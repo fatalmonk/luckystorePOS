@@ -28,6 +28,15 @@ function withTranId(url: string, tranId: string) {
   return target.toString()
 }
 
+/** Create session: sandbox and live both use gwprocess v4 per https://developer.sslcommerz.com/doc/v4/ — override with SSLCOMMERZ_SESSION_API_URL if needed. */
+function sslCommerzSessionApiUrl(isLive: boolean): string {
+  const override = Deno.env.get('SSLCOMMERZ_SESSION_API_URL')?.trim()
+  if (override) return override
+  return isLive
+    ? 'https://securepay.sslcommerz.com/gwprocess/v4/api.php'
+    : 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php'
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -66,9 +75,7 @@ serve(async (req) => {
     const SSL_STORE_ID = Deno.env.get('SSLCOMMERZ_STORE_ID') || Deno.env.get('SSL_COMMERZ_STORE_ID') || ''
     const SSL_STORE_PASSWORD = Deno.env.get('SSLCOMMERZ_STORE_PASSWORD') || Deno.env.get('SSL_COMMERZ_STORE_PASSWORD') || ''
     const SSL_IS_LIVE = (Deno.env.get('SSLCOMMERZ_IS_LIVE') || 'false') === 'true'
-    const SSL_GATEWAY_URL = SSL_IS_LIVE
-      ? 'https://securepay.sslcommerz.com/gwprocess/v4/api.php'
-      : 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php'
+    const SSL_GATEWAY_URL = sslCommerzSessionApiUrl(SSL_IS_LIVE)
 
     if (!SSL_STORE_ID || !SSL_STORE_PASSWORD) {
       throw new Error('SSLCommerz credentials are missing')

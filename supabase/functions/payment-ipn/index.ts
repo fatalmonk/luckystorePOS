@@ -7,6 +7,18 @@ const corsHeaders = {
 
 type SSLValidationResult = Record<string, string>
 
+function sslCommerzValidatorBase(isLive: boolean): string {
+  const raw = Deno.env.get('SSLCOMMERZ_VALIDATOR_URL')?.trim()
+  if (raw) {
+    const u = new URL(raw)
+    u.search = ''
+    return u.toString().replace(/\/$/, '')
+  }
+  return isLive
+    ? 'https://securepay.sslcommerz.com/validator/api/validationserverAPI.php'
+    : 'https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php'
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -31,9 +43,7 @@ serve(async (req) => {
     const storeId = Deno.env.get('SSLCOMMERZ_STORE_ID') || Deno.env.get('SSL_COMMERZ_STORE_ID') || ''
     const storePassword = Deno.env.get('SSLCOMMERZ_STORE_PASSWORD') || Deno.env.get('SSL_COMMERZ_STORE_PASSWORD') || ''
     const isLive = (Deno.env.get('SSLCOMMERZ_IS_LIVE') || 'false') === 'true'
-    const validatorBase = isLive
-      ? 'https://securepay.sslcommerz.com/validator/api/validationserverAPI.php'
-      : 'https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php'
+    const validatorBase = sslCommerzValidatorBase(isLive)
 
     if (!storeId || !storePassword) {
       throw new Error('SSLCommerz credentials are missing')
