@@ -35,7 +35,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-full-service-role-key-here
 # ⚠️ NEVER commit this file to git!
 # Get from: Supabase Dashboard → Settings → API → service_role key
 
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNja3NjaGlleHp2eXN2ZHJhY3ZjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzQwMDc2MywiZXhwIjoyMDc4OTc2NzYzfQ.very-long-signature-here
+
 ```
 
 ## 🔒 Security

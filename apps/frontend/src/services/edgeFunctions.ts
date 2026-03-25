@@ -32,7 +32,12 @@ export async function invokeEdgeFunction<TResponse = unknown>(
   if (isInvalidJwtError(firstTry.error)) {
     const { data, error: refreshError } = await supabase.auth.refreshSession()
     if (!refreshError && data.session?.access_token) {
-      const secondTry = await supabase.functions.invoke<TResponse>(functionName, { body: body as never })
+      const secondTry = await supabase.functions.invoke<TResponse>(functionName, {
+        body: body as never,
+        headers: {
+          Authorization: `Bearer ${data.session.access_token}`,
+        },
+      })
       if (!secondTry.error) {
         if (secondTry.data == null) {
           throw new Error(`${fallbackErrorMessage}: empty response`)
