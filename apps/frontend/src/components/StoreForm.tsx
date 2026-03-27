@@ -1,7 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { checkStoreCodeUnique } from '../services/stores'
 import type { StoreFormData } from '../services/stores'
+import {
+  createPlacesSessionToken,
+  getFormattedAddressFromPlaceId,
+  isGooglePlacesConfigured,
+  searchAddressPredictions,
+  type AddressPrediction,
+} from '../services/googlePlaces'
 
 interface StoreFormProps {
   store?: {
@@ -38,6 +45,85 @@ export function StoreForm({ store, onSave, onCancel }: StoreFormProps) {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [codeChecking, setCodeChecking] = useState(false)
+  const [placesSessionToken, setPlacesSessionToken] = useState(() =>
+    createPlacesSessionToken()
+  )
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressPrediction[]>([])
+  const [addressLoading, setAddressLoading] = useState(false)
+  const [addressLookupError, setAddressLookupError] = useState<string | null>(null)
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1)
+
+  useEffect(() => {
+    if (!isGooglePlacesConfigured()) {
+      setAddressSuggestions([])
+      setAddressLoading(false)
+      return
+    }
+
+    const addressInput = formData.address?.trim() || ''
+    if (addressInput.length < 3) {
+      setAddressSuggestions([])
+      setAddressLoading(false)
+      setActiveSuggestionIndex(-1)
+      return
+    }
+
+    let cancelled = false
+    setAddressLoading(true)
+    setAddressLookupError(null)
+    const timer = window.setTimeout(async () => {
+      try {
+        const suggestions = await searchAddressPredictions(
+          addressInput,
+          placesSessionToken
+        )
+        if (cancelled) return
+        setAddressSuggestions(suggestions)
+        setShowAddressSuggestions(true)
+        setActiveSuggestionIndex(-1)
+      } catch {
+        if (cancelled) return
+        setAddressLookupError('Address autocomplete is temporarily unavailable.')
+        setAddressSuggestions([])
+      } finally {
+        if (!cancelled) {
+          setAddressLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [formData.address, placesSessionToken])
+
+  const handleAddressSelect = async (suggestion: AddressPrediction) => {
+    setFormData((prev) => ({ ...prev, address: suggestion.text }))
+    setAddressSuggestions([])
+    setShowAddressSuggestions(false)
+    setActiveSuggestionIndex(-1)
+    setAddressLookupError(null)
+
+    try {
+      setAddressLoading(true)
+      const formattedAddress = await getFormattedAddressFromPlaceId(
+        suggestion.placeId,
+        placesSessionToken
+      )
+      if (formattedAddress) {
+        setFormData((prev) => ({ ...prev, address: formattedAddress }))
+      }
+    } catch {
+      setAddressLookupError(
+        'Could not fetch full address details. You can still edit it manually.'
+      )
+    } finally {
+      setAddressLoading(false)
+      setPlacesSessionToken(createPlacesSessionToken())
+    }
+  }
 
   const validateCode = async (code: string) => {
     if (!code) {
@@ -177,20 +263,91 @@ export function StoreForm({ store, onSave, onCancel }: StoreFormProps) {
         </div>
       </div>
 
-      <div>
+      <div className="relative">
         <label className="block text-sm font-medium text-gray-700">Address</label>
-        <textarea
+        <input
+          type="text"
           value={formData.address || ''}
-          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          rows={3}
-          placeholder="Store address (optional)"
+          onFocus={() => {
+            if (addressSuggestions.length > 0) {
+              setShowAddressSuggestions(true)
+            }
+          }}
+          onBlur={() => {
+            window.setTimeout(() => setShowAddressSuggestions(false), 150)
+          }}
+          onChange={(e) => {
+            setFormData({ ...formData, address: e.target.value })
+            setAddressLookupError(null)
+          }}
+          onKeyDown={(e) => {
+            if (!showAddressSuggestions || addressSuggestions.length === 0) return
+
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              setActiveSuggestionIndex((prev) =>
+                prev < addressSuggestions.length - 1 ? prev + 1 : prev
+              )
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              setActiveSuggestionIndex((prev) => (prev > 0 ? prev - 1 : -1))
+            } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+              e.preventDefault()
+              const selected = addressSuggestions[activeSuggestionIndex]
+              if (selected) {
+                void handleAddressSelect(selected)
+              }
+            } else if (e.key === 'Escape') {
+              setShowAddressSuggestions(false)
+              setActiveSuggestionIndex(-1)
+            }
+          }}
+          placeholder={
+            isGooglePlacesConfigured()
+              ? 'Start typing to search address (optional)'
+              : 'Store address (optional)'
+          }
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
+        {isGooglePlacesConfigured() && (
+          <p className="mt-1 text-xs text-gray-500">
+            Google Places suggestions will appear while you type.
+          </p>
+        )}
+        {addressLoading && (
+          <p className="mt-1 text-sm text-gray-500">Searching addresses...</p>
+        )}
+        {addressLookupError && (
+          <p className="mt-1 text-sm text-amber-600">{addressLookupError}</p>
+        )}
+        {showAddressSuggestions && addressSuggestions.length > 0 && (
+          <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+            {addressSuggestions.map((suggestion, index) => (
+              <li key={suggestion.placeId}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    void handleAddressSelect(suggestion)
+                  }}
+                  className={`w-full px-3 py-2 text-left text-sm ${
+                    index === activeSuggestionIndex
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {suggestion.text}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Timezone</label>
         <select
+          title="Store timezone"
           value={formData.timezone}
           onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": false,
     "noImplicitAny": false,
     "skipLibCheck": true,
