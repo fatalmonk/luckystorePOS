@@ -1,6 +1,6 @@
 {
   "installCommand": "if [ ! -d \"flutter\" ]; then git clone https://github.com/flutter/flutter.git -b stable --depth 1; fi && ./flutter/bin/flutter config --enable-web && ./flutter/bin/flutter pub get",
-  "buildCommand": "echo \"SUPABASE_URL=$SUPABASE_URL\\nSUPABASE_ANON_KEY=$SUPABASE_ANON_KEY\\nMANAGER_EMAIL=$MANAGER_EMAIL\\nMANAGER_PASSWORD=$MANAGER_PASSWORD\\nADMIN_EMAIL=$ADMIN_EMAIL\\nADMIN_PASSWORD=$ADMIN_PASSWORD\" > .env && ./flutter/bin/flutter gen-l10n && ./flutter/bin/flutter build web --release",
+  "buildCommand": "./build.sh",
   "outputDirectory": "build/web",
   "rewrites": [
     {
