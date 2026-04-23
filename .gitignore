@@ -149,3 +149,5 @@ data/inventory/**/*.csv
 data/inventory/**/*.json
 data/inventory/**/*.pdf
 data/inventory/**/*.txt
+.vercel
+.env*.local
