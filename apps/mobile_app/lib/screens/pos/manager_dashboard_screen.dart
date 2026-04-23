@@ -17,7 +17,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   bool _loading = true;
   String? _error;
   
-  Map<String, dynamic> _stats = {
+  final Map<String, dynamic> _stats = {
     'today_sales': 0.0,
     'total_orders': 0,
     'active_sessions': 0,
@@ -160,7 +160,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +194,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                     dotData: FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: const Color(0xFF2ECC71).withOpacity(0.1),
+                      color: const Color(0xFF2ECC71).withValues(alpha: 0.1),
                     ),
                   ),
                 ],
@@ -213,7 +213,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,10 +264,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF161B22),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               boxShadow: [
                 BoxShadow(
-                  color: isOpen ? const Color(0xFFE8B84B).withOpacity(0.1) : Colors.black12,
+                  color: isOpen ? const Color(0xFFE8B84B).withValues(alpha: 0.1) : Colors.black12,
                   blurRadius: 8,
                   offset: const Offset(0, 4)
                 )
@@ -278,9 +278,9 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                 Container(
                   width: 48, height: 48,
                   decoration: BoxDecoration(
-                    color: isOpen ? const Color(0xFFE8B84B).withOpacity(0.15) : Colors.white.withOpacity(0.05),
+                    color: isOpen ? const Color(0xFFE8B84B).withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isOpen ? const Color(0xFFE8B84B).withOpacity(0.5) : Colors.transparent),
+                    border: Border.all(color: isOpen ? const Color(0xFFE8B84B).withValues(alpha: 0.5) : Colors.transparent),
                   ),
                   child: Icon(
                     isOpen ? Icons.lock_open_rounded : Icons.lock_rounded, 
@@ -300,7 +300,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: isOpen ? const Color(0xFF2ECC71).withOpacity(0.15) : Colors.white10,
+                              color: isOpen ? const Color(0xFF2ECC71).withValues(alpha: 0.15) : Colors.white10,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(isOpen ? 'ACTIVE' : 'CLOSED', style: TextStyle(color: isOpen ? const Color(0xFF2ECC71) : Colors.white54, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),

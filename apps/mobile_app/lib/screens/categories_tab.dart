@@ -97,8 +97,8 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
                     borderRadius: BorderRadius.circular(14),
                     gradient: LinearGradient(
                       colors: [
-                        AppTheme.primaryAccent.withOpacity(0.8),
-                        AppTheme.primaryAccentLight.withOpacity(0.6),
+                        AppTheme.primaryAccent.withValues(alpha: 0.8),
+                        AppTheme.primaryAccentLight.withValues(alpha: 0.6),
                       ],
                     ),
                   ),
@@ -109,7 +109,7 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
                     children: [
                       const Text('Get 15% Cashback', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
-                      Text('On all orders above ৳400', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                      Text('On all orders above ৳400', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
                     ],
                   ),
                 ),

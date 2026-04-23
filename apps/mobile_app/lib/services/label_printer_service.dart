@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 // import 'package:flutter_blue_plus/flutter_blue_plus.dart'; // Problematic on web
 import '../models/pos_models.dart';
@@ -42,8 +41,4 @@ class LabelPrinterService {
     throw Exception('Bluetooth label printing is currently disabled due to library incompatibility on this platform.');
   }
 
-  String _truncate(String text, int length) {
-    if (text.length <= length) return text;
-    return '${text.substring(0, length - 2)}..';
-  }
 }

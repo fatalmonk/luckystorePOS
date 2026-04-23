@@ -1,5 +1,6 @@
 /// Backend Integration: bKash Tokenized Checkout APIs
 /// Reference Implementation for Lucky Store App.
+library;
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;

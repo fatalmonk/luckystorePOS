@@ -1,0 +1,36 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java</file>
+  <line>17</line>
+  <module>lucky_store_android</module>
+  <package>io.flutter.plugins</package>
+  <entry_point TYPE="method" FQNAME="io.flutter.plugins.GeneratedPluginRegistrant void registerWith(FlutterEngine flutterEngine)" />
+  <language>JAVA</language>
+  <offset>21</offset>
+  <length>12</length>
+  <highlighted_element>registerWith</highlighted_element>
+  <problem_class id="unused" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java</file>
+  <line>15</line>
+  <module>lucky_store_android</module>
+  <package>io.flutter.plugins</package>
+  <entry_point TYPE="class" FQNAME="io.flutter.plugins.GeneratedPluginRegistrant" />
+  <language>JAVA</language>
+  <offset>19</offset>
+  <length>25</length>
+  <highlighted_element>GeneratedPluginRegistrant</highlighted_element>
+  <problem_class id="unused" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is never used.</description>
+</problem>
+</problems>

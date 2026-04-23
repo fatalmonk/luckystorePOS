@@ -1,0 +1,146 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml</file>
+  <line>4</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Unresolved class '{applicationName}'</description>
+  <highlighted_element>{applicationName}</highlighted_element>
+  <language>XML</language>
+  <offset>23</offset>
+  <length>17</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml</file>
+  <line>7</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Unresolved class 'MainActivity'</description>
+  <highlighted_element>MainActivity</highlighted_element>
+  <language>XML</language>
+  <offset>27</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/drawable/launch_background.xml</file>
+  <line>4</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/drawable/launch_background.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol '@android:color/white'</description>
+  <highlighted_element>@android:color/white</highlighted_element>
+  <language>XML</language>
+  <offset>28</offset>
+  <length>20</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/drawable-v21/launch_background.xml</file>
+  <line>4</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/drawable-v21/launch_background.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol '?android:colorBackground'</description>
+  <highlighted_element>?android:colorBackground</highlighted_element>
+  <language>XML</language>
+  <offset>28</offset>
+  <length>24</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml</file>
+  <line>4</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol '@android:style/Theme.Light.NoTitleBar'</description>
+  <highlighted_element>@android:style/Theme.Light.NoTitleBar</highlighted_element>
+  <language>XML</language>
+  <offset>38</offset>
+  <length>37</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml</file>
+  <line>7</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol 'android:windowBackground'</description>
+  <highlighted_element>android:windowBackground</highlighted_element>
+  <language>XML</language>
+  <offset>20</offset>
+  <length>24</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml</file>
+  <line>15</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol '@android:style/Theme.Light.NoTitleBar'</description>
+  <highlighted_element>@android:style/Theme.Light.NoTitleBar</highlighted_element>
+  <language>XML</language>
+  <offset>38</offset>
+  <length>37</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml</file>
+  <line>16</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol 'android:windowBackground'</description>
+  <highlighted_element>android:windowBackground</highlighted_element>
+  <language>XML</language>
+  <offset>20</offset>
+  <length>24</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml</file>
+  <line>4</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol '@android:style/Theme.Black.NoTitleBar'</description>
+  <highlighted_element>@android:style/Theme.Black.NoTitleBar</highlighted_element>
+  <language>XML</language>
+  <offset>38</offset>
+  <length>37</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml</file>
+  <line>7</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol 'android:windowBackground'</description>
+  <highlighted_element>android:windowBackground</highlighted_element>
+  <language>XML</language>
+  <offset>20</offset>
+  <length>24</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml</file>
+  <line>15</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol '@android:style/Theme.Black.NoTitleBar'</description>
+  <highlighted_element>@android:style/Theme.Black.NoTitleBar</highlighted_element>
+  <language>XML</language>
+  <offset>38</offset>
+  <length>37</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml</file>
+  <line>16</line>
+  <module>lucky_store_android</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/android/app/src/main/res/values-night/styles.xml" />
+  <problem_class id="AndroidDomInspection" severity="ERROR" attribute_key="WRONG_REFERENCES_ATTRIBUTES">Android Resources Validation</problem_class>
+  <description>Cannot resolve symbol 'android:windowBackground'</description>
+  <highlighted_element>android:windowBackground</highlighted_element>
+  <language>XML</language>
+  <offset>20</offset>
+  <length>24</length>
+</problem>
+</problems>

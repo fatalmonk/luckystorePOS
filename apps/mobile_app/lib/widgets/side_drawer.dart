@@ -88,7 +88,7 @@ class _SideDrawerState extends State<SideDrawer> {
                         height: 56,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           border: Border.all(color: Colors.white, width: 2),
                         ),
                         child: const Icon(Icons.person, color: Colors.white, size: 30),
@@ -135,7 +135,7 @@ class _SideDrawerState extends State<SideDrawer> {
                     alignment: Alignment.centerLeft,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       padding: const EdgeInsets.all(3),

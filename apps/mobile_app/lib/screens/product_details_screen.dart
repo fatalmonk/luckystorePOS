@@ -36,7 +36,7 @@ class ProductDetailsScreen extends StatelessWidget {
               child: Container(
                 height: 300,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   image: DecorationImage(
                     image: NetworkImage(imageUrl),
                     fit: BoxFit.cover,
@@ -104,7 +104,7 @@ class ProductDetailsScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppTheme.errorAccent.withOpacity(0.2),
+                            color: AppTheme.errorAccent.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

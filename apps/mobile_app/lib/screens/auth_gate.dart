@@ -84,7 +84,7 @@ class _StoreLogo extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE8B84B).withOpacity(0.35),
+            color: const Color(0xFFE8B84B).withValues(alpha: 0.35),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),

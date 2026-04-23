@@ -213,7 +213,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
           _progress = (processed / total).clamp(0.0, 1.0);
           _statusMessage = complete 
             ? (_isDryRun ? 'Dry run complete. No data saved.' : 'Import successful!')
-            : 'Processing... ${processed}/${total} rows';
+            : 'Processing... $processed/$total rows';
         });
 
         if (!complete) await Future.delayed(const Duration(milliseconds: 500));
@@ -249,7 +249,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.table_chart_outlined, size: 80, color: AppTheme.primaryAccent.withOpacity(0.5)),
+          Icon(Icons.table_chart_outlined, size: 80, color: AppTheme.primaryAccent.withValues(alpha: 0.5)),
           const SizedBox(height: 24),
           const Text('Bulk Inventory Upload', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 8),
@@ -281,7 +281,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
           child: Container(
             decoration: BoxDecoration(
               color: AppTheme.backgroundElevated,
-              border: Border(right: BorderSide(color: Colors.white.withOpacity(0.05))),
+              border: Border(right: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
             ),
             child: Column(
               children: [
@@ -335,7 +335,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
                   decoration: BoxDecoration(
                     color: Colors.black26,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _mappings.containsKey(id) ? AppTheme.primaryAccent.withOpacity(0.3) : Colors.white10),
+                    border: Border.all(color: _mappings.containsKey(id) ? AppTheme.primaryAccent.withValues(alpha: 0.3) : Colors.white10),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -348,8 +348,11 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
                         ..._headers.map((h) => DropdownMenuItem(value: h, child: Text(h, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: Colors.white)))),
                       ],
                       onChanged: (val) => setState(() {
-                        if (val == null) _mappings.remove(id);
-                        else _mappings[id] = val;
+                        if (val == null) {
+                          _mappings.remove(id);
+                        } else {
+                          _mappings[id] = val;
+                        }
                       }),
                     ),
                   ),
@@ -367,7 +370,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.black26,
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       ),
       child: Column(
         children: [
@@ -377,7 +380,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
             label: const Text('Google MC Preset'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 45),
-              side: BorderSide(color: AppTheme.primaryAccent.withOpacity(0.5)),
+              side: BorderSide(color: AppTheme.primaryAccent.withValues(alpha: 0.5)),
             ),
           ),
           const SizedBox(height: 16),
@@ -461,13 +464,13 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
               decoration: BoxDecoration(
                 color: Colors.black26,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _errors.length,
-                separatorBuilder: (_, __) => Divider(color: Colors.white.withOpacity(0.05), height: 1),
+                separatorBuilder: (_, __) => Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
                 itemBuilder: (ctx, i) {
                   final err = _errors[i];
                   return ListTile(
@@ -491,7 +494,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
       decoration: BoxDecoration(
         color: AppTheme.backgroundElevated,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.03)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

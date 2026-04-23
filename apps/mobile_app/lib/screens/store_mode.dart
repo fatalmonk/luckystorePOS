@@ -24,7 +24,7 @@ class StoreModeScreen extends StatelessWidget {
           // Simulated Interactive Map Layout
           Positioned.fill(
             child: Container(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white.withValues(alpha: 0.02),
               child: CustomPaint(
                 painter: AisleMapPainter(), // Custom blueprint visual logic
               ),
@@ -44,7 +44,7 @@ class StoreModeScreen extends StatelessWidget {
                     color: Colors.blueAccent,
                     shape: BoxShape.circle,
                     boxShadow: [
-                      BoxShadow(color: Colors.blueAccent.withOpacity(0.5), blurRadius: 10, spreadRadius: 4),
+                      BoxShadow(color: Colors.blueAccent.withValues(alpha: 0.5), blurRadius: 10, spreadRadius: 4),
                     ],
                   ),
                 ),

@@ -139,7 +139,7 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
                     Text(
                       'Enter your access PIN to continue',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 15,
                       ),
                     ),
@@ -211,7 +211,7 @@ class _BrandedLogo extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE8B84B).withOpacity(0.3),
+            color: const Color(0xFFE8B84B).withValues(alpha: 0.3),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -259,11 +259,11 @@ class _PinDots extends StatelessWidget {
             height: filled ? 20 : 16,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: filled ? const Color(0xFFE8B84B) : Colors.white.withOpacity(0.15),
+              color: filled ? const Color(0xFFE8B84B) : Colors.white.withValues(alpha: 0.15),
               boxShadow: filled
-                  ? [BoxShadow(color: const Color(0xFFE8B84B).withOpacity(0.4), blurRadius: 10)]
+                  ? [BoxShadow(color: const Color(0xFFE8B84B).withValues(alpha: 0.4), blurRadius: 10)]
                   : null,
-              border: filled ? null : Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
+              border: filled ? null : Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1.5),
             ),
           );
         }),
@@ -331,8 +331,8 @@ class _NumericPad extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.05),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            color: Colors.white.withValues(alpha: 0.05),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           alignment: Alignment.center,
           child: Text(
@@ -359,7 +359,7 @@ class _NumericPad extends StatelessWidget {
           height: 80,
           child: Icon(
             Icons.backspace_outlined,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             size: 28,
           ),
         ),

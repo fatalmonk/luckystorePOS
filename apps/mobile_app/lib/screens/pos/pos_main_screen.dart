@@ -114,7 +114,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                     child: _buildLeftPanel(),
                   ),
                   // Divider
-                  Container(width: 1, color: Colors.white.withOpacity(0.06)),
+                  Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
                   // ── RIGHT PANEL ────────────────────────────────────────
                   Expanded(
                     flex: 40,
@@ -150,7 +150,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
-        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))),
+        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
       ),
       child: Row(
         children: [
@@ -184,15 +184,15 @@ class _PosMainScreenState extends State<PosMainScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Search product, SKU, or brand...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 14),
-                prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.4), size: 18),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 14),
+                prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.4), size: 18),
                 suffixIcon: _searchCtrl.text.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, color: Colors.white.withOpacity(0.4), size: 16),
+                        icon: Icon(Icons.clear, color: Colors.white.withValues(alpha: 0.4), size: 16),
                         onPressed: () { _searchCtrl.clear(); })
                     : null,
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.06),
+                fillColor: Colors.white.withValues(alpha: 0.06),
                 contentPadding: const EdgeInsets.symmetric(vertical: 8),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -258,17 +258,17 @@ class _PosMainScreenState extends State<PosMainScreen> {
         decoration: BoxDecoration(
           color: selected
               ? const Color(0xFFE8B84B)
-              : Colors.white.withOpacity(0.07),
+              : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
               color: selected
                   ? const Color(0xFFE8B84B)
-                  : Colors.white.withOpacity(0.12)),
+                  : Colors.white.withValues(alpha: 0.12)),
         ),
         child: Text(
           count != null ? '$label ($count)' : label,
           style: TextStyle(
-              color: selected ? Colors.black : Colors.white.withOpacity(0.75),
+              color: selected ? Colors.black : Colors.white.withValues(alpha: 0.75),
               fontSize: 12,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w400),
         ),
@@ -287,10 +287,10 @@ class _PosMainScreenState extends State<PosMainScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off_rounded,
-                color: Colors.white.withOpacity(0.2), size: 48),
+                color: Colors.white.withValues(alpha: 0.2), size: 48),
             const SizedBox(height: 8),
             Text('No products found',
-                style: TextStyle(color: Colors.white.withOpacity(0.35))),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.35))),
           ],
         ),
       );
@@ -325,7 +325,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF161B22),
               border: Border(
-                  bottom: BorderSide(color: Colors.white.withOpacity(0.06))),
+                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
             ),
             child: Row(
               children: [
@@ -357,7 +357,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                     onPressed: _confirmClearCart,
                     child: Text('Clear',
                         style: TextStyle(
-                            color: Colors.red.withOpacity(0.8), fontSize: 12)),
+                            color: Colors.red.withValues(alpha: 0.8), fontSize: 12)),
                   ),
               ],
             ),
@@ -393,15 +393,15 @@ class _PosMainScreenState extends State<PosMainScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.shopping_cart_outlined,
-              color: Colors.white.withOpacity(0.1), size: 56),
+              color: Colors.white.withValues(alpha: 0.1), size: 56),
           const SizedBox(height: 8),
           Text('Cart is empty',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.25), fontSize: 14)),
+                  color: Colors.white.withValues(alpha: 0.25), fontSize: 14)),
           const SizedBox(height: 4),
           Text('Tap a product or scan a barcode',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.15), fontSize: 12)),
+                  color: Colors.white.withValues(alpha: 0.15), fontSize: 12)),
         ],
       ),
     );
@@ -415,7 +415,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
       ),
       child: Column(
         children: [
@@ -517,7 +517,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
               _scanning = false;
               _scanCtrl.stop();
             }),
-            child: Container(color: Colors.black.withOpacity(0.75)),
+            child: Container(color: Colors.black.withValues(alpha: 0.75)),
           ),
           // Scanner viewport
           Center(
@@ -542,7 +542,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
+                    color: Colors.black.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20)),
                 child: const Text('Point at barcode or QR code',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
@@ -635,7 +635,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
             Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8B84B).withOpacity(0.15),
+                color: const Color(0xFFE8B84B).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.person_rounded,
@@ -751,18 +751,18 @@ class _PosMainScreenState extends State<PosMainScreen> {
             height: 36,
             decoration: BoxDecoration(
               color: active
-                  ? const Color(0xFFE8B84B).withOpacity(0.15)
-                  : Colors.white.withOpacity(0.06),
+                  ? const Color(0xFFE8B84B).withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                   color: active
-                      ? const Color(0xFFE8B84B).withOpacity(0.5)
+                      ? const Color(0xFFE8B84B).withValues(alpha: 0.5)
                       : Colors.transparent),
             ),
             child: Icon(icon,
                 color: active
                     ? const Color(0xFFE8B84B)
-                    : Colors.white.withOpacity(0.6),
+                    : Colors.white.withValues(alpha: 0.6),
                 size: 18),
           ),
         ),
@@ -791,7 +791,7 @@ class _ProductTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Stack(
           children: [
@@ -858,7 +858,7 @@ class _ProductTile extends StatelessWidget {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
@@ -879,7 +879,7 @@ class _ProductTile extends StatelessWidget {
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle),
                 child: const Icon(Icons.add, color: Colors.white, size: 14),
               ),
@@ -892,9 +892,9 @@ class _ProductTile extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      color: Colors.white.withOpacity(0.04),
+      color: Colors.white.withValues(alpha: 0.04),
       child: Icon(Icons.inventory_2_outlined,
-          color: Colors.white.withOpacity(0.2), size: 28),
+          color: Colors.white.withValues(alpha: 0.2), size: 28),
     );
   }
 }
@@ -921,7 +921,7 @@ class _CartLine extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        color: Colors.red.withOpacity(0.8),
+        color: Colors.red.withValues(alpha: 0.8),
         child: const Icon(Icons.delete_outline_rounded,
             color: Colors.white, size: 22),
       ),
@@ -997,7 +997,7 @@ class _CartLine extends StatelessWidget {
         width: 26,
         height: 26,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Icon(icon, color: Colors.white70, size: 14),

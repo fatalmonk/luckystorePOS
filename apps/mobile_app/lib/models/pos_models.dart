@@ -1,4 +1,5 @@
 /// POS-specific data models for Lucky Store POS system
+library;
 
 // ---------------------------------------------------------------------------
 // PosItem — product as returned by lookup_item_by_scan / search_items_pos

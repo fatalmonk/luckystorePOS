@@ -50,7 +50,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: AppTheme.shadowDark.withOpacity(0.5),
+              color: AppTheme.shadowDark.withValues(alpha: 0.5),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

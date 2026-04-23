@@ -1,4 +1,5 @@
 /// Core data models for Lucky Store mobile app
+library;
 
 class Product {
   final int productId;

@@ -41,7 +41,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: Text(
@@ -76,7 +76,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: progress,
-                      backgroundColor: Colors.black.withOpacity(0.2),
+                      backgroundColor: Colors.black.withValues(alpha: 0.2),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         unlockedFreeDelivery ? const Color(0xFF4EEB9E) : Colors.white,
                       ),
@@ -89,7 +89,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                       ? 'Free Delivery Unlocked! 🚚' 
                       : 'Add ৳${(freeDeliveryThreshold - cart.totalAmount).toStringAsFixed(0)} more for Free Delivery',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 10,
                     ),
                   ),

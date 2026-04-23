@@ -55,7 +55,7 @@ class ProductCard extends StatelessWidget {
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       image: DecorationImage(
                         image: NetworkImage(imageUrl),
                         fit: BoxFit.cover,
@@ -137,7 +137,7 @@ class ProductCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundElevated.withOpacity(0.8),
+                    color: AppTheme.backgroundElevated.withValues(alpha: 0.8),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.favorite_border, color: AppTheme.textSecondary, size: 18),

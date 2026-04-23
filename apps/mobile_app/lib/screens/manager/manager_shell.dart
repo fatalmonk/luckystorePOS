@@ -114,9 +114,9 @@ class _ManagerShellState extends State<ManagerShell> {
             selectedLabelTextStyle: const TextStyle(
                 color: Color(0xFFE8B84B), fontWeight: FontWeight.w700, fontSize: 12),
             unselectedIconTheme:
-                IconThemeData(color: Colors.white.withOpacity(0.45)),
+                IconThemeData(color: Colors.white.withValues(alpha: 0.45)),
             unselectedLabelTextStyle: TextStyle(
-                color: Colors.white.withOpacity(0.45), fontSize: 12),
+                color: Colors.white.withValues(alpha: 0.45), fontSize: 12),
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
@@ -137,7 +137,7 @@ class _ManagerShellState extends State<ManagerShell> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.07),
+                      color: Colors.white.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -154,7 +154,7 @@ class _ManagerShellState extends State<ManagerShell> {
               child: IconButton(
                 tooltip: 'Sign Out',
                 icon: Icon(Icons.logout_rounded,
-                    color: Colors.white.withOpacity(0.5)),
+                    color: Colors.white.withValues(alpha: 0.5)),
                 onPressed: () => _handleSignOut(context),
               ),
             ),
@@ -167,7 +167,7 @@ class _ManagerShellState extends State<ManagerShell> {
                 .toList(),
           ),
           // Vertical divider
-          Container(width: 1, color: Colors.white.withOpacity(0.06)),
+          Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
           // Page content
           Expanded(child: _pages[_selectedIndex]),
         ],
@@ -211,7 +211,7 @@ class _ManagerShellState extends State<ManagerShell> {
                   Text(
                     '${auth.appUser?.name ?? 'Manager'} · ${auth.appUser?.role.toUpperCase() ?? ''}',
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.5), fontSize: 11),
+                        color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
                   ),
                 ],
               ),
@@ -222,7 +222,7 @@ class _ManagerShellState extends State<ManagerShell> {
           IconButton(
             tooltip: 'Sign Out',
             icon: Icon(Icons.logout_rounded,
-                color: Colors.white.withOpacity(0.55), size: 22),
+                color: Colors.white.withValues(alpha: 0.55), size: 22),
             onPressed: () => _handleSignOut(context),
           ),
           const SizedBox(width: 4),
@@ -233,10 +233,10 @@ class _ManagerShellState extends State<ManagerShell> {
         decoration: BoxDecoration(
           color: const Color(0xFF161B22),
           border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.06))),
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -249,7 +249,7 @@ class _ManagerShellState extends State<ManagerShell> {
           elevation: 0,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFFE8B84B),
-          unselectedItemColor: Colors.white.withOpacity(0.4),
+          unselectedItemColor: Colors.white.withValues(alpha: 0.4),
           selectedLabelStyle: const TextStyle(
               fontSize: 11, fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontSize: 11),

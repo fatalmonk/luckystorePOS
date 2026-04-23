@@ -19,7 +19,6 @@ class _LabelPrintScreenState extends State<LabelPrintScreen> {
   PosItem? _selectedItem;
 
   int _copies = 1;
-  bool _isConnecting = false;
   bool _isPrinting = false;
   String? _statusMsg;
 
@@ -131,7 +130,7 @@ class _LabelPrintScreenState extends State<LabelPrintScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF161B22),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: TextField(
                   controller: _searchCtrl,
@@ -187,7 +186,7 @@ class _LabelPrintScreenState extends State<LabelPrintScreen> {
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
-                  color: _statusMsg!.contains('Error') ? Colors.redAccent.withOpacity(0.1) : const Color(0xFF2ECC71).withOpacity(0.1),
+                  color: _statusMsg!.contains('Error') ? Colors.redAccent.withValues(alpha: 0.1) : const Color(0xFF2ECC71).withValues(alpha: 0.1),
                   child: Row(
                     children: [
                       Icon(
@@ -211,7 +210,7 @@ class _LabelPrintScreenState extends State<LabelPrintScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF161B22),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE8B84B).withOpacity(0.3)),
+                    border: Border.all(color: const Color(0xFFE8B84B).withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     children: [
@@ -223,7 +222,7 @@ class _LabelPrintScreenState extends State<LabelPrintScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10)],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 10)],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -293,7 +292,7 @@ class _LabelPrintScreenState extends State<LabelPrintScreen> {
                           label: Text(_isPrinting ? 'PRINTING...' : 'PRINT LABELS', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE8B84B),
-                            disabledBackgroundColor: const Color(0xFFE8B84B).withOpacity(0.5),
+                            disabledBackgroundColor: const Color(0xFFE8B84B).withValues(alpha: 0.5),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),

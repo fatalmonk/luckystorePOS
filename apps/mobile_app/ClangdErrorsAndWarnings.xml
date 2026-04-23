@@ -1,0 +1,262 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Flutter/Debug.xcconfig</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Flutter/Debug.xcconfig" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Unable to handle compilation, expected exactly one compiler job in ''</description>
+  <highlighted_element>#include</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Flutter/Release.xcconfig</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Flutter/Release.xcconfig" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Unable to handle compilation, expected exactly one compiler job in ''</description>
+  <highlighted_element>#include</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h</file>
+  <line>10</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>'Flutter/Flutter.h' file not found</description>
+  <highlighted_element>#import &lt;Flutter/Flutter.h&gt;</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>27</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h</file>
+  <line>14</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Expected identifier or '('</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h</file>
+  <line>16</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Expected identifier or '('</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Too many errors emitted, stopping now</description>
+  <highlighted_element>//</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>2</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>12</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Prefix attribute must be followed by an interface, protocol, or implementation</description>
+  <highlighted_element>import</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>1</offset>
+  <length>6</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>18</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>24</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>30</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>36</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>42</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>48</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>54</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>60</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Use of '@import' when modules are disabled</description>
+  <highlighted_element>@</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>1</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m</file>
+  <line>65</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Expected a type</description>
+  <highlighted_element>NSObject&lt;FlutterPluginRegistry&gt;</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>30</offset>
+  <length>31</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/macos/Flutter/Flutter-Debug.xcconfig</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/macos/Flutter/Flutter-Debug.xcconfig" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Unable to handle compilation, expected exactly one compiler job in ''</description>
+  <highlighted_element>#include</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/macos/Flutter/Flutter-Release.xcconfig</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/macos/Flutter/Flutter-Release.xcconfig" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Unable to handle compilation, expected exactly one compiler job in ''</description>
+  <highlighted_element>#include</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/macos/Runner/Configs/Debug.xcconfig</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/macos/Runner/Configs/Debug.xcconfig" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Unable to handle compilation, expected exactly one compiler job in ''</description>
+  <highlighted_element>#include</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/macos/Runner/Configs/Release.xcconfig</file>
+  <line>1</line>
+  <module>lucky_store</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/macos/Runner/Configs/Release.xcconfig" />
+  <problem_class id="ClangdErrorsAndWarnings" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">Clangd errors and warnings</problem_class>
+  <hints />
+  <description>Unable to handle compilation, expected exactly one compiler job in ''</description>
+  <highlighted_element>#include</highlighted_element>
+  <language>ObjectiveC</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+</problems>

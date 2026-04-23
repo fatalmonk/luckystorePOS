@@ -82,7 +82,7 @@ class ReceiptScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +204,7 @@ class ReceiptScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
       ),
       child: Column(
         children: [
@@ -325,10 +325,10 @@ class _Dashes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(32, (_) => Expanded(
+      children: List.generate(32, (index) => Expanded(
         child: Container(
           height: 1,
-          color: _.isEven ? Colors.white12 : Colors.transparent,
+          color: index.isEven ? Colors.white12 : Colors.transparent,
         ),
       )),
     );

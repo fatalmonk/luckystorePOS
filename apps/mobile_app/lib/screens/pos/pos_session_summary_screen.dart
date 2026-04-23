@@ -215,7 +215,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isOpen ? const Color(0xFFE8B84B).withOpacity(0.5) : Colors.white.withOpacity(0.05)),
+        border: Border.all(color: isOpen ? const Color(0xFFE8B84B).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,7 +227,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isOpen ? const Color(0xFFE8B84B).withOpacity(0.1) : Colors.white10,
+                  color: isOpen ? const Color(0xFFE8B84B).withValues(alpha: 0.1) : Colors.white10,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(isOpen ? 'IN PROGRESS' : 'CLOSED', style: TextStyle(color: isOpen ? const Color(0xFFE8B84B) : Colors.white54, fontSize: 11, fontWeight: FontWeight.bold)),
@@ -317,7 +317,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         padding: const EdgeInsets.all(30),
         alignment: Alignment.center,
@@ -329,7 +329,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),

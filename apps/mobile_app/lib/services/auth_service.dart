@@ -12,7 +12,7 @@ class AuthService {
       await _supabase.auth.signInWithPassword(email: email, password: password);
       return true;
     } catch (e) {
-      print('Sign in error: $e');
+      // Keep noisy auth failures out of production stdout.
       return false;
     }
   }
@@ -38,7 +38,7 @@ class AuthService {
       }
       return false;
     } catch (e) {
-      print('Error checking role: $e');
+      // Any lookup failure should fail closed.
       return false;
     }
   }
