@@ -6,5 +6,5 @@ echo "MANAGER_PASSWORD=$MANAGER_PASSWORD" >> .env
 echo "ADMIN_EMAIL=$ADMIN_EMAIL" >> .env
 echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env
 ./flutter/bin/flutter gen-l10n
-./flutter/bin/flutter build web --release --no-wasm-dry-run
+./flutter/bin/flutter build web --release
 
