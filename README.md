@@ -4,40 +4,63 @@ Lucky Store monorepo containing the Flutter POS application, scraper utilities, 
 
 ## Repo structure
 
-- `apps/mobile_app` - Flutter POS and Mobile Application (Vercel web target for POS, plus iOS/Android targets)
+- `apps/mobile_app` - Flutter POS and mobile application (web + iOS + Android targets)
 - `apps/scraper` - Scraping utilities
 - `data/` - Datasets (competitors, inventory samples)
-- `scripts/` - Automation scripts and one-off database/data tools (`deploy`, `ops`, `db`, `data`, `tools`, etc.)
+- `scripts/` - Automation and ops scripts (`deploy`, `ops`, `db`, `data`, `tools`, etc.)
 - `supabase/` - Supabase Edge Functions and migrations
 - `docs/` - Project documentation index ([docs/README.md](./docs/README.md))
-- `archive/` - Deprecated codebases, including the legacy React frontend and import tools
+- `archive/` - Deprecated codebases, including legacy frontend and import tools
 
-## Local setup
+## Setup
 
-1. Make sure Flutter is installed.
-2. Fetch dependencies for the mobile app:
+### 1) Prerequisites
+
+Install the tools needed for your workflow:
+
+- Flutter SDK (for `apps/mobile_app`)
+- Node.js + npm (for scripts and JavaScript tooling)
+- Supabase CLI (for local DB/functions workflows)
+
+### 2) Install dependencies
+
+```bash
+# Mobile app
+cd apps/mobile_app
+flutter pub get
+
+# Return to repo root for script tooling
+cd ../..
+npm install
+```
+
+### 3) Configure environment variables
+
+1. Copy the template:
+
+```bash
+cp .env.example .env
+```
+
+2. Fill in real values in `.env` (or app-local `.env` files where required).
+3. Do **not** commit `.env` files; only commit template files like `.env.example`.
+
+### 4) Run the POS app locally
 
 ```bash
 cd apps/mobile_app
-flutter pub get
-```
 
-3. Configure environment variables.
-   Create an `.env` file in `apps/mobile_app` with the required Supabase credentials (e.g., `SUPABASE_URL`, `SUPABASE_ANON_KEY`).
-4. Run the app locally:
-
-```bash
-# To run on web (Chrome)
+# Web (Chrome)
 flutter run -d chrome
 
-# To run on an emulator/device
+# Emulator/device
 flutter run
 ```
 
 ## Deploy POS Web to Vercel
 
-This repo is configured to build and deploy `apps/mobile_app` to Vercel as a compiled web application. The deployment configuration lives at the repository root in `/vercel.json`, and its commands still target `apps/mobile_app` for install/build/output.
+This repo is configured to build and deploy `apps/mobile_app` to Vercel as a compiled web application. Deployment configuration lives at `/vercel.json` in the repo root, while build commands target `apps/mobile_app`.
 
-In your Vercel project settings, set the root directory and `vercel.json` usage so they are consistent with each other (repo-level `/vercel.json` plus commands that operate on `apps/mobile_app`), and configure any necessary environment variables.
+In Vercel project settings, keep the root directory and `vercel.json` behavior aligned, and configure required environment variables.
 
-Then you can connect the GitHub repo in Vercel for automatic deployments, or deploy via CLI from `apps/mobile_app`.
+Then connect the GitHub repository for automatic deployments, or deploy via CLI from `apps/mobile_app`.

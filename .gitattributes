@@ -1,0 +1,38 @@
+# Normalize text files and keep repository line endings consistent across OSes.
+* text=auto eol=lf
+
+# Scripts that must use CRLF on Windows.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Shell and source files that should always remain LF.
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.dart text eol=lf
+*.sql text eol=lf
+
+# Treat common binary assets as binary (no diff/line-ending normalization).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

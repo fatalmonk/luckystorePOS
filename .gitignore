@@ -1,27 +1,29 @@
-# -----------------------------------------------------------------------------
-# Lucky Store - Repository-wide gitignore
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------
+# Lucky Store monorepo: machine-local files and generated output
+# ------------------------------------------------------------
 
-# Environment files (local machine secrets/config only; keep examples tracked)
+# Environment and secrets (track only templates)
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
 !.env*.example
-apps/*/.env
-apps/*/.env.local
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env*.example
+*.local
+*.secret
+*.secrets
 
-# Secrets and certificates
+# Certificates and private keys
 *.key
 *.pem
 *.p12
 *.pfx
 *.crt
 *.csr
-*credentials*
-*secrets*
 
-# Dependency directories and package manager metadata
+# Dependencies
 node_modules/
 apps/*/node_modules/
 .pnp
@@ -33,7 +35,7 @@ apps/*/node_modules/
 .yarn/build-state.yml
 .yarn/install-state.gz
 
-# Build outputs and caches (monorepo paths kept explicit)
+# Build outputs and caches
 apps/frontend/dist/
 dist/
 build/
@@ -48,7 +50,7 @@ coverage/
 .nyc_output/
 *.tsbuildinfo
 
-# Runtime and debug logs
+# Runtime logs
 logs/
 *.log
 *.pid
@@ -60,7 +62,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Temporary files and local scratch artifacts
+# Temp files
 tmp/
 temp/
 *.tmp
@@ -70,7 +72,7 @@ temp/
 *.orig
 /scratch_*.js
 
-# Editor and IDE artifacts
+# Editor / IDE
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -83,16 +85,16 @@ temp/
 *.swo
 *~
 
-# OS metadata
+# OS files
 .DS_Store
 **/.DS_Store
 Thumbs.db
 
-# Local archives and one-off backup directories
+# Archives and backups
 archive/
 /supabasebackup/
 
-# Database dumps and local exports (do not ignore *.sql globally)
+# Database dumps and exports
 *.dump
 *.sql.gz
 *.sql.zip
@@ -101,7 +103,7 @@ archive/
 /dumps/
 /backups/
 
-# Generated data artifacts only (keep canonical/source datasets trackable)
+# Generated data artifacts
 /test-*.csv
 /test-*.sh
 /data/inventory/inventory_chunks/
@@ -110,19 +112,19 @@ archive/
 /apps/scraper/chaldal-products.xlsx
 /apps/scraper/lucky-store-competitor-prices.xlsx
 
-# Docker / local overrides (machine-specific)
+# Container / deployment local overrides
 docker-compose.override.yml
 *.override.yml
 .env.docker
 
-# Supabase and local DB tooling
+# Supabase local state
 .supabase/
 supabase/.temp/
 
-# Hosting platform local state
+# Hosting local state
 .vercel/
 
-# AI/IDE local metadata
+# AI / agent metadata
 .cursor/
 .agents/
 .claude/
