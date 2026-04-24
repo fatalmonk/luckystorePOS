@@ -182,17 +182,27 @@ async function findDuplicatesByBarcode() {
  */
 async function checkRelatedData(itemId) {
   const [stockLevels, competitorPrices, batches, saleItems] = await Promise.all([
-    supabase.from('stock_levels').select('id').eq('item_id', itemId).limit(1),
-    supabase.from('competitor_prices').select('id').eq('item_id', itemId).limit(1),
-    supabase.from('batches').select('id').eq('item_id', itemId).limit(1),
-    supabase.from('sale_items').select('id').eq('item_id', itemId).limit(1),
+    supabase.from('stock_levels').select('id', { count: 'exact', head: true }).eq('item_id', itemId),
+    supabase.from('competitor_prices').select('id', { count: 'exact', head: true }).eq('item_id', itemId),
+    supabase.from('batches').select('id', { count: 'exact', head: true }).eq('item_id', itemId),
+    supabase.from('sale_items').select('id', { count: 'exact', head: true }).eq('item_id', itemId),
   ]);
 
+  const queryErrors = [stockLevels.error, competitorPrices.error, batches.error, saleItems.error].filter(Boolean);
+
+  if (queryErrors.length > 0) {
+    throw new Error(`Failed to check related data for item ${itemId}: ${queryErrors.map(e => e.message).join('; ')}`);
+  }
+
   return {
-    hasStock: (stockLevels.data?.length || 0) > 0,
-    hasCompetitorPrices: (competitorPrices.data?.length || 0) > 0,
-    hasBatches: (batches.data?.length || 0) > 0,
-    hasSales: (saleItems.data?.length || 0) > 0,
+    hasStock: (stockLevels.count || 0) > 0,
+    stockCount: stockLevels.count || 0,
+    hasCompetitorPrices: (competitorPrices.count || 0) > 0,
+    competitorPriceCount: competitorPrices.count || 0,
+    hasBatches: (batches.count || 0) > 0,
+    batchCount: batches.count || 0,
+    hasSales: (saleItems.count || 0) > 0,
+    saleItemCount: saleItems.count || 0,
   };
 }
 
@@ -287,9 +297,30 @@ async function transferRelatedData(fromItemId, toItemId) {
  * Delete duplicate item
  */
 async function deleteDuplicate(itemId, keptItemId) {
+  let relatedData;
+
+  try {
+    relatedData = await checkRelatedData(itemId);
+  } catch (error) {
+    console.error(`   ❌ Error loading related data for item ${itemId}:`, error.message);
+    return { status: 'error' };
+  }
+
+  // Conservative policy for sale_items: keep historical item link intact and skip deletion.
+  // This aligns with DB constraint in supabase/migrations/20260420100000_pos_transactions.sql
+  // where sale_items.item_id references items(id) with ON DELETE RESTRICT.
+  if (relatedData.hasSales) {
+    console.log(
+      `   ⏭️  Skipped item ${itemId}: found ${relatedData.saleItemCount} linked sale_items row(s).` +
+      ' Policy=conservative; item retained to preserve historical sales references.'
+    );
+
+    return { status: 'skipped' };
+  }
+
   if (DRY_RUN) {
     console.log(`   [DRY RUN] Would delete item ${itemId}`);
-    return;
+    return { status: 'deleted' };
   }
 
   // Transfer related data first
@@ -303,10 +334,10 @@ async function deleteDuplicate(itemId, keptItemId) {
 
   if (error) {
     console.error(`   ❌ Error deleting item ${itemId}:`, error.message);
-    return false;
+    return { status: 'error' };
   }
 
-  return true;
+  return { status: 'deleted' };
 }
 
 /**
@@ -390,6 +421,7 @@ async function main() {
 
   // Delete duplicates
   let deleted = 0;
+  let skipped = 0;
   let errors = 0;
 
   for (const itemId of itemsToRemove) {
@@ -428,10 +460,12 @@ async function main() {
       }
     }
     if (keptItem) {
-      const success = await deleteDuplicate(itemId, keptItem.id);
-      if (success) {
+      const result = await deleteDuplicate(itemId, keptItem.id);
+      if (result.status === 'deleted') {
         deleted++;
         console.log(`   ✅ Deleted: ${itemsData?.find(i => i.id === itemId)?.name || itemId}`);
+      } else if (result.status === 'skipped') {
+        skipped++;
       } else {
         errors++;
       }
@@ -444,6 +478,7 @@ async function main() {
   console.log('\n' + '='.repeat(50));
   console.log('📊 Cleanup Summary:');
   console.log(`   ✅ Deleted: ${deleted}`);
+  console.log(`   ⏭️  Skipped: ${skipped}`);
   console.log(`   ❌ Errors: ${errors}`);
   console.log('='.repeat(50));
 }

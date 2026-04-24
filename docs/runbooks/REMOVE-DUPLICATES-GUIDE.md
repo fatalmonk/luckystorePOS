@@ -11,7 +11,7 @@ This script finds and removes duplicate items from your database. It identifies 
 1. **Finds duplicates** - Groups items by name and barcode
 2. **Keeps the best** - Retains the item with the most complete data (has barcode, image, category, etc.)
 3. **Transfers data** - Moves related data (stock levels, competitor prices, batches) to the kept item
-4. **Deletes duplicates** - Removes the duplicate items
+4. **Deletes duplicates** - Removes the duplicate items (except protected historical-sale records)
 
 ## Usage
 
@@ -42,7 +42,16 @@ When a duplicate is deleted, the following data is transferred to the kept item:
 - ✅ **Stock levels** - Quantities are merged
 - ✅ **Competitor prices** - Moved to kept item
 - ✅ **Batches** - Reassigned to kept item
-- ⚠️ **Sale items** - Historical data, kept linked to original item
+- ⏭️ **Sale items** - **Conservative policy**: if linked `sale_items` rows exist, the duplicate is skipped (not deleted).
+
+
+## sale_items Deletion Policy (Conservative)
+
+The script explicitly checks `sale_items` before deleting each duplicate item.
+
+- If `sale_items.item_id = fromItemId` exists, deletion is skipped and the script logs a clear reason.
+- This matches `supabase/migrations/20260420100000_pos_transactions.sql`, where `sale_items.item_id` is defined with `ON DELETE RESTRICT`.
+- Result: historical sale line items keep their original item linkage, and cleanup continues for other duplicates.
 
 ## Item Selection Logic
 
@@ -85,7 +94,7 @@ Found 3 groups of duplicate barcodes
 - ✅ **Dry run mode** - Test before deleting
 - ✅ **Data transfer** - Related data is preserved
 - ✅ **Score-based selection** - Keeps the most complete item
-- ✅ **Detailed logging** - Shows what will be deleted
+- ✅ **Detailed logging** - Shows what will be deleted and what is skipped
 
 ## Important Notes
 
@@ -106,7 +115,7 @@ Found 3 groups of duplicate barcodes
 
 ### Items not being deleted
 - Check if items have related data that prevents deletion
-- The script will show errors in the summary
+- If items are linked in `sale_items`, they are counted under **Skipped** (not **Errors**)
 
 ## Related Scripts
 
