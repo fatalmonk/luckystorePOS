@@ -7,7 +7,7 @@
  * 
  * Keeps the item with the most complete data (has barcode, image, etc.)
  * 
- * Usage: node scripts/remove-duplicate-items.js [--dry-run]
+ * Usage: node scripts/ops/remove-duplicate-items.js [--dry-run]
  */
 
 import { createClient } from '@supabase/supabase-js';
