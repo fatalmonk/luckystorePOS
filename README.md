@@ -10,7 +10,7 @@ Lucky Store monorepo containing the Flutter POS application, scraper utilities, 
 - `scripts/` - Automation scripts and one-off database/data tools (`deploy`, `ops`, `db`, `data`, `tools`, etc.)
 - `supabase/` - Supabase Edge Functions and migrations
 - `docs/` - Project documentation index ([docs/README.md](./docs/README.md))
-- `archive/` - Deprecated codebases, including the legacy React frontend and imyport tools
+- `archive/` - Deprecated codebases, including the legacy React frontend and import tools
 
 ## Local setup
 
@@ -36,8 +36,8 @@ flutter run
 
 ## Deploy POS Web to Vercel
 
-This repo is configured to build and deploy `apps/mobile_app` to Vercel as a compiled web application. The `vercel.json` within `apps/mobile_app` handles the Flutter installation and web build process.
+This repo is configured to build and deploy `apps/mobile_app` to Vercel as a compiled web application. The deployment configuration lives at the repository root in `/vercel.json`, and its commands still target `apps/mobile_app` for install/build/output.
 
-In your Vercel project settings, set the root directory to `apps/mobile_app` and configure any necessary environment variables.
+In your Vercel project settings, set the root directory and `vercel.json` usage so they are consistent with each other (repo-level `/vercel.json` plus commands that operate on `apps/mobile_app`), and configure any necessary environment variables.
 
 Then you can connect the GitHub repo in Vercel for automatic deployments, or deploy via CLI from `apps/mobile_app`.
