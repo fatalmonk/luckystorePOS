@@ -40,6 +40,16 @@ apps/frontend/dist/
 dist/
 build/
 out/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/.packages
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/coverage/
 .cache/
 .parcel-cache/
 .turbo/
@@ -120,6 +130,13 @@ docker-compose.override.yml
 # Supabase local state
 .supabase/
 supabase/.temp/
+supabase/.branches/
+supabase/.cache/
+supabase/.env
+
+# Supabase migrations must always be versioned
+!supabase/migrations/
+!supabase/migrations/**
 
 # Hosting local state
 .vercel/
