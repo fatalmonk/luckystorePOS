@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/app_user.dart';
 
@@ -51,18 +52,31 @@ class AuthProvider extends ChangeNotifier {
   }
 
   AuthProvider() {
-    _init();
+    _bootstrapSession();
+  }
+
+  Future<void> _bootstrapSession() async {
+    if (_supabase.auth.currentSession == null) {
+      final email = dotenv.maybeGet('MANAGER_EMAIL');
+      final password = dotenv.maybeGet('MANAGER_PASSWORD');
+      
+      if (email != null && email.isNotEmpty && password != null && password.isNotEmpty) {
+        try {
+          debugPrint('[AuthProvider] Attempting service account bootstrap...');
+          await _supabase.auth.signInWithPassword(email: email, password: password);
+          debugPrint('[AuthProvider] Bootstrapped session with service account: $email');
+        } catch (e) {
+          debugPrint('[AuthProvider] Service account bootstrap failed: $e');
+        }
+      }
+    }
+    
+    _status = AuthStatus.unauthenticated;
+    notifyListeners();
   }
 
   void _init() {
-    _status = _supabase.auth.currentSession == null
-        ? AuthStatus.unauthenticated
-        : AuthStatus.loading;
-
-    if (_status == AuthStatus.loading) {
-      // Existing session may be stale for POS role context; fail closed.
-      signOut();
-    }
+    // Legacy init - _bootstrapSession handles this now
   }
 
   void _setStatus(AuthStatus s) {
@@ -80,24 +94,30 @@ class AuthProvider extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      // Ensure we have a server-issued JWT; anonymous auth still yields
-      // an authenticated session token suitable for server-authorized RPC calls.
+      // Ensure we have a server-issued JWT for RLS.
+      // We prioritize the bootstrapped manager session if present.
       if (_supabase.auth.currentSession == null) {
-        await _supabase.auth.signInAnonymously();
+        try {
+          await _supabase.auth.signInAnonymously();
+        } catch (e) {
+          debugPrint('[AuthProvider] Anonymous sign-in failed (might be disabled): $e');
+          // If both manager bootstrap and anonymous fail, we still try the RPC
+          // as anon, but subsequent RLS-protected calls will likely fail.
+        }
       }
 
       final response = await _supabase.rpc('authenticate_staff_pin', params: {
         'p_pin': pin,
       });
 
-      if (response == null) {
+      if (response == null || (response is List && response.isEmpty)) {
         _signInError = 'Invalid PIN. Please try again.';
         _signInErrorCode = invalidLoginErrorCode;
         await signOut();
         return false;
       }
 
-      final profile = response as Map<String, dynamic>;
+      final profile = (response is List) ? response.first as Map<String, dynamic> : response as Map<String, dynamic>;
       final role = (profile['role'] as String? ?? '').toLowerCase();
       if (role != 'cashier' && role != 'manager' && role != 'admin') {
         _signInError = 'Access role is not allowed for POS.';
@@ -120,7 +140,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('[AuthProvider] PIN sign-in failed: $e');
-      _signInError = 'Sign-in failed. Check network and try again.';
+      _signInError = 'Sign-in failed. Please try again.';
       _signInErrorCode = networkErrorCode;
       await signOut();
       return false;

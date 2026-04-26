@@ -12,6 +12,7 @@ import { StockHistoryPage } from '../features/inventory/StockHistoryPage';
 
 import { SalesHistoryPage } from '../features/sales/SalesHistoryPage';
 import { SettingsPage } from '../features/settings/SettingsPage';
+import { OAuthConsentPage } from '../features/oauth/OAuthConsentPage';
 
 import { NotificationProvider } from '../components/Notification';
 
@@ -22,6 +23,7 @@ export function App() {
         <BrowserRouter>
           <AuthGuard>
             <Routes>
+              <Route path="/oauth/consent" element={<OAuthConsentPage />} />
               <Route path="/" element={<Layout />}>
                 <Route index element={<DashboardPage />} />
                 <Route path="sales" element={<SalesHistoryPage />} />
