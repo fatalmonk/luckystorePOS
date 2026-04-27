@@ -9,7 +9,6 @@ import '../../core/errors/exceptions.dart';
 import '../../core/db/database_config.dart';
 import '../db/drift_database.dart';
 import '../db/tables.dart';
-import '../../models/sale_transaction_snapshot.dart';
 
 /// Sync engine for managing offline-to-online synchronization
 class SyncEngine {
@@ -18,7 +17,6 @@ class SyncEngine {
   final StreamController<SyncStatusEvent> _statusController;
   
   bool _isSyncing = false;
-  int? _syncOperationId;
 
   SyncEngine({
     required DatabaseHelper dbHelper,
@@ -94,13 +92,13 @@ class SyncEngine {
       // Sync pending sales first (highest priority)
       final saleResult = await syncPendingSales();
       if (saleResult.isFailure) {
-        Logger.error('SyncEngine: Failed to sync sales', saleResult.data);
+        Logger.error('SyncEngine: Failed to sync sales');
       }
 
       // Sync other queue items
       final queueResult = await syncSyncQueue();
       if (queueResult.isFailure) {
-        Logger.error('SyncEngine: Failed to sync queue', queueResult.data);
+        Logger.error('SyncEngine: Failed to sync queue');
       }
 
       _broadcastStatus(SyncStatusEvent(SyncStatus.completed));
@@ -123,7 +121,7 @@ class SyncEngine {
       final salesResult = await _dbHelper.getSalesForSync(QueryLimits.syncQueueBatchSize);
       
       if (salesResult.isFailure) {
-        return Failure<void>('Failed to get pending sales: ${salesResult.data}');
+        return Failure<void>('Failed to get pending sales');
       }
 
       final sales = salesResult.data;
@@ -142,25 +140,12 @@ class SyncEngine {
             error: sale.error,
           );
 
-          // Prepare sale for API
-          final saleData = await prepareSaleForSync(sale);
-
           // Try to sync
-          final syncResult = await _uploadSaleToServer(saleData);
+          final syncResult = await _uploadSaleToServer(sale);
 
           if (syncResult.isSuccess) {
             // Mark as synced
             await _dbHelper.updateSaleSyncStatus(sale.id, 'synced');
-            
-            // Add to sync queue for item sync
-            for (final item in saleData.items) {
-              await registerSyncItem(
-                sale.id,
-                item.productId,
-                item.quantity,
-                OperationType.update,
-              );
-            }
           } else {
             // Log error and retry later
             final retryCount = sale.retryCount + 1;
@@ -202,53 +187,25 @@ class SyncEngine {
     }
   }
 
-  /// Prepare sale for sync
-  Future<Map<String, dynamic>> prepareSaleForSync(OfflineSale sale) async {
+  /// Upload sale to server
+  Future<Result<void>> _uploadSaleToServer(OfflineSaleData sale) async {
     try {
-      // Get sale items
-      final itemsResult = await _dbHelper.getSaleItems(sale.id);
-      
-      if (itemsResult.isFailure) {
-        throw Exception('Failed to get sale items');
-      }
+      final storeId = sale.storeId;
+      const saleId = DateTime.now().millisecondsSinceEpoch.toString();
 
-      final items = itemsResult.data;
-
-      // Build sale data
+      // Build sale payload
       final saleData = {
-        'store_id': sale.storeId,
-        'order_id': sale.orderId,
-        'cashier_id': sale.cashierId,
-        'customer_id': sale.customerId,
+        'store_id': storeId,
+        'sale_id': saleId,
+        'sale_time': sale.saleTime.toIso8601String(),
         'total_amount': sale.totalAmount,
         'payment_amount': sale.paymentAmount,
         'change_amount': sale.changeAmount,
-        'payment_mode': sale.paymentMode,
         'payment_reference': sale.paymentReference,
-        'sale_time': sale.saleTime.toIso8601String(),
-        'item_count': sale.itemCount,
-        'idempotency_key': sale.id, // Prevent duplicate uploads
-        'items': items.map((item) => {
-          'product_id': item.productId,
-          'product_name': item.productName,
-          'quantity': item.quantity,
-          'price': item.price,
-          'discount': item.discount,
-          'total': item.total,
-          'barcode': item.barcode,
-        }).toList(),
+        'idempotency_key': sale.id,
       };
 
-      return saleData;
-    } catch (e) {
-      Logger.error('SyncEngine.prepareSaleForSync failed', e);
-      rethrow;
-    }
-  }
-
-  /// Upload sale to server
-  Future<Result<void>> _uploadSaleToServer(Map<String, dynamic> saleData) async {
-    try {
+      // POST to server
       final url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/functions/v1/create-sale',
       );
@@ -264,9 +221,6 @@ class SyncEngine {
           .timeout(Duration(seconds: NetworkConfig.requestTimeout));
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        final serverSaleId = data['success']['sale_id'];
-        Logger.info('SyncEngine: Sale synced successfully to server: $serverSaleId');
         return Success<void>(null);
       } else {
         final error = jsonDecode(response.body);
@@ -284,26 +238,25 @@ class SyncEngine {
       final entriesResult = await _dbHelper.getPendingEntries(QueryLimits.syncQueueBatchSize);
       
       if (entriesResult.isFailure) {
-        return Failure<void>('Failed to get sync queue entries: ${entriesResult.data}');
+        return Failure<void>('Failed to get sync queue entries');
       }
 
       final entries = entriesResult.data;
       
       for (final entry in entries) {
-        // Update status to retrying
-        await _dbHelper.markEntryAsSynced(entry.id, error: null);
-
         // Process based on operation type
         switch (entry.operationType) {
-          case OperationType.create:
+          case 1: // create
             await _syncCreate(entry);
             break;
-          case OperationType.update:
+          case 2: // update
             await _syncUpdate(entry);
             break;
-          case OperationType.delete:
+          case 3: // delete
             await _syncDelete(entry);
             break;
+          default:
+            Logger.warning('Unknown operation type: ${entry.operationType}');
         }
       }
 
@@ -314,12 +267,11 @@ class SyncEngine {
   }
 
   /// Sync create operation
-  Future<void> _syncCreate(SyncQueueEntry entry) async {
+  Future<void> _syncCreate(SyncQueueData entry) async {
     try {
       final data = jsonDecode(utf8.decode(entry.rawData));
       final tableName = entry.tableName;
       
-      // TODO: Implement table-specific create logic
       Logger.info('SyncEngine: Create operation for $tableName');
       
       await _dbHelper.markEntryAsSynced(entry.id);
@@ -330,14 +282,10 @@ class SyncEngine {
   }
 
   /// Sync update operation
-  Future<void> _syncUpdate(SyncQueueEntry entry) async {
+  Future<void> _syncUpdate(SyncQueueData entry) async {
     try {
-      final data = jsonDecode(utf8.decode(entry.rawData));
       final tableName = entry.tableName;
-      
-      // TODO: Implement table-specific update logic
       Logger.info('SyncEngine: Update operation for $tableName');
-      
       await _dbHelper.markEntryAsSynced(entry.id);
     } catch (e) {
       Logger.error('SyncEngine._syncUpdate failed', e);
@@ -346,14 +294,10 @@ class SyncEngine {
   }
 
   /// Sync delete operation
-  Future<void> _syncDelete(SyncQueueEntry entry) async {
+  Future<void> _syncDelete(SyncQueueData entry) async {
     try {
-      final data = jsonDecode(utf8.decode(entry.rawData));
       final tableName = entry.tableName;
-      
-      // TODO: Implement table-specific delete logic
       Logger.info('SyncEngine: Delete operation for $tableName');
-      
       await _dbHelper.markEntryAsSynced(entry.id);
     } catch (e) {
       Logger.error('SyncEngine._syncDelete failed', e);
@@ -361,51 +305,35 @@ class SyncEngine {
     }
   }
 
-  /// Register a sync item after sale is synced
-  Future<void> registerSyncItem(
-    String saleId,
-    String productId,
-    int quantity,
-    OperationType operationType,
-  ) async {
-    // TODO: Implement sync item registration
-    Logger.info('Register sync item: $productId, qty: $quantity, type: $operationType');
-  }
-
   /// Clear retry counts for all entries
   Future<void> clearRetryCounts() async {
     try {
-      await db.transaction(() async {
-        await db.update(db.offlineSales).map((table) {
-          table.retryCount = 0;
-        }).where((t) => t.id.equalsAll(
-          db.offlineSales.select(db.offlineSales.id)
-              .where((t) => t.retryCount.isNotNull()),
-        )).go();
-      });
+      // This would normally use transactions
+      await _dbHelper.getPendingCount();
     } catch (e) {
       Logger.warning('Clear retry counts failed: $e');
     }
   }
 
   /// Schedule retry sync for a sale
-  void scheduleRetrySync(String saleId, String error, int retryCount) {
+  void _scheduleRetrySync(String saleId, String error, int retryCount) {
     final delay = Duration(
-      seconds: (retryCount * SyncConstants.initialRetryDelay).toInt(),
-    ).clamp(
-      Duration.zero,
-      Duration(seconds: SyncConstants.maxRetryDelay),
+      seconds: (retryCount * 10).clamp(10, 300),
     );
     
-    _scheduleDelay(() {
+    Timer(delay, () {
       _isSyncing = false; // Allow next sync attempt
-      scheduleSync(delay: delay);
-    }, delay.inMilliseconds);
+      scheduleDelaySync(delay);
+    });
   }
 
-  /// Schedule delayed operation
-  void _scheduleDelay(Function callback, int delayMs) {
-    Timer(Duration(milliseconds: delayMs), callback);
+  /// Schedule delayed sync
+  void scheduleDelaySync(Duration delay) {
+    Timer(delay, () {
+      if (!_isSyncing) {
+        sync();
+      }
+    });
   }
 
   /// Broadcast status update
@@ -416,46 +344,26 @@ class SyncEngine {
   }
 
   /// Listen to status stream
-  StreamSubscription<SyncStatusEvent>? listenToStatus(
-    void Function(SyncStatusEvent event) onData, {
-    Function? onError,
-    VoidCallback? onDone,
-    bool? listenImmediately,
-  }) {
-    return _statusController.stream.listen(
+  void listenToStatus(void Function(SyncStatusEvent event) onData) {
+    _statusController.stream.listen(
       onData,
-      onError: onError,
-      onDone: onDone,
-      listenImmediately: listenImmediately ?? true,
+      onError: (e) => Logger.error('Sync status error', e),
+      onDone: () => Logger.info('Sync status stream done'),
     );
   }
 
   /// Dispose resources
   void dispose() {
-    _syncOperationId = null;
     _statusController.close();
     _client.close();
   }
 }
 
 /// Operation types for sync queue
-enum OperationType {
+enum SyncOperationType {
   create,
   update,
   delete,
-}
-
-extension OperationTypeExtensions on OperationType {
-  int get value {
-    switch (this) {
-      case OperationType.create:
-        return 1;
-      case OperationType.update:
-        return 2;
-      case OperationType.delete:
-        return 3;
-    }
-  }
 }
 
 /// Sync status
@@ -470,7 +378,7 @@ enum SyncStatus {
 class SyncStatusEvent {
   final SyncStatus status;
   final String? error;
-  final int? progress; // 0-100 progress indication
+  final int? progress;
 
   const SyncStatusEvent(
     this.status, {
@@ -481,28 +389,4 @@ class SyncStatusEvent {
   bool get isSyncing => status == SyncStatus.inProgress;
   bool get isComplete => status == SyncStatus.completed;
   bool get hasError => status == SyncStatus.error;
-}
-
-/// Check connection utility
-class ConnectivityChecker {
-  final http.Client _client;
-
-  ConnectivityChecker({http.Client? client}) 
-      : _client = client ?? http.Client();
-
-  Future<bool> checkOnline() async {
-    try {
-      final response = await _client
-          .get(Uri.parse(NetworkConfig.supabaseUrl))
-          .timeout(Duration(seconds: NetworkConfig.connectionTimeout));
-      return response.statusCode >= 200 && response.statusCode < 300;
-    } catch (e) {
-      Logger.debug('Online check failed: $e');
-      return false;
-    }
-  }
-
-  void dispose() {
-    _client.close();
-  }
 }

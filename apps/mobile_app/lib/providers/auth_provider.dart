@@ -132,7 +132,10 @@ class AuthProvider extends ChangeNotifier {
         name: profile['full_name'] as String? ?? 'User',
         role: role,
         storeId: profile['store_id'] as String? ?? '',
+        posPin: profile['pos_pin'] as String?,
       );
+
+      debugPrint('[AuthProvider] User profile: id=${_appUser?.id}, name=${_appUser?.name}, role=${_appUser?.role}, storeId=${_appUser?.storeId}, authId=${_appUser?.authId}');
 
       _setStatus(role == 'cashier' ? AuthStatus.cashier : AuthStatus.manager);
       debugPrint('[AuthProvider] Verified session established — '

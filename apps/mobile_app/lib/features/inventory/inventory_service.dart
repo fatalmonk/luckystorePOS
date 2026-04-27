@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../core/network/network_config.dart';
-import '../core/errors/exceptions.dart';
-import '../core/utils/result.dart';
+import '../../core/network/network_config.dart';
+import '../../core/errors/exceptions.dart';
+import '../../core/utils/result.dart';
+import '../../core/utils/app_utils.dart';
 import '../../config/environment_contract.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 /// Inventory service for stock operations
 class InventoryService {

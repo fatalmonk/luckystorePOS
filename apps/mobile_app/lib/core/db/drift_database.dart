@@ -6,11 +6,11 @@ import 'dart:io';
 import 'tables.dart';
 import 'database_config.dart';
 import '../utils/result.dart';
-import '../errors/exceptions.dart';
+import '../utils/app_utils.dart';
+import 'tables.g.dart';
 
-// Database connection
-class ApplicationDatabase extends _$AppDatabase {
-  ApplicationDatabase() : super(_openConnection());
+class ApplicationDatabase extends GeneratedDatabase {
+  ApplicationDatabase(QueryExecutor e) : super(e);
 
   @override
   int get schemaVersion => DatabaseConfig.schemaVersion;
@@ -22,68 +22,36 @@ class ApplicationDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Handle version migrations here
         Logger.debug('Database migration from version $from to $to');
         
-        if (from == 1 && to >= 2) {
-          // Example migration logic if needed
-          await m.addColumn(products, products.stockQuantity);
-        }
-        
         if (from == 1 && to == 2) {
-          // Add new table if needed
-          await m.createAll();
+          // Add new tables or columns here
         }
-      },
-      onUpgradeTo: (Migrator m, int to) async {
-        await m.createAll();
       },
     );
   }
 
   @override
   Future<void> close() async {
-    // Perform cleanup before closing
     await super.close();
   }
 }
 
-// Open connection to database
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    // Use documents directory for database file
     final docsDir = await getApplicationDocumentsDirectory();
-    
-    // Create database file path
     final dbFile = File(
       path.join(docsDir.path, DatabaseConfig.databaseName),
     );
+
+    final db = await driftDatabase(dbFile, DatabaseConfig.enableDebugLogging);
     
-    // Enable WAL mode for better concurrency
-    final e = await DriftApi.openDatabase(
-      dbFile,
-      config: DatabaseConfig.enableDebugLogging
-          ? null
-          : DriftApiConfig.quiet(),
-    );
+    await db.schemaManager.applySchemaToDatabase();
     
-    // Enable WAL mode
-    await e.executor
-        .customStatement('PRAGMA journal_mode = ${DatabaseConfig.journalMode}');
-    
-    // Set cache size
-    await e.executor.customStatement(
-      'PRAGMA cache_size = ${DatabaseConfig.cacheSize}',
-    );
-    
-    // Enable foreign key constraints
-    await e.executor.customStatement('PRAGMA foreign_keys = ON');
-    
-    return e;
+    return db;
   });
 }
 
-// Helper class for database operations
 class DatabaseHelper {
   final ApplicationDatabase db;
 
@@ -91,9 +59,9 @@ class DatabaseHelper {
 
   // ===== Products =====
 
-  Future<Result<int>> insertProduct(Product product) async {
+  Future<Result<int>> insertProduct(Product p) async {
     try {
-      final id = await db.products.insert(product);
+      final id = await db.products.insert(p);
       return Success<int>(id);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.insertProduct failed', e, stackTrace);
@@ -101,11 +69,9 @@ class DatabaseHelper {
     }
   }
 
-  Future<Result<bool>> updateProduct(Product product) async {
+  Future<Result<bool>> updateProduct(Product p) async {
     try {
-      await db.products.update(
-        product..syncStatus = 'pending',
-      );
+      await db.products.put(p);
       return Success<bool>(true);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.updateProduct failed', e, stackTrace);
@@ -115,10 +81,10 @@ class DatabaseHelper {
 
   Future<Result<List<Product>>> getProductsByStore(String storeId) async {
     try {
-      final products = await db.products
+      final products = db.products
           .select(db.products)
           ..where((p) => p.storeId.equals(storeId))
-          .get();
+          .getAll();
       return Success<List<Product>>(products);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getProductsByStore failed', e, stackTrace);
@@ -128,10 +94,9 @@ class DatabaseHelper {
 
   Future<Result<Product>> getProduct(String productId) async {
     try {
-      final product = await db(db.products)
-          .where((p) => p.id.equals(productId))
+      final product = await (db.select(db.products)
+            ..where((t) => t.id.equals(productId)))
           .getSingleOrNull();
-      
       if (product != null) {
         return Success<Product>(product);
       }
@@ -144,11 +109,10 @@ class DatabaseHelper {
 
   Future<Result<List<Product>>> searchProducts(String query) async {
     try {
-      final products = await db(db.products)
-          .where((p) => p.name.isLike('%$query%'))
-          .limit(20)
+      final products = await (db(db.products)
+          .where((p) => p.name.like('%$query%'))
+          .limit(20))
           .get();
-      
       return Success<List<Product>>(products);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.searchProducts failed', e, stackTrace);
@@ -158,13 +122,13 @@ class DatabaseHelper {
 
   // ===== Offline Sales =====
 
-  Future<Result<String>> insertOfflineSale(OfflineSale sale) async {
+  Future<Result<int>> insertOfflineSale(OfflineSale s) async {
     try {
-      final id = await db.offlineSales.insert(sale);
-      return Success<String>(id);
+      final id = await db.offlineSales.insert(s);
+      return Success<int>(id);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.insertOfflineSale failed', e, stackTrace);
-      return Failure<String>('Failed to save offline sale: $e');
+      return Failure<int>('Failed to save offline sale: $e');
     }
   }
 
@@ -174,8 +138,7 @@ class DatabaseHelper {
           .select(db.offlineSales)
           ..where((s) => s.syncStatus.equals('pending'))
           ..order((t) => OrderingTerm.desc(t.createdAt))
-          .get();
-      
+          .getAll();
       return Success<List<OfflineSale>>(sales);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getPendingSales failed', e, stackTrace);
@@ -183,25 +146,22 @@ class DatabaseHelper {
     }
   }
 
-  Future<Result<void>> updateSaleSyncStatus(String saleId, String status, {String? error}) async {
+  Future<Result<void>> updateSaleSyncStatus(
+    String saleId,
+    String status, {
+    String? error,
+  }) async {
     try {
-      await db.offlineSales.update(
-        db.offlineSales
-            .readWhere((t) => t.id.equals(saleId))
-            .map((sale) {
-          sale.syncStatus = status;
-          sale.error = error;
-          sale.updatedAt = DateTime.now();
-          return sale;
-        }),
-      );
+      await (db.update(db.offlineSales)
+          ..where((t) => t.id.equals(saleId)))
+          .write(OfflineSaleCompanion(
+            syncStatus: Value(status),
+            error: Value(error),
+            updatedAt: Value(DateTime.now()),
+          ));
       return Success<void>(null);
     } catch (e, stackTrace) {
-      Logger.error(
-        'DatabaseHelper.updateSaleSyncStatus failed',
-        e,
-        stackTrace,
-      );
+      Logger.error('DatabaseHelper.updateSaleSyncStatus failed', e, stackTrace);
       return Failure<void>('Failed to update sale status: $e');
     }
   }
@@ -210,12 +170,10 @@ class DatabaseHelper {
     try {
       final sales = await db.offlineSales
           .select(db.offlineSales)
-          ..where((s) =>
-              s.syncStatus.equals('pending') || s.syncStatus.equals('retrying'))
+          ..where((s) => s.syncStatus.equalsAny(['pending', 'retrying']))
           ..order((t) => OrderingTerm.asc(t.createdAt))
-          .limit(batchLimit)
-          .get();
-      
+          ..limit(batchLimit)
+          .getAll();
       return Success<List<OfflineSale>>(sales);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getSalesForSync failed', e, stackTrace);
@@ -225,10 +183,8 @@ class DatabaseHelper {
 
   Future<Result<int>> getPendingSaleCount() async {
     try {
-      final count = await db.selectedCount(db.offlineSales)
-          ..where((s) => s.syncStatus.equals('pending'))
-          .get();
-      
+      final count = await (db(db.offlineSales)
+          .selectWhere((s) => s.syncStatus.equals('pending'))).count().get();
       return Success<int>(count ?? 0);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getPendingSaleCount failed', e, stackTrace);
@@ -255,8 +211,7 @@ class DatabaseHelper {
       final items = await db.offlineSaleItems
           .select(db.offlineSaleItems)
           ..where((i) => i.saleId.equals(saleId))
-          .get();
-      
+          .getAll();
       return Success<List<OfflineSaleItem>>(items);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getSaleItems failed', e, stackTrace);
@@ -268,14 +223,7 @@ class DatabaseHelper {
 
   Future<Result<void>> insertOrUpdateStockLevel(OfflineStockLevel level) async {
     try {
-      // Try to update, if not found, insert
-      await db.offlineStockLevels
-          .put(level..syncStatus = 'pending')
-          .then((value) {
-        if (value == 0) {
-          // If no update, insert
-        }
-      });
+      await db.offlineStockLevels.put(level);
       return Success<void>(null);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.insertOrUpdateStockLevel failed', e, stackTrace);
@@ -288,8 +236,7 @@ class DatabaseHelper {
       final levels = await db.offlineStockLevels
           .select(db.offlineStockLevels)
           ..where((t) => t.storeId.equals(storeId))
-          .get();
-      
+          .getAll();
       return Success<List<OfflineStockLevel>>(levels);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getStockLevels failed', e, stackTrace);
@@ -299,49 +246,39 @@ class DatabaseHelper {
 
   // ===== Sync Queue =====
 
-  Future<Result<String>> addSyncQueueEntry(SyncQueueEntry entry) async {
+  Future<Result<int>> addSyncQueueEntry(SyncQueue e) async {
     try {
-      final id = await db.syncQueue.insert(entry);
-      return Success<String>(id);
+      final id = await db.syncQueue.insert(e);
+      return Success<int>(id);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.addSyncQueueEntry failed', e, stackTrace);
-      return Failure<String>('Failed to add to sync queue: $e');
+      return Failure<int>('Failed to add to sync queue: $e');
     }
   }
 
-  Future<Result<List<SyncQueueEntry>>> getPendingEntries(int limit) async {
+  Future<Result<List<SyncQueue>>> getPendingEntries(int limit) async {
     try {
       final entries = await db.syncQueue
           .select(db.syncQueue)
           ..where((s) => s.syncStatus.equals('pending'))
           ..order((t) => OrderingTerm.asc([t.priority, t.createdAt]))
-          .limit(limit)
-          .get();
-      
-      return Success<List<SyncQueueEntry>>(entries);
+          ..limit(limit)
+          .getAll();
+      return Success<List<SyncQueue>>(entries);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getPendingEntries failed', e, stackTrace);
-      return Failure<List<SyncQueueEntry>>('Error fetching sync queue entries: $e');
+      return Failure<List<SyncQueue>>('Error fetching sync queue entries: $e');
     }
   }
 
   Future<Result<void>> markEntryAsSynced(String entryId, {String? error}) async {
     try {
-      await db.syncQueue
-          .update(
-            db.syncQueue
-                .readWhere((t) => t.id.equals(entryId))
-                .map((entry) {
-              entry.syncStatus = 'synced';
-              if (error != null) {
-                entry.failedAt = DateTime.now();
-              }
-              entry.updatedAt = DateTime.now();
-              return entry;
-            }),
-          )
-          .catchError((e, s) => Logger.error('markEntryAsSynced failed', e, s));
-      
+      await (db.update(db.syncQueue)
+          ..where((t) => t.id.equals(entryId)))
+          .write(SyncQueueCompanion(
+            syncStatus: Value('synced'),
+            lastRetryAt: Value(error != null ? DateTime.now() : null),
+          ));
       return Success<void>(null);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.markEntryAsSynced failed', e, stackTrace);
@@ -351,10 +288,9 @@ class DatabaseHelper {
 
   Future<Result<int>> getPendingCount() async {
     try {
-      final count = await db.selectedCount(db.syncQueue)
-          ..where((s) => s.syncStatus.equals('pending') || s.syncStatus.equals('retrying'))
-          .get();
-      
+      final count = await (db(db.syncQueue)
+          .selectWhere((s) =>
+              s.syncStatus.equalsAny(['pending', 'retrying']))).count().get();
       return Success<int>(count ?? 0);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getPendingCount failed', e, stackTrace);
@@ -366,7 +302,7 @@ class DatabaseHelper {
 
   Future<Result<List<OfflineSetting>>> getAllSettings() async {
     try {
-      final settings = await db.offlineSettings.select(db.offlineSettings).get();
+      final settings = await db.offlineSettings.getAll();
       return Success<List<OfflineSetting>>(settings);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.getAllSettings failed', e, stackTrace);
@@ -376,13 +312,14 @@ class DatabaseHelper {
 
   Future<Result<void>> saveSetting(String key, String value, {String? description}) async {
     try {
-      await db.offlineSettings.put(OfflineSettingCompanion(
-        key: Value(key),
-        value: Value(value),
-        description: Value(description),
-        updatedAt: Value(DateTime.now()),
-      ));
-      
+      await db.offlineSettings.insertOnConflictUpdate(
+        OfflineSettingCompanion(
+          key: Value(key),
+          value: Value(value),
+          description: Value(description),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
       return Success<void>(null);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.saveSetting failed', e, stackTrace);
@@ -392,11 +329,9 @@ class DatabaseHelper {
 
   Future<Result<OfflineSetting>> getSetting(String key) async {
     try {
-      final setting = await db.offlineSettings
-          .select(db.offlineSettings)
-          ..where((s) => s.key.equals(key))
+      final setting = await (db(db.offlineSettings)
+          .selectWhere((s) => s.key.equals(key)))
           .getSingleOrNull();
-      
       if (setting != null) {
         return Success<OfflineSetting>(setting);
       }
@@ -411,24 +346,54 @@ class DatabaseHelper {
 
   Future<Result<void>> cleanUpSyncedSales() async {
     try {
-      await db.transaction(() async {
-        // This will be scheduled after sync completes
-        await db.delete(db.offlineSales)
-            .where((s) => s.syncStatus.equals('synced'))
-            .go();
-            
-        await db.delete(db.offlineSaleItems)
-            .selectWhere((i) => i.saleId.equalsAll(
-              db.offlineSales.select(db.offlineSales.id)
-                  .where((s) => s.syncStatus.equals('synced')),
-            ))
-            .go();
-      });
+      // Get synced sales
+      final syncedSales = await db.offlineSales
+          .select(db.offlineSales)
+          ..where((s) => s.syncStatus.equals('synced'))
+          .getAll();
+      
+      if (syncedSales.isNotEmpty) {
+        // Delete items first
+        final saleIds = syncedSales.map((s) => s.id).toList();
+        for (final item in await db.offlineSaleItems
+            .select(db.offlineSaleItems)
+            ..where((i) => i.saleId.equalsAny(saleIds))
+            .getAll()) {
+          await db.offlineSaleItems.deleteWhere((t) => t.id.equals(item.id));
+        }
+        
+        // Then delete sales
+        for (final sale in syncedSales) {
+          await db.offlineSales.deleteWhere((t) => t.id.equals(sale.id));
+        }
+      }
       
       return Success<void>(null);
     } catch (e, stackTrace) {
       Logger.error('DatabaseHelper.cleanUpSyncedSales failed', e, stackTrace);
       return Failure<void>('Failed to cleanup synced data: $e');
     }
+  }
+}
+
+/// Helper function to setup drift database
+Future<GeneratedDatabase> driftDatabase(File dbFile, bool enableLogging) async {
+  if (enableLogging) {
+    return GeneratedDatabase(await FlutterSqlFork.open(
+      () => Sqlite.open(dbFile.path),
+      statements: [
+        'PRAGMA journal_mode = WAL',
+        'PRAGMA foreign_keys = ON',
+      ],
+    ));
+  } else {
+    return GeneratedDatabase(await FlutterSqlFork.open(
+      () => Sqlite.open(dbFile.path),
+      statements: [
+        'PRAGMA journal_mode = WAL',
+        'PRAGMA foreign_keys = ON',
+      ],
+      logEvents: (type, message) {},
+    ));
   }
 }

@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 /// Utility class for common operations
 class AppUtils {
   AppUtils._();
   
   /// Debounce function to limit function calls
-  static T debounce<T>({
-    required T Function() callback,
+  static Function debounce({
+    required VoidCallback callback,
     required Duration duration,
   }) {
     Timer? timer;
@@ -18,8 +19,8 @@ class AppUtils {
   }
   
   /// Throttle function to limit function calls to a maximum once per interval
-  static T throttle<T>({
-    required T Function() callback,
+  static Function throttle({
+    required VoidCallback callback,
     required Duration duration,
   }) {
     Timer? timer;

@@ -98,13 +98,17 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       _error = null;
     });
     try {
-      final userResponse = await _supabase
-          .from('users')
-          .select('store_id')
-          .eq('auth_id', _supabase.auth.currentUser!.id)
-          .maybeSingle();
-      if (userResponse == null) throw Exception('Store not found for user');
-      final storeId = userResponse['store_id'];
+      // Use the store_id from the authenticated user context instead of querying users table
+      // This is set during login via AuthProvider -> PosProvider
+      final authProvider = context.read<AuthProvider>();
+      final appUser = authProvider.appUser;
+      
+      if (appUser == null || appUser.storeId.isEmpty) {
+        throw Exception('User store context not found. Please log in again.');
+      }
+      
+      final storeId = appUser.storeId;
+      debugPrint('[ManagerDashboard] Using store_id: $storeId from appUser context');
 
       final statsResp = await _supabase
           .rpc('get_manager_dashboard_stats', params: {'p_store_id': storeId});
