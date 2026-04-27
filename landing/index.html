@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Store POS - The Most Reliable Offline-First POS System</title>
+    <meta name="description" content="Build a business that runs even when the internet is down. The ultimate offline-capable POS system for modern retailers.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.95;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .features {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #2d3748;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature-card {
+            background: #f7fafc;
+            padding: 40px;
+            border-radius: 16px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        
+        .feature-card p {
+            color: #718096;
+            line-height: 1.7;
+        }
+        
+        .benefits {
+            background: #edf2f7;
+            padding: 80px 20px;
+        }
+        
+        .benefits-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .benefits h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #2d3748;
+        }
+        
+        .benefit-item {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            align-items: flex-start;
+        }
+        
+        .benefit-check {
+            font-size: 2rem;
+            color: #48bb78;
+            margin-top: -5px;
+        }
+        
+        .testimonials {
+            padding: 80px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .testimonials h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+        }
+        
+        .testimonial-grid {
+            display: grid;
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .cta {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .footer p {
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .features h2, .benefits h2, .testimonials h2, .cta h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>POS That Works When The Internet Doesn't</h1>
+        <p>The offline-first point-of-sale system built for businesses that can't afford downtime. Reliable inventory tracking, instant checkout, and complete data sync when you're back online.</p>
+        <div class="hero-buttons">
+            <a href="#demo" class="btn btn-primary">Request Demo</a>
+            <a href="#features" class="btn btn-secondary">See Features</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2>Why Lucky Store POS?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Instant Barcode Scanning</h3>
+                <p>Find products in milliseconds with optimized index-based search. No more waiting for lookups during checkout.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📴</div>
+                <h3>100% Offline Capable</h3>
+                <p>Keep selling even when the internet is down. Automatic sync when connection is restored with retry mechanisms.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Inventory Truth Engine</h3>
+                <p>Atomic stock deductions with FOR UPDATE locks prevent overselling. Complete audit trail for every movement.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🖨️</div>
+                <h3>Reliable Print Retries</h3>
+                <p>3-attempt retry logic ensures every receipt prints. No more "did it print?" questions from cashiers.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Owner WhatsApp Reports</h3>
+                <p>Daily sales summaries sent directly to your WhatsApp. Stay informed about your business performance.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Automated Due Reminders</h3>
+                <p>Automatically send payment reminders to customers with overdue accounts. Get paid faster, automatically.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits">
+        <div class="benefits-content">
+            <h2>Real Benefits for Real Businesses</h2>
+            <div class="benefit-item">
+                <div class="benefit-check">✓</div>
+                <div>
+                    <h3>No More Lost Sales from Internet Downtime</h3>
+                    <p>Keep serving customers even during network outages. Offline mode with automatic sync recovery.</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-check">✓</div>
+                <div>
+                    <h3>Never Oversell Inventory Again</h3>
+                    <p>Database-level locks and atomic transactions ensure inventory accuracy, even with multiple POS terminals.</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-check">✓</div>
+                <div>
+                    <h3>Cashier Speed That Increases Transaction Throughput</h3>
+                    <p>Scan → Add → Pay → Print in under 2 seconds. Happy customers, shorter lines.</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-check">✓</div>
+                <div>
+                    <h3>Stay Informed Without Checking the App</h3>
+                    <p>Automatic WhatsApp reports keep you updated on sales, low stock alerts, and due payments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <h2>What Store Owners Say</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-text">"The offline mode saved us during a 3-hour power outage. While competitors' POS systems went dark, we kept processing sales. That's reliability!"</p>
+                <p class="testimonial-author">— Rahman, Corner Store Owner (Dhaka)</p>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Inventory accuracy went from 'good enough' to '100%'. The audit trail shows exactly when and who changed stock. Worth every taka."</p>
+                <p class="testimonial-author">— Karim Electronics Manager</p>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Daily WhatsApp reports are a game-changer. I know exactly how the store performed before I even get home. Best business investment ever."</p>
+                <p class="testimonial-author">— Sultana, Boutique Owner (Chittagong)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="demo">
+        <h2>Ready to Transform Your Store?</h2>
+        <p>Join 100+ stores already running on Lucky Store POS.</p>
+        <div class="hero-buttons">
+            <a href="#" class="btn btn-primary" style="background: white; color: #f5576c;">Start Free Trial</a>
+            <a href="#" class="btn btn-secondary" style="border-color: white;">Contact Sales</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Lucky Store POS. All rights reserved.</p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">Built for modern retailers who demand reliability.</p>
+    </footer>
+</body>
+</html>
