@@ -174,9 +174,11 @@ class PosProvider extends ChangeNotifier {
   /// by [AuthProvider] — eliminates the extra Supabase round-trip from
   /// [loadCashierProfile] when [StaffPinLoginScreen] is used post-login.
   Future<void> loadFromAppUser(AppUser user) async {
+    debugPrint('[PosProvider] loadFromAppUser: user=${user.name}, role=${user.role}, storeId=${user.storeId}, userId=${user.id}');
     _cashierId = user.id;
     _cashierName = user.name;
-    _storeId = user.storeId;
+    _storeId = user.storeId.isNotEmpty ? user.storeId : null; // Use user's store_id or null
+    debugPrint('[PosProvider] Store context set: _storeId=$_storeId');
     notifyListeners();
     await _loadPaymentMethods();
   }

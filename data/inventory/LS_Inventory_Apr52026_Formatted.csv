@@ -1,0 +1,302 @@
+Handle,SKU,Name,Category,Description,Sold by weight,Option 1 name,Option 1 value,Option 2 name,Option 2 value,Option 3 name,Option 3 value,Cost,Barcode,SKU of included item,Quantity of included item,Track stock,Available for sale [Lucky Store],Price [Lucky Store],In stock [Lucky Store],Low stock [Lucky Store]
+pepsodent-advanced-salt-70g,PER-PEPS-ADVA-70G,Pepsodent Advanced Salt 70g,Personal Care,Toothpaste 70g,N,,,,,,,78.67,,,,Y,Y,90.0,6,5
+pepsodent-advanced-salt-140g,PER-PEPS-ADVA-140G,Pepsodent Advanced Salt 140g,Personal Care,Toothpaste 140g,N,,,,,,,140.47,,,,Y,Y,160.0,6,5
+pepsodent-germicheck-85g,PER-PEPS-GERM-85G,Pepsodent Germicheck 85g,Personal Care,Toothpaste 80g,N,,,,,,,83.03,,,,Y,Y,95.0,12,5
+pepsodent-sensitive-expert-140,PER-PEPS-SENS,Pepsodent Sensitive Expert 140,Personal Care,Toothpaste 140g,N,,,,,,,183.33,,,,Y,Y,220.0,2,5
+pepsodent-germicheck-40g,PER-PEPS-GERM-40G,Pepsodent Germicheck 40g,Personal Care,Toothpaste 40g,N,,,,,,,43.75,,,,Y,Y,50.0,12,5
+pepsodent-sensitive-gum-care-140g,PER-PEPS-SENS-140G,Pepsodent Sensitive Gum Care 140g,Personal Care,Toothpaste 140g,N,,,,,,,208.33,,,,Y,Y,240.0,2,5
+pepsodent-germicheck-190g,PER-PEPS-GERM-190G,Pepsodent Germicheck 190g,Personal Care,Toothpaste 190g,N,,,,,,,149.24,,,,Y,Y,170.0,13,5
+pepsodent-sensitive-expert-fresh-15g,PER-PEPS-SENS-15G,Pepsodent Sensitive Expert Fresh 15g,Personal Care,Toothpaste 15g,N,,,,,,,10.65,,,,Y,Y,15.0,13,5
+sunsilk-shampoo-hair-fall-solution,PER-SUNS-SHAM,Sunsilk Shampoo Hair Fall Solution,Personal Care,Shampoo 5.25ml,N,,,,,,,2.58,,,,Y,Y,5.0,36,5
+sunsilk-shampoo-thick-long-5-25,PER-SUNS-SHAM-1,Sunsilk Shampoo Thick & Long 5.25,Personal Care,Shampoo 5.25ml,N,,,,,,,2.58,,,,Y,Y,5.0,36,5
+sunsilk-conditioner-hair-fall-solution-8ml,PER-SUNS-COND-8ML,Sunsilk Conditioner Hair Fall Solution 8ml,Personal Care,Conditioner 8ml,N,,,,,,,3.5,,,,Y,Y,5.0,36,5
+sunsilk-shampoo-black-shine-5-25ml,PER-SUNS-SHAM-5.25ML,Sunsilk Shampoo Black Shine 5.25ml,Personal Care,Shampoo 5.25ml,N,,,,,,,2.58,,,,Y,Y,5.0,72,5
+sunsilk-shampoo-black-shine-330ml,PER-SUNS-SHAM-330ML,Sunsilk Shampoo Black Shine 330ml,Personal Care,Shampoo 330ml,N,,,,,,,307.13,,,,Y,Y,355.0,2,5
+sunsilk-hairfall-solution-170ml,PER-SUNS-HAIR-170ML,Sunsilk Hairfall Solution 170ml,Personal Care,Shampoo 170ml,N,,,,,,,158.14,,,,Y,Y,185.0,3,5
+sunsilk-black-shine-170ml,PER-SUNS-BLAC-170ML,Sunsilk Black Shine 170ml,Personal Care,Shampoo 170ml,N,,,,,,,158.14,,,,Y,Y,185.0,3,5
+sunsilk-hijab-refresh-340ml,PER-SUNS-HIJA-340ML,Sunsilk Hijab Refresh 340ml,Personal Care,Shampoo 340ml,N,,,,,,,364.24,,,,Y,Y,420.0,2,5
+sunsilk-shampoo-thick-long-340ml,PER-SUNS-SHAM-340ML,Sunsilk Shampoo Thick & Long 340ml,Personal Care,Shampoo 340ml,N,,,,,,,307.13,,,,Y,Y,355.0,2,5
+sunsilk-shampoo-thick-long-170ml,PER-SUNS-SHAM-170ML,Sunsilk Shampoo Thick & Long 170ml,Personal Care,Shampoo 170ml,N,,,,,,,158.14,,,,Y,Y,185.0,3,5
+sunsilk-shampoo-black-shine-80ml,PER-SUNS-SHAM-80ML,Sunsilk Shampoo Black Shine 80ml,Personal Care,Shampoo 80ml,N,,,,,,,79.3,,,,Y,Y,95.0,3,5
+sunsilk-hairfall-solution-340ml,PER-SUNS-HAIR-340ML,Sunsilk Hairfall Solution 340ml,Personal Care,Shampoo 340ml,N,,,,,,,307.13,,,,Y,Y,355.0,2,5
+sunsilk-shampoo-onion-375ml,PER-SUNS-SHAM-375ML,Sunsilk Shampoo Onion 375ml,Personal Care,Shampoo 375ml,N,,,,,,,364.27,,,,Y,Y,418.9,2,5
+sunsilk-conditioner-hair-fall-solution-180ml,PER-SUNS-COND-180ML,Sunsilk Conditioner Hair Fall Solution 180ml,Personal Care,Shampoo 180ml,N,,,,,,,176.21,,,,Y,Y,200.0,3,5
+sunsilk-shampoo-volume-375ml,PER-SUNS-SHAM-375ML-1,Sunsilk Shampoo Volume 375ml,Personal Care,Shampoo 375ml,N,,,,,,,364.24,,,,Y,Y,420.0,2,5
+clear-shampoo-complete-active-care-5-5ml,PER-CLEA-SHAM-5.5ML,Clear Shampoo Complete Active Care 5.5ml,Personal Care,Shampoo 5.5ml,N,,,,,,,3.43,,,,Y,Y,3.9,36,5
+clear-shampoo-anti-hair-fall-330ml,PER-CLEA-SHAM-330ML,Clear Shampoo Anti Hair Fall 330ml,Personal Care,Shampoo 330ml,N,,,,,,,347.49,,,,Y,Y,400.0,2,5
+clear-shampoo-complete-active-care-170ml,PER-CLEA-SHAM-170ML,Clear Shampoo Complete Active Care 170ml,Personal Care,Shampoo 170ml,N,,,,,,,207.5,,,,Y,Y,235.0,3,5
+clear-shampoo-complete-active-care-330ml,PER-CLEA-SHAM-330ML-1,Clear Shampoo Complete Active Care 330ml,Personal Care,Shampoo 330ml,N,,,,,,,347.4,,,,Y,Y,400.0,2,5
+clear-shampoo-cool-sport-menthol-5ml,PER-CLEA-SHAM-5ML,Clear Shampoo Cool Sport Menthol 5ml,Personal Care,Shampoo 5ml,N,,,,,,,4.29,,,,Y,Y,5.0,72,5
+clear-shampoo-cool-sport-menthol-170ml,PER-CLEA-SHAM-170ML-1,Clear Shampoo Cool Sport Menthol 170ml,Personal Care,Shampoo 170ml,N,,,,,,,230.49,,,,Y,Y,265.0,3,5
+clear-shampoo-cool-sport-menthol-330ml,PER-CLEA-SHAM-330ML-2,Clear Shampoo Cool Sport Menthol 330ml,Personal Care,Shampoo 330ml,N,,,,,,,425.82,,,,Y,Y,490.0,3,5
+clear-shampoo-cool-sport-menthol-80ml,PER-CLEA-SHAM-80ML,Clear Shampoo Cool Sport Menthol 80ml,Personal Care,Shampoo 80ml,N,,,,,,,103,,,,Y,Y,120.0,3,5
+dove-shampoo-intensive-repair-6ml,PER-DOVE-SHAM-6ML,Dove Shampoo Intensive Repair 6ml,Personal Care,Shampoo 6ml,N,,,,,,,3.43,,,,Y,Y,5.0,36,5
+dove-shampoo-hairfall-rescue-6ml,PER-DOVE-SHAM-6ML-1,Dove Shampoo Hairfall Rescue 6ml,Personal Care,Shampoo 6ml,N,,,,,,,3.43,,,,Y,Y,5.0,36,5
+dove-conditioner-intensive-repair-7ml,PER-DOVE-COND-7ML,Dove Conditioner Intensive Repair 7ml,Personal Care,Conditioner 7ml,N,,,,,,,4.29,,,,Y,Y,5.0,36,5
+dove-shampoo-hairfall-rescue-170ml,PER-DOVE-SHAM-170ML,Dove Shampoo Hairfall Rescue 170ml,Personal Care,Shampoo 170ml,N,,,,,,,171.2,,,,Y,Y,200.0,2,5
+dove-shampoo-intensive-repair-170ml,PER-DOVE-SHAM-170ML-1,Dove Shampoo Intensive Repair 170ml,Personal Care,Shampoo 170ml,N,,,,,,,171.2,,,,Y,Y,200.0,2,5
+dove-shampoo-intensive-repair-330ml,PER-DOVE-SHAM-330ML,Dove Shampoo Intensive Repair 330ml,Personal Care,Shampoo 330ml,N,,,,,,,376.33,,,,Y,Y,435.0,2,5
+dove-shampoo-nourishing-oil-170ml,PER-DOVE-SHAM-170ML-2,Dove Shampoo Nourishing Oil 170ml,Personal Care,Oil 170ml,N,,,,,,,171.2,,,,Y,Y,200.0,2,5
+dove-conditioner-hairfall-rescue-170ml,PER-DOVE-COND-170ML,Dove Conditioner Hairfall Rescue 170ml,Personal Care,Conditioner 170ml,N,,,,,,,232,,,,Y,Y,265.0,2,5
+dove-shampoo-oxygen-moisture-330ml,PER-DOVE-SHAM-330ML-1,Dove Shampoo Oxygen Moisture 330ml,Personal Care,Shampoo 330ml,N,,,,,,,376.33,,,,Y,Y,435.0,2,5
+dove-conditioner-intensive-repair-50ml,PER-DOVE-COND-50ML,Dove Conditioner Intensive Repair 50ml,Personal Care,Conditoner 50ml,N,,,,,,,24,,,,Y,Y,30.0,2,5
+dove-shampoo-intensive-repair-330ml-1,PER-DOVE-SHAM-330ML-2,Dove Shampoo Intensive Repair 330ml,Personal Care,Shampoo 330ml,N,,,,,,,376.33,,,,Y,Y,435.0,2,5
+tresemme-shampoo-color-revitalized-580ml,PER-TRES-SHAM-580ML,Tresemme Shampoo Color Revitalized 580ml,Personal Care,Shampoo 580ml,N,,,,,,,602.5,,,,Y,Y,700.0,1,5
+tresemme-shampoo-keratin-smooth-340ml,PER-TRES-SHAM-340ML,Tresemme Shampoo Keratin Smooth 340ml,Personal Care,Shampoo 340ml,N,,,,,,,458.1,,,,Y,Y,525.0,1,5
+tresemme-shampoo-keratin-smooth-185ml,PER-TRES-SHAM-185ML,Tresemme Shampoo Keratin Smooth 185ml,Personal Care,Shampoo 185ml,N,,,,,,,298.58,,,,Y,Y,345.0,1,5
+tresemme-keratin-190ml,PER-TRES-KERA-190ML,Tresemme Keratin 190ml,Personal Care,Conditioner 190ml,N,,,,,,,256,,,,Y,Y,300.0,1,5
+pond-oil-control-50g,PER-POND-OILX-50G,Pond Oil Control 50g,Personal Care,Facewash 50g,N,,,,,,,75.02,,,,Y,Y,85.0,1,5
+ponds-white-beauty-50g,PER-POND-WHIT-50G,Ponds White Beauty 50g,Personal Care,Facewash 50g,N,,,,,,,90.75,,,,Y,Y,100.0,1,5
+ponds-pure-white-100g,PER-POND-PURE-100G,Ponds Pure White 100g,Personal Care,Facewash 100g,N,,,,,,,156.34,,,,Y,Y,180.0,2,5
+ponds-white-beauty-100g,PER-POND-WHIT-100G,Ponds White Beauty 100g,Personal Care,Facewash 100g,N,,,,,,,157,,,,Y,Y,180.0,2,5
+ponds-pure-white-50g,PER-POND-PURE-50G,Ponds Pure White 50g,Personal Care,Facewash 50g,N,,,,,,,94,,,,Y,Y,110.0,1,5
+ponds-oil-control-100g,PER-POND-OILX-100G,Ponds Oil Control 100g,Personal Care,Facewash 100g,N,,,,,,,157,,,,Y,Y,180.0,2,5
+pond-daily-100g,PER-POND-DAIL-100G,Pond Daily 100g,Personal Care,Facewash 100g,N,,,,,,,135,,,,Y,Y,155.0,2,5
+ponds-light-50ml,PER-POND-LIGH-50ML,Ponds Light 50ml,Personal Care,Moisturizer 50ml,N,,,,,,,160,,,,Y,Y,185.0,3,5
+ponds-superlight-gel-50ml,PER-POND-SUPE-50ML,Ponds Superlight Gel 50ml,Personal Care,,N,,,,,,,160,,,,Y,Y,185.0,3,5
+ponds-superlight-gel-100ml,PER-POND-SUPE-100ML,Ponds Superlight Gel 100ml,Personal Care,,N,,,,,,,271.99,,,,Y,Y,310.0,3,5
+ponds-daily-50g,PER-POND-DAIL-50G,Ponds Daily 50g,Personal Care,Facewash,N,,,,,,,72,,,,Y,Y,85.0,1,5
+ponds-skin-cream-white-beauty-35g,PER-POND-SKIN-35G,Ponds Skin Cream White Beauty 35g,Personal Care,Cream 35g,N,,,,,,,215,,,,Y,Y,250.0,3,5
+ponds-bright-beauty-50g,PER-POND-BRIG-50G,Ponds Bright Beauty 50g,Personal Care,Cream 50g,N,,,,,,,355,,,,Y,Y,410.0,3,5
+lifebouy-liquid-total-200ml,PER-LIFE-LIQU-200ML,Lifebouy Liquid Total 200ml,Personal Care,Handwash 200ml,N,,,,,,,105.52,,,,Y,Y,125.0,4,5
+lifebouy-liquid-care-170ml,PER-LIFE-LIQU-170ML,Lifebouy Liquid Care 170ml,Personal Care,Handwash 170ml,N,,,,,,,78.8,,,,Y,Y,90.0,18,5
+lifebouy-health-care-150g,PER-LIFE-HEAL-150G,Lifebouy Health Care 150g,Personal Care,Soap 150g,N,,,,,,,73.46,,,,Y,Y,85.0,24,5
+lifebouy-health-care-90g,PER-LIFE-HEAL-90G,Lifebouy Health Care 90g,Personal Care,Soap 90g,N,,,,,,,49.15,,,,Y,Y,60.0,24,5
+lifebouy-liquid-lemon-fresh-200ml,PER-LIFE-LIQU-200ML-1,Lifebouy Liquid Lemon Fresh 200ml,Personal Care,Handwash 200ml,N,,,,,,,105.52,,,,Y,Y,120.0,4,5
+lifebouy-liquid-handwash-care-200g,PER-LIFE-LIQU-200G,Lifebouy Liquid Handwash Care 200g,Personal Care,Handwash 200ml,N,,,,,,,105.52,,,,Y,Y,120.0,4,5
+lifebouy-liquid-lemon-fresh-170ml,PER-LIFE-LIQU-170ML-1,Lifebouy Liquid Lemon Fresh 170ml,Personal Care,Handwash 200ml,N,,,,,,,78.8,,,,Y,Y,90.0,18,5
+lifebouy-health-soap-lemon-fresh-150g,PER-LIFE-HEAL-150G-1,Lifebouy Health Soap Lemon Fresh 150g,Personal Care,Soap 150g,N,,,,,,,73.46,,,,Y,Y,85.0,24,5
+lifebouy-health-soap-total-90g,PER-LIFE-HEAL-90G-1,Lifebouy Health Soap Total 90g,Personal Care,Soap 90g,N,,,,,,,49.15,,,,Y,Y,55.0,24,5
+lifebouy-health-soap-lemon-fresh-90g,PER-LIFE-HEAL-90G-2,Lifebouy Health Soap Lemon Fresh 90g,Personal Care,Soap 90g,N,,,,,,,49.15,,,,Y,Y,55.0,24,5
+lifebouy-health-soap-total-150g,PER-LIFE-HEAL-150G-2,Lifebouy Health Soap Total 150g,Personal Care,Soap 150g,N,,,,,,,73.46,,,,Y,Y,85.0,24,5
+lux-soap-velvet-touch-90g,PER-LUXX-SOAP-90G,Lux Soap Velvet Touch 90g,Personal Care,Soap 90g,N,,,,,,,53.52,,,,Y,Y,60.0,54,5
+lux-soap-soft-touch-75g,PER-LUXX-SOAP-75G,Lux Soap Soft Touch 75g,Personal Care,Soap 90g,N,,,,,,,44.21,,,,Y,Y,50.0,54,5
+lux-soap-soft-touch-90g,PER-LUXX-SOAP-90G-1,Lux Soap Soft Touch 90g,Personal Care,Soap 90g,N,,,,,,,53.52,,,,Y,Y,60.0,54,5
+lux-soap-velvet-touch-150g,PER-LUXX-SOAP-150G,Lux Soap Velvet Touch 150g,Personal Care,Soap 150g,N,,,,,,,80.2,,,,Y,Y,90.0,33,5
+lux-soap-velvet-touch-75g,PER-LUXX-SOAP-75G-1,Lux Soap Velvet Touch 75g,Personal Care,Soap 75g,N,,,,,,,44.21,,,,Y,Y,50.0,54,5
+lux-soap-soft-touch-150g,PER-LUXX-SOAP-150G-1,Lux Soap Soft Touch 150g,Personal Care,Soap 150g,N,,,,,,,80.2,,,,Y,Y,90.0,36,5
+lux-soap-soft-touch-25g,PER-LUXX-SOAP-25G,Lux Soap Soft Touch 25g,Personal Care,Soap 25g,N,,,,,,,12.81,,,,Y,Y,15.0,72,5
+dove-cream-bar-135g,PER-DOVE-CREA-135G,Dove Cream Bar 135g,Personal Care,Soap 135g,N,,,,,,,129.98,,,,Y,Y,150.0,6,5
+dove-cream-pink-bar-135g,PER-DOVE-CREA-135G-1,Dove Cream Pink Bar 135g,Personal Care,Soap 135g,N,,,,,,,129.98,,,,Y,Y,150.0,6,5
+dove-cream-bar-90g,PER-DOVE-CREA-90G,Dove Cream Bar 90g,Personal Care,Soap 90g,N,,,,,,,99.01,,,,Y,Y,115.0,6,5
+dove-cream-pink-bar-90g,PER-DOVE-CREA-90G-1,Dove Cream Pink Bar 90g,Personal Care,Soap 25g,N,,,,,,,99.01,,,,Y,Y,115.0,6,5
+dove-cream-bar-50g,PER-DOVE-CREA-50G,Dove Cream Bar 50g,Personal Care,Soap 25g,N,,,,,,,57,,,,Y,Y,65.0,6,5
+boost-standard-jar-400g,BEV-BOOS-STAN-400G,Boost Standard Jar 400g,Beverages,Powdered Drink 400g,N,,,,,,,514.02,,,,Y,Y,600.0,6,5
+maltova-400g,BEV-MALT-GXXX-400G,Maltova 400g,Beverages,Powdered Drink 400g,N,,,,,,,514.02,,,,Y,Y,600.0,6,5
+horlicks-pouch-400g,BEV-HORL-POUC-400G,Horlicks Pouch 400g,Beverages,Powdered Drink 350g,N,,,,,,,327.1,,,,Y,Y,375.0,6,5
+mother-horlicks-350g,BEV-MOTH-HORL-350G,Mother Horlicks 350g,Beverages,Powdered Drink 350g,N,,,,,,,579.44,,,,Y,Y,670.0,3,5
+junior-horlicks-stage-ii-500g,BEV-JUNI-HORL-500G,Junior Horlicks Stage II 500g,Beverages,Powdered Drink 500g,N,,,,,,,514.02,,,,Y,Y,590.0,3,5
+junior-horlicks-stage-i-500g,BEV-JUNI-HORL-500G-1,Junior Horlicks Stage I 500g,Beverages,Powdered Drink 500g,N,,,,,,,514.02,,,,Y,Y,590.0,3,5
+standard-horlicks-jar-1000g,BEV-STAN-HORL-1000G,Standard Horlicks Jar 1000g,Beverages,Powdered Drink 1000g,N,,,,,,,840.02,,,,Y,Y,960.0,6,5
+standard-horlicks-jar-250g,BEV-STAN-HORL-250G,Standard Horlicks Jar 250g,Beverages,Powdered Drink 250g,N,,,,,,,263.01,,,,Y,Y,300.0,6,5
+standard-horlicks-jar-18g,BEV-STAN-HORL-18G,Standard Horlicks Jar 18g,Beverages,Powdered Drink 18g,N,,,,,,,18,,,,Y,Y,20.0,36,5
+standard-horlicks-jar-500g,BEV-STAN-HORL-500G,Standard Horlicks Jar 500g,Beverages,Powdered Drink 500g,N,,,,,,,467.98,,,,Y,Y,540.0,6,5
+go-handsome-facewash-men-100g,PER-GOXX-HAND-100G,Go & Handsome Facewash Men 100g,Personal Care,Facewash 100g,N,,,,,,,146.09,,,,Y,Y,168.0,2,5
+go-handsome-facewash-men-50g,PER-GOXX-HAND-50G,Go & Handsome Facewash Men 50g,Personal Care,Facewash 50g,N,,,,,,,146.09,,,,Y,Y,168.0,2,5
+go-handsome-skin-cream-men-25g,PER-GOXX-HAND-25G,Go & Handsome Skin Cream Men 25g,Personal Care,Cream 25g,N,,,,,,,112,,,,Y,Y,130.0,2,5
+go-handsome-skin-cream-men-50g,PER-GOXX-HAND-50G-1,Go & Handsome Skin Cream Men 50g,Personal Care,Cream 50g,N,,,,,,,92.89,,,,Y,Y,105.0,2,5
+knorr-soup-31g,PAC-KNOR-SOUP-31G,Knorr Soup 31g,Packaged Food,Packet Soup 31g,N,,,,,,,143.7,,,,Y,Y,165.0,2,5
+knorr-soup-chicken-corn-24g,PAC-KNOR-SOUP-24G,Knorr Soup Chicken Corn 24g,Packaged Food,Packet Soup 24g,N,,,,,,,49.55,,,,Y,Y,60.0,12,5
+knorr-soup-thai-28g,PAC-KNOR-SOUP-28G,Knorr Soup Thai 28g,Packaged Food,Packet Soup 28g,N,,,,,,,49.55,,,,Y,Y,60.0,12,5
+close-up-toothpaste-sea-salt-140g,PER-CLOS-UPXX-140G,Close Up Toothpaste Sea Salt 140g,Personal Care,Toothpaste 140g,N,,,,,,,149.25,,,,Y,Y,170.0,6,5
+close-up-menthol-fresh-toothpaste-85g,PER-CLOS-UPXX-85G,Close Up Menthol Fresh Toothpaste 85g,Personal Care,Toothpaste 85g,N,,,,,,,92.09,,,,Y,Y,105.0,6,5
+close-up-menthol-fresh-toothpaste-38g,PER-CLOS-UPXX-38G,Close Up Menthol Fresh Toothpaste 38g,Personal Care,Toothpaste 38g,N,,,,,,,44.25,,,,Y,Y,50.0,12,5
+close-up-menthol-fresh-toothpaste-145g,PER-CLOS-UPXX-145G,Close Up Menthol Fresh Toothpaste 145g,Personal Care,Toothpaste 145g,N,,,,,,,136.07,,,,Y,Y,155.0,12,5
+close-up-menthol-fresh-toothpaste-7g,PER-CLOS-UPXX-7G,Close Up Menthol Fresh Toothpaste 7g,Personal Care,Toothpaste 7g,N,,,,,,,2.46,,,,Y,Y,5.0,12,5
+lifebouy-liquid-lemon-fresh-170ml-1,PER-LIFE-LIQU-170ML-2,Lifebouy Liquid Lemon Fresh 170ml,Personal Care,Liquid Soap 170ml,N,,,,,,,78.8,,,,Y,Y,90.0,4,5
+lifebouy-soap-lemon-fresh-150g,PER-LIFE-SOAP-150G,Lifebouy Soap Lemon Fresh 150g,Personal Care,Soap 150g,N,,,,,,,73.46,,,,Y,Y,85.0,9,5
+lifebouy-hand-soap-total-90g,PER-LIFE-HAND-90G,Lifebouy Hand Soap Total 90g,Personal Care,Soap 90g,N,,,,,,,49.15,,,,Y,Y,60.0,9,5
+lux-soap-soft-touch-75g-1,PER-LUXX-SOAP-75G-2,Lux Soap Soft Touch 75g,Personal Care,Soap 75g,N,,,,,,,44.21,,,,Y,Y,50.0,18,5
+lux-soap-velvet-touch-150g-1,PER-LUXX-SOAP-150G-2,Lux Soap Velvet Touch 150g,Personal Care,Soap 150g,N,,,,,,,80.2,,,,Y,Y,90.0,9,5
+wheel-fabric-solutions-laundry-soap-125g,CLE-WHEE-FABR-125G,Wheel Fabric Solutions Laundry Soap 125g,Cleaning Supply,rice,N,,,,,,,26.55,,,,Y,Y,30.0,106,5
+wheel-fabric-solutions-clean-and-fresh-200g,CLE-WHEE-FABR-200G,Wheel Fabric Solutions Clean and Fresh 200g,Cleaning Supply,Laundry Soap 200g,N,,,,,,,27.55,,,,Y,Y,30.0,72,5
+rin-power-white-200g,CLE-RINX-POWE-200G,Rin Power White 200g,Cleaning Supply,Laundry Soap 200g,N,,,,,,,36.67,,,,Y,Y,45.0,6,5
+rin-fabric-solution-power-bright-500g,CLE-RINX-FABR-500G,Rin Fabric Solution Power Bright 500g,Cleaning Supply,Laundry Soap 500g,N,,,,,,,80.51,,,,Y,Y,90.0,54,5
+rin-fabric-solution-liquid-400ml,CLE-RINX-FABR-400ML,Rin Fabric Solution Liquid 400ml,Cleaning Supply,Laundry Liquid 400ml,N,,,,,,,100,,,,Y,Y,115.0,12,5
+rin-powder-power-bright-1kg,CLE-RINX-POWD-1KG,Rin Powder Power Bright 1kg,Cleaning Supply,Laundry Soap 1kg,N,,,,,,,165.25,,,,Y,Y,190.0,30,5
+surf-excel-180g,CLE-SURF-EXCE-180G,Surf Excel 180g,Cleaning Supply,Laundry Powder 180g,N,,,,,,,45,,,,Y,Y,50.0,12,5
+surf-excel-500g,CLE-SURF-EXCE-500G,Surf Excel 500g,Cleaning Supply,Laundry Powder 500g,N,,,,,,,108.11,,,,Y,Y,125.0,60,5
+surf-excel-1000g,CLE-SURF-EXCE-1000G,Surf Excel 1000g,Cleaning Supply,Laundry Powder 1000g,N,,,,,,,211,,,,Y,Y,240.0,30,5
+surf-excel-matic-liquid-top-1l,CLE-SURF-EXCE-1L,Surf Excel Matic Liquid Top 1L,Cleaning Supply,Laundry Liquid 1L,N,,,,,,,333.33,,,,Y,Y,380.0,12,5
+surf-excel-matic-liquid-top-500ml,CLE-SURF-EXCE-500ML,Surf Excel Matic Liquid Top 500ml,Cleaning Supply,Laundry Liquid 500ml,N,,,,,,,175,,,,Y,Y,200.0,12,5
+surf-excel-fabric-solution-quick-wash-18g,CLE-SURF-EXCE-18G,Surf Excel Fabric Solution Quick Wash 18g,Cleaning Supply,Laundry Soap 18g,N,,,,,,,4.5,,,,Y,Y,5.0,36,5
+vim-dish-washing-bar-125g,CLE-VIMX-DISH-125G,Vim Dish Washing Bar 125g,Cleaning Supply,Dishwashing Bar 125g,N,,,,,,,13.5,,,,Y,Y,16.0,90,5
+vim-dish-washing-bar-300g,CLE-VIMX-DISH-300G,Vim Dish Washing Bar 300g,Cleaning Supply,Dishwashing Bar 300g,N,,,,,,,35.95,,,,Y,Y,40.0,72,5
+vim-dish-washing-liquid-200ml,CLE-VIMX-DISH-200ML,Vim Dish Washing Liquid 200ml,Cleaning Supply,Dishwashing Liquid 200ml,N,,,,,,,44.23,,,,Y,Y,50.0,36,5
+vim-dish-washing-liquid-475ml,CLE-VIMX-DISH-475ML,Vim Dish Washing Liquid 475ml,Cleaning Supply,Dishwashing Liquid 475ml,N,,,,,,,115,,,,Y,Y,135.0,24,5
+vim-dish-washing-liquid-1l,CLE-VIMX-DISH-1L,Vim Dish Washing Liquid 1L,Cleaning Supply,Dishwashing Liquid 1L,N,,,,,,,207.83,,,,Y,Y,240.0,6,5
+vim-dish-washing-powder-500g,CLE-VIMX-DISH-500G,Vim Dish Washing Powder 500g,Cleaning Supply,Dishwashing Powder 500g,N,,,,,,,45,,,,Y,Y,55.0,12,5
+domex-750ml,CLE-DOME-MLXX-750ML,Domex 750ml,Cleaning Supply,Dishwashing Liquid 750ml,N,,,,,,,149.84,,,,Y,Y,175.0,6,5
+domex-500ml,CLE-DOME-MLXX-500ML,Domex 500ml,Cleaning Supply,Dishwashing Liquid 500ml,N,,,,,,,113,,,,Y,Y,130.0,6,5
+glucose-350g,BEV-GLUC-GXXX-350G,Glucose 350g,Beverages,Powdered Drink 350g,N,,,,,,,117,,,,Y,Y,135.0,6,5
+glucose-mini,BEV-GLUC-MINI,Glucose mini,Beverages,Powdered Drink,N,,,,,,,110,,,,Y,Y,125.0,6,5
+energy-plus-standard-pack,BIS-ENER-PLUS,Energy Plus - Standard Pack,Biscuits & Cookies,,N,,,,,,,13,,,,Y,Y,15.0,24,5
+tip-standard-pack,BIS-TIPX-STAN,Tip -Standard Pack,Biscuits & Cookies,,N,,,,,,,13,,,,Y,Y,15.0,24,5
+digestive-standard-pack,BIS-DIGE-STAN,Digestive -Standard Pack,Biscuits & Cookies,,N,,,,,,,25,,,,Y,Y,30.0,36,5
+nutty-standard-pack,BIS-NUTT-STAN,Nutty - Standard Pack,Biscuits & Cookies,,N,,,,,,,13,,,,Y,Y,15.0,24,5
+solecti-cookies-standard-pack,BIS-SOLE-COOK,Solecti Cookies - Standard Pack,Biscuits & Cookies,Check the name,N,,,,,,,16,,,,Y,Y,20.0,24,5
+orange-biscuit-standard-pack,BIS-ORAN-BISC,Orange Biscuit - Standard Pack,Biscuits & Cookies,"(price written 4*24 but charged 8*24, please check with supplier)",N,,,,,,,4,,,,Y,Y,5.0,24,5
+chocolate-plus-classic-pack,BIS-CHOC-PLUS,Chocolate Plus - Classic Pack,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,10.0,24,5
+milk-plus-classic-pack,BIS-MILK-PLUS,Milk Plus - Classic Pack,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,10.0,24,5
+hello-cookies-classic-pack,BIS-HELL-COOK,Hello Cookies - Classic Pack,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,10.0,24,5
+bourbon-cookies-classic-pack,BIS-BOUR-COOK,Bourbon Cookies -Classic Pack,Biscuits & Cookies,,N,,,,,,,115,,,,Y,Y,130.0,8,5
+energy-plus-family-pack,BIS-ENER-PLUS-1,Energy Plus - Family Pack,Biscuits & Cookies,Check these products if Price & Quantity is matching,N,,,,,,,42,,,,Y,Y,50.0,9,5
+tip-family-pack,BIS-TIPX-FAMI,Tip - Family Pack,Biscuits & Cookies,,N,,,,,,,50,,,,Y,Y,60.0,8,5
+nutty-family-pack,BIS-NUTT-FAMI,Nutty - Family Pack,Biscuits & Cookies,,N,,,,,,,42,,,,Y,Y,50.0,8,5
+milk-mary-family-pack,BIS-MILK-MARY,Milk Mary - Family Pack,Biscuits & Cookies,,N,,,,,,,42,,,,Y,Y,50.0,8,5
+lexus-family-pack,BIS-LEXU-FAMI,Lexus - Family Pack,Biscuits & Cookies,,N,,,,,,,20,,,,Y,Y,25.0,70,5
+orange-biscuit-family-pack,BIS-ORAN-BISC-1,Orange Biscuit - Family Pack,Biscuits & Cookies,,N,,,,,,,33,,,,Y,Y,40.0,6,5
+hello-cookies-family-pack,BIS-HELL-COOK-1,Hello Cookies - Family Pack,Biscuits & Cookies,,N,,,,,,,42,,,,Y,Y,50.0,8,5
+dry-cake,BIS-DRYX-CAKE,Dry Cake,Biscuits & Cookies,,N,,,,,,,126,,,,Y,Y,130.0,6,5
+foodie-masala-noodles-8-pack,PAC-FOOD-MASA-8PACK,Foodie Masala Noodles 8 Pack,Packaged Food,,N,,,,,,,105,,,,Y,Y,120.0,12,5
+foodie-masala-noodles-12-pack,PAC-FOOD-MASA-12PACK,Foodie Masala Noodles 12 Pack,Packaged Food,,N,,,,,,,154,,,,Y,Y,170.0,8,5
+pulse-mango-masala,CHO-PULS-MANG,Pulse - Mango Masala,Chocolates & Candies,1 Jar,N,,,,,,,300,,,,Y,Y,350.0,1,5
+kopi-candy,CHO-KOPI-CAND,Kopi - Candy,Chocolates & Candies,1 Jar,N,,,,,,,300,,,,Y,Y,350.0,1,5
+pulse-mango-masala-1,CHO-PULS-MANG-1,Pulse - Mango Masala,Chocolates & Candies,,N,,,,,,,6,,,,Y,Y,10.0,75,5
+knock-chocolate-cream,CHO-KNOC-CHOC,Knock Chocolate Cream,Chocolates & Candies,1 Carton,N,,,,,,,741,,,,Y,Y,800.0,1,5
+knock-milk-cream,CHO-KNOC-MILK,Knock Milk Cream,Chocolates & Candies,1 Carton,N,,,,,,,741,,,,Y,Y,800.0,1,5
+knock-strawberry-cream,CHO-KNOC-STRA,Knock Strawberry Cream,Chocolates & Candies,1 Carton,N,,,,,,,741,,,,Y,Y,800.0,1,5
+toffeeto-chocolate,CHO-TOFF-CHOC,Toffeeto Chocolate,Chocolates & Candies,1 Jar,N,,,,,,,393,,,,Y,Y,450.0,1,5
+volt-pencil-battery-um-3,ELE-VOLT-PENC,Volt Pencil Battery UM-3,Electronics,,N,,,,,,,14,,,,Y,Y,20.0,60,5
+volt-pencil-battery-um-4,ELE-VOLT-PENC-1,Volt Pencil Battery UM-4,Electronics,,N,,,,,,,24,,,,Y,Y,30.0,25,5
+honey-tea-bag-25g,TEA-HONE-TEAX-25G,Honey Tea Bag 25g,Tea & Coffee,Tea Bag 25g,N,,,,,,,139.34,,,,Y,Y,160.2,6,5
+lipton-pure-tea-25g,TEA-LIPT-PURE-25G,Lipton Pure Tea 25g,Tea & Coffee,Tea Bag 25g,N,,,,,,,131.2,,,,Y,Y,150.9,6,5
+taaza-tea-bag,TEA-TAAZ-TEAX,Taaza Tea Bag,Tea & Coffee,,N,,,,,,,86.37,,,,Y,Y,95,6,5
+taaza-50g,TEA-TAAZ-GXXX-50G,Taaza 50g,Tea & Coffee,,N,,,,,,,25.75,,,,Y,Y,29.7,48,5
+taaza-100g,TEA-TAAZ-GXXX-100G,Taaza 100g,Tea & Coffee,,N,,,,,,,52.86,,,,Y,Y,60.8,24,5
+taaza-400g,TEA-TAAZ-GXXX-400G,Taaza 400g,Tea & Coffee,,N,,,,,,,220.26,,,,Y,Y,250,12,5
+taaza-500g,TEA-TAAZ-GXXX-500G,Taaza 500g,Tea & Coffee,,N,,,,,,,264.32,,,,Y,Y,300,12,5
+taaza-500g-3-star,TEA-TAAZ-GXXX-500G-1,Taaza 500g 3 star,Tea & Coffee,,N,,,,,,,220.26,,,,Y,Y,250,12,5
+godrej-good-knight-power-activ-machine-refill,PES-GODR-GOOD,Godrej Good Knight Power Activ+ (Machine + Refill),Pest Control,Mosquito Killer,N,,,,,,,156,,,,Y,Y,180,3,5
+godrej-good-knigth-bullet-machine-refill,PES-GODR-GOOD-1,Godrej Good Knigth Bullet (Machine+Refill),Pest Control,Mosquito Killer,N,,,,,,,80,,,,Y,Y,95,3,5
+goodknight-refill-liquid-45ml,PES-GOOD-REFI-45ML,Goodknight Refill Liquid (45ml),Pest Control,45ml,N,,,,,,,107,,,,Y,Y,130,6,5
+godrej-red-hit-200ml,PES-GODR-REDX-200ML,Godrej Red HIT (200ml),Pest Control,Aerosol 200ml,N,,,,,,,175,,,,Y,Y,200,1,5
+godrej-red-hit-400ml,PES-GODR-REDX-400ML,Godrej Red Hit (400ml),Pest Control,Aerosol 400ml,N,,,,,,,310,,,,Y,Y,350,1,5
+godrej-black-hit-200ml,PES-GODR-BLAC-200ML,Godrej Black Hit (200ml),Pest Control,Aerosol 200ml,N,,,,,,,200,,,,Y,Y,225,1,5
+godrej-black-hit-lime-475ml,PES-GODR-BLAC-475ML,Godrej Black Hit/Lime (475ml),Pest Control,Aerosol 475ml,N,,,,,,,330,,,,Y,Y,415,1,5
+godrej-soap,PER-GODR-SOAP,Godrej Soap,Personal Care,Soap,N,,,,,,,200,,,,Y,Y,230,2,5
+godrej-powder-hair-dye-black-3g,PER-GODR-POWD-3G,Godrej Powder Hair Dye Black 3g,Personal Care,Hair Color Powder,N,,,,,,,10.83,,,,Y,Y,15,24,5
+expert-shampoo-hair-color-9g,PER-EXPE-SHAM-9G,Expert Shampoo Hair Color 9g,Personal Care,Hair Color,N,,,,,,,42,,,,Y,Y,50,24,5
+expert-shampoo-hair-color-5g,PER-EXPE-SHAM-5G,Expert Shampoo Hair Color 5g,Personal Care,Hair Color,N,,,,,,,25,,,,Y,Y,30,24,5
+aer-room-spray,AIR-AERX-ROOM,AER Room Spray,Air Freshner,Cream,N,,,,,,,230,,,,Y,Y,300,6,5
+aer-pocket-perfume,AIR-AERX-POCK,AER Pocket Perfume,Air Freshner,Perfume,N,,,,,,,60,,,,Y,Y,75,36,5
+godrej-magic-handwash-refill,PER-GODR-MAGI,Godrej Magic Handwash Refill,Personal Care,Handwash Refill,N,,,,,,,25,,,,Y,Y,30,40,5
+muffin-bread-vanilla-324g,BIS-MUFF-BREA-324G,Muffin Bread Vanilla 324g,Biscuits & Cookies,,N,,,,,,,150,,,,Y,Y,200,4,5
+muffin-bread-chocolate-324g,BIS-MUFF-BREA-324G-1,Muffin Bread Chocolate 324g,Biscuits & Cookies,,N,,,,,,,150,,,,Y,Y,200,4,5
+muffin-lata-vanilla-8g,BIS-MUFF-LATA-8G,Muffin Lata Vanilla 8g,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,60,48,5
+muffin-lata-chocolate-8g,BIS-MUFF-LATA-8G-1,Muffin Lata Chocolate 8g,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,60,48,5
+muffin-lata-fruit-8g,BIS-MUFF-LATA-8G-2,Muffin Lata Fruit 8g,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,10,24,5
+kazi-toast-250g,BIS-KAZI-TOAS-250G,Kazi Toast 250g,Biscuits & Cookies,,N,,,,,,,50,,,,Y,Y,60,6,5
+slice-pound-cake-vanilla,BIS-SLIC-POUN,Slice Pound Cake Vanilla,Biscuits & Cookies,,N,,,,,,,25,,,,Y,Y,30,15,5
+slice-pound-cake-milk,BIS-SLIC-POUN-1,Slice Pound Cake Milk,Biscuits & Cookies,,N,,,,,,,4,,,,Y,Y,5,72,5
+slice-pound-cake-chocolate,BIS-SLIC-POUN-2,Slice Pound Cake Chocolate,Biscuits & Cookies,,N,,,,,,,29,,,,Y,Y,35,15,5
+pound-cake-vanilla,BIS-POUN-CAKE,Pound Cake Vanilla,Biscuits & Cookies,,N,,,,,,,100,,,,Y,Y,115,5,5
+pound-cake-chocolate,BIS-POUN-CAKE-1,Pound Cake Chocolate,Biscuits & Cookies,,N,,,,,,,100,,,,Y,Y,115,5,5
+pound-cake-fruit,BIS-POUN-CAKE-2,Pound Cake Fruit,Biscuits & Cookies,,N,,,,,,,108,,,,Y,Y,125,5,5
+dry-cake-300g,BIS-DRYX-CAKE-300G,Dry Cake (300g),Biscuits & Cookies,,N,,,,,,,125,,,,Y,Y,145,2,5
+mini-dry-cake,BIS-MINI-DRYX,Mini Dry Cake,Biscuits & Cookies,,N,,,,,,,8,,,,Y,Y,10,48,5
+tomato-ketchup-small,CON-TOMA-KETC,Tomato Ketchup Small,Condiments,,N,,,,,,,76,,,,Y,Y,100,2,5
+kellogs-almond-corn-flakes-300g,CER-KELL-ALMO-300G,Kellogs Almond Corn Flakes 300g,Cereals,,N,,,,,,,530,,,,Y,Y,560.0,2,5
+kellogs-corn-flakes-real-honey-300g,CER-KELL-CORN-300G,Kellogs Corn Flakes Real Honey 300g,Cereals,,N,,,,,,,530,,,,Y,Y,560.0,2,5
+kellogs-fruit-loops-285g,CER-KELL-FRUI-285G,Kellogs Fruit Loops 285g,Cereals,,N,,,,,,,530,,,,Y,Y,560.0,2,5
+kellogs-chocos-127g,CER-KELL-CHOC-127G,Kellogs Chocos 127g,Cereals,,N,,,,,,,160,,,,Y,Y,170.0,4,5
+kellogs-chocos-250g,CER-KELL-CHOC-250G,Kellogs Chocos 250g,Cereals,,N,,,,,,,360,,,,Y,Y,370.0,3,5
+kellogs-chocos-fills-centred-pillow-250g,CER-KELL-CHOC-250G-1,Kellogs Chocos Fills Centred Pillow 250g,Cereals,,N,,,,,,,530,,,,Y,Y,560.0,2,5
+kellogs-muesli-crunchy-fruit-nut-500g,CER-KELL-MUES-500G,Kellogs Muesli Crunchy Fruit & Nut 500g,Cereals,,N,,,,,,,920,,,,Y,Y,1000.0,2,5
+kellogs-k-park-26g,CER-KELL-KXXX-26G,Kellogs K-Park 26g,Cereals,,N,,,,,,,17.5,,,,Y,Y,20.0,48,5
+kellogs-oats-400g,CER-KELL-OATS-400G,Kellogs Oats 400g,Cereals,,N,,,,,,,320,,,,Y,Y,360.0,6,5
+kellogs-oats-900g,CER-KELL-OATS-900G,Kellogs Oats 900g,Cereals,,N,,,,,,,675,,,,Y,Y,750.0,4,5
+dano-daily-pusti-100g,DAI-DANO-DAIL-100G,Dano Daily Pusti 100g,Dairy,,N,,,,,,,82,,,,Y,Y,100.0,6,5
+dano-daily-pusti-50g,DAI-DANO-DAIL-50G,Dano Daily Pusti 50g,Dairy,,N,,,,,,,40,,,,Y,Y,50.0,6,5
+dano-daily-pusti-500g,DAI-DANO-DAIL-500G,Dano Daily Pusti 500g,Dairy,,N,,,,,,,360,,,,Y,Y,400.0,4,5
+dano-daily-pusti-200g,DAI-DANO-DAIL-200G,Dano Daily Pusti 200g,Dairy,,N,,,,,,,150,,,,Y,Y,180.0,5,5
+dano-delight-500g,DAI-DANO-DELI-500G,Dano Delight 500g,Dairy,,N,,,,,,,451,,,,Y,Y,480.0,4,5
+dano-delight-200g,DAI-DANO-DELI-200G,Dano Delight 200g,Dairy,,N,,,,,,,185,,,,Y,Y,200.0,5,5
+dano-power-500g,DAI-DANO-POWE-500G,Dano Power 500g,Dairy,,N,,,,,,,447,,,,Y,Y,480.0,4,5
+dano-power-200g,DAI-DANO-POWE-200G,Dano Power 200g,Dairy,,N,,,,,,,190,,,,Y,Y,210.0,5,5
+diploma-ifcmp-1kg,DAI-DIPL-IFCM-1KG,Diploma IFCMP 1kg,Dairy,,N,,,,,,,893,,,,Y,Y,950.0,6,5
+diploma-ifcmp-200g,DAI-DIPL-IFCM-200G,Diploma IFCMP 200g,Dairy,,N,,,,,,,190,,,,Y,Y,205.0,6,5
+diploma-ifcmp-500g,DAI-DIPL-IFCM-500G,Diploma IFCMP 500g,Dairy,,N,,,,,,,449,,,,Y,Y,480.0,6,5
+doodles-instant-noodles-masala-62g-8-pack,SNA-DOOD-INST-62G,Doodles Instant Noodles Masala 62g (8 Pack),Snacks,,N,,,,,,,223,,,,Y,Y,250.0,3,5
+doodles-instant-noodles-masala-62g-24-pack,SNA-DOOD-INST-62G-1,Doodles Instant Noodles Masala 62g (24 Pack),Snacks,,N,,,,,,,76,,,,Y,Y,100.0,3,5
+doodles-instant-noodles-masala-62g-12-pack,SNA-DOOD-INST-62G-2,Doodles Instant Noodles Masala 62g (12 Pack),Snacks,Check physicall if given,N,,,,,,,146,,,,Y,Y,160.0,3,5
+doodles-instant-noodles-ramen-62g-4-pack,SNA-DOOD-INST-62G-3,Doodles Instant Noodles Ramen 62g (4 Pack),Snacks,,N,,,,,,,90,,,,Y,Y,110.0,12,5
+doodles-instant-noodles-ramen-62g-8-pack,SNA-DOOD-INST-62G-4,Doodles Instant Noodles Ramen 62g (8 Pack),Snacks,,N,,,,,,,182,,,,Y,Y,210.0,6,5
+doodles-stick-noodles-150g,SNA-DOOD-STIC-150G,Doodles Stick Noodles 150g,Snacks,,N,,,,,,,17.25,,,,Y,Y,20.0,6,5
+doodles-stick-noodles-chicken-delight-300g,SNA-DOOD-STIC-300G,Doodles Stick Noodles Chicken Delight 300g,Snacks,,N,,,,,,,43,,,,Y,Y,50.0,6,5
+detos-nacho-cheese-chips-30g,SNA-DETO-NACH-30G,Detos Nacho Cheese Chips 30g,Snacks,,N,,,,,,,16.13,,,,Y,Y,20.0,24,5
+detos-sweet-chilli-chips-30g,SNA-DETO-SWEE-30G,Detos Sweet Chilli Chips 30g,Snacks,,N,,,,,,,16.13,,,,Y,Y,20.0,24,5
+poppers-corn-coconut-crackers-25g,SNA-POPP-CORN-25G,Poppers Corn Coconut Crackers 25g,Snacks,,N,,,,,,,16.13,,,,Y,Y,20.0,24,5
+bellame-butter-toast-200g,BIS-BELL-BUTT-200G,Bellame Butter Toast 200g,Biscuits & Cookies,,N,,,,,,,82,,,,Y,Y,95.0,3,5
+bellame-choco-little-cookies-240g,BIS-BELL-CHOC-240G,Bellame Choco Little Cookies 240g,Biscuits & Cookies,,N,,,,,,,92,,,,Y,Y,105.0,3,5
+bellame-chocolate-digestive-135g,BIS-BELL-CHOC-135G,Bellame Chocolate Digestive 135g,Biscuits & Cookies,,N,,,,,,,43,,,,Y,Y,50.0,6,5
+bellame-chocolate-fondue-cookie-176g,BIS-BELL-CHOC-176G,Bellame Chocolate Fondue Cookie 176g,Biscuits & Cookies,,N,,,,,,,120,,,,Y,Y,150.0,3,5
+bellame-digestive-biscuit-135g,BIS-BELL-DIGE-135G,Bellame Digestive Biscuit 135g,Biscuits & Cookies,,N,,,,,,,30.5,,,,Y,Y,50.0,6,5
+bellame-peanut-bite-cookies-240g,BIS-BELL-PEAN-240G,Bellame Peanut Bite Cookies 240g,Biscuits & Cookies,,N,,,,,,,58,,,,Y,Y,75.0,3,5
+nazirshail-50kg-rahman,RIC-NAZI-KGXX-50KG,Nazirshail 50KG (Rahman),Rice & Grain,50KG Bag,N,,,,,,,4340,,,,Y,Y,4600.0,2,5
+nazirshail-25kg-rahman,RIC-NAZI-KGXX-25KG,Nazirshail 25KG (Rahman),Rice & Grain,25KG Bag,N,,,,,,,2180,,,,Y,Y,2400.0,8,5
+nazirshail-25kg-rupchanda,RIC-NAZI-KGXX-25KG-1,Nazirshail 25KG (Rupchanda),Rice & Grain,25KG Bag,N,,,,,,,2040,,,,Y,Y,2200.0,2,5
+katari-atob-50kg-rahman,RIC-KATA-ATOB-50KG,Katari Atob 50KG (Rahman),Rice & Grain,50KG Bag,N,,,,,,,4330,,,,Y,Y,4550.0,2,5
+katari-atob-25kg-rahman,RIC-KATA-ATOB-25KG,Katari Atob 25KG (Rahman),Rice & Grain,25KG Bag,N,,,,,,,2175,,,,Y,Y,2250.0,8,5
+miniket-atob-50kg-shonko,RIC-MINI-ATOB-50KG,Miniket Atob 50KG (Shonko),Rice & Grain,50KG Bag,N,,,,,,,3200,,,,Y,Y,3500.0,2,5
+miniket-atob-25kg-shonko,RIC-MINI-ATOB-25KG,Miniket Atob 25KG (Shonko),Rice & Grain,25KG Bag,N,,,,,,,1610,,,,Y,Y,1780.0,8,5
+aci-chinigura-50kg,RIC-ACIX-CHIN-50KG,ACI Chinigura 50KG,Rice & Grain,50KG Bag,N,,,,,,,6850,,,,Y,Y,7500.0,1,5
+katari-c-50kg-nobanno,RIC-KATA-CXXX-50KG,Katari C 50KG (Nobanno),Rice & Grain,50KG Bag,N,,,,,,,4120,,,,Y,Y,4350.0,1,5
+katari-c-25kg-nobanno,RIC-KATA-CXXX-25KG,Katari C 25KG (Nobanno),Rice & Grain,25KG Bag,N,,,,,,,2070,,,,Y,Y,2175.0,4,5
+jirashail-50kg-nobanno,RIC-JIRA-KGXX-50KG,Jirashail 50KG (Nobanno),Rice & Grain,50KG Bag,N,,,,,,,4020,,,,Y,Y,4200.0,1,5
+jirashail-25kg-nobanno,RIC-JIRA-KGXX-25KG,Jirashail 25KG (Nobanno),Rice & Grain,25KG Bag,N,,,,,,,2020,,,,Y,Y,2150.0,4,5
+basmati-25kg-golden,RIC-BASM-KGXX-25KG,Basmati 25KG (Golden),Rice & Grain,25KG Bag,N,,,,,,,1885,,,,Y,Y,2500.0,2,5
+miniket-c-50kg-nouka,RIC-MINI-CXXX-50KG,Miniket C 50KG (Nouka),Rice & Grain,50KG Bag,N,,,,,,,2640,,,,Y,Y,2800.0,1,5
+potatoes-alu,FRE-POTA-ALUX,Potatoes - alu,Fresh Produce,60KG Bag,N,,,,,,,13.5,,,,Y,Y,18.0,120,5
+onions-piyaj,FRE-ONIO-PIYA,Onions - piyaj,Fresh Produce,50KG Bag,N,,,,,,,31,,,,Y,Y,38.0,103,5
+ginger-ada,FRE-GING-ADAX,Ginger - ada,Fresh Produce,20KG Bag,N,,,,,,,105,,,,Y,Y,145.0,20,5
+garlic-roshun,FRE-GARL-ROSH,Garlic - roshun,Fresh Produce,20KG Bag,N,,,,,,,137,,,,Y,Y,150.0,20,5
+jirashail-25kg-nobanno-1,RIC-JIRA-KGXX-25KG-1,Jirashail 25KG (Nobanno),Rice & Grain,25KG Bag,N,,,,,,,72.8,,,,Y,Y,84.0,50,5
+nazirshail-25kg-rahman-1,RIC-NAZI-KGXX-25KG-2,Nazirshail 25KG (Rahman),Rice & Grain,25KG Bag,N,,,,,,,76.0,,,,Y,Y,90.0,50,5
+katari-atob-25kg-premium,RIC-KATA-ATOB-25KG-1,Katari Atob 25KG (Premium),Rice & Grain,25KG Bag,N,,,,,,,80.8,,,,Y,Y,89.0,50,5
+paijam-atob-25kg-boiled,RIC-PAIJ-ATOB-25KG,Paijam Atob 25KG (Boiled),Rice & Grain,25KG Bag,N,,,,,,,58.0,,,,Y,Y,75.0,50,5
+lentils-masur-daal,RIC-LENT-MASU,Lentils - Masur Daal,Rice & Grain,50KG Bag,N,,,,,,,79.0,,,,Y,Y,109.0,50,5
+motor-daal,RIC-MOTO-DAAL,Motor Daal,Rice & Grain,50KG Bag,N,,,,,,,52.0,,,,Y,Y,75.0,50,5
+shewkaran-rice-50kg,RIC-SHEW-RICE-50KG,Shewkaran Rice 50KG,Rice & Grain,50KG Bag,N,,,,,,,53.5,,,,Y,Y,60.0,100,5
+salt,COO-SALT-PROD,Salt,Cooking Needs,50KG Bag,N,,,,,,,31.6,,,,Y,Y,40.0,50,5
+sugar,COO-SUGA-PROD,Sugar,Cooking Needs,50KG Bag,N,,,,,,,99,,,,Y,Y,104.0,50,5
+jirashail-25kg-bashir,RIC-JIRA-KGXX-25KG-2,Jirashail 25KG (Bashir),Rice & Grain,25KG Bag,N,,,,,,,72,,,,Y,Y,82.0,50,5
+moida-loose,COO-MOID-LOOS,Moida - loose,Cooking Needs,50KG Bag,N,,,,,,,40,,,,Y,Y,59.0,50,5
+ata-loose,COO-ATAX-LOOS,Ata - loose,Cooking Needs,50KG Bag,N,,,,,,,35,,,,Y,Y,49.0,50,5
+chona-boot,COO-CHON-BOOT,Chona Boot,Cooking Needs,25KG Bag,N,,,,,,,76,,,,Y,Y,80.0,25,5
+rupchanda-soyabean-oil-1l,COO-RUPC-SOYA-1L,Rupchanda Soyabean Oil 1L,Cooking Needs,1L,N,,,,,,,189,,,,Y,Y,195.0,16,5
+rupchanda-soyabean-oil-2l,COO-RUPC-SOYA-2L,Rupchanda Soyabean Oil 2L,Cooking Needs,2L,N,,,,,,,384,,,,Y,Y,390.0,9,5
+rupchanda-soyabean-oil-5l,COO-RUPC-SOYA-5L,Rupchanda Soyabean Oil 5L,Cooking Needs,5L,N,,,,,,,940,,,,Y,Y,955.0,8,5
+fortune-rice-bran-oil-2l,COO-FORT-RICE-2L,Fortune Rice Bran Oil 2L,Cooking Needs,2L,N,,,,,,,434,,,,Y,Y,458.0,2,5
+fortune-rice-bran-oil-5l,COO-FORT-RICE-5L,Fortune Rice Bran Oil 5L,Cooking Needs,5L,N,,,,,,,1095,,,,Y,Y,1120.0,2,5
+kings-pure-sunflower-oil-2l,COO-KING-PURE-2L,Kings Pure Sunflower Oil 2L,Cooking Needs,2L,N,,,,,,,710,,,,Y,Y,800.0,1,5
+fortune-mustard-oil-80ml,COO-FORT-MUST-80ML,Fortune Mustard Oil 80ml,Cooking Needs,,N,,,,,,,27,,,,Y,Y,35.0,12,5
+fortune-mustard-oil-250ml,COO-FORT-MUST-250ML,Fortune Mustard Oil 250ml,Cooking Needs,,N,,,,,,,75,,,,Y,Y,85.0,2,5
+fortune-mustard-oil-1l,COO-FORT-MUST-1L,Fortune Mustard Oil 1L,Cooking Needs,,N,,,,,,,296,,,,Y,Y,350.0,3,5
+fortune-mustard-oil-5l,COO-FORT-MUST-5L,Fortune Mustard Oil 5L,Cooking Needs,,N,,,,,,,1100,,,,Y,Y,1200.0,1,5
+rupchanda-chinigura-rice-1kg,RIC-RUPC-CHIN-1KG,Rupchanda Chinigura Rice 1KG,Rice & Grain,1KG Bag,N,,,,,,,148,,,,Y,Y,175.0,10,5
+fortune-basmati-rice-1kg,RIC-FORT-BASM-1KG,Fortune Basmati Rice 1KG,Rice & Grain,1KG Bag,N,,,,,,,330,,,,Y,Y,400.0,2,5
+kitkat-1-finger,CHO-KITK-XXXX,Kitkat 1 Finger,Chocolates & Candies,,N,,,,,,,24,,,,Y,Y,30.0,42,5
+kitkat-3-finger,CHO-KITK-XXXX-1,Kitkat 3 Finger,Chocolates & Candies,,N,,,,,,,52,,,,Y,Y,65.0,21,5
+kitkat-4-finger,CHO-KITK-XXXX-2,Kitkat 4 Finger,Chocolates & Candies,,N,,,,,,,68,,,,Y,Y,115.0,28,5
+taaqa-juice,BEV-TAAQ-JUIC,Taaqa Juice,Beverages,,N,,,,,,,24,,,,Y,Y,30.0,60,5
+nutrilife-can,BEV-NUTR-CANX,Nutrilife Can,Beverages,,N,,,,,,,50,,,,Y,Y,60.0,4,5
+nutrilife-mango-juice-160ml,BEV-NUTR-MANG-160ML,Nutrilife Mango Juice 160ML,Beverages,,N,,,,,,,36,,,,Y,Y,45.0,6,5
+nutrilife-orange-juice-160ml,BEV-NUTR-ORAN-160ML,Nutrilife Orange Juice 160ML,Beverages,,N,,,,,,,36,,,,Y,Y,45.0,6,5
+nutrilife-mango-juice-1l,BEV-NUTR-MANG-1L,Nutrilife Mango Juice 1L,Beverages,,N,,,,,,,227,,,,Y,Y,295.0,1,5
+nutrilife-orange-juice-1l,BEV-NUTR-ORAN-1L,Nutrilife Orange Juice 1L,Beverages,,N,,,,,,,227,,,,Y,Y,295.0,2,5
+nutrilife-pomegranate-1l,BEV-NUTR-POME-1L,Nutrilife Pomegranate 1L,Beverages,,N,,,,,,,292,,,,Y,Y,350.0,1,5
+nutrilife-cranberry-1l,BEV-NUTR-CRAN-1L,Nutrilife Cranberry 1L,Beverages,,N,,,,,,,330,,,,Y,Y,360.0,1,5
+oats-bar,CHO-OATS-BARX,Oats Bar,Chocolates & Candies,,N,,,,,,,103,,,,Y,Y,120.0,3,5
+center-fresh-chewing-gum,CHO-CENT-FRES,Center Fresh Chewing Gum,Chocolates & Candies,,N,,,,,,,25,,,,Y,Y,30.0,24,5
+isubgul,GRO-ISUB-PROD,Isubgul,Grocery,,N,,,,,,,74,,,,Y,Y,85.0,10,5
+tastemaker-tasting-salt,COO-TAST-TAST,Tastemaker - Tasting Salt,Cooking Needs,,N,,,,,,,42,,,,Y,Y,50.0,12,5
+mentos,CHO-MENT-PROD,Mentos,Chocolates & Candies,,N,,,,,,,33.33,,,,Y,Y,40.0,24,5
+meridian-chicken-chips,SNA-MERI-CHIC,Meridian Chicken Chips,Snacks,,N,,,,,,,17,,,,Y,Y,20.0,24,5
+meridian-shrimp-chips,SNA-MERI-SHRI,Meridian Shrimp Chips,Snacks,,N,,,,,,,17,,,,Y,Y,20.0,24,5
+real-potato-chips-american-tomato,SNA-REAL-POTA,Real Potato Chips (American Tomato),Snacks,,N,,,,,,,14.16,,,,Y,Y,20.0,24,5
+chicken-sticks-1,SNA-CHIC-STIC,Chicken Sticks -1,Snacks,,N,,,,,,,14.16,,,,Y,Y,20.0,24,5
+nimki-small,SNA-NIMK-SMAL,Nimki Small,Snacks,,N,,,,,,,6.66,,,,Y,Y,10.0,24,5
+nimki-big,SNA-NIMK-BIGX,Nimki Big,Snacks,,N,,,,,,,45,,,,Y,Y,60.0,6,5
+eggs-red-loose,COO-EGGS-REDX,Eggs - Red (Loose),Cooking Needs,,N,,,,,,,8.5,,,,Y,Y,8.8,210,5
+eggs-white-loose,COO-EGGS-WHIT,Eggs - White (Loose),Cooking Needs,,N,,,,,,,7.8,,,,Y,Y,8.8,60,5

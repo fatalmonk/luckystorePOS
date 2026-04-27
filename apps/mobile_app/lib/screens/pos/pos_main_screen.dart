@@ -43,6 +43,18 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
   Future<void> _init() async {
     final pos = context.read<PosProvider>();
+    final auth = context.read<AuthProvider>();
+    
+    // Check if we need to set the store context from authenticated user
+    if (pos.storeId == null || pos.storeId!.isEmpty) {
+      final appUser = auth.appUser;
+      if (appUser != null && appUser.storeId.isNotEmpty) {
+        debugPrint('[PosMainScreen] Loading store context from appUser: ${appUser.storeId}');
+        await pos.loadFromAppUser(appUser);
+        debugPrint('[PosMainScreen] Store context after load: ${pos.storeId}');
+      }
+    }
+    
     setState(() {
       _loadState = PosLoadState.loading;
       _loadError = null;
@@ -1027,13 +1039,14 @@ class _ProductTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis),
                         const Spacer(),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('৳${item.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                     color: Color(0xFFE8B84B),
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w700)),
+                                    fontWeight: FontWeight.w700),
+                                overflow: TextOverflow.ellipsis),
+                            const Spacer(flex: 2),
                             Text('${item.qtyOnHand}',
                                 style: TextStyle(
                                     color: item.qtyOnHand > 5
@@ -1155,17 +1168,17 @@ class _CartLine extends StatelessWidget {
 
             // Qty control
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _qtyBtn(Icons.remove_rounded,
                     () => onQtyChanged(cartItem.qty - 1)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text('${cartItem.qty}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600)),
-                ),
+                const SizedBox(width: 10),
+                Text('${cartItem.qty}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(width: 10),
                 _qtyBtn(Icons.add_rounded,
                     () => onQtyChanged(cartItem.qty + 1)),
               ],
