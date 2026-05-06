@@ -4,6 +4,8 @@ import 'dart:async';
 
 /// Print event types
 enum PrinterEventType {
+  scanning,
+  scanComplete,
   connecting,
   connected,
   disconnected,

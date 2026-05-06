@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
+import { createDebugLogger } from '../../lib/debug';
+
+const debugLog = createDebugLogger('QuickPosPage');
 import { SkeletonBlock } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { Search, Plus, ScanLine, AlertCircle, X, Trash2, RefreshCw, ShoppingCart, ChevronUp, Banknote, Smartphone, CreditCard, Wallet, PlusCircle } from 'lucide-react';
@@ -10,15 +13,6 @@ import type { PosProduct, PosCategory, CartItem, PaymentInput } from '../../lib/
 import { ReceiptPreview } from './ReceiptPreview';
 
 import './receipt.css';
-
-// Debug mode toggle (set via VITE_DEBUG_POS=true in .env)
-const DEBUG_POS = import.meta.env.VITE_DEBUG_POS === 'true';
-
-function debugLog(label: string, data: unknown) {
-  if (DEBUG_POS) {
-    console.log(`[QuickPosPage] ${label}:`, JSON.stringify(data, null, 2));
-  }
-}
 
 interface CompletedSale {
   cart: CartItem[];
@@ -89,7 +83,8 @@ export function QuickPosPage() {
 
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [cartDiscount, setCartDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
+  const [discountValue, setDiscountValue] = useState<string>('');
 
   // Scanner state
   const [scanValue, setScanValue] = useState('');
@@ -110,6 +105,13 @@ export function QuickPosPage() {
 
   // Cart calculations
   const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
+  const cartDiscount = useMemo(() => {
+    const val = parseFloat(discountValue) || 0;
+    if (discountType === 'percentage') {
+      return (subtotal * val) / 100;
+    }
+    return val;
+  }, [discountValue, discountType, subtotal]);
   const totalAmount = Math.max(0, subtotal - cartDiscount);
 
   // Derived: change calculation
@@ -241,11 +243,12 @@ export function QuickPosPage() {
   // Clear cart
   const clearCart = useCallback(() => {
     setCart([]);
-    setCartDiscount(0);
+    setDiscountValue('');
+    setDiscountType('amount');
     setError(null);
   }, []);
 
-  // Handle barcode scan
+  // Handle explicit barcode scan
   const handleScanKeyDown = useCallback(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       const value = e.currentTarget.value.trim();
@@ -270,6 +273,54 @@ export function QuickPosPage() {
       }
     }
   }, [storeId, addToCart]);
+
+  // Global scanner listener (no-click scanning)
+  useEffect(() => {
+    let buffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleGlobalKeyDown = async (e: KeyboardEvent) => {
+      // Ignore if typing in an input or textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+      if (showPaymentModal) return;
+
+      const currentTime = Date.now();
+      // Scanners type very quickly, usually < 30ms per character
+      if (currentTime - lastKeyTime > 50) {
+        buffer = '';
+      }
+      lastKeyTime = currentTime;
+
+      if (e.key === 'Enter' && buffer.length > 0) {
+        e.preventDefault();
+        const value = buffer.trim();
+        buffer = '';
+        debugLog('Global scan detected', value);
+
+        try {
+          const product = await api.pos.lookupByScan(value, storeId);
+          if (product) {
+            addToCart(product, 1);
+          } else {
+            setError(`Item not found: ${value}`);
+            setTimeout(() => setError(null), 3000);
+          }
+        } catch (err: any) {
+          setError(`Scan error: ${err.message}`);
+          setTimeout(() => setError(null), 3000);
+        }
+        return;
+      }
+
+      if (e.key.length === 1) {
+        buffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [storeId, addToCart, showPaymentModal]);
 
   // Split payment helpers
   const addSplitPayment = useCallback(() => {
@@ -522,10 +573,31 @@ export function QuickPosPage() {
           <span>Sub Total</span>
           <span>৳{subtotal.toFixed(2)}</span>
         </div>
-        <div className="billing-actions">
-          <button className="button-outline">Discount</button>
-          <button className="button-outline">Tax</button>
-          <button className="button-outline">Additional Charges</button>
+        <div className="billing-actions mt-2 mb-2">
+          <div className="flex items-center gap-2 w-full">
+            <span className="text-sm font-medium text-text-muted">Discount:</span>
+            <div className="flex border border-border-color rounded-md overflow-hidden bg-input flex-1">
+              <input
+                type="number"
+                value={discountValue}
+                onChange={(e) => setDiscountValue(e.target.value)}
+                placeholder="0.00"
+                className="bg-transparent border-none outline-none w-full px-3 py-1.5 text-right text-sm"
+              />
+              <button
+                className={clsx("px-3 py-1.5 text-sm font-bold border-l border-border-color", discountType === 'amount' ? "bg-primary text-black" : "bg-card text-text-muted hover:bg-border-light")}
+                onClick={() => setDiscountType('amount')}
+              >
+                ৳
+              </button>
+              <button
+                className={clsx("px-3 py-1.5 text-sm font-bold border-l border-border-color", discountType === 'percentage' ? "bg-primary text-black" : "bg-card text-text-muted hover:bg-border-light")}
+                onClick={() => setDiscountType('percentage')}
+              >
+                %
+              </button>
+            </div>
+          </div>
         </div>
         <div className="billing-total">
           <span>Total Amount</span>
@@ -558,7 +630,35 @@ export function QuickPosPage() {
   return (
     <div className={clsx('pos-container', showMobileCart && 'pos-container--sheet-open')}>
       <div className="pos-content">
-        {/* Left Panel - Products */}
+        {/* Left Panel - Categories */}
+        <div className="pos-sidebar">
+          <h2 className="text-sm font-bold text-text-muted mb-2 px-2 uppercase tracking-wider">Categories</h2>
+          <div className="pos-categories">
+            <button
+              className={`category-pill ${activeCategory === null ? 'active' : ''}`}
+              onClick={() => setActiveCategory(null)}
+            >
+              All Categories
+            </button>
+            {catLoading ? (
+              <div className="category-pill">Loading...</div>
+            ) : catError ? (
+              <div className="category-pill text-danger">Error loading</div>
+            ) : (
+              categories.map((category) => (
+                <button
+                  key={category.id}
+                  className={`category-pill ${activeCategory === category.id ? 'active' : ''}`}
+                  onClick={() => setActiveCategory(category.id)}
+                >
+                  {category.name} ({category.itemCount})
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Center Panel - Products */}
         <div className="pos-products">
           {/* Action Bar */}
           <div className="pos-action-bar">
@@ -618,35 +718,6 @@ export function QuickPosPage() {
               </button>
             </div>
           )}
-
-          {/* Category Pills */}
-          <div className="pos-categories">
-            <button
-              className={`category-pill ${activeCategory === null ? 'active' : ''}`}
-              onClick={() => setActiveCategory(null)}
-            >
-              All Categories
-            </button>
-            {catLoading ? (
-              <div className="category-pill">Loading...</div>
-            ) : catError ? (
-              <div className="category-pill" style={{ color: 'var(--color-danger)' }}>
-                Error loading categories
-              </div>
-            ) : (
-              categories.map((category) => (
-                <button
-                  key={category.id}
-                  className={`category-pill ${activeCategory === category.id ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(category.id)}
-                >
-                  {category.name} ({category.itemCount})
-                </button>
-              ))
-            )}
-          </div>
-
-          {/* Product Grid */}
           <div className="pos-grid">
             {prodLoading ? (
               Array(8).fill(0).map((_, i) => (

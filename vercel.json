@@ -35,6 +35,10 @@
     {
       "source": "/icons",
       "destination": "/apps/admin_web/dist/icons"
+    },
+    {
+      "source": "/download/(.*)",
+      "destination": "/download/$1"
     }
   ],
   "buildCommand": "cd apps/admin_web && npm install && npm run build",

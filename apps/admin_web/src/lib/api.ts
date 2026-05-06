@@ -1,14 +1,9 @@
 import { supabase } from './supabase';
 import { mapSearchItems, mapCategories, mapReminder, mapReminders } from './api/mappers';
 import type { PosProduct, PosCategory, SaleResult, Expense, ExpenseFormData, RecordExpenseResult, ExpenseCategory, ExpensePaymentType } from './api/types';
+import { createDebugLogger } from './debug';
 
-const DEBUG_POS = import.meta.env.VITE_DEBUG_POS === 'true';
-
-function debugLog(label: string, data: any) {
-  if (DEBUG_POS) {
-    console.log(`[POS API] ${label}:`, JSON.stringify(data, null, 2));
-  }
-}
+const debugLog = createDebugLogger('POS API');
 
 export const api = {
   dashboard: {

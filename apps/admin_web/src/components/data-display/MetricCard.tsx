@@ -6,8 +6,8 @@ export interface MetricCardProps {
   value: string | number;
   icon?: React.ReactNode;
   trend?: 'up' | 'down';
-  /** color variant: primary, secondary, tertiary */
-  color?: 'primary' | 'secondary' | 'tertiary';
+  /** color variant: primary, secondary, tertiary, success, danger, warning, info */
+  color?: 'primary' | 'secondary' | 'tertiary' | 'success' | 'danger' | 'warning' | 'info';
 }
 
 export const MetricCard: React.FC<MetricCardProps> = ({
@@ -20,8 +20,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const bgClass = {
     primary: 'bg-primary text-white',
     secondary: 'bg-secondary text-white',
-    // Tailwind has no bg-tertiary, use inline style with CSS variable
     tertiary: 'text-white',
+    success: 'bg-emerald-500 text-white',
+    danger: 'bg-red-500 text-white',
+    warning: 'bg-amber-500 text-white',
+    info: 'bg-blue-500 text-white',
   }[color];
 
   const trendIcon =

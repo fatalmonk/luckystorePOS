@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
+import '../../../../models/pos_models.dart';
 
 class CategoriesTab extends StatefulWidget {
   const CategoriesTab({super.key});
@@ -183,12 +184,14 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => ProductCard(
-                sku: 'CAT-${2000 + index}',
-                name: 'Fresh Organic Item ${index + 1}',
-                price: 120.0 + (index * 15),
+                item: PosItem(
+                  id: 'CAT-${2000 + index}',
+                  sku: 'CAT-${2000 + index}',
+                  name: 'Fresh Organic Item ${index + 1}',
+                  price: 120.0 + (index * 15),
+                ),
                 originalPrice: 150.0 + (index * 15),
                 weight: '${200 + (index * 50)} g',
-                imageUrl: 'https://via.placeholder.com/150/26282E/F3F3F3?text=Item+${index + 1}',
               ),
               childCount: 6,
             ),

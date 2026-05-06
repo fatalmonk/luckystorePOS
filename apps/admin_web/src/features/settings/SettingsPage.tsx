@@ -7,6 +7,7 @@ import { Users, CreditCard, FileText, UserPlus, Save, Check, ToggleLeft, ToggleR
 import { clsx } from 'clsx';
 import { AddUserModal } from './AddUserModal';
 import { AddPaymentMethodModal } from './AddPaymentMethodModal';
+import { PageHeader } from '../../components/layout/PageHeader';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
@@ -20,10 +21,10 @@ export function SettingsPage() {
 
   return (
     <div className="settings-container">
-      <header style={{ marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Settings</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Manage your shop's users and configuration.</p>
-      </header>
+      <PageHeader 
+        title="Settings" 
+        subtitle="Manage your shop's users and configuration." 
+      />
 
       <div style={{ display: 'flex', gap: 'var(--space-8)' }}>
         {/* Vertical Tabs */}
@@ -303,7 +304,7 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
             value={formData.store_name}
             onChange={e => setFormData({...formData, store_name: e.target.value})}
             placeholder="Lucky Store"
-            style={{ width: '100%', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)' }}
+            className="input w-full"
           />
         </div>
 
@@ -313,7 +314,7 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
             value={formData.header_text}
             onChange={e => setFormData({...formData, header_text: e.target.value})}
             placeholder="Welcome to Lucky Store!"
-            style={{ width: '100%', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', minHeight: '80px' }}
+            className="input w-full min-h-[80px]"
           />
         </div>
 
@@ -323,7 +324,7 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
             value={formData.footer_text}
             onChange={e => setFormData({...formData, footer_text: e.target.value})}
             placeholder="No returns without receipt. Thank you!"
-            style={{ width: '100%', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', minHeight: '80px' }}
+            className="input w-full min-h-[80px]"
           />
         </div>
 
@@ -331,17 +332,7 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            style={{
-              backgroundColor: 'var(--color-primary)',
-              color: '#000',
-              padding: 'var(--space-3) var(--space-8)',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              opacity: updateMutation.isPending ? 0.7 : 1
-            }}
+            className="button-primary"
           >
             {updateMutation.isPending ? 'Saving...' : <><Save size={18} /> Save Settings</>}
           </button>

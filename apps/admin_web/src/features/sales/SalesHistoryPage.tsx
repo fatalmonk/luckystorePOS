@@ -4,6 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { Search, XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth, subDays } from 'date-fns';
@@ -83,10 +84,10 @@ export function SalesHistoryPage() {
   if (error) {
     return (
       <div className="sales-history-container">
-        <header className="mb-8">
-          <h1 className="text-[var(--font-size-2xl)] font-bold">Sales History</h1>
-          <p className="text-[var(--text-muted)]">Search and review store transactions.</p>
-        </header>
+        <PageHeader 
+          title="Sales History" 
+          description="Search and review store transactions." 
+        />
         <div className="card">
           <ErrorState message="Failed to load sales history." onRetry={() => refetch()} />
         </div>
@@ -120,10 +121,10 @@ export function SalesHistoryPage() {
 
   return (
     <div className="sales-history-container">
-      <header style={{ marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Sales History</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Search and review store transactions.</p>
-      </header>
+      <PageHeader 
+        title="Sales History" 
+        description="Search and review store transactions." 
+      />
 
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>

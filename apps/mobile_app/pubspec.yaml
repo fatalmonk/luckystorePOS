@@ -34,6 +34,7 @@ dependencies:
   drift: ^2.12.0              # SQLite ORM with query builder
   # sqlcipher: ^3.0.0           # Optional: encrypted DB (disabled - package not found)
   flutter_background_service: ^5.0.5
+  webview_flutter: ^4.8.0        # Google Maps address selection
   # flutter_workmanager: ^0.5.9   # Disabled - package not found
 
 dev_dependencies:
@@ -49,3 +50,4 @@ flutter:
   assets:
     - .env
     - assets/app.env
+    - assets/address_selection.html

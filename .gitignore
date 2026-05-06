@@ -21,6 +21,7 @@ apps/*/.env.*
 *.pfx
 *.crt
 *.csr
+*client_secret*.json
 
 # -----------------------------------------------------------------------------
 # Node / JS / Package Managers

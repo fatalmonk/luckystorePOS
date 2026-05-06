@@ -12,14 +12,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-primary text-white hover:bg-primary-hover',
-  // Secondary uses black background via CSS variable
-  secondary: 'text-white',
-  // Tertiary uses the CSS variable directly because Tailwind does not have a bg-tertiary class
-  tertiary: 'text-white hover:opacity-90',
-  danger: 'bg-danger text-white hover:bg-danger-hover',
-  outline: 'border border-primary text-primary hover:bg-primary/5',
-  ghost: 'hover:bg-gray-100',
+  primary: 'bg-primary text-white hover:bg-primary-hover border border-transparent',
+  secondary: 'bg-white text-text-main border border-border-color hover:bg-gray-50 shadow-sm',
+  tertiary: 'bg-tertiary text-white hover:opacity-90 border border-transparent',
+  danger: 'bg-danger text-white hover:bg-red-600 border border-transparent',
+  outline: 'bg-transparent text-primary border border-primary hover:bg-primary-light/20',
+  ghost: 'bg-transparent text-text-main hover:bg-gray-100 border border-transparent',
 };
 
 const sizeClasses = {
@@ -52,14 +50,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             },
             className
           )}
-          // Apply custom background for tertiary using CSS variable
-          style={
-            variant === 'tertiary'
-              ? { backgroundColor: 'var(--color-tertiary)' }
-              : variant === 'secondary'
-              ? { backgroundColor: 'var(--color-secondary)' }
-              : undefined
-          }
           disabled={disabled || loading}
           {...props}
         >

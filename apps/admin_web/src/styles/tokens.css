@@ -1,17 +1,15 @@
 :root {
   /* Colors - Modern, Professional Palette */
-  /* Primary - Yellow */
-  --color-primary: #fbbf24; /* Yellow 400 */
-  --color-primary-hover: #f59e0b; /* Yellow 500 (darker) */
-  --color-primary-light: #fde68a; /* Yellow 300 (lighter) */
+  /* Colors - Karbar Palette */
+  /* Primary - Emerald Green */
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-light: #d1fae5;
 
-  /* Secondary - Black */
-  --color-secondary: #000000;
-  --color-secondary-hover: #111111;
-  --color-secondary-light: #222222;
-
-  /* Tertiary - Green */
-  --color-tertiary: #10b981; /* Emerald Green */
+  /* Secondary */
+  --color-secondary: #1e293b;
+  --color-secondary-hover: #0f172a;
+  --color-secondary-light: #334155;
 
   /* Semantic Colors */
   --color-success: #10b981;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
+import '../../../../models/pos_models.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -122,12 +123,14 @@ class HomeScreen extends StatelessWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   return ProductCard(
-                    sku: 'LKY-${1000 + index}',
-                    name: 'Premium Miniket Rice - Handpicked',
-                    price: 340.0,
+                    item: PosItem(
+                      id: 'LKY-${1000 + index}',
+                      sku: 'LKY-${1000 + index}',
+                      name: 'Premium Miniket Rice - Handpicked',
+                      price: 340.0,
+                    ),
                     originalPrice: 380.0,
                     weight: '5 kg',
-                    imageUrl: 'https://via.placeholder.com/150/26282E/F3F3F3?text=Rice',
                   );
                 },
                 childCount: 6,

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
+import { Drawer } from '../../components/ui/Drawer';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 
 interface ProductEditDrawerProps {
   product: any | null;
@@ -43,147 +46,81 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
   };
 
   return (
-    <div 
-      className="drawer-overlay"
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        zIndex: 1000,
-        backdropFilter: 'blur(2px)'
-      }}
-    >
-      <div 
-        className="drawer-content"
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: '450px',
-          backgroundColor: 'var(--bg-card)',
-          height: '100%',
-          boxShadow: 'var(--shadow-lg)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 'var(--space-6)'
-        }}
-      >
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700' }}>Edit Product</h2>
-          <button onClick={onClose} style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
-        </header>
+    <Drawer isOpen={!!product} onClose={onClose} title="Edit Product" className="w-[450px]">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 h-full">
+        <Input 
+          label="Product Name"
+          value={formData.name || ''} 
+          onChange={e => setFormData({...formData, name: e.target.value})}
+          required
+        />
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', flex: 1, overflowY: 'auto' }}>
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Product Name</label>
-            <input 
-              type="text" 
-              value={formData.name || ''} 
-              onChange={e => setFormData({...formData, name: e.target.value})}
-              required
-              className="form-input"
-              style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
+        <div className="grid grid-cols-2 gap-4">
+          <Input 
+            label="Sales Price (৳)"
+            type="number" 
+            value={formData.price || 0} 
+            onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
+            required
+          />
+          <Input 
+            label="Purchase Price (৳)"
+            type="number" 
+            value={formData.cost || 0} 
+            onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})}
+            required
+          />
+
+          <div className="flex items-end gap-2">
+            <Input 
+              label="Item Code (SKU)"
+              value={formData.sku || ''} 
+              onChange={e => setFormData({...formData, sku: e.target.value})}
+              className="flex-1"
             />
+            <Button type="button" variant="outline" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
+              Gen
+            </Button>
           </div>
+          
+          <Input 
+            label="Barcode"
+            value={formData.barcode || ''} 
+            onChange={e => setFormData({...formData, barcode: e.target.value})}
+          />
+        </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Price (৳)</label>
-              <input 
-                type="number" 
-                value={formData.price || 0} 
-                onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
-                required
-                className="form-input"
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
-              />
-            </div>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Cost (৳)</label>
-              <input 
-                type="number" 
-                value={formData.cost || 0} 
-                onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})}
-                required
-                className="form-input"
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
-              />
-            </div>
-          </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-text-main">Category</label>
+          <select 
+            value={formData.category_id || ''} 
+            onChange={e => setFormData({...formData, category_id: e.target.value})}
+            className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">Select Category</option>
+            {categories?.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>SKU</label>
-              <input 
-                type="text" 
-                value={formData.sku || ''} 
-                onChange={e => setFormData({...formData, sku: e.target.value})}
-                className="form-input"
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
-              />
-            </div>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Barcode</label>
-              <input 
-                type="text" 
-                value={formData.barcode || ''} 
-                onChange={e => setFormData({...formData, barcode: e.target.value})}
-                className="form-input"
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
-              />
-            </div>
-          </div>
+        <div className="flex items-center gap-2 mt-2">
+          <input 
+            type="checkbox" 
+            id="active"
+            checked={formData.active || false} 
+            onChange={e => setFormData({...formData, active: e.target.checked})}
+            className="rounded border-border-color text-primary focus:ring-primary"
+          />
+          <label htmlFor="active" className="text-sm font-medium text-text-main">Active Product</label>
+        </div>
 
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Category</label>
-            <select 
-              value={formData.category_id || ''} 
-              onChange={e => setFormData({...formData, category_id: e.target.value})}
-              className="form-input"
-              style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)' }}
-            >
-              <option value="">Select Category</option>
-              {categories?.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-            <input 
-              type="checkbox" 
-              id="active"
-              checked={formData.active || false} 
-              onChange={e => setFormData({...formData, active: e.target.checked})}
-            />
-            <label htmlFor="active" style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>Active Product</label>
-          </div>
-
-          <div style={{ marginTop: 'auto', paddingTop: 'var(--space-8)' }}>
-            <button 
-              type="submit" 
-              disabled={updateMutation.isPending}
-              style={{ 
-                width: '100%',
-                backgroundColor: 'var(--color-primary)', 
-                color: 'white', 
-                padding: 'var(--space-3)', 
-                borderRadius: 'var(--radius-md)',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 'var(--space-2)',
-                opacity: updateMutation.isPending ? 0.7 : 1
-              }}
-            >
-              <Save size={18} /> {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="mt-auto pt-8">
+          <Button type="submit" loading={updateMutation.isPending} icon={<Save size={18} />} className="w-full">
+            Save Changes
+          </Button>
+        </div>
+      </form>
+    </Drawer>
   );
 }

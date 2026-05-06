@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../inventory/label_printer_screen.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final String sku;
@@ -168,20 +169,53 @@ class ProductDetailsScreen extends StatelessWidget {
           color: AppTheme.backgroundElevated,
           boxShadow: [BoxShadow(color: AppTheme.shadowDark, blurRadius: 10, offset: const Offset(0, -5))],
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Print Label Button
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LabelPrinterScreen(
+                        barcode: sku,
+                        productName: name,
+                        price: price,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.print, color: Colors.white),
+                label: const Text(
+                  'Print Label',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.secondaryAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  minimumSize: const Size(double.infinity, 0),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Add to Cart Button
+              ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  minimumSize: const Size(double.infinity, 0),
                 ),
-                child: const Text('Add to Cart', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                child: const Text(
+                  'Add to Cart',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

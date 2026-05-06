@@ -4,14 +4,9 @@
 // =============================================================================
 
 import type { PosProduct, PosCategory, Reminder, ReminderType } from './types';
+import { createDebugLogger } from '../debug';
 
-const DEBUG_POS = import.meta.env.VITE_DEBUG_POS === 'true';
-
-function debugLog(label: string, data: any) {
-  if (DEBUG_POS) {
-    console.log(`[POS Mapper] ${label}:`, JSON.stringify(data, null, 2));
-  }
-}
+const debugLog = createDebugLogger('POS Mapper');
 
 /**
  * Maps a row from search_items_pos or lookup_item_by_scan to PosProduct

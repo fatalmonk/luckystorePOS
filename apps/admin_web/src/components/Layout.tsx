@@ -8,14 +8,12 @@ import '../styles/components.css';
 
 export function Layout() {
   return (
-    <div className="app-layout">
+    <div className="app-container">
+      <Sidebar />
       <TopHeader />
-      <div className="app-container">
-        <Sidebar />
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
+      <main className="main-content">
+        <Outlet />
+      </main>
     </div>
   );
 }

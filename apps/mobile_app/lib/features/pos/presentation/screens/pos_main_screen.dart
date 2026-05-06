@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../../../models/pos_models.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/services/printer/printer_test_screen.dart';
+import '../../../inventory/presentation/screens/bulk_label_print_screen.dart';
 import './payment_screen.dart';
 import './pos_session_summary_screen.dart';
 
@@ -147,6 +149,10 @@ class _PosMainScreenState extends State<PosMainScreen> {
   // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600;
+    final isLargeTablet = screenWidth >= 900;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
@@ -154,19 +160,24 @@ class _PosMainScreenState extends State<PosMainScreen> {
         body: SafeArea(
           child: Stack(
             children: [
+              // Responsive layout: split view for tablets, adjusted flex for different sizes
               Row(
                 children: [
                   // ── LEFT PANEL ─────────────────────────────────────────
                   Expanded(
-                    flex: 60,
+                    flex: isLargeTablet ? 70 : (isTablet ? 65 : 60),
                     child: _buildLeftPanel(),
                   ),
                   // Divider
                   Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
                   // ── RIGHT PANEL ────────────────────────────────────────
-                  Expanded(
-                    flex: 40,
-                    child: _buildRightPanel(),
+                  // Minimum width constraint for cart panel
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 280),
+                    child: Expanded(
+                      flex: isLargeTablet ? 30 : (isTablet ? 35 : 40),
+                      child: _buildRightPanel(),
+                    ),
                   ),
                 ],
               ),
@@ -275,6 +286,52 @@ class _PosMainScreenState extends State<PosMainScreen> {
               tooltip: 'POS debug snapshot',
               onTap: () => _showPosDebugDialog(pos),
             ),
+          ),
+          const SizedBox(width: 4),
+          // More actions menu (to save space on smaller tablets)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white70, size: 20),
+            tooltip: 'More actions',
+            padding: EdgeInsets.zero,
+            onSelected: (value) {
+              if (value == 'bulk_print') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BulkLabelPrintScreen(),
+                  ),
+                );
+              } else if (value == 'test_printer') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PrinterTestScreen(),
+                  ),
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'bulk_print',
+                child: Row(
+                  children: [
+                    Icon(Icons.print_outlined, size: 20),
+                    SizedBox(width: 8),
+                    Text('Bulk Print Labels'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'test_printer',
+                child: Row(
+                  children: [
+                    Icon(Icons.bug_report, size: 20),
+                    SizedBox(width: 8),
+                    Text('Test Printer'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -398,13 +455,19 @@ class _PosMainScreenState extends State<PosMainScreen> {
       );
     }
 
+    // Responsive grid: calculate columns based on available width
+    final screenWidth = MediaQuery.of(context).size.width;
+    final leftPanelWidth = screenWidth * 0.65; // Approximate left panel width
+    final crossAxisCount = leftPanelWidth > 800 ? 4 : (leftPanelWidth > 500 ? 3 : 2);
+    final childAspectRatio = leftPanelWidth > 800 ? 0.85 : 0.75;
+
     return GridView.builder(
       padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        childAspectRatio: 0.82,
+        childAspectRatio: childAspectRatio,
       ),
       itemCount: _items.length,
       itemBuilder: (ctx, i) => _ProductTile(
@@ -1030,14 +1093,16 @@ class _ProductTile extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.name,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                height: 1.2),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
+                        Flexible(
+                          child: Text(item.name,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.2),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis),
+                        ),
                         const Spacer(),
                         Row(
                           children: [
@@ -1187,8 +1252,7 @@ class _CartLine extends StatelessWidget {
             const SizedBox(width: 10),
 
             // Line total
-            SizedBox(
-              width: 60,
+            Flexible(
               child: Text('৳${cartItem.lineTotal.toStringAsFixed(0)}',
                   textAlign: TextAlign.right,
                   style: const TextStyle(

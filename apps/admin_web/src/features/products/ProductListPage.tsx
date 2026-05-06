@@ -3,13 +3,17 @@ import { useQuery } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { Search, Plus, Edit2, Package } from 'lucide-react';
+import { Search, Plus, Edit2, Package, Filter } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ProductEditDrawer } from './ProductEditDrawer';
 import { ProductAddModal } from './ProductAddModal';
 import { useNotify } from '../../components/Notification';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useDebounce } from '../../hooks/useDebounce';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { ProductDetailDrawer } from './ProductDetailDrawer';
 
 const ROW_HEIGHT = 64;
 const VISIBLE_ROWS = 15;
@@ -26,6 +30,7 @@ export function ProductListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const { data: products, isLoading, error, refetch } = useQuery({
@@ -59,12 +64,10 @@ export function ProductListPage() {
   if (error) {
     return (
       <div className="products-container">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-[var(--font-size-2xl)] font-bold">Products</h1>
-            <p className="text-[var(--text-muted)]">Manage your shop's catalog.</p>
-          </div>
-        </header>
+        <PageHeader 
+          title="Products" 
+          subtitle="Manage your shop's catalog." 
+        />
         <div className="card">
           <ErrorState message="Failed to load products." onRetry={() => refetch()} />
         </div>
@@ -74,46 +77,41 @@ export function ProductListPage() {
 
   return (
     <div className="products-container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Products</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Manage your shop's catalog.</p>
-        </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="button-primary"
-          style={{ 
-            backgroundColor: 'var(--color-primary)', 
-            color: 'white', 
-            padding: 'var(--space-2) var(--space-4)', 
-            borderRadius: 'var(--radius-md)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            fontWeight: '600'
-          }}
-        >
-          <Plus size={18} /> Add Product
-        </button>
-      </header>
+      <PageHeader 
+        title="Products" 
+        subtitle="Manage your shop's catalog." 
+        actions={
+          <Button onClick={() => setIsAddModalOpen(true)} icon={<Plus size={18} />}>
+            Add Product
+          </Button>
+        }
+        className="mb-8"
+      />
 
-      <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-6)', display: 'flex', gap: 'var(--space-4)' }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+      <div className="card flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input 
             type="text" 
             placeholder="Search by name, SKU, or barcode..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: 'var(--space-3) var(--space-3) var(--space-3) 40px', 
-              borderRadius: 'var(--radius-md)', 
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--input-bg)',
-              color: 'var(--text-main)'
-            }}
+            className="w-full pl-10 pr-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
           />
+        </div>
+        <div className="flex gap-2">
+          <select className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="">All Categories</option>
+            {categories?.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <select className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="">Sort By</option>
+            <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="stock">Stock</option>
+          </select>
         </div>
       </div>
 
@@ -150,7 +148,7 @@ export function ProductListPage() {
             icon={<Package size={48} />}
             title={searchTerm ? 'No products match your search' : 'No products yet'}
             description={searchTerm ? 'Try adjusting your search terms.' : 'Add your first product to get started.'}
-            action={!searchTerm ? <button className="button-primary" onClick={() => setIsAddModalOpen(true)}><Plus size={18} /> Add Product</button> : undefined}
+            action={!searchTerm ? <Button onClick={() => setIsAddModalOpen(true)} icon={<Plus size={18} />}>Add Product</Button> : undefined}
           />
         ) : (
           <div
@@ -163,6 +161,8 @@ export function ProductListPage() {
                 return (
                   <div
                     key={p.id}
+                    onClick={() => setViewingProductId(p.id)}
+                    className="hover:bg-[rgba(0,0,0,0.02)] cursor-pointer transition-colors"
                     style={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${virtualRow.start}px)`,
@@ -193,23 +193,13 @@ export function ProductListPage() {
                       </span>
                     </div>
                     <div style={{ padding: 'var(--space-4)', width: '12%' }}>
-                      <span className={clsx(
-                        'badge',
-                        p.active ? 'badge-success' : 'badge-muted'
-                      )} style={{
-                        fontSize: 'var(--font-size-xs)',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        backgroundColor: p.active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                        color: p.active ? 'var(--color-success)' : 'var(--text-muted)',
-                        fontWeight: '600'
-                      }}>
+                      <Badge variant={p.active ? 'success' : 'neutral'}>
                         {p.active ? 'Active' : 'Inactive'}
-                      </span>
+                      </Badge>
                     </div>
                     <div style={{ padding: 'var(--space-4)', textAlign: 'right', width: '8%' }}>
                       <button 
-                        onClick={() => setEditingProduct(p)}
+                        onClick={(e) => { e.stopPropagation(); setEditingProduct(p); }}
                         style={{ color: 'var(--color-primary)', padding: 'var(--space-1)' }}
                       >
                         <Edit2 size={18} />
@@ -227,6 +217,15 @@ export function ProductListPage() {
         product={editingProduct} 
         categories={categories}
         onClose={() => setEditingProduct(null)} 
+      />
+
+      <ProductDetailDrawer
+        productId={viewingProductId}
+        onClose={() => setViewingProductId(null)}
+        onEdit={(p) => {
+          setViewingProductId(null);
+          setEditingProduct(p);
+        }}
       />
 
       <ProductAddModal 

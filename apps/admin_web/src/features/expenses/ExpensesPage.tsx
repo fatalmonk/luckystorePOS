@@ -5,6 +5,8 @@ import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { useNotify } from '../../components/Notification';
 import { useDebounce } from '../../hooks/useDebounce';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { Drawer } from '../../components/ui/Drawer';
 import {
   Receipt,
   Plus,
@@ -52,21 +54,7 @@ export function ExpensesPage() {
     },
   });
 
-  if (error) {
-    return (
-      <div className="expenses-container">
-        <header className="expenses-header">
-          <div>
-            <h1 className="expenses-title">Expenses</h1>
-            <p className="expenses-subtitle">Track and manage store expenses.</p>
-          </div>
-        </header>
-        <div className="card">
-          <ErrorState message="Failed to load expenses." onRetry={() => refetch()} />
-        </div>
-      </div>
-    );
-  }
+
 
   const filtered = useMemo(() => {
     if (!expenses) return [];
@@ -98,19 +86,33 @@ export function ExpensesPage() {
     [filtered],
   );
 
+  if (error) {
+    return (
+      <div className="expenses-container">
+        <PageHeader
+          title="Expenses"
+          subtitle="Track and manage store expenses."
+        />
+        <div className="card">
+          <ErrorState message="Failed to load expenses." onRetry={() => refetch()} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="expenses-container">
-      <header className="expenses-header">
-        <div>
-          <h1 className="expenses-title">Expenses</h1>
-          <p className="expenses-subtitle">Track and manage store expenses.</p>
-        </div>
-        <button className="button-primary" onClick={() => setShowForm(true)}>
-          <Plus size={18} /> Add Expense
-        </button>
-      </header>
+      <PageHeader
+        title="Expenses"
+        subtitle="Track and manage store expenses."
+        actions={
+          <button className="button-primary" onClick={() => setShowForm(true)}>
+            <Plus size={18} /> Add Expense
+          </button>
+        }
+      />
 
-      <div className="dashboard-grid">
+      <div className="dashboard-grid mt-6 mb-6">
         <SummaryCard title="Today" amount={todayTotal} icon={<CalendarDays size={20} className="text-emerald-600" />} />
         <SummaryCard title="This Week" amount={weekTotal} icon={<TrendingUp size={20} className="text-emerald-600" />} />
         <SummaryCard title="This Month" amount={monthTotal} icon={<Wallet size={20} className="text-emerald-600" />} />
@@ -214,13 +216,12 @@ export function ExpensesPage() {
         </table>
       </div>
 
-      {showForm && (
-        <AddExpenseDrawer
-          onSubmit={(form) => createMutation.mutate(form)}
-          onClose={() => setShowForm(false)}
-          isPending={createMutation.isPending}
-        />
-      )}
+      <AddExpenseDrawer
+        isOpen={showForm}
+        onSubmit={(form) => createMutation.mutate(form)}
+        onClose={() => setShowForm(false)}
+        isPending={createMutation.isPending}
+      />
     </div>
   );
 }
@@ -238,10 +239,12 @@ function SummaryCard({ title, amount, icon }: { title: string; amount: number; i
 }
 
 function AddExpenseDrawer({
+  isOpen,
   onSubmit,
   onClose,
   isPending,
 }: {
+  isOpen: boolean;
   onSubmit: (form: ExpenseFormData) => void;
   onClose: () => void;
   isPending: boolean;
@@ -266,102 +269,107 @@ function AddExpenseDrawer({
   };
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-content expenses-drawer" onClick={(e) => e.stopPropagation()}>
-        <header className="expenses-drawer-header">
-          <h2>Add Expense</h2>
-          <button onClick={onClose} style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
-        </header>
-
-        <form onSubmit={handleSubmit} className="expenses-form">
-          <label className="expenses-form-label">
+    <Drawer isOpen={isOpen} onClose={onClose} title="Add Expense">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
             Date
-            <input
-              type="date"
-              value={form.expenseDate}
-              onChange={(e) => set('expenseDate', e.target.value)}
-              className="expenses-form-input"
-              required
-            />
           </label>
+          <input
+            type="date"
+            value={form.expenseDate}
+            onChange={(e) => set('expenseDate', e.target.value)}
+            className="input w-full"
+            required
+          />
+        </div>
 
-          <label className="expenses-form-label">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
             Vendor
-            <input
-              type="text"
-              placeholder="e.g. ABC Supplies"
-              value={form.vendorName}
-              onChange={(e) => set('vendorName', e.target.value)}
-              className="expenses-form-input"
-              required
-            />
           </label>
+          <input
+            type="text"
+            placeholder="e.g. ABC Supplies"
+            value={form.vendorName}
+            onChange={(e) => set('vendorName', e.target.value)}
+            className="input w-full"
+            required
+          />
+        </div>
 
-          <label className="expenses-form-label">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
             Description
-            <input
-              type="text"
-              placeholder="What was this for?"
-              value={form.description}
-              onChange={(e) => set('description', e.target.value)}
-              className="expenses-form-input"
-              required
-            />
           </label>
+          <input
+            type="text"
+            placeholder="What was this for?"
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            className="input w-full"
+            required
+          />
+        </div>
 
-          <label className="expenses-form-label">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
             Amount (৳)
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              placeholder="0.00"
-              value={form.amount || ''}
-              onChange={(e) => set('amount', parseFloat(e.target.value) || 0)}
-              className="expenses-form-input"
-              required
-            />
           </label>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+            value={form.amount || ''}
+            onChange={(e) => set('amount', parseFloat(e.target.value) || 0)}
+            className="input w-full"
+            required
+          />
+        </div>
 
-          <label className="expenses-form-label">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
             Category
-            <select
-              value={form.category}
-              onChange={(e) => set('category', e.target.value as ExpenseCategory)}
-              className="expenses-form-input"
-            >
-              {EXPENSE_CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
           </label>
+          <select
+            value={form.category}
+            onChange={(e) => set('category', e.target.value as ExpenseCategory)}
+            className="input w-full"
+          >
+            {EXPENSE_CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
 
-          <label className="expenses-form-label">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
             Payment Method
-            <select
-              value={form.paymentType}
-              onChange={(e) => set('paymentType', e.target.value as ExpensePaymentType)}
-              className="expenses-form-input"
-            >
-              {EXPENSE_PAYMENT_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
           </label>
+          <select
+            value={form.paymentType}
+            onChange={(e) => set('paymentType', e.target.value as ExpensePaymentType)}
+            className="input w-full"
+          >
+            {EXPENSE_PAYMENT_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
 
-          <div className="expenses-form-actions">
-            <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
-            <button
-              type="submit"
-              className="button-primary"
-              disabled={isPending || !form.vendorName.trim() || form.amount <= 0}
-              style={{ opacity: isPending || !form.vendorName.trim() || form.amount <= 0 ? 0.5 : 1 }}
-            >
-              {isPending ? 'Saving...' : 'Record Expense'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border-light">
+          <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
+          <button
+            type="submit"
+            className="button-primary"
+            disabled={isPending || !form.vendorName.trim() || form.amount <= 0}
+            style={{ opacity: isPending || !form.vendorName.trim() || form.amount <= 0 ? 0.5 : 1 }}
+          >
+            {isPending ? 'Saving...' : 'Record Expense'}
+          </button>
+        </div>
+      </form>
+    </Drawer>
   );
 }
