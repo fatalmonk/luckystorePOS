@@ -40,7 +40,7 @@ CREATE OR REPLACE FUNCTION public.get_upcoming_reminders(
 )
 RETURNS SETOF reminders
 LANGUAGE sql
-SECURITY DEFINER
+SECURITY DEFINER SET search_path = public, pg_temp
 STABLE
 AS $$
     SELECT r.*
@@ -66,7 +66,7 @@ CREATE OR REPLACE FUNCTION public.create_reminder(
 )
 RETURNS reminders
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY DEFINER SET search_path = public, pg_temp
 AS $$
 DECLARE
     new_row reminders%ROWTYPE;
@@ -92,7 +92,7 @@ CREATE OR REPLACE FUNCTION public.update_reminder(
 )
 RETURNS reminders
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY DEFINER SET search_path = public, pg_temp
 AS $$
 DECLARE
     updated_row reminders%ROWTYPE;
@@ -126,7 +126,7 @@ CREATE OR REPLACE FUNCTION public.delete_reminder(
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY DEFINER SET search_path = public, pg_temp
 AS $$
 BEGIN
     DELETE FROM reminders r

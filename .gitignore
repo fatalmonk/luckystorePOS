@@ -193,3 +193,21 @@ apply_*_v2.sql
 # to avoid leaking even non-secret config. Manage via CI secrets.
 apps/mobile_app/assets/app.env
 apps/mobile_app/flutter
+
+logs
+dev-debug.log
+# Dependency directories
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 
+.agent_handoff/

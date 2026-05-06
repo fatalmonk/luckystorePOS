@@ -33,16 +33,36 @@ $$;
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
-CREATE INDEX IF NOT EXISTS idx_items_name_trgm
-ON public.items USING gin (name gin_trgm_ops);
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'items' AND schemaname = 'public') THEN
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'items' AND column_name = 'name'
+    ) THEN
+      CREATE INDEX IF NOT EXISTS idx_items_name_trgm
+      ON public.items USING gin (name gin_trgm_ops);
+    END IF;
 
-CREATE INDEX IF NOT EXISTS idx_items_barcode_trgm
-ON public.items USING gin (barcode gin_trgm_ops)
-WHERE barcode IS NOT NULL;
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'items' AND column_name = 'barcode'
+    ) THEN
+      CREATE INDEX IF NOT EXISTS idx_items_barcode_trgm
+      ON public.items USING gin (barcode gin_trgm_ops)
+      WHERE barcode IS NOT NULL;
+    END IF;
 
-CREATE INDEX IF NOT EXISTS idx_items_sku_trgm
-ON public.items USING gin (sku gin_trgm_ops)
-WHERE sku IS NOT NULL;
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'items' AND column_name = 'sku'
+    ) THEN
+      CREATE INDEX IF NOT EXISTS idx_items_sku_trgm
+      ON public.items USING gin (sku gin_trgm_ops)
+      WHERE sku IS NOT NULL;
+    END IF;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_import_runs_status_created_at
 ON public.import_runs(status, created_at DESC);

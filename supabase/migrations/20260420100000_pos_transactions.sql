@@ -435,8 +435,13 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) TO authenticated;
+  END IF;
+END $$;
 
 -- ---------------------------------------------------------------------------
 -- 10) RPC: void_sale()
