@@ -1,124 +1,363 @@
-import { useState } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { Skeleton } from '../../components/Skeleton';
-import { Search, XCircle, ChevronRight, Receipt, CreditCard, X } from 'lucide-react';
+import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { MetricCard } from '../../components/data-display/MetricCard';
+import { TableFilters } from '../../components/data-display/TableFilters';
+import { XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
-import { format } from 'date-fns';
+import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth, subDays } from 'date-fns';
 import { useNotify } from '../../components/Notification';
+import { useDebounce } from '../../hooks/useDebounce';
+
+const ROW_HEIGHT = 56;
+const VISIBLE_ROWS = 15;
+
+type DateRange = 'today' | 'week' | 'month' | 'custom';
+
+function getDateRange(range: DateRange, customStart?: string, customEnd?: string): { startDate: string; endDate: string } {
+  const now = new Date();
+  switch (range) {
+    case 'today':
+      return { startDate: startOfDay(now).toISOString(), endDate: endOfDay(now).toISOString() };
+    case 'week':
+      return { startDate: startOfWeek(now, { weekStartsOn: 6 }).toISOString(), endDate: endOfWeek(now, { weekStartsOn: 6 }).toISOString() };
+    case 'month':
+      return { startDate: startOfMonth(now).toISOString(), endDate: endOfMonth(now).toISOString() };
+    case 'custom':
+      return {
+        startDate: customStart ? startOfDay(new Date(customStart)).toISOString() : startOfDay(now).toISOString(),
+        endDate: customEnd ? endOfDay(new Date(customEnd)).toISOString() : endOfDay(now).toISOString(),
+      };
+  }
+}
+
+function formatCurrency(amount: number): string {
+  return `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function exportSalesToCSV(sales: any[]) {
+  if (!sales.length) return;
+  const headers = ['Receipt #', 'Date & Time', 'Cashier', 'Subtotal', 'Discount', 'Total', 'Status'];
+  const rows = sales.map((s: any) => [
+    s.sale_number,
+    format(new Date(s.created_at), 'dd/MM/yyyy HH:mm'),
+    s.cashier_name,
+    s.subtotal ?? '',
+    s.discount_amount ?? '',
+    s.total_amount,
+    s.status,
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sales-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export function SalesHistoryPage() {
   const { notify } = useNotify();
   const { storeId } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>('month');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
 
-  const { data: sales, isLoading, error } = useQuery({
-    queryKey: ['sales-history', storeId, searchTerm],
-    queryFn: () => api.sales.history(storeId, searchTerm),
+  // Reset page when search changes
+  useMemo(() => { setCurrentPage(1); }, [debouncedSearch]);
+
+  const { startDate, endDate } = getDateRange(dateRange, customStart, customEnd);
+
+  const { data: sales, isLoading, error, refetch } = useQuery({
+    queryKey: ['sales-history', storeId, debouncedSearch, startDate, endDate],
+    queryFn: () => api.sales.history(storeId, searchTerm || undefined, startDate, endDate),
   });
 
   if (error) {
-    notify('Failed to load sales history. Please check your connection.', 'error');
-    return <div className="error">Error loading sales history.</div>;
+    return (
+      <div className="sales-history-container">
+        <PageHeader 
+          title="Sales History" 
+          subtitle="Search and review store transactions." 
+        />
+        <div className="card">
+          <ErrorState message="Failed to load sales history." onRetry={() => refetch()} />
+        </div>
+      </div>
+    );
   }
+
+  const completedSales = (sales ?? []).filter((s: any) => s.status === 'completed');
+  const voidedSales = (sales ?? []).filter((s: any) => s.status === 'voided');
+
+  const totalRevenue = completedSales.reduce((sum: number, s: any) => sum + Number(s.total_amount || 0), 0);
+  const avgTicket = completedSales.length ? totalRevenue / completedSales.length : 0;
+  const voidCount = voidedSales.length;
+
+  const totalPages = Math.ceil((sales?.length ?? 0) / pageSize);
+  const paginatedSales = sales?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
+
+  const salesScrollRef = useRef<HTMLDivElement>(null);
+
+  const salesVirtualizer = useVirtualizer({
+    count: paginatedSales.length,
+    getScrollElement: () => salesScrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
+  });
+
+  const handleDateRangeChange = (range: DateRange) => {
+    setDateRange(range);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="sales-history-container">
-      <header style={{ marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Sales History</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Search and review store transactions.</p>
-      </header>
+      <PageHeader 
+        title="Sales History" 
+        subtitle="Search and review store transactions." 
+      />
 
-      <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-6)', display: 'flex', gap: 'var(--space-4)' }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder="Search by Receipt #..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: 'var(--space-3) var(--space-3) var(--space-3) 40px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--input-bg)'
-            }}
-          />
-        </div>
+      {/* Summary Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+        <MetricCard title="Total Revenue" value={formatCurrency(totalRevenue)} icon={<DollarSign size={18} style={{ color: 'var(--color-success)' }} />} color="success" variant="light" />
+        <MetricCard title="Average Ticket" value={formatCurrency(avgTicket)} icon={<TrendingUp size={18} style={{ color: 'var(--color-primary)' }} />} color="primary" variant="light" />
+        <MetricCard title="Voided" value={voidCount} icon={<AlertTriangle size={18} style={{ color: voidCount > 0 ? 'var(--color-danger)' : 'var(--text-muted)' }} />} color={voidCount > 0 ? 'danger' : 'neutral'} variant="light" />
       </div>
 
+      {/* Filters Row */}
+      <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+        <TableFilters
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search by Receipt #..."
+          filters={[]}
+        >
+          {/* Date Range Picker */}
+          <div style={{ display: 'flex', gap: '4px', backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 'var(--radius-md)', padding: '2px' }}>
+            {(['today', 'week', 'month', 'custom'] as DateRange[]).map((range) => (
+              <button
+                key={range}
+                onClick={() => handleDateRangeChange(range)}
+                style={{
+                  padding: 'var(--space-2) var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: dateRange === range ? '700' : '500',
+                  backgroundColor: dateRange === range ? 'var(--color-primary)' : 'transparent',
+                  color: dateRange === range ? 'white' : 'var(--text-muted)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {range === 'today' ? 'Today' : range === 'week' ? 'This Week' : range === 'month' ? 'This Month' : 'Custom'}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom Date Inputs */}
+          {dateRange === 'custom' && (
+            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => { setCustomStart(e.target.value); setCurrentPage(1); }}
+                style={{
+                  padding: 'var(--space-2) var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--input-bg)',
+                  fontSize: 'var(--font-size-sm)',
+                }}
+              />
+              <span style={{ color: 'var(--text-muted)' }}>to</span>
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => { setCustomEnd(e.target.value); setCurrentPage(1); }}
+                style={{
+                  padding: 'var(--space-2) var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--input-bg)',
+                  fontSize: 'var(--font-size-sm)',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Export Button */}
+          <button
+            onClick={() => exportSalesToCSV(sales ?? [])}
+            disabled={!sales?.length}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+              padding: 'var(--space-3) var(--space-4)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-card)',
+              cursor: sales?.length ? 'pointer' : 'not-allowed',
+              opacity: sales?.length ? 1 : 0.5,
+              fontSize: 'var(--font-size-sm)',
+              fontWeight: '600',
+            }}
+          >
+            <Download size={16} />
+            Export CSV
+          </button>
+        </TableFilters>
+      </div>
+
+      {/* Results count */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+        <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
+          {sales?.length ?? 0} transaction{sales?.length === 1 ? '' : 's'} found
+        </span>
+      </div>
+
+      {/* Sales Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)' }}>
-              <th style={{ padding: 'var(--space-4)' }}>Receipt #</th>
-              <th style={{ padding: 'var(--space-4)' }}>Date & Time</th>
-              <th style={{ padding: 'var(--space-4)' }}>Cashier</th>
-              <th style={{ padding: 'var(--space-4)' }}>Amount</th>
-              <th style={{ padding: 'var(--space-4)' }}>Status</th>
-              <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Actions</th>
+              <th style={{ padding: 'var(--space-4)', width: '18%' }}>Receipt #</th>
+              <th style={{ padding: 'var(--space-4)', width: '24%' }}>Date & Time</th>
+              <th style={{ padding: 'var(--space-4)', width: '18%' }}>Cashier</th>
+              <th style={{ padding: 'var(--space-4)', width: '16%' }}>Amount</th>
+              <th style={{ padding: 'var(--space-4)', width: '14%' }}>Status</th>
+              <th style={{ padding: 'var(--space-4)', textAlign: 'right', width: '10%' }}>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {isLoading ? (
-              Array(5).fill(0).map((_, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '120px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '150px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '100px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '80px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '60px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}><Skeleton style={{ width: '40px', height: '30px', marginLeft: 'auto' }} /></td>
-                </tr>
-              ))
-            ) : sales?.length === 0 ? (
-              <tr>
-                <td colSpan={6} style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <Receipt size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.2 }} />
-                  <p>No sales found.</p>
-                </td>
-              </tr>
-            ) : (
-              sales?.map((s: any) => (
-                <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: 'var(--space-4)', fontWeight: '700' }}>{s.sale_number}</td>
-                  <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                    {format(new Date(s.created_at), 'MMM d, yyyy HH:mm')}
-                  </td>
-                  <td style={{ padding: 'var(--space-4)' }}>{s.cashier_name}</td>
-                  <td style={{ padding: 'var(--space-4)', fontWeight: '700' }}>৳{s.total_amount}</td>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <span className={clsx(
-                      'badge',
-                      s.status === 'completed' ? 'badge-success' : 'badge-danger'
-                    )} style={{
-                      fontSize: 'var(--font-size-xs)',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontWeight: '700',
-                      backgroundColor: s.status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                      color: s.status === 'completed' ? 'var(--color-success)' : 'var(--color-danger)',
-                      textTransform: 'uppercase'
-                    }}>
-                      {s.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
-                    <button
-                      onClick={() => setSelectedSaleId(s.id)}
-                      style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto', fontWeight: '600' }}
-                    >
-                      Details <ChevronRight size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
         </table>
+
+        {isLoading ? (
+          <div className="p-4">
+            {Array(5).fill(0).map((_, i) => (
+              <div key={i} className="flex gap-4 py-3">
+                <SkeletonBlock className="w-[120px] h-5" />
+                <SkeletonBlock className="w-[150px] h-5" />
+                <SkeletonBlock className="w-[100px] h-5" />
+                <SkeletonBlock className="w-[80px] h-5" />
+                <SkeletonBlock className="w-[60px] h-5" />
+              </div>
+            ))}
+          </div>
+        ) : paginatedSales.length === 0 ? (
+          <EmptyState
+            icon={<Receipt size={48} />}
+            title="No sales yet"
+            description="Transactions will appear here once sales are recorded."
+          />
+        ) : (
+          <div
+            ref={salesScrollRef}
+            style={{ height: `${Math.min(paginatedSales.length, VISIBLE_ROWS) * ROW_HEIGHT + 4}px`, overflow: 'auto' }}
+          >
+            <div style={{ height: `${salesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+              {salesVirtualizer.getVirtualItems().map((virtualRow) => {
+                const s = paginatedSales[virtualRow.index];
+                return (
+                  <div
+                    key={s.id}
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      position: 'absolute',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderBottom: '1px solid var(--border-color)',
+                    }}
+                    onClick={() => setSelectedSaleId(s.id)}
+                  >
+                    <div style={{ padding: 'var(--space-4)', width: '18%', fontWeight: '700' }}>{s.sale_number}</div>
+                    <div style={{ padding: 'var(--space-4)', width: '24%', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                      {format(new Date(s.created_at), 'MMM d, yyyy HH:mm')}
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', width: '18%' }}>{s.cashier_name}</div>
+                    <div style={{ padding: 'var(--space-4)', width: '16%', fontWeight: '700' }}>৳{s.total_amount}</div>
+                    <div style={{ padding: 'var(--space-4)', width: '14%' }}>
+                      <span className={clsx(
+                        'badge',
+                        s.status === 'completed' ? 'badge-success' : 'badge-danger'
+                      )} style={{
+                        fontSize: 'var(--font-size-xs)',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontWeight: '700',
+                        backgroundColor: s.status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        color: s.status === 'completed' ? 'var(--color-success)' : 'var(--color-danger)',
+                        textTransform: 'uppercase'
+                      }}>
+                        {s.status}
+                      </span>
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', textAlign: 'right', width: '10%' }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedSaleId(s.id); }}
+                        style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto', fontWeight: '600' }}
+                      >
+                        Details <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
+              Page {currentPage} of {totalPages}
+            </span>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: 'var(--space-2) var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-card)',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  fontSize: 'var(--font-size-sm)',
+                }}
+              >
+                ← Prev
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  padding: 'var(--space-2) var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-card)',
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  fontSize: 'var(--font-size-sm)',
+                }}
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <SaleDetailsDrawer
@@ -197,7 +436,12 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
         </header>
 
         {isLoading ? (
-          <Skeleton style={{ width: '100%', height: '400px' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <SkeletonBlock className="w-full h-8" />
+            <SkeletonBlock className="w-full h-8" />
+            <SkeletonBlock className="w-full h-8" />
+            <SkeletonBlock className="w-3/4 h-8" />
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
             {/* Header Info */}

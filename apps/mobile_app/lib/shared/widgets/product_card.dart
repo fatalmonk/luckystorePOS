@@ -2,42 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
-import '../../shared/providers/cart_provider.dart';
-import '../../features/pos/presentation/screens/product_details_screen.dart';
+import '../../shared/providers/pos_provider.dart';
+import '../../models/pos_models.dart';
+import '../../features/inventory/label_printer_screen.dart';
 
 class ProductCard extends StatelessWidget {
-  final String sku;
-  final String name;
-  final double price;
-  final double originalPrice;
-  final String weight;
-  final String imageUrl;
+  final PosItem item;
+  final double? originalPrice;
+  final String? weight;
 
   const ProductCard({
     super.key,
-    required this.sku,
-    required this.name,
-    required this.price,
-    required this.originalPrice,
-    required this.weight,
-    required this.imageUrl,
+    required this.item,
+    this.originalPrice,
+    this.weight,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailsScreen(
-              sku: sku,
-              name: name,
-              price: price,
-              originalPrice: originalPrice,
-              weight: weight,
-              imageUrl: imageUrl,
-            ),
+        HapticFeedback.mediumImpact();
+        context.read<PosProvider>().addItem(item);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added to Cart - ৳${item.price.toStringAsFixed(0)}'),
+            duration: const Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppTheme.primaryAccent,
           ),
         );
       },
@@ -56,10 +48,12 @@ class ProductCard extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
-                      image: DecorationImage(
-                        image: NetworkImage(imageUrl),
-                        fit: BoxFit.cover,
-                      ),
+                      image: item.imageUrl != null
+                          ? DecorationImage(
+                              image: NetworkImage(item.imageUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
                   ),
                 ),
@@ -76,7 +70,7 @@ class ProductCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              name,
+                              item.name,
                               style: const TextStyle(
                                 color: AppTheme.textPrimary,
                                 fontSize: 13,
@@ -85,31 +79,34 @@ class ProductCard extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              weight,
-                              style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 12,
+                            if (weight != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                weight!,
+                                style: const TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Struck-through original price
-                            Text(
-                              '৳${originalPrice.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 12,
-                                decoration: TextDecoration.lineThrough,
+                            if (originalPrice != null)
+                              Text(
+                                '৳${originalPrice!.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 12,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
                               ),
-                            ),
                             // Bold pricing
                             Text(
-                              '৳${price.toStringAsFixed(0)}',
+                              '৳${item.price.toStringAsFixed(0)}',
                               style: const TextStyle(
                                 color: AppTheme.primaryAccentLight,
                                 fontSize: 16,
@@ -124,44 +121,56 @@ class ProductCard extends StatelessWidget {
                 ),
               ],
             ),
-            
-            // Add to Wishlist heart icon
+
+            // Print Label button
             Positioned(
               top: 8,
               right: 8,
               child: GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  // TODO: Add to wishlist logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LabelPrinterScreen(
+                        barcode: item.sku,
+                        productName: item.name,
+                        price: item.price,
+                      ),
+                    ),
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundElevated.withValues(alpha: 0.8),
+                    color: AppTheme.primaryAccent.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.favorite_border, color: AppTheme.textSecondary, size: 18),
+                  child: const Icon(Icons.print, color: Colors.white, size: 18),
                 ),
               ),
             ),
-            
-            // Add-to-Cart Transformative Button
+
+            // Quantity selector (shows current cart quantity)
             Positioned(
               bottom: 10,
               right: 10,
-              child: Consumer<CartProvider>(
-                builder: (context, cart, child) {
-                  final cartItem = cart.items[sku];
-                  final int quantity = cartItem?.quantity ?? 0;
+              child: Consumer<PosProvider>(
+                builder: (context, posProvider, child) {
+                  final cartItem = posProvider.cart.firstWhere(
+                    (c) => c.item.id == item.id,
+                    orElse: () => CartItem(item: item, qty: 0),
+                  );
+                  final int quantity = cartItem.qty;
 
                   if (quantity == 0) {
                     return GestureDetector(
                       onTap: () {
                         HapticFeedback.mediumImpact();
-                        cart.addItem(sku, name, price);
+                        posProvider.addItem(item);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Added to Cart - ৳${price.toStringAsFixed(0)}'),
+                            content: Text('Added to Cart - ৳${item.price.toStringAsFixed(0)}'),
                             duration: const Duration(seconds: 1),
                             behavior: SnackBarBehavior.floating,
                             backgroundColor: AppTheme.primaryAccent,
@@ -192,7 +201,11 @@ class ProductCard extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            cart.decrementItem(sku);
+                            if (quantity <= 1) {
+                              posProvider.removeItem(item.id);
+                            } else {
+                              posProvider.setQty(item.id, quantity - 1);
+                            }
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -209,7 +222,7 @@ class ProductCard extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            cart.addItem(sku, name, price);
+                            posProvider.setQty(item.id, quantity + 1);
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

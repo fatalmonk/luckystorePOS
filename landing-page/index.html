@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lucky Store POS - Modern Point of Sale system for retail businesses in Bangladesh">
+    <meta name="author" content="Lucky Store">
+    <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE">
+    <title>Lucky Store POS - Modern Point of Sale System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            position: relative;
+        }
+
+        .admin-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid white;
+            border-radius: 25px;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .admin-link:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .admin-link {
+                position: static;
+                display: inline-block;
+                margin-top: 20px;
+            }
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 24px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .tagline {
+            font-size: 1.3em;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 40px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #667eea;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .feature h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .about {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .about h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #764ba2;
+        }
+
+        .about p {
+            max-width: 800px;
+            margin: 0 auto 20px;
+            font-size: 1.1em;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .contact {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .contact h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .contact-info {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .contact-info p {
+            margin: 10px 0;
+        }
+
+        footer {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: underline;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        footer a:hover {
+            opacity: 1;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        .download-section {
+            text-align: center;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .tagline {
+                font-size: 1.1em;
+            }
+
+            .features, .about {
+                padding: 40px 20px;
+            }
+
+            .features h2, .about h2, .contact h2 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/admin" class="admin-link">🔐 Admin Login</a>
+            <div class="logo">🏪</div>
+            <h1>Lucky Store POS</h1>
+            <p class="tagline">
+                A modern Point of Sale system designed for retail businesses in Bangladesh.
+                Manage sales, inventory, and customers with ease.
+            </p>
+        </header>
+
+        <section class="features">
+            <h2>Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Management</h3>
+                    <p>Process transactions quickly with our intuitive POS interface. Support for cash, card, and mobile payments.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📦</div>
+                    <h3>Inventory Tracking</h3>
+                    <p>Real-time inventory management with low stock alerts, product variants, and barcode scanning support.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">👥</div>
+                    <h3>Customer Management</h3>
+                    <p>Build customer profiles, track purchase history, and manage loyalty programs.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Ready</h3>
+                    <p>Works seamlessly on tablets and phones. Perfect for on-the-go sales and inventory checks.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🏷️</div>
+                    <h3>Label Printing</h3>
+                    <p>Print price labels with MRP and discount information using Bluetooth thermal printers.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📈</div>
+                    <h3>Analytics & Reports</h3>
+                    <p>Get insights into your business with sales reports, inventory reports, and performance analytics.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="about">
+            <h2>About Lucky Store POS</h2>
+            <p>
+                Lucky Store POS is a comprehensive retail management solution built specifically for businesses in Chittagong, Bangladesh.
+                Our application helps small to medium-sized retail stores streamline their operations, from sales processing
+                to inventory management.
+            </p>
+            <p>
+                Located at 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, we serve local businesses including
+                grocery stores, pharmacies, clothing boutiques, and electronics shops. Lucky Store POS provides the tools you need
+                to manage your business efficiently with support for local payment methods and Bengali language.
+            </p>
+            <p>
+                Developed with care by the Lucky Store Team. Contact us at luckystore.1947@gmail.com or 01731944544
+                for support and inquiries.
+            </p>
+        </section>
+
+                <section class="download-section">
+            <h2 style="margin-bottom: 30px; color: white;">Download for Android</h2>
+            <p style="color: white; margin-bottom: 20px;">
+                Get the APK from our GitHub Releases page
+            </p>
+            <a href="https://github.com/fatalmonk/luckystorePOS/releases" class="download-btn" target="_blank">Download APK from GitHub</a>
+        </section>
+
+        <section class="install-instructions" style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 40px; margin: 20px 0;">
+            <h2>Installation Instructions</h2>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto; color: #555;">
+                <h3>For Android:</h3>
+                <ol style="line-height: 2; margin-left: 20px;">
+                    <li>Click the download button above</li>
+                    <li>On GitHub Releases page, click <strong>"app-release.apk"</strong> under Assets</li>
+                    <li>Once downloaded, open your phone's <strong>Settings</strong></li>
+                    <li>Go to <strong>Security</strong> or <strong>Privacy</strong></li>
+                    <li>Enable <strong>"Unknown sources"</strong> or <strong>"Install unknown apps"</strong></li>
+                    <li>Find the downloaded APK and tap to install</li>
+                    <li>Open the app and start managing your store!</li>
+                </ol>
+                <p style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+                    <strong>Note:</strong> This app is not available on Google Play Store. You are downloading directly from our official GitHub releases.
+                </p>
+            </div>
+        </section>
+
+        <section class="contact">
+            <h2>Contact Us</h2>
+            <div class="contact-info">
+                <p>Email: luckystore.1947@gmail.com</p>
+                <p>Phone: 01731944544</p>
+                <p>Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh</p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="support.html">Support</a>
+            <a href="/admin">Admin Dashboard</a>
+        </div>
+        <p>&copy; 2024 Lucky Store. All rights reserved.</p>
+        <p>Lucky Store POS - Point of Sale System for Bangladesh Retailers</p>
+    </footer>
+</body>
+</html>

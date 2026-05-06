@@ -1,127 +1,227 @@
-# Lucky Store QA Test Suite - Month 2
+<div align="center">
 
-## Overview
+# 🏪 Lucky Store POS
 
-Comprehensive Quality Assurance test suite for the Lucky Store Month 2 systems, covering all critical transaction processing flows.
+**A modern Point of Sale system designed for retail businesses in Bangladesh**
 
-## Test Structure
+[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.io)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
 
-```
-apps/mobile_app/test/
-├── unit/                       # Unit tests (6 files)
-│   ├── duplicate_submission_test.dart
-│   ├── race_conditions_test.dart
-│   ├── overdue_calculations_test.dart
-│   ├── stock_validation_test.dart
-│   ├── offline_queue_test.dart
-│   └── statement_accuracy_test.dart
-├── integration/
-│   └── all_systems_integration_test.dart
-├── load/
-│   └── load_tests.dart
-├── MANUAL_TEST_CHECKLIST.md   # Manual testing checklist
-└── README.md                  # This file
-```
+[🚀 Live Demo](https://lucky-store-pos-six.vercel.app/) • [📱 Download APK](https://github.com/fatalmonk/luckystorePOS/releases) • [📖 Docs](docs/)
 
-## Running Tests
+</div>
+
+---
+
+## ✨ Features
+
+<details open>
+<summary><b>📱 Mobile App (Flutter)</b></summary>
+
+<br>
+
+| Feature | Description |
+|---------|-------------|
+| 🛒 **Sales Management** | Process transactions with cash, card & mobile payments |
+| 📦 **Inventory Tracking** | Real-time stock with low stock alerts & CSV bulk import |
+| 👥 **Customer Management** | Build profiles, track purchase history & loyalty |
+| 🏷️ **Label Printing** | Print price labels with MRP using MHT-P29L Bluetooth printer |
+| 📡 **Barcode Scanning** | Quick product lookup via camera scan |
+| 🌐 **Offline Support** | Works without internet, syncs when connected |
+| 🗺️ **Google Maps** | Address selection for deliveries |
+
+</details>
+
+<details>
+<summary><b>💻 Admin Dashboard (React + Vite)</b></summary>
+
+<br>
+
+- 📊 Sales analytics & dashboard
+- 📝 Product management
+- 📒 Customer & supplier ledgers
+- 📈 Sales history & reports
+- 🛍️ Purchase entry
+- 💰 Expense tracking
+
+</details>
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
 
 ```bash
-# Navigate to mobile app directory
+# Flutter SDK
+flutter --version  # >= 3.0.0
+
+# Node.js
+node --version     # >= 18.0.0
+
+# Supabase CLI
+supabase --version # >= 1.0.0
+```
+
+### 📱 Mobile App
+
+```bash
 cd apps/mobile_app
-
-# Run all unit tests
-flutter test test/unit/
-
-# Run specific unit test
-flutter test test/unit/duplicate_submission_test.dart
-
-# Run integration tests
-flutter test test/integration/
-
-# Run load tests
-flutter test test/load/
-
-# Run the default widget test
-flutter test test/widget_test.dart
-
-# Run all tests
-flutter test
+flutter pub get
+flutter run
 ```
 
-## Test Categories
-
-### 1. Duplicate Submissions
-- Idempotency key generation and uniqueness
-- Offline queue duplicate detection
-- RPC-level idempotency
-- Invoice duplicate protection
-
-### 2. Race Conditions
-- Concurrent sales of same item
-- Simultaneous payment processing
-- Offline sync guard clauses
-- Session state consistency
-
-### 3. Concurrent Payments
-- Split payments across methods
-- Overpayment handling
-- Exact payment flow
-- Change calculation
-
-### 4. Overdue Calculations
-- Days overdue accuracy
-- Aging buckets (0-30, 31-60, 61-90, 90+)
-- Balance from ledger entries
-- Promise to pay handling
-
-### 5. Wrong Cost Inputs
-- Negative cost rejection
-- Zero cost handling
-- Large cost validation
-- Decimal precision (4 places)
-
-### 6. Negative Stock
-- Sales exceeding stock
-- Negative quantity handling
-- Stock validation before sale
-
-### 7. Offline Queue Replay
-- Queue persistence (JSON save/load)
-- Exponential backoff retry
-- Conflict detection
-- State transitions
-
-### 8. Statement Accuracy
-- Double-entry bookkeeping
-- Running balance
-- Debit/credit display
-- Void reversals
-
-### 9. Performance & Load
-- Large inventory search (1000+ items)
-- Customer reports (500+ customers)
-- Ledger display (1000+ entries)
-- Offline queue (500+ transactions)
-
-### 10. Manual Testing
-See `MANUAL_TEST_CHECKLIST.md` for 60+ manual scenarios.
-
-## Dependencies
-
-The tests use only built-in Dart test libraries. No external mock libraries are currently required.
-
-## Notes
-
-- **Unit tests**: Pure Dart logic, no Flutter widget dependencies
-- **Integration tests**: Cross-component flows, mock Supabase where needed
-- **Load tests**: Performance benchmarks with Stopwatch timing
-- **Manual tests**: Human-verified UI flows
-
-## Expected Output
+### 💻 Admin Web
 
 ```bash
-00:00 +1: loading test/widget_test.dart
-00:01 +1: All tests passed!
+cd apps/admin_web
+npm install
+npm run dev
 ```
 
-Each test file should output its timing metrics (load tests) for monitoring performance regressions.
+### 🗄️ Supabase Local
+
+```bash
+supabase start
+supabase db reset
+```
+
+---
+
+## 📁 Project Structure
+
+```
+Lucky Store/
+├── 📱 apps/
+│   ├── 📲 mobile_app/          # Flutter POS app
+│   ├── 💻 admin_web/           # React admin dashboard
+│   └── 🔍 scraper/             # Product data scraper
+├── 🌐 landing-page/           # Public website
+├── 🗄️ supabase/               # Database & Edge Functions
+├── 📖 docs/                   # Documentation
+└── 📊 data/                   # Inventory CSVs & assets
+```
+
+---
+
+## 🔧 Environment Setup
+
+```bash
+# Root environment
+cp .env.example .env
+
+# Mobile app environment
+cp apps/mobile_app/.env.example apps/mobile_app/.env
+
+# Admin web uses root .env or Vercel env vars
+```
+
+<details>
+<summary>🔐 Required Environment Variables</summary>
+
+<br>
+
+| Variable | Description |
+|----------|-------------|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_ANON_KEY` | Public API key for Supabase |
+| `GOOGLE_MAPS_API_KEY` | For address autocomplete |
+| `SSLCOMMERZ_STORE_ID` | Payment gateway credentials |
+
+</details>
+
+---
+
+## 🔌 Integrations
+
+<div align="center">
+
+| Service | Purpose |
+|---------|---------|
+| <img src="https://seeklogo.com/images/S/supabase-logo-DCC676FFE2-seeklogo.com.png" width="20"> **Supabase** | Database, Auth, Edge Functions, Real-time |
+| <img src="https://developers.google.com/static/maps/images/maps-icon_1x.png" width="20"> **Google Maps** | Address selection for deliveries |
+| 💳 **SSLCommerz** | Payment gateway (cards, mobile banking) |
+| 🖨️ **MHT-P29L Printer** | Bluetooth thermal label printer |
+
+</div>
+
+---
+
+## 🖨️ Hardware Support
+
+### MHT-P29L Label Printer
+
+- ✅ Bluetooth connection via `flutter_blue_plus`
+- ✅ TSPL command format
+- ✅ Code128 barcode support
+- ✅ MRP with strikethrough pricing
+- ✅ 40x30mm label size
+
+---
+
+## 🚀 Deployment
+
+### Landing Page (Vercel)
+
+```bash
+vercel --prod
+```
+
+**Live URL:** [https://lucky-store-pos-six.vercel.app/](https://lucky-store-pos-six.vercel.app/)
+
+### APK Distribution
+
+Download from [GitHub Releases](https://github.com/fatalmonk/luckystorePOS/releases)
+
+---
+
+## 📊 Database Schema
+
+```sql
+-- Core Tables
+products               -- Inventory items with MRP/stock
+sales                  -- Transaction records
+customers              -- Customer profiles
+inventory_adjustments  -- Stock movements
+tenant_isolation       -- Multi-tenant support
+```
+
+See [`supabase/migrations/`](supabase/migrations/) for full schema.
+
+---
+
+## 🤝 Contributing
+
+1. 🍴 Fork the repository
+2. 🌿 Create feature branch: `git checkout -b feature/amazing-feature`
+3. 💾 Commit changes: `git commit -m 'feat: Add amazing feature'`
+4. 📤 Push to branch: `git push origin feature/amazing-feature`
+5. 🔁 Open a Pull Request
+
+See [BRANCH_STRATEGY.md](docs/root-docs/BRANCH_STRATEGY.md) for detailed workflow.
+
+---
+
+## 📞 Contact
+
+<div align="center">
+
+📧 **Email:** [luckystore.1947@gmail.com](mailto:luckystore.1947@gmail.com)
+
+📱 **Phone:** 01731944544
+
+📍 **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh
+
+</div>
+
+---
+
+<div align="center">
+
+**Made with ❤️ for retailers in Bangladesh**
+
+© 2024 Lucky Store. All rights reserved.
+
+</div>

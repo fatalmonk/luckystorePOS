@@ -1,30 +1,58 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { Skeleton } from '../../components/Skeleton';
-import { Search, RefreshCw, History, AlertCircle } from 'lucide-react';
+import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { Search, RefreshCw, History, Package } from 'lucide-react';
 import { clsx } from 'clsx';
 import { StockUpdateDrawer } from './StockUpdateDrawer';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useDebounce } from '../../hooks/useDebounce';
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  sku?: string;
+  current_qty: number;
+  reorder_status: 'OK' | 'LOW' | 'OUT';
+  last_updated?: string;
+}
 
 export function InventoryListPage() {
   const { storeId } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [adjustingProduct, setAdjustingProduct] = useState<any | null>(null);
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', storeId],
     queryFn: () => api.inventory.list(storeId),
   });
 
-  const filteredItems = inventory?.filter((p: any) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredItems = useMemo(() =>
+    inventory?.filter((p: InventoryItem) =>
+      p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase())
+    ) ?? [],
+    [inventory, debouncedSearch]
   );
 
-  if (error) return <div className="error">Error loading inventory.</div>;
+  if (error) {
+    return (
+      <div className="inventory-container">
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-[var(--font-size-2xl)] font-bold">Stock Inventory</h1>
+            <p className="text-[var(--text-muted)]">Monitor and adjust stock levels.</p>
+          </div>
+        </header>
+        <div className="card">
+          <ErrorState message="Failed to load inventory." onRetry={() => refetch()} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="inventory-container">
@@ -94,23 +122,26 @@ export function InventoryListPage() {
           <tbody>
             {isLoading ? (
               Array(5).fill(0).map((_, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '200px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '60px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '80px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)' }}><Skeleton style={{ width: '100px', height: '20px' }} /></td>
-                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}><Skeleton style={{ width: '100px', height: '30px', marginLeft: 'auto' }} /></td>
+                <tr key={i} className="border-b border-[var(--border-color)]">
+                  <td className="p-4"><SkeletonBlock className="w-[200px] h-5" /></td>
+                  <td className="p-4"><SkeletonBlock className="w-[60px] h-5" /></td>
+                  <td className="p-4"><SkeletonBlock className="w-[80px] h-5" /></td>
+                  <td className="p-4"><SkeletonBlock className="w-[100px] h-5" /></td>
+                  <td className="p-4 text-right"><SkeletonBlock className="w-[100px] h-[30px] ml-auto" /></td>
                 </tr>
               ))
-            ) : filteredItems?.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <AlertCircle size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.2 }} />
-                  <p>No inventory items found.</p>
+                <td colSpan={5}>
+                  <EmptyState
+                    icon={<Package size={48} />}
+                    title="No inventory items"
+                    description="Add products to start tracking stock levels."
+                  />
                 </td>
               </tr>
             ) : (
-              filteredItems?.map((p: any) => (
+              filteredItems.map((p: any) => (
                 <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: 'var(--space-4)' }}>
                     <div style={{ fontWeight: '600' }}>{p.name}</div>

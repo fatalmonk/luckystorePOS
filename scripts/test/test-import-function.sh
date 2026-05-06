@@ -10,9 +10,13 @@ NC='\033[0m' # No Color
 echo -e "${YELLOW}🧪 Testing Import Inventory Edge Function${NC}"
 echo ""
 
-# Supabase credentials
-SUPABASE_URL="https://cckschiexzvysvdracvc.supabase.co"
-ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNja3NjaGlleHp2eXN2ZHJhY3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MDA3NjMsImV4cCI6MjA3ODk3Njc2M30.1htIKuXVNs9mtRSktS2cBk2QvAriXpYgipIYuVuI3T8"
+# Supabase credentials (read from environment)
+if [ -z "${VITE_SUPABASE_URL:-}" ]; then
+  echo -e "${RED}Error: VITE_SUPABASE_URL is not set. Export it before running this script.${NC}"
+  exit 1
+fi
+SUPABASE_URL="${VITE_SUPABASE_URL}"
+ANON_KEY="${VITE_SUPABASE_ANON_KEY:-}"
 FUNCTION_URL="${SUPABASE_URL}/functions/v1/import-inventory"
 
 # Check if CSV file is provided

@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
+import '../../../../core/services/printer/printer_test_screen.dart';
+import '../../../inventory/presentation/screens/bulk_label_print_screen.dart';
 
 /// Adaptive home page that shows different layouts based on device size.
 class HomePage extends StatelessWidget {
@@ -24,6 +26,32 @@ class HomePage extends StatelessWidget {
           appBar: AppBar(
             title: const Text('Lucky Store POS'),
             actions: [
+              // Bulk Label Print
+              IconButton(
+                icon: const Icon(Icons.print_outlined),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BulkLabelPrintScreen(),
+                    ),
+                  );
+                },
+                tooltip: 'Bulk Print Labels',
+              ),
+              // Printer Test (for debugging)
+              IconButton(
+                icon: const Icon(Icons.bug_report_outlined),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PrinterTestScreen(),
+                    ),
+                  );
+                },
+                tooltip: 'Test Printer',
+              ),
               IconButton(
                 icon: const Icon(Icons.shopping_cart),
                 onPressed: () => posProvider.openCart(),

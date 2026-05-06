@@ -8,31 +8,16 @@
  * Usage: node scripts/ops/import-competitor-data.js
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { createSupabaseClient, getSupabaseUrl } from '../lib/supabase-client.js';
+import { readFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables from repo root (.env then .env.local)
-const repoRoot = join(__dirname, '..', '..');
-for (const name of ['.env', '.env.local']) {
-  const envPath = join(repoRoot, name);
-  if (existsSync(envPath)) {
-    config({ path: envPath });
-  }
-}
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn(
-    '⚠️  SUPABASE_SERVICE_ROLE_KEY not set. Add it to .env or .env.local at the repo root.'
-  );
-}
-
 // Supabase configuration
-const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
+const SUPABASE_URL = getSupabaseUrl();
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_SERVICE_KEY) {
@@ -41,11 +26,12 @@ if (!SUPABASE_SERVICE_KEY) {
   console.error('Please create .env or .env.local at the repo root with:');
   console.error('SUPABASE_SERVICE_ROLE_KEY=your-full-service-role-key-here');
   console.error('');
-  console.error('Get the key from: https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/settings/api');
+  const projectRef = SUPABASE_URL.replace('https://', '').replace('.supabase.co', '');
+  console.error(`Get the key from: https://app.supabase.com/project/${projectRef}/settings/api`);
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const supabase = createSupabaseClient(SUPABASE_SERVICE_KEY);
 const COMPETITOR_NAME = 'Shwapno';
 
 // CSV files directory

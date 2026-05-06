@@ -1,0 +1,375 @@
+/* ================================================================== */
+/* Receipt Preview Modal                                              */
+/* ================================================================== */
+
+.receipt-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  width: 95vw;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.receipt-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.receipt-modal-header h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.receipt-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.receipt-sale-number {
+  padding: var(--space-2) var(--space-6);
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.receipt-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- Thermal Receipt Paper (58mm) ---- */
+
+.receipt-paper {
+  width: 100%;
+  max-width: 280px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.receipt-content {
+  padding: var(--space-4);
+  text-align: center;
+  color: #111;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.receipt-store-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.receipt-header-msg {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: var(--space-2);
+  font-style: italic;
+}
+
+.receipt-footer-msg {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: var(--space-2);
+  font-style: italic;
+}
+
+.receipt-date {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: var(--space-1);
+}
+
+.receipt-sale-id {
+  font-size: 12px;
+  color: #555;
+}
+
+.receipt-divider {
+  border-top: 2px solid #111;
+  margin: var(--space-3) 0;
+}
+
+.receipt-divider--dashed {
+  border-top: 1px dashed #888;
+}
+
+.receipt-items {
+  text-align: left;
+}
+
+.receipt-item {
+  margin-bottom: var(--space-2);
+}
+
+.receipt-item-name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.receipt-item-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #555;
+}
+
+.receipt-item-total {
+  font-weight: 600;
+  color: #111;
+}
+
+.receipt-totals {
+  text-align: left;
+}
+
+.receipt-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.receipt-total-row--grand {
+  font-size: 16px;
+  font-weight: 700;
+  padding: var(--space-2) 0;
+}
+
+.receipt-total-row--discount {
+  color: var(--color-danger);
+}
+
+.receipt-total-row--change {
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.receipt-thankyou {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: var(--space-1);
+}
+
+/* ================================================================== */
+/* Mobile Cart Sheet                                                  */
+/* ================================================================== */
+
+.mobile-cart-trigger {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-cart-trigger {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: var(--color-primary);
+    color: #000;
+    font-weight: 700;
+    font-size: var(--font-size-base);
+    padding: var(--space-4) var(--space-6);
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+    min-height: 56px;
+  }
+
+  .mobile-cart-trigger:hover {
+    background: var(--color-primary-hover);
+  }
+
+  .mobile-cart-badge {
+    background: #000;
+    color: var(--color-primary);
+    border-radius: 9999px;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    margin-left: var(--space-2);
+  }
+
+  .mobile-cart-total {
+    font-size: var(--font-size-lg);
+  }
+
+  .cart-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    animation: fadeIn 150ms ease-out;
+  }
+
+  .cart-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 51;
+    background: var(--bg-card);
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 200ms ease-out;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .cart-sheet-handle {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-3) 0 var(--space-1);
+    flex-shrink: 0;
+  }
+
+  .cart-sheet-handle-bar {
+    width: 40px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+
+  .cart-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4) var(--space-3);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+
+  .cart-sheet-header h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+  }
+
+  .cart-sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+  }
+
+  .cart-sheet-footer {
+    padding: var(--space-4);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+
+  /* Desktop billing panel hidden on mobile — replaced by sheet */
+  .pos-billing {
+    display: none;
+  }
+
+  /* When sheet is open, prevent background scroll */
+  .pos-container--sheet-open {
+    overflow: hidden;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ================================================================== */
+/* Print Styles — Thermal Receipt                                     */
+/* ================================================================== */
+
+@media print {
+  /* Hide everything except the receipt */
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-paper,
+  .receipt-paper * {
+    visibility: visible;
+  }
+
+  .receipt-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    max-width: 58mm;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    font-size: 12px;
+  }
+
+  .receipt-content {
+    padding: 4mm 2mm;
+  }
+
+  .receipt-store-name {
+    font-size: 16px;
+  }
+
+  .receipt-total-row--grand {
+    font-size: 14px;
+  }
+
+  /* Remove the receipt-modal wrapper chrome */
+  .receipt-modal,
+  .receipt-scroll-area {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+}

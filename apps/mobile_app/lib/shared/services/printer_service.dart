@@ -10,9 +10,10 @@
 /// This file re-exports it for convenience and adds the PDF receipt
 /// and label printing capabilities.
 
-// Re-export the canonical printer service and its dependencies
+// Re-export the canonical printer service and its models
 export '../../core/services/printer/printer_service.dart';
-export '../../core/services/printer/print_retry_queue.dart';
+export '../../core/services/printer/printer_models.dart';
+export '../../core/services/printer/printer_config.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
@@ -21,9 +22,23 @@ import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import '../../models/pos_models.dart';
 
-/// PDF Receipt Printer - generates and prints PDF receipts
-/// using the `printing` package (works on all platforms including web).
-class PdfReceiptPrinter {
+/// Legacy wrapper for backward compatibility.
+/// Provides [printEscPosReceipt] and [printPdfReceipt] methods
+/// that delegate to the canonical services.
+class ReceiptPrinterService {
+  static final ReceiptPrinterService _instance = ReceiptPrinterService._internal();
+  factory ReceiptPrinterService() => _instance;
+  ReceiptPrinterService._internal();
+
+  /// Print ESC/POS receipt via Bluetooth/network printer.
+  /// Currently delegates to PDF printing as the thermal printer path
+  /// requires a connected [PrinterService].
+  Future<void> printEscPosReceipt(SaleResult sale) async {
+    // For now, fall back to PDF printing on all platforms.
+    // TODO: Integrate with PrinterService when a printer is connected.
+    return printPdfReceipt(sale);
+  }
+
   /// Generate and print/share a PDF receipt using the 'printing' package.
   Future<void> printPdfReceipt(SaleResult sale, {String storeName = 'Lucky Store'}) async {
     final pdf = pw.Document();

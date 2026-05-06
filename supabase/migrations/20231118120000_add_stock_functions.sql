@@ -37,7 +37,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Add store_id to users table (for cashier's default store)
-ALTER TABLE users ADD COLUMN IF NOT EXISTS store_id uuid REFERENCES stores(id);
+-- Only run if users table exists (it may be created in a later migration)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'users' AND schemaname = 'public') THEN
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS store_id uuid REFERENCES stores(id);
+    END IF;
+END $$;
 
 -- Create index on stock_levels for better performance
 CREATE INDEX IF NOT EXISTS idx_stock_levels_store_item ON stock_levels(store_id, item_id);

@@ -111,27 +111,61 @@ class AppUtils {
   }
 }
 
-/// Logging utility
+/// Production-safe logging utility
+/// Logs are only output in debug/profile builds, never in release builds
 class Logger {
   static const String _prefix = '✨ LuckyStore ';
-  
+
+  /// Check if running in release mode
+  static bool get _isRelease => kReleaseMode;
+
+  /// Log informational message (debug builds only)
   static void info(String message) {
-    debugPrint('$_prefix$message');
+    if (_isRelease) return;
+    // ignore: avoid_print
+    print('$_prefix[INFO] $message');
   }
-  
+
+  /// Log warning message (debug builds only)
   static void warning(String message) {
-    debugPrint('$_prefix⚠️ $message');
+    if (_isRelease) return;
+    // ignore: avoid_print
+    print('$_prefix⚠️ [WARN] $message');
   }
-  
+
+  /// Log error message (always logged, but sanitized in release)
   static void error(String message, [Object? error, StackTrace? stack]) {
+    if (_isRelease) {
+      // In release, only log to crash reporting service (not console)
+      // TODO: Integrate with Sentry/Crashlytics here
+      return;
+    }
+    // ignore: avoid_print
+    print('$_prefix❌ [ERROR] $message');
     if (error != null) {
-      debugPrint('$_prefix❌ $message - Error: $error');
-    } else {
-      debugPrint('$_prefix❌ $message');
+      // ignore: avoid_print
+      print('  Error: $error');
+    }
+    if (stack != null) {
+      // ignore: avoid_print
+      print('  Stack: $stack');
     }
   }
-  
+
+  /// Log debug message (debug builds only)
   static void debug(String message) {
-    debugPrint('$_prefix🔍 $message');
+    if (_isRelease) return;
+    // ignore: avoid_print
+    print('$_prefix🔍 [DEBUG] $message');
+  }
+
+  /// Log sensitive data (never logged to console, only to secure crash reporting)
+  static void sensitive(String message, [Object? data]) {
+    // Never log sensitive data to console
+    // Only send to secure crash reporting in production
+    // ignore: avoid_print
+    if (!_isRelease) {
+      print('$_prefix🔒 [SENSITIVE] $message (hidden in release)');
+    }
   }
 }

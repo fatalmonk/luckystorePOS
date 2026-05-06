@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
+import { Modal } from '../../components/ui/Modal';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 
 interface ProductAddModalProps {
   isOpen: boolean;
@@ -46,105 +49,24 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
   };
 
   return (
-    <div 
-      className="modal-overlay"
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        backdropFilter: 'blur(2px)'
-      }}
-    >
-      <div 
-        className="modal-content card"
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: '500px',
-          backgroundColor: 'var(--bg-card)',
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 'var(--space-6)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-lg)'
-        }}
-      >
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700' }}>Add New Product</h2>
-          <button onClick={onClose} style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
-        </header>
+    <Modal isOpen={isOpen} onClose={onClose} title="Add New Product" className="max-w-2xl">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <Input 
+            label="Product Name"
+            value={formData.name} 
+            onChange={e => setFormData({...formData, name: e.target.value})}
+            required
+            placeholder="e.g. Dano Daily Pusti 1kg"
+            className="col-span-2"
+          />
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', overflowY: 'auto' }}>
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Product Name</label>
-            <input 
-              type="text" 
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})}
-              required
-              placeholder="e.g. Dano Daily Pusti 1kg"
-              style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-main)' }}
-            />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Price (৳)</label>
-              <input 
-                type="number" 
-                value={formData.price} 
-                onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
-                required
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-main)' }}
-              />
-            </div>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Cost (৳)</label>
-              <input 
-                type="number" 
-                value={formData.cost} 
-                onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})}
-                required
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-main)' }}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>SKU</label>
-              <input 
-                type="text" 
-                value={formData.sku} 
-                onChange={e => setFormData({...formData, sku: e.target.value})}
-                placeholder="DDP-001"
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-main)' }}
-              />
-            </div>
-            <div className="form-group">
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Barcode</label>
-              <input 
-                type="text" 
-                value={formData.barcode} 
-                onChange={e => setFormData({...formData, barcode: e.target.value})}
-                placeholder="LS-000001"
-                style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-main)' }}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Category</label>
+          <div className="flex flex-col gap-1 col-span-2">
+            <label className="text-sm font-medium text-text-main">Category</label>
             <select 
               value={formData.category_id} 
               onChange={e => setFormData({...formData, category_id: e.target.value})}
-              style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-main)' }}
+              className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Select Category</option>
               {categories?.map(cat => (
@@ -153,29 +75,49 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
             </select>
           </div>
 
-          <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--border-color)' }}>
-            <button 
-              type="submit" 
-              disabled={createMutation.isPending}
-              style={{ 
-                width: '100%',
-                backgroundColor: 'var(--color-primary)', 
-                color: 'white', 
-                padding: 'var(--space-3)', 
-                borderRadius: 'var(--radius-md)',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 'var(--space-2)',
-                opacity: createMutation.isPending ? 0.7 : 1
-              }}
-            >
-              <Plus size={18} /> {createMutation.isPending ? 'Adding...' : 'Add Product'}
-            </button>
+          <Input 
+            label="Sales Price (৳)"
+            type="number" 
+            value={formData.price} 
+            onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
+            required
+          />
+          <Input 
+            label="Purchase Price (৳)"
+            type="number" 
+            value={formData.cost} 
+            onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})}
+            required
+          />
+
+          <div className="flex items-end gap-2">
+            <Input 
+              label="Item Code (SKU)"
+              value={formData.sku} 
+              onChange={e => setFormData({...formData, sku: e.target.value})}
+              placeholder="DDP-001"
+              className="flex-1"
+            />
+            <Button type="button" variant="outline" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
+              Generate
+            </Button>
           </div>
-        </form>
-      </div>
-    </div>
+          
+          <Input 
+            label="Barcode"
+            value={formData.barcode} 
+            onChange={e => setFormData({...formData, barcode: e.target.value})}
+            placeholder="LS-000001"
+          />
+        </div>
+
+        <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-border-light">
+          <Button variant="secondary" onClick={onClose} type="button">Cancel</Button>
+          <Button type="submit" loading={createMutation.isPending} icon={<Plus size={18} />}>
+            Add Product
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

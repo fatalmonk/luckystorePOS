@@ -21,6 +21,7 @@ apps/*/.env.*
 *.pfx
 *.crt
 *.csr
+*client_secret*.json
 
 # -----------------------------------------------------------------------------
 # Node / JS / Package Managers
@@ -191,3 +192,4 @@ apply_*_v2.sql
 # app.env is safe-to-bundle (anon key only) but still shouldn't be committed
 # to avoid leaking even non-secret config. Manage via CI secrets.
 apps/mobile_app/assets/app.env
+apps/mobile_app/flutter

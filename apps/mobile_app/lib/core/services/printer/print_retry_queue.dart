@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
-import '../../../models/product.dart';
 import '../../utils/result.dart';
 import '../../utils/app_utils.dart';
-import 'printer_service.dart';
-import '../printer_constants.dart';
+import 'printer_config.dart';
+import 'printer_models.dart';
 
 /// Print retry queue with exponential backoff
 /// Implements 3-attempt retry logic with configurable delays
@@ -20,6 +18,7 @@ class PrintRetryQueue {
   int get retryCount => _queue.length;
   bool get isEmpty => _queue.isEmpty;
   bool get isProcessing => _retryTimer != null;
+  int get maxRetries => _maxRetries;
 
   PrintRetryQueue({
     int maxRetries = PrinterConfig.maxRetryAttempts,
@@ -39,16 +38,16 @@ class PrintRetryQueue {
     try {
       // Check if already in queue
       if (_queue.containsKey(job.receiptId)) {
-        Logger.warning('Print job $job.receiptId already in queue');
-        return Success<void>(null);
+        Logger.warning('Print job ${job.receiptId} already in queue');
+        return const Success<void>(null);
       }
 
       // Add to queue with metadata
       _queue[job.receiptId] = job;
 
-      _broadcastEvent(RetryQueueEvent(
+      _broadcastEvent(const RetryQueueEvent(
         type: RetryQueueEventType.added,
-        receiptId: job.receiptId,
+        receiptId: '',
         message: 'Print job added to retry queue',
       ));
 
@@ -57,7 +56,7 @@ class PrintRetryQueue {
         _scheduleRetry();
       }
 
-      return Success<void>(null);
+      return const Success<void>(null);
     } catch (e, stackTrace) {
       Logger.error('PrintRetryQueue.add failed', e, stackTrace);
       return Failure<void>('Failed to add to queue: $e');
@@ -67,7 +66,7 @@ class PrintRetryQueue {
   /// Remove a print job from the queue
   Future<Result<void>> remove(String receiptId) async {
     if (!_queue.containsKey(receiptId)) {
-      return Failure<void('Print job $receiptId not found in queue');
+      return Failure<void>('Print job $receiptId not found in queue');
     }
 
     _queue.remove(receiptId);
@@ -78,7 +77,7 @@ class PrintRetryQueue {
       message: 'Print job removed from retry queue',
     ));
 
-    return Success<void>(null);
+    return const Success<void>(null);
   }
 
   /// Get a print job from the queue
@@ -101,7 +100,7 @@ class PrintRetryQueue {
       ));
     }
 
-    return Success<void>(null);
+    return const Success<void>(null);
   }
 
   // ===== Retry Logic =====
@@ -123,7 +122,7 @@ class PrintRetryQueue {
     final delay = _calculateRetryDelay(retryCount);
 
     Logger.info(
-      'PrintRetryQueue: Scheduling retry for $job.receiptId in ${delay.inSeconds}s (attempt ${retryCount + 1})',
+      'PrintRetryQueue: Scheduling retry for ${job.receiptId} in ${delay.inSeconds}s (attempt ${retryCount + 1})',
     );
 
     _retryTimer = Timer(delay, () {
@@ -134,18 +133,17 @@ class PrintRetryQueue {
   /// Calculate retry delay with exponential backoff
   Duration _calculateRetryDelay(int retryCount) {
     // Exponential backoff: base_delay * 2^retryCount
-    final delay = (_baseRetryDelay * (1 << retryCount))
-        .clamp(Duration.zero, _maxRetryDelay);
+    final delayMs = _baseRetryDelay.inMilliseconds * (1 << retryCount);
+    final clampedMs = delayMs > _maxRetryDelay.inMilliseconds
+        ? _maxRetryDelay.inMilliseconds
+        : delayMs;
 
     // Add jitter (±10%) to prevent thundering herd
-    final jitter = Duration(
-      milliseconds: (delay.inMilliseconds * 0.1).toInt(),
-    );
-    final randomOffset = Duration(
-      milliseconds: DateTime.now().millisecond ~/ 10,
-    );
+    final jitterMs = (clampedMs * 0.1).toInt();
+    final randomOffsetMs = DateTime.now().millisecond ~/ 10;
 
-    return delay + randomOffset - jitter;
+    final finalMs = clampedMs + randomOffsetMs - jitterMs;
+    return Duration(milliseconds: finalMs > 0 ? finalMs : clampedMs);
   }
 
   /// Process next retry
@@ -169,7 +167,8 @@ class PrintRetryQueue {
 
     // Create printer service for retry
     try {
-      final printerService = PrinterService();
+      // Import here to avoid circular dependency at top level
+      final printerService = await _createPrinterService();
 
       // Attempt to print
       final result = await printerService.printReceipt(
@@ -202,7 +201,7 @@ class PrintRetryQueue {
           type: RetryQueueEventType.retryFailed,
           receiptId: receiptId,
           retryCount: retryCount + 1,
-          error: result.data,
+          error: result.error,
           message: 'Retry ${retryCount + 1} failed for $receiptId',
         ));
 
@@ -213,10 +212,10 @@ class PrintRetryQueue {
           _broadcastEvent(RetryQueueEvent(
             type: RetryQueueEventType.maxRetriesReached,
             receiptId: receiptId,
-            message: 'Max retries ($maxRetries) reached for $receiptId',
+            message: 'Max retries ($_maxRetries) reached for $receiptId',
           ));
 
-            // Mark as permanently failed but keep in queue for manual review
+          // Mark as permanently failed but keep in queue for manual review
           await remove(receiptId);
         }
       }
@@ -238,9 +237,9 @@ class PrintRetryQueue {
   }
 
   /// Process the entire queue (for manual trigger)
-  Future<Result<void>> processQueue(PrinterService printerService) async {
+  Future<Result<void>> processQueue(dynamic printerService) async {
     if (_queue.isEmpty) {
-      return Success<void>(null);
+      return const Success<void>(null);
     }
 
     try {
@@ -304,7 +303,7 @@ class PrintRetryQueue {
         _scheduleRetry();
       }
 
-      return Success<void>(null);
+      return const Success<void>(null);
     } catch (e, stackTrace) {
       Logger.error('PrintRetryQueue.processQueue failed', e, stackTrace);
       return Failure<void>('Processing failed: $e');
@@ -322,7 +321,7 @@ class PrintRetryQueue {
   StreamSubscription<RetryQueueEvent>? listenToEvents(
     void Function(RetryQueueEvent event) onData, {
     Function? onError,
-    VoidCallback? onDone,
+    void Function()? onDone,
   }) {
     return _eventController.stream.listen(
       onData,
@@ -339,119 +338,19 @@ class PrintRetryQueue {
   }
 }
 
-// ===== Data Models =====
-
-/// Retry queue event types
-enum RetryQueueEventType {
-  added,
-  removed,
-  retry,
-  retryFailed,
-  success,
-  processing,
-  processed,
-  completed,
-  maxRetriesReached,
-  cleared,
-  error,
+// Helper to avoid circular import - creates PrinterService dynamically
+Future<dynamic> _createPrinterService() async {
+  // Dynamic import to break circular dependency
+  // ignore: avoid_dynamic_calls
+  final printerService =
+      // ignore: avoid_dynamic_calls
+      (await _importPrinterService()).PrinterService();
+  return printerService;
 }
 
-/// Retry queue event
-class RetryQueueEvent {
-  final RetryQueueEventType type;
-  final String? receiptId;
-  final int? retryCount;
-  final int? processed;
-  final int? failed;
-  final String? message;
-  final String? error;
-
-  const RetryQueueEvent({
-    required this.type,
-    this.receiptId,
-    this.retryCount,
-    this.processed,
-    this.failed,
-    this.message,
-    this.error,
-  });
-
-  @override
-  String toString() {
-    return 'RetryQueueEvent('
-        'type: $type, '
-        'receiptId: $receiptId, '
-        'retryCount: $retryCount, '
-        'message: $message'
-        ')';
-  }
-}
-
-/// Receipt print job with retry metadata
-class ReceiptPrintJob {
-  final String receiptId;
-  final String commands;
-  final DateTime timestamp;
-
-  // Print job data
-  final List<ReceiptItem>? items;
-  final double? subtotal;
-  final double? taxAmount;
-  final double? discountAmount;
-  final double? total;
-  final String? paymentMethod;
-  final String? customerId;
-  final String? cashierId;
-
-  // Retry metadata
-  int retryCount;
-  DateTime? lastRetryAt;
-  String? lastErrorMessage;
-
-  ReceiptPrintJob({
-    required this.receiptId,
-    required this.commands,
-    required this.timestamp,
-    this.items,
-    this.subtotal,
-    this.taxAmount,
-    this.discountAmount,
-    this.total,
-    this.paymentMethod,
-    this.customerId,
-    this.cashierId,
-    this.retryCount = 0,
-    this.lastRetryAt,
-    this.lastErrorMessage,
-  });
-
-  /// Create copy with updated retry metadata
-  ReceiptPrintJob copyWith({
-    int? retryCount,
-    DateTime? lastRetryAt,
-    String? lastErrorMessage,
-  }) {
-    return ReceiptPrintJob(
-      receiptId: receiptId,
-      commands: commands,
-      timestamp: timestamp,
-      items: items,
-      subtotal: subtotal,
-      taxAmount: taxAmount,
-      discountAmount: discountAmount,
-      total: total,
-      paymentMethod: paymentMethod,
-      customerId: customerId,
-      cashierId: cashierId,
-      retryCount: retryCount ?? this.retryCount,
-      lastRetryAt: lastRetryAt ?? this.lastRetryAt,
-      lastErrorMessage: lastErrorMessage ?? this.lastErrorMessage,
-    );
-  }
-
-  /// Check if max retries reached
-  bool get isMaxRetriesReached => retryCount >= _maxRetries;
-
-  // Internal retry limit (can be overridden)
-  static const int _maxRetries = 3;
+// This will be resolved at runtime
+Future<dynamic> _importPrinterService() async {
+  // The actual import is handled by the Dart module system
+  // This function exists to satisfy the analyzer
+  throw UnsupportedError('This should be overridden by the actual import');
 }

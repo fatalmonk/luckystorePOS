@@ -55,8 +55,9 @@ void main() {
       final buckets = {'0-30': 0, '31-60': 0, '61-90': 0, '90+': 0};
       for (final c in customers) {
         final days = c['days_overdue'] as int;
-        if (days <= 30) buckets['0-30'] = buckets['0-30']! + 1;
-        else if (days <= 60) buckets['31-60'] = buckets['31-60']! + 1;
+        if (days <= 30) {
+          buckets['0-30'] = buckets['0-30']! + 1;
+        } else if (days <= 60) buckets['31-60'] = buckets['31-60']! + 1;
         else if (days <= 90) buckets['61-90'] = buckets['61-90']! + 1;
         else buckets['90+'] = buckets['90+']! + 1;
       }

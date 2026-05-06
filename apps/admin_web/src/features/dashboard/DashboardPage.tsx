@@ -1,111 +1,193 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { DollarSign, AlertTriangle, Users, Package } from 'lucide-react';
+import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-react';
+import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
+import { useRealtimeSubscription } from '../../hooks/useRealtime';
+import { useNotify } from '../../components/Notification';
+import { MetricCard } from '../../components/data-display/MetricCard';
 
 export function DashboardPage() {
   const { storeId } = useAuth();
+  const { notify } = useNotify();
 
-  const { data: stats, isLoading, error } = useQuery({
+  const remindersQuery = useQuery({
+    queryKey: ['dashboard-reminders', storeId],
+    queryFn: () => api.reminders.list(storeId!),
+    enabled: !!storeId,
+  });
+
+  const reminders = remindersQuery.data;
+
+  // Realtime: show toast when a new sale is inserted on another device
+  useRealtimeSubscription({
+    table: 'sales',
+    event: 'INSERT',
+    filter: storeId ? `store_id=eq.${storeId}` : undefined,
+    invalidateKeys: [['dashboard-stats', storeId], ['low-stock', storeId]],
+    onEvent: () => {
+      notify('New sale recorded on another device', 'success');
+    },
+  });
+
+  const statsQuery = useQuery({
     queryKey: ['dashboard-stats', storeId],
     queryFn: () => api.dashboard.getStats(storeId),
   });
-
-  const { data: lowStock } = useQuery({
+  const lowStockQuery = useQuery({
     queryKey: ['low-stock', storeId],
     queryFn: () => api.dashboard.getLowStock(storeId),
   });
 
-  if (isLoading) return <div className="skeleton">Loading dashboard...</div>;
-  if (error) return <div className="error">Error loading dashboard</div>;
+  const stats = statsQuery.data;
+  const lowStock = lowStockQuery.data;
+  const isLoading = statsQuery.isLoading;
+  const isError = statsQuery.isError;
+
+  if (isLoading) {
+    return (
+      <div className="dashboard-container">
+        <header className="mb-8">
+          <SkeletonBlock className="w-[200px] h-7" />
+          <SkeletonBlock className="w-[260px] h-[18px] mt-2" />
+        </header>
+        <div className="dashboard-grid">
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+        <section className="mt-12">
+          <SkeletonBlock className="w-[160px] h-[22px] mb-6" />
+          <div className="card skeleton-block h-[200px] opacity-30" />
+        </section>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="dashboard-container">
+        <ErrorState message="Failed to load dashboard data." onRetry={() => { statsQuery.refetch(); lowStockQuery.refetch(); }} />
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
       <header style={{ marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Shop Overview</h1>
+        <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '700', color: 'var(--text-main)' }}>Welcome {stats?.user?.name || 'Mohammed'}</h1>
         <p style={{ color: 'var(--text-muted)' }}>Here's what's happening today.</p>
       </header>
 
       <div className="dashboard-grid">
-        <StatCard 
-          title="Today Sales" 
-          value={`$${stats?.total_sales || '0.00'}`} 
-          icon={<DollarSign color="var(--color-success)" />} 
+        <MetricCard
+          title="To Receive"
+          value={`৳${stats?.to_receive || '0.00'}`}
+          icon={<DollarSign size={20} />}
+          color="success"
         />
-        <StatCard 
-          title="Low Stock" 
-          value={lowStock?.length || 0} 
-          icon={<AlertTriangle color="var(--color-warning)" />} 
-          badge={lowStock?.length > 0 ? 'Action Needed' : ''}
+        <MetricCard
+          title="To Give"
+          value={`৳${stats?.to_give || '0.00'}`}
+          icon={<DollarSign size={20} />}
+          color="danger"
         />
-        <StatCard 
-          title="Open Sessions" 
-          value={stats?.open_sessions || 0} 
-          icon={<Users color="var(--color-primary)" />} 
+        <MetricCard
+          title="Today Sales"
+          value={`৳${stats?.total_sales || '0.00'}`}
+          icon={<TrendingUp size={20} />}
+          color="success"
         />
-        <StatCard 
-          title="Products" 
-          value={stats?.total_products || 0} 
-          icon={<Package color="var(--color-secondary)" />} 
+        <MetricCard
+          title="Purchase"
+          value={`৳${stats?.total_purchases || '0.00'}`}
+          icon={<Package size={20} />}
+          color="info"
+        />
+        <MetricCard
+          title="Expense"
+          value={`৳${stats?.total_expenses || '0.00'}`}
+          icon={<AlertTriangle size={20} />}
+          color="danger"
         />
       </div>
 
-      <section style={{ marginTop: 'var(--space-12)' }}>
-        <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-6)' }}>
-          Top Products Today
-        </h2>
-        <div className="card">
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
-                <th style={{ padding: 'var(--space-3)' }}>Product</th>
-                <th style={{ padding: 'var(--space-3)' }}>Qty Sold</th>
-                <th style={{ padding: 'var(--space-3)' }}>Revenue</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats?.top_products?.map((p: any) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: 'var(--space-3)' }}>{p.name}</td>
-                  <td style={{ padding: 'var(--space-3)' }}>{p.qty}</td>
-                  <td style={{ padding: 'var(--space-3)' }}>${p.revenue}</td>
-                </tr>
-              )) || (
-                <tr>
-                  <td colSpan={3} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No sales data yet today.
-                  </td>
-                </tr>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', marginTop: 'var(--space-8)' }}>
+        {/* Left Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <section>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
+              Cashflow Overview
+            </h2>
+            <div className="card" style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+              Chart Placeholder (Revenue vs Expenses)
+            </div>
+          </section>
+
+          <section>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
+              Low Stock Alerts
+            </h2>
+            <div className="card">
+              {lowStock && lowStock.length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  {lowStock.slice(0, 5).map((item: any) => (
+                    <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
+                      <span>{item.name}</span>
+                      <span style={{ color: 'var(--color-danger)', fontWeight: '600' }}>{item.quantity} left</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  icon={<AlertTriangle size={48} />}
+                  title="Stock is healthy"
+                  description="No items are currently running low."
+                />
               )}
-            </tbody>
-          </table>
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
-  );
-}
 
-function StatCard({ title, value, icon, badge }: any) {
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>{title}</span>
-        {icon}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-        <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>{value}</span>
-        {badge && (
-          <span style={{ 
-            fontSize: 'var(--font-size-xs)', 
-            backgroundColor: 'rgba(245, 158, 11, 0.1)', 
-            color: 'var(--color-warning)',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            fontWeight: '600'
-          }}>
-            {badge}
-          </span>
-        )}
+        {/* Right Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <section>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
+              Total Balance
+            </h2>
+            <div className="card" style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>Current Available Balance</div>
+              <div style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '700', color: 'var(--color-success)' }}>৳{stats?.total_balance || '0.00'}</div>
+            </div>
+          </section>
+
+          <section>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
+              Upcoming Reminders
+            </h2>
+            <div className="card">
+              {reminders && reminders.length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {reminders.slice(0, 5).map((reminder: any) => (
+                    <li key={reminder.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{reminder.title}</span>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{new Date(reminder.reminderDate).toLocaleDateString()}</span>
+                      </div>
+                      {reminder.description && (
+                        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{reminder.description}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  icon={<Bell size={48} />}
+                  title="No upcoming reminders"
+                  description="You are all caught up."
+                />
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

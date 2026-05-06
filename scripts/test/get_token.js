@@ -1,10 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
-import 'dotenv/config';
+import { createSupabaseClient, getSupabaseUrl } from '../lib/supabase-client.js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const supabase = createClient(supabaseUrl, serviceRoleKey);
+const supabaseUrl = getSupabaseUrl();
+const supabase = createSupabaseClient(serviceRoleKey);
 
 async function run() {
   const email = 'temp_import_admin_' + Date.now() + '@luckystore.com';
@@ -31,7 +29,7 @@ async function run() {
     full_name: 'Temp Admin'
   });
   
-  const supabaseClient = createClient(supabaseUrl, process.env.VITE_SUPABASE_ANON_KEY);
+  const supabaseClient = createSupabaseClient(process.env.VITE_SUPABASE_ANON_KEY);
   const { data: sessionData, error: loginErr } = await supabaseClient.auth.signInWithPassword({
     email,
     password

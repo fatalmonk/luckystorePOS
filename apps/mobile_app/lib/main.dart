@@ -7,7 +7,6 @@ import 'theme/app_theme.dart';
 import 'features/auth/presentation/screens/auth_gate.dart';
 import 'features/auth/presentation/screens/startup_config_error_screen.dart';
 import 'shared/providers/auth_provider.dart';
-import 'shared/providers/cart_provider.dart';
 import 'shared/providers/pos_provider.dart';
 import 'shared/controllers/app_access_controller.dart';
 import 'features/checkout/presentation/screens/checkout_screen.dart';
@@ -160,7 +159,6 @@ class LuckyStoreApp extends StatelessWidget {
         return MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => CartProvider()),
             ChangeNotifierProvider(create: (_) => PosProvider()),
             ChangeNotifierProxyProvider<AuthProvider, AppAccessController>(
               create: (_) => AppAccessController(startupResult: startupResult),

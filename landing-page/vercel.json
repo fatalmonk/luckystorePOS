@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/privacy",
+      "dest": "/privacy-policy.html"
+    },
+    {
+      "src": "/terms",
+      "dest": "/terms-of-service.html"
+    }
+  ]
+}
