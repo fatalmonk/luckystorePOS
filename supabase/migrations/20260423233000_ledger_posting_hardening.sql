@@ -6,11 +6,8 @@
 DO $$
 BEGIN
   IF to_regclass('public.ledger_posting_queue') IS NOT NULL THEN
-    ALTER TABLE public.ledger_posting_queue
-      ADD COLUMN IF NOT EXISTS next_retry_at timestamptz NOT NULL DEFAULT now();
-
-    CREATE INDEX IF NOT EXISTS idx_lpq_retry_schedule
-      ON public.ledger_posting_queue (status, next_retry_at, priority DESC, created_at);
+    EXECUTE 'ALTER TABLE public.ledger_posting_queue ADD COLUMN IF NOT EXISTS next_retry_at timestamptz NOT NULL DEFAULT now()';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_lpq_retry_schedule ON public.ledger_posting_queue (status, next_retry_at, priority DESC, created_at)';
   END IF;
 END $$;
 

@@ -118,7 +118,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.update_reminder(UUID, TEXT, TEXT, DATE, TEXT, BOOLEAN) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.update_reminder(UUID, TEXT, DATE, TEXT, BOOLEAN) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.update_reminder(UUID, TEXT, TEXT, DATE, TEXT, BOOLEAN) TO authenticated;
 
 -- RPC: delete_reminder
 CREATE OR REPLACE FUNCTION public.delete_reminder(

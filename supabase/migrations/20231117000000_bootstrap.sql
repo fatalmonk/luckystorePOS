@@ -78,6 +78,8 @@ CREATE TABLE IF NOT EXISTS public.categories (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_name_unique ON public.categories(name);
+
 -- ---------------------------------------------------------------------------
 -- 5) items — single canonical inventory table
 -- ---------------------------------------------------------------------------
