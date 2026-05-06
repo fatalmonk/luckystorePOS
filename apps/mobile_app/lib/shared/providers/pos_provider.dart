@@ -689,24 +689,6 @@ class PosProvider extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, int>> _loadStockByItemIds(List<String> itemIds) async {
-    if (_storeId == null || itemIds.isEmpty) return const {};
-    final rows = await _supabase
-        .from('stock_levels')
-        .select('item_id, qty_on_hand')
-        .eq('store_id', _storeId!)
-        .inFilter('item_id', itemIds);
-    final result = <String, int>{};
-    for (final raw in (rows as List)) {
-      final row = raw as Map<String, dynamic>;
-      final itemId = row['item_id'] as String?;
-      if (itemId == null) continue;
-      final qty = (row['qty_on_hand'] as num?)?.toInt() ?? 0;
-      result.update(itemId, (v) => v + qty, ifAbsent: () => qty);
-    }
-    return result;
-  }
-
   Future<List<PosItem>> _searchItemsRpc(String query,
       {String? categoryId}) async {
     final result = await _supabase.rpc('search_items_pos', params: {

@@ -10,7 +10,6 @@ import 'printer_models.dart';
 class LabelPrinterService {
   static const String _serviceUuid = "0000ff00-0000-1000-8000-00805f9b34fb";
   static const String _writeCharacteristicUuid = "0000ff02-0000-1000-8000-00805f9b34fb";
-  static const String _notifyCharacteristicUuid = "0000ff01-0000-1000-8000-00805f9b34fb";
 
   BluetoothDevice? _connectedDevice;
   BluetoothCharacteristic? _writeCharacteristic;
@@ -292,8 +291,6 @@ class LabelPrinterService {
 
     // Calculate positions (dots - 203 DPI = 8 dots/mm)
     final widthDots = labelWidth * 8;
-    final heightDots = labelHeight * 8;
-    final centerX = widthDots ~/ 2;
 
     int currentY = 10; // Track Y position
 

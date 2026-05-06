@@ -11,7 +11,6 @@ import 'file_picker_stub.dart'
 import '../../../../core/services/printer/label_printer_service.dart';
 import '../../../../core/services/printer/printer_models.dart';
 import '../../../../core/utils/result.dart';
-import '../../../../theme/app_theme.dart';
 import '../../../inventory/label_printer_screen.dart';
 
 /// Product model for bulk printing
@@ -56,7 +55,6 @@ class _BulkLabelPrintScreenState extends State<BulkLabelPrintScreen> {
   List<BulkPrintProduct> _filteredProducts = [];
   List<BulkPrintProduct> _selectedProducts = [];
 
-  bool _isLoading = false;
   bool _isScanning = false;
   bool _isConnected = false;
   bool _isPrinting = false;
@@ -71,7 +69,6 @@ class _BulkLabelPrintScreenState extends State<BulkLabelPrintScreen> {
 
   // CSV Import
   bool _isImporting = false;
-  CsvImportResult? _lastImportResult;
 
   @override
   void initState() {
@@ -351,7 +348,6 @@ class _BulkLabelPrintScreenState extends State<BulkLabelPrintScreen> {
 
       setState(() {
         _isImporting = false;
-        _lastImportResult = importResult;
       });
 
       if (importResult.products.isNotEmpty) {

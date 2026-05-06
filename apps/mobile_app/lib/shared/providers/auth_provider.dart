@@ -75,10 +75,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _init() {
-    // Legacy init - _bootstrapSession handles this now
-  }
-
   void _setStatus(AuthStatus s) {
     if (_status == s) return;
     _status = s;

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../models/pos_models.dart';
-import '../../../../models/sale_transaction_snapshot.dart';
 import '../../../../models/party.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import './receipt_screen.dart';

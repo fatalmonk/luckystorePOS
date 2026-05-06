@@ -126,5 +126,5 @@ class OfflineSettings extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
-  Set<Column> get primaryKeys => {key};
+  Set<Column> get primaryKey => {key};
 }
