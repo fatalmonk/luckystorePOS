@@ -21,6 +21,7 @@ apps/*/.env.*
 *.pfx
 *.crt
 *.csr
+*client_secret*.json
 
 # -----------------------------------------------------------------------------
 # Node / JS / Package Managers
@@ -196,3 +197,5 @@ apps/mobile_app/assets/app.env
 apps/mobile_app/flutter/
 # Ignore local JSON secrets
 data/*.json
+.vercel/
+

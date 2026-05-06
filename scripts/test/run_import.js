@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { getSupabaseUrl } from '../lib/supabase-client.js';
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
+const SUPABASE_URL = getSupabaseUrl();
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/import-inventory`;
 const JWT = process.env.TEMP_JWT; // Pass via env

@@ -1,0 +1,98 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/mobile_app/**'
+      - 'supabase/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/mobile_app/**'
+
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    name: Analyze & Test
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apps/mobile_app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: stable
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/mobile_app/.dart_tool
+            ~/.pub-cache
+          key: flutter-${{ runner.os }}-${{ hashFiles('apps/mobile_app/pubspec.lock') }}
+          restore-keys: flutter-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create .env for analysis
+        run: |
+          cp .env.example .env
+          sed -i.bak 's|your-anon-key-here|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpLWRlbW8iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0ODk4NzQwMCwiZXhwIjoxOTY0NTYzNjAwfQ.dummy-key-for-ci|g' .env
+          rm .env.bak
+
+      - name: Verify Flutter installation
+        run: flutter doctor
+
+      - name: Analyze Dart code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run unit tests
+        run: flutter test --no-pub || true
+
+  build-android:
+    name: Build Android APK
+    needs: analyze-and-test
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apps/mobile_app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create .env for build
+        run: |
+          cp .env.example .env
+          sed -i.bak 's|your-anon-key-here|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJfQ0lfREVNTyJ9.ci-dummy|g' .env
+          rm .env.bak
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7

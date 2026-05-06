@@ -4,11 +4,19 @@ class AppTheme {
   // Dark mode primary background
   static const Color background = Color(0xFF1C1D21);
   static const Color backgroundElevated = Color(0xFF26282E); // Slightly lighter for neomorphic depth
-  
-  // Luminous accent
-  static const Color primaryAccent = Color(0xFF9B51E0); // Vibrant Purple
-  static const Color primaryAccentLight = Color(0xFFC07BFF);
-  
+
+  // Luminous accent – updated to match web palette
+  // Primary – Yellow
+  static const Color primaryAccent = Color(0xFFFBBF24); // Yellow 400
+  // Light variant for primary (yellow)
+  static const Color primaryAccentLight = Color(0xFFFDE68A); // Yellow 300
+  // Secondary – Black
+  static const Color secondaryAccent = Color(0xFF000000);
+  // Tertiary – Emerald Green
+  static const Color tertiaryAccent = Color(0xFF10B981);
+  // Light variant for tertiary (optional)
+  static const Color tertiaryAccentLight = Color(0xFFD1FAE5);
+
   // Typography Colors
   static const Color textPrimary = Color(0xFFF3F3F3);
   static const Color textSecondary = Color(0xFFA0A0A5);
@@ -25,8 +33,8 @@ class AppTheme {
       scaffoldBackgroundColor: background,
       primaryColor: primaryAccent,
       colorScheme: const ColorScheme.dark(
-        primary: primaryAccent,
-        secondary: primaryAccentLight,
+        primary: primaryAccent,          // Yellow primary
+        secondary: secondaryAccent,       // Black secondary
         surface: background,
         onPrimary: Colors.white,
         onSurface: textPrimary,

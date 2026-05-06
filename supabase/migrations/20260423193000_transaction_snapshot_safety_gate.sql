@@ -2,233 +2,236 @@
 
 DROP FUNCTION IF EXISTS public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text);
 
-CREATE OR REPLACE FUNCTION public.complete_sale(
-  p_store_id uuid,
-  p_cashier_id uuid,
-  p_session_id uuid DEFAULT NULL,
-  p_items jsonb DEFAULT '[]',
-  p_payments jsonb DEFAULT '[]',
-  p_discount numeric DEFAULT 0,
-  p_client_transaction_id text DEFAULT NULL,
-  p_notes text DEFAULT NULL,
-  p_snapshot jsonb DEFAULT NULL
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-DECLARE
-  v_existing record;
-  v_status text := 'success';
-  v_conflict_reason text;
-  v_adjustments jsonb := '[]'::jsonb;
-  v_item record;
-  v_live_item record;
-  v_sale_id uuid;
-  v_sale_number text;
-  v_subtotal numeric(12,2) := 0;
-  v_total numeric(12,2) := 0;
-  v_tendered numeric(12,2) := 0;
-  v_change numeric(12,2) := 0;
-BEGIN
-  IF p_client_transaction_id IS NULL OR btrim(p_client_transaction_id) = '' THEN
-    RETURN jsonb_build_object(
-      'status', 'rejected',
-      'sync_status', 'conflict',
-      'adjustments', '[]'::jsonb,
-      'conflict_reason', 'client_transaction_id_required',
-      'message', 'client_transaction_id is required'
-    );
-  END IF;
+-- canonical definition in 20260426213841_domain_rpcs_trust_engine.sql
+DROP FUNCTION IF EXISTS public.complete_sale();
+-- (previous definition commented out to avoid migration conflicts)
+-- CREATE OR REPLACE FUNCTION public.complete_sale(
+--   p_store_id uuid,
+--   p_cashier_id uuid,
+--   p_session_id uuid DEFAULT NULL,
+--   p_items jsonb DEFAULT '[]',
+--   p_payments jsonb DEFAULT '[]',
+--   p_discount numeric DEFAULT 0,
+--   p_client_transaction_id text DEFAULT NULL,
+--   p_notes text DEFAULT NULL,
+--   p_snapshot jsonb DEFAULT NULL
+-- )
+-- RETURNS jsonb
+-- LANGUAGE plpgsql
+-- SECURITY DEFINER
+-- SET search_path = public, pg_temp
+-- AS $$
+-- DECLARE
+--   v_existing record;
+--   v_status text := 'success';
+--   v_conflict_reason text;
+--   v_adjustments jsonb := '[]'::jsonb;
+--   v_item record;
+--   v_live_item record;
+--   v_sale_id uuid;
+--   v_sale_number text;
+--   v_subtotal numeric(12,2) := 0;
+--   v_total numeric(12,2) := 0;
+--   v_tendered numeric(12,2) := 0;
+--   v_change numeric(12,2) := 0;
+-- BEGIN
+--   IF p_client_transaction_id IS NULL OR btrim(p_client_transaction_id) = '' THEN
+--     RETURN jsonb_build_object(
+--       'status', 'rejected',
+--       'sync_status', 'conflict',
+--       'adjustments', '[]'::jsonb,
+--       'conflict_reason', 'client_transaction_id_required',
+--       'message', 'client_transaction_id is required'
+--     );
+--   END IF;
 
-  SELECT id, sale_number, subtotal, discount_amount, total_amount, amount_tendered, change_due
-    INTO v_existing
-  FROM public.sales
-  WHERE store_id = p_store_id
-    AND client_transaction_id = p_client_transaction_id
-  LIMIT 1;
+--   SELECT id, sale_number, subtotal, discount_amount, total_amount, amount_tendered, change_due
+--     INTO v_existing
+--   FROM public.sales
+--   WHERE store_id = p_store_id
+--     AND client_transaction_id = p_client_transaction_id
+--   LIMIT 1;
 
-  IF v_existing.id IS NOT NULL THEN
-    RETURN jsonb_build_object(
-      'status', 'success',
-      'sync_status', 'synced',
-      'adjustments', '[]'::jsonb,
-      'conflict_reason', null,
-      'duplicate_detected', true,
-      'sale_id', v_existing.id,
-      'sale_number', v_existing.sale_number,
-      'subtotal', COALESCE(v_existing.subtotal, 0),
-      'discount', COALESCE(v_existing.discount_amount, 0),
-      'total_amount', COALESCE(v_existing.total_amount, 0),
-      'tendered', COALESCE(v_existing.amount_tendered, 0),
-      'change_due', COALESCE(v_existing.change_due, 0)
-    );
-  END IF;
+--   IF v_existing.id IS NOT NULL THEN
+--     RETURN jsonb_build_object(
+--       'status', 'success',
+--       'sync_status', 'synced',
+--       'adjustments', '[]'::jsonb,
+--       'conflict_reason', null,
+--       'duplicate_detected', true,
+--       'sale_id', v_existing.id,
+--       'sale_number', v_existing.sale_number,
+--       'subtotal', COALESCE(v_existing.subtotal, 0),
+--       'discount', COALESCE(v_existing.discount_amount, 0),
+--       'total_amount', COALESCE(v_existing.total_amount, 0),
+--       'tendered', COALESCE(v_existing.amount_tendered, 0),
+--       'change_due', COALESCE(v_existing.change_due, 0)
+--     );
+--   END IF;
 
-  IF jsonb_array_length(COALESCE(p_items, '[]'::jsonb)) = 0 THEN
-    RETURN jsonb_build_object(
-      'status', 'rejected',
-      'sync_status', 'conflict',
-      'adjustments', '[]'::jsonb,
-      'conflict_reason', 'empty_sale',
-      'message', 'Sale must have at least one item'
-    );
-  END IF;
+--   IF jsonb_array_length(COALESCE(p_items, '[]'::jsonb)) = 0 THEN
+--     RETURN jsonb_build_object(
+--       'status', 'rejected',
+--       'sync_status', 'conflict',
+--       'adjustments', '[]'::jsonb,
+--       'conflict_reason', 'empty_sale',
+--       'message', 'Sale must have at least one item'
+--     );
+--   END IF;
 
-  FOR v_item IN
-    SELECT * FROM jsonb_to_recordset(p_items) AS x(
-      item_id uuid,
-      qty integer,
-      unit_price numeric,
-      cost numeric,
-      discount numeric
-    )
-  LOOP
-    SELECT i.id, i.name, i.active, i.price, COALESCE(sl.qty_on_hand, 0) AS qty_on_hand
-      INTO v_live_item
-    FROM public.items i
-    LEFT JOIN public.stock_levels sl
-      ON sl.item_id = i.id AND sl.store_id = p_store_id
-    WHERE i.id = v_item.item_id;
+--   FOR v_item IN
+--     SELECT * FROM jsonb_to_recordset(p_items) AS x(
+--       item_id uuid,
+--       qty integer,
+--       unit_price numeric,
+--       cost numeric,
+--       discount numeric
+--     )
+--   LOOP
+--     SELECT i.id, i.name, i.active, i.price, COALESCE(sl.qty_on_hand, 0) AS qty_on_hand
+--       INTO v_live_item
+--     FROM public.items i
+--     LEFT JOIN public.stock_levels sl
+--       ON sl.item_id = i.id AND sl.store_id = p_store_id
+--     WHERE i.id = v_item.item_id;
 
-    IF v_live_item.id IS NULL OR v_live_item.active IS DISTINCT FROM true THEN
-      PERFORM public.log_sale_sync_conflict(
-        p_store_id,
-        p_client_transaction_id,
-        'deleted_product',
-        jsonb_build_object('item_id', v_item.item_id),
-        true
-      );
-      RETURN jsonb_build_object(
-        'status', 'conflict',
-        'sync_status', 'conflict',
-        'adjustments', '[]'::jsonb,
-        'conflict_reason', 'deleted_or_inactive_product',
-        'message', 'One or more products are deleted/inactive'
-      );
-    END IF;
+--     IF v_live_item.id IS NULL OR v_live_item.active IS DISTINCT FROM true THEN
+--       PERFORM public.log_sale_sync_conflict(
+--         p_store_id,
+--         p_client_transaction_id,
+--         'deleted_product',
+--         jsonb_build_object('item_id', v_item.item_id),
+--         true
+--       );
+--       RETURN jsonb_build_object(
+--         'status', 'conflict',
+--         'sync_status', 'conflict',
+--         'adjustments', '[]'::jsonb,
+--         'conflict_reason', 'deleted_or_inactive_product',
+--         'message', 'One or more products are deleted/inactive'
+--       );
+--     END IF;
 
-    IF v_live_item.qty_on_hand < COALESCE(v_item.qty, 0) THEN
-      PERFORM public.log_sale_sync_conflict(
-        p_store_id,
-        p_client_transaction_id,
-        'insufficient_stock',
-        jsonb_build_object(
-          'item_id', v_item.item_id,
-          'required_qty', v_item.qty,
-          'available_qty', v_live_item.qty_on_hand
-        ),
-        true
-      );
-      RETURN jsonb_build_object(
-        'status', 'conflict',
-        'sync_status', 'conflict',
-        'adjustments', '[]'::jsonb,
-        'conflict_reason', 'insufficient_stock',
-        'message', format('Insufficient stock for %s', v_live_item.name)
-      );
-    END IF;
+--     IF v_live_item.qty_on_hand < COALESCE(v_item.qty, 0) THEN
+--       PERFORM public.log_sale_sync_conflict(
+--         p_store_id,
+--         p_client_transaction_id,
+--         'insufficient_stock',
+--         jsonb_build_object(
+--           'item_id', v_item.item_id,
+--           'required_qty', v_item.qty,
+--           'available_qty', v_live_item.qty_on_hand
+--         ),
+--         true
+--       );
+--       RETURN jsonb_build_object(
+--         'status', 'conflict',
+--         'sync_status', 'conflict',
+--         'adjustments', '[]'::jsonb,
+--         'conflict_reason', 'insufficient_stock',
+--         'message', format('Insufficient stock for %s', v_live_item.name)
+--       );
+--     END IF;
 
-    IF ROUND(COALESCE(v_item.unit_price, 0), 2) < ROUND(COALESCE(v_live_item.price, 0), 2) THEN
-      PERFORM public.log_sale_sync_conflict(
-        p_store_id,
-        p_client_transaction_id,
-        'changed_price',
-        jsonb_build_object(
-          'item_id', v_item.item_id,
-          'snapshot_price', v_item.unit_price,
-          'current_price', v_live_item.price
-        ),
-        true
-      );
-      RETURN jsonb_build_object(
-        'status', 'conflict',
-        'sync_status', 'conflict',
-        'adjustments', '[]'::jsonb,
-        'conflict_reason', 'price_increase_requires_manager',
-        'message', format('Price increased for %s', v_live_item.name)
-      );
-    END IF;
+--     IF ROUND(COALESCE(v_item.unit_price, 0), 2) < ROUND(COALESCE(v_live_item.price, 0), 2) THEN
+--       PERFORM public.log_sale_sync_conflict(
+--         p_store_id,
+--         p_client_transaction_id,
+--         'changed_price',
+--         jsonb_build_object(
+--           'item_id', v_item.item_id,
+--           'snapshot_price', v_item.unit_price,
+--           'current_price', v_live_item.price
+--         ),
+--         true
+--       );
+--       RETURN jsonb_build_object(
+--         'status', 'conflict',
+--         'sync_status', 'conflict',
+--         'adjustments', '[]'::jsonb,
+--         'conflict_reason', 'price_increase_requires_manager',
+--         'message', format('Price increased for %s', v_live_item.name)
+--       );
+--     END IF;
 
-    IF ROUND(COALESCE(v_item.unit_price, 0), 2) > ROUND(COALESCE(v_live_item.price, 0), 2) THEN
-      v_status := 'adjusted';
-      v_adjustments := v_adjustments || jsonb_build_object(
-        'item_id', v_item.item_id,
-        'type', 'price_down_auto_adjust',
-        'snapshot_price', v_item.unit_price,
-        'applied_price', v_live_item.price
-      );
-    END IF;
-  END LOOP;
+--     IF ROUND(COALESCE(v_item.unit_price, 0), 2) > ROUND(COALESCE(v_live_item.price, 0), 2) THEN
+--       v_status := 'adjusted';
+--       v_adjustments := v_adjustments || jsonb_build_object(
+--         'item_id', v_item.item_id,
+--         'type', 'price_down_auto_adjust',
+--         'snapshot_price', v_item.unit_price,
+--         'applied_price', v_live_item.price
+--       );
+--     END IF;
+--   END LOOP;
 
-  INSERT INTO public.sales (
-    store_id, cashier_id, session_id, status, notes, client_transaction_id
-  ) VALUES (
-    p_store_id, p_cashier_id, p_session_id, 'completed', p_notes, p_client_transaction_id
-  ) RETURNING id, sale_number INTO v_sale_id, v_sale_number;
+--   INSERT INTO public.sales (
+--     store_id, cashier_id, session_id, status, notes, client_transaction_id
+--   ) VALUES (
+--     p_store_id, p_cashier_id, p_session_id, 'completed', p_notes, p_client_transaction_id
+--   ) RETURNING id, sale_number INTO v_sale_id, v_sale_number;
 
-  FOR v_item IN
-    SELECT * FROM jsonb_to_recordset(p_items) AS x(
-      item_id uuid,
-      qty integer,
-      unit_price numeric,
-      cost numeric,
-      discount numeric
-    )
-  LOOP
-    SELECT i.price INTO v_live_item FROM public.items i WHERE i.id = v_item.item_id;
-    INSERT INTO public.sale_items (sale_id, item_id, qty, unit_price, cost, discount, line_total)
-    VALUES (
-      v_sale_id,
-      v_item.item_id,
-      v_item.qty,
-      LEAST(COALESCE(v_item.unit_price, 0), COALESCE(v_live_item.price, 0)),
-      COALESCE(v_item.cost, 0),
-      COALESCE(v_item.discount, 0),
-      ROUND((LEAST(COALESCE(v_item.unit_price, 0), COALESCE(v_live_item.price, 0)) - COALESCE(v_item.discount, 0)) * v_item.qty, 2)
-    );
-    v_subtotal := v_subtotal + ROUND((LEAST(COALESCE(v_item.unit_price, 0), COALESCE(v_live_item.price, 0)) - COALESCE(v_item.discount, 0)) * v_item.qty, 2);
-  END LOOP;
+--   FOR v_item IN
+--     SELECT * FROM jsonb_to_recordset(p_items) AS x(
+--       item_id uuid,
+--       qty integer,
+--       unit_price numeric,
+--       cost numeric,
+--       discount numeric
+--     )
+--   LOOP
+--     SELECT i.price INTO v_live_item FROM public.items i WHERE i.id = v_item.item_id;
+--     INSERT INTO public.sale_items (sale_id, item_id, qty, unit_price, cost, discount, line_total)
+--     VALUES (
+--       v_sale_id,
+--       v_item.item_id,
+--       v_item.qty,
+--       LEAST(COALESCE(v_item.unit_price, 0), COALESCE(v_live_item.price, 0)),
+--       COALESCE(v_item.cost, 0),
+--       COALESCE(v_item.discount, 0),
+--       ROUND((LEAST(COALESCE(v_item.unit_price, 0), COALESCE(v_live_item.price, 0)) - COALESCE(v_item.discount, 0)) * v_item.qty, 2)
+--     );
+--     v_subtotal := v_subtotal + ROUND((LEAST(COALESCE(v_item.unit_price, 0), COALESCE(v_live_item.price, 0)) - COALESCE(v_item.discount, 0)) * v_item.qty, 2);
+--   END LOOP;
 
-  v_total := GREATEST(ROUND(v_subtotal - COALESCE(p_discount, 0), 2), 0);
+--   v_total := GREATEST(ROUND(v_subtotal - COALESCE(p_discount, 0), 2), 0);
 
-  FOR v_item IN
-    SELECT * FROM jsonb_to_recordset(p_payments) AS x(
-      payment_method_id uuid,
-      amount numeric,
-      reference text
-    )
-  LOOP
-    v_tendered := v_tendered + COALESCE(v_item.amount, 0);
-    INSERT INTO public.sale_payments(sale_id, payment_method_id, amount, reference)
-    VALUES (v_sale_id, v_item.payment_method_id, v_item.amount, v_item.reference);
-  END LOOP;
+--   FOR v_item IN
+--     SELECT * FROM jsonb_to_recordset(p_payments) AS x(
+--       payment_method_id uuid,
+--       amount numeric,
+--       reference text
+--     )
+--   LOOP
+--     v_tendered := v_tendered + COALESCE(v_item.amount, 0);
+--     INSERT INTO public.sale_payments(sale_id, payment_method_id, amount, reference)
+--     VALUES (v_sale_id, v_item.payment_method_id, v_item.amount, v_item.reference);
+--   END LOOP;
 
-  v_change := GREATEST(ROUND(v_tendered - v_total, 2), 0);
-  UPDATE public.sales
-  SET subtotal = v_subtotal,
-      discount_amount = COALESCE(p_discount, 0),
-      total_amount = v_total,
-      amount_tendered = v_tendered,
-      change_due = v_change
-  WHERE id = v_sale_id;
+--   v_change := GREATEST(ROUND(v_tendered - v_total, 2), 0);
+--   UPDATE public.sales
+--   SET subtotal = v_subtotal,
+--       discount_amount = COALESCE(p_discount, 0),
+--       total_amount = v_total,
+--       amount_tendered = v_tendered,
+--       change_due = v_change
+--   WHERE id = v_sale_id;
 
-  RETURN jsonb_build_object(
-    'status', v_status,
-    'sync_status', CASE WHEN v_status = 'conflict' THEN 'conflict' ELSE 'synced' END,
-    'adjustments', v_adjustments,
-    'conflict_reason', v_conflict_reason,
-    'sale_id', v_sale_id,
-    'sale_number', v_sale_number,
-    'subtotal', v_subtotal,
-    'discount', COALESCE(p_discount, 0),
-    'total_amount', v_total,
-    'tendered', v_tendered,
-    'change_due', v_change
-  );
-END;
-$$;
+--   RETURN jsonb_build_object(
+--     'status', v_status,
+--     'sync_status', CASE WHEN v_status = 'conflict' THEN 'conflict' ELSE 'synced' END,
+--     'adjustments', v_adjustments,
+--     'conflict_reason', v_conflict_reason,
+--     'sale_id', v_sale_id,
+--     'sale_number', v_sale_number,
+--     'subtotal', v_subtotal,
+--     'discount', COALESCE(p_discount, 0),
+--     'total_amount', v_total,
+--     'tendered', v_tendered,
+--     'change_due', v_change
+--   );
+-- END;
+-- $$;
 
 REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) TO authenticated;

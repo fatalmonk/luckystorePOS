@@ -2,8 +2,8 @@
 
 Canonical app locations:
 
-- `apps/frontend/` - React/Vite frontend app
-- `apps/scraper/` - Scraper scripts
-- `apps/import-tools/` - Legacy and import-related tools
+- `apps/admin_web/` - React/Vite admin web app
+- `apps/mobile_app/` - Flutter mobile POS app
+- `apps/scraper/` - Competitor product scraper scripts
 
 Use `apps/*` paths for all app code (see root `README.md` for full layout).

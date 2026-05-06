@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { Skeleton } from '../../components/Skeleton';
+import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { History, ArrowLeft, ArrowUp, ArrowDown, User, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -14,7 +14,7 @@ export function StockHistoryPage() {
     queryFn: () => api.inventory.history(storeId),
   });
 
-  if (error) return <div className="error">Error loading stock history.</div>;
+  if (error) return <div className="card"><ErrorState message="Error loading stock history." /></div>;
 
   return (
     <div className="history-container">
@@ -28,14 +28,15 @@ export function StockHistoryPage() {
 
       <div className="card" style={{ padding: 0 }}>
         {isLoading ? (
-          <div style={{ padding: 'var(--space-6)' }}>
-            <Skeleton style={{ width: '100%', height: '400px' }} />
+          <div className="p-6">
+            <SkeletonBlock className="w-full h-[400px]" />
           </div>
         ) : history?.length === 0 ? (
-          <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <History size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.2 }} />
-            <p>No stock movements recorded yet.</p>
-          </div>
+          <EmptyState
+            icon={<History size={48} />}
+            title="No stock movements yet"
+            description="Stock movements will appear here once you make adjustments."
+          />
         ) : (
           <div className="history-list">
             {history?.map((log: any) => (

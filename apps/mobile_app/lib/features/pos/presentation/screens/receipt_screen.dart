@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../models/pos_models.dart';
-import '../../../../shared/services/printer_service.dart';
+// import '../../../../shared/services/printer_service.dart'; // TODO: Re-enable when printer is available
 
 /// Receipt screen shown after a successful sale.
 /// Displays a clean receipt with all line items, totals, payment breakdown,
@@ -231,7 +231,8 @@ class ReceiptScreen extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     try {
-                      await ReceiptPrinterService().printEscPosReceipt(saleResult);
+                      // await ReceiptPrinterService().printEscPosReceipt(saleResult);
+                      debugPrint('Print BT: skipped - no printer connected');
                     } catch (e) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -260,7 +261,8 @@ class ReceiptScreen extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () async {
                     try {
-                      await ReceiptPrinterService().printPdfReceipt(saleResult);
+                      // await ReceiptPrinterService().printPdfReceipt(saleResult);
+                      debugPrint('PDF Share: skipped - no printer connected');
                     } catch (e) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

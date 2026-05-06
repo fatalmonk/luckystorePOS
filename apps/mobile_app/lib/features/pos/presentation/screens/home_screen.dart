@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
+import '../../../../models/pos_models.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -24,14 +25,14 @@ class HomeScreen extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'Search products... (Fuzzy Match)',
                   hintStyle: TextStyle(color: AppTheme.textSecondary),
-                  prefixIcon: Icon(Icons.search, color: AppTheme.primaryAccentLight),
+                  prefixIcon: Icon(Icons.search, color: AppTheme.secondaryAccent),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
           ),
-          
+
           SliverPadding(
             padding: const EdgeInsets.all(16.0),
             sliver: SliverList(
@@ -58,15 +59,15 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 const Text(
                   'Popular Aisles',
                   style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Category Grid
                 GridView.builder(
                   shrinkWrap: true,
@@ -97,9 +98,9 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 const Text(
                   'Trending Now',
                   style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
@@ -122,12 +123,14 @@ class HomeScreen extends StatelessWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   return ProductCard(
-                    sku: 'LKY-${1000 + index}',
-                    name: 'Premium Miniket Rice - Handpicked',
-                    price: 340.0,
+                    item: PosItem(
+                      id: 'LKY-${1000 + index}',
+                      sku: 'LKY-${1000 + index}',
+                      name: 'Premium Miniket Rice - Handpicked',
+                      price: 340.0,
+                    ),
                     originalPrice: 380.0,
                     weight: '5 kg',
-                    imageUrl: 'https://via.placeholder.com/150/26282E/F3F3F3?text=Rice',
                   );
                 },
                 childCount: 6,

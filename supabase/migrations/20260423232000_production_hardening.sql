@@ -18,163 +18,166 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_stock_movements_idempotency
   WHERE idempotency_key IS NOT NULL;
 
 -- 2) Update complete_sale to handle idempotency
-CREATE OR REPLACE FUNCTION public.complete_sale(
-  p_store_id      uuid,
-  p_cashier_id    uuid,
-  p_session_id    uuid        DEFAULT NULL,
-  p_items         jsonb       DEFAULT '[]',
-  p_payments      jsonb       DEFAULT '[]',
-  p_discount      numeric     DEFAULT 0,
-  p_notes         text        DEFAULT NULL,
-  p_idempotency_key text      DEFAULT NULL
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-DECLARE
-  v_user_id       uuid;
-  v_sale_id       uuid;
-  v_sale_number   text;
-  v_existing_sale jsonb;
-  v_subtotal      numeric(12,2) := 0;
-  v_total         numeric(12,2);
-  v_tendered      numeric(12,2) := 0;
-  v_change        numeric(12,2);
-  v_item          record;
-  v_payment       record;
-  v_item_rec      public.items%ROWTYPE;
-BEGIN
-  -- 1. Check idempotency
-  IF p_idempotency_key IS NOT NULL THEN
-    SELECT jsonb_build_object(
-      'sale_id', id,
-      'sale_number', sale_number,
-      'total_amount', total_amount,
-      'status', status,
-      'is_duplicate', true
-    ) INTO v_existing_sale
-    FROM public.sales 
-    WHERE idempotency_key = p_idempotency_key;
+-- canonical definition in 20260426213841_domain_rpcs_trust_engine.sql
+DROP FUNCTION IF EXISTS public.complete_sale();
+-- (previous definition commented out to avoid migration conflicts)
+-- CREATE OR REPLACE FUNCTION public.complete_sale(
+--   p_store_id      uuid,
+--   p_cashier_id    uuid,
+--   p_session_id    uuid        DEFAULT NULL,
+--   p_items         jsonb       DEFAULT '[]',
+--   p_payments      jsonb       DEFAULT '[]',
+--   p_discount      numeric     DEFAULT 0,
+--   p_notes         text        DEFAULT NULL,
+--   p_idempotency_key text      DEFAULT NULL
+-- )
+-- RETURNS jsonb
+-- LANGUAGE plpgsql
+-- SECURITY DEFINER
+-- SET search_path = public, pg_temp
+-- AS $$
+-- DECLARE
+--   v_user_id       uuid;
+--   v_sale_id       uuid;
+--   v_sale_number   text;
+--   v_existing_sale jsonb;
+--   v_subtotal      numeric(12,2) := 0;
+--   v_total         numeric(12,2);
+--   v_tendered      numeric(12,2) := 0;
+--   v_change        numeric(12,2);
+--   v_item          record;
+--   v_payment       record;
+--   v_item_rec      public.items%ROWTYPE;
+-- BEGIN
+--   -- 1. Check idempotency
+--   IF p_idempotency_key IS NOT NULL THEN
+--     SELECT jsonb_build_object(
+--       'sale_id', id,
+--       'sale_number', sale_number,
+--       'total_amount', total_amount,
+--       'status', status,
+--       'is_duplicate', true
+--     ) INTO v_existing_sale
+--     FROM public.sales 
+--     WHERE idempotency_key = p_idempotency_key;
 
-    IF v_existing_sale IS NOT NULL THEN
-      RETURN v_existing_sale;
-    END IF;
-  END IF;
+--     IF v_existing_sale IS NOT NULL THEN
+--       RETURN v_existing_sale;
+--     END IF;
+--   END IF;
 
-  -- 2. Authenticate
-  SELECT id INTO v_user_id
-    FROM public.users WHERE auth_id = (SELECT auth.uid());
-  IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'Not authenticated';
-  END IF;
+--   -- 2. Authenticate
+--   SELECT id INTO v_user_id
+--     FROM public.users WHERE auth_id = (SELECT auth.uid());
+--   IF v_user_id IS NULL THEN
+--     RAISE EXCEPTION 'Not authenticated';
+--   END IF;
 
-  -- 3. Validate items array
-  IF jsonb_array_length(p_items) = 0 THEN
-    RAISE EXCEPTION 'Sale must have at least one item';
-  END IF;
+--   -- 3. Validate items array
+--   IF jsonb_array_length(p_items) = 0 THEN
+--     RAISE EXCEPTION 'Sale must have at least one item';
+--   END IF;
 
-  -- 4. Insert sale
-  INSERT INTO public.sales (store_id, cashier_id, session_id, status, notes, idempotency_key)
-    VALUES (p_store_id, p_cashier_id, p_session_id, 'completed', p_notes, p_idempotency_key)
-    RETURNING id, sale_number INTO v_sale_id, v_sale_number;
+--   -- 4. Insert sale
+--   INSERT INTO public.sales (store_id, cashier_id, session_id, status, notes, idempotency_key)
+--     VALUES (p_store_id, p_cashier_id, p_session_id, 'completed', p_notes, p_idempotency_key)
+--     RETURNING id, sale_number INTO v_sale_id, v_sale_number;
 
-  -- 5. Process each line item
-  FOR v_item IN
-    SELECT * FROM jsonb_to_recordset(p_items) AS x(
-      item_id    uuid,
-      qty        integer,
-      unit_price numeric,
-      cost       numeric,
-      discount   numeric
-    )
-  LOOP
-    -- Validate item exists and is active
-    SELECT * INTO v_item_rec FROM public.items WHERE id = v_item.item_id AND active = true;
-    IF v_item_rec.id IS NULL THEN
-      RAISE EXCEPTION 'Item % not found or inactive', v_item.item_id;
-    END IF;
+--   -- 5. Process each line item
+--   FOR v_item IN
+--     SELECT * FROM jsonb_to_recordset(p_items) AS x(
+--       item_id    uuid,
+--       qty        integer,
+--       unit_price numeric,
+--       cost       numeric,
+--       discount   numeric
+--     )
+--   LOOP
+--     -- Validate item exists and is active
+--     SELECT * INTO v_item_rec FROM public.items WHERE id = v_item.item_id AND active = true;
+--     IF v_item_rec.id IS NULL THEN
+--       RAISE EXCEPTION 'Item % not found or inactive', v_item.item_id;
+--     END IF;
 
-    IF v_item.qty <= 0 THEN
-      RAISE EXCEPTION 'Qty must be > 0 for item %', v_item_rec.name;
-    END IF;
+--     IF v_item.qty <= 0 THEN
+--       RAISE EXCEPTION 'Qty must be > 0 for item %', v_item_rec.name;
+--     END IF;
 
-    DECLARE
-      v_line_total numeric(12,2);
-    BEGIN
-      v_line_total := ROUND((v_item.unit_price - COALESCE(v_item.discount, 0)) * v_item.qty, 2);
-      v_subtotal   := v_subtotal + v_line_total;
+--     DECLARE
+--       v_line_total numeric(12,2);
+--     BEGIN
+--       v_line_total := ROUND((v_item.unit_price - COALESCE(v_item.discount, 0)) * v_item.qty, 2);
+--       v_subtotal   := v_subtotal + v_line_total;
 
-      INSERT INTO public.sale_items (sale_id, item_id, qty, unit_price, cost, discount, line_total)
-        VALUES (v_sale_id, v_item.item_id, v_item.qty,
-                v_item.unit_price, COALESCE(v_item.cost, 0),
-                COALESCE(v_item.discount, 0), v_line_total);
-    END;
+--       INSERT INTO public.sale_items (sale_id, item_id, qty, unit_price, cost, discount, line_total)
+--         VALUES (v_sale_id, v_item.item_id, v_item.qty,
+--                 v_item.unit_price, COALESCE(v_item.cost, 0),
+--                 COALESCE(v_item.discount, 0), v_line_total);
+--     END;
 
-    -- Decrement stock
-    PERFORM public.adjust_stock(
-      p_store_id,
-      v_item.item_id,
-      -v_item.qty,
-      'sale',
-      'Sale: ' || v_sale_number,
-      v_user_id,
-      'sale-' || v_sale_id || '-' || v_item.item_id
-    );
-  END LOOP;
+--     -- Decrement stock
+--     PERFORM public.adjust_stock(
+--       p_store_id,
+--       v_item.item_id,
+--       -v_item.qty,
+--       'sale',
+--       'Sale: ' || v_sale_number,
+--       v_user_id,
+--       'sale-' || v_sale_id || '-' || v_item.item_id
+--     );
+--   END LOOP;
 
-  -- 6. Compute totals
-  v_total := ROUND(v_subtotal - COALESCE(p_discount, 0), 2);
-  IF v_total < 0 THEN v_total := 0; END IF;
+--   -- 6. Compute totals
+--   v_total := ROUND(v_subtotal - COALESCE(p_discount, 0), 2);
+--   IF v_total < 0 THEN v_total := 0; END IF;
 
-  -- 7. Process payments
-  FOR v_payment IN
-    SELECT * FROM jsonb_to_recordset(p_payments) AS x(
-      payment_method_id uuid,
-      amount            numeric,
-      reference         text
-    )
-  LOOP
-    v_tendered := v_tendered + v_payment.amount;
+--   -- 7. Process payments
+--   FOR v_payment IN
+--     SELECT * FROM jsonb_to_recordset(p_payments) AS x(
+--       payment_method_id uuid,
+--       amount            numeric,
+--       reference         text
+--     )
+--   LOOP
+--     v_tendered := v_tendered + v_payment.amount;
 
-    INSERT INTO public.sale_payments (sale_id, payment_method_id, amount, reference)
-      VALUES (v_sale_id, v_payment.payment_method_id, v_payment.amount, v_payment.reference);
-  END LOOP;
+--     INSERT INTO public.sale_payments (sale_id, payment_method_id, amount, reference)
+--       VALUES (v_sale_id, v_payment.payment_method_id, v_payment.amount, v_payment.reference);
+--   END LOOP;
 
-  v_change := ROUND(v_tendered - v_total, 2);
-  IF v_change < 0 THEN
-    RAISE EXCEPTION 'Payment insufficient. Total: %, Tendered: %', v_total, v_tendered;
-  END IF;
+--   v_change := ROUND(v_tendered - v_total, 2);
+--   IF v_change < 0 THEN
+--     RAISE EXCEPTION 'Payment insufficient. Total: %, Tendered: %', v_total, v_tendered;
+--   END IF;
 
-  -- 8. Update sale totals
-  UPDATE public.sales
-    SET subtotal        = v_subtotal,
-        discount_amount = COALESCE(p_discount, 0),
-        total_amount    = v_total,
-        amount_tendered = v_tendered,
-        change_due      = v_change
-    WHERE id = v_sale_id;
+--   -- 8. Update sale totals
+--   UPDATE public.sales
+--     SET subtotal        = v_subtotal,
+--         discount_amount = COALESCE(p_discount, 0),
+--         total_amount    = v_total,
+--         amount_tendered = v_tendered,
+--         change_due      = v_change
+--     WHERE id = v_sale_id;
 
-  -- 9. Update session totals
-  IF p_session_id IS NOT NULL THEN
-    UPDATE public.pos_sessions
-      SET total_sales = total_sales + v_total
-      WHERE id = p_session_id;
-  END IF;
+--   -- 9. Update session totals
+--   IF p_session_id IS NOT NULL THEN
+--     UPDATE public.pos_sessions
+--       SET total_sales = total_sales + v_total
+--       WHERE id = p_session_id;
+--   END IF;
 
-  RETURN jsonb_build_object(
-    'sale_id',      v_sale_id,
-    'sale_number',  v_sale_number,
-    'subtotal',     v_subtotal,
-    'discount',     COALESCE(p_discount, 0),
-    'total_amount', v_total,
-    'tendered',     v_tendered,
-    'change_due',   v_change,
-    'is_duplicate', false
-  );
-END;
-$$;
+--   RETURN jsonb_build_object(
+--     'sale_id',      v_sale_id,
+--     'sale_number',  v_sale_number,
+--     'subtotal',     v_subtotal,
+--     'discount',     COALESCE(p_discount, 0),
+--     'total_amount', v_total,
+--     'tendered',     v_tendered,
+--     'change_due',   v_change,
+--     'is_duplicate', false
+--   );
+-- END;
+-- $$;
 
 -- 3) RPC: void_sale
 CREATE OR REPLACE FUNCTION public.void_sale(

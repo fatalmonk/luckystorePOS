@@ -10,25 +10,8 @@
  * Usage: node scripts/ops/remove-duplicate-items.js [--dry-run]
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
+import { createSupabaseClient } from '../lib/supabase-client.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Load environment variables from repo root (.env then .env.local)
-const repoRoot = join(__dirname, '..', '..');
-for (const name of ['.env', '.env.local']) {
-  const envPath = join(repoRoot, name);
-  if (existsSync(envPath)) {
-    config({ path: envPath });
-  }
-}
-
-const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_SERVICE_KEY) {
@@ -38,7 +21,7 @@ if (!SUPABASE_SERVICE_KEY) {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const supabase = createSupabaseClient(SUPABASE_SERVICE_KEY);
 const DRY_RUN = process.argv.includes('--dry-run') || process.argv.includes('-d');
 
 /**

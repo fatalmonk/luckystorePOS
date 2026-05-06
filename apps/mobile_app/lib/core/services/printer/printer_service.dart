@@ -5,6 +5,8 @@ import '../../network/network_config.dart';
 import '../../utils/result.dart';
 import '../../utils/app_utils.dart';
 import '../printer_constants.dart';
+import 'printer_config.dart';
+import 'printer_models.dart';
 import 'print_retry_queue.dart';
 
 /// Unified Print Service for reliable receipt printing
@@ -221,7 +223,7 @@ class PrinterService {
       // Step 2: Send to printer
       final printResult = await _sendToPrinter(printJob);
 
-      if (printResult.isSuccess) {
+      if (printResult is Success<PrintResult>) {
         _successfulPrints++;
         stopwatch.stop();
         _updateAveragePrintTime(stopwatch.elapsed);
@@ -237,7 +239,7 @@ class PrinterService {
         ));
 
         return Success<PrintResult>(printResult.data);
-      } else {
+      } else if (printResult is Failure<PrintResult>) {
         // Add to retry queue
         await _retryQueue.add(printJob);
 
@@ -245,11 +247,13 @@ class PrinterService {
           type: PrinterEventType.printFailed,
           printerId: _connectedPrinterId!,
           receiptId: receiptId,
-          error: printResult.data,
+          error: printResult.error,
           message: 'Print failed, added to retry queue',
         ));
 
-        return Failure<PrintResult>(printResult.data);
+        return Failure<PrintResult>(printResult.error);
+      } else {
+        return Failure<PrintResult>('Unknown print result');
       }
     } catch (e, stackTrace) {
       Logger.error('PrinterService.printReceipt failed', e, stackTrace);
@@ -336,6 +340,14 @@ class PrinterService {
       receiptId: receiptId,
       commands: commands.toString(),
       timestamp: timestamp,
+      items: items,
+      subtotal: subtotal,
+      taxAmount: taxAmount,
+      discountAmount: discountAmount,
+      total: total,
+      paymentMethod: paymentMethod,
+      customerId: customerId,
+      cashierId: cashierId,
     );
   }
 
@@ -351,11 +363,7 @@ class PrinterService {
         '${NetworkConfig.supabaseUrl}/functions/v1/print-receipt',
       );
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${NetworkConfig.supabaseAnonKey}',
-        'apikey': NetworkConfig.supabaseAnonKey,
-      };
+      final headers = NetworkConfig.defaultHeaders;
 
       final response = await _client
           .post(
@@ -407,19 +415,19 @@ class PrinterService {
 
   /// Retry failed print
   Future<Result<void>> retryPrint(String receiptId) async {
-    final job = await _retryQueue.getJob(receiptId);
+    final job = _retryQueue.getJob(receiptId);
     if (job == null) {
       return Failure<void>('Print job not found in queue');
     }
 
     return printReceipt(
       receiptId: receiptId,
-      items: job.items,
-      subtotal: job.subtotal,
-      taxAmount: job.taxAmount,
-      discountAmount: job.discountAmount,
-      total: job.total,
-      paymentMethod: job.paymentMethod,
+      items: job.items ?? <ReceiptItem>[],
+      subtotal: job.subtotal ?? 0,
+      taxAmount: job.taxAmount ?? 0,
+      discountAmount: job.discountAmount ?? 0,
+      total: job.total ?? 0,
+      paymentMethod: job.paymentMethod ?? 'Unknown',
       customerId: job.customerId,
       cashierId: job.cashierId,
       timestamp: job.timestamp,
@@ -443,7 +451,7 @@ class PrinterService {
   StreamSubscription<PrinterEvent>? listenToEvents(
     void Function(PrinterEvent event) onData, {
     Function? onError,
-    VoidCallback? onDone,
+    void Function()? onDone,
   }) {
     return _eventController.stream.listen(
       onData,
@@ -459,131 +467,4 @@ class PrinterService {
     _client.close();
     _retryQueue.dispose();
   }
-}
-
-// ===== Data Models =====
-
-/// Print event types
-enum PrinterEventType {
-  connecting,
-  connected,
-  disconnected,
-  printing,
-  printed,
-  printFailed,
-  printError,
-  connectionFailed,
-}
-
-/// Printer event
-class PrinterEvent {
-  final PrinterEventType type;
-  final String? printerId;
-  final String? receiptId;
-  final String? message;
-  final String? error;
-  final Map<String, dynamic>? data;
-
-  const PrinterEvent({
-    required this.type,
-    this.printerId,
-    this.receiptId,
-    this.message,
-    this.error,
-    this.data,
-  });
-
-  @override
-  String toString() {
-    return 'PrinterEvent('
-        'type: $type, '
-        'printerId: $printerId, '
-        'receiptId: $receiptId, '
-        'message: $message, '
-        'error: $error'
-        ')';
-  }
-}
-
-/// Print result
-class PrintResult {
-  final String receiptId;
-  final DateTime printTime;
-  final String? printerId;
-  final bool success;
-
-  const PrintResult({
-    required this.receiptId,
-    required this.printTime,
-    this.printerId,
-    required this.success,
-  });
-}
-
-/// Receipt item for print job
-class ReceiptItem {
-  final String name;
-  final int quantity;
-  final double price;
-  final double total;
-  final double discount;
-
-  const ReceiptItem({
-    required this.name,
-    required this.quantity,
-    required this.price,
-    required this.total,
-    this.discount = 0.0,
-  });
-}
-
-/// Print job structure
-class ReceiptPrintJob {
-  final String receiptId;
-  final String commands;
-  final DateTime timestamp;
-
-  // Additional fields for printing
-  final List<ReceiptItem>? items;
-  final double? subtotal;
-  final double? taxAmount;
-  final double? discountAmount;
-  final double? total;
-  final String? paymentMethod;
-  final String? customerId;
-  final String? cashierId;
-
-  ReceiptPrintJob({
-    required this.receiptId,
-    required this.commands,
-    required this.timestamp,
-    this.items,
-    this.subtotal,
-    this.taxAmount,
-    this.discountAmount,
-    this.total,
-    this.paymentMethod,
-    this.customerId,
-    this.cashierId,
-  });
-}
-
-// ===== Exceptions =====
-
-class PrinterConnectionException implements Exception {
-  final String message;
-
-  const PrinterConnectionException(this.message);
-
-  @override
-  String toString() => 'PrinterConnectionException: $message';
-}
-
-class PrinterNotFoundException implements Exception {
-  final String printerId;
-
-  const PrinterNotFoundException(this.printerId);
-
-  @override
-  String toString() => 'PrinterNotFoundException: $printerId not found';
 }

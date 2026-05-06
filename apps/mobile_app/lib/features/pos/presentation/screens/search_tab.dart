@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
+import '../../../../models/pos_models.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -69,7 +70,7 @@ class _SearchTabState extends State<SearchTab> {
                 decoration: InputDecoration(
                   hintText: 'Search... (fuzzy matching)',
                   hintStyle: const TextStyle(color: AppTheme.textSecondary),
-                  prefixIcon: const Icon(Icons.search, color: AppTheme.primaryAccentLight),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.secondaryAccent),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
@@ -132,12 +133,14 @@ class _SearchTabState extends State<SearchTab> {
                   itemBuilder: (context, i) {
                     final p = _results[i];
                     return ProductCard(
-                      sku: p['sku'] as String,
-                      name: p['name'] as String,
-                      price: p['price'] as double,
+                      item: PosItem(
+                        id: p['sku'] as String,
+                        sku: p['sku'] as String,
+                        name: p['name'] as String,
+                        price: p['price'] as double,
+                      ),
                       originalPrice: p['original'] as double,
                       weight: p['weight'] as String,
-                      imageUrl: 'https://via.placeholder.com/150/26282E/F3F3F3?text=${Uri.encodeComponent(p['name'] as String)}',
                     );
                   },
                 ),

@@ -21,8 +21,6 @@ interface AuthContextValue {
   /** Supabase store UUID resolved from the `users` table */
   storeId: string;
   loading: boolean;
-  /** Convenience: resolved cash ledger account ID for the user's store */
-  cashAccountId: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -41,14 +39,12 @@ export function useAuth(): AuthContextValue {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AdminUser | null>(null);
-  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Resolve the admin user profile whenever the auth session changes.
   const resolveUser = async (s: Session | null) => {
     if (!s) {
       setUser(null);
-      setCashAccountId(null);
       setLoading(false);
       return;
     }
@@ -78,16 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(resolved);
 
-      // Resolve the store's cash ledger account for the Collections payment modal.
-      if (resolved.storeId) {
-        const { data: acct } = await supabase
-          .from('ledger_accounts')
-          .select('id')
-          .eq('store_id', resolved.storeId)
-          .eq('code', '1000_CASH')
-          .maybeSingle();
-        setCashAccountId((acct?.id as string) ?? null);
-      }
     } catch (e) {
       console.error('[AuthContext] Unexpected error resolving user:', e);
       setUser(null);
@@ -122,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     tenantId: user?.tenantId ?? '',
     storeId: user?.storeId ?? '',
-    cashAccountId,
     loading,
     signOut,
   };

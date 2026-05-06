@@ -2,6 +2,11 @@
 library;
 
 // ---------------------------------------------------------------------------
+// PosLoadState — UI state for product catalog loading
+// ---------------------------------------------------------------------------
+enum PosLoadState { loading, ready, empty, error }
+
+// ---------------------------------------------------------------------------
 // PosItem — product as returned by lookup_item_by_scan / search_items_pos
 // ---------------------------------------------------------------------------
 class PosItem {

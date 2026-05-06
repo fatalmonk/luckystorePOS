@@ -117,6 +117,7 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
               child: Column(
                 children: [
                   const Icon(Icons.pin_outlined, color: AppTheme.primaryAccentLight, size: 48),
+                  const Icon(Icons.pin_outlined, color: AppTheme.secondaryAccent, size: 48),
                   const SizedBox(height: 12),
                   const Text(
                     'WebView: bKash PIN Entry',

@@ -1,26 +1,49 @@
 :root {
   /* Colors - Modern, Professional Palette */
-  --color-primary: #6366f1; /* Indigo */
-  --color-primary-hover: #4f46e5;
-  --color-secondary: #0ea5e9; /* Sky */
-  --color-success: #10b981; /* Emerald */
-  --color-warning: #f59e0b; /* Amber */
-  --color-danger: #ef4444; /* Red */
-  
-  /* Neutral Palette - Light Mode */
+  /* Colors - Karbar Palette */
+  /* Primary - Emerald Green */
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-light: #d1fae5;
+
+  /* Secondary */
+  --color-secondary: #1e293b;
+  --color-secondary-hover: #0f172a;
+  --color-secondary-light: #334155;
+
+  /* Semantic Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Sidebar - Dark Slate */
+  --bg-sidebar: #0f172a;
+  --bg-sidebar-hover: rgba(255,255,255,0.05);
+  --text-sidebar: #94a3b8;
+  --text-sidebar-active: #10b981;
+
+  /* Surfaces */
   --bg-app: #f8fafc;
   --bg-card: #ffffff;
-  --bg-sidebar: #ffffff;
-  --text-main: #0f172a;
+  --bg-header: #ffffff;
+  --bg-input: #f1f5f9;
+  --input-bg: #f1f5f9;
+
+  /* Text */
+  --text-main: #1e293b;
   --text-muted: #64748b;
+  --text-light: #94a3b8;
+
+  /* Borders */
   --border-color: #e2e8f0;
-  --input-bg: #ffffff;
-  
+  --border-light: #f1f5f9;
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  
+
   /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -29,7 +52,7 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-12: 3rem;
-  
+
   /* Typography */
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --font-size-xs: 0.75rem;
@@ -38,11 +61,12 @@
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.25rem;
   --font-size-2xl: 1.5rem;
-  
+  --font-size-3xl: 1.875rem;
+
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Border Radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -58,4 +82,5 @@
   --text-muted: #94a3b8;
   --border-color: #334155;
   --input-bg: #1e293b;
+  --bg-input: #1e293b;
 }

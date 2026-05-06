@@ -3,36 +3,12 @@
  * Run with: node scripts/ops/create-storage-bucket.js
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { config } from 'dotenv';
-import { existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { createSupabaseClient, getSupabaseUrl } from '../lib/supabase-client.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const repoRoot = join(__dirname, '..', '..');
-for (const name of ['.env', '.env.local']) {
-  const p = join(repoRoot, name);
-  if (existsSync(p)) {
-    config({ path: p });
-  }
-}
-const frontendEnv = join(repoRoot, 'apps', 'frontend', '.env.local');
-if (existsSync(frontendEnv)) {
-  config({ path: frontendEnv });
-}
-
-const supabaseUrl =
-  process.env.VITE_SUPABASE_URL || 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
-if (!process.env.VITE_SUPABASE_URL) {
-  console.warn('VITE_SUPABASE_URL not set; using fallback project URL');
-}
-
+const supabaseUrl = getSupabaseUrl();
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
+if (!supabaseServiceKey) {
   console.error('❌ Missing Supabase credentials');
   console.error(
     '   Set VITE_SUPABASE_URL in repo root or apps/frontend/.env.local; set SUPABASE_SERVICE_ROLE_KEY in repo root .env / .env.local or your shell.'
@@ -40,7 +16,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createSupabaseClient(supabaseServiceKey);
 
 async function createStorageBucket() {
   console.log('🪣 Creating storage bucket: item-images');
@@ -65,7 +41,7 @@ async function createStorageBucket() {
         // Note: Supabase JS client doesn't have a direct method to update bucket settings
         // You'll need to do this in the dashboard or use the REST API
         console.log('   Please set bucket to public in Supabase Dashboard:');
-        console.log('   https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/storage/buckets');
+        console.log(`   https://app.supabase.com/project/${supabaseUrl.replace('https://', '').replace('.supabase.co', '')}/storage/buckets`);
       }
       return;
     }
@@ -80,7 +56,7 @@ async function createStorageBucket() {
     if (error) {
       console.error('❌ Error creating bucket:', error.message);
       console.log('\n💡 You may need to create it manually in the Supabase Dashboard:');
-      console.log('   https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/storage/buckets');
+      console.log(`   https://app.supabase.com/project/${supabaseUrl.replace('https://', '').replace('.supabase.co', '')}/storage/buckets`);
       console.log('   - Name: item-images');
       console.log('   - Public: Yes');
       return;
@@ -92,7 +68,7 @@ async function createStorageBucket() {
   } catch (err) {
     console.error('❌ Unexpected error:', err.message);
     console.log('\n💡 Please create the bucket manually in Supabase Dashboard:');
-    console.log('   https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/storage/buckets');
+    console.log(`   https://app.supabase.com/project/${supabaseUrl.replace('https://', '').replace('.supabase.co', '')}/storage/buckets`);
   }
 }
 

@@ -588,43 +588,46 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.complete_sale(
-  p_store_id uuid,
-  p_cashier_id uuid,
-  p_session_id uuid DEFAULT NULL,
-  p_items jsonb DEFAULT '[]'::jsonb,
-  p_payments jsonb DEFAULT '[]'::jsonb,
-  p_discount numeric DEFAULT 0,
-  p_client_transaction_id text DEFAULT NULL,
-  p_notes text DEFAULT NULL,
-  p_snapshot jsonb DEFAULT NULL,
-  p_fulfillment_policy text DEFAULT 'STRICT',
-  p_override_token text DEFAULT NULL,
-  p_override_reason text DEFAULT NULL
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-BEGIN
-  -- Backward-compatible wrapper: execution only, posting is async/deterministic via post_sale_to_ledger.
-  RETURN public.create_sale(
-    p_store_id,
-    p_cashier_id,
-    p_session_id,
-    p_items,
-    p_payments,
-    p_discount,
-    p_client_transaction_id,
-    p_notes,
-    p_snapshot,
-    p_fulfillment_policy,
-    p_override_token,
-    p_override_reason
-  );
-END;
-$$;
+-- canonical definition in 20260426213841_domain_rpcs_trust_engine.sql
+DROP FUNCTION IF EXISTS public.complete_sale();
+-- (previous definition commented out to avoid migration conflicts)
+-- CREATE OR REPLACE FUNCTION public.complete_sale(
+--   p_store_id uuid,
+--   p_cashier_id uuid,
+--   p_session_id uuid DEFAULT NULL,
+--   p_items jsonb DEFAULT '[]'::jsonb,
+--   p_payments jsonb DEFAULT '[]'::jsonb,
+--   p_discount numeric DEFAULT 0,
+--   p_client_transaction_id text DEFAULT NULL,
+--   p_notes text DEFAULT NULL,
+--   p_snapshot jsonb DEFAULT NULL,
+--   p_fulfillment_policy text DEFAULT 'STRICT',
+--   p_override_token text DEFAULT NULL,
+--   p_override_reason text DEFAULT NULL
+-- )
+-- RETURNS jsonb
+-- LANGUAGE plpgsql
+-- SECURITY DEFINER
+-- SET search_path = public, pg_temp
+-- AS $$
+-- BEGIN
+--   -- Backward-compatible wrapper: execution only, posting is async/deterministic via post_sale_to_ledger.
+--   RETURN public.create_sale(
+--     p_store_id,
+--     p_cashier_id,
+--     p_session_id,
+--     p_items,
+--     p_payments,
+--     p_discount,
+--     p_client_transaction_id,
+--     p_notes,
+--     p_snapshot,
+--     p_fulfillment_policy,
+--     p_override_token,
+--     p_override_reason
+--   );
+-- END;
+-- $$;
 
 CREATE OR REPLACE FUNCTION public.validate_trial_balance(
   p_store_id uuid,

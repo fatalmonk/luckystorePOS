@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
-import { Phone, MessageCircle, FileText, Check, AlertCircle, X } from 'lucide-react';
+import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { EmptyState, SkeletonCard, SkeletonBlock } from '../../components/PageState';
+import { useDebounce } from '../../hooks/useDebounce';
 
 type Receivable = {
   party_id: string;
@@ -15,12 +17,36 @@ type Receivable = {
 };
 
 export const CollectionsWorkspace: React.FC = () => {
-  const { tenantId, storeId, cashAccountId } = useAuth();
+  const { tenantId, storeId } = useAuth();
 
   const [receivables, setReceivables] = useState<Receivable[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Resolve the store's cash ledger account ID for the payment modal.
+  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
+  const [cashAccountLoading, setCashAccountLoading] = useState(true);
+
+  useEffect(() => {
+    if (!storeId) {
+      setCashAccountId(null);
+      setCashAccountLoading(false);
+      return;
+    }
+    setCashAccountLoading(true);
+    supabase
+      .from('ledger_accounts')
+      .select('id')
+      .eq('store_id', storeId)
+      .eq('code', '1000_CASH')
+      .maybeSingle()
+      .then(({ data: acct }) => {
+        setCashAccountId((acct?.id as string) ?? null);
+        setCashAccountLoading(false);
+      });
+  }, [storeId]);
 
   // Modals
   const [selectedParty, setSelectedParty] = useState<Receivable | null>(null);
@@ -41,7 +67,7 @@ export const CollectionsWorkspace: React.FC = () => {
     const { data, error } = await supabase.rpc('get_receivables_aging', {
       p_tenant_id: tenantId,
       p_store_id: storeId,
-      p_search: search || null
+      p_search: debouncedSearch || null
     });
 
     if (!error && data) {
@@ -50,12 +76,10 @@ export const CollectionsWorkspace: React.FC = () => {
       setFetchError(error?.message ?? 'Failed to load receivables.');
     }
     setLoading(false);
-  }, [tenantId, storeId, search]);
+  }, [tenantId, storeId, debouncedSearch]);
 
-  // Debounced fetch — re-runs when search changes (300ms delay)
   useEffect(() => {
-    const timer = setTimeout(() => fetchAging(), 300);
-    return () => clearTimeout(timer);
+    fetchAging();
   }, [fetchAging]);
 
   const handleAddNote = async (e: React.FormEvent) => {
@@ -131,127 +155,239 @@ export const CollectionsWorkspace: React.FC = () => {
   const overdueCount = receivables.filter(r => r.days_overdue > 30).length;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6">Collections Workspace</h1>
+    <div className="dashboard-container">
+      <header style={{ marginBottom: 'var(--space-8)' }}>
+        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--text-main)' }}>Collections Workspace</h1>
+        <p style={{ color: 'var(--text-muted)' }}>Track receivables and follow up with customers.</p>
+      </header>
 
       {/* Fetch error banner */}
       {fetchError && (
-        <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-6 text-sm text-red-400">
-          <AlertCircle size={16} className="shrink-0" />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-3)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: 'var(--radius-md)',
+          padding: 'var(--space-3) var(--space-4)',
+          marginBottom: 'var(--space-6)',
+          fontSize: 'var(--font-size-sm)',
+          color: 'var(--color-danger)'
+        }}>
+          <AlertCircle size={16} />
           <span>{fetchError}</span>
-          <button onClick={() => setFetchError(null)} className="ml-auto"><X size={14} /></button>
+          <button onClick={fetchAging} style={{ marginLeft: 'var(--space-2)', background: 'none', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--color-danger)', padding: '2px 8px', fontSize: 'var(--font-size-xs)', fontWeight: '600' }}>Retry</button>
+          <button onClick={() => setFetchError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-          <div className="text-sm text-white/50 mb-1">Total Receivables</div>
-          <div className="text-2xl font-bold text-amber-400">৳ {totalReceivables.toLocaleString()}</div>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-          <div className="text-sm text-white/50 mb-1">Customers Overdue</div>
-          <div className="text-2xl font-bold text-rose-400">{overdueCount}</div>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-          <div className="text-sm text-white/50 mb-1">Active Promises</div>
-          <div className="text-2xl font-bold text-emerald-400">
-            {receivables.filter(r => r.promise_to_pay_date).length}
-          </div>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-          <div className="text-sm text-white/50 mb-1">Accounts</div>
-          <div className="text-2xl font-bold text-white/90">{receivables.length}</div>
-        </div>
+      <div className="dashboard-grid" style={{ marginBottom: 'var(--space-6)' }}>
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+        ) : (
+          <>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Total Receivables</span>
+              <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-warning)' }}>৳ {totalReceivables.toLocaleString()}</span>
+            </div>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Customers Overdue</span>
+              <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-danger)' }}>{overdueCount}</span>
+            </div>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Active Promises</span>
+              <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-success)' }}>
+                {receivables.filter(r => r.promise_to_pay_date).length}
+              </span>
+            </div>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Accounts</span>
+              <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--text-main)' }}>{receivables.length}</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Filters */}
-      <div className="mb-4">
+      <div style={{ marginBottom: 'var(--space-4)' }}>
         <input
           type="text"
           placeholder="Search by name or phone..."
-          className="w-full md:w-1/3 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-primary"
+          style={{
+            width: '100%',
+            maxWidth: '360px',
+            padding: 'var(--space-2) var(--space-4)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--input-bg)',
+            color: 'var(--text-main)',
+            outline: 'none'
+          }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
       {/* Data Table */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="text-[11px] uppercase tracking-wider text-white/40 border-b border-white/5 bg-white/[0.02]">
-              <tr>
-                <th className="p-4">Customer</th>
-                <th className="p-4 text-right">Amount Due</th>
-                <th className="p-4 text-right">Age (Days)</th>
-                <th className="p-4">Promise Date</th>
-                <th className="p-4 w-1/4">Latest Note</th>
-                <th className="p-4 text-right">Actions</th>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{
+                textAlign: 'left',
+                borderBottom: '1px solid var(--border-color)',
+                backgroundColor: 'rgba(0,0,0,0.02)',
+                color: 'var(--text-muted)',
+                fontSize: 'var(--font-size-xs)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                <th style={{ padding: 'var(--space-4)' }}>Customer</th>
+                <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Amount Due</th>
+                <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Age (Days)</th>
+                <th style={{ padding: 'var(--space-4)' }}>Promise Date</th>
+                <th style={{ padding: 'var(--space-4)', maxWidth: '200px' }}>Latest Note</th>
+                <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
-            <tbody className="text-sm text-white/80">
+            <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="p-8 text-center text-white/40">Loading receivables...</td></tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-[var(--border-color)]">
+                    <td className="p-4">
+                      <SkeletonBlock className="w-[120px] h-4" />
+                      <SkeletonBlock className="w-[80px] h-3 mt-1" />
+                    </td>
+                    <td className="p-4 text-right"><SkeletonBlock className="w-[80px] h-[18px] ml-auto" /></td>
+                    <td className="p-4 text-right"><SkeletonBlock className="w-[40px] h-[18px] ml-auto" /></td>
+                    <td className="p-4"><SkeletonBlock className="w-[100px] h-[14px]" /></td>
+                    <td className="p-4"><SkeletonBlock className="w-[160px] h-[14px]" /></td>
+                    <td className="p-4 text-right"><SkeletonBlock className="w-[120px] h-[30px] ml-auto" /></td>
+                  </tr>
+                ))
               ) : receivables.length === 0 ? (
-                <tr><td colSpan={6} className="p-8 text-center text-white/40">No dues found.</td></tr>
-              ) : receivables.map((r) => (
-                <tr key={r.party_id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                  <td className="p-4">
-                    <div className="font-semibold text-white">{r.customer_name}</div>
-                    <div className="text-xs text-white/50">{r.phone || 'No phone'}</div>
+                <tr>
+                  <td colSpan={6}>
+                    <EmptyState
+                      icon={<DollarSign size={48} />}
+                      title="No outstanding receivables"
+                      description="All customer dues are cleared."
+                    />
                   </td>
-                  <td className="p-4 text-right font-bold text-amber-400">
+                </tr>
+              ) : receivables.map((r) => (
+                <tr key={r.party_id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: 'var(--space-4)' }}>
+                    <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{r.customer_name}</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{r.phone || 'No phone'}</div>
+                  </td>
+                  <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--color-warning)' }}>
                     ৳ {r.balance_due.toLocaleString()}
                   </td>
-                  <td className="p-4 text-right">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${r.days_overdue > 30 ? 'bg-rose-500/20 text-rose-400' : 'bg-white/10 text-white/60'}`}>
+                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: 'var(--font-size-xs)',
+                      fontWeight: '600',
+                      backgroundColor: r.days_overdue > 30 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0,0,0,0.05)',
+                      color: r.days_overdue > 30 ? 'var(--color-danger)' : 'var(--text-muted)'
+                    }}>
                       {r.days_overdue}
                     </span>
                   </td>
-                  <td className="p-4">
+                  <td style={{ padding: 'var(--space-4)' }}>
                     {r.promise_to_pay_date ? (
-                      <div className="text-emerald-400 font-medium">
+                      <div style={{ color: 'var(--color-success)', fontWeight: '500' }}>
                         {format(new Date(r.promise_to_pay_date), 'MMM dd, yyyy')}
                       </div>
                     ) : (
-                      <span className="text-white/20">-</span>
+                      <span style={{ color: 'var(--text-light)' }}>-</span>
                     )}
                   </td>
-                  <td className="p-4 text-xs text-white/60 truncate max-w-[200px]">
+                  <td style={{ padding: 'var(--space-4)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {r.last_note || '-'}
                   </td>
-                  <td className="p-4 text-right flex justify-end gap-2">
-                    <button
-                      onClick={() => handleWhatsApp(r)}
-                      title="WhatsApp Reminder"
-                      className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-colors"
-                    >
-                      <MessageCircle size={16} />
-                    </button>
-                    {r.phone && (
-                      <a
-                        href={`tel:${r.phone}`}
-                        title="Call"
-                        className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-colors inline-block"
+                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                      <button
+                        onClick={() => handleWhatsApp(r)}
+                        title="WhatsApp Reminder"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: 'var(--space-2)',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          color: 'var(--color-success)',
+                          cursor: 'pointer',
+                          border: 'none',
+                          transition: 'background-color var(--transition-fast)'
+                        }}
                       >
-                        <Phone size={16} />
-                      </a>
-                    )}
-                    <button
-                      onClick={() => { setSelectedParty(r); setActionError(null); setNoteModalOpen(true); }}
-                      title="Add Note"
-                      className="p-2 bg-white/5 hover:bg-white/10 text-white/70 rounded-lg transition-colors"
-                    >
-                      <FileText size={16} />
-                    </button>
-                    <button
-                      onClick={() => { setSelectedParty(r); setActionError(null); setPaymentModalOpen(true); }}
-                      title="Receive Payment"
-                      className="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-colors"
-                    >
-                      <Check size={16} />
-                    </button>
+                        <MessageCircle size={16} />
+                      </button>
+                      {r.phone && (
+                        <a
+                          href={`tel:${r.phone}`}
+                          title="Call"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 'var(--space-2)',
+                            borderRadius: 'var(--radius-md)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            color: 'var(--color-info)',
+                            transition: 'background-color var(--transition-fast)'
+                          }}
+                        >
+                          <Phone size={16} />
+                        </a>
+                      )}
+                      <button
+                        onClick={() => { setSelectedParty(r); setActionError(null); setNoteModalOpen(true); }}
+                        title="Add Note"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: 'var(--space-2)',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--bg-input)',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          border: 'none',
+                          transition: 'background-color var(--transition-fast)'
+                        }}
+                      >
+                        <FileText size={16} />
+                      </button>
+                      <button
+                        onClick={() => { setSelectedParty(r); setActionError(null); setPaymentModalOpen(true); }}
+                        title="Receive Payment"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: 'var(--space-2)',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                          color: 'var(--color-warning)',
+                          cursor: 'pointer',
+                          border: 'none',
+                          transition: 'background-color var(--transition-fast)'
+                        }}
+                      >
+                        <Check size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -262,51 +398,93 @@ export const CollectionsWorkspace: React.FC = () => {
 
       {/* Note Modal */}
       {noteModalOpen && selectedParty && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1e1e24] border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-4">Follow-up Note</h2>
-            <p className="text-sm text-white/50 mb-6">Recording note for <strong className="text-white">{selectedParty.customer_name}</strong></p>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(2px)'
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '440px', padding: 'var(--space-6)' }}>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', color: 'var(--text-main)', marginBottom: 'var(--space-2)' }}>Follow-up Note</h2>
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
+              Recording note for <strong style={{ color: 'var(--text-main)' }}>{selectedParty.customer_name}</strong>
+            </p>
 
             {actionError && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4 text-xs text-red-400">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--space-2) var(--space-3)',
+                marginBottom: 'var(--space-4)',
+                fontSize: 'var(--font-size-xs)',
+                color: 'var(--color-danger)'
+              }}>
                 <AlertCircle size={14} />{actionError}
               </div>
             )}
 
-            <form onSubmit={handleAddNote} className="space-y-4">
+            <form onSubmit={handleAddNote} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1 uppercase tracking-wider">Note Details</label>
+                <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', fontWeight: '500', color: 'var(--text-muted)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Note Details</label>
                 <textarea
                   required
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary h-24 resize-none"
+                  style={{
+                    width: '100%',
+                    padding: 'var(--space-3)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--input-bg)',
+                    color: 'var(--text-main)',
+                    outline: 'none',
+                    minHeight: '96px',
+                    resize: 'none'
+                  }}
                   placeholder="E.g. Called, promised to pay next week..."
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1 uppercase tracking-wider">Promise to Pay Date (Optional)</label>
+                <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', fontWeight: '500', color: 'var(--text-muted)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Promise to Pay Date (Optional)</label>
                 <input
                   type="date"
                   value={promiseDate}
                   onChange={(e) => setPromiseDate(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary"
+                  style={{
+                    width: '100%',
+                    padding: 'var(--space-3)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--input-bg)',
+                    color: 'var(--text-main)',
+                    outline: 'none'
+                  }}
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)' }}>
                 <button
                   type="button"
                   onClick={() => { setNoteModalOpen(false); setActionError(null); }}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-semibold"
+                  className="button-outline"
+                  style={{ flex: 1 }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="flex-1 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl transition-colors font-semibold shadow-lg shadow-primary/20 disabled:opacity-50"
+                  className="button-primary"
+                  style={{ flex: 1, opacity: actionLoading ? 0.5 : 1 }}
                 >
                   {actionLoading ? 'Saving...' : 'Save Note'}
                 </button>
@@ -318,23 +496,49 @@ export const CollectionsWorkspace: React.FC = () => {
 
       {/* Payment Modal */}
       {paymentModalOpen && selectedParty && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1e1e24] border border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-4">Receive Payment</h2>
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
-              <div className="text-sm text-amber-500/70 mb-1">Outstanding Balance</div>
-              <div className="text-2xl font-bold text-amber-400">৳ {selectedParty.balance_due.toLocaleString()}</div>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(2px)'
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '400px', padding: 'var(--space-6)' }}>
+            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', color: 'var(--text-main)', marginBottom: 'var(--space-4)' }}>Receive Payment</h2>
+            <div style={{
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-4)',
+              marginBottom: 'var(--space-6)'
+            }}>
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>Outstanding Balance</div>
+              <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-warning)' }}>৳ {selectedParty.balance_due.toLocaleString()}</div>
             </div>
 
             {actionError && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4 text-xs text-red-400">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--space-2) var(--space-3)',
+                marginBottom: 'var(--space-4)',
+                fontSize: 'var(--font-size-xs)',
+                color: 'var(--color-danger)'
+              }}>
                 <AlertCircle size={14} />{actionError}
               </div>
             )}
 
-            <form onSubmit={handleReceivePayment} className="space-y-4">
+            <form onSubmit={handleReceivePayment} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1 uppercase tracking-wider">Amount Received (৳)</label>
+                <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', fontWeight: '500', color: 'var(--text-muted)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Amount Received (৳)</label>
                 <input
                   type="number"
                   required
@@ -343,23 +547,49 @@ export const CollectionsWorkspace: React.FC = () => {
                   step="0.01"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary text-xl font-bold"
+                  style={{
+                    width: '100%',
+                    padding: 'var(--space-3)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--input-bg)',
+                    color: 'var(--text-main)',
+                    outline: 'none',
+                    fontSize: 'var(--font-size-xl)',
+                    fontWeight: '700'
+                  }}
                   placeholder="0.00"
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)' }}>
                 <button
                   type="button"
                   onClick={() => { setPaymentModalOpen(false); setActionError(null); }}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-semibold"
+                  className="button-outline"
+                  style={{ flex: 1 }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading || !cashAccountId}
-                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-colors font-semibold shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  style={{
+                    flex: 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 'var(--space-2)',
+                    padding: 'var(--space-3) var(--space-4)',
+                    backgroundColor: 'var(--color-success)',
+                    color: '#fff',
+                    fontWeight: '600',
+                    borderRadius: 'var(--radius-md)',
+                    border: 'none',
+                    cursor: (actionLoading || !cashAccountId) ? 'not-allowed' : 'pointer',
+                    opacity: (actionLoading || !cashAccountId) ? 0.5 : 1,
+                    minHeight: '44px'
+                  }}
                 >
                   {actionLoading ? 'Processing...' : 'Confirm'}
                 </button>

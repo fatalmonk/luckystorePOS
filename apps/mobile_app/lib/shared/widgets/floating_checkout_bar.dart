@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../shared/providers/cart_provider.dart';
+import '../../shared/providers/pos_provider.dart';
 import '../../theme/app_theme.dart';
 
 class FloatingCheckoutBar extends StatelessWidget {
@@ -8,19 +8,19 @@ class FloatingCheckoutBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CartProvider>(
-      builder: (context, cart, child) {
-        if (cart.itemCount == 0) return const SizedBox.shrink();
+    return Consumer<PosProvider>(
+      builder: (context, posProvider, child) {
+        if (posProvider.cartIsEmpty) return const SizedBox.shrink();
 
         // Gamified Progress Logic (e.g. 500 BDT for free delivery)
         const double freeDeliveryThreshold = 500.0;
-        final double progress = (cart.totalAmount / freeDeliveryThreshold).clamp(0.0, 1.0);
-        final bool unlockedFreeDelivery = cart.totalAmount >= freeDeliveryThreshold;
+        final double progress = (posProvider.totalAmount / freeDeliveryThreshold).clamp(0.0, 1.0);
+        final bool unlockedFreeDelivery = posProvider.totalAmount >= freeDeliveryThreshold;
 
         return Positioned(
           left: 16,
           right: 16,
-          bottom: 16, // Above BottomNavigationBar (in a Stack context)
+          bottom: 16,
           child: GestureDetector(
             onTap: () {
               // Navigate to Checkout
@@ -45,7 +45,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              '${cart.itemCount}',
+                              '${posProvider.itemCount}',
                               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                           ),
@@ -61,7 +61,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        '৳${cart.totalAmount.toStringAsFixed(0)}',
+                        '৳${posProvider.totalAmount.toStringAsFixed(0)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -85,9 +85,9 @@ class FloatingCheckoutBar extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    unlockedFreeDelivery 
-                      ? 'Free Delivery Unlocked! 🚚' 
-                      : 'Add ৳${(freeDeliveryThreshold - cart.totalAmount).toStringAsFixed(0)} more for Free Delivery',
+                    unlockedFreeDelivery
+                      ? 'Free Delivery Unlocked! 🚚'
+                      : 'Add ৳${(freeDeliveryThreshold - posProvider.totalAmount).toStringAsFixed(0)} more for Free Delivery',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 10,

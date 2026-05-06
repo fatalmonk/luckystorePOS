@@ -5,7 +5,16 @@
 
 set -e
 
-PROJECT_REF="hvmyxyccfnkrbxqbhlnm"
+PROJECT_REF="${SUPABASE_PROJECT_REF:-}"
+if [ -z "$PROJECT_REF" ]; then
+  # Derive from VITE_SUPABASE_URL if available (e.g. https://abc.supabase.co -> abc)
+  if [ -n "${VITE_SUPABASE_URL:-}" ]; then
+    PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^/]+)\.supabase\.co|\1|')
+  else
+    echo "Error: SUPABASE_PROJECT_REF or VITE_SUPABASE_URL must be set"
+    exit 1
+  fi
+fi
 
 echo "🚀 Deploying POS checkout functions to ${PROJECT_REF}..."
 
