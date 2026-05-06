@@ -32,6 +32,33 @@
             text-align: center;
             padding: 60px 20px;
             color: white;
+            position: relative;
+        }
+
+        .admin-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid white;
+            border-radius: 25px;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .admin-link:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .admin-link {
+                position: static;
+                display: inline-block;
+                margin-top: 20px;
+            }
         }
 
         .logo {
@@ -218,7 +245,8 @@
 <body>
     <div class="container">
         <header>
-            <div class="logo">�️</div>
+            <a href="/admin" class="admin-link">🔐 Admin Login</a>
+            <div class="logo">🏪</div>
             <h1>Lucky Store POS</h1>
             <p class="tagline">
                 A modern Point of Sale system designed for retail businesses in Bangladesh.
@@ -322,6 +350,7 @@
             <a href="privacy-policy.html">Privacy Policy</a>
             <a href="terms-of-service.html">Terms of Service</a>
             <a href="support.html">Support</a>
+            <a href="/admin">Admin Dashboard</a>
         </div>
         <p>&copy; 2024 Lucky Store. All rights reserved.</p>
         <p>Lucky Store POS - Point of Sale System for Bangladesh Retailers</p>
