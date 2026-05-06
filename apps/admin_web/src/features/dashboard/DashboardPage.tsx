@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { DollarSign, AlertTriangle, Users, Package, TrendingUp, Bell } from 'lucide-react';
+import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-react';
 import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/Notification';
-import type { ReactNode } from 'react';
 import { MetricCard } from '../../components/data-display/MetricCard';
 
 export function DashboardPage() {
@@ -189,50 +188,6 @@ export function DashboardPage() {
             </div>
           </section>
         </div>
-      </div>
-    </div>
-  );
-}
-
-interface StatCardProps {
-  title: string;
-  /**
-   * Value can be a formatted string (e.g., "৳123.45") or a number.
-   */
-  value: string | number;
-  icon: ReactNode;
-  badge?: string;
-}
-
-// Define product type for top products list
-interface DashboardProduct {
-  id: string | number;
-  name: string;
-  qty: number;
-  revenue: number;
-}
-
-function StatCard({ title, value, icon, badge }: StatCardProps) {
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>{title}</span>
-        {icon}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-        <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>{value}</span>
-        {badge && (
-          <span style={{
-            fontSize: 'var(--font-size-xs)',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            color: 'var(--color-warning)',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            fontWeight: '600'
-          }}>
-            {badge}
-          </span>
-        )}
       </div>
     </div>
   );

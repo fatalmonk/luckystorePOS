@@ -5,7 +5,9 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { Search, XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
+import { MetricCard } from '../../components/data-display/MetricCard';
+import { TableFilters } from '../../components/data-display/TableFilters';
+import { XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth, subDays } from 'date-fns';
 import { useNotify } from '../../components/Notification';
@@ -86,7 +88,7 @@ export function SalesHistoryPage() {
       <div className="sales-history-container">
         <PageHeader 
           title="Sales History" 
-          description="Search and review store transactions." 
+          subtitle="Search and review store transactions." 
         />
         <div className="card">
           <ErrorState message="Failed to load sales history." onRetry={() => refetch()} />
@@ -123,37 +125,24 @@ export function SalesHistoryPage() {
     <div className="sales-history-container">
       <PageHeader 
         title="Sales History" 
-        description="Search and review store transactions." 
+        subtitle="Search and review store transactions." 
       />
 
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Total Revenue</span>
-            <DollarSign size={18} style={{ color: 'var(--color-success)' }} />
-          </div>
-          <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>{formatCurrency(totalRevenue)}</span>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Average Ticket</span>
-            <TrendingUp size={18} style={{ color: 'var(--color-primary)' }} />
-          </div>
-          <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>{formatCurrency(avgTicket)}</span>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Voided</span>
-            <AlertTriangle size={18} style={{ color: voidCount > 0 ? 'var(--color-danger)' : 'var(--text-muted)' }} />
-          </div>
-          <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>{voidCount}</span>
-        </div>
+        <MetricCard title="Total Revenue" value={formatCurrency(totalRevenue)} icon={<DollarSign size={18} style={{ color: 'var(--color-success)' }} />} color="success" variant="light" />
+        <MetricCard title="Average Ticket" value={formatCurrency(avgTicket)} icon={<TrendingUp size={18} style={{ color: 'var(--color-primary)' }} />} color="primary" variant="light" />
+        <MetricCard title="Voided" value={voidCount} icon={<AlertTriangle size={18} style={{ color: voidCount > 0 ? 'var(--color-danger)' : 'var(--text-muted)' }} />} color={voidCount > 0 ? 'danger' : 'neutral'} variant="light" />
       </div>
 
       {/* Filters Row */}
       <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', alignItems: 'center' }}>
+        <TableFilters
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search by Receipt #..."
+          filters={[]}
+        >
           {/* Date Range Picker */}
           <div style={{ display: 'flex', gap: '4px', backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 'var(--radius-md)', padding: '2px' }}>
             {(['today', 'week', 'month', 'custom'] as DateRange[]).map((range) => (
@@ -208,36 +197,6 @@ export function SalesHistoryPage() {
             </div>
           )}
 
-          {/* Search */}
-          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              placeholder="Search by Receipt #..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: 'var(--space-3) var(--space-3) var(--space-3) 40px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--input-bg)',
-              }}
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                style={{
-                  position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
-                  display: 'flex', alignItems: 'center'
-                }}
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-
           {/* Export Button */}
           <button
             onClick={() => exportSalesToCSV(sales ?? [])}
@@ -257,7 +216,7 @@ export function SalesHistoryPage() {
             <Download size={16} />
             Export CSV
           </button>
-        </div>
+        </TableFilters>
       </div>
 
       {/* Results count */}

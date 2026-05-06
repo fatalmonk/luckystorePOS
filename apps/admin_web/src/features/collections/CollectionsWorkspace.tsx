@@ -17,13 +17,36 @@ type Receivable = {
 };
 
 export const CollectionsWorkspace: React.FC = () => {
-  const { tenantId, storeId, cashAccountId } = useAuth();
+  const { tenantId, storeId } = useAuth();
 
   const [receivables, setReceivables] = useState<Receivable[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
+
+  // Resolve the store's cash ledger account ID for the payment modal.
+  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
+  const [cashAccountLoading, setCashAccountLoading] = useState(true);
+
+  useEffect(() => {
+    if (!storeId) {
+      setCashAccountId(null);
+      setCashAccountLoading(false);
+      return;
+    }
+    setCashAccountLoading(true);
+    supabase
+      .from('ledger_accounts')
+      .select('id')
+      .eq('store_id', storeId)
+      .eq('code', '1000_CASH')
+      .maybeSingle()
+      .then(({ data: acct }) => {
+        setCashAccountId((acct?.id as string) ?? null);
+        setCashAccountLoading(false);
+      });
+  }, [storeId]);
 
   // Modals
   const [selectedParty, setSelectedParty] = useState<Receivable | null>(null);

@@ -3,6 +3,16 @@
 
 set -e  # Exit on error
 
+# Resolve project reference from SUPABASE_PROJECT_REF or VITE_SUPABASE_URL
+SUPABASE_PROJECT_REF="${SUPABASE_PROJECT_REF:-}"
+if [ -z "$SUPABASE_PROJECT_REF" ] && [ -n "${VITE_SUPABASE_URL:-}" ]; then
+  SUPABASE_PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^/]+)\.supabase\.co|\1|')
+fi
+if [ -z "$SUPABASE_PROJECT_REF" ]; then
+  echo "Error: SUPABASE_PROJECT_REF or VITE_SUPABASE_URL must be set"
+  exit 1
+fi
+
 echo "🚀 Starting Edge Function Deployment..."
 echo ""
 
@@ -30,7 +40,7 @@ else
     
     echo ""
     echo "🔗 Step 2: Linking project..."
-    supabase link --project-ref hvmyxyccfnkrbxqbhlnm || {
+    supabase link --project-ref "${SUPABASE_PROJECT_REF}" || {
         echo "❌ Failed to link project. Please check your project reference ID."
         exit 1
     }
@@ -59,16 +69,16 @@ echo ""
 echo "✅ Deployment complete!"
 echo ""
 echo "📋 Function Details:"
-echo "   URL: https://hvmyxyccfnkrbxqbhlnm.supabase.co/functions/v1/import-inventory"
+echo "   URL: https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/import-inventory"
 echo "   Name: import-inventory"
 echo ""
 echo "📝 Next Steps:"
-echo "   1. Verify function in dashboard: https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/functions"
+echo "   1. Verify function in dashboard: https://app.supabase.com/project/${SUPABASE_PROJECT_REF}/functions"
 echo "   2. Create storage bucket 'item-images' if not already created"
 echo "   3. Test with a sample CSV file"
 echo ""
 echo "🧪 Test the function:"
-echo "   curl -X POST https://hvmyxyccfnkrbxqbhlnm.supabase.co/functions/v1/import-inventory \\"
+echo "   curl -X POST https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/import-inventory \\"
 echo "     -H \"Authorization: Bearer <anon-key>\" \\"
 echo "     -H \"apikey: <anon-key>\" \\"
 echo "     -F \"file=@test.csv\""

@@ -363,11 +363,7 @@ class PrinterService {
         '${NetworkConfig.supabaseUrl}/functions/v1/print-receipt',
       );
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${NetworkConfig.supabaseAnonKey}',
-        'apikey': NetworkConfig.supabaseAnonKey,
-      };
+      final headers = NetworkConfig.defaultHeaders;
 
       final response = await _client
           .post(

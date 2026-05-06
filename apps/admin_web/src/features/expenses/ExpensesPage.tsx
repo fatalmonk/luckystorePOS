@@ -7,17 +7,14 @@ import { useNotify } from '../../components/Notification';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
+import { MetricCard } from '../../components/data-display/MetricCard';
+import { TableFilters } from '../../components/data-display/TableFilters';
 import {
   Receipt,
   Plus,
-  X,
   CalendarDays,
   TrendingUp,
   Wallet,
-  Banknote,
-  CreditCard,
-  Search,
-  SlidersHorizontal,
 } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import {
@@ -113,52 +110,39 @@ export function ExpensesPage() {
       />
 
       <div className="dashboard-grid mt-6 mb-6">
-        <SummaryCard title="Today" amount={todayTotal} icon={<CalendarDays size={20} className="text-emerald-600" />} />
-        <SummaryCard title="This Week" amount={weekTotal} icon={<TrendingUp size={20} className="text-emerald-600" />} />
-        <SummaryCard title="This Month" amount={monthTotal} icon={<Wallet size={20} className="text-emerald-600" />} />
+        <MetricCard title="Today" value={`৳${todayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="This Week" value={`৳${weekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="This Month" value={`৳${monthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
       </div>
 
       <div className="card expenses-filters">
-        <div className="expenses-filters-row">
-          <div className="expenses-search">
-            <Search size={18} className="expenses-search-icon" />
-            <input
-              type="text"
-              placeholder="Search vendor, description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input expenses-search-input"
-            />
-          </div>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="expenses-filter-select"
-          >
-            <option value="">All Categories</option>
-            {EXPENSE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            value={filterPaymentType}
-            onChange={(e) => setFilterPaymentType(e.target.value)}
-            className="expenses-filter-select"
-          >
-            <option value="">All Payment Types</option>
-            {EXPENSE_PAYMENT_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-          {(filterCategory || filterPaymentType || searchTerm) && (
-            <button
-              className="expenses-clear-btn"
-              onClick={() => { setFilterCategory(''); setFilterPaymentType(''); setSearchTerm(''); }}
-            >
-              <X size={14} /> Clear
-            </button>
-          )}
-        </div>
+        <TableFilters
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search vendor, description..."
+          filters={[
+            {
+              label: 'Category',
+              value: filterCategory,
+              onChange: setFilterCategory,
+              options: [
+                { label: 'All Categories', value: '' },
+                ...EXPENSE_CATEGORIES.map(c => ({ label: c, value: c })),
+              ],
+            },
+            {
+              label: 'Payment',
+              value: filterPaymentType,
+              onChange: setFilterPaymentType,
+              options: [
+                { label: 'All Payment Types', value: '' },
+                ...EXPENSE_PAYMENT_TYPES.map(t => ({ label: t, value: t })),
+              ],
+            },
+          ]}
+          onClear={() => { setFilterCategory(''); setFilterPaymentType(''); setSearchTerm(''); }}
+          isFiltered={!!(filterCategory || filterPaymentType || searchTerm)}
+        />
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -222,18 +206,6 @@ export function ExpensesPage() {
         onClose={() => setShowForm(false)}
         isPending={createMutation.isPending}
       />
-    </div>
-  );
-}
-
-function SummaryCard({ title, amount, icon }: { title: string; amount: number; icon: React.ReactNode }) {
-  return (
-    <div className="card">
-      <div className="expenses-summary-header">
-        <span className="expenses-summary-title">{title}</span>
-        {icon}
-      </div>
-      <span className="expenses-summary-amount">৳{amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
     </div>
   );
 }

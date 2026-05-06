@@ -137,3 +137,35 @@ export interface RecordExpenseResult {
   expense_id?: string;
   batch_id?: string;
 }
+
+// =============================================================================
+// Product CRUD Input Types
+// Snake-case keys match the Supabase 'items' table columns
+// =============================================================================
+
+export interface ProductCreateInput {
+  name: string;
+  sku?: string;
+  barcode?: string;
+  short_code?: string;
+  brand?: string;
+  price: number;
+  cost?: number;
+  stock: number;
+  category_id?: string;
+  image_url?: string;
+  group_tag?: string;
+}
+
+export type ProductUpdateInput = Partial<ProductCreateInput>;
+
+// =============================================================================
+// Receipt Config Update Type
+// Matches the parameters of the update_receipt_config_simple RPC
+// =============================================================================
+
+export interface ReceiptConfigUpdateInput {
+  store_name: string;
+  header_text: string;
+  footer_text: string;
+}

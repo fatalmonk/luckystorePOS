@@ -1,10 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
-import 'dotenv/config';
+import { createSupabaseClient } from '../lib/supabase-client.js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const supabase = createClient(supabaseUrl, serviceRoleKey);
+const supabase = createSupabaseClient(serviceRoleKey);
 
 async function check() {
   const email = 'temp_import_admin_' + Date.now() + '@luckystore.com';

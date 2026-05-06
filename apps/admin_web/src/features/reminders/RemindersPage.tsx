@@ -4,6 +4,8 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { SkeletonBlock, SkeletonListItem } from '../../components/PageState';
 import { useDebounce } from '../../hooks/useDebounce';
+import { MetricCard } from '../../components/data-display/MetricCard';
+import { TableFilters } from '../../components/data-display/TableFilters';
 import {
   Bell,
   Plus,
@@ -15,7 +17,6 @@ import {
   AlertCircle,
   AlertTriangle,
   Clock,
-  Search,
 } from 'lucide-react';
 import type { Reminder, ReminderType } from '../../lib/api/types';
 
@@ -175,64 +176,56 @@ export function RemindersPage() {
 
       {/* Summary Cards */}
       <div className="dashboard-grid">
-        <SummaryCard
+        <MetricCard
           title="Overdue"
-          count={overdueCount}
+          value={overdueCount}
           icon={<AlertTriangle size={20} className="text-red-500" />}
-          variant="danger"
+          color="danger"
+          variant="light"
         />
-        <SummaryCard
+        <MetricCard
           title="Today"
-          count={todayCount}
+          value={todayCount}
           icon={<Clock size={20} className="text-amber-500" />}
-          variant="warning"
+          color="warning"
+          variant="light"
         />
-        <SummaryCard
+        <MetricCard
           title="Upcoming"
-          count={upcomingCount}
+          value={upcomingCount}
           icon={<Calendar size={20} className="text-emerald-600" />}
-          variant="success"
+          color="success"
+          variant="light"
         />
       </div>
 
       {/* Toolbar */}
       <div className="reminders-toolbar">
-        <div className="reminders-filters-row">
-          <div className="reminders-search">
-            <Search size={18} className="reminders-search-icon" />
-            <input
-              type="text"
-              placeholder="Search reminders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input reminders-search-input"
-            />
-          </div>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="reminders-filter-select"
-          >
-            <option value="">All Types</option>
-            {REMINDER_TYPES.map(t => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
+        <TableFilters
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search reminders..."
+          filters={[
+            {
+              label: 'Type',
+              value: filterType,
+              onChange: setFilterType,
+              options: [
+                { label: 'All Types', value: '' },
+                ...REMINDER_TYPES.map(t => ({ label: t.label, value: t.value })),
+              ],
+            },
+          ]}
+          onClear={() => { setFilterType(''); setSearchTerm(''); }}
+          isFiltered={!!(filterType || searchTerm)}
+        >
           <button
             onClick={() => setShowCompleted(!showCompleted)}
             className={`reminders-toggle-btn ${showCompleted ? 'active' : ''}`}
           >
             <Check size={16} /> Show completed
           </button>
-          {(filterType || searchTerm) && (
-            <button
-              className="reminders-clear-btn"
-              onClick={() => { setFilterType(''); setSearchTerm(''); }}
-            >
-              <X size={14} /> Clear
-            </button>
-          )}
-        </div>
+        </TableFilters>
       </div>
 
       {/* Reminder List */}
@@ -359,38 +352,6 @@ export function RemindersPage() {
           onClose={() => { setShowModal(false); setEditingReminder(null); }}
         />
       )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Summary Card
-// ---------------------------------------------------------------------------
-
-interface SummaryCardProps {
-  title: string;
-  count: number;
-  icon: React.ReactNode;
-  variant: 'danger' | 'warning' | 'success';
-}
-
-const VARIANT_COLORS = {
-  danger: { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--color-danger)' },
-  warning: { bg: 'rgba(245, 158, 11, 0.1)', text: 'var(--color-warning)' },
-  success: { bg: 'rgba(16, 185, 129, 0.1)', text: 'var(--color-success)' },
-};
-
-function SummaryCard({ title, count, icon, variant }: SummaryCardProps) {
-  const colors = VARIANT_COLORS[variant];
-  return (
-    <div className="card">
-      <div className="reminders-summary-header">
-        <span className="reminders-summary-title">{title}</span>
-        {icon}
-      </div>
-      <span className="reminders-summary-count" style={{ color: colors.text }}>
-        {count}
-      </span>
     </div>
   );
 }

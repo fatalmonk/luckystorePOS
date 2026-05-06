@@ -1,10 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
-import 'dotenv/config';
+import { createSupabaseClient } from '../lib/supabase-client.js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
-
-const supabase = createClient(supabaseUrl, anonKey);
+const supabase = createSupabaseClient(anonKey);
 
 async function check() {
   const { data: sessionData, error: loginErr } = await supabase.auth.signInWithPassword({
