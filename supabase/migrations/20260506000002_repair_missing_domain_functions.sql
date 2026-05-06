@@ -22,7 +22,7 @@ BEGIN
 
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 REVOKE ALL ON FUNCTION public.check_idempotency(TEXT, UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.check_idempotency(TEXT, UUID) TO authenticated;
@@ -122,7 +122,7 @@ EXCEPTION WHEN OTHERS THEN
     DELETE FROM idempotency_keys WHERE idempotency_key = p_idempotency_key AND tenant_id = p_tenant_id AND completed_at IS NULL;
     RAISE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 REVOKE ALL ON FUNCTION public.record_sale(TEXT, UUID, UUID, JSONB, JSONB, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_sale(TEXT, UUID, UUID, JSONB, JSONB, TEXT) TO authenticated;
@@ -205,7 +205,7 @@ EXCEPTION WHEN OTHERS THEN
     DELETE FROM idempotency_keys WHERE idempotency_key = p_idempotency_key AND tenant_id = p_tenant_id AND completed_at IS NULL;
     RAISE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 REVOKE ALL ON FUNCTION public.record_purchase(TEXT, UUID, UUID, UUID, UUID, JSONB, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_purchase(TEXT, UUID, UUID, UUID, UUID, JSONB, TEXT) TO authenticated;
@@ -231,7 +231,7 @@ BEGIN
 
     RETURN v_balance;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 REVOKE ALL ON FUNCTION public.get_expected_cash(UUID, UUID, UUID, DATE) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_expected_cash(UUID, UUID, UUID, DATE) TO authenticated;
@@ -276,7 +276,7 @@ BEGIN
 
     RETURN v_response;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 REVOKE ALL ON FUNCTION public.record_cash_closing(TEXT, UUID, UUID, UUID, NUMERIC, DATE, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_cash_closing(TEXT, UUID, UUID, UUID, NUMERIC, DATE, TEXT) TO authenticated;

@@ -1,0 +1,15 @@
+node_modules/**
+.git/**
+.gitignore
+*.md
+.DS_Store
+dist/**
+build/**
+coverage/**
+.env
+.env.local
+.env.*.local
+**/*.test.*
+**/*.spec.*
+**/test/**
+**/__tests__/**
