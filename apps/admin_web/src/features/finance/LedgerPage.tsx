@@ -54,7 +54,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyPhone, setNewPartyPhone] = useState('');
   const { tenantId } = useAuth();
-  const notify = useNotify();
+  const { notify } = useNotify();
 
   useEffect(() => {
     fetchParties();
@@ -264,19 +264,19 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       <Drawer isOpen={showAddParty} onClose={() => setShowAddParty(false)} title={`Add ${partyType === 'supplier' ? 'Supplier' : 'Customer'}`}>
         <form onSubmit={async (e) => {
           e.preventDefault();
-          if (!newPartyName.trim()) { notify.error('Name is required'); return; }
+          if (!newPartyName.trim()) { notify('Name is required', 'error'); return; }
           const { data, error } = await supabase.from('parties').insert([{
             tenant_id: tenantId,
             type: partyType,
             name: newPartyName.trim(),
             phone: newPartyPhone.trim() || null,
           }]).select().single();
-          if (error) { notify.error(error.message); return; }
+          if (error) { notify(error.message, 'error'); return; }
           if (data) setParties(prev => [...prev, data as Party]);
           setNewPartyName('');
           setNewPartyPhone('');
           setShowAddParty(false);
-          notify.success(`${partyType === 'supplier' ? 'Supplier' : 'Customer'} added`);
+          notify(`${partyType === 'supplier' ? 'Supplier' : 'Customer'} added`, 'success');
         }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div>
             <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Name *</label>

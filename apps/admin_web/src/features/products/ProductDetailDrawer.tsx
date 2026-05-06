@@ -20,7 +20,7 @@ interface ProductDetailDrawerProps {
 
 export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetailDrawerProps) {
   const { storeId } = useAuth();
-  const notify = useNotify();
+  const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [showDeactivate, setShowDeactivate] = useState(false);
   
@@ -41,10 +41,10 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setShowDeactivate(false);
-      notify.success('Product deactivated');
+      notify('Product deactivated', 'success');
       onClose();
     },
-    onError: (err: any) => notify.error(err.message || 'Failed to deactivate product'),
+    onError: (err: any) => notify(err.message || 'Failed to deactivate product', 'error'),
   });
 
   if (!productId) return null;

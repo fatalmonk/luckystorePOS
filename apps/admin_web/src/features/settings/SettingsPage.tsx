@@ -85,7 +85,7 @@ export function SettingsPage() {
 
 function UsersSettings({ storeId }: { storeId: string }) {
   const { tenantId } = useAuth();
-  const notify = useNotify();
+  const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -100,9 +100,9 @@ function UsersSettings({ storeId }: { storeId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-users'] });
       setDeletingUserId(null);
-      notify.success('User deleted');
+      notify('User deleted', 'success');
     },
-    onError: (err: any) => notify.error(err.message || 'Failed to delete user'),
+    onError: (err: any) => notify(err.message || 'Failed to delete user', 'error'),
   });
 
   const updateMutation = useMutation({
@@ -110,9 +110,9 @@ function UsersSettings({ storeId }: { storeId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-users'] });
       setEditingUser(null);
-      notify.success('User updated');
+      notify('User updated', 'success');
     },
-    onError: (err: any) => notify.error(err.message || 'Failed to update user'),
+    onError: (err: any) => notify(err.message || 'Failed to update user', 'error'),
   });
 
   return (
@@ -226,7 +226,7 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
   const [showAddMethod, setShowAddMethod] = useState(false);
   const [deletingMethodId, setDeletingMethodId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const notify = useNotify();
+  const { notify } = useNotify();
   const { data: payments, isLoading, isError, refetch: refetchPayments } = useQuery({
     queryKey: ['settings-payments', storeId],
     queryFn: () => api.settings.getPaymentMethods(storeId),
@@ -245,9 +245,9 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
       setDeletingMethodId(null);
-      notify.success('Payment method deleted');
+      notify('Payment method deleted', 'success');
     },
-    onError: (err: any) => notify.error(err.message || 'Failed to delete payment method'),
+    onError: (err: any) => notify(err.message || 'Failed to delete payment method', 'error'),
   });
 
   return (

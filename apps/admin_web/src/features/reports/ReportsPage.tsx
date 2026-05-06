@@ -211,28 +211,28 @@ function SalesReportContent({ data }: { data: any }) {
           title="Total Revenue"
           value={`৳${data.totalRevenue.toLocaleString()}`}
           icon={<TrendingUp size={20} />}
-          color="emerald"
+          color="success"
           variant="solid"
         />
         <MetricCard
           title="Transactions"
           value={data.transactionCount.toString()}
           icon={<BarChart3 size={20} />}
-          color="blue"
+          color="info"
           variant="solid"
         />
         <MetricCard
           title="Average Ticket"
           value={`৳${data.avgTicket.toFixed(2)}`}
           icon={<TrendingUp size={20} />}
-          color="purple"
+          color="tertiary"
           variant="solid"
         />
         <MetricCard
           title="Daily Avg"
           value={`৳${data.dailySales.length > 0 ? (data.totalRevenue / data.dailySales.length).toFixed(0) : 0}`}
           icon={<Calendar size={20} />}
-          color="amber"
+          color="warning"
           variant="solid"
         />
       </div>
@@ -300,28 +300,28 @@ function InventoryReportContent({ data }: { data: any }) {
           title="Total Inventory Value"
           value={`৳${data.totalValue.toLocaleString()}`}
           icon={<Package size={20} />}
-          color="emerald"
+          color="success"
           variant="solid"
         />
         <MetricCard
           title="Total Items"
           value={data.totalItems.toString()}
           icon={<Package size={20} />}
-          color="blue"
+          color="info"
           variant="solid"
         />
         <MetricCard
           title="Low Stock Items"
           value={data.lowStockCount.toString()}
           icon={<TrendingUp size={20} />}
-          color="amber"
+          color="warning"
           variant="solid"
         />
         <MetricCard
           title="Out of Stock"
           value={data.outOfStockCount.toString()}
           icon={<Package size={20} />}
-          color="red"
+          color="danger"
           variant="solid"
         />
       </div>
@@ -377,35 +377,35 @@ function ProfitReportContent({ data }: { data: any }) {
           title="Gross Revenue"
           value={`৳${data.grossRevenue.toLocaleString()}`}
           icon={<TrendingUp size={20} />}
-          color="emerald"
+          color="success"
           variant="solid"
         />
         <MetricCard
           title="COGS"
           value={`৳${data.cogs.toLocaleString()}`}
           icon={<Package size={20} />}
-          color="red"
+          color="danger"
           variant="solid"
         />
         <MetricCard
           title="Gross Profit"
           value={`৳${data.grossProfit.toLocaleString()}`}
           icon={<TrendingUp size={20} />}
-          color={data.grossProfit >= 0 ? 'emerald' : 'red'}
+          color={data.grossProfit >= 0 ? 'success' : 'danger'}
           variant="solid"
         />
         <MetricCard
           title="Expenses"
           value={`৳${data.totalExpenses.toLocaleString()}`}
           icon={<TrendingUp size={20} />}
-          color="red"
+          color="danger"
           variant="solid"
         />
         <MetricCard
           title="Net Profit"
           value={`৳${Math.abs(data.netProfit).toLocaleString()}`}
           icon={<TrendingUp size={20} />}
-          color={isProfit ? 'emerald' : 'red'}
+          color={isProfit ? 'success' : 'danger'}
           variant="solid"
         />
       </div>

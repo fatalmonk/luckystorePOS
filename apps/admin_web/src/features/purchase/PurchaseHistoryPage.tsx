@@ -76,21 +76,21 @@ export function PurchaseHistoryPage() {
           title="Total Purchases"
           value={stats?.totalPurchases?.toString() || '0'}
           icon={<ShoppingCart size={20} />}
-          color="blue"
+          color="info"
           variant="solid"
         />
         <MetricCard
           title="Total Value"
           value={`৳${(stats?.totalValue || 0).toLocaleString()}`}
           icon={<DollarSign size={20} />}
-          color="emerald"
+          color="success"
           variant="solid"
         />
         <MetricCard
           title="Pending Drafts"
           value={stats?.pendingDrafts?.toString() || '0'}
           icon={<FileText size={20} />}
-          color="amber"
+          color="warning"
           variant="solid"
         />
       </div>
