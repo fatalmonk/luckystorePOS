@@ -48,8 +48,7 @@ jobs:
       - name: Create .env for analysis
         run: |
           cp .env.example .env
-          # Provide placeholder values so the build doesn't fail on missing keys
-          sed -i.bak 's/your-anon-key-here/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpLWRlbW8iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0ODk4NzQwMCwiZXhwIjoxOTY0NTYzNjAwfQ.dummy-key-for-ci' .env
+          sed -i.bak 's|your-anon-key-here|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpLWRlbW8iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0ODk4NzQwMCwiZXhwIjoxOTY0NTYzNjAwfQ.dummy-key-for-ci|g' .env
           rm .env.bak
 
       - name: Verify Flutter installation
@@ -85,7 +84,7 @@ jobs:
       - name: Create .env for build
         run: |
           cp .env.example .env
-          sed -i.bak 's/your-anon-key-here/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJfQ0lfREVNTyJ9.ci-dummy' .env
+          sed -i.bak 's|your-anon-key-here|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJfQ0lfREVNTyJ9.ci-dummy|g' .env
           rm .env.bak
 
       - name: Build APK (debug)
