@@ -127,5 +127,10 @@ DROP FUNCTION IF EXISTS public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, num
 
 -- NOTE: Permissions for complete_sale are managed in the canonical migration (20260426213841).
 -- Keeping these here for backward compatibility if this migration is re-run:
-REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,jsonb,text,text,text)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,jsonb,text,text,text) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,jsonb,text,text,text) TO authenticated;
+  END IF;
+END $$;

@@ -233,5 +233,10 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) TO authenticated;
+  END IF;
+END $$;

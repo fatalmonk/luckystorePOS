@@ -28,36 +28,43 @@ $$;
 -- ---------------------------------------------------------------------------
 -- RLS policies
 -- ---------------------------------------------------------------------------
-ALTER TABLE public.stock_levels ENABLE ROW LEVEL SECURITY;
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'stock_levels' AND schemaname = 'public') THEN
+    ALTER TABLE public.stock_levels ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Authenticated users can read stock levels" ON public.stock_levels;
-CREATE POLICY "Authenticated users can read stock levels"
-  ON public.stock_levels
-  FOR SELECT
-  TO authenticated
-  USING (true);
+    DROP POLICY IF EXISTS "Authenticated users can read stock levels" ON public.stock_levels;
+    CREATE POLICY "Authenticated users can read stock levels"
+      ON public.stock_levels
+      FOR SELECT
+      TO authenticated
+      USING (true);
 
-DROP POLICY IF EXISTS "Admins managers can manage stock levels" ON public.stock_levels;
-CREATE POLICY "Staff roles can manage stock levels"
-  ON public.stock_levels
-  FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.users u
-      WHERE u.auth_id = (SELECT auth.uid())
-        AND u.role IN ('admin', 'manager', 'stock')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public.users u
-      WHERE u.auth_id = (SELECT auth.uid())
-        AND u.role IN ('admin', 'manager', 'stock')
-    )
-  );
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'users' AND schemaname = 'public') THEN
+      DROP POLICY IF EXISTS "Admins managers can manage stock levels" ON public.stock_levels;
+      CREATE POLICY "Staff roles can manage stock levels"
+        ON public.stock_levels
+        FOR ALL
+        TO authenticated
+        USING (
+          EXISTS (
+            SELECT 1
+            FROM public.users u
+            WHERE u.auth_id = (SELECT auth.uid())
+              AND u.role IN ('admin', 'manager', 'stock')
+          )
+        )
+        WITH CHECK (
+          EXISTS (
+            SELECT 1
+            FROM public.users u
+            WHERE u.auth_id = (SELECT auth.uid())
+              AND u.role IN ('admin', 'manager', 'stock')
+          )
+        );
+    END IF;
+  END IF;
+END $$;
 
 -- ---------------------------------------------------------------------------
 -- Trusted stock RPCs (bypass RLS inside function; not exposed to anon)

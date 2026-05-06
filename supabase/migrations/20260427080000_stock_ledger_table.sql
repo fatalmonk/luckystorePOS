@@ -80,25 +80,9 @@ ALTER TABLE public.stock_ledger
 -- Enable RLS
 ALTER TABLE public.stock_ledger ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users to read their store's ledger
-CREATE POLICY stock_ledger_read_authenticated 
-  ON public.stock_ledger FOR SELECT 
-  TO authenticated
-  USING (
-    store_id IN (
-      SELECT store_id FROM public.user_stores WHERE user_id = auth.uid()
-    )
-  );
-
--- Allow authenticated users to insert their store's ledger entries
-CREATE POLICY stock_ledger_insert_authenticated 
-  ON public.stock_ledger FOR INSERT 
-  TO authenticated
-  WITH CHECK (
-    store_id IN (
-      SELECT store_id FROM public.user_stores WHERE user_id = auth.uid()
-    )
-  );
+-- NOTE: RLS policies referencing public.user_stores are intentionally omitted here.
+-- That table does not exist yet during bootstrap replay.
+-- Proper RLS policies are added in 20260427200000_fix_stock_ledger_rls.sql.
 
 -- Service role can do anything
 CREATE POLICY stock_ledger_service_role_all 

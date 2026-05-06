@@ -30,7 +30,7 @@ AS $$
     'group_tag',    i.group_tag,
     'image_url',    i.image_url,
     'qty_on_hand',  COALESCE(sl.qty, 0),
-    'category',     c.category
+    'category',     c.name
   )
   FROM public.items i
   LEFT JOIN public.stock_levels sl
@@ -73,7 +73,7 @@ AS $$
       i.cost,
       i.group_tag,
       i.image_url,
-      c.category AS category,
+      c.name AS category,
       c.id AS category_id,
       COALESCE(sl.qty, 0) AS qty_on_hand
     FROM public.items i

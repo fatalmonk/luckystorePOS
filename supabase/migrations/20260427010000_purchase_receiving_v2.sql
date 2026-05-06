@@ -37,7 +37,7 @@ CREATE TRIGGER set_purchase_receipts_updated_at
 CREATE TABLE IF NOT EXISTS public.purchase_receipt_items (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   receipt_id      UUID NOT NULL REFERENCES public.purchase_receipts(id) ON DELETE CASCADE,
-  item_id         UUID NOT NULL REFERENCES public.inventory_items(id) ON DELETE RESTRICT,
+  item_id         UUID NOT NULL REFERENCES public.items(id) ON DELETE RESTRICT,
   quantity        NUMERIC(15, 4) NOT NULL CHECK (quantity > 0),
   unit_cost       NUMERIC(15, 4) NOT NULL DEFAULT 0,
   UNIQUE (receipt_id, item_id)
@@ -57,7 +57,7 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
   RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- purchase_receipts policies
 CREATE POLICY "receipts_select" ON public.purchase_receipts

@@ -783,8 +783,13 @@ GRANT EXECUTE ON FUNCTION public.post_sale_to_ledger(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.process_pending_ledger_postings(uuid, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.process_pending_ledger_postings(uuid, integer) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,jsonb,text,text,text)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,jsonb,text,text,text) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,jsonb,text,text,text) TO authenticated;
+  END IF;
+END $$;
 
 REVOKE ALL ON FUNCTION public.validate_trial_balance(uuid, date, date) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.validate_trial_balance(uuid, date, date) TO authenticated;

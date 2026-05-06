@@ -3,11 +3,16 @@
 -- 2) Heartbeat-aware lease reclaim semantics
 -- 3) Retry backoff to avoid retry storms
 
-ALTER TABLE public.ledger_posting_queue
-  ADD COLUMN IF NOT EXISTS next_retry_at timestamptz NOT NULL DEFAULT now();
+DO $$
+BEGIN
+  IF to_regclass('public.ledger_posting_queue') IS NOT NULL THEN
+    ALTER TABLE public.ledger_posting_queue
+      ADD COLUMN IF NOT EXISTS next_retry_at timestamptz NOT NULL DEFAULT now();
 
-CREATE INDEX IF NOT EXISTS idx_lpq_retry_schedule
-  ON public.ledger_posting_queue (status, next_retry_at, priority DESC, created_at);
+    CREATE INDEX IF NOT EXISTS idx_lpq_retry_schedule
+      ON public.ledger_posting_queue (status, next_retry_at, priority DESC, created_at);
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.ledger_posting_idempotency (
   sale_id uuid PRIMARY KEY REFERENCES public.sales(id) ON DELETE CASCADE,
@@ -24,6 +29,10 @@ CREATE TABLE IF NOT EXISTS public.ledger_posting_idempotency (
 ALTER TABLE public.ledger_posting_idempotency ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.ledger_posting_idempotency FROM PUBLIC;
 
+DO $$
+BEGIN
+  IF to_regclass('public.ledger_workers') IS NOT NULL THEN
+    EXECUTE $func$
 CREATE OR REPLACE FUNCTION public.is_ledger_worker_alive(
   p_worker_id text,
   p_max_staleness interval DEFAULT interval '60 seconds'
@@ -31,7 +40,7 @@ CREATE OR REPLACE FUNCTION public.is_ledger_worker_alive(
 RETURNS boolean
 LANGUAGE sql
 STABLE
-AS $$
+AS $inner$
   SELECT EXISTS (
     SELECT 1
     FROM public.ledger_workers w
@@ -39,8 +48,15 @@ AS $$
       AND w.active = true
       AND w.last_heartbeat >= now() - COALESCE(p_max_staleness, interval '60 seconds')
   );
-$$;
+$inner$;
+    $func$;
+  END IF;
+END $$;
 
+DO $$
+BEGIN
+  IF to_regclass('public.ledger_posting_queue') IS NOT NULL AND to_regclass('public.ledger_workers') IS NOT NULL THEN
+    EXECUTE $func$
 CREATE OR REPLACE FUNCTION public.renew_ledger_job_lease(
   p_worker_id text,
   p_queue_id uuid
@@ -49,7 +65,7 @@ RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $$
+AS $inner$
 DECLARE
   v_updated integer := 0;
 BEGIN
@@ -67,14 +83,21 @@ BEGIN
   GET DIAGNOSTICS v_updated = ROW_COUNT;
   RETURN v_updated > 0;
 END;
-$$;
+$inner$;
+    $func$;
+  END IF;
+END $$;
 
+DO $$
+BEGIN
+  IF to_regclass('public.ledger_posting_queue') IS NOT NULL AND to_regclass('public.ledger_workers') IS NOT NULL THEN
+    EXECUTE $func$
 CREATE OR REPLACE FUNCTION public.reclaim_stale_ledger_locks()
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $$
+AS $inner$
 DECLARE
   v_reclaimed integer := 0;
 BEGIN
@@ -99,8 +122,15 @@ BEGIN
   GET DIAGNOSTICS v_reclaimed = ROW_COUNT;
   RETURN v_reclaimed;
 END;
-$$;
+$inner$;
+    $func$;
+  END IF;
+END $$;
 
+DO $$
+BEGIN
+  IF to_regclass('public.ledger_posting_queue') IS NOT NULL AND to_regclass('public.ledger_workers') IS NOT NULL THEN
+    EXECUTE $func$
 CREATE OR REPLACE FUNCTION public.claim_ledger_posting_jobs(
   p_worker_id text,
   p_batch_size integer DEFAULT 10,
@@ -110,7 +140,7 @@ RETURNS SETOF public.ledger_posting_queue
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $$
+AS $inner$
 BEGIN
   IF public.is_ledger_worker_alive(p_worker_id, interval '2 minutes') IS NOT TRUE THEN
     RAISE EXCEPTION 'worker not active or stale: %', p_worker_id;
@@ -139,7 +169,10 @@ BEGIN
   WHERE q.id = c.id
   RETURNING q.*;
 END;
-$$;
+$inner$;
+    $func$;
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.post_sale_to_ledger(
   p_sale_id uuid
@@ -389,6 +422,10 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
+DO $$
+BEGIN
+  IF to_regclass('public.ledger_posting_queue') IS NOT NULL AND to_regclass('public.ledger_workers') IS NOT NULL THEN
+    EXECUTE $func$
 CREATE OR REPLACE FUNCTION public.process_ledger_posting_batch(
   p_worker_id text,
   p_batch_size integer DEFAULT 50,
@@ -398,7 +435,7 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $$
+AS $inner$
 DECLARE
   v_job public.ledger_posting_queue%ROWTYPE;
   v_sale record;
@@ -528,10 +565,23 @@ BEGIN
     'failed', v_failed
   );
 END;
-$$;
+$inner$;
+    $func$;
+  END IF;
+END $$;
 
-REVOKE ALL ON FUNCTION public.is_ledger_worker_alive(text, interval) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.is_ledger_worker_alive(text, interval) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.is_ledger_worker_alive(text, interval)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.is_ledger_worker_alive(text, interval) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.is_ledger_worker_alive(text, interval) TO authenticated;
+  END IF;
+END $$;
 
-REVOKE ALL ON FUNCTION public.renew_ledger_job_lease(text, uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.renew_ledger_job_lease(text, uuid) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.renew_ledger_job_lease(text, uuid)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.renew_ledger_job_lease(text, uuid) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.renew_ledger_job_lease(text, uuid) TO authenticated;
+  END IF;
+END $$;
