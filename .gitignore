@@ -193,3 +193,4 @@ apply_*_v2.sql
 # to avoid leaking even non-secret config. Manage via CI secrets.
 apps/mobile_app/assets/app.env
 apps/mobile_app/flutter
+.vercel
