@@ -48,6 +48,5 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - .env
     - assets/app.env
     - assets/address_selection.html
