@@ -56,7 +56,7 @@ export function App() {
     <QueryProvider>
       <NotificationProvider>
         <AuthProvider>
-          <BrowserRouter>
+          <BrowserRouter basename="/admin">
             <ErrorBoundary>
               <OfflineIndicator />
               <Routes>
