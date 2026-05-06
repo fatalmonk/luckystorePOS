@@ -55,7 +55,6 @@ class _BulkLabelPrintScreenState extends State<BulkLabelPrintScreen> {
   List<BulkPrintProduct> _filteredProducts = [];
   List<BulkPrintProduct> _selectedProducts = [];
 
-  bool _isScanning = false;
   bool _isConnected = false;
   bool _isPrinting = false;
   bool _selectAll = false;
@@ -92,10 +91,8 @@ class _BulkLabelPrintScreenState extends State<BulkLabelPrintScreen> {
     setState(() {
       switch (event.type) {
         case PrinterEventType.scanning:
-          _isScanning = true;
           break;
         case PrinterEventType.scanComplete:
-          _isScanning = false;
           break;
         case PrinterEventType.connecting:
           _statusMessage = 'Connecting to printer...';
