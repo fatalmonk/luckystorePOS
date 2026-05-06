@@ -171,10 +171,10 @@ class _PosMainScreenState extends State<PosMainScreen> {
                   // Divider
                   Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
                   // ── RIGHT PANEL ────────────────────────────────────────
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 280),
-                    child: Expanded(
-                      flex: isLargeTablet ? 30 : (isTablet ? 35 : 40),
+                  Expanded(
+                    flex: isLargeTablet ? 30 : (isTablet ? 35 : 40),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 280),
                       child: _buildRightPanel(),
                     ),
                   ),

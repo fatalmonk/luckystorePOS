@@ -78,28 +78,31 @@ class ProductGrid extends StatelessWidget {
       );
     }
 
-    // Responsive grid: calculate columns based on available width
-    final screenWidth = MediaQuery.of(context).size.width;
-    final leftPanelWidth = screenWidth * 0.65;
-    final crossAxisCount = leftPanelWidth > 800 ? 4 : (leftPanelWidth > 500 ? 3 : 2);
-    final childAspectRatio = leftPanelWidth > 800 ? 0.85 : 0.75;
+    // Responsive grid: calculate columns based on actual available width
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width > 800 ? 4 : (width > 500 ? 3 : 2);
+        final childAspectRatio = width > 800 ? 0.85 : 0.75;
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: childAspectRatio,
-      ),
-      itemCount: items.length,
-      itemBuilder: (ctx, i) => ProductTile(
-        item: items[i],
-        onTap: allowProductAdd
-            ? () => onAddToCart(items[i])
-            : null,
-        disabledMessage: 'Product loading failed. Retry before adding items.',
-      ),
+        return GridView.builder(
+          padding: const EdgeInsets.all(12),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: childAspectRatio,
+          ),
+          itemCount: items.length,
+          itemBuilder: (ctx, i) => ProductTile(
+            item: items[i],
+            onTap: allowProductAdd
+                ? () => onAddToCart(items[i])
+                : null,
+            disabledMessage: 'Product loading failed. Retry before adding items.',
+          ),
+        );
+      },
     );
   }
 }
