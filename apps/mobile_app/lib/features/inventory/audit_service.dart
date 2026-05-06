@@ -5,8 +5,6 @@ import '../../core/utils/app_utils.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'stock_ledger_entry.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 /// Audit service for tracking inventory changes with full context
 class AuditService {

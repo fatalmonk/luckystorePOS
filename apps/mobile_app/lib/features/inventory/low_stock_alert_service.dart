@@ -5,7 +5,6 @@ import '../../core/network/network_config.dart';
 import '../../core/utils/result.dart';
 import '../../core/utils/app_utils.dart';
 import 'package:flutter/foundation.dart';
-import '../../config/environment_contract.dart';
 
 
 /// Service for monitoring low stock levels and generating alerts

@@ -184,7 +184,7 @@ class ManagerSecurityLayer {
     BuildContext context,
     String saleId,
   ) async {
-    final bool? confirmed = await requireManagerAuth(
+    await requireManagerAuth(
       context,
       reason: 'Void sale: $saleId',
       onAuthSuccess: () async {
@@ -202,7 +202,7 @@ class ManagerSecurityLayer {
     // Only require manager auth for high-value refunds (e.g., > $100)
     if (amount <= 100.0) return;
 
-    final bool? confirmed = await requireManagerAuth(
+    await requireManagerAuth(
       context,
       reason: 'High-value refund: \$$amount',
       onAuthSuccess: () async {
@@ -217,7 +217,7 @@ class ManagerSecurityLayer {
     String itemId,
     int delta,
   ) async {
-    final bool? confirmed = await requireManagerAuth(
+    await requireManagerAuth(
       context,
       reason: 'Stock adjustment: $itemId (delta: $delta)',
       onAuthSuccess: () async {

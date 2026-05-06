@@ -254,7 +254,6 @@ class DueReminderService {
     int minOverdueDays,
   ) async {
     try {
-      final cutoffDate = asOfDate.subtract(Duration(days: minOverdueDays));
 
       final url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/rest/v1/customers?'
