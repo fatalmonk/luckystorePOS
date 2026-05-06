@@ -8,7 +8,8 @@
     "scrape": "node apps/scraper/scrape-shwapno.js",
     "import-competitor": "node scripts/ops/import-competitor-data.js",
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",
-    "remove-duplicates:dry-run": "node scripts/ops/remove-duplicate-items.js --dry-run"
+    "remove-duplicates:dry-run": "node scripts/ops/remove-duplicate-items.js --dry-run",
+    "scan:secrets": "node scripts/secret_scan.js"
   },
   "license": "ISC",
   "dependencies": {

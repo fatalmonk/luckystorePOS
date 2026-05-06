@@ -28,7 +28,7 @@ jobs:
       - name: Lint (non-blocking — report only)
         run: |
           cd apps/admin_web
-          npm run lint || true
+          npm run lint
       - name: Production build (fail-fast on compile errors)
         run: |
           cd apps/admin_web
@@ -36,8 +36,6 @@ jobs:
 
   flutter_test:
     runs-on: ubuntu-latest
-    # Temporarily disabled - Flutter CI environment issue (not code-related)
-    if: false
     steps:
       - uses: actions/checkout@v4
       - name: Set up Flutter
@@ -73,8 +71,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    # Temporarily disabled - Flutter CI environment issue (not code-related)
-    if: false
     steps:
       - uses: actions/checkout@v4
       - name: Set up Flutter
