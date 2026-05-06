@@ -74,4 +74,34 @@ export const settings = {
     if (error) throw error;
     return data;
   },
+  deletePaymentMethod: async (methodId: string) => {
+    const { data, error } = await supabase
+      .from('payment_methods')
+      .delete()
+      .eq('id', methodId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+  updateUser: async (userId: string, updates: { name?: string; role?: string; pos_pin?: string }) => {
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+  deleteUser: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
 };

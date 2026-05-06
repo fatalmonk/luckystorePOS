@@ -3,8 +3,12 @@ import { supabase } from '../../lib/supabase';
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
+import { Drawer } from '../../components/ui/Drawer';
+import { useAuth } from '../../lib/AuthContext';
+import { useNotify } from '../../components/Notification';
 
 interface LedgerPageConfig {
   partyType: 'customer' | 'supplier';
@@ -46,6 +50,11 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
+  const [showAddParty, setShowAddParty] = useState(false);
+  const [newPartyName, setNewPartyName] = useState('');
+  const [newPartyPhone, setNewPartyPhone] = useState('');
+  const { tenantId } = useAuth();
+  const { notify } = useNotify();
 
   useEffect(() => {
     fetchParties();
@@ -113,7 +122,11 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
   return (
     <div className="dashboard-container">
-      <PageHeader title={title} subtitle={subtitle} />
+      <PageHeader title={title} subtitle={subtitle} actions={
+        <button className="button-primary" onClick={() => setShowAddParty(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+          <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
+        </button>
+      } />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
         {/* Party List */}
@@ -247,6 +260,38 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
           </div>
         )}
       </div>
+
+      <Drawer isOpen={showAddParty} onClose={() => setShowAddParty(false)} title={`Add ${partyType === 'supplier' ? 'Supplier' : 'Customer'}`}>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!newPartyName.trim()) { notify('Name is required', 'error'); return; }
+          const { data, error } = await supabase.from('parties').insert([{
+            tenant_id: tenantId,
+            type: partyType,
+            name: newPartyName.trim(),
+            phone: newPartyPhone.trim() || null,
+          }]).select().single();
+          if (error) { notify(error.message, 'error'); return; }
+          if (data) setParties(prev => [...prev, data as Party]);
+          setNewPartyName('');
+          setNewPartyPhone('');
+          setShowAddParty(false);
+          notify(`${partyType === 'supplier' ? 'Supplier' : 'Customer'} added`, 'success');
+        }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Name *</label>
+            <input type="text" value={newPartyName} onChange={e => setNewPartyName(e.target.value)} className="input w-full" placeholder="Enter name" required />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Phone</label>
+            <input type="text" value={newPartyPhone} onChange={e => setNewPartyPhone(e.target.value)} className="input w-full" placeholder="Phone number" />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+            <button type="button" className="button-outline" onClick={() => setShowAddParty(false)}>Cancel</button>
+            <button type="submit" className="button-primary">Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}</button>
+          </div>
+        </form>
+      </Drawer>
     </div>
   );
 };
