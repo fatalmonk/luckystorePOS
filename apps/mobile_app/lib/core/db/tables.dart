@@ -43,7 +43,7 @@ class Products extends Table {
   TextColumn get syncId => text().nullable()();
 
   @override
-  Set<Column> get primaryKeys => {id};
+  Set<Column> get primaryKey => {id};
 }
 
 class OfflineSales extends Table {
@@ -67,7 +67,7 @@ class OfflineSales extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
-  Set<Column> get primaryKeys => {id};
+  Set<Column> get primaryKey => {id};
 }
 
 class OfflineSaleItems extends Table {
@@ -83,7 +83,7 @@ class OfflineSaleItems extends Table {
   TextColumn get barcode => text().nullable()();
 
   @override
-  Set<Column> get primaryKeys => {id};
+  Set<Column> get primaryKey => {id};
 }
 
 class OfflineStockLevels extends Table {
@@ -97,13 +97,13 @@ class OfflineStockLevels extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
-  Set<Column> get primaryKeys => {id};
+  Set<Column> get primaryKey => {id};
 }
 
 class SyncQueue extends Table {
   TextColumn get id => text()();
   IntColumn get operationType => integer()();
-  TextColumn get tableName => text()();
+  TextColumn get syncTable => text()();
   TextColumn get recordId => text()();
   BlobColumn get rawData => blob()();
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
@@ -115,11 +115,11 @@ class SyncQueue extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
-  Set<Column> get primaryKeys => {id};
+  Set<Column> get primaryKey => {id};
 }
 
 class OfflineSettings extends Table {
-  TextColumn get key => text().primaryKey()();
+  TextColumn get key => text()();
   TextColumn get value => text()();
   TextColumn get description => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();

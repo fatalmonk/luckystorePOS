@@ -52,7 +52,7 @@ class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
       _buffer = _buffer.substring(0, _buffer.length - 1);
     } else if (key == LogicalKeyboardKey.escape) {
       _buffer = '';
-    } else if (key.isCharacter) {
+    } else if (key.keyLabel.length == 1) {
       _buffer += key.keyLabel;
       
       // Debounce buffer processing to handle fast scanners

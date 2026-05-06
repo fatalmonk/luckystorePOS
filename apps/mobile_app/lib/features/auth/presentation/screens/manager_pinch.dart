@@ -114,7 +114,7 @@ class _ManagerPinDialogState extends State<ManagerPinDialog> {
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.authenticateStaffPin(_pin);
+      final result = await authProvider.verifyManagerPin(_pin);
 
       if (result) {
         _showSuccess();
@@ -189,7 +189,7 @@ class ManagerSecurityLayer {
       reason: 'Void sale: $saleId',
       onAuthSuccess: () async {
         final posProvider = context.read<PosProvider>();
-        await posProvider.voidSale(saleId);
+        await posProvider.voidSale(saleId, 'Manager override: $saleId');
       },
     );
   }
@@ -221,7 +221,8 @@ class ManagerSecurityLayer {
       context,
       reason: 'Stock adjustment: $itemId (delta: $delta)',
       onAuthSuccess: () async {
-        // Call adjust_stock RPC or equivalent
+        final posProvider = context.read<PosProvider>();
+        await posProvider.adjustStock(itemId, delta);
       },
     );
   }
@@ -244,19 +245,20 @@ class PinAuthorizeButton extends StatelessWidget {
       onPressed: () async {
         final authProvider = context.read<AuthProvider>();
         
-        if (authProvider.user.role == 'manager' || authProvider.user.role == 'admin') {
-          // Allow managers to proceed directly
-          onAuthorized();
-        } else {
-          // Require PIN for others
-          ManagerSecurityLayer.requireManagerAuth(
-            context,
-            reason: reason,
-            onAuthSuccess: () {
-              onAuthorized();
-            },
-          );
-        }
+          final role = authProvider.appUser?.role;
+          if (role == 'manager' || role == 'admin') {
+            // Allow managers to proceed directly
+            onAuthorized();
+          } else {
+            // Require PIN for others
+            await ManagerSecurityLayer.requireManagerAuth(
+              context,
+              reason: reason,
+              onAuthSuccess: () async {
+                onAuthorized();
+              },
+            );
+          }
       },
       child: const Text('Authorize'),
     );

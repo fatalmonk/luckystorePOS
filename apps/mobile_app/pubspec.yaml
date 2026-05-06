@@ -35,7 +35,9 @@ dependencies:
   # sqlcipher: ^3.0.0           # Optional: encrypted DB (disabled - package not found)
   flutter_background_service: ^5.0.5
   webview_flutter: ^4.8.0        # Google Maps address selection
-  # flutter_workmanager: ^0.5.9   # Disabled - package not found
+  workmanager: ^0.7.0
+  path: ^1.9.0
+
 
 dev_dependencies:
   flutter_test:
@@ -43,6 +45,10 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.14.1
   drift_dev: ^2.31.0           # Code generation for Drift ORM — dev only
+  mocktail: ^1.0.4
+  integration_test:
+    sdk: flutter
+
 
 flutter:
   uses-material-design: true

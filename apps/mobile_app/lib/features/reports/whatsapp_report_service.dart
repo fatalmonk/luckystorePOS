@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+
 import 'package:http/http.dart' as http;
 import '../../core/network/network_config.dart';
 import '../../core/utils/result.dart';
@@ -88,7 +90,7 @@ class WhatsAppReportService {
       if (formatted.startsWith('88')) {
         formatted = '+$formatted';
       } else if (formatted.startsWith('01')) {
-        formatted = '+88$formatted.substring(1);
+        formatted = '+88${formatted.substring(1)}';
       } else {
         formatted = '+88$formatted';
       }
@@ -157,7 +159,7 @@ class WhatsAppReportService {
       // Note: Using WhatsApp Business API or third-party service
       final sentResult = await _sendToWhatsApp(_ownerPhoneNumber!, message);
 
-      if (sentResult.isSuccess) {
+      if (sentResult is Success) {
         _lastReportSent = DateTime.now();
 
         _broadcastEvent(ReportEvent(
@@ -176,9 +178,10 @@ class WhatsAppReportService {
           reportDate: reportDate,
         ));
       } else {
-        return Failure<ReportResult>(sentResult.data);
+        return Failure<ReportResult>((sentResult as Failure).error);
       }
     } catch (e, stackTrace) {
+
       Logger.error('WhatsAppReportService.sendDailyReport failed', e, stackTrace);
       _broadcastEvent(ReportEvent(
         type: ReportEventType.error,
@@ -390,15 +393,16 @@ class WhatsAppReportService {
         : '';
 
     return '''
-📊 *_DAILY SALES REPORT - $dateStr_*
+📊 *_DAILY SALES REPORT - ${dateStr}_*
 
 🏪 *_Store:_* ${storeInfo['name']}
 
 📈 *_SALES SUMMARY_*
-• Total Sales: _$totalSales_ transactions
-• Total Revenue: *_৳$totalAmount_*
-• Items Sold: _$totalItems_ units
-• Average Order: *_৳$avgOrder_*
+• Total Sales: _${totalSales}_ transactions
+• Total Revenue: *_৳${totalAmount}_*
+• Items Sold: _${totalItems}_ units
+• Average Order: *_৳${avgOrder}_*
+
 
 💰 *_PAYMENT BREAKDOWN_*
 (payment_mode: amount)

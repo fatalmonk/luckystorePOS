@@ -1,47 +1,39 @@
-/// Background sync service for offline-first architecture.
-/// Uses WorkManager (Android) and BGTaskScheduler (iOS) to process
-/// offline sync actions even when the app is minimized or the device is asleep.
-
 import 'dart:async';
-import 'package:flutter_workmanager.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:flutter/foundation.dart';
 import '../offline/db.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Main work manager task that executes background synchronization.
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      final database = LazyDatabase()() as OfflineDatabase;
+      final database = OfflineDatabase();
       final supabase = Supabase.instance.client;
       
-      // Get pending sync actions
       final pendingActions = await database.getPendingActions();
       
       if (pendingActions.isEmpty) {
         return Future.value(true);
       }
       
-      // Process each action
       for (final action in pendingActions) {
-        // Mark as syncing
-        await database.updateActionStatus(action.id.toValue(), 'syncing');
+        await database.updateActionStatus(action.id, SyncActionStatus.syncing);
         
         try {
-          final payload = action.payload.toValue();
+          final payload = action.payload;
           
-          // Sync to Supabase
           final response = await supabase.rpc('complete_sale', 
             params: {'p_action': payload}
           );
           
-          if (response != null && response['success']) {
-            await database.updateActionStatus(action.id.toValue(), 'success');
+          if (response != null && (response is Map && response['success'] == true)) {
+            await database.updateActionStatus(action.id, SyncActionStatus.success);
           } else {
-            await database.updateActionStatus(action.id.toValue(), 'failed');
+            await database.updateActionStatus(action.id, SyncActionStatus.failed);
           }
         } catch (e) {
-          await database.updateActionStatus(action.id.toValue(), 'failed');
+          await database.updateActionStatus(action.id, SyncActionStatus.failed);
         }
       }
       
@@ -53,7 +45,6 @@ void callbackDispatcher() {
   });
 }
 
-/// Manager class to coordinate background tasks.
 class OfflineSyncManager {
   static final OfflineSyncManager _instance = OfflineSyncManager._internal();
   factory OfflineSyncManager() => _instance;
@@ -65,20 +56,18 @@ class OfflineSyncManager {
       isInDebugMode: false,
     );
 
-    // Register periodic sync task
     await Workmanager().registerPeriodicTask(
       'offlineSync',
       'offlineSyncTask',
       frequency: const Duration(minutes: 15),
-      constraints: TaskConstraints(
+      constraints: Constraints(
         networkType: NetworkType.connected,
       ),
     );
   }
 
   Future<void> enqueueSync(String actionId, Map<String, dynamic> payload) async {
-    // This would be handled by the Drift database layer
-    // The WorkManager will pick up pending actions
     debugPrint('Sync task queued: $actionId');
   }
 }
+

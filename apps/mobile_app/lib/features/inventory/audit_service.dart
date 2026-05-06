@@ -124,7 +124,7 @@ class AuditService {
       }
       return 0;
     } catch (e) {
-      Logger.warning('AuditService: Could not fetch previous quantity', e);
+      Logger.warning('AuditService: Could not fetch previous quantity: $e');
       return 0;
     }
   }
@@ -184,7 +184,7 @@ class AuditService {
     required List<InventoryChange> changes,
     String? performedBy,
   }) async {
-    final results = List.generate(changes.length, (index) => null);
+    final results = List<StockLedgerEntry?>.filled(changes.length, null);
     final errors = <int>[];
 
     for (int i = 0; i < changes.length; i++) {
@@ -202,7 +202,7 @@ class AuditService {
           metadata: change.metadata,
         );
         
-        if (result.isSuccess) {
+        if (result is Success<StockLedgerEntry>) {
           results[i] = result.data;
         } else {
           errors.add(i);
@@ -235,32 +235,35 @@ class AuditService {
   }) async {
     try {
       var url = Uri.parse(
-        '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?'
-        'product_id.eq=$productId&'
-        'select=*&'
-        'order=timestamp.desc'
+        '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?select=*&order=timestamp.desc&product_id=eq.$productId'
       );
 
       if (storeId != null) {
-        url = Uri.parse(
-          '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?'
-          'product_id.eq=$productId&'
-          'store_id.eq=$storeId&'
-          'select=*&'
-          'order=timestamp.desc'
-        );
+        url = url.replace(queryParameters: {
+          ...url.queryParameters,
+          'store_id': 'eq.$storeId',
+        });
       }
 
       if (startDate != null) {
-        url = Uri.parse('$url&timestamp.gte=${startDate.toIso8601String()}');
+        url = url.replace(queryParameters: {
+          ...url.queryParameters,
+          'timestamp.gte': startDate.toIso8601String(),
+        });
       }
 
       if (endDate != null) {
-        url = Uri.parse('$url&timestamp.lte=${endDate.toIso8601String()}');
+        url = url.replace(queryParameters: {
+          ...url.queryParameters,
+          'timestamp.lte': endDate.toIso8601String(),
+        });
       }
 
       if (limit != null) {
-        url = Uri.parse('$url&limit=$limit');
+        url = url.replace(queryParameters: {
+          ...url.queryParameters,
+          'limit': limit.toString(),
+        });
       }
 
       final headers = {
