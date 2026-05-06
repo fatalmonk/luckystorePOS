@@ -1,127 +1,140 @@
-# Lucky Store QA Test Suite - Month 2
+# Lucky Store POS
+
+A modern Point of Sale system designed for retail businesses in Bangladesh.
 
 ## Overview
 
-Comprehensive Quality Assurance test suite for the Lucky Store Month 2 systems, covering all critical transaction processing flows.
+Lucky Store POS is a comprehensive retail management solution that helps small to medium-sized retail stores streamline operations including sales processing, inventory management, customer tracking, and label printing.
 
-## Test Structure
+## Project Structure
 
 ```
-apps/mobile_app/test/
-├── unit/                       # Unit tests (6 files)
-│   ├── duplicate_submission_test.dart
-│   ├── race_conditions_test.dart
-│   ├── overdue_calculations_test.dart
-│   ├── stock_validation_test.dart
-│   ├── offline_queue_test.dart
-│   └── statement_accuracy_test.dart
-├── integration/
-│   └── all_systems_integration_test.dart
-├── load/
-│   └── load_tests.dart
-├── MANUAL_TEST_CHECKLIST.md   # Manual testing checklist
-└── README.md                  # This file
+Lucky Store/
+├── apps/
+│   ├── mobile_app/          # Flutter POS app (Android/iOS)
+│   │   ├── lib/
+│   │   │   ├── features/
+│   │   │   │   ├── pos/         # Point of Sale screen
+│   │   │   │   ├── inventory/   # Inventory management
+│   │   │   │   ├── checkout/    # Checkout & payments
+│   │   │   │   └── ...
+│   │   │   └── core/
+│   │   │       └── services/
+│   │   │           └── printer/  # Label printer (MHT-P29L)
+│   │   └── ...
+│   ├── admin_web/           # React admin dashboard
+│   └── scraper/             # Product data scraper
+├── landing-page/            # Public website (HTML/CSS)
+├── supabase/                # Database & Edge Functions
+└── data/                    # Inventory CSVs and assets
 ```
 
-## Running Tests
+## Features
 
+### Mobile App (Flutter)
+- **Sales Management** - Process transactions with cash/card/mobile payments
+- **Inventory Tracking** - Real-time stock with low stock alerts, CSV bulk import
+- **Customer Management** - Build profiles, track purchase history
+- **Label Printing** - Print price labels with MRP using MHT-P29L Bluetooth printer
+- **Barcode Scanning** - Scan products for quick checkout
+- **Offline Support** - Works without internet, syncs when connected
+- **Google Maps Integration** - Address selection for deliveries
+
+### Admin Web (React + Vite)
+- Dashboard with sales analytics
+- Product management
+- Customer & supplier ledgers
+- Sales history & reports
+- Purchase entry
+- Expense tracking
+
+## Quick Start
+
+### Prerequisites
+- Flutter SDK (for mobile app)
+- Node.js (for admin web)
+- Supabase CLI (for backend)
+
+### Mobile App
 ```bash
-# Navigate to mobile app directory
 cd apps/mobile_app
-
-# Run all unit tests
-flutter test test/unit/
-
-# Run specific unit test
-flutter test test/unit/duplicate_submission_test.dart
-
-# Run integration tests
-flutter test test/integration/
-
-# Run load tests
-flutter test test/load/
-
-# Run the default widget test
-flutter test test/widget_test.dart
-
-# Run all tests
-flutter test
+flutter pub get
+flutter run
 ```
 
-## Test Categories
+### Admin Web
+```bash
+cd apps/admin_web
+npm install
+npm run dev
+```
 
-### 1. Duplicate Submissions
-- Idempotency key generation and uniqueness
-- Offline queue duplicate detection
-- RPC-level idempotency
-- Invoice duplicate protection
+### Supabase Local Development
+```bash
+supabase start
+supabase db reset  # Applies migrations
+```
 
-### 2. Race Conditions
-- Concurrent sales of same item
-- Simultaneous payment processing
-- Offline sync guard clauses
-- Session state consistency
+## Deployment
 
-### 3. Concurrent Payments
-- Split payments across methods
-- Overpayment handling
-- Exact payment flow
-- Change calculation
+### Landing Page (Vercel)
+```bash
+vercel --prod
+```
+URL: https://lucky-store-pos-six.vercel.app/
 
-### 4. Overdue Calculations
-- Days overdue accuracy
-- Aging buckets (0-30, 31-60, 61-90, 90+)
-- Balance from ledger entries
-- Promise to pay handling
+### APK Distribution
+Download from GitHub Releases: https://github.com/fatalmonk/luckystorePOS/releases
 
-### 5. Wrong Cost Inputs
-- Negative cost rejection
-- Zero cost handling
-- Large cost validation
-- Decimal precision (4 places)
+## Environment Setup
 
-### 6. Negative Stock
-- Sales exceeding stock
-- Negative quantity handling
-- Stock validation before sale
-
-### 7. Offline Queue Replay
-- Queue persistence (JSON save/load)
-- Exponential backoff retry
-- Conflict detection
-- State transitions
-
-### 8. Statement Accuracy
-- Double-entry bookkeeping
-- Running balance
-- Debit/credit display
-- Void reversals
-
-### 9. Performance & Load
-- Large inventory search (1000+ items)
-- Customer reports (500+ customers)
-- Ledger display (1000+ entries)
-- Offline queue (500+ transactions)
-
-### 10. Manual Testing
-See `MANUAL_TEST_CHECKLIST.md` for 60+ manual scenarios.
-
-## Dependencies
-
-The tests use only built-in Dart test libraries. No external mock libraries are currently required.
-
-## Notes
-
-- **Unit tests**: Pure Dart logic, no Flutter widget dependencies
-- **Integration tests**: Cross-component flows, mock Supabase where needed
-- **Load tests**: Performance benchmarks with Stopwatch timing
-- **Manual tests**: Human-verified UI flows
-
-## Expected Output
+Copy the example files and fill in your values:
 
 ```bash
-00:00 +1: loading test/widget_test.dart
-00:01 +1: All tests passed!
+# Root
+cp .env.example .env
+
+# Mobile app
+cp apps/mobile_app/.env.example apps/mobile_app/.env
+
+# Admin web (uses root .env or Vercel env vars)
 ```
 
-Each test file should output its timing metrics (load tests) for monitoring performance regressions.
+See `.env.example` files for required variables.
+
+## Key Integrations
+
+- **Supabase** - Database, Auth, Edge Functions, Real-time subscriptions
+- **Google Maps** - Address selection via WebView + JavaScriptChannel
+- **SSLCommerz** - Payment gateway integration
+- **MHT-P29L Printer** - Bluetooth thermal label printing with TSPL commands
+
+## Hardware Support
+
+### Label Printer: MHT-P29L
+- Bluetooth connection via `flutter_blue_plus`
+- TSPL command format for labels
+- Supports Code128 barcodes
+- MRP with strikethrough pricing
+- 40x30mm label size
+
+## Database
+
+PostgreSQL with Supabase. Key tables:
+- `products` - Inventory items with MRP/stock
+- `sales` - Transaction records
+- `customers` - Customer profiles
+- `inventory_adjustments` - Stock movements
+- `tenant_isolation` - Multi-tenant support
+
+See `supabase/migrations/` for schema details.
+
+## Contact
+
+- **Email:** luckystore.1947@gmail.com
+- **Phone:** 01731944544
+- **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh
+
+## License
+
+Private - Lucky Store © 2024
