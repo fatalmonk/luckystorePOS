@@ -3,11 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonRow } from '../../components/PageState';
-import { Users, CreditCard, FileText, UserPlus, Save, Check, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Users, CreditCard, FileText, UserPlus, Save, Check, ToggleLeft, ToggleRight, Trash2, Edit2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AddUserModal } from './AddUserModal';
 import { AddPaymentMethodModal } from './AddPaymentMethodModal';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { Modal } from '../../components/ui/Modal';
 import { PageHeader } from '../../components/layout/PageHeader';
+import { useNotify } from '../../components/Notification';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
@@ -82,10 +85,34 @@ export function SettingsPage() {
 
 function UsersSettings({ storeId }: { storeId: string }) {
   const { tenantId } = useAuth();
+  const notify = useNotify();
+  const queryClient = useQueryClient();
   const [showAddUser, setShowAddUser] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const { data: users, isLoading, isError, refetch } = useQuery({
     queryKey: ['settings-users', storeId],
     queryFn: () => api.settings.getUsers(storeId),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => api.settings.deleteUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings-users'] });
+      setDeletingUserId(null);
+      notify.success('User deleted');
+    },
+    onError: (err: any) => notify.error(err.message || 'Failed to delete user'),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: any }) => api.settings.updateUser(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings-users'] });
+      setEditingUser(null);
+      notify.success('User updated');
+    },
+    onError: (err: any) => notify.error(err.message || 'Failed to update user'),
   });
 
   return (
@@ -108,20 +135,21 @@ function UsersSettings({ storeId }: { storeId: string }) {
             <th style={{ paddingBottom: 'var(--space-3)' }}>Email</th>
             <th style={{ paddingBottom: 'var(--space-3)' }}>Role</th>
             <th style={{ paddingBottom: 'var(--space-3)' }}>Last Login</th>
+            <th style={{ paddingBottom: 'var(--space-3)' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {isLoading ? (
-            Array(3).fill(0).map((_, i) => <SkeletonRow key={i} cols={4} />)
+            Array(3).fill(0).map((_, i) => <SkeletonRow key={i} cols={5} />)
           ) : isError ? (
             <tr>
-              <td colSpan={4}>
+              <td colSpan={5}>
                 <ErrorState message="Failed to load users." onRetry={() => refetch()} />
               </td>
             </tr>
           ) : users?.length === 0 ? (
             <tr>
-              <td colSpan={4}>
+              <td colSpan={5}>
                 <EmptyState
                   icon={<Users size={48} />}
                   title="No users yet"
@@ -146,6 +174,16 @@ function UsersSettings({ storeId }: { storeId: string }) {
                 <td style={{ padding: 'var(--space-4) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
                   {u.last_login || u.last_login_at ? new Date(u.last_login || u.last_login_at).toLocaleDateString('en-GB') : 'Never'}
                 </td>
+                <td style={{ padding: 'var(--space-4) 0' }}>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                    <button onClick={() => setEditingUser(u)} style={{ color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Edit user">
+                      <Edit2 size={16} />
+                    </button>
+                    <button onClick={() => setDeletingUserId(u.id)} style={{ color: 'var(--color-danger)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Delete user">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))
           )}
@@ -158,13 +196,37 @@ function UsersSettings({ storeId }: { storeId: string }) {
         tenantId={tenantId}
         onClose={() => setShowAddUser(false)}
       />
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          isOpen={!!editingUser}
+          onClose={() => setEditingUser(null)}
+          onSave={(updates) => updateMutation.mutate({ id: editingUser.id, updates })}
+          isSaving={updateMutation.isPending}
+        />
+      )}
+
+      {/* Delete User Confirm */}
+      <ConfirmDialog
+        isOpen={!!deletingUserId}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => deletingUserId && deleteMutation.mutate(deletingUserId)}
+        onCancel={() => setDeletingUserId(null)}
+      />
     </div>
   );
 }
 
 function PaymentsSettings({ storeId }: { storeId: string }) {
   const [showAddMethod, setShowAddMethod] = useState(false);
+  const [deletingMethodId, setDeletingMethodId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const notify = useNotify();
   const { data: payments, isLoading, isError, refetch: refetchPayments } = useQuery({
     queryKey: ['settings-payments', storeId],
     queryFn: () => api.settings.getPaymentMethods(storeId),
@@ -176,6 +238,16 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
     },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.settings.deletePaymentMethod(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
+      setDeletingMethodId(null);
+      notify.success('Payment method deleted');
+    },
+    onError: (err: any) => notify.error(err.message || 'Failed to delete payment method'),
   });
 
   return (
@@ -235,6 +307,9 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
                   {pm.is_active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                   {pm.is_active ? 'Active' : 'Inactive'}
                 </button>
+                <button onClick={() => setDeletingMethodId(pm.id)} style={{ color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Delete payment method">
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))
@@ -245,6 +320,16 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
         isOpen={showAddMethod}
         storeId={storeId}
         onClose={() => setShowAddMethod(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deletingMethodId}
+        title="Delete Payment Method"
+        message="Are you sure you want to delete this payment method? Existing transactions will not be affected."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => deletingMethodId && deleteMutation.mutate(deletingMethodId)}
+        onCancel={() => setDeletingMethodId(null)}
       />
     </div>
   );
@@ -344,5 +429,52 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
         </div>
       </div>
     </form>
+  );
+}
+
+function EditUserModal({ user, isOpen, onClose, onSave, isSaving }: { user: any; isOpen: boolean; onClose: () => void; onSave: (updates: any) => void; isSaving: boolean }) {
+  const [name, setName] = useState(user?.name || user?.full_name || '');
+  const [role, setRole] = useState(user?.role || 'cashier');
+  const [pin, setPin] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || user.full_name || '');
+      setRole(user.role || 'cashier');
+      setPin('');
+    }
+  }, [user]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit User">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Email</label>
+          <input type="email" value={user?.email || ''} disabled className="input w-full" style={{ opacity: 0.6 }} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Full Name</label>
+          <input type="text" value={name} onChange={e => setName(e.target.value)} className="input w-full" />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Role</label>
+          <select value={role} onChange={e => setRole(e.target.value)} className="input w-full">
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="cashier">Staff</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>New POS PIN</label>
+          <input type="password" value={pin} onChange={e => setPin(e.target.value)} placeholder="Leave blank to keep current" className="input w-full" />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+          <button className="button-outline" onClick={onClose}>Cancel</button>
+          <button className="button-primary" onClick={() => onSave({ name, role, ...(pin ? { pos_pin: pin } : {}) })} disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }

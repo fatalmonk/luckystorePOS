@@ -1,8 +1,23 @@
-import { Search, Command, Bell, Moon } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Command, Bell, Moon, Sun } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export function TopHeader() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark(!isDark);
 
   return (
     <header className="top-header">
@@ -42,9 +57,9 @@ export function TopHeader() {
           <span className="sr-only">Notifications</span>
           <Bell size={16} />
         </button>
-        <button className="header-button">
-          <span className="sr-only">Dark mode</span>
-          <Moon size={16} />
+        <button className="header-button" onClick={toggleTheme}>
+          <span className="sr-only">Toggle theme</span>
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <div className="user-profile">
           <div className="avatar">M</div>

@@ -25,6 +25,11 @@ export const products = {
     if (error) throw error;
     return data;
   },
+  remove: async (id: string) => {
+    const { data, error } = await supabase.from('items').update({ active: false }).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
 };
 
 export const categories = {

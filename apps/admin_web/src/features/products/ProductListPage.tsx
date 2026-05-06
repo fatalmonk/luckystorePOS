@@ -32,6 +32,7 @@ export function ProductListPage() {
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'stock-asc'>('name-asc');
 
   const { data: products, isLoading, error, refetch } = useQuery({
     queryKey: ['products'],
@@ -43,14 +44,33 @@ export function ProductListPage() {
     queryFn: () => api.categories.list(),
   });
 
-  const filteredProducts = useMemo(() =>
-    products?.filter((p: any) =>
+  const filteredProducts = useMemo(() => {
+    let filtered = products?.filter((p: any) =>
       p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       p.barcode?.toLowerCase().includes(debouncedSearch.toLowerCase())
-    ) ?? [],
-    [products, debouncedSearch]
-  );
+    ) ?? [];
+
+    // Apply sorting
+    filtered = [...filtered].sort((a: any, b: any) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'price-asc':
+          return (a.price || 0) - (b.price || 0);
+        case 'price-desc':
+          return (b.price || 0) - (a.price || 0);
+        case 'stock-asc':
+          return (a.stock || 0) - (b.stock || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [products, debouncedSearch, sortBy]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -106,11 +126,16 @@ export function ProductListPage() {
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <select className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary">
-            <option value="">Sort By</option>
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-            <option value="stock">Stock</option>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="name-asc">Name A-Z</option>
+            <option value="name-desc">Name Z-A</option>
+            <option value="price-asc">Price Low-High</option>
+            <option value="price-desc">Price High-Low</option>
+            <option value="stock-asc">Stock Low-High</option>
           </select>
         </div>
       </div>

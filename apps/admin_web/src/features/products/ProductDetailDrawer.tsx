@@ -1,14 +1,16 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Drawer } from '../../components/ui/Drawer';
 import { Button } from '../../components/ui/Button';
-import { Edit2, Package, TrendingUp } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Edit2, Package, TrendingUp, Trash2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { SkeletonBlock } from '../../components/PageState';
 import { Badge } from '../../components/ui/Badge';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { useNotify } from '../../components/Notification';
 
 interface ProductDetailDrawerProps {
   productId: string | null;
@@ -18,6 +20,9 @@ interface ProductDetailDrawerProps {
 
 export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetailDrawerProps) {
   const { storeId } = useAuth();
+  const notify = useNotify();
+  const queryClient = useQueryClient();
+  const [showDeactivate, setShowDeactivate] = useState(false);
   
   const { data: product, isLoading: isProductLoading } = useQuery({
     queryKey: ['product', productId],
@@ -29,6 +34,17 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
     queryKey: ['stock-history', storeId, productId],
     queryFn: () => api.inventory.history(storeId!, productId!),
     enabled: !!productId && !!storeId,
+  });
+
+  const deactivateMutation = useMutation({
+    mutationFn: () => api.products.remove(productId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setShowDeactivate(false);
+      notify.success('Product deactivated');
+      onClose();
+    },
+    onError: (err: any) => notify.error(err.message || 'Failed to deactivate product'),
   });
 
   if (!productId) return null;
@@ -65,6 +81,15 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             <Button variant="outline" onClick={() => onEdit(product)} icon={<Edit2 size={16} />}>
               Edit
             </Button>
+            {product.active && (
+              <button
+                onClick={() => setShowDeactivate(true)}
+                style={{ color: 'var(--color-danger)', cursor: 'pointer', background: 'none', border: 'none', padding: '8px' }}
+                aria-label="Deactivate product"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
 
           {/* Metrics */}
@@ -123,6 +148,16 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
       ) : (
         <div className="text-center text-text-muted p-8">Product not found</div>
       )}
+
+      <ConfirmDialog
+        isOpen={showDeactivate}
+        title="Deactivate Product"
+        message="This will hide the product from POS and reports. Existing sales history will be preserved."
+        confirmLabel="Deactivate"
+        variant="danger"
+        onConfirm={() => deactivateMutation.mutate()}
+        onCancel={() => setShowDeactivate(false)}
+      />
     </Drawer>
   );
 }

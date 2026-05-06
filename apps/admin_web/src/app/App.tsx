@@ -19,6 +19,7 @@ const LazySupplierLedgerPage = React.lazy(() => import('../features/finance/Supp
 const LazyCustomerLedgerPage = React.lazy(() => import('../features/finance/CustomerLedgerPage').then(m => ({ default: m.CustomerLedgerPage })));
 const LazyCollectionsWorkspace = React.lazy(() => import('../features/collections/CollectionsWorkspace').then(m => ({ default: m.CollectionsWorkspace })));
 const LazyPurchaseEntryPage = React.lazy(() => import('../features/purchase/PurchaseEntryPage').then(m => ({ default: m.PurchaseEntryPage })));
+const LazyPurchaseHistoryPage = React.lazy(() => import('../features/purchase/PurchaseHistoryPage').then(m => ({ default: m.PurchaseHistoryPage })));
 const LazySettingsPage = React.lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const LazyReportsPage = React.lazy(() => import('../features/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
 const LazyQuickPosPage = React.lazy(() => import('../features/pos/QuickPosPage').then(m => ({ default: m.QuickPosPage })));
@@ -71,6 +72,7 @@ export function App() {
                   <Route path="finance/customers" element={<LazyRoute><LazyCustomerLedgerPage /></LazyRoute>} />
                   <Route path="collections" element={<LazyRoute><LazyCollectionsWorkspace /></LazyRoute>} />
                   <Route path="purchase" element={<LazyRoute><LazyPurchaseEntryPage /></LazyRoute>} />
+                  <Route path="purchase/history" element={<LazyRoute><LazyPurchaseHistoryPage /></LazyRoute>} />
                   <Route path="expenses" element={<LazyRoute><LazyExpensesPage /></LazyRoute>} />
                   <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
                   <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
