@@ -9,6 +9,7 @@
 /// The core/services/printer/ implementation is the canonical version.
 /// This file re-exports it for convenience and adds the PDF receipt
 /// and label printing capabilities.
+library;
 
 // Re-export the canonical printer service and its models
 export '../../core/services/printer/printer_service.dart';
@@ -148,7 +149,7 @@ class LabelPrinterService {
   LabelPrinterService._internal();
 
   /// Scans for and connects to a printer by name (default: "M102")
-  Future<void> connect({String targetDeviceName = "M102"}) async {
+  Future<void> connect({String targetDeviceName = 'M102'}) async {
     if (kIsWeb) {
       debugPrint('[LabelPrinterService] Bluetooth scanning not supported on Web.');
       return;

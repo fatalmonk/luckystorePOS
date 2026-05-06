@@ -382,14 +382,13 @@ class WhatsAppReportService {
 
     // Build top products
     final productLines = topProducts.isNotEmpty
-        ? '\n🏆 TOP SELLING PRODUCTS:\n' +
-            topProducts.asMap().entries.map((entry) {
+        ? '\n🏆 TOP SELLING PRODUCTS:\n${topProducts.asMap().entries.map((entry) {
               final index = entry.key + 1;
               final product = entry.value;
               final name = product['product_name'] ?? 'Unknown';
               final qty = product['quantity'] as int;
               return '    $index. $name (Sold: $qty units)';
-            }).join('\n')
+            }).join('\n')}'
         : '';
 
     return '''

@@ -45,7 +45,7 @@ class StockLedgerRepository {
             .toList();
 
         // Apply filters if not in URL
-        final filtered = FilterLedgerEntries(entries, query);
+        final filtered = filterLedgerEntries(entries, query);
 
         return Success<List<StockLedgerEntry>>(filtered);
       } else {
@@ -197,7 +197,7 @@ class StockLedgerRepository {
 }
 
 /// Filter ledger entries based on query criteria
-List<StockLedgerEntry> FilterLedgerEntries(
+List<StockLedgerEntry> filterLedgerEntries(
   List<StockLedgerEntry> entries,
   StockLedgerQuery query,
 ) {

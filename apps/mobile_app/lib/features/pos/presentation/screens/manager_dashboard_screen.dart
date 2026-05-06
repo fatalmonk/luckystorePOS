@@ -513,8 +513,9 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
 
   String _formatDuration(Duration? duration) {
     if (duration == null) return '—';
-    if (duration.inHours >= 1)
+    if (duration.inHours >= 1) {
       return '${duration.inHours}h ${duration.inMinutes % 60}m';
+    }
     if (duration.inMinutes >= 1) return '${duration.inMinutes}m';
     return '${duration.inSeconds}s';
   }

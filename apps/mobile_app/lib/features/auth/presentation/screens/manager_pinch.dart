@@ -1,5 +1,6 @@
 /// PIN (Manager) authentication flow for voids, refunds, and high-value adjustments.
 /// Requires manager-level PIN override for sensitive POS operations.
+library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -32,8 +33,12 @@ class _ManagerPinDialogState extends State<ManagerPinDialog> {
 
   @override
   void dispose() {
-    for (var c in _pinControllers) c.dispose();
-    for (var f in _focusNodes) f.dispose();
+    for (var c in _pinControllers) {
+      c.dispose();
+    }
+    for (var f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 

@@ -164,6 +164,7 @@ class Logger {
     // Only send to secure crash reporting in production
     // ignore: avoid_print
     if (!_isRelease) {
+      // ignore: avoid_print
       print('$_prefix🔒 [SENSITIVE] $message (hidden in release)');
     }
   }

@@ -19,7 +19,7 @@ class BkashService {
         'username': 'YOUR_USERNAME',
         'password': 'YOUR_PASSWORD',
       },
-      body: jsonEncode({"app_key": _appKey, "app_secret": _appSecret}),
+      body: jsonEncode({'app_key': _appKey, 'app_secret': _appSecret}),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -38,9 +38,9 @@ class BkashService {
         'x-app-key': _appKey,
       },
       body: jsonEncode({
-        "mode": "0000",
-        "payerReference": payerReference, // Users Phone Number
-        "callbackURL": "https://luckystore.com/bkash_callback"
+        'mode': '0000',
+        'payerReference': payerReference, // Users Phone Number
+        'callbackURL': 'https://luckystore.com/bkash_callback'
       }),
     );
     // User is redirected to bkashURL to enter OTP once.
@@ -60,14 +60,14 @@ class BkashService {
         'x-app-key': _appKey,
       },
       body: jsonEncode({
-        "mode": "0001", // Authorization mode
-        "payerReference": "017XXXXXXXX",
-        "agreementID": agreementId,
-        "amount": amount.toStringAsFixed(2),
-        "currency": "BDT",
-        "intent": "sale",
-        "merchantInvoiceNumber": "INV-12345",
-        "callbackURL": "https://luckystore.com/bkash_payment_callback" 
+        'mode': '0001', // Authorization mode
+        'payerReference': '017XXXXXXXX',
+        'agreementID': agreementId,
+        'amount': amount.toStringAsFixed(2),
+        'currency': 'BDT',
+        'intent': 'sale',
+        'merchantInvoiceNumber': 'INV-12345',
+        'callbackURL': 'https://luckystore.com/bkash_payment_callback' 
       }),
     );
     
@@ -87,7 +87,7 @@ class BkashService {
         'authorization': idToken,
         'x-app-key': _appKey,
       },
-      body: jsonEncode({"paymentID": paymentId}),
+      body: jsonEncode({'paymentID': paymentId}),
     );
     
     if (response.statusCode == 200) {

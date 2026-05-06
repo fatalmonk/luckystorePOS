@@ -129,13 +129,13 @@ class _LabelPrinterScreenState extends State<LabelPrinterScreen> {
     await _printerService.stopScan();
 
     final device = result.device;
-    final result_conn = await _printerService.connect(
+    final resultConn = await _printerService.connect(
       deviceId: device.remoteId.str,
       deviceName: device.platformName,
     );
 
-    if (result_conn is Failure<String> && mounted) {
-      setState(() => _errorMessage = result_conn.error);
+    if (resultConn is Failure<String> && mounted) {
+      setState(() => _errorMessage = resultConn.error);
     }
   }
 

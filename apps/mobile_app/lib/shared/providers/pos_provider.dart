@@ -346,8 +346,9 @@ class PosProvider extends ChangeNotifier {
     required String transactionTraceId,
   }) async {
     if (_cart.isEmpty) throw Exception('Cart is empty');
-    if (_cashierId == null || _storeId == null)
+    if (_cashierId == null || _storeId == null) {
       throw Exception('No active session');
+    }
 
     final paymentsPayload = tenders
         .map((t) => {
@@ -403,8 +404,8 @@ class PosProvider extends ChangeNotifier {
         status: SaleExecutionStatus.success,
         conflictReason: null,
         message: 'Queued for server validation',
-        adjustments: const [],
-        partialFulfillment: const [],
+        adjustments: [],
+        partialFulfillment: [],
         saleResult: null,
         transactionTraceId: null,
       );
