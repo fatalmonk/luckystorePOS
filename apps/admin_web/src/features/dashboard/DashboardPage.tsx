@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/Notification';
@@ -39,10 +40,60 @@ export function DashboardPage() {
     queryFn: () => api.dashboard.getLowStock(storeId),
   });
 
+  // Fetch last 7 days revenue vs expenses
+  const cashflowQuery = useQuery({
+    queryKey: ['cashflow', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const days = 7;
+      const data = [];
+      const today = new Date();
+
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 1);
+        const nextDateStr = nextDate.toISOString().split('T')[0];
+
+        // Get sales for this day
+        const { data: salesData } = await supabase
+          .from('sales')
+          .select('total_amount')
+          .eq('store_id', storeId)
+          .eq('status', 'completed')
+          .gte('created_at', dateStr)
+          .lt('created_at', nextDateStr);
+
+        // Get expenses for this day
+        const { data: expensesData } = await supabase
+          .from('expenses')
+          .select('amount')
+          .eq('store_id', storeId)
+          .gte('date', dateStr)
+          .lt('date', nextDateStr);
+
+        const revenue = salesData?.reduce((sum, s) => sum + (s.total_amount || 0), 0) || 0;
+        const expenses = expensesData?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+
+        data.push({
+          date: dateStr,
+          label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          revenue,
+          expenses,
+        });
+      }
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
   const stats = statsQuery.data;
   const lowStock = lowStockQuery.data;
-  const isLoading = statsQuery.isLoading;
-  const isError = statsQuery.isError;
+  const cashflow = cashflowQuery.data || [];
+  const isLoading = statsQuery.isLoading || cashflowQuery.isLoading;
+  const isError = statsQuery.isError || cashflowQuery.isError;
 
   if (isLoading) {
     return (
@@ -117,8 +168,57 @@ export function DashboardPage() {
             <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
               Cashflow Overview
             </h2>
-            <div className="card" style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-              Chart Placeholder (Revenue vs Expenses)
+            <div className="card" style={{ padding: 'var(--space-6)' }}>
+              {cashflow.length > 0 && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <div style={{ width: 12, height: 12, backgroundColor: 'var(--color-success)', borderRadius: 2 }}></div>
+                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Revenue</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <div style={{ width: 12, height: 12, backgroundColor: 'var(--color-danger)', borderRadius: 2 }}></div>
+                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Expenses</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '200px', gap: 'var(--space-2)' }}>
+                    {cashflow.map((day: any, idx: number) => {
+                      const maxVal = Math.max(...cashflow.map((d: any) => Math.max(d.revenue, d.expenses)), 1);
+                      const revenueHeight = maxVal > 0 ? (day.revenue / maxVal) * 100 : 0;
+                      const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
+                      return (
+                        <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: '100%', width: '100%', justifyContent: 'center' }}>
+                            <div
+                              style={{
+                                width: '40%',
+                                height: `${revenueHeight}%`,
+                                backgroundColor: 'var(--color-success)',
+                                borderRadius: '2px 2px 0 0',
+                                minHeight: day.revenue > 0 ? 4 : 0,
+                                transition: 'height 0.3s ease',
+                              }}
+                              title={`Revenue: ৳${day.revenue.toLocaleString()}`}
+                            />
+                            <div
+                              style={{
+                                width: '40%',
+                                height: `${expenseHeight}%`,
+                                backgroundColor: 'var(--color-danger)',
+                                borderRadius: '2px 2px 0 0',
+                                minHeight: day.expenses > 0 ? 4 : 0,
+                                transition: 'height 0.3s ease',
+                              }}
+                              title={`Expenses: ৳${day.expenses.toLocaleString()}`}
+                            />
+                          </div>
+                          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{day.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </section>
 

@@ -1,9 +1,21 @@
-import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3, History } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import '../styles/layout.css';
 
-const navGroups = [
+interface NavItem {
+  icon: React.ComponentType<{ size?: number }>;
+  label: string;
+  path: string;
+  children?: { label: string; path: string }[];
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     title: 'Overview',
     items: [
@@ -16,8 +28,14 @@ const navGroups = [
     items: [
       { icon: ShoppingCart, label: 'Sales', path: '/sales' },
       { icon: Package, label: 'Products', path: '/products' },
-      { icon: Warehouse, label: 'Inventory', path: '/inventory' },
-      { icon: PlusCircle, label: 'Purchase', path: '/purchase' },
+      { icon: Warehouse, label: 'Inventory', path: '/inventory', children: [
+        { label: 'Current Stock', path: '/inventory' },
+        { label: 'History', path: '/inventory/history' },
+      ] },
+      { icon: PlusCircle, label: 'Purchase', path: '/purchase', children: [
+        { label: 'New Purchase', path: '/purchase' },
+        { label: 'History', path: '/purchase/history' },
+      ] },
     ]
   },
   {
@@ -55,16 +73,33 @@ export function Sidebar() {
             <h3 className="sidebar-nav-title">{group.title}</h3>
             <nav className="sidebar-nav">
               {group.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) => 
-                    isActive ? 'sidebar-nav-item active' : 'sidebar-nav-item'
-                  }
-                >
-                  <item.icon size={20} />
-                  <span>{item.label}</span>
-                </NavLink>
+                <div key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      isActive ? 'sidebar-nav-item active' : 'sidebar-nav-item'
+                    }
+                    end={!item.children}
+                  >
+                    <item.icon size={20} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                  {item.children && (
+                    <div className="sidebar-nav-children" style={{ marginLeft: '28px', borderLeft: '1px solid var(--border-color)', paddingLeft: '12px' }}>
+                      {item.children.map((child) => (
+                        <NavLink
+                          key={child.path}
+                          to={child.path}
+                          className={({ isActive }) =>
+                            isActive ? 'sidebar-nav-item active text-sm' : 'sidebar-nav-item text-sm'
+                          }
+                        >
+                          {child.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </nav>
           </div>

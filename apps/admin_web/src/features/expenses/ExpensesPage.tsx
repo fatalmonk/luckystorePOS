@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -7,6 +7,7 @@ import { useNotify } from '../../components/Notification';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
 import {
@@ -15,6 +16,8 @@ import {
   CalendarDays,
   TrendingUp,
   Wallet,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import {
@@ -29,6 +32,8 @@ export function ExpensesPage() {
   const queryClient = useQueryClient();
 
   const [showForm, setShowForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterPaymentType, setFilterPaymentType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,6 +53,30 @@ export function ExpensesPage() {
     },
     onError: (err: any) => {
       notify(err.message || 'Failed to record expense.', 'error');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: any }) => api.expenses.update(id, updates),
+    onSuccess: () => {
+      notify('Expense updated successfully.', 'success');
+      queryClient.invalidateQueries({ queryKey: ['expenses', storeId] });
+      setEditingExpense(null);
+    },
+    onError: (err: any) => {
+      notify(err.message || 'Failed to update expense.', 'error');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.expenses.remove(id),
+    onSuccess: () => {
+      notify('Expense deleted.', 'success');
+      queryClient.invalidateQueries({ queryKey: ['expenses', storeId] });
+      setDeletingExpenseId(null);
+    },
+    onError: (err: any) => {
+      notify(err.message || 'Failed to delete expense.', 'error');
     },
   });
 
@@ -155,6 +184,7 @@ export function ExpensesPage() {
               <th>Category</th>
               <th>Payment</th>
               <th className="text-right">Amount</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -167,11 +197,12 @@ export function ExpensesPage() {
                   <td><SkeletonBlock className="w-[90px] h-[18px]" /></td>
                   <td><SkeletonBlock className="w-[70px] h-[18px]" /></td>
                   <td><SkeletonBlock className="w-[80px] h-[18px] ml-auto" /></td>
+                  <td><SkeletonBlock className="w-[60px] h-[18px]" /></td>
                 </tr>
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="expenses-empty">
+                <td colSpan={7} className="expenses-empty">
                   <EmptyState
                     icon={<Receipt size={48} />}
                     title="No expenses yet"
@@ -193,6 +224,16 @@ export function ExpensesPage() {
                     <span className="expenses-payment-badge">{e.paymentType}</span>
                   </td>
                   <td className="expenses-amount text-right">৳{e.amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => setEditingExpense(e)} style={{ color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Edit expense">
+                        <Edit2 size={14} />
+                      </button>
+                      <button onClick={() => setDeletingExpenseId(e.id)} style={{ color: 'var(--color-danger)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Delete expense">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -205,6 +246,24 @@ export function ExpensesPage() {
         onSubmit={(form) => createMutation.mutate(form)}
         onClose={() => setShowForm(false)}
         isPending={createMutation.isPending}
+      />
+
+      <EditExpenseDrawer
+        expense={editingExpense}
+        isOpen={!!editingExpense}
+        onSubmit={(id, updates) => updateMutation.mutate({ id, updates })}
+        onClose={() => setEditingExpense(null)}
+        isPending={updateMutation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deletingExpenseId}
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => deletingExpenseId && deleteMutation.mutate(deletingExpenseId)}
+        onCancel={() => setDeletingExpenseId(null)}
       />
     </div>
   );
@@ -339,6 +398,88 @@ function AddExpenseDrawer({
             style={{ opacity: isPending || !form.vendorName.trim() || form.amount <= 0 ? 0.5 : 1 }}
           >
             {isPending ? 'Saving...' : 'Record Expense'}
+          </button>
+        </div>
+      </form>
+    </Drawer>
+  );
+}
+
+function EditExpenseDrawer({
+  expense,
+  isOpen,
+  onSubmit,
+  onClose,
+  isPending,
+}: {
+  expense: Expense | null;
+  isOpen: boolean;
+  onSubmit: (id: string, updates: any) => void;
+  onClose: () => void;
+  isPending: boolean;
+}) {
+  const [form, setForm] = useState({
+    expenseDate: '',
+    vendorName: '',
+    description: '',
+    amount: 0,
+    paymentType: 'Cash' as ExpensePaymentType,
+    category: 'All Other Expenses' as ExpenseCategory,
+  });
+
+  React.useEffect(() => {
+    if (expense) {
+      setForm({
+        expenseDate: expense.expenseDate,
+        vendorName: expense.vendorName,
+        description: expense.description,
+        amount: expense.amount,
+        paymentType: expense.paymentType,
+        category: expense.category,
+      });
+    }
+  }, [expense]);
+
+  const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) =>
+    setForm(prev => ({ ...prev, [key]: value }));
+
+  if (!expense) return null;
+
+  return (
+    <Drawer isOpen={isOpen} onClose={onClose} title="Edit Expense">
+      <form onSubmit={(e) => { e.preventDefault(); onSubmit(expense.id, form); }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Date</label>
+          <input type="date" value={form.expenseDate} onChange={e => set('expenseDate', e.target.value)} className="input w-full" required />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Vendor</label>
+          <input type="text" value={form.vendorName} onChange={e => set('vendorName', e.target.value)} className="input w-full" />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Description</label>
+          <input type="text" value={form.description} onChange={e => set('description', e.target.value)} className="input w-full" />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Amount (৳)</label>
+          <input type="number" value={form.amount || ''} onChange={e => set('amount', parseFloat(e.target.value) || 0)} className="input w-full" required />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Category</label>
+          <select value={form.category} onChange={e => set('category', e.target.value as ExpenseCategory)} className="input w-full">
+            {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Payment Method</label>
+          <select value={form.paymentType} onChange={e => set('paymentType', e.target.value as ExpensePaymentType)} className="input w-full">
+            {EXPENSE_PAYMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+          <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
+          <button type="submit" className="button-primary" disabled={isPending}>
+            {isPending ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>

@@ -6,6 +6,8 @@ import { settings } from './settings';
 import { expenses } from './expenses';
 import { pos } from './pos';
 import { reminders } from './reminders';
+import { purchases } from './purchases';
+import { reports } from './reports';
 
 export const api = {
   dashboard,
@@ -17,4 +19,6 @@ export const api = {
   expenses,
   pos,
   reminders,
+  purchases,
+  reports,
 };

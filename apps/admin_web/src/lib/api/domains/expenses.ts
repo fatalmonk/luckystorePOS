@@ -45,4 +45,31 @@ export const expenses = {
     if (error) throw error;
     return data as RecordExpenseResult;
   },
+  update: async (expenseId: string, updates: { expenseDate?: string; vendorName?: string; description?: string; amount?: number; paymentType?: string; category?: string }) => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .update({
+        expense_date: updates.expenseDate,
+        vendor_name: updates.vendorName,
+        description: updates.description,
+        amount: updates.amount,
+        payment_type: updates.paymentType,
+        category: updates.category,
+      })
+      .eq('id', expenseId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+  remove: async (expenseId: string) => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', expenseId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
 };
