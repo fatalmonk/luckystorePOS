@@ -85,9 +85,9 @@ ALTER TABLE public.stock_ledger ENABLE ROW LEVEL SECURITY;
 -- Proper RLS policies are added in 20260427200000_fix_stock_ledger_rls.sql.
 
 -- Service role can do anything
-CREATE POLICY stock_ledger_service_role_all 
-  ON public.stock_ledger USING (true) 
-  TO service_role;
+CREATE POLICY stock_ledger_service_role_all
+  ON public.stock_ledger TO service_role
+  USING (true);
 
 CREATE POLICY stock_ledger_service_role_insert 
   ON public.stock_ledger FOR INSERT 
@@ -180,41 +180,9 @@ CREATE TRIGGER trg_log_stock_ledger
   WHEN (NEW.qty IS DISTINCT FROM OLD.qty)
   EXECUTE FUNCTION public.log_stock_ledger_on_update();
 
--- -----------------------------------------------------------------------------
--- 8) Create function to get stock status by ID (for reporting)
--- -----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_stock_level_by_id(p_stock_level_id uuid)
-RETURNS TABLE (
-  stock_level_id uuid,
-  store_id uuid,
-  product_id uuid,
-  quantity integer,
-  last_updated timestamptz,
-  recent_movements jsonb
-)
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT 
-    sl.id,
-    sl.store_id,
-    sl.item_id,
-    sl.qty,
-    sl.updated_at,
-    (
-      SELECT jsonb_agg(row_to_json(lm))
-      FROM (
-        SELECT * FROM public.stock_ledger
-        WHERE store_id = sl.store_id
-          AND product_id = sl.item_id
-        ORDER BY created_at DESC
-        LIMIT 10
-      ) lm
-    ) AS recent_movements
-  FROM public.stock_levels sl
-  WHERE sl.id = p_stock_level_id;
-$$;
+-- NOTE: get_stock_level_by_id() is omitted here — stock_levels uses a composite
+-- PK (store_id, item_id) with no single uuid “id” column, so the function is
+-- incompatible. A proper version is added later if needed.
 
 -- Grant permissions
 REVOKE ALL ON TABLE public.stock_ledger FROM PUBLIC;
@@ -223,8 +191,6 @@ GRANT INSERT ON TABLE public.stock_ledger TO authenticated;
 GRANT ALL ON TABLE public.stock_ledger TO service_role;
 GRANT ALL ON v_stock_ledger_recent TO authenticated;
 GRANT ALL ON v_stock_ledger_product_summary TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_stock_level_by_id(uuid) TO authenticated;
-
 -- Comment on table
 COMMENT ON TABLE public.stock_ledger IS 
   'Audit trail for all inventory movements. Every stock change is logged here with previous/new quantities, transaction type, and metadata.';
