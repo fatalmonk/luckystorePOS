@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import '../../core/network/network_config.dart';
 import '../../core/utils/result.dart';
 import '../../core/utils/app_utils.dart';
+import 'package:flutter/foundation.dart';
+
 
 /// Service for sending automated due payment reminders
 /// Tracks overdue payments and sends WhatsApp reminders to customers
@@ -107,6 +109,7 @@ class DueReminderService {
           sent: 0,
           skipped: 0,
           errors: 0,
+          totalOverdueCustomers: overdueCustomers.length,
           sentAt: DateTime.now(),
         ));
       }
@@ -147,7 +150,7 @@ class DueReminderService {
           // Send reminder
           final result = await _sendWhatsAppReminder(phoneNumber, message);
 
-          if (result.isSuccess) {
+          if (result is Success<void>) {
             sent++;
             _totalRemindersSentToday++;
 
@@ -205,7 +208,7 @@ class DueReminderService {
     }
 
     if (_totalRemindersSentToday >= maxRemindersPerDay) {
-      return Failure<void('Daily reminder limit reached');
+      return Failure<void>('Daily reminder limit reached');
     }
 
     try {
@@ -213,13 +216,13 @@ class DueReminderService {
       final customer = await _getCustomerDetails(customerId);
 
       if (customer == null || (customer['total_overdue'] as double?) == 0) {
-        return Failure<void('Customer not found or no overdue balance');
+        return Failure<void>('Customer not found or no overdue balance');
       }
 
       // Get phone number
       final phoneNumber = _extractWhatsAppNumber(customer);
       if (phoneNumber == null) {
-        return Failure<void('No WhatsApp number found for customer');
+        return Failure<void>('No WhatsApp number found for customer');
       }
 
       // Build and send message
@@ -232,14 +235,14 @@ class DueReminderService {
 
       final result = await _sendWhatsAppReminder(phoneNumber, message);
 
-      if (result.isSuccess) {
+      if (result is Success<void>) {
         _totalRemindersSentToday++;
         return Success<void>(null);
       }
 
-      return Failure<void>(result.data);
+      return Failure<void>((result as Failure).error);
     } catch (e) {
-      return Failure<void('Failed to send reminder: $e');
+      return Failure<void>('Failed to send reminder: $e');
     }
   }
 
@@ -338,7 +341,7 @@ $greeting $name! 👋
 
 This is a friendly reminder from _Lucky Store POS_.
 
-💰 _Your pending balance: ৳$amount_
+💰 _Your pending balance: ৳${amount}_
 
 You have been overdue for _$daysOverdue days_. Please clear your dues to avoid any interruption in service.
 
@@ -420,7 +423,7 @@ Thank you for your prompt attention!
       final error = json.decode(response.body);
       return Failure<void>(error['error'] ?? 'Failed to send reminder');
     } catch (e) {
-      return Failure<void('Network error: ${e.toString()}');
+      return Failure<void>('Network error: ${e.toString()}');
     }
   }
 
@@ -436,7 +439,6 @@ Thank you for your prompt attention!
     _broadcastEvent(ReminderEvent(
       type: ReminderEventType.scheduled,
       message: 'Daily reminders scheduled for $hour:$minute',
-      data: {'hour': hour, 'minute': minute},
     ));
 
     // TODO: Implement with Workmanager or Flutter Schedule

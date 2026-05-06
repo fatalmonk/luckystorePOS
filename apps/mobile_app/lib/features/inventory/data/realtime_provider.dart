@@ -23,23 +23,28 @@ class RealtimeProvider {
   /// to the current POS terminal and avoids memory leaks from unrelated stores.
   Future<void> init() async {
     // Clean up any existing subscription.
-    await dispose();
+    await _channel?.unsubscribe();
+    
+    // Create a channel
+    _channel = _client.channel('public:stock_levels');
 
-    // Create a channel with a filter on the store_id.
-    _channel = _client.channel('public:stock_levels',
-        config: RealtimeChannelConfig(
-          // The filter uses PostgreSQL syntax. Only rows where store_id matches
-          // the current store are sent to this client.
-          filter: "store_id=eq.'${_storeId}'",
-        ));
-
-    // Listen for all INSERT/UPDATE/DELETE events.
-    _channel!.on(RealtimeListenTypes.all, (payload, [ref]) {
-      // Payload data contains the new row data under `payload['new']` for
-      // INSERT/UPDATE and `payload['old']` for DELETE.
-      final Map<String, dynamic> data = payload['new'] ?? payload['old'] ?? {};
-      _controller.add(data);
-    });
+    // Listen for all INSERT/UPDATE/DELETE events with filter.
+    _channel!.onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'stock_levels',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'store_id',
+        value: _storeId,
+      ),
+      callback: (payload) {
+        final data = payload.newRecord.isNotEmpty ? payload.newRecord : payload.oldRecord;
+        if (data.isNotEmpty) {
+          _controller.add(data);
+        }
+      },
+    );
 
     await _channel!.subscribe();
   }
@@ -47,7 +52,6 @@ class RealtimeProvider {
   /// Dispose the channel and controller.
   Future<void> dispose() async {
     await _channel?.unsubscribe();
-    await _channel?.removeAllListeners();
     await _controller.close();
     _channel = null;
   }

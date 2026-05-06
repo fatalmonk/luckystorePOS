@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../../core/network/network_config.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/utils/result.dart';
+import '../../core/utils/app_utils.dart';
 import 'stock_ledger_entry.dart';
+
 
 /// Repository for stock ledger operations
 class StockLedgerRepository {
@@ -16,7 +20,7 @@ class StockLedgerRepository {
     required StockLedgerQuery query,
   }) async {
     try {
-      final params = buildQueryParams(query);
+      final params = _buildQueryParams(query);
       
       final url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?$params&select=*&order=timestamp.${query.sortOrder}&limit=${query.limit}&offset=${query.offset}'
@@ -151,7 +155,7 @@ class StockLedgerRepository {
       final url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?'
         'reference_id.eq=$referenceId&'
-        (entryType != null ? 'entry_type.eq=$entryType&' : '') +
+        '${entryType != null ? 'entry_type.eq=$entryType&' : ''}'
         'select=*&'
         'order=timestamp.desc'
       );

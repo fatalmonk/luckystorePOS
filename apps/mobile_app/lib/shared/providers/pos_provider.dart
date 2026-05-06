@@ -546,6 +546,24 @@ class PosProvider extends ChangeNotifier {
     });
   }
 
+  // ── Refund sale ────────────────────────────────────────────────────────────
+
+  Future<void> processRefund(String saleId, double amount) async {
+    await _supabase.rpc('process_refund', params: {
+      'p_sale_id': saleId,
+      'p_amount': amount,
+    });
+  }
+
+  // ── Stock adjustment ───────────────────────────────────────────────────────
+
+  Future<void> adjustStock(String itemId, int delta) async {
+    await _supabase.rpc('adjust_stock', params: {
+      'p_item_id': itemId,
+      'p_delta': delta,
+    });
+  }
+
   // ── Cash closing ─────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> recordCashClosing({

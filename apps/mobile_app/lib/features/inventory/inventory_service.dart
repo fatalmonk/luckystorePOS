@@ -1,12 +1,12 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../../core/network/network_config.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/utils/result.dart';
 import '../../core/utils/app_utils.dart';
 import '../../config/environment_contract.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 
 /// Inventory service for stock operations
 class InventoryService {
@@ -21,7 +21,7 @@ class InventoryService {
     required String storeId,
     required String productId,
     required int quantity,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final url = Uri.parse('${NetworkConfig.supabaseUrl}/rpc/deduct_stock');
@@ -133,7 +133,7 @@ class InventoryService {
       
       final url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/rest/v1/stock_levels?'
-        'store_id=eq.$storeId&qty.lt=$threshold&select=*,product:id(item_id)($EnvironmentContract.productProjection)',
+        'store_id=eq.$storeId&qty.lt=$threshold&select=*,product:id(item_id)(id,name,sku,barcode)',
       );
 
       final headers = {

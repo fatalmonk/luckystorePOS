@@ -1,75 +1,37 @@
-/// Drift database schema for offline inventory and store data.
-/// This replaces the JSON-based offline queue with a robust SQLite database
-/// that allows reliable local queries for inventory, items, and pending
-/// sync actions even when the device is offline.
-
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-/// Table definitions for offline-first inventory storage.
+part 'db.g.dart';
+
+enum SyncActionType {
+  insert,
+  update,
+  delete,
+}
+
+enum SyncActionStatus {
+  pending,
+  syncing,
+  success,
+  failed,
+}
 
 @DataClassName('SyncAction')
 class SyncActions extends Table {
-  TextColumn get id => text().called('id')();
-  
-  TextColumn get actionType => text().map(const EnumMapper<SyncActionType>())();
-  
-  TextColumn get payload => text();
-  
-  TextColumn get status => text()
-      .map(const EnumMapper<SyncActionStatus>())
-      .default_;
-  
-  DateTimeColumn get createdAt => dateTime().withDefault(currentTime)();
-  
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentTime);
+  TextColumn get id => text()();
+  IntColumn get actionType => intEnum<SyncActionType>()();
+  TextColumn get payload => text()();
+  IntColumn get status => intEnum<SyncActionStatus>().withDefault(Constant(SyncActionStatus.pending.index))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
 }
 
-class SyncActionType extends EnumClass<SyncActionType> {
-  static const SyncActionType insert = $values[0];
-  static const SyncActionType update = $values[1];
-  static const SyncActionType delete = $values[2];
-
-  static const $Values<SyncActionType> values = $Values($values);
-
-  const SyncActionType._();
-
-  Set<SyncActionType> get all => $values.toSet();
-
-  static const $EnumDescriptor<SyncActionType> $ = $EnumDescriptor($values, SyncActionType._);
-
-  @visibleForOverriding
-  @override
-  $EnumDescriptor<SyncActionType> get $enumDescriptor => $;
-}
-
-class SyncActionStatus extends EnumClass<SyncActionStatus> {
-  static const SyncActionStatus pending = $values[0];
-  static const SyncActionStatus syncing = $values[1];
-  static const SyncActionStatus success = $values[2];
-  static const SyncActionStatus failed = $values[3];
-
-  static const $Values<SyncActionStatus> values = $Values($values);
-
-  const SyncActionStatus._();
-
-  Set<SyncActionStatus> get all => $values.toSet();
-
-  static const $EnumDescriptor<SyncActionStatus> $ = $EnumDescriptor($values, SyncActionStatus._);
-
-  @overridable
-  @override
-  $EnumDescriptor<SyncActionStatus> get $enumDescriptor => $;
-}
-
-/// Drift database class.
 @DriftDatabase(tables: [SyncActions])
 class OfflineDatabase extends _$OfflineDatabase {
   OfflineDatabase() : super(_openConnection());
@@ -83,23 +45,19 @@ class OfflineDatabase extends _$OfflineDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
       },
-      onUpgrade: (Migrator m, int from, int to) async {
-        // Future migrations can be added here
-      },
     );
   }
 
-  /// Get pending sync actions (status = pending)
-  Future<List<SyncActionCompanion>> getPendingActions() async {
-    return into(syncActions).select(syncActions).where((tbl) => tbl.status.equals('pending')).get();
-  }
+  Future<List<SyncAction>> getPendingActions() =>
+      (select(syncActions)..where((tbl) => tbl.status.equals(SyncActionStatus.pending.index))).get();
 
-  /// Update action status
-  Future<void> updateActionStatus(String id, String status) async {
-    await into(syncActions).update(syncActions.id.equals(id)).write({
-      syncActions.status.toColumnValue(status),
-      syncActions.updatedAt.toColumnValue(DateTime.now()),
-    });
+  Future<void> updateActionStatus(String id, SyncActionStatus status) {
+    return (update(syncActions)..where((tbl) => tbl.id.equals(id))).write(
+      SyncActionsCompanion(
+        status: Value(status),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
   }
 }
 
@@ -110,3 +68,4 @@ LazyDatabase _openConnection() {
     return NativeDatabase.createInBackground(file);
   });
 }
+

@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import '../../core/network/network_config.dart';
 import '../../core/utils/result.dart';
 import '../../core/utils/app_utils.dart';
+import 'package:flutter/foundation.dart';
+import '../../config/environment_contract.dart';
+
 
 /// Service for monitoring low stock levels and generating alerts
 /// Automatically notifies store managers when inventory drops below threshold
@@ -44,7 +47,7 @@ class LowStockAlertService {
       ));
       return Success<void>(null);
     } catch (e) {
-      return Failure<void('Failed to enable: $e');
+      return Failure<void>('Failed to enable: $e');
     }
   }
 
@@ -58,14 +61,14 @@ class LowStockAlertService {
       ));
       return Success<void>(null);
     } catch (e) {
-      return Failure<void('Failed to disable: $e');
+      return Failure<void>('Failed to disable: $e');
     }
   }
 
   /// Set default low stock threshold
   Future<Result<void>> setDefaultThreshold(int threshold) async {
     if (threshold < 0) {
-      return Failure<void('Threshold must be non-negative');
+      return Failure<void>('Threshold must be non-negative');
     }
 
     _broadcastEvent(AlertEvent(
@@ -80,16 +83,16 @@ class LowStockAlertService {
   // ===== Stock Monitoring =====
 
   /// Check all warehouses for low stock
-  Future<Result<AlertResult>> checkAllWarehouses({
+  Future<Result<StockCheckResult>> checkAllWarehouses({
     int? threshold,
     String? storeId,
   }) async {
     if (!_isEnabled) {
-      return Failure<AlertResult>('Alerts are disabled');
+      return Failure<StockCheckResult>('Alerts are disabled');
     }
 
     if (_isCheckingStock) {
-      return Failure<AlertResult>('Stock check already in progress');
+      return Failure<StockCheckResult>('Stock check already in progress');
     }
 
     _isCheckingStock = true;
@@ -112,10 +115,10 @@ class LowStockAlertService {
         lowStockCount: results.lowStockCount,
         criticalCount: results.criticalCount,
         message:
-            'Stock check complete: ${results.lowStockCount} items low ($results.criticalCount critical)',
+            'Stock check complete: ${results.lowStockCount} items low (${results.criticalCount} critical)',
       ));
 
-      return Success<AlertResult>(results);
+      return Success<StockCheckResult>(results);
     } catch (e, stackTrace) {
       Logger.error('LowStockAlertService.checkAllWarehouses failed', e, stackTrace);
       _broadcastEvent(AlertEvent(
@@ -123,7 +126,7 @@ class LowStockAlertService {
         error: e.toString(),
         message: 'Stock check failed: ${e.toString()}',
       ));
-      return Failure<AlertResult>('Stock check failed: $e');
+      return Failure<StockCheckResult>('Stock check failed: $e');
     } finally {
       _isCheckingStock = false;
     }
@@ -136,7 +139,7 @@ class LowStockAlertService {
   ) async {
     try {
       // Query: Get items with stock below threshold
-      final url = Uri.parse(
+      var url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/rest/v1/stock_levels?'
         'qty.lt.$threshold&'
         'select=id,store_id,item_id,qty,updated_at&'
@@ -144,7 +147,10 @@ class LowStockAlertService {
       );
 
       if (storeId != null) {
-        url.queryParameters['store_id'] = 'eq.$storeId';
+        url = url.replace(queryParameters: {
+          ...url.queryParameters,
+          'store_id': 'eq.$storeId',
+        });
       }
 
       final response = await _client
@@ -215,8 +221,7 @@ class LowStockAlertService {
   Future<Map<String, dynamic>> _getProductDetails(String productId) async {
     try {
       final url = Uri.parse(
-        '${NetworkConfig.supabaseUrl}/rest/v1/items?id=eq.$productId&select=*',
-        category_id()($Environment.categoryProjection)');
+        '${NetworkConfig.supabaseUrl}/rest/v1/items?id=eq.$productId&select=*,category:category_id(id,name)');
 
       final response = await _client
           .get(url, headers: _getAuthHeaders())
@@ -259,7 +264,7 @@ class LowStockAlertService {
       final criticalItems = await _getCriticalStockItems(storeId);
 
       if (criticalItems.isEmpty) {
-        return Failure<VoidResult('No critical stock items found');
+        return Failure<VoidResult>('No critical stock items found');
       }
 
       int sent = 0;
@@ -274,20 +279,24 @@ class LowStockAlertService {
 
       return Success<VoidResult>(VoidResult(success: true, message: 'Sent $sent notifications'));
     } catch (e) {
-      return Failure<VoidResult('Failed to notify: $e');
+      return Failure<VoidResult>('Failed to notify: $e');
     }
   }
 
   /// Get critical stock items (qty <= 1)
   Future<List<ProductAlert>> _getCriticalStockItems(String? storeId) async {
     try {
-      final url = Uri.parse(
+      var url = Uri.parse(
         '${NetworkConfig.supabaseUrl}/rest/v1/stock_levels?'
         'qty.lte.1&'
-        'select=*,product:id(item_id)($EnvironmentProductProjection)';
+        'select=*,product:id(item_id)(id,name,sku,barcode)'
+      );
 
       if (storeId != null) {
-        url.queryParameters['store_id'] = 'eq.$storeId';
+        url = url.replace(queryParameters: {
+          ...url.queryParameters,
+          'store_id': 'eq.$storeId',
+        });
       }
 
       final response = await _client
@@ -416,7 +425,7 @@ class LowStockAlertService {
 
     // Add critical items first
     for (final item in items.where((i) => i.priority == AlertPriority.critical)) {
-      lines.add('🔴 *_${item.name}_*');
+      lines.add('🔴 *_${item.productName}_*');
       lines.add('   SKU: ${item.sku}');
       lines.add('   Current: *_${item.currentStock}_ units');
       lines.add('   Status: CRITICAL');
@@ -425,7 +434,7 @@ class LowStockAlertService {
 
     // Add low stock items
     for (final item in items.where((i) => i.priority == AlertPriority.medium)) {
-      lines.add('🟡 *_${item.name}_*');
+      lines.add('🟡 *_${item.productName}_*');
       lines.add('   SKU: ${item.sku}');
       lines.add('   Current: *_${item.currentStock}_ units');
       lines.add('   Threshold: *_${item.threshold}_ units');
@@ -471,7 +480,7 @@ class LowStockAlertService {
       final error = json.decode(response.body);
       return Failure<VoidResult>(error['error'] ?? 'Send failed');
     } catch (e) {
-      return Failure<VoidResult('Network error: ${e.toString()}});
+      return Failure<VoidResult>('Network error: ${e.toString()}');
     }
   }
 
@@ -542,9 +551,9 @@ class LowStockAlertService {
         );
       }
 
-      return Failure<List<Map<String, dynamic>>>([]);
+      return Failure<List<Map<String, dynamic>>>('Failed to fetch history: $response.statusCode');
     } catch (e) {
-      return Failure<List<Map<String, dynamic>>>([]);
+      return Failure<List<Map<String, dynamic>>>('Failed to fetch history: $e');
     }
   }
 
