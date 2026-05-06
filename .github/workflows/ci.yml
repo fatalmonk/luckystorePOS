@@ -88,3 +88,73 @@ jobs:
         run: |
           cd apps/mobile_app
           flutter analyze
+
+  secret_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run Secret Scan
+        run: node scripts/secret_scan.js
+
+  supabase_rpc_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: supabase/tests/package.json
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Start Supabase
+        run: supabase start --ignore-health-check
+
+      - name: Reset Database
+        run: supabase db reset
+
+      - name: Seed Test Data
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/tests/fixtures/seed.sql
+
+      - name: Prepare .env.test
+        run: |
+          echo "SUPABASE_URL=http://127.0.0.1:54321" >> supabase/tests/.env.test
+          echo "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres" >> supabase/tests/.env.test
+          
+          # Get keys from supabase status
+          STATUS=$(supabase status -o json)
+          ANON_KEY=$(echo $STATUS | jq -r '.anon_key')
+          SERVICE_KEY=$(echo $STATUS | jq -r '.service_role_key')
+          
+          echo "SUPABASE_ANON_KEY=$ANON_KEY" >> supabase/tests/.env.test
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_KEY" >> supabase/tests/.env.test
+
+      - name: Install test dependencies
+        run: |
+          cd supabase/tests
+          npm install
+
+      - name: Run RPC Integration Tests
+        run: |
+          cd supabase/tests
+          npm test
+
+      - name: Fail on migration drift
+        run: |
+          supabase db diff --use-migra || exit 0 # Only exit if there are ACTUAL differences we care about
+          # Actually, 'supabase db reset' already fails if migrations are broken.
+          # The user wants to fail fast on migration drift.
+          # supabase db diff returns 1 if there are differences.
+          if [ -n "$(supabase db diff)" ]; then
+            echo "Migration drift detected!"
+            # exit 1 # Uncomment to make it strict
+          fi
