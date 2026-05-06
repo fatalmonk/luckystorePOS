@@ -21,7 +21,7 @@ class BarcodeScannerListener extends StatefulWidget {
 }
 
 class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
-  bool _isListening = true;
+  final bool _isListening = true;
   Timer? _debounceTimer;
   String _buffer = '';
 

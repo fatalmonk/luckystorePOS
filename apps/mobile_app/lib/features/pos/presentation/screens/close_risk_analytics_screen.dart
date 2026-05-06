@@ -140,7 +140,7 @@ class _CloseRiskAnalyticsScreenState extends State<CloseRiskAnalyticsScreen> {
                       ),
                       _metric(
                         'Average pending queue at close',
-                        '${((_analytics['average_pending_queue_at_close'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                        ((_analytics['average_pending_queue_at_close'] as num?)?.toDouble() ?? 0).toStringAsFixed(2),
                         const Color(0xFFE8B84B),
                       ),
                       _metric(

@@ -4,13 +4,13 @@ import 'package:flutter/foundation.dart';
 enum LedgerEntryType {
   purchase,
   sale,
-  return_in,
-  return_out,
+  returnIn,
+  returnOut,
   adjustment,
-  transfer_in,
-  transfer_out,
-  voided_sale,
-  inventory_count,
+  transferIn,
+  transferOut,
+  voidedSale,
+  inventoryCount,
 }
 
 /// Expand LedgerEntryType to String
@@ -21,19 +21,19 @@ extension LedgerEntryTypeExtension on LedgerEntryType {
         return 'purchase';
       case LedgerEntryType.sale:
         return 'sale';
-      case LedgerEntryType.return_in:
+      case LedgerEntryType.returnIn:
         return 'return_in';
-      case LedgerEntryType.return_out:
+      case LedgerEntryType.returnOut:
         return 'return_out';
       case LedgerEntryType.adjustment:
         return 'adjustment';
-      case LedgerEntryType.transfer_in:
+      case LedgerEntryType.transferIn:
         return 'transfer_in';
-      case LedgerEntryType.transfer_out:
+      case LedgerEntryType.transferOut:
         return 'transfer_out';
-      case LedgerEntryType.voided_sale:
+      case LedgerEntryType.voidedSale:
         return 'voided_sale';
-      case LedgerEntryType.inventory_count:
+      case LedgerEntryType.inventoryCount:
         return 'inventory_count';
     }
   }

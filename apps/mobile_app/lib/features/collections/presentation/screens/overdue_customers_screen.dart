@@ -162,7 +162,7 @@ Thank you.''';
           color: const Color(0xFF161B22),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           margin: const EdgeInsets.only(bottom: 12),
           child: InkWell(
@@ -193,21 +193,21 @@ Thank you.''';
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.access_time, size: 14, color: Colors.white.withOpacity(0.5)),
+                      Icon(Icons.access_time, size: 14, color: Colors.white.withValues(alpha: 0.5)),
                       const SizedBox(width: 4),
                       Text(
                         '$days days overdue',
                         style: TextStyle(
-                            color: days > 30 ? Colors.redAccent : Colors.white.withOpacity(0.5),
+                            color: days > 30 ? Colors.redAccent : Colors.white.withValues(alpha: 0.5),
                             fontSize: 12),
                       ),
                       const SizedBox(width: 16),
                       if (customer['phone'] != null) ...[
-                        Icon(Icons.phone, size: 14, color: Colors.white.withOpacity(0.5)),
+                        Icon(Icons.phone, size: 14, color: Colors.white.withValues(alpha: 0.5)),
                         const SizedBox(width: 4),
                         Text(
                           customer['phone'],
-                          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                         ),
                       ]
                     ],
@@ -217,17 +217,17 @@ Thank you.''';
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.note_alt_outlined, size: 14, color: Colors.white.withOpacity(0.5)),
+                          Icon(Icons.note_alt_outlined, size: 14, color: Colors.white.withValues(alpha: 0.5)),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               customer['last_note'],
-                              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -355,15 +355,15 @@ class _ReceivePaymentSheetState extends State<_ReceivePaymentSheet> {
           const SizedBox(height: 8),
           Text(
             'From: ${widget.customer['customer_name']}',
-            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8B84B).withOpacity(0.1),
+              color: const Color(0xFFE8B84B).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE8B84B).withOpacity(0.3)),
+              border: Border.all(color: const Color(0xFFE8B84B).withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -381,7 +381,7 @@ class _ReceivePaymentSheetState extends State<_ReceivePaymentSheet> {
             autofocus: true,
             decoration: InputDecoration(
               labelText: 'Amount Received (৳)',
-              labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+              labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

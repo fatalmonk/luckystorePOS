@@ -11,9 +11,9 @@ class PrintRetryQueue {
   final StreamController<RetryQueueEvent> _eventController;
   Timer? _retryTimer;
 
-  int _maxRetries = PrinterConfig.maxRetryAttempts;
-  Duration _baseRetryDelay = PrinterConfig.baseRetryDelay;
-  Duration _maxRetryDelay = PrinterConfig.maxRetryDelay;
+  final int _maxRetries;
+  final Duration _baseRetryDelay;
+  final Duration _maxRetryDelay;
 
   int get retryCount => _queue.length;
   bool get isEmpty => _queue.isEmpty;

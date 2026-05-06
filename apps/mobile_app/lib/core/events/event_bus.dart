@@ -3,7 +3,7 @@ import 'dart:async';
 /// Generic event bus that replaces repeated StreamController.broadcast() boilerplate.
 ///
 /// Usage:
-///   final bus = EventBus<MyEventType>();
+///   final bus = `EventBus<MyEventType>()`;
 ///   bus.stream.listen((event) => ...);
 ///   bus.emit(MyEventType.someEvent);
 class EventBus<T> {

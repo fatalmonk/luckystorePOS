@@ -46,7 +46,7 @@ class RealtimeProvider {
       },
     );
 
-    await _channel!.subscribe();
+    _channel!.subscribe();
   }
 
   /// Dispose the channel and controller.

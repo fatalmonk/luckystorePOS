@@ -490,13 +490,13 @@ class LowStockAlertService {
     int hourlyInterval = 6, // Check every 6 hours
     int threshold = defaultThreshold,
   }) {
-    Logger.info('Scheduled auto stock check every ${hourlyInterval} hours (threshold: $threshold)');
+    Logger.info('Scheduled auto stock check every $hourlyInterval hours (threshold: $threshold)');
 
     _broadcastEvent(AlertEvent(
       type: AlertEventType.scheduled,
       interval: hourlyInterval,
       threshold: threshold,
-      message: 'Auto check scheduled every ${hourlyInterval} hours',
+      message: 'Auto check scheduled every $hourlyInterval hours',
     ));
 
     // TODO: Implement with Workmanager or Flutter Schedule

@@ -8,8 +8,8 @@ import 'printer_models.dart';
 /// TSPL Label Printer Service for MHT-P29L and similar TSC-compatible printers
 /// Uses Bluetooth Low Energy (BLE) to connect and print labels
 class LabelPrinterService {
-  static const String _serviceUuid = "0000ff00-0000-1000-8000-00805f9b34fb";
-  static const String _writeCharacteristicUuid = "0000ff02-0000-1000-8000-00805f9b34fb";
+  static const String _serviceUuid = '0000ff00-0000-1000-8000-00805f9b34fb';
+  static const String _writeCharacteristicUuid = '0000ff02-0000-1000-8000-00805f9b34fb';
 
   BluetoothDevice? _connectedDevice;
   BluetoothCharacteristic? _writeCharacteristic;
