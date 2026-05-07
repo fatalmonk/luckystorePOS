@@ -19,7 +19,7 @@ const reasons = [
   { value: 'other', label: 'Manual fix' },
 ];
 
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 
 export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDrawerProps) {
   const { notify } = useNotify();

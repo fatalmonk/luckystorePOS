@@ -1,8 +1,0 @@
-include: package:flutter_lints/flutter.yaml
-
-analyzer:
-  exclude:
-    - "**/flutter/packages/**"
-    - "**/flutter/bin/cache/**"
-    - "**/.pub-cache/**"
-    - "**/sdk/**"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
@@ -8,7 +8,7 @@ import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../compo
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 
 interface LedgerPageConfig {
   partyType: 'customer' | 'supplier';
@@ -58,9 +58,9 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
   useEffect(() => {
     fetchParties();
-  }, []);
+  }, [fetchParties]);
 
-  const fetchParties = async () => {
+  const fetchParties = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
     const { data, error } = await supabase
@@ -75,7 +75,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       setParties(data as Party[]);
     }
     setLoading(false);
-  };
+  }, [partyType]);
 
   const fetchLedger = async (party: Party) => {
     setSelectedParty(party);

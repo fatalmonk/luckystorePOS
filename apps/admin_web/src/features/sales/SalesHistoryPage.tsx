@@ -10,7 +10,7 @@ import { TableFilters } from '../../components/data-display/TableFilters';
 import { XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth, subDays } from 'date-fns';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
 
 const ROW_HEIGHT = 56;
@@ -39,10 +39,10 @@ function formatCurrency(amount: number): string {
   return `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function exportSalesToCSV(sales: any[]) {
+function exportSalesToCSV(sales: { sale_number: string, created_at: string, cashier_name: string, subtotal: number, discount_amount: number, total_amount: number, status: string }[]) {
   if (!sales.length) return;
   const headers = ['Receipt #', 'Date & Time', 'Cashier', 'Subtotal', 'Discount', 'Total', 'Status'];
-  const rows = sales.map((s: any) => [
+  const rows = sales.map((s: { sale_number: string, created_at: string, cashier_name: string, subtotal: number, discount_amount: number, total_amount: number, status: string }) => [
     s.sale_number,
     format(new Date(s.created_at), 'dd/MM/yyyy HH:mm'),
     s.cashier_name,
@@ -74,7 +74,7 @@ export function SalesHistoryPage() {
   const pageSize = 20;
 
   // Reset page when search changes
-  useMemo(() => { setCurrentPage(1); }, [debouncedSearch]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch]);
 
   const { startDate, endDate } = getDateRange(dateRange, customStart, customEnd);
 
@@ -97,10 +97,10 @@ export function SalesHistoryPage() {
     );
   }
 
-  const completedSales = (sales ?? []).filter((s: any) => s.status === 'completed');
-  const voidedSales = (sales ?? []).filter((s: any) => s.status === 'voided');
+  const completedSales = (sales ?? []).filter((s: { status: string }) => s.status === 'completed');
+  const voidedSales = (sales ?? []).filter((s: { status: string }) => s.status === 'voided');
 
-  const totalRevenue = completedSales.reduce((sum: number, s: any) => sum + Number(s.total_amount || 0), 0);
+  const totalRevenue = completedSales.reduce((sum: number, s: { total_amount: number }) => sum + Number(s.total_amount || 0), 0);
   const avgTicket = completedSales.length ? totalRevenue / completedSales.length : 0;
   const voidCount = voidedSales.length;
 
@@ -392,7 +392,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
       queryClient.invalidateQueries({ queryKey: ['sales-history'] });
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to void sale. Please try again.', 'error');
     }
   });
@@ -482,7 +482,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item: any, idx: number) => (
+                  {items.map((item: { item_name: string, sku: string, qty: number, line_total: number }, idx: number) => (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', fontSize: 'var(--font-size-sm)' }}>
                       <td style={{ padding: 'var(--space-2) 0' }}>
                         <div>{item.item_name}</div>
@@ -519,7 +519,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
               <h3 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '700', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CreditCard size={16} /> Payments
               </h3>
-              {payments.map((p: any, idx: number) => (
+              {payments.map((p: { method_name: string, reference?: string, amount: number }, idx: number) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-sm)', padding: 'var(--space-1) 0' }}>
                   <span>{p.method_name} {p.reference && <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>({p.reference})</span>}</span>
                   <span style={{ fontWeight: '600' }}>৳{p.amount}</span>
