@@ -39,25 +39,37 @@ $$;
 -- =============================================================================
 -- 3) Fix stores SELECT policy - restrict to user's tenant
 -- =============================================================================
-DROP POLICY IF EXISTS "stores_select_authenticated" ON public.stores;
-DROP POLICY IF EXISTS "stores_select_tenant_isolated" ON public.stores;
 
-CREATE POLICY "stores_select_tenant_isolated"
-  ON public.stores
-  FOR SELECT
-  TO authenticated
-  USING (
-    tenant_id = public.get_current_user_tenant_id()
-    OR
-    -- Admin/manager can see stores they have access to
-    EXISTS (
-      SELECT 1
-      FROM public.users u
-      WHERE u.auth_id = (SELECT auth.uid())
-        AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.tenant_id = tenant_id
-    )
-  );
+DO $$
+BEGIN
+  -- Only apply if stores table exists
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' AND table_name = 'stores'
+  ) THEN
+    DROP POLICY IF EXISTS "stores_select_authenticated" ON public.stores;
+    DROP POLICY IF EXISTS "stores_select_tenant_isolated" ON public.stores;
+    
+    CREATE POLICY "stores_select_tenant_isolated"
+      ON public.stores
+      FOR SELECT
+      TO authenticated
+      USING (
+        tenant_id = public.get_current_user_tenant_id()
+        OR
+        -- Admin/manager can see stores they have access to
+        EXISTS (
+          SELECT 1
+          FROM public.users u
+          WHERE u.auth_id = (SELECT auth.uid())
+            AND u.role IN ('admin', 'manager', 'advisor')
+            AND u.tenant_id = tenant_id
+        )
+      );
+  ELSE
+    RAISE NOTICE 'Table stores does not exist, skipping policy creation';
+  END IF;
+END $$;
 
 -- =============================================================================
 -- 4) Fix categories SELECT policy - restrict to user's store/tenant
