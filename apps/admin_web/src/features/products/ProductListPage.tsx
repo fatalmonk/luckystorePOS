@@ -7,7 +7,7 @@ import { Search, Plus, Edit2, Package, Filter } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ProductEditDrawer } from './ProductEditDrawer';
 import { ProductAddModal } from './ProductAddModal';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';

@@ -10,7 +10,7 @@ import { AddPaymentMethodModal } from './AddPaymentMethodModal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { Modal } from '../../components/ui/Modal';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',

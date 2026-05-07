@@ -5,7 +5,7 @@ import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-rea
 import { supabase } from '../../lib/supabase';
 import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 import { MetricCard } from '../../components/data-display/MetricCard';
 
 export function DashboardPage() {
@@ -182,8 +182,8 @@ export function DashboardPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '200px', gap: 'var(--space-2)' }}>
-                    {cashflow.map((day: any, idx: number) => {
-                      const maxVal = Math.max(...cashflow.map((d: any) => Math.max(d.revenue, d.expenses)), 1);
+                    {cashflow.map((day: { date: string, label: string, revenue: number, expenses: number }, idx: number) => {
+                      const maxVal = Math.max(...cashflow.map((d: { revenue: number, expenses: number }) => Math.max(d.revenue, d.expenses)), 1);
                       const revenueHeight = maxVal > 0 ? (day.revenue / maxVal) * 100 : 0;
                       const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
                       return (
@@ -229,7 +229,7 @@ export function DashboardPage() {
             <div className="card">
               {lowStock && lowStock.length > 0 ? (
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                  {lowStock.slice(0, 5).map((item: any) => (
+                  {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
                     <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
                       <span>{item.name}</span>
                       <span style={{ color: 'var(--color-danger)', fontWeight: '600' }}>{item.quantity} left</span>
@@ -266,7 +266,7 @@ export function DashboardPage() {
             <div className="card">
               {reminders && reminders.length > 0 ? (
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {reminders.slice(0, 5).map((reminder: any) => (
+                  {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
                     <li key={reminder.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{reminder.title}</span>

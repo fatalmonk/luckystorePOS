@@ -5,7 +5,7 @@ export interface Column<T> {
   header: string;
   accessor: keyof T | ((row: T) => React.ReactNode);
   /** optional render function */
-  render?: (value: any, row: T) => React.ReactNode;
+  render?: (value: unknown, row: T) => React.ReactNode;
 }
 
 export interface DataTableProps<T> {
@@ -16,7 +16,7 @@ export interface DataTableProps<T> {
   className?: string;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
   onRowClick,
@@ -52,7 +52,7 @@ export function DataTable<T extends Record<string, any>>({
                   typeof col.accessor === 'function'
                     ? col.accessor(row)
                     : row[col.accessor as string];
-                const cellContent = col.render ? col.render(value, row) : value;
+                const cellContent = col.render ? col.render(value, row) : (value as React.ReactNode);
                 return (
                   <td key={colIdx} className="px-4 py-2 text-sm text-text-main">
                     {cellContent}

@@ -1,19 +1,6 @@
-import { useState, createContext, useContext } from 'react';
+import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, X } from 'lucide-react';
-
-type NotificationType = 'error' | 'success' | 'info';
-
-interface Notification {
-  id: string;
-  message: string;
-  type: NotificationType;
-}
-
-interface NotificationContextType {
-  notify: (message: string, type?: NotificationType) => void;
-}
-
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+import { Notification, NotificationType, NotificationContext } from './NotificationContext';
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -64,9 +51,3 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     </NotificationContext.Provider>
   );
 }
-
-export const useNotify = () => {
-  const context = useContext(NotificationContext);
-  if (!context) throw new Error('useNotify must be used within NotificationProvider');
-  return context;
-};

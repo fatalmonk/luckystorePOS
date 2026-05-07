@@ -10,7 +10,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { SkeletonBlock } from '../../components/PageState';
 import { Badge } from '../../components/ui/Badge';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 
 interface ProductDetailDrawerProps {
   productId: string | null;
