@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_shadows.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_text_styles.dart';
 import '../../shared/providers/pos_provider.dart';
 import '../../models/pos_models.dart';
 import '../../features/inventory/label_printer_screen.dart';
@@ -34,7 +37,12 @@ class ProductCard extends StatelessWidget {
         );
       },
       child: Container(
-        decoration: AppTheme.neomorphicDecoration,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDefault,
+          borderRadius: AppRadius.borderMd,
+          boxShadow: AppShadows.elevation1,
+          border: Border.all(color: AppColors.borderDefault),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
@@ -47,7 +55,7 @@ class ProductCard extends StatelessWidget {
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: AppColors.backgroundSubtle,
                       image: item.imageUrl != null
                           ? DecorationImage(
                               image: NetworkImage(item.imageUrl!),
@@ -72,9 +80,10 @@ class ProductCard extends StatelessWidget {
                             Text(
                               item.name,
                               style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 13,
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
+                                fontFamily: AppTextStyles.fontFamilyPrimary,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -84,8 +93,9 @@ class ProductCard extends StatelessWidget {
                               Text(
                                 weight!,
                                 style: const TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: AppColors.textSecondary,
                                   fontSize: 12,
+                                  fontFamily: AppTextStyles.fontFamilyPrimary,
                                 ),
                               ),
                             ],
@@ -99,18 +109,20 @@ class ProductCard extends StatelessWidget {
                               Text(
                                 '৳${originalPrice!.toStringAsFixed(0)}',
                                 style: const TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: AppColors.textSecondary,
                                   fontSize: 12,
                                   decoration: TextDecoration.lineThrough,
+                                  fontFamily: AppTextStyles.fontFamilyPrimary,
                                 ),
                               ),
                             // Bold pricing
                             Text(
                               '৳${item.price.toStringAsFixed(0)}',
                               style: const TextStyle(
-                                color: AppTheme.primaryAccentLight,
+                                color: AppColors.primaryDefault,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                fontFamily: AppTextStyles.fontFamilyPrimary,
                               ),
                             ),
                           ],
@@ -143,7 +155,7 @@ class ProductCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryAccent.withValues(alpha: 0.9),
+                    color: AppColors.secondaryDefault.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.print, color: Colors.white, size: 18),
@@ -180,7 +192,7 @@ class ProductCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: const BoxDecoration(
-                          color: AppTheme.primaryAccent,
+                          color: AppColors.primaryDefault,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.add, color: Colors.white, size: 20),
@@ -191,9 +203,9 @@ class ProductCard extends StatelessWidget {
                   // Transformed State: [-] 1 [+] selector
                   return Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.backgroundElevated,
+                      color: AppColors.surfaceRaised,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppTheme.primaryAccent),
+                      border: Border.all(color: AppColors.primaryDefault),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -209,14 +221,15 @@ class ProductCard extends StatelessWidget {
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Icon(Icons.remove, color: AppTheme.textPrimary, size: 16),
+                            child: Icon(Icons.remove, color: AppColors.textPrimary, size: 16),
                           ),
                         ),
                         Text(
                           '$quantity',
                           style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.bold,
+                            fontFamily: AppTextStyles.fontFamilyPrimary,
                           ),
                         ),
                         GestureDetector(
@@ -226,7 +239,7 @@ class ProductCard extends StatelessWidget {
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Icon(Icons.add, color: AppTheme.primaryAccentLight, size: 16),
+                            child: Icon(Icons.add, color: AppColors.primaryDefault, size: 16),
                           ),
                         ),
                       ],

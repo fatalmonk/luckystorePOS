@@ -107,7 +107,7 @@ class LuckyStoreApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Lucky Store',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
 
       // Localization setup
       locale: provider.locale,
