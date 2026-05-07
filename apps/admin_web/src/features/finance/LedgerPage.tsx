@@ -56,9 +56,6 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const { tenantId } = useAuth();
   const { notify } = useNotify();
 
-  useEffect(() => {
-    fetchParties();
-  }, [fetchParties]);
 
   const fetchParties = useCallback(async () => {
     setLoading(true);
@@ -76,6 +73,10 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     }
     setLoading(false);
   }, [partyType]);
+
+  useEffect(() => {
+    fetchParties();
+  }, [fetchParties]);
 
   const fetchLedger = async (party: Party) => {
     setSelectedParty(party);

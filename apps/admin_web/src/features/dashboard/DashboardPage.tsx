@@ -266,7 +266,7 @@ export function DashboardPage() {
             <div className="card">
               {reminders && reminders.length > 0 ? (
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description?: string }) => (
+                  {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
                     <li key={reminder.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{reminder.title}</span>
