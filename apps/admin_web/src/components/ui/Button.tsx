@@ -12,18 +12,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-primary text-white hover:bg-primary-hover border border-transparent',
-  secondary: 'bg-white text-text-main border border-border-color hover:bg-gray-50 shadow-sm',
-  tertiary: 'bg-tertiary text-white hover:opacity-90 border border-transparent',
-  danger: 'bg-danger text-white hover:bg-red-600 border border-transparent',
-  outline: 'bg-transparent text-primary border border-primary hover:bg-primary-light/20',
-  ghost: 'bg-transparent text-text-main hover:bg-gray-100 border border-transparent',
+  primary: 'bg-primary text-primary-on hover:bg-primary-hover border border-transparent rounded-md',
+  secondary: 'bg-surface text-text-primary border border-border-default hover:bg-background-subtle rounded-sm',
+  tertiary: 'bg-secondary text-secondary-on hover:bg-secondary-hover border border-transparent rounded-md',
+  danger: 'bg-danger text-danger-on hover:bg-danger-dark border border-transparent rounded-md',
+  outline: 'bg-transparent text-primary border border-primary hover:bg-primary-subtle rounded-md',
+  ghost: 'bg-transparent text-text-primary hover:bg-background-subtle border border-transparent rounded-md',
 };
 
 const sizeClasses = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2',
-  lg: 'px-6 py-2.5 text-lg',
+  sm: 'px-3 py-1.5 text-xs',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-6 py-2.5 text-base',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -41,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
           ref={ref}
           className={clsx(
-            'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+            'inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
             variantClasses[variant],
             sizeClasses[size],
             {
