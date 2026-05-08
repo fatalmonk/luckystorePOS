@@ -63,7 +63,7 @@ BEGIN
           FROM public.users u
           WHERE u.auth_id = (SELECT auth.uid())
             AND u.role IN ('admin', 'manager', 'advisor')
-            AND u.tenant_id = tenant_id
+            AND u.tenant_id = stores.tenant_id
         )
       );
   ELSE

@@ -17,7 +17,7 @@ BEGIN
       ON public.stores
       FOR INSERT
       TO authenticated
-      USING (
+      WITH CHECK (
         tenant_id = public.get_current_user_tenant_id()
         AND EXISTS (
           SELECT 1
