@@ -42,12 +42,12 @@ class AppColors {
   static const Color surfaceRaised = Color(0xFFFFFFFF);
   static const Color surfaceOverlay = Color(0x730F172A); // rgba(15,23,42,0.45) -> 45% = ~73
 
-  // Primary (Indigo-Blue)
-  static const Color primaryDefault = Color(0xFF4F46E5);
-  static const Color primaryHover = Color(0xFF4338CA);
-  static const Color primaryPressed = Color(0xFF3730A3);
-  static const Color primarySubtle = Color(0xFFEEF2FF);
-  static const Color primaryOn = Color(0xFFFFFFFF);
+  // Primary (Gold-Yellow)
+  static const Color primaryDefault = Color(0xFFE8B84B);
+  static const Color primaryHover = Color(0xFFD4941A);
+  static const Color primaryPressed = Color(0xFFB0781A);
+  static const Color primarySubtle = Color(0xFFFEF3C7);
+  static const Color primaryOn = Color(0xFF1E293B);
 
   // Secondary (Teal-Green)
   static const Color secondaryDefault = Color(0xFF0D9488);
