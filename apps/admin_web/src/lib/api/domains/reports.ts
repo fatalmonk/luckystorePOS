@@ -16,7 +16,7 @@ export const reports = {
     // Get top selling products
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
-      .select('qty, unit_price, item_id')
+      .select('qty, price, item_id')
       .in('sale_id', sales?.map((s: any) => s.id) || []);
 
     if (itemsError) throw itemsError;
@@ -36,7 +36,7 @@ export const reports = {
       const name = nameMap.get(item.item_id) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
       existing.quantity += item.qty || 0;
-      existing.revenue += (item.qty || 0) * (item.unit_price || 0);
+      existing.revenue += (item.qty || 0) * (item.price || 0);
       productMap.set(name, existing);
     });
 
