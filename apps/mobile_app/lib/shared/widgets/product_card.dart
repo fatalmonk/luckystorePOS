@@ -36,7 +36,7 @@ class ProductCard extends StatelessWidget {
             duration: const Duration(seconds: 1),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.primaryDefault,
-            shape: AppRadius.borderMd,
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
           ),
         );
       },

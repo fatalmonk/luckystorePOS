@@ -4,6 +4,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_button_styles.dart';
 
 /// Right panel with cart items and order summary for the POS screen.
 class CartPanel extends StatelessWidget {
@@ -161,11 +163,11 @@ class OrderSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: AppSpacing.insetLg,
       decoration: BoxDecoration(
         color: AppColors.surfaceRaised,
         boxShadow: AppShadows.elevation3,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.space6)),
       ),
       child: Column(
         children: [
@@ -174,15 +176,15 @@ class OrderSummary extends StatelessWidget {
             Text('৳ ${subtotal.toStringAsFixed(2)}', style: AppTextStyles.labelMd),
           ]),
           if (cartDiscount > 0) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.space2),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('Discount', style: AppTextStyles.bodyMd.copyWith(color: AppColors.successDefault)),
               Text('- ৳ ${cartDiscount.toStringAsFixed(2)}',
                   style: AppTextStyles.labelMd.copyWith(color: AppColors.successDefault, fontWeight: FontWeight.bold)),
             ]),
           ],
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.space4),
             child: Divider(color: AppColors.borderDefault, height: 1),
           ),
 
@@ -191,7 +193,7 @@ class OrderSummary extends StatelessWidget {
             Text('৳ ${totalAmount.toStringAsFixed(0)}',
                 style: AppTextStyles.headingXl.copyWith(color: AppColors.primaryDefault)),
           ]),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.space6),
 
           Row(
             children: [
@@ -199,34 +201,30 @@ class OrderSummary extends StatelessWidget {
               GestureDetector(
                 onTap: cartIsEmpty ? null : onShowDiscountDialog,
                 child: Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: AppSpacing.insetSquishMd,
                   decoration: BoxDecoration(
                     color: AppColors.backgroundSubtle,
                     borderRadius: AppRadius.borderMd,
                     border: Border.all(color: AppColors.borderDefault),
                   ),
-                  child: const Icon(Icons.local_offer_outlined, color: AppColors.primaryDefault, size: 24),
+                  child: const Icon(Icons.local_offer_outlined, color: AppColors.primaryDefault, size: AppSpacing.space6),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.space3),
 
               // Charge button
               Expanded(
                 child: ElevatedButton(
                   onPressed: cartIsEmpty ? null : onCharge,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryDefault,
-                    disabledBackgroundColor: AppColors.backgroundSubtle,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                    elevation: 4,
-                    shadowColor: AppColors.primaryDefault.withValues(alpha: 0.4),
+                  style: AppButtonStyles.primary.copyWith(
+                    elevation: WidgetStateProperty.all(4),
+                    shadowColor: WidgetStateProperty.all(AppColors.primaryDefault.withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.bolt_rounded, color: AppColors.primaryOn, size: 20),
-                      const SizedBox(width: 8),
+                      const Icon(Icons.bolt_rounded, color: AppColors.primaryOn, size: AppSpacing.space5),
+                      const SizedBox(width: AppSpacing.space2),
                       Text(
                         'PLACE ORDER',
                         style: AppTextStyles.labelLg.copyWith(

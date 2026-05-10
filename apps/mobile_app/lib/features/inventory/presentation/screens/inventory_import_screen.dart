@@ -8,6 +8,10 @@ import 'package:excel/excel.dart' as ex;
 import 'package:provider/provider.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_button_styles.dart';
 
 class InventoryImportScreen extends StatefulWidget {
   const InventoryImportScreen({super.key});
@@ -311,10 +315,10 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
 
   Widget _buildMappingList() {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: AppSpacing.insetLg,
       children: [
-        const Text('COLUMN MAPPING', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: AppTheme.primaryAccent)),
-        const SizedBox(height: 16),
+        Text('COLUMN MAPPING', style: AppTextStyles.labelMd.copyWith(letterSpacing: 1.2, color: AppColors.primaryDefault)),
+        const SizedBox(height: AppSpacing.space4),
         ..._internalFields.map((field) {
           final id = field['id']!;
           final isRequired = field['req'] == 'true';
@@ -325,7 +329,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
               children: [
                 Row(
                   children: [
-                    Text(field['label']!, style: const TextStyle(fontSize: 13, color: Colors.white70)),
+                    Text(field['label']!, style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
                     if (isRequired) const Text(' *', style: TextStyle(color: Colors.redAccent)),
                   ],
                 ),
@@ -341,11 +345,11 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: _mappings[id],
-                      hint: const Text('Skip field', style: TextStyle(color: Colors.white24, fontSize: 13)),
+                      hint: Text('Skip field', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
                       dropdownColor: AppTheme.backgroundElevated,
                       items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('Skip field', style: TextStyle(color: Colors.white24))),
-                        ..._headers.map((h) => DropdownMenuItem(value: h, child: Text(h, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: Colors.white)))),
+                        DropdownMenuItem<String>(value: null, child: Text('Skip field', style: TextStyle(color: AppTheme.textSecondary))),
+                        ..._headers.map((h) => DropdownMenuItem(value: h, child: Text(h, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppTheme.textPrimary)))),
                       ],
                       onChanged: (val) => setState(() {
                         if (val == null) {
@@ -383,24 +387,25 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
               side: BorderSide(color: AppTheme.primaryAccent.withValues(alpha: 0.5)),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.space4),
           SwitchListTile(
-            title: const Text('Dry Run Only', style: TextStyle(fontSize: 14)),
-            subtitle: const Text('Validate without saving', style: TextStyle(fontSize: 11, color: Colors.white24)),
+            title: Text('Dry Run Only', style: AppTextStyles.bodyMd),
+            subtitle: Text('Validate without saving', style: AppTextStyles.bodySm),
             value: _isDryRun,
             onChanged: _isProcessing ? null : (v) => setState(() => _isDryRun = v),
-            activeColor: AppTheme.primaryAccent,
+            activeColor: AppColors.primaryDefault,
             contentPadding: EdgeInsets.zero,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.space4),
           ElevatedButton(
             onPressed: _isProcessing ? null : _startImport,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isDryRun ? Colors.blueGrey : AppTheme.primaryAccent,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            style: _isDryRun 
+                ? AppButtonStyles.primary.copyWith(backgroundColor: WidgetStateProperty.all(Colors.blueGrey))
+                : AppButtonStyles.primary,
+            child: Text(
+              _isProcessing ? 'PROCESSING...' : (_isDryRun ? 'DRY RUN' : 'START IMPORT'),
+              style: AppTextStyles.labelLg.copyWith(color: AppColors.primaryOn),
             ),
-            child: Text(_isProcessing ? 'PROCESSING...' : (_isDryRun ? 'DRY RUN' : 'START IMPORT'), style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -412,10 +417,10 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.checklist_rtl_rounded, size: 60, color: Colors.white10),
-          const SizedBox(height: 16),
-          Text('File: ${_selectedFile!.name}', style: const TextStyle(color: Colors.white54)),
-          const Text('Configure mappings and click Start.', style: TextStyle(color: Colors.white24)),
+          Icon(Icons.checklist_rtl_rounded, size: 60, color: AppColors.textSecondary),
+          const SizedBox(height: AppSpacing.space4),
+          Text('File: ${_selectedFile!.name}', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+          Text('Configure mappings and click Start.', style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -433,9 +438,9 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_statusMessage ?? 'Processing Result', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text('Mode: ${_isDryRun ? "Dry Run (Simulated)" : "Production (Applied)"}', style: TextStyle(color: _isDryRun ? Colors.blueAccent : Colors.orangeAccent)),
+                    Text(_statusMessage ?? 'Processing Result', style: AppTextStyles.headingLg),
+                    const SizedBox(height: AppSpacing.space1),
+                    Text('Mode: ${_isDryRun ? "Dry Run (Simulated)" : "Production (Applied)"}', style: AppTextStyles.bodySm.copyWith(color: _isDryRun ? AppColors.primaryDefault : Colors.orangeAccent)),
                   ],
                 ),
               ),
@@ -458,7 +463,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
           ),
           if (_errors.isNotEmpty) ...[
             const SizedBox(height: 40),
-            const Text('ERROR LOG', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54)),
+            Text('ERROR LOG', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(

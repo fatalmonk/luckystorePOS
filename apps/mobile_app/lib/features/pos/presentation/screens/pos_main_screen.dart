@@ -135,7 +135,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
       backgroundColor: success ? AppColors.successDefault : AppColors.dangerDefault,
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
-      shape: AppRadius.borderMd,
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
     ));
   }
 

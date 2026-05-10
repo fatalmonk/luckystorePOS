@@ -71,8 +71,8 @@ export function DashboardPage() {
           .from('expenses')
           .select('amount')
           .eq('store_id', storeId)
-          .gte('date', dateStr)
-          .lt('date', nextDateStr);
+          .gte('expense_date', dateStr)
+          .lt('expense_date', nextDateStr);
 
         const revenue = salesData?.reduce((sum, s) => sum + (s.total_amount || 0), 0) || 0;
         const expenses = expensesData?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;

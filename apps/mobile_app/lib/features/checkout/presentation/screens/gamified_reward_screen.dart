@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../core/theme/app_motion.dart';
 
 class GamifiedRewardScreen extends StatefulWidget {
   const GamifiedRewardScreen({super.key});
@@ -19,9 +20,9 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: AppMotion.durationSlow,
     );
-    _scaleAnimation = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
+    _scaleAnimation = CurvedAnimation(parent: _controller, curve: AppMotion.easeDecelerate);
   }
 
   void _revealReward() {
@@ -50,7 +51,7 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Scratch the card to reveal your Lucky Coins!',
               style: TextStyle(color: AppTheme.textPrimary, fontSize: 16),
             ),

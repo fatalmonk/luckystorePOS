@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
 import '../../../../models/pos_models.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_radius.dart';
 
 class CategoriesTab extends StatefulWidget {
   const CategoriesTab({super.key});
@@ -56,14 +60,14 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
         children: [
           // Horizontal top-level tab bar
           Container(
-            color: AppTheme.background,
+            color: AppColors.surfaceDefault,
             child: TabBar(
               controller: _tabController,
               isScrollable: true,
-              indicatorColor: AppTheme.primaryAccent,
-              labelColor: AppTheme.primaryAccent,
-              unselectedLabelColor: AppTheme.textSecondary,
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              indicatorColor: AppColors.primaryDefault,
+              labelColor: AppColors.primaryDefault,
+              unselectedLabelColor: AppColors.textSecondary,
+              labelStyle: AppTextStyles.labelMd.copyWith(fontWeight: FontWeight.bold),
               tabs: _tabs.map((t) => Tab(text: t)).toList(),
             ),
           ),
@@ -85,7 +89,7 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
         // Horizontally scrolling promotional cashback banner
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.insetLg,
             child: SizedBox(
               height: 110,
               child: ListView.builder(
@@ -93,9 +97,9 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
                 itemCount: 3,
                 itemBuilder: (context, i) => Container(
                   width: 280,
-                  margin: const EdgeInsets.only(right: 16),
+                  margin: const EdgeInsets.only(right: AppSpacing.space4),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: AppRadius.borderMd,
                     gradient: LinearGradient(
                       colors: [
                         AppTheme.primaryAccent.withValues(alpha: 0.8),
@@ -144,14 +148,14 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
                       Expanded(
                         child: Text(
                           item['name']!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
                         ),
                       ),
-                      Text(item['emoji']!, style: const TextStyle(fontSize: 28)),
+                      Text(item['emoji']!, style: TextStyle(fontSize: 28)),
                     ],
                   ),
                 );
@@ -162,7 +166,7 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
         ),
 
         // Products in this category
-        const SliverPadding(
+        SliverPadding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           sliver: SliverToBoxAdapter(
             child: Text(

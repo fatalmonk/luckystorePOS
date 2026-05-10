@@ -4,6 +4,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_button_styles.dart';
 
 /// Product grid for the POS left panel, with loading, error, and empty states.
 class ProductGrid extends StatelessWidget {
@@ -39,24 +41,19 @@ class ProductGrid extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.error_outline_rounded,
-                color: AppColors.dangerDefault, size: 48),
-            const SizedBox(height: 16),
+                color: AppColors.dangerDefault, size: AppSpacing.space12),
+            const SizedBox(height: AppSpacing.space4),
             Text(
               'Data load failed: $msg',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMd.copyWith(color: AppColors.dangerDefault),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.space5),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Retry Connection'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryDefault,
-                foregroundColor: AppColors.primaryOn,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
+              style: AppButtonStyles.primary,
             ),
           ],
         ),
@@ -68,14 +65,14 @@ class ProductGrid extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off_rounded,
-                color: AppColors.textMuted.withValues(alpha: 0.3), size: 64),
-            const SizedBox(height: 16),
+                color: AppColors.textMuted.withValues(alpha: 0.3), size: AppSpacing.space16),
+            const SizedBox(height: AppSpacing.space4),
             Text(
               'No products found for store $storeId',
               style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.space5),
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
@@ -84,7 +81,7 @@ class ProductGrid extends StatelessWidget {
                 foregroundColor: AppColors.primaryDefault,
                 side: const BorderSide(color: AppColors.primaryDefault),
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: AppSpacing.insetSquishLg,
               ),
             ),
           ],
@@ -246,7 +243,7 @@ class ProductTile extends StatelessWidget {
                       'SOLD OUT',
                       style: AppTextStyles.labelXs.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.black,
+                        fontWeight: FontWeight.w900,
                         letterSpacing: 1.0,
                       ),
                     ),

@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../../../models/pos_models.dart';
 import '../../../../models/party.dart';
 import '../../../../shared/providers/pos_provider.dart';
+import '../../../../core/theme/app_motion.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import './receipt_screen.dart';
 
 /// Cashier-optimised payment screen.
@@ -600,7 +603,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             });
           },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
+            duration: AppMotion.durationNormal,
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
@@ -816,19 +819,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final isPaid = _isPaid(pos);
     final change = _change(pos);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+      padding: EdgeInsets.fromLTRB(AppSpacing.space4, AppSpacing.space2, AppSpacing.space4, AppSpacing.space1),
       child: Row(
         children: [
           // Add split payment (only visible when not yet fully paid)
           if (!isPaid && _tenders.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: 10),
+              padding: EdgeInsets.only(right: AppSpacing.space2),
               child: OutlinedButton(
                 onPressed: () => _addTender(pos),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF30363D)),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 15),
+                  padding: AppSpacing.insetSquishMd,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
@@ -841,23 +843,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Expanded(
             child: ElevatedButton(
               onPressed: _processing ? null : () => _completeSale(pos),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isPaid
-                    ? const Color(0xFF2ECC71)
-                    : const Color(0xFFE8B84B),
-                disabledBackgroundColor:
-                    Colors.white.withValues(alpha: 0.1),
-                padding: const EdgeInsets.symmetric(vertical: 17),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+              style: AppButtonStyles.primary.copyWith(
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.disabled)) return Colors.white.withValues(alpha: 0.1);
+                  return isPaid ? const Color(0xFF2ECC71) : const Color(0xFFE8B84B);
+                }),
+                minimumSize: WidgetStateProperty.all(const Size(double.infinity, 52)),
               ),
               child: _processing
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          color: Colors.black, strokeWidth: 2.5),
+                          color: Colors.black, strokeWidth: 2),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,

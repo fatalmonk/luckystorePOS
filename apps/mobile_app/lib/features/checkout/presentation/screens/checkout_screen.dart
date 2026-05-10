@@ -3,6 +3,9 @@ import '../../../../theme/app_theme.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/address_selector.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_button_styles.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -44,7 +47,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               decoration: AppTheme.neomorphicDecoration,
               child: Row(
                 children: [
-                  const Icon(Icons.location_on, color: AppTheme.primaryAccent),
+                  Icon(Icons.location_on, color: AppTheme.primaryAccent),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -60,7 +63,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         if (_deliveryAddress != null)
                           Text(
                             '${_deliveryAddress!.city}, ${_deliveryAddress!.country}',
-                            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                            style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                           ),
                       ],
                     ),
@@ -69,7 +72,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     onPressed: _openAddressSelector,
                     child: Text(
                       _deliveryAddress != null ? 'Change' : 'Select',
-                      style: const TextStyle(color: AppTheme.secondaryAccent),
+                      style: TextStyle(color: AppTheme.secondaryAccent),
                     ),
                   ),
                 ],
@@ -114,22 +117,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   Expanded(
                     child: Text(
                       '${cartItem.item.name} × ${cartItem.qty}',
-                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                      style: TextStyle(color: AppTheme.textPrimary, fontSize: 13),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
                     '৳${cartItem.lineTotal.toStringAsFixed(0)}',
-                    style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             )),
-            const Divider(color: AppTheme.shadowLight, height: 24),
+            Divider(color: AppColors.borderDefault, height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Delivery Fee', style: TextStyle(color: AppTheme.textSecondary)),
+                Text('Delivery Fee', style: TextStyle(color: AppTheme.textSecondary)),
                 Text(
                   totalAmount >= 500 ? 'Free 🚚' : '৳40',
                   style: TextStyle(
@@ -143,10 +146,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Total', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                 Text(
                   '৳${(totalAmount + (totalAmount >= 500 ? 0 : 40)).toStringAsFixed(0)}',
-                  style: const TextStyle(color: AppTheme.primaryAccent, fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppTheme.primaryAccent, fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -171,7 +174,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       Icon(opt.icon, color: opt.color),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: Text(opt.label, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+                        child: Text(opt.label, style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
                       ),
                       if (_selectedPayment == i)
                         Icon(Icons.check_circle, color: opt.color),
@@ -189,7 +192,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         decoration: BoxDecoration(
           color: AppTheme.backgroundElevated,
-          boxShadow: [BoxShadow(color: AppTheme.shadowDark, blurRadius: 10, offset: const Offset(0, -5))],
+          boxShadow: AppTheme.shadowDark,
         ),
         child: SizedBox(
           width: double.infinity,
@@ -202,24 +205,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 return;
               }
               if (_selectedPayment == 0) {
-                // COD: go straight to confirmation — bypass payment screens
                 Navigator.of(context).pushNamed('/order-confirmed');
               } else if (_selectedPayment == 1) {
-                // bKash tokenized flow
                 Navigator.of(context).pushNamed('/bkash-checkout');
               } else {
-                // SSLCommerz card/wallet flow
                 Navigator.of(context).pushNamed('/ssl-checkout');
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            child: const Text(
+            style: AppButtonStyles.primary,
+            child: Text(
               'Place Order',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: AppTextStyles.labelLg.copyWith(color: AppColors.primaryOn, fontSize: 18),
             ),
           ),
         ),
@@ -251,7 +247,7 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppTheme.textSecondary,
           fontSize: 13,
           fontWeight: FontWeight.w600,
@@ -291,7 +287,7 @@ class _DeliveryTypeCard extends StatelessWidget {
             Icon(icon, color: isSelected ? AppTheme.primaryAccent : AppTheme.textSecondary, size: 28),
             const SizedBox(height: 8),
             Text(label, style: TextStyle(color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary, fontWeight: FontWeight.bold)),
-            Text(subtitle, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+            Text(subtitle, style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
           ],
         ),
       ),
