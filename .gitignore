@@ -10,6 +10,7 @@
 .env.*
 !.env.example
 !.env*.example
+!.env.local.example
 
 apps/*/.env
 apps/*/.env.*
@@ -53,6 +54,7 @@ coverage/
 .next/
 .nuxt/
 .svelte-kit/
+.vite/
 
 *.tsbuildinfo
 
@@ -198,4 +200,3 @@ apps/mobile_app/flutter/
 # Ignore local JSON secrets
 data/*.json
 .vercel/
-
