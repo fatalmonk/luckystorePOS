@@ -14,6 +14,10 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../sales/offline_transaction_sync_service.dart';
 import '../../../sales/offline_sync_operational_alert_engine.dart';
 import '../../../sales/store_closing_health_check_service.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_radius.dart';
 
 class ManagerDashboardScreen extends StatefulWidget {
   const ManagerDashboardScreen({super.key});
@@ -200,11 +204,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D1117),
+        backgroundColor: AppColors.surfaceDefault,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF161B22),
-          title: const Text('Manager Dashboard',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          backgroundColor: AppColors.surfaceRaised,
+          title: Text('Manager Dashboard',
+              style: AppTextStyles.headingLg.copyWith(color: AppColors.textPrimary)),
           elevation: 0,
           actions: [
             IconButton(
@@ -248,18 +252,18 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: Color(0xFFE8B84B)))
+                child: CircularProgressIndicator(color: AppColors.primaryDefault))
             : _error != null
                 ? Center(
                     child: Text(_error!,
-                        style: const TextStyle(color: Colors.redAccent)))
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.dangerDefault)))
                 : RefreshIndicator(
                     onRefresh: _loadDashboardData,
-                    color: const Color(0xFFE8B84B),
-                    backgroundColor: const Color(0xFF161B22),
+                    color: AppColors.primaryDefault,
+                    backgroundColor: AppColors.surfaceRaised,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
+                      padding: AppSpacing.insetLg,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -274,17 +278,14 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                           _buildSyncTelemetryCards(),
                           const SizedBox(height: 16),
                           _buildCloseStatusCard(),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.space3),
                           _buildCloseReviewActions(auth.appUser?.role ?? ''),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: AppSpacing.space6),
                           _buildSalesTrendGraph(),
-                          const SizedBox(height: 24),
-                          const Text('Recent POS Sessions',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.space6),
+                          Text('Recent POS Sessions',
+                              style: AppTextStyles.headingLg.copyWith(color: AppColors.textPrimary)),
+                          const SizedBox(height: AppSpacing.space3),
                           _buildSessionsList(),
                         ],
                       ),
@@ -296,10 +297,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
 
   Widget _buildSummaryCards() {
     return LayoutBuilder(builder: (context, constraints) {
-      final cardWidth = (constraints.maxWidth - 16) / 2;
+      final cardWidth = (constraints.maxWidth - AppSpacing.space4) / 2;
       return Wrap(
-        spacing: 16,
-        runSpacing: 16,
+        spacing: AppSpacing.space4,
+        runSpacing: AppSpacing.space4,
         children: [
           _statCard(
               'Today\'s Sales',
@@ -321,10 +322,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   Widget _buildOfflineSyncCards() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = (constraints.maxWidth - 16) / 2;
+        final cardWidth = (constraints.maxWidth - AppSpacing.space4) / 2;
         return Wrap(
-          spacing: 16,
-          runSpacing: 16,
+          spacing: AppSpacing.space4,
+          runSpacing: AppSpacing.space4,
           children: [
             _statCard('Queued Sales', '${_offlineStats.queuedSalesCount}',
                 Icons.sync_problem_rounded, const Color(0xFFE8B84B), cardWidth),
@@ -401,11 +402,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   Widget _buildSyncAlertBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: AppSpacing.insetSquishMd,
       decoration: BoxDecoration(
-        color: const Color(0xFFB3261E).withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEF5350)),
+        color: AppColors.dangerSubtle,
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(color: AppColors.dangerDefault.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,10 +451,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     };
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: AppSpacing.insetSquishMd,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.borderMd,
         border: Border.all(color: color.withValues(alpha: 0.7)),
       ),
       child: Text(
@@ -467,11 +468,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     final isOwnerOrAdmin = role == 'admin' || role == 'owner';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.insetMd,
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
+        color: AppColors.surfaceRaised,
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(color: AppColors.borderDefault),
       ),
       child: Wrap(
         spacing: 10,
@@ -484,11 +485,8 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                 MaterialPageRoute(builder: (_) => const ClosingHistoryScreen()),
               );
             },
-            icon: const Icon(Icons.history, color: Colors.white70),
-            label: const Text(
-              'Closing History',
-              style: TextStyle(color: Colors.white),
-            ),
+            icon: const Icon(Icons.history, color: AppColors.textSecondary),
+            label: Text('Closing History', style: AppTextStyles.labelMd),
           ),
           if (isOwnerOrAdmin)
             OutlinedButton.icon(
@@ -500,11 +498,8 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.analytics_outlined, color: Colors.white70),
-              label: const Text(
-                'Close Risk Analytics',
-                style: TextStyle(color: Colors.white),
-              ),
+              icon: const Icon(Icons.analytics_outlined, color: AppColors.textSecondary),
+              label: Text('Close Risk Analytics', style: AppTextStyles.labelMd),
             ),
         ],
       ),
@@ -600,11 +595,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       double width) {
     return Container(
       width: width,
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.insetMd,
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: AppColors.surfaceRaised,
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(color: AppColors.borderDefault),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,11 +607,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title,
-                  style: const TextStyle(
-                      color: Colors.white60,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500)),
+              Text(title, style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary)),
               Icon(icon, color: iconColor, size: 20),
             ],
           ),
@@ -665,16 +656,16 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.insetMd,
             decoration: BoxDecoration(
-                color: const Color(0xFF161B22),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                color: AppColors.surfaceRaised,
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: AppColors.borderDefault),
                 boxShadow: [
                   BoxShadow(
                       color: isOpen
-                          ? const Color(0xFFE8B84B).withValues(alpha: 0.1)
-                          : Colors.black12,
+                          ? AppColors.primaryDefault.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 4))
                 ]),
@@ -685,17 +676,17 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: isOpen
-                        ? const Color(0xFFE8B84B).withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
+                        ? AppColors.primarySubtle
+                        : AppColors.surfaceDefault,
+                    borderRadius: AppRadius.borderSm,
                     border: Border.all(
                         color: isOpen
-                            ? const Color(0xFFE8B84B).withValues(alpha: 0.5)
-                            : Colors.transparent),
+                            ? AppColors.primaryDefault.withValues(alpha: 0.5)
+                            : AppColors.borderDefault),
                   ),
                   child: Icon(
                       isOpen ? Icons.lock_open_rounded : Icons.lock_rounded,
-                      color: isOpen ? const Color(0xFFE8B84B) : Colors.white54,
+                      color: isOpen ? AppColors.primaryDefault : AppColors.textSecondary,
                       size: 24),
                 ),
                 const SizedBox(width: 16),

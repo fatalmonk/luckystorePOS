@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/address_selector.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_button_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -33,37 +35,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final totalAmount = posProvider.totalAmount;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.backgroundDefault,
       appBar: AppBar(title: const Text('Checkout')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.insetMd,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Delivery Address Card
             _SectionLabel(label: 'Delivery Address'),
             Container(
-              padding: const EdgeInsets.all(16),
-              decoration: AppTheme.neomorphicDecoration,
+              padding: AppSpacing.insetMd,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDefault,
+                borderRadius: AppRadius.borderMd,
+                boxShadow: AppShadows.elevation1,
+                border: Border.all(color: AppColors.borderDefault),
+              ),
               child: Row(
                 children: [
-                  Icon(Icons.location_on, color: AppTheme.primaryAccent),
-                  const SizedBox(width: 12),
+                  const Icon(Icons.location_on, color: AppColors.primaryDefault),
+                  const SizedBox(width: AppSpacing.space3),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           _deliveryAddress?.address ?? 'Tap to select address',
-                          style: TextStyle(
-                            color: _deliveryAddress != null ? AppTheme.textPrimary : AppTheme.textSecondary,
+                          style: AppTextStyles.labelMd.copyWith(
+                            color: _deliveryAddress != null ? AppColors.textPrimary : AppColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         if (_deliveryAddress != null)
                           Text(
                             '${_deliveryAddress!.city}, ${_deliveryAddress!.country}',
-                            style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
                           ),
                       ],
                     ),
@@ -72,13 +79,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     onPressed: _openAddressSelector,
                     child: Text(
                       _deliveryAddress != null ? 'Change' : 'Select',
-                      style: TextStyle(color: AppTheme.secondaryAccent),
+                      style: const TextStyle(color: AppColors.secondaryDefault),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.space6),
 
             // Delivery Type
             _SectionLabel(label: 'Delivery Type'),
@@ -105,55 +112,54 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.space6),
 
             // Collapsible Order Summary
             _SectionLabel(label: 'Order Summary ($itemCount items)'),
             ...cart.map((cartItem) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.space1),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
                       '${cartItem.item.name} × ${cartItem.qty}',
-                      style: TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                      style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
                     '৳${cartItem.lineTotal.toStringAsFixed(0)}',
-                    style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
+                    style: AppTextStyles.labelMd.copyWith(color: AppColors.textPrimary),
                   ),
                 ],
               ),
             )),
-            Divider(color: AppColors.borderDefault, height: 24),
+            Divider(color: AppColors.borderDefault, height: AppSpacing.space6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Delivery Fee', style: TextStyle(color: AppTheme.textSecondary)),
+                Text('Delivery Fee', style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary)),
                 Text(
                   totalAmount >= 500 ? 'Free 🚚' : '৳40',
-                  style: TextStyle(
-                    color: totalAmount >= 500 ? const Color(0xFF4EEB9E) : AppTheme.textSecondary,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.labelMd.copyWith(
+                    color: totalAmount >= 500 ? AppColors.successDefault : AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.space2),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Total', style: AppTextStyles.headingLg.copyWith(color: AppColors.textPrimary)),
                 Text(
                   '৳${(totalAmount + (totalAmount >= 500 ? 0 : 40)).toStringAsFixed(0)}',
-                  style: TextStyle(color: AppTheme.primaryAccent, fontSize: 20, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.headingXl.copyWith(color: AppColors.primaryDefault),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.space6),
 
             // Payment Selection (first-class for COD)
             _SectionLabel(label: 'Payment Method'),
@@ -162,19 +168,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               return GestureDetector(
                 onTap: () => setState(() => _selectedPayment = i),
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: AppTheme.neomorphicDecoration.copyWith(
-                    border: _selectedPayment == i
-                        ? Border.all(color: opt.color, width: 2)
-                        : null,
+                  margin: const EdgeInsets.only(bottom: AppSpacing.space3),
+                  padding: AppSpacing.insetSquishMd,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceDefault,
+                    borderRadius: AppRadius.borderMd,
+                    boxShadow: AppShadows.elevation1,
+                    border: Border.all(
+                      color: _selectedPayment == i ? opt.color : AppColors.borderDefault,
+                      width: _selectedPayment == i ? 2 : 1,
+                    ),
                   ),
                   child: Row(
                     children: [
                       Icon(opt.icon, color: opt.color),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppSpacing.space4),
                       Expanded(
-                        child: Text(opt.label, style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+                        child: Text(opt.label, style: AppTextStyles.labelMd.copyWith(color: AppColors.textPrimary)),
                       ),
                       if (_selectedPayment == i)
                         Icon(Icons.check_circle, color: opt.color),
@@ -189,10 +199,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       ),
       bottomSheet: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: AppSpacing.insetMd.copyWith(bottom: AppSpacing.space8),
         decoration: BoxDecoration(
-          color: AppTheme.backgroundElevated,
-          boxShadow: AppTheme.shadowDark,
+          color: AppColors.surfaceRaised,
+          boxShadow: AppShadows.elevation2,
         ),
         child: SizedBox(
           width: double.infinity,
@@ -244,13 +254,11 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.space3),
       child: Text(
         label,
-        style: TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+        style: AppTextStyles.labelSm.copyWith(
+          color: AppColors.textSecondary,
           letterSpacing: 0.8,
         ),
       ),
@@ -278,16 +286,22 @@ class _DeliveryTypeCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: AppTheme.neomorphicDecoration.copyWith(
-          border: isSelected ? Border.all(color: AppTheme.primaryAccent, width: 2) : null,
+        padding: AppSpacing.insetMd,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDefault,
+          borderRadius: AppRadius.borderMd,
+          boxShadow: AppShadows.elevation1,
+          border: Border.all(
+            color: isSelected ? AppColors.primaryDefault : AppColors.borderDefault,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? AppTheme.primaryAccent : AppTheme.textSecondary, size: 28),
-            const SizedBox(height: 8),
-            Text(label, style: TextStyle(color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary, fontWeight: FontWeight.bold)),
-            Text(subtitle, style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+            Icon(icon, color: isSelected ? AppColors.primaryDefault : AppColors.textSecondary, size: 28),
+            const SizedBox(height: AppSpacing.space2),
+            Text(label, style: AppTextStyles.labelMd.copyWith(color: isSelected ? AppColors.textPrimary : AppColors.textSecondary)),
+            Text(subtitle, style: AppTextStyles.bodyXs.copyWith(color: AppColors.textSecondary)),
           ],
         ),
       ),

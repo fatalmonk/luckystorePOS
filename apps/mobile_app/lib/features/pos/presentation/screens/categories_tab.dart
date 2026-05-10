@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
 import '../../../../models/pos_models.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -102,8 +101,8 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
                     borderRadius: AppRadius.borderMd,
                     gradient: LinearGradient(
                       colors: [
-                        AppTheme.primaryAccent.withValues(alpha: 0.8),
-                        AppTheme.primaryAccentLight.withValues(alpha: 0.6),
+                        AppColors.primaryDefault.withValues(alpha: 0.8),
+                        AppColors.primaryDefault.withValues(alpha: 0.5),
                       ],
                     ),
                   ),
@@ -148,10 +147,9 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
                       Expanded(
                         child: Text(
                           item['name']!,
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: AppTextStyles.labelMd.copyWith(
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -171,7 +169,7 @@ class _CategoriesTabState extends State<CategoriesTab> with SingleTickerProvider
           sliver: SliverToBoxAdapter(
             child: Text(
               'Products',
-              style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              style: AppTextStyles.headingMd.copyWith(color: AppColors.textPrimary),
             ),
           ),
         ),

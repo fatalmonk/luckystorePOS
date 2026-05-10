@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
 import '../../../../models/pos_models.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -61,19 +65,24 @@ class _SearchTabState extends State<SearchTab> {
           children: [
             // Dominant search bar
             Container(
-              decoration: AppTheme.neomorphicDecoration,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDefault,
+                borderRadius: AppRadius.borderMd,
+                boxShadow: AppShadows.elevation1,
+                border: Border.all(color: AppColors.borderDefault),
+              ),
               child: TextField(
                 controller: _controller,
                 autofocus: true,
-                style: TextStyle(color: AppTheme.textPrimary),
+                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textPrimary),
                 onChanged: (v) => setState(() => _query = v),
                 decoration: InputDecoration(
                   hintText: 'Search... (fuzzy matching)',
-                  hintStyle: TextStyle(color: AppTheme.textSecondary),
-                  prefixIcon: Icon(Icons.search, color: AppTheme.secondaryAccent),
+                  hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.primaryDefault),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
-                          icon: Icon(Icons.clear, color: AppTheme.textSecondary),
+                          icon: const Icon(Icons.clear, color: AppColors.textSecondary),
                           onPressed: () {
                             _controller.clear();
                             setState(() => _query = '');
@@ -81,7 +90,7 @@ class _SearchTabState extends State<SearchTab> {
                         )
                       : null,
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  contentPadding: AppSpacing.insetMd,
                 ),
               ),
             ),
@@ -93,11 +102,11 @@ class _SearchTabState extends State<SearchTab> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search, color: AppTheme.textSecondary, size: 64),
-                      const SizedBox(height: 12),
+                      const Icon(Icons.search, color: AppColors.textSecondary, size: 64),
+                      const SizedBox(height: AppSpacing.space3),
                       Text(
                         'Start typing to find products',
-                        style: TextStyle(color: AppTheme.textSecondary),
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -109,11 +118,11 @@ class _SearchTabState extends State<SearchTab> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search_off, color: AppTheme.textSecondary, size: 64),
-                      const SizedBox(height: 12),
+                      const Icon(Icons.search_off, color: AppColors.textSecondary, size: 64),
+                      const SizedBox(height: AppSpacing.space3),
                       Text(
                         'No products found. Try a different spelling.',
-                        style: TextStyle(color: AppTheme.textSecondary),
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                         textAlign: TextAlign.center,
                       ),
                     ],

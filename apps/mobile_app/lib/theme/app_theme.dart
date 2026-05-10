@@ -1,29 +1,10 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
-import '../core/theme/app_shadows.dart';
 import '../core/theme/app_radius.dart';
 
 class AppTheme {
-  // --- Legacy Bridge Getters (DO NOT USE IN NEW CODE) ---
-  static Color get primaryAccent => AppColors.primaryDefault;
-  static Color get primaryAccentLight => AppColors.primarySubtle;
-  static Color get secondaryAccent => AppColors.secondaryDefault;
-  static Color get errorAccent => AppColors.dangerDefault;
-  static Color get background => AppColors.backgroundDefault;
-  static Color get backgroundElevated => AppColors.surfaceDefault;
-  static Color get textPrimary => AppColors.textPrimary;
-  static Color get textSecondary => AppColors.textSecondary;
-  static List<BoxShadow> get shadowDark => AppShadows.elevation2;
-  static List<BoxShadow> get shadowLight => AppShadows.elevation1;
-  
-  static BoxDecoration get neomorphicDecoration => BoxDecoration(
-    color: AppColors.surfaceDefault,
-    borderRadius: AppRadius.borderMd,
-    boxShadow: AppShadows.elevation1,
-    border: Border.all(color: AppColors.borderDefault),
-  );
-  // -----------------------------------------------------
+  // --- Design System Theme Definitions ---
 
   static ThemeData get lightTheme {
     return ThemeData(
