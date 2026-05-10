@@ -220,20 +220,24 @@ class OrderSummary extends StatelessWidget {
                     elevation: WidgetStateProperty.all(4),
                     shadowColor: WidgetStateProperty.all(AppColors.primaryDefault.withValues(alpha: 0.4)),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.bolt_rounded, color: AppColors.primaryOn, size: AppSpacing.space5),
-                      const SizedBox(width: AppSpacing.space2),
-                      Text(
-                        'PLACE ORDER',
-                        style: AppTextStyles.labelLg.copyWith(
-                          color: AppColors.primaryOn,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.bolt_rounded, color: AppColors.primaryOn, size: AppSpacing.space5),
+                        const SizedBox(width: AppSpacing.space2),
+                        Text(
+                          'PLACE ORDER',
+                          style: AppTextStyles.labelLg.copyWith(
+                            color: AppColors.primaryOn,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
