@@ -188,6 +188,7 @@ CREATE POLICY "items_select_tenant_isolated"
 
 -- Verify existing write policies
 DROP POLICY IF EXISTS "Admins manage items" ON public.items;
+DROP POLICY IF EXISTS "items_manage_authorized" ON public.items;
 
 CREATE POLICY "items_manage_authorized"
   ON public.items
