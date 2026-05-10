@@ -4,7 +4,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../theme/app_theme.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../data/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isTablet = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.backgroundDefault,
       appBar: AppBar(
         title: const Text('Admin Login'),
         backgroundColor: Colors.transparent,
@@ -67,37 +67,36 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: AppSpacing.insetLg,
           child: Container(
             constraints: isTablet ? const BoxConstraints(maxWidth: 400) : null,
-            padding: const EdgeInsets.all(24),
-            decoration: AppTheme.neomorphicDecoration,
+            padding: AppSpacing.insetLg,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDefault,
+              borderRadius: AppRadius.borderMd,
+              boxShadow: AppShadows.elevation1,
+              border: Border.all(color: AppColors.borderDefault),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
+                const Icon(
                   Icons.admin_panel_settings,
                   size: 64,
-                  color: AppTheme.primaryAccent,
+                  color: AppColors.primaryDefault,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.space6),
                 Text(
                   'Store Mode Access',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary,
-                  ),
+                  style: AppTextStyles.headingXl.copyWith(color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.space2),
                 Text(
                   'Sign in with your admin or manager account to access store operations.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: AppSpacing.space8),
                 if (_errorMessage != null) ...[
@@ -118,35 +117,35 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
                 TextField(
                   controller: _emailController,
-                  style: TextStyle(color: AppTheme.textPrimary),
+                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    labelStyle: TextStyle(color: AppTheme.textSecondary),
+                    labelStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    fillColor: AppColors.surfaceRaised,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.borderMd,
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.email, color: AppTheme.textSecondary),
+                    prefixIcon: const Icon(Icons.email, color: AppColors.textSecondary),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.space4),
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
-                  style: TextStyle(color: AppTheme.textPrimary),
+                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: TextStyle(color: AppTheme.textSecondary),
+                    labelStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    fillColor: AppColors.surfaceRaised,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.borderMd,
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.lock, color: AppTheme.textSecondary),
+                    prefixIcon: const Icon(Icons.lock, color: AppColors.textSecondary),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.space6),

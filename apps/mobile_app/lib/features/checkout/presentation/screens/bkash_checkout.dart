@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../features/checkout/data/bkash_service.dart';
 
 /// Opens the bKash PIN entry page via an in-app WebView wrapper.
@@ -58,7 +61,7 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.backgroundDefault,
       appBar: AppBar(
         title: const Text('bKash Payment'),
         leading: IconButton(
@@ -67,7 +70,7 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: AppSpacing.insetLg,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -77,7 +80,7 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
               height: 80,
               decoration: BoxDecoration(
                 color: const Color(0xFFE2136E), // bKash brand pink
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: AppRadius.borderMd,
               ),
               child: const Center(
                 child: Text(
@@ -90,74 +93,71 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.space8),
 
             Text(
               'Amount: ৳${widget.amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.headingXl.copyWith(color: AppColors.textPrimary),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.space2),
 
             Text(
               _statusMessage,
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: AppSpacing.space12),
 
-            // NOTE: In production, replace the button below with a real WebView
-            // loading widget.bkashUrl. The WebView's navigationDelegate intercepts
-            // the callbackURL redirect and triggers _onPaymentCallback().
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: AppTheme.neomorphicDecoration,
+              padding: AppSpacing.insetLg,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDefault,
+                borderRadius: AppRadius.borderMd,
+                boxShadow: AppShadows.elevation1,
+                border: Border.all(color: AppColors.borderDefault),
+              ),
               child: Column(
                 children: [
-                  Icon(Icons.pin_outlined, color: AppTheme.primaryAccentLight, size: 48),
-                  Icon(Icons.pin_outlined, color: AppTheme.secondaryAccent, size: 48),
-                  const SizedBox(height: 12),
+                  const Icon(Icons.pin_outlined, color: AppColors.primarySubtle, size: 48),
+                  const SizedBox(height: AppSpacing.space3),
                   Text(
                     'WebView: bKash PIN Entry',
-                    style: TextStyle(color: AppTheme.textSecondary),
+                    style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.space1),
                   Text(
                     widget.bkashUrl,
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 10),
+                    style: AppTextStyles.bodyXs.copyWith(color: AppColors.textSecondary),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.space5),
                   // Simulates "payment success" callback from WebView redirect
                   if (!_isExecuting)
                     ElevatedButton(
                       onPressed: _onPaymentCallback,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE2136E),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: AppSpacing.insetSquishMd,
+                        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
                       ),
                       child: const Text('Simulate PIN Confirm', style: TextStyle(color: Colors.white)),
                     )
                   else
-                    CircularProgressIndicator(color: AppColors.primaryDefault),
+                    const CircularProgressIndicator(color: AppColors.primaryDefault),
                 ],
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.space8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.lock_outline, color: AppTheme.textSecondary, size: 14),
-                const SizedBox(width: 6),
+                const Icon(Icons.lock_outline, color: AppColors.textSecondary, size: 14),
+                const SizedBox(width: AppSpacing.space2),
                 Text(
                   'Secured by bKash Tokenized Checkout',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                  style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
                 ),
               ],
             ),

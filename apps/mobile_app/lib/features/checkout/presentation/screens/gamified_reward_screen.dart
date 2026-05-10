@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../theme/app_theme.dart';
 import '../../../../core/theme/app_motion.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
+import '../../../../core/theme/app_button_styles.dart';
 
 class GamifiedRewardScreen extends StatefulWidget {
   const GamifiedRewardScreen({super.key});
@@ -42,7 +47,7 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.backgroundDefault,
       appBar: AppBar(
         title: const Text('Order Confirmed! 🎉'),
         automaticallyImplyLeading: false,
@@ -53,7 +58,7 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
           children: [
             Text(
               'Scratch the card to reveal your Lucky Coins!',
-              style: TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+              style: AppTextStyles.headingMd.copyWith(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 32),
             GestureDetector(
@@ -62,12 +67,17 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
                 width: 250,
                 height: 250,
                 decoration: _isScratched 
-                  ? AppTheme.neomorphicDecoration
+                  ? BoxDecoration(
+                      color: AppColors.surfaceDefault,
+                      borderRadius: AppRadius.borderMd,
+                      boxShadow: AppShadows.elevation1,
+                      border: Border.all(color: AppColors.borderDefault),
+                    )
                   : BoxDecoration(
-                      color: AppTheme.primaryAccent,
-                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.primaryDefault,
+                      borderRadius: AppRadius.borderMd,
                       boxShadow: [
-                        BoxShadow(color: AppTheme.primaryAccent.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5),
+                        BoxShadow(color: AppColors.primaryDefault.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5),
                       ],
                     ),
                 child: _isScratched
@@ -76,15 +86,15 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.monetization_on, color: Colors.amber, size: 64),
-                          SizedBox(height: 16),
-                          Text(
+                          const Icon(Icons.monetization_on, color: Colors.amber, size: 64),
+                          const SizedBox(height: AppSpacing.space4),
+                          const Text(
                             '+50',
                             style: TextStyle(color: Colors.amber, fontSize: 48, fontWeight: FontWeight.w900),
                           ),
                           Text(
                             'Lucky Coins added to Wallet',
-                            style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -103,12 +113,8 @@ class _GamifiedRewardScreenState extends State<GamifiedRewardScreen> with Single
                 onPressed: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                ),
-                child: const Text('Back to Home', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                style: AppButtonStyles.primary,
+                child: Text('Back to Home', style: AppTextStyles.labelLg.copyWith(color: AppColors.primaryOn)),
               )
           ],
         ),

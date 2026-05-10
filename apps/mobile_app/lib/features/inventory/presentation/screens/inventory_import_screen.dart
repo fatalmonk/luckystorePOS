@@ -6,12 +6,12 @@ import 'package:http/http.dart' as http;
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart' as ex;
 import 'package:provider/provider.dart';
-import '../../../../theme/app_theme.dart';
-import '../../../../shared/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_button_styles.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../shared/providers/auth_provider.dart';
 
 class InventoryImportScreen extends StatefulWidget {
   const InventoryImportScreen({super.key});
@@ -232,15 +232,15 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.backgroundDefault,
       appBar: AppBar(
-        title: const Text('Inventory Master Import'),
+        title: Text('Inventory Master Import', style: AppTextStyles.headingLg),
         actions: [
           if (_selectedFile != null)
             TextButton.icon(
               onPressed: _pickFile,
-              icon: const Icon(Icons.file_upload, color: Colors.white),
-              label: const Text('Change File', style: TextStyle(color: Colors.white)),
+              icon: Icon(Icons.file_upload, color: AppColors.primaryOn),
+              label: Text('Change File', style: AppTextStyles.labelMd.copyWith(color: AppColors.primaryOn)),
             ),
         ],
       ),
@@ -253,21 +253,17 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.table_chart_outlined, size: 80, color: AppTheme.primaryAccent.withValues(alpha: 0.5)),
-          const SizedBox(height: 24),
-          const Text('Bulk Inventory Upload', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 8),
-          const Text('Upload Google MC, Excel or CSV files', style: TextStyle(color: Colors.white38)),
-          const SizedBox(height: 32),
+          Icon(Icons.table_chart_outlined, size: 80, color: AppColors.primaryDefault.withValues(alpha: 0.5)),
+          const SizedBox(height: AppSpacing.space6),
+          Text('Bulk Inventory Upload', style: AppTextStyles.headingXl.copyWith(color: AppColors.textPrimary)),
+          const SizedBox(height: AppSpacing.space2),
+          Text('Upload Google MC, Excel or CSV files', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: AppSpacing.space8),
           ElevatedButton.icon(
             onPressed: _pickFile,
             icon: const Icon(Icons.add),
             label: const Text('SELECT INVENTORY FILE'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryAccent,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
+            style: AppButtonStyles.primary,
           ),
         ],
       ),
@@ -284,8 +280,8 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
           width: isTablet ? 350 : 300,
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.backgroundElevated,
-              border: Border(right: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+              color: AppColors.surfaceRaised,
+              border: Border(right: BorderSide(color: AppColors.borderDefault)),
             ),
             child: Column(
               children: [
@@ -300,7 +296,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
           child: Column(
             children: [
               if (_isProcessing) 
-                LinearProgressIndicator(value: _progress, backgroundColor: Colors.white10, color: AppTheme.primaryAccent),
+                LinearProgressIndicator(value: _progress, backgroundColor: AppColors.surfaceDefault, color: AppColors.primaryDefault),
               Expanded(
                 child: _summary.isEmpty 
                   ? _buildPreviewPlaceholder()
@@ -329,27 +325,27 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
               children: [
                 Row(
                   children: [
-                    Text(field['label']!, style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
-                    if (isRequired) const Text(' *', style: TextStyle(color: Colors.redAccent)),
+                    Text(field['label']!, style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary)),
+                    if (isRequired) Text(' *', style: AppTextStyles.bodySm.copyWith(color: AppColors.dangerDefault)),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.space2),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: AppSpacing.insetSquishSm,
                   decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _mappings.containsKey(id) ? AppTheme.primaryAccent.withValues(alpha: 0.3) : Colors.white10),
+                    color: AppColors.surfaceDefault,
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: _mappings.containsKey(id) ? AppColors.primaryDefault.withValues(alpha: 0.3) : AppColors.borderDefault),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: _mappings[id],
-                      hint: Text('Skip field', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                      dropdownColor: AppTheme.backgroundElevated,
+                      hint: Text('Skip field', style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary)),
+                      dropdownColor: AppColors.surfaceRaised,
                       items: [
-                        DropdownMenuItem<String>(value: null, child: Text('Skip field', style: TextStyle(color: AppTheme.textSecondary))),
-                        ..._headers.map((h) => DropdownMenuItem(value: h, child: Text(h, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppTheme.textPrimary)))),
+                        DropdownMenuItem<String>(value: null, child: Text('Skip field', style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary))),
+                        ..._headers.map((h) => DropdownMenuItem(value: h, child: Text(h, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)))),
                       ],
                       onChanged: (val) => setState(() {
                         if (val == null) {
@@ -371,10 +367,10 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
 
   Widget _buildActionPanel() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: AppSpacing.insetLg,
       decoration: BoxDecoration(
-        color: Colors.black26,
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+        color: AppColors.surfaceDefault,
+        border: Border(top: BorderSide(color: AppColors.borderDefault)),
       ),
       child: Column(
         children: [
@@ -384,7 +380,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
             label: const Text('Google MC Preset'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 45),
-              side: BorderSide(color: AppTheme.primaryAccent.withValues(alpha: 0.5)),
+              side: BorderSide(color: AppColors.primaryDefault.withValues(alpha: 0.5)),
             ),
           ),
           const SizedBox(height: AppSpacing.space4),
@@ -445,7 +441,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
                 ),
               ),
               if (_progress < 1.0 && _isProcessing)
-                CircularProgressIndicator(value: _progress, color: AppTheme.primaryAccent),
+                CircularProgressIndicator(value: _progress, color: AppColors.primaryDefault),
             ],
           ),
           const SizedBox(height: 32),
@@ -462,26 +458,26 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
             ],
           ),
           if (_errors.isNotEmpty) ...[
-            const SizedBox(height: 40),
-            Text('ERROR LOG', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.space10),
+            Text('ERROR LOG', style: AppTextStyles.labelMd.copyWith(color: AppColors.textSecondary)),
+            const SizedBox(height: AppSpacing.space4),
             Container(
               decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                color: AppColors.surfaceDefault,
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: AppColors.borderDefault),
               ),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _errors.length,
-                separatorBuilder: (_, __) => Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+                separatorBuilder: (_, __) => Divider(color: AppColors.borderDefault, height: 1),
                 itemBuilder: (ctx, i) {
                   final err = _errors[i];
                   return ListTile(
-                    leading: Text('#${err['row']}', style: const TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
-                    title: Text(err['error'] ?? 'Unknown error', style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
-                    subtitle: Text(err['code'] ?? '', style: const TextStyle(color: Colors.white10, fontSize: 11)),
+                    leading: Text('#${err['row']}', style: AppTextStyles.labelMd.copyWith(color: AppColors.textMuted)),
+                    title: Text(err['error'] ?? 'Unknown error', style: AppTextStyles.bodySm.copyWith(color: AppColors.dangerDefault)),
+                    subtitle: Text(err['code'] ?? '', style: AppTextStyles.bodyXs.copyWith(color: AppColors.textMuted)),
                   );
                 },
               ),
@@ -495,20 +491,20 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
   Widget _buildStatCard(String label, String value, IconData icon, [Color? color]) {
     return Container(
       width: 160,
-      padding: const EdgeInsets.all(20),
+      padding: AppSpacing.insetMd,
       decoration: BoxDecoration(
-        color: AppTheme.backgroundElevated,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+        color: AppColors.surfaceRaised,
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(color: AppColors.borderDefault),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color ?? Colors.white38, size: 20),
-          const SizedBox(height: 12),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 10, color: Colors.white24, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          Icon(icon, color: color ?? AppColors.textMuted, size: 20),
+          const SizedBox(height: AppSpacing.space3),
+          Text(value, style: AppTextStyles.headingXl.copyWith(color: AppColors.textPrimary)),
+          const SizedBox(height: AppSpacing.space1),
+          Text(label, style: AppTextStyles.labelXs.copyWith(color: AppColors.textMuted)),
         ],
       ),
     );
