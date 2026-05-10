@@ -16,7 +16,7 @@ export const reports = {
     // Get top selling products
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
-      .select('quantity, unit_price, item_id')
+      .select('qty, unit_price, item_id')
       .in('sale_id', sales?.map((s: any) => s.id) || []);
 
     if (itemsError) throw itemsError;
@@ -35,8 +35,8 @@ export const reports = {
     saleItems?.forEach((item: any) => {
       const name = nameMap.get(item.item_id) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
-      existing.quantity += item.quantity || 0;
-      existing.revenue += (item.quantity || 0) * (item.unit_price || 0);
+      existing.quantity += item.qty || 0;
+      existing.revenue += (item.qty || 0) * (item.unit_price || 0);
       productMap.set(name, existing);
     });
 
@@ -126,12 +126,12 @@ export const reports = {
     // Get COGS from sale_items
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
-      .select('quantity, cost')
+      .select('qty, cost')
       .in('sale_id', sales?.map((s: any) => s.id) || []);
 
     if (itemsError) throw itemsError;
 
-    const cogs = saleItems?.reduce((sum: number, item: any) => sum + ((item.quantity || 0) * (item.cost || 0)), 0) || 0;
+    const cogs = saleItems?.reduce((sum: number, item: any) => sum + ((item.qty || 0) * (item.cost || 0)), 0) || 0;
 
     // Get expenses
     const { data: expenses, error: expError } = await supabase
