@@ -73,6 +73,11 @@ class AppColors {
   static const Color warningSubtle = Color(0xFFFFFBEB);
   static const Color warningOn = Color(0xFF1E293B);
 
+  // Semantic - Info
+  static const Color infoDefault = Color(0xFF3B82F6);
+  static const Color infoSubtle = Color(0xFFEFF6FF);
+  static const Color infoOn = Color(0xFFFFFFFF);
+
   // Borders
   static const Color borderDefault = Color(0xFFE2E8F0);
   static const Color borderStrong = Color(0xFF94A3B8);
