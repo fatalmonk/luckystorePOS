@@ -158,7 +158,7 @@ export function OAuthConsentPage() {
             </div>
           </div>
 
-          <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl text-left text-sm text-orange-600 dark:text-orange-400">
+          <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl text-left text-sm text-orange-600">
             <strong>Warning:</strong> Only approve access if you trust <strong>{authDetails.client.name}</strong>. By clicking Approve, you are granting them access to the data listed above.
           </div>
 

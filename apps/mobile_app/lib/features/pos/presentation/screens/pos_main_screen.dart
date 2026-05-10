@@ -173,7 +173,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                   Expanded(
                     flex: isLargeTablet ? 30 : (isTablet ? 35 : 40),
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 280),
+                      constraints: BoxConstraints(minWidth: isTablet ? 280 : 220),
                       child: _buildRightPanel(),
                     ),
                   ),
@@ -226,6 +226,8 @@ class _PosMainScreenState extends State<PosMainScreen> {
   }
 
   Widget _buildTopBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600;
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -246,19 +248,21 @@ class _PosMainScreenState extends State<PosMainScreen> {
             child: Row(
               children: [
                 const Icon(Icons.shopping_bag_rounded, color: AppColors.primaryOn, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'LUCKY POS',
-                  style: AppTextStyles.labelMd.copyWith(
-                    color: AppColors.primaryOn,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
+                if (isTablet) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    'LUCKY POS',
+                    style: AppTextStyles.labelMd.copyWith(
+                      color: AppColors.primaryOn,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
 
           // Search bar
           Expanded(

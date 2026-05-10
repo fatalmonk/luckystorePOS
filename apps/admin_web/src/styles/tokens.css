@@ -74,6 +74,11 @@
   --color-warning-subtle: #FFFBEB;
   --color-warning-on: #1E293B;
 
+  /* Semantic - Info */
+  --color-info-default: #3B82F6;
+  --color-info-subtle: #EFF6FF;
+  --color-info-on: #FFFFFF;
+
   /* Borders */
   --color-border-default: #E2E8F0;
   --color-border-strong: #94A3B8;
