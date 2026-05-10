@@ -7,7 +7,9 @@ export interface MetricCardProps {
   icon?: React.ReactNode;
   trend?: 'up' | 'down';
   /** color variant for the icon badge and accent */
-  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'neutral';
+  color?: 'primary' | 'secondary' | 'tertiary' | 'success' | 'danger' | 'warning' | 'info' | 'neutral';
+  /** @deprecated - visual variant is now always 'light'. This prop is accepted but ignored. */
+  variant?: string;
   /** optional badge text displayed next to the value */
   badge?: string;
   className?: string;
@@ -16,6 +18,7 @@ export interface MetricCardProps {
 const COLOR_MAP: Record<string, { icon: string; value: string; badge: string }> = {
   primary:   { icon: 'bg-primary/10 text-primary',   value: 'text-primary',          badge: 'bg-primary/10 text-primary' },
   secondary: { icon: 'bg-secondary/10 text-secondary', value: 'text-secondary',      badge: 'bg-secondary/10 text-secondary' },
+  tertiary:  { icon: 'bg-secondary/10 text-secondary', value: 'text-secondary',      badge: 'bg-secondary/10 text-secondary' },
   success:   { icon: 'bg-success/10 text-success',   value: 'text-success-dark',     badge: 'bg-success/10 text-success-dark' },
   danger:    { icon: 'bg-danger/10 text-danger',     value: 'text-danger',           badge: 'bg-danger/10 text-danger' },
   warning:   { icon: 'bg-warning/10 text-warning-dark', value: 'text-warning-dark',  badge: 'bg-warning/10 text-warning-dark' },
@@ -29,6 +32,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   icon,
   trend,
   color = 'primary',
+  variant: _variant, // accepted but ignored — deprecated
   badge,
   className,
 }) => {
