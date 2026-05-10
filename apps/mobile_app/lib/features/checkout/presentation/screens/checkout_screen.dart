@@ -22,9 +22,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   AddressResult? _deliveryAddress;
 
   static const List<_PaymentOption> _paymentOptions = [
-    _PaymentOption(label: 'Cash on Delivery', icon: Icons.money, color: Color(0xFF4EEB9E)),
-    _PaymentOption(label: 'bKash', icon: Icons.account_balance_wallet, color: Color(0xFFE2136E)),
-    _PaymentOption(label: 'Card / Nagad / Rocket', icon: Icons.credit_card, color: Color(0xFF3A86FF)),
+    _PaymentOption(label: 'Cash on Delivery', icon: Icons.money, color: AppColors.successDefault),
+    _PaymentOption(label: 'bKash', icon: Icons.account_balance_wallet, color: Color(0xFFE2136E)), // bKash brand
+    _PaymentOption(label: 'Card / Nagad / Rocket', icon: Icons.credit_card, color: AppColors.infoDefault),
   ];
 
   @override
