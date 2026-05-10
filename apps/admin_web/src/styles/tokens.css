@@ -181,4 +181,30 @@
   --motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --motion-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
   --motion-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+
+  /* 8. Legacy Token Aliases (Deprecation Bridge) */
+  --bg-app: var(--color-background-default);
+  --bg-sidebar: var(--color-surface-default);
+  --bg-sidebar-hover: var(--color-background-subtle);
+  --bg-header: var(--color-surface-default);
+  --bg-card: var(--color-surface-default);
+  --bg-input: var(--color-surface-default);
+  
+  --text-main: var(--color-text-primary);
+  --text-muted: var(--color-text-muted);
+  --text-sidebar: var(--color-text-secondary);
+  --text-sidebar-active: var(--color-primary-default);
+  
+  --border-color: var(--color-border-default);
+  --border-light: var(--color-border-default);
+  
+  --shadow-sm: var(--elevation-1);
+  --shadow-md: var(--elevation-2);
+  --shadow-lg: var(--elevation-3);
+
+  --color-primary: var(--color-primary-default);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-success: var(--color-success-default);
+  --color-danger: var(--color-danger-default);
+  --color-warning: var(--color-warning-default);
 }

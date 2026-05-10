@@ -63,8 +63,8 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2 style={{ color: 'white', fontWeight: 700, fontSize: 'var(--font-size-lg)', marginBottom: '4px' }}>Lucky Store</h2>
-        <p style={{ color: 'var(--text-sidebar)', fontSize: 'var(--font-size-sm)' }}>Admin Panel</p>
+        <h2 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: 'var(--font-size-lg)', marginBottom: '4px' }}>Lucky Store</h2>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>Admin Panel</p>
       </div>
 
       <div className="sidebar-nav-container">
@@ -107,7 +107,7 @@ export function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <button onClick={signOut} style={{ color: 'var(--text-sidebar)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)' }}>
+        <button onClick={signOut} style={{ color: 'var(--color-danger-default)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)' }}>
           <LogOut size={20} />
           <span>Logout</span>
         </button>
