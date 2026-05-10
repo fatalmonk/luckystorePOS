@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { Drawer } from '../../components/ui/Drawer';
@@ -78,7 +78,7 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
               onChange={e => setFormData({...formData, sku: e.target.value})}
               className="flex-1"
             />
-            <Button type="button" variant="outline" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
+            <Button type="button" variant="secondary" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
               Gen
             </Button>
           </div>
@@ -91,11 +91,11 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-text-main">Category</label>
+          <label className="text-sm font-medium text-text-primary">Category</label>
           <select 
             value={formData.category_id || ''} 
             onChange={e => setFormData({...formData, category_id: e.target.value})}
-            className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">Select Category</option>
             {categories?.map(cat => (
@@ -110,9 +110,9 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
             id="active"
             checked={formData.active || false} 
             onChange={e => setFormData({...formData, active: e.target.checked})}
-            className="rounded border-border-color text-primary focus:ring-primary"
+            className="rounded border-border-default text-primary focus:ring-primary"
           />
-          <label htmlFor="active" className="text-sm font-medium text-text-main">Active Product</label>
+          <label htmlFor="active" className="text-sm font-medium text-text-primary">Active Product</label>
         </div>
 
         <div className="mt-auto pt-8">

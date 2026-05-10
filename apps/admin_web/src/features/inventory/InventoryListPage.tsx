@@ -2,13 +2,17 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { Search, RefreshCw, History, Package } from 'lucide-react';
-import { clsx } from 'clsx';
+import { ErrorState } from '../../components/PageState';
+import { Search, RefreshCw, History } from 'lucide-react';
 import { StockUpdateDrawer } from './StockUpdateDrawer';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { useDebounce } from '../../hooks/useDebounce';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { Button } from '../../components/ui/Button';
+import { DataTable, Column } from '../../components/data-display/DataTable';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
 
 interface InventoryItem {
   id: string;
@@ -38,165 +42,121 @@ export function InventoryListPage() {
     [inventory, debouncedSearch]
   );
 
+  const columns: Column<InventoryItem>[] = [
+    {
+      header: 'Product',
+      accessor: 'name',
+      render: (_, row) => (
+        <div>
+          <div className="font-semibold text-text-primary">{row.name}</div>
+          <div className="text-xs text-text-muted">SKU: {row.sku || 'N/A'}</div>
+        </div>
+      ),
+    },
+    {
+      header: 'Current Stock',
+      accessor: 'current_qty',
+      render: (val) => (
+        <span className="text-lg font-bold font-mono">{val as number}</span>
+      ),
+    },
+    {
+      header: 'Status',
+      accessor: 'reorder_status',
+      render: (val) => {
+        const status = val as string;
+        let variant: 'success' | 'warning' | 'danger' = 'success';
+        if (status === 'LOW') variant = 'warning';
+        if (status === 'OUT') variant = 'danger';
+        return (
+          <Badge variant={variant} className="font-bold px-2 py-0.5">
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      header: 'Last Updated',
+      accessor: 'last_updated',
+      render: (val) => (
+        <span className="text-text-muted">
+          {val ? formatDistanceToNow(new Date(val as string)) + ' ago' : 'Never'}
+        </span>
+      ),
+    },
+    {
+      header: 'Actions',
+      accessor: 'id',
+      align: 'right',
+      render: (_, row) => (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={(e) => {
+            e.stopPropagation();
+            setAdjustingProduct(row);
+          }}
+        >
+          Update
+        </Button>
+      ),
+    },
+  ];
+
   if (error) {
     return (
       <div className="inventory-container">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-[var(--font-size-2xl)] font-bold">Stock Inventory</h1>
-            <p className="text-[var(--text-muted)]">Monitor and adjust stock levels.</p>
-          </div>
-        </header>
-        <div className="card">
+        <PageHeader 
+          title="Stock Inventory" 
+          subtitle="Monitor and adjust stock levels." 
+        />
+        <Card className="mt-6">
           <ErrorState message="Failed to load inventory." onRetry={() => refetch()} />
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="inventory-container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Stock Inventory</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Monitor and adjust stock levels.</p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-          <Link
-            to="/inventory/history"
-            className="button-secondary"
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              color: 'var(--text-main)',
-              padding: 'var(--space-2) var(--space-4)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              fontWeight: '600',
-              textDecoration: 'none'
-            }}
-          >
-            <History size={18} /> View History
-          </Link>
-          <button
-            onClick={() => refetch()}
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <RefreshCw size={18} />
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        title="Stock Inventory"
+        subtitle="Monitor and adjust stock levels."
+        actions={
+          <div className="flex gap-3">
+            <Link to="/inventory/history">
+              <Button variant="secondary" icon={<History size={18} />}>
+                View History
+              </Button>
+            </Link>
+            <Button variant="secondary" onClick={() => refetch()} loading={isLoading}>
+              <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+            </Button>
+          </div>
+        }
+        className="mb-8"
+      />
 
-      <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-        <div style={{ position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder="Filter by product name or SKU..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: 'var(--space-3) var(--space-3) var(--space-3) 40px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--input-bg)'
-            }}
-          />
+      <Card className="mb-6" padding="none">
+        <div className="p-4">
+          <div className="relative">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              placeholder="Filter by product name or SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)' }}>
-              <th style={{ padding: 'var(--space-4)' }}>Product</th>
-              <th style={{ padding: 'var(--space-4)' }}>Current Stock</th>
-              <th style={{ padding: 'var(--space-4)' }}>Status</th>
-              <th style={{ padding: 'var(--space-4)' }}>Last Updated</th>
-              <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array(5).fill(0).map((_, i) => (
-                <tr key={i} className="border-b border-[var(--border-color)]">
-                  <td className="p-4"><SkeletonBlock className="w-[200px] h-5" /></td>
-                  <td className="p-4"><SkeletonBlock className="w-[60px] h-5" /></td>
-                  <td className="p-4"><SkeletonBlock className="w-[80px] h-5" /></td>
-                  <td className="p-4"><SkeletonBlock className="w-[100px] h-5" /></td>
-                  <td className="p-4 text-right"><SkeletonBlock className="w-[100px] h-[30px] ml-auto" /></td>
-                </tr>
-              ))
-            ) : filteredItems.length === 0 ? (
-              <tr>
-                <td colSpan={5}>
-                  <EmptyState
-                    icon={<Package size={48} />}
-                    title="No inventory items"
-                    description="Add products to start tracking stock levels."
-                  />
-                </td>
-              </tr>
-            ) : (
-              filteredItems.map((p: any) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <div style={{ fontWeight: '600' }}>{p.name}</div>
-                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>SKU: {p.sku || 'N/A'}</div>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <span style={{ fontSize: 'var(--font-size-lg)', fontWeight: '700' }}>{p.current_qty}</span>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <span className={clsx(
-                      'badge',
-                      p.reorder_status === 'OK' && 'badge-success',
-                      p.reorder_status === 'LOW' && 'badge-warning',
-                      p.reorder_status === 'OUT' && 'badge-danger'
-                    )} style={{
-                      fontSize: 'var(--font-size-xs)',
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontWeight: '700',
-                      backgroundColor:
-                        p.reorder_status === 'OK' ? 'rgba(16, 185, 129, 0.1)' :
-                        p.reorder_status === 'LOW' ? 'rgba(245, 158, 11, 0.1)' :
-                        'rgba(239, 68, 68, 0.1)',
-                      color:
-                        p.reorder_status === 'OK' ? 'var(--color-success)' :
-                        p.reorder_status === 'LOW' ? 'var(--color-warning)' :
-                        'var(--color-danger)'
-                    }}>
-                      {p.reorder_status}
-                    </span>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                    {p.last_updated ? formatDistanceToNow(new Date(p.last_updated)) + ' ago' : 'Never'}
-                  </td>
-                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
-                    <button
-                      onClick={() => setAdjustingProduct(p)}
-                      style={{
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'white',
-                        padding: 'var(--space-2) var(--space-4)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--font-size-sm)',
-                        fontWeight: '600'
-                      }}
-                    >
-                      Update
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={filteredItems}
+        emptyMessage="No inventory items found. Add products to start tracking stock levels."
+      />
 
       <StockUpdateDrawer
         product={adjustingProduct}

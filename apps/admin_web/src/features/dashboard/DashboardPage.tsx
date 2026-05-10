@@ -123,9 +123,9 @@ export function DashboardPage() {
 
   return (
     <div className="dashboard-container">
-      <header style={{ marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '700', color: 'var(--text-main)' }}>Welcome {stats?.user?.name || 'Mohammed'}</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Here's what's happening today.</p>
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-text-primary">Welcome {stats?.user?.name || 'Mohammed'}</h1>
+        <p className="text-text-muted mt-1">Here's what's happening today.</p>
       </header>
 
       <div className="dashboard-grid">
@@ -161,39 +161,40 @@ export function DashboardPage() {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', marginTop: 'var(--space-8)' }}>
+      <div className="grid grid-cols-2 gap-6 mt-8">
         {/* Left Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <div className="flex flex-col gap-6">
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">
               Cashflow Overview
             </h2>
-            <div className="card" style={{ padding: 'var(--space-6)' }}>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
               {cashflow.length > 0 && (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <div style={{ width: 12, height: 12, backgroundColor: 'var(--color-success)', borderRadius: 2 }}></div>
-                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Revenue</span>
+                  <div className="flex items-center gap-6 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-success" />
+                      <span className="text-sm text-text-muted">Revenue</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <div style={{ width: 12, height: 12, backgroundColor: 'var(--color-danger)', borderRadius: 2 }}></div>
-                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Expenses</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-danger" />
+                      <span className="text-sm text-text-muted">Expenses</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '200px', gap: 'var(--space-2)' }}>
+                  <div className="flex items-end justify-between gap-2" style={{ height: '200px' }}
+                  >
                     {cashflow.map((day: { date: string, label: string, revenue: number, expenses: number }, idx: number) => {
                       const maxVal = Math.max(...cashflow.map((d: { revenue: number, expenses: number }) => Math.max(d.revenue, d.expenses)), 1);
                       const revenueHeight = maxVal > 0 ? (day.revenue / maxVal) * 100 : 0;
                       const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
                       return (
-                        <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)' }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: '100%', width: '100%', justifyContent: 'center' }}>
+                        <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                          <div className="flex items-end gap-0.5 w-full justify-center" style={{ height: '100%' }}>
                             <div
                               style={{
                                 width: '40%',
                                 height: `${revenueHeight}%`,
-                                backgroundColor: 'var(--color-success)',
+                                backgroundColor: 'var(--color-success-default)',
                                 borderRadius: '2px 2px 0 0',
                                 minHeight: day.revenue > 0 ? 4 : 0,
                                 transition: 'height 0.3s ease',
@@ -204,7 +205,7 @@ export function DashboardPage() {
                               style={{
                                 width: '40%',
                                 height: `${expenseHeight}%`,
-                                backgroundColor: 'var(--color-danger)',
+                                backgroundColor: 'var(--color-danger-default)',
                                 borderRadius: '2px 2px 0 0',
                                 minHeight: day.expenses > 0 ? 4 : 0,
                                 transition: 'height 0.3s ease',
@@ -212,7 +213,7 @@ export function DashboardPage() {
                               title={`Expenses: ৳${day.expenses.toLocaleString()}`}
                             />
                           </div>
-                          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{day.label}</span>
+                          <span className="text-xs text-text-muted">{day.label}</span>
                         </div>
                       );
                     })}
@@ -223,16 +224,14 @@ export function DashboardPage() {
           </section>
 
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Low Stock Alerts
-            </h2>
-            <div className="card">
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Low Stock Alerts</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1">
               {lowStock && lowStock.length > 0 ? (
-                <ul style={{ listStyle: 'none', padding: 0 }}>
+                <ul className="divide-y divide-border-default">
                   {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
-                    <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
-                      <span>{item.name}</span>
-                      <span style={{ color: 'var(--color-danger)', fontWeight: '600' }}>{item.quantity} left</span>
+                    <li key={item.id} className="flex justify-between items-center px-4 py-3">
+                      <span className="text-sm text-text-primary">{item.name}</span>
+                      <span className="text-sm font-semibold text-danger">{item.quantity} left</span>
                     </li>
                   ))}
                 </ul>
@@ -248,32 +247,28 @@ export function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <div className="flex flex-col gap-6">
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Total Balance
-            </h2>
-            <div className="card" style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
-              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>Current Available Balance</div>
-              <div style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '700', color: 'var(--color-success)' }}>৳{stats?.total_balance || '0.00'}</div>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Total Balance</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-8 text-center">
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Current Available Balance</div>
+              <div className="text-4xl font-bold text-success font-mono">৳{stats?.total_balance || '0.00'}</div>
             </div>
           </section>
 
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Upcoming Reminders
-            </h2>
-            <div className="card">
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Upcoming Reminders</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1">
               {reminders && reminders.length > 0 ? (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <ul className="divide-y divide-border-default">
                   {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
-                    <li key={reminder.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{reminder.title}</span>
-                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{new Date(reminder.reminderDate).toLocaleDateString()}</span>
+                    <li key={reminder.id} className="flex flex-col gap-1 px-4 py-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-text-primary">{reminder.title}</span>
+                        <span className="text-xs text-text-muted">{new Date(reminder.reminderDate).toLocaleDateString()}</span>
                       </div>
                       {reminder.description && (
-                        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{reminder.description}</p>
+                        <p className="text-sm text-text-muted">{reminder.description}</p>
                       )}
                     </li>
                   ))}
