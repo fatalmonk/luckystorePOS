@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../features/checkout/data/bkash_service.dart';
 
 /// Opens the bKash PIN entry page via an in-app WebView wrapper.
@@ -93,7 +94,7 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
 
             Text(
               'Amount: ৳${widget.amount.toStringAsFixed(2)}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -103,7 +104,7 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
 
             Text(
               _statusMessage,
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
@@ -116,17 +117,17 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
               decoration: AppTheme.neomorphicDecoration,
               child: Column(
                 children: [
-                  const Icon(Icons.pin_outlined, color: AppTheme.primaryAccentLight, size: 48),
-                  const Icon(Icons.pin_outlined, color: AppTheme.secondaryAccent, size: 48),
+                  Icon(Icons.pin_outlined, color: AppTheme.primaryAccentLight, size: 48),
+                  Icon(Icons.pin_outlined, color: AppTheme.secondaryAccent, size: 48),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     'WebView: bKash PIN Entry',
                     style: TextStyle(color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     widget.bkashUrl,
-                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10),
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 10),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
@@ -143,17 +144,17 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
                       child: const Text('Simulate PIN Confirm', style: TextStyle(color: Colors.white)),
                     )
                   else
-                    const CircularProgressIndicator(color: AppTheme.primaryAccent),
+                    CircularProgressIndicator(color: AppColors.primaryDefault),
                 ],
               ),
             ),
 
             const SizedBox(height: 32),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.lock_outline, color: AppTheme.textSecondary, size: 14),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Text(
                   'Secured by bKash Tokenized Checkout',
                   style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),

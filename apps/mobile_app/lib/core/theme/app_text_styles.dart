@@ -88,6 +88,24 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
+  static const TextStyle bodySmall = bodySm;
+
+  static const TextStyle bodyXs = TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: 10,
+    height: 1.5,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+  );
+
+  static const TextStyle labelXs = TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: 9,
+    height: 1.2,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
   static const TextStyle monoMd = TextStyle(
     fontFamily: fontFamilyMono,
     fontSize: 14,

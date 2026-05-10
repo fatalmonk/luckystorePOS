@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../inventory/label_printer_screen.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final String sku;
@@ -63,7 +64,7 @@ class ProductDetailsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: AppTheme.neomorphicDecoration,
-                        child: const Icon(Icons.favorite_border, color: AppTheme.textSecondary),
+                        child: Icon(Icons.favorite_border, color: AppTheme.textSecondary),
                       ),
                     ],
                   ),
@@ -89,14 +90,14 @@ class ProductDetailsScreen extends StatelessWidget {
                     children: [
                       Text(
                         '৳${price.toStringAsFixed(0)}',
-                        style: const TextStyle(color: AppTheme.primaryAccent, fontSize: 28, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: AppTheme.primaryAccent, fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 12),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           '৳${originalPrice.toStringAsFixed(0)}',
-                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 18, decoration: TextDecoration.lineThrough),
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 18, decoration: TextDecoration.lineThrough),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -110,21 +111,21 @@ class ProductDetailsScreen extends StatelessWidget {
                           ),
                           child: Text(
                             '-${(((originalPrice - price) / originalPrice) * 100).toStringAsFixed(0)}%',
-                            style: const TextStyle(color: AppTheme.errorAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: AppTheme.errorAccent, fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Divider(color: AppTheme.shadowLight),
+                  Divider(color: AppColors.borderDefault),
                   const SizedBox(height: 16),
 
                   // Logistics & Delivery
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: AppTheme.neomorphicDecoration,
-                    child: const Row(
+                    child: Row(
                       children: [
                         Icon(Icons.local_shipping_outlined, color: AppTheme.primaryAccentLight),
                         Icon(Icons.local_shipping_outlined, color: AppTheme.secondaryAccent),
@@ -167,7 +168,7 @@ class ProductDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.backgroundElevated,
-          boxShadow: [BoxShadow(color: AppTheme.shadowDark, blurRadius: 10, offset: const Offset(0, -5))],
+          boxShadow: AppTheme.shadowDark,
         ),
         child: SafeArea(
           child: Column(
@@ -226,7 +227,7 @@ class ProductDetailsScreen extends StatelessWidget {
       children: [
         Icon(icon, color: AppTheme.textSecondary, size: 28),
         const SizedBox(height: 4),
-        Text(name, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+        Text(name, style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
       ],
     );
   }

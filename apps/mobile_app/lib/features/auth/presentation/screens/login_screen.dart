@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_button_styles.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../theme/app_theme.dart';
 import '../../data/auth_service.dart';
 
@@ -71,13 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
+                Icon(
                   Icons.admin_panel_settings,
                   size: 64,
                   color: AppTheme.primaryAccent,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Store Mode Access',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -87,43 +92,43 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Sign in with your admin or manager account to access store operations.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppTheme.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.space8),
                 if (_errorMessage != null) ...[
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: AppSpacing.insetSm,
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.dangerSubtle,
+                      border: Border.all(color: AppColors.dangerDefault.withValues(alpha: 0.5)),
+                      borderRadius: AppRadius.borderSm,
                     ),
                     child: Text(
                       _errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent),
+                      style: AppTextStyles.bodySm.copyWith(color: AppColors.dangerDefault),
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.space4),
                 ],
                 TextField(
                   controller: _emailController,
-                  style: const TextStyle(color: AppTheme.textPrimary),
+                  style: TextStyle(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                    labelStyle: TextStyle(color: AppTheme.textSecondary),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.email, color: AppTheme.textSecondary),
+                    prefixIcon: Icon(Icons.email, color: AppTheme.textSecondary),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -131,45 +136,33 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
-                  style: const TextStyle(color: AppTheme.textPrimary),
+                  style: TextStyle(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                    labelStyle: TextStyle(color: AppTheme.textSecondary),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.lock, color: AppTheme.textSecondary),
+                    prefixIcon: Icon(Icons.lock, color: AppTheme.textSecondary),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.space6),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  style: AppButtonStyles.primary,
                   child: _isLoading
                       ? const SizedBox(
-                          width: 24,
-                          height: 24,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      : Text('Sign In', style: AppTextStyles.labelLg.copyWith(color: AppColors.primaryOn)),
                 ),
               ],
             ),

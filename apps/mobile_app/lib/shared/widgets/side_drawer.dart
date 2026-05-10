@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_theme.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_shadows.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../main.dart'; // AppLocaleNotifier
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/pos/presentation/screens/store_mode.dart';
@@ -71,7 +71,7 @@ class _SideDrawerState extends State<SideDrawer> {
             // Header: Clean Branded Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.space6, AppSpacing.space8, AppSpacing.space6, AppSpacing.space6),
               decoration: BoxDecoration(
                 color: AppColors.primarySubtle,
                 border: const Border(
@@ -84,17 +84,17 @@ class _SideDrawerState extends State<SideDrawer> {
                   Row(
                     children: [
                       Container(
-                        width: 60,
-                        height: 60,
+                        width: AppSpacing.space16,
+                        height: AppSpacing.space16,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: AppColors.surfaceDefault,
                           boxShadow: AppShadows.elevation1,
                           border: Border.all(color: AppColors.primaryDefault, width: 2),
                         ),
-                        child: const Icon(Icons.person_rounded, color: AppColors.primaryDefault, size: 32),
+                        child: const Icon(Icons.person_rounded, color: AppColors.primaryDefault, size: AppSpacing.space8),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppSpacing.space4),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,12 +132,12 @@ class _SideDrawerState extends State<SideDrawer> {
                   ),
                   const SizedBox(height: 20),
                   // Language Toggle
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundSubtle,
-                      borderRadius: AppRadius.full,
-                      border: Border.all(color: AppColors.borderDefault),
-                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundSubtle,
+                        borderRadius: AppRadius.borderFull,
+                        border: Border.all(color: AppColors.borderDefault),
+                      ),
                     padding: const EdgeInsets.all(4),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -170,7 +170,7 @@ class _SideDrawerState extends State<SideDrawer> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: _isAdmin ? AppColors.warningSubtle : AppColors.backgroundSubtle,
-                        borderRadius: AppRadius.lg,
+                        borderRadius: AppRadius.borderLg,
                         border: Border.all(
                           color: _isAdmin ? AppColors.warningDefault.withValues(alpha: 0.3) : AppColors.borderDefault,
                         ),
@@ -182,7 +182,7 @@ class _SideDrawerState extends State<SideDrawer> {
                             color: _isAdmin ? AppColors.warningDark : AppColors.textPrimary,
                           ),
                         ),
-                        subtitle: const Text('Admin ops & aisle map', style: AppTextStyles.bodySmall),
+                        subtitle: Text('Admin ops & aisle map', style: AppTextStyles.bodySmall),
                         value: _isAdmin,
                         activeColor: AppColors.warningDefault,
                         onChanged: _handleStoreModeToggle,
@@ -326,7 +326,7 @@ class _LanguagePill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? AppColors.surfaceDefault : Colors.transparent,
-          borderRadius: AppRadius.full,
+          borderRadius: AppRadius.borderFull,
           boxShadow: isActive ? AppShadows.elevation1 : null,
         ),
         child: Text(
@@ -368,7 +368,7 @@ class _DrawerMenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: (iconColor ?? AppColors.textSecondary).withValues(alpha: 0.1),
-          borderRadius: AppRadius.md,
+          borderRadius: AppRadius.borderMd,
         ),
         child: Icon(icon, color: iconColor ?? AppColors.textSecondary, size: 22),
       ),
@@ -384,7 +384,7 @@ class _DrawerMenuItem extends StatelessWidget {
                 gradient: const LinearGradient(
                   colors: [AppColors.warningDefault, AppColors.warningDark],
                 ),
-                borderRadius: AppRadius.full,
+                borderRadius: AppRadius.borderFull,
               ),
               child: Text(
                 badgeLabel!, 

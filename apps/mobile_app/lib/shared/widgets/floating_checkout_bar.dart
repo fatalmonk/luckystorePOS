@@ -32,7 +32,7 @@ class FloatingCheckoutBar extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.primaryDefault,
-                borderRadius: AppRadius.xl,
+                borderRadius: AppRadius.borderXl,
                 boxShadow: AppShadows.elevation3,
               ),
               child: Column(
@@ -48,7 +48,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                             height: 32,
                             decoration: BoxDecoration(
                               color: AppColors.primaryOn.withValues(alpha: 0.2),
-                              borderRadius: AppRadius.md,
+                              borderRadius: AppRadius.borderMd,
                             ),
                             alignment: Alignment.center,
                             child: Text(
@@ -86,7 +86,7 @@ class FloatingCheckoutBar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: AppRadius.full,
+                        borderRadius: AppRadius.borderFull,
                         child: LinearProgressIndicator(
                           value: progress,
                           backgroundColor: AppColors.primaryOn.withValues(alpha: 0.15),

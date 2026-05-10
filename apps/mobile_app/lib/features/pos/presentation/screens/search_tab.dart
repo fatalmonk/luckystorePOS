@@ -65,15 +65,15 @@ class _SearchTabState extends State<SearchTab> {
               child: TextField(
                 controller: _controller,
                 autofocus: true,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 onChanged: (v) => setState(() => _query = v),
                 decoration: InputDecoration(
                   hintText: 'Search... (fuzzy matching)',
-                  hintStyle: const TextStyle(color: AppTheme.textSecondary),
-                  prefixIcon: const Icon(Icons.search, color: AppTheme.secondaryAccent),
+                  hintStyle: TextStyle(color: AppTheme.textSecondary),
+                  prefixIcon: Icon(Icons.search, color: AppTheme.secondaryAccent),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
+                          icon: Icon(Icons.clear, color: AppTheme.textSecondary),
                           onPressed: () {
                             _controller.clear();
                             setState(() => _query = '');
@@ -88,13 +88,13 @@ class _SearchTabState extends State<SearchTab> {
             const SizedBox(height: 20),
 
             if (_query.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.search, color: AppTheme.textSecondary, size: 64),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
                         'Start typing to find products',
                         style: TextStyle(color: AppTheme.textSecondary),
@@ -104,13 +104,13 @@ class _SearchTabState extends State<SearchTab> {
                 ),
               )
             else if (_results.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.search_off, color: AppTheme.textSecondary, size: 64),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
                         'No products found. Try a different spelling.',
                         style: TextStyle(color: AppTheme.textSecondary),
