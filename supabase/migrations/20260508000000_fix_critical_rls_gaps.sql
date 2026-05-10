@@ -219,6 +219,7 @@ CREATE POLICY "items_manage_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "disc_select" ON public.discounts;
+DROP POLICY IF EXISTS "discounts_select_tenant_isolated" ON public.discounts;
 
 -- Create secure SELECT policy
 CREATE POLICY "discounts_select_tenant_isolated"
@@ -239,6 +240,7 @@ CREATE POLICY "discounts_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "disc_write" ON public.discounts;
+DROP POLICY IF EXISTS "discounts_write_authorized" ON public.discounts;
 
 CREATE POLICY "discounts_write_authorized"
   ON public.discounts
@@ -839,6 +841,7 @@ GRANT EXECUTE ON FUNCTION public.get_current_user_store_id() TO authenticated;
 DROP POLICY IF EXISTS "parties_select_all" ON public.parties;
 DROP POLICY IF EXISTS "parties_select_tenant_isolated" ON public.parties;
 
+DROP POLICY IF EXISTS "parties_select_tenant_isolated" ON public.parties;
 CREATE POLICY "parties_select_tenant_isolated" ON public.parties
   FOR SELECT
   TO authenticated
@@ -850,6 +853,7 @@ CREATE POLICY "parties_select_tenant_isolated" ON public.parties
 DROP POLICY IF EXISTS "expenses_select_all" ON public.expenses;
 DROP POLICY IF EXISTS "expenses_select_tenant_isolated" ON public.expenses;
 
+DROP POLICY IF EXISTS "expenses_select_tenant_isolated" ON public.expenses;
 CREATE POLICY "expenses_select_tenant_isolated" ON public.expenses
   FOR SELECT
   TO authenticated
