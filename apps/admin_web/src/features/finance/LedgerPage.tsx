@@ -176,7 +176,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             <div style={{
               padding: 'var(--space-4)',
               borderBottom: '1px solid var(--border-color)',
-              backgroundColor: 'rgba(0,0,0,0.02)',
+              backgroundColor: 'var(--color-background-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
@@ -199,7 +199,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                   <tr style={{
                     textAlign: 'left',
                     borderBottom: '1px solid var(--border-color)',
-                    backgroundColor: 'rgba(0,0,0,0.02)',
+                    backgroundColor: 'var(--color-background-subtle)',
                     color: 'var(--text-muted)',
                     fontSize: 'var(--font-size-xs)',
                     textTransform: 'uppercase',
