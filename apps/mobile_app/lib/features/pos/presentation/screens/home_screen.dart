@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_shadows.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../shared/widgets/product_card.dart';
 import '../../../../models/pos_models.dart';
 
@@ -8,26 +11,33 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: CustomScrollView(
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDefault,
+      body: CustomScrollView(
         slivers: [
           // Dominant Pinned Search Bar
           SliverAppBar(
             floating: true,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppTheme.background,
+            toolbarHeight: 80,
+            backgroundColor: AppColors.backgroundDefault,
             title: Container(
-              height: 48,
-              decoration: AppTheme.neomorphicDecoration,
-              child: const TextField(
-                style: TextStyle(color: AppTheme.textPrimary),
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDefault,
+                borderRadius: AppRadius.borderLg,
+                boxShadow: AppShadows.elevation1,
+                border: Border.all(color: AppColors.borderDefault),
+              ),
+              child: TextField(
+                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Search products... (Fuzzy Match)',
-                  hintStyle: TextStyle(color: AppTheme.textSecondary),
-                  prefixIcon: Icon(Icons.search, color: AppTheme.secondaryAccent),
+                  hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textMuted),
+                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primaryDefault),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
@@ -39,7 +49,7 @@ class HomeScreen extends StatelessWidget {
               delegate: SliverChildListDelegate([
                 // Promotional Slider (Partial View)
                 SizedBox(
-                  height: 140,
+                  height: 160,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: 3,
@@ -48,11 +58,24 @@ class HomeScreen extends StatelessWidget {
                         width: MediaQuery.of(context).size.width * 0.85,
                         margin: const EdgeInsets.only(right: 16),
                         decoration: BoxDecoration(
-                          color: AppTheme.backgroundElevated,
-                          borderRadius: BorderRadius.circular(16),
+                          color: AppColors.surfaceRaised,
+                          borderRadius: AppRadius.borderLg,
+                          boxShadow: AppShadows.elevation2,
                           image: const DecorationImage(
-                            image: NetworkImage('https://via.placeholder.com/400x150/9B51E0/FFFFFF?text=Flash+Sale'),
+                            image: NetworkImage('https://via.placeholder.com/400x150/6366F1/FFFFFF?text=Premium+Collection'),
                             fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: AppRadius.borderLg,
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomRight,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.6),
+                                Colors.transparent,
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -60,11 +83,11 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
-                const Text(
+                Text(
                   'Popular Aisles',
-                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.headingMd,
                 ),
                 const SizedBox(height: 16),
 
@@ -75,35 +98,51 @@ class HomeScreen extends StatelessWidget {
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     childAspectRatio: 0.8,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 20,
                   ),
                   itemCount: 8,
                   itemBuilder: (context, index) {
+                    final icons = [
+                      Icons.apple_rounded, 
+                      Icons.bakery_dining_rounded, 
+                      Icons.egg_rounded, 
+                      Icons.local_drink_rounded,
+                      Icons.cleaning_services_rounded,
+                      Icons.medical_services_rounded,
+                      Icons.pets_rounded,
+                      Icons.toys_rounded,
+                    ];
+                    final labels = [
+                      'Fruits', 'Bakery', 'Dairy', 'Drinks',
+                      'Cleaning', 'Pharma', 'Pets', 'Toys'
+                    ];
+                    
                     return Column(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: AppTheme.neomorphicDecoration.copyWith(
-                            borderRadius: BorderRadius.circular(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.primarySubtle,
+                            borderRadius: AppRadius.borderMd,
                           ),
-                          child: const Icon(Icons.apple, color: AppTheme.primaryAccent, size: 28),
+                          child: Icon(icons[index % icons.length], color: AppColors.primaryDefault, size: 28),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Fruits',
-                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                        Text(
+                          labels[index % labels.length],
+                          style: AppTextStyles.labelSm.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     );
                   },
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
-                const Text(
+                Text(
                   'Trending Now',
-                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.headingMd,
                 ),
                 const SizedBox(height: 16),
               ]),
@@ -112,11 +151,11 @@ class HomeScreen extends StatelessWidget {
 
           // Product Grid
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 120),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.65,
+                childAspectRatio: 0.68,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
@@ -126,14 +165,14 @@ class HomeScreen extends StatelessWidget {
                     item: PosItem(
                       id: 'LKY-${1000 + index}',
                       sku: 'LKY-${1000 + index}',
-                      name: 'Premium Miniket Rice - Handpicked',
-                      price: 340.0,
+                      name: index % 2 == 0 ? 'Premium Miniket Rice - Handpicked' : 'Fresh Farm Eggs - 1 Dozen',
+                      price: index % 2 == 0 ? 340.0 : 145.0,
                     ),
-                    originalPrice: 380.0,
-                    weight: '5 kg',
+                    originalPrice: index % 2 == 0 ? 380.0 : 160.0,
+                    weight: index % 2 == 0 ? '5 kg' : '12 pcs',
                   );
                 },
-                childCount: 6,
+                childCount: 10,
               ),
             ),
           ),

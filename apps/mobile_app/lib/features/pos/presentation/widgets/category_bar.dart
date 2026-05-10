@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../models/pos_models.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_radius.dart';
 
 /// Horizontal category chip bar used in the POS left panel.
 class CategoryBar extends StatelessWidget {
@@ -16,14 +19,18 @@ class CategoryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
+    return Container(
+      height: 52,
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceDefault,
+        border: Border(bottom: BorderSide(color: AppColors.borderDefault)),
+      ),
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         children: [
           _chip(
-            'All',
+            'All Products',
             selected: selectedCategoryId == null,
             onTap: () => onCategorySelected(null),
           ),
@@ -47,24 +54,24 @@ class CategoryBar extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(right: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFFE8B84B)
-              : Colors.white.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(20),
+              ? AppColors.primaryDefault
+              : AppColors.backgroundSubtle,
+          borderRadius: AppRadius.borderFull,
           border: Border.all(
-              color: selected
-                  ? const Color(0xFFE8B84B)
-                  : Colors.white.withValues(alpha: 0.12)),
+            color: selected ? AppColors.primaryDefault : AppColors.borderDefault,
+          ),
         ),
+        alignment: Alignment.center,
         child: Text(
           count != null ? '$label ($count)' : label,
-          style: TextStyle(
-              color: selected ? Colors.black : Colors.white.withValues(alpha: 0.75),
-              fontSize: 12,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w400),
+          style: AppTextStyles.labelSm.copyWith(
+            color: selected ? AppColors.primaryOn : AppColors.textSecondary,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );

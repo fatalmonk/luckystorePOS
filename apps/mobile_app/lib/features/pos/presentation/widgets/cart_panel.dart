@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../models/pos_models.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 
 /// Right panel with cart items and order summary for the POS screen.
 class CartPanel extends StatelessWidget {
@@ -34,78 +38,82 @@ class CartPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Cart header
-        Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF161B22),
-            border: Border(
-                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.shopping_cart_rounded,
-                  color: Color(0xFFE8B84B), size: 18),
-              const SizedBox(width: 8),
-              const Text('Cart',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600)),
-              if (itemCount > 0) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFE8B84B),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Text('$itemCount',
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800)),
-                ),
-              ],
-              const Spacer(),
-              if (!cartIsEmpty)
-                TextButton(
-                  onPressed: onClearCart,
-                  child: Text('Clear',
-                      style: TextStyle(
-                          color: Colors.red.withValues(alpha: 0.8), fontSize: 12)),
-                ),
-            ],
-          ),
-        ),
-
-        // Cart items
-        Expanded(
-          child: cartIsEmpty
-              ? _emptyCartPlaceholder()
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: cartItems.length,
-                  itemBuilder: (ctx, i) => CartLine(
-                    cartItem: cartItems[i],
-                    onRemove: () => onRemoveItemAt(i),
-                    onQtyChanged: (q) => onQtyChangedAt(i)(q),
+    return Container(
+      color: AppColors.surfaceDefault,
+      child: Column(
+        children: [
+          // Cart header
+          Container(
+            height: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceDefault,
+              border: Border(bottom: BorderSide(color: AppColors.borderDefault)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.shopping_cart_rounded, color: AppColors.primaryDefault, size: 20),
+                const SizedBox(width: 10),
+                Text('Current Order', style: AppTextStyles.headingMd),
+                if (itemCount > 0) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySubtle,
+                      borderRadius: AppRadius.borderFull,
+                    ),
+                    child: Text(
+                      '$itemCount items',
+                      style: AppTextStyles.labelXs.copyWith(
+                        color: AppColors.primaryDefault,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-        ),
+                ],
+                const Spacer(),
+                if (!cartIsEmpty)
+                  TextButton.icon(
+                    onPressed: onClearCart,
+                    icon: const Icon(Icons.delete_sweep_rounded, size: 16),
+                    label: const Text('Clear'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.dangerDefault,
+                      textStyle: AppTextStyles.labelSm.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
+          ),
 
-        // Totals + Charge button
-        OrderSummary(
-          subtotal: subtotal,
-          cartDiscount: cartDiscount,
-          totalAmount: totalAmount,
-          cartIsEmpty: cartIsEmpty,
-          onShowDiscountDialog: onShowDiscountDialog,
-          onCharge: onCharge,
-        ),
-      ],
+          // Cart items
+          Expanded(
+            child: cartIsEmpty
+                ? _emptyCartPlaceholder()
+                : ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: cartItems.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (ctx, i) => CartLine(
+                      cartItem: cartItems[i],
+                      onRemove: () => onRemoveItemAt(i),
+                      onQtyChanged: (q) => onQtyChangedAt(i)(q),
+                    ),
+                  ),
+          ),
+
+          // Totals + Charge button
+          OrderSummary(
+            subtotal: subtotal,
+            cartDiscount: cartDiscount,
+            totalAmount: totalAmount,
+            cartIsEmpty: cartIsEmpty,
+            onShowDiscountDialog: onShowDiscountDialog,
+            onCharge: onCharge,
+          ),
+        ],
+      ),
     );
   }
 
@@ -114,23 +122,24 @@ class CartPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.shopping_cart_outlined,
-              color: Colors.white.withValues(alpha: 0.1), size: 56),
+          Icon(Icons.shopping_basket_outlined,
+              color: AppColors.textMuted.withValues(alpha: 0.1), size: 80),
+          const SizedBox(height: 16),
+          Text(
+            'Order is empty',
+            style: AppTextStyles.headingMd.copyWith(color: AppColors.textMuted),
+          ),
           const SizedBox(height: 8),
-          Text('Cart is empty',
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.25), fontSize: 14)),
-          const SizedBox(height: 4),
-          Text('Tap a product or scan a barcode',
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.15), fontSize: 12)),
+          Text(
+            'Add products to begin checkout',
+            style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Order summary section with subtotal, discount, total, and action buttons.
 class OrderSummary extends StatelessWidget {
   final double subtotal;
   final double cartDiscount;
@@ -151,86 +160,81 @@ class OrderSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const tStyle = TextStyle(color: Colors.white70, fontSize: 13);
-    const vStyle = TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600);
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+        color: AppColors.surfaceRaised,
+        boxShadow: AppShadows.elevation3,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
-          // Subtotal
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('Subtotal', style: tStyle),
-            Text('৳ ${subtotal.toStringAsFixed(2)}', style: vStyle),
+            Text('Subtotal', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+            Text('৳ ${subtotal.toStringAsFixed(2)}', style: AppTextStyles.labelMd),
           ]),
           if (cartDiscount > 0) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              const Text('Discount', style: tStyle),
+              Text('Discount', style: AppTextStyles.bodyMd.copyWith(color: AppColors.successDefault)),
               Text('- ৳ ${cartDiscount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      color: Color(0xFF2ECC71), fontSize: 13, fontWeight: FontWeight.w600)),
+                  style: AppTextStyles.labelMd.copyWith(color: AppColors.successDefault, fontWeight: FontWeight.bold)),
             ]),
           ],
-          const Divider(color: Color(0xFF30363D), height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(color: AppColors.borderDefault, height: 1),
+          ),
 
-          // Total
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('TOTAL',
-                style: TextStyle(
-                    color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
-            Text('৳ ${totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(
-                    color: Color(0xFFE8B84B),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800)),
+            Text('Total Amount', style: AppTextStyles.headingMd),
+            Text('৳ ${totalAmount.toStringAsFixed(0)}',
+                style: AppTextStyles.headingXl.copyWith(color: AppColors.primaryDefault)),
           ]),
-          const SizedBox(height: 14),
+          const SizedBox(height: 24),
 
-          // Discount + Charge buttons
           Row(
             children: [
-              // Quick discount button
-              OutlinedButton(
-                onPressed: cartIsEmpty ? null : onShowDiscountDialog,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF30363D)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+              // Discount button
+              GestureDetector(
+                onTap: cartIsEmpty ? null : onShowDiscountDialog,
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundSubtle,
+                    borderRadius: AppRadius.borderMd,
+                    border: Border.all(color: AppColors.borderDefault),
+                  ),
+                  child: const Icon(Icons.local_offer_outlined, color: AppColors.primaryDefault, size: 24),
                 ),
-                child: const Icon(Icons.local_offer_outlined,
-                    color: Color(0xFFE8B84B), size: 18),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
 
               // Charge button
               Expanded(
                 child: ElevatedButton(
                   onPressed: cartIsEmpty ? null : onCharge,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8B84B),
-                    disabledBackgroundColor: const Color(0xFF30363D),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
+                    backgroundColor: AppColors.primaryDefault,
+                    disabledBackgroundColor: AppColors.backgroundSubtle,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                    elevation: 4,
+                    shadowColor: AppColors.primaryDefault.withValues(alpha: 0.4),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.payment_rounded, color: Colors.black, size: 18),
-                      SizedBox(width: 6),
-                      Text('CHARGE',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5)),
+                      const Icon(Icons.bolt_rounded, color: AppColors.primaryOn, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'PLACE ORDER',
+                        style: AppTextStyles.labelLg.copyWith(
+                          color: AppColors.primaryOn,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -243,7 +247,6 @@ class OrderSummary extends StatelessWidget {
   }
 }
 
-/// One item row in the cart panel.
 class CartLine extends StatelessWidget {
   final CartItem cartItem;
   final VoidCallback onRemove;
@@ -263,68 +266,78 @@ class CartLine extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        color: Colors.red.withValues(alpha: 0.8),
-        child: const Icon(Icons.delete_outline_rounded,
-            color: Colors.white, size: 22),
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: AppColors.dangerDefault,
+          borderRadius: AppRadius.borderMd,
+        ),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 28),
       ),
       onDismissed: (_) => onRemove(),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C2128),
-          borderRadius: BorderRadius.circular(10),
+          color: AppColors.surfaceDefault,
+          borderRadius: AppRadius.borderMd,
+          border: Border.all(color: AppColors.borderDefault),
+          boxShadow: AppShadows.elevation1,
         ),
         child: Row(
           children: [
-            // Item info
+            // Product info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(cartItem.item.name,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 2),
-                  Text('৳${cartItem.item.price.toStringAsFixed(2)} each',
-                      style: const TextStyle(
-                          color: Colors.white38, fontSize: 11)),
+                  Text(
+                    cartItem.item.name,
+                    style: AppTextStyles.labelMd,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '৳${cartItem.item.price.toStringAsFixed(0)} / unit',
+                    style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+                  ),
                 ],
               ),
             ),
 
             // Qty control
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _qtyBtn(Icons.remove_rounded,
-                    () => onQtyChanged(cartItem.qty - 1)),
-                const SizedBox(width: 10),
-                Text('${cartItem.qty}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600)),
-                const SizedBox(width: 10),
-                _qtyBtn(Icons.add_rounded,
-                    () => onQtyChanged(cartItem.qty + 1)),
-              ],
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSubtle,
+                borderRadius: AppRadius.borderSm,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _qtyBtn(Icons.remove_rounded, () => onQtyChanged(cartItem.qty - 1)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      '${cartItem.qty}',
+                      style: AppTextStyles.labelMd.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  _qtyBtn(Icons.add_rounded, () => onQtyChanged(cartItem.qty + 1), color: AppColors.primaryDefault),
+                ],
+              ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 16),
 
             // Line total
-            Flexible(
-              child: Text('৳${cartItem.lineTotal.toStringAsFixed(0)}',
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                      color: Color(0xFFE8B84B),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700)),
+            SizedBox(
+              width: 70,
+              child: Text(
+                '৳${cartItem.lineTotal.toStringAsFixed(0)}',
+                textAlign: TextAlign.right,
+                style: AppTextStyles.labelMd.copyWith(
+                  color: AppColors.primaryDefault,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
           ],
         ),
@@ -332,17 +345,14 @@ class CartLine extends StatelessWidget {
     );
   }
 
-  Widget _qtyBtn(IconData icon, VoidCallback onTap) {
+  Widget _qtyBtn(IconData icon, VoidCallback onTap, {Color? color}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 26,
-        height: 26,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Icon(icon, color: Colors.white70, size: 14),
+        width: 32,
+        height: 32,
+        alignment: Alignment.center,
+        child: Icon(icon, color: color ?? AppColors.textPrimary, size: 18),
       ),
     );
   }

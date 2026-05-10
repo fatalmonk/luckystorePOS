@@ -8,6 +8,10 @@ import '../../../../shared/providers/pos_provider.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../core/services/printer/printer_test_screen.dart';
 import '../../../inventory/presentation/screens/bulk_label_print_screen.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_shadows.dart';
+import '../../../../core/theme/app_radius.dart';
 import './payment_screen.dart';
 import '../widgets/category_bar.dart';
 import '../widgets/product_grid.dart';
@@ -48,13 +52,10 @@ class _PosMainScreenState extends State<PosMainScreen> {
     final pos = context.read<PosProvider>();
     final auth = context.read<AuthProvider>();
 
-    // Check if we need to set the store context from authenticated user
     if (pos.storeId == null || pos.storeId!.isEmpty) {
       final appUser = auth.appUser;
       if (appUser != null && appUser.storeId.isNotEmpty) {
-        debugPrint('[PosMainScreen] Loading store context from appUser: ${appUser.storeId}');
         await pos.loadFromAppUser(appUser);
-        debugPrint('[PosMainScreen] Store context after load: ${pos.storeId}');
       }
     }
 
@@ -103,7 +104,6 @@ class _PosMainScreenState extends State<PosMainScreen> {
     if (!mounted) return;
     setState(() {
       _items = items;
-      _categories = _categories;
       _loadError = error ?? pos.posDebugSnapshot['last_load_error'] as String?;
       _allowProductAdd = _loadError == null;
       _loadState = _loadError != null
@@ -131,10 +131,11 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
   void _showSnack(String msg, {required bool success}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: success ? const Color(0xFF2ECC71) : const Color(0xFFE74C3C),
+      content: Text(msg, style: AppTextStyles.labelMd.copyWith(color: Colors.white)),
+      backgroundColor: success ? AppColors.successDefault : AppColors.dangerDefault,
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
+      shape: AppRadius.borderMd,
     ));
   }
 
@@ -146,7 +147,6 @@ class _PosMainScreenState extends State<PosMainScreen> {
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -154,13 +154,12 @@ class _PosMainScreenState extends State<PosMainScreen> {
     final isLargeTablet = screenWidth >= 900;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D1117),
+        backgroundColor: AppColors.backgroundDefault,
         body: SafeArea(
           child: Stack(
             children: [
-              // Responsive layout: split view for tablets, adjusted flex for different sizes
               Row(
                 children: [
                   // ── LEFT PANEL ─────────────────────────────────────────
@@ -169,7 +168,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                     child: _buildLeftPanel(),
                   ),
                   // Divider
-                  Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
+                  Container(width: 1, color: AppColors.borderDefault),
                   // ── RIGHT PANEL ────────────────────────────────────────
                   Expanded(
                     flex: isLargeTablet ? 30 : (isTablet ? 35 : 40),
@@ -180,7 +179,6 @@ class _PosMainScreenState extends State<PosMainScreen> {
                   ),
                 ],
               ),
-              // Barcode scanner overlay
               if (_scanning) _buildScannerOverlay(),
             ],
           ),
@@ -188,8 +186,6 @@ class _PosMainScreenState extends State<PosMainScreen> {
       ),
     );
   }
-
-  // ── LEFT PANEL ─────────────────────────────────────────────────────────────
 
   Widget _buildLeftPanel() {
     return Column(
@@ -204,7 +200,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
             _doSearch(_searchQuery, catId);
           },
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 1),
         Expanded(
           child: ProductGrid(
             items: _items,
@@ -231,141 +227,90 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
   Widget _buildTopBar() {
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceDefault,
+        border: Border(bottom: BorderSide(color: AppColors.borderDefault)),
       ),
       child: Row(
         children: [
-          // Lucky Store logo pill
+          // Branded App Pill
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                  colors: [Color(0xFFE8B84B), Color(0xFFD4941A)]),
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.primaryDefault,
+              borderRadius: AppRadius.borderMd,
+              boxShadow: AppShadows.elevation1,
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.store_rounded, color: Colors.white, size: 14),
-                SizedBox(width: 4),
-                Text('LUCKY POS',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5)),
+                const Icon(Icons.shopping_bag_rounded, color: AppColors.primaryOn, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'LUCKY POS',
+                  style: AppTextStyles.labelMd.copyWith(
+                    color: AppColors.primaryOn,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
+            ),
+          ),
+          const SizedBox(width: 16),
+
+          // Search bar
+          Expanded(
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSubtle,
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: AppColors.borderDefault),
+              ),
+              child: TextField(
+                controller: _searchCtrl,
+                style: AppTextStyles.bodyMd,
+                decoration: InputDecoration(
+                  hintText: 'Search products, SKU, or brands...',
+                  hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textMuted),
+                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primaryDefault, size: 20),
+                  suffixIcon: _searchCtrl.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded, color: AppColors.textMuted, size: 18),
+                          onPressed: () { _searchCtrl.clear(); })
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
 
-          // Search bar
-          Expanded(
-            child: TextField(
-              controller: _searchCtrl,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: 'Search product, SKU, or brand...',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 14),
-                prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.4), size: 18),
-                suffixIcon: _searchCtrl.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear, color: Colors.white.withValues(alpha: 0.4), size: 16),
-                        onPressed: () { _searchCtrl.clear(); })
-                    : null,
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.06),
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // Barcode scan button
           _iconButton(
             icon: Icons.qr_code_scanner_rounded,
             active: _scanning,
-            tooltip: 'Scan barcode',
+            tooltip: 'Scan Barcode',
             onTap: () => setState(() => _scanning = !_scanning),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
 
           Consumer<PosProvider>(
             builder: (ctx, pos, _) => _iconButton(
-              icon: Icons.person_outline_rounded,
+              icon: Icons.person_rounded,
               tooltip: pos.cashierName ?? 'Cashier',
               onTap: () => showCashierDialog(context, pos),
             ),
           ),
-          const SizedBox(width: 4),
-          Consumer<PosProvider>(
-            builder: (ctx, pos, _) => _iconButton(
-              icon: Icons.bug_report_outlined,
-              tooltip: 'POS debug snapshot',
-              onTap: () => showPosDebugDialog(
-                context,
-                pos,
-                categories: _categories,
-                items: _items,
-                onReload: () async {
-                  await _init();
-                  if (!mounted) return;
-                  _showSnack('POS data reloaded', success: true);
-                },
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          // More actions menu
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white70, size: 20),
-            tooltip: 'More actions',
-            padding: EdgeInsets.zero,
-            onSelected: (value) {
-              if (value == 'bulk_print') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const BulkLabelPrintScreen(),
-                  ),
-                );
-              } else if (value == 'test_printer') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PrinterTestScreen(),
-                  ),
-                );
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'bulk_print',
-                child: Row(
-                  children: [
-                    Icon(Icons.print_outlined, size: 20),
-                    SizedBox(width: 8),
-                    Text('Bulk Print Labels'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'test_printer',
-                child: Row(
-                  children: [
-                    Icon(Icons.bug_report, size: 20),
-                    SizedBox(width: 8),
-                    Text('Test Printer'),
-                  ],
-                ),
-              ),
-            ],
+          const SizedBox(width: 8),
+          
+          _iconButton(
+            icon: Icons.more_vert_rounded,
+            tooltip: 'More Actions',
+            onTap: () {}, // This will trigger the popup menu
+            isMenu: true,
           ),
         ],
       ),
@@ -377,28 +322,24 @@ class _PosMainScreenState extends State<PosMainScreen> {
       builder: (context, pos, _) {
         final d = pos.posDebugSnapshot;
         final lastError = (d['last_load_error'] as String?) ?? 'none';
-        const mode = 'RPC';
-        final lastSuccess = _formatTimestamp(pos.lastSuccessfulCatalogLoadAt);
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          color: const Color(0xFF0B1320),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          color: AppColors.primarySubtle,
           child: Text(
-            'Mode: $mode  |  Store: ${d['store_id'] ?? 'null'}  |  Items: ${d['last_item_count'] ?? 0}  |  Cats: ${d['last_category_count'] ?? 0}  |  Last OK: $lastSuccess  |  Last Error: $lastError',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
+            'Store: ${d['store_id'] ?? 'null'} | Items: ${d['last_item_count'] ?? 0} | Last OK: ${_formatTimestamp(pos.lastSuccessfulCatalogLoadAt)} | Error: $lastError',
+            style: AppTextStyles.bodyXs.copyWith(
+              color: AppColors.primaryDefault,
+              fontWeight: FontWeight.w600,
               fontFamily: 'monospace',
             ),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         );
       },
     );
   }
-
-  // ── RIGHT PANEL ────────────────────────────────────────────────────────────
 
   Widget _buildRightPanel() {
     return Consumer<PosProvider>(
@@ -421,48 +362,47 @@ class _PosMainScreenState extends State<PosMainScreen> {
     );
   }
 
-  // ── Scanner overlay ─────────────────────────────────────────────────────────
-
   Widget _buildScannerOverlay() {
     return Positioned.fill(
       child: Stack(
         children: [
-          // Blurred background tap to dismiss
           GestureDetector(
             onTap: () => setState(() {
               _scanning = false;
               _scanCtrl.stop();
             }),
-            child: Container(color: Colors.black.withValues(alpha: 0.75)),
+            child: Container(color: Colors.black.withValues(alpha: 0.8)),
           ),
-          // Scanner viewport
           Center(
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE8B84B), width: 2),
-              ),
-              clipBehavior: Clip.hardEdge,
-              child: MobileScanner(
-                controller: _scanCtrl,
-                onDetect: _onBarcodeDetected,
-              ),
-            ),
-          ),
-          // Label
-          Center(
-            child: Transform.translate(
-              offset: const Offset(0, 170),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(20)),
-                child: const Text('Point at barcode or QR code',
-                    style: TextStyle(color: Colors.white, fontSize: 13)),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 280,
+                  height: 280,
+                  decoration: BoxDecoration(
+                    borderRadius: AppRadius.borderLg,
+                    border: Border.all(color: AppColors.primaryDefault, width: 3),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: MobileScanner(
+                    controller: _scanCtrl,
+                    onDetect: _onBarcodeDetected,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceDefault,
+                    borderRadius: AppRadius.borderFull,
+                  ),
+                  child: Text(
+                    'Point at barcode or QR code',
+                    style: AppTextStyles.labelMd.copyWith(color: AppColors.textPrimary),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -470,43 +410,77 @@ class _PosMainScreenState extends State<PosMainScreen> {
     );
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-
   Widget _iconButton({
     required IconData icon,
     required VoidCallback onTap,
     bool active = false,
     String? tooltip,
+    bool isMenu = false,
   }) {
-    return Tooltip(
-      message: tooltip ?? '',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: active
-                  ? const Color(0xFFE8B84B).withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                  color: active
-                      ? const Color(0xFFE8B84B).withValues(alpha: 0.5)
-                      : Colors.transparent),
+    final button = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isMenu ? null : onTap,
+        borderRadius: AppRadius.borderMd,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: active
+                ? AppColors.primarySubtle
+                : AppColors.backgroundSubtle,
+            borderRadius: AppRadius.borderMd,
+            border: Border.all(
+              color: active ? AppColors.primaryDefault : AppColors.borderDefault,
             ),
-            child: Icon(icon,
-                color: active
-                    ? const Color(0xFFE8B84B)
-                    : Colors.white.withValues(alpha: 0.6),
-                size: 18),
+          ),
+          child: Icon(
+            icon,
+            color: active ? AppColors.primaryDefault : AppColors.textPrimary,
+            size: 22,
           ),
         ),
       ),
     );
+
+    if (isMenu) {
+      return PopupMenuButton<String>(
+        offset: const Offset(0, 52),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+        child: button,
+        onSelected: (value) {
+          if (value == 'bulk_print') {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const BulkLabelPrintScreen()));
+          } else if (value == 'test_printer') {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const PrinterTestScreen()));
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'bulk_print',
+            child: Row(
+              children: [
+                const Icon(Icons.print_rounded, size: 20, color: AppColors.textPrimary),
+                const SizedBox(width: 12),
+                Text('Bulk Print Labels', style: AppTextStyles.labelMd),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 'test_printer',
+            child: Row(
+              children: [
+                const Icon(Icons.bug_report_rounded, size: 20, color: AppColors.textPrimary),
+                const SizedBox(width: 12),
+                Text('Test Printer', style: AppTextStyles.labelMd),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Tooltip(message: tooltip ?? '', child: button);
   }
 
   String _formatTimestamp(DateTime? value) {
@@ -514,14 +488,13 @@ class _PosMainScreenState extends State<PosMainScreen> {
     final local = value.toLocal();
     final h = local.hour % 12 == 0 ? 12 : local.hour % 12;
     final m = local.minute.toString().padLeft(2, '0');
-    final s = local.second.toString().padLeft(2, '0');
     final period = local.hour < 12 ? 'AM' : 'PM';
-    return '${local.month}/${local.day} $h:$m:$s $period';
+    return '${local.month}/${local.day} $h:$m $period';
   }
 
   String _cleanError(Object e) {
     final raw = e.toString().replaceFirst('Exception:', '').trim();
     if (raw.isEmpty) return 'Unknown error';
-    return raw.length > 180 ? '${raw.substring(0, 180)}...' : raw;
+    return raw.length > 100 ? '${raw.substring(0, 100)}...' : raw;
   }
 }
