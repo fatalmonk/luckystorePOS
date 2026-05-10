@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_theme.dart';
+import '../theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_shadows.dart';
 import '../../main.dart'; // AppLocaleNotifier
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/pos/presentation/screens/store_mode.dart';
@@ -36,9 +40,7 @@ class _SideDrawerState extends State<SideDrawer> {
 
   Future<void> _handleStoreModeToggle(bool value) async {
     if (value) {
-      // Trying to turn ON Store Mode
       if (!_isAdmin) {
-        // Show login
         final result = await Navigator.of(context).push<bool>(
           MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
@@ -47,7 +49,6 @@ class _SideDrawerState extends State<SideDrawer> {
         }
       }
     } else {
-      // Turning OFF Store Mode
       await AuthService.signOut();
       if (mounted) {
         setState(() {
@@ -63,18 +64,18 @@ class _SideDrawerState extends State<SideDrawer> {
     final bool isBengali = localeNotifier.locale?.languageCode == 'bn';
 
     return Drawer(
-      backgroundColor: AppTheme.backgroundElevated,
+      backgroundColor: AppColors.surfaceDefault,
       child: SafeArea(
         child: Column(
           children: [
-            // Header: Avatar + Address + Language Toggle
+            // Header: Clean Branded Header
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryAccent, Color(0xFF6A1B9A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              decoration: BoxDecoration(
+                color: AppColors.primarySubtle,
+                border: const Border(
+                  bottom: BorderSide(color: AppColors.borderDefault),
                 ),
               ),
               child: Column(
@@ -82,16 +83,16 @@ class _SideDrawerState extends State<SideDrawer> {
                 children: [
                   Row(
                     children: [
-                      // User Avatar
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.2),
-                          border: Border.all(color: Colors.white, width: 2),
+                          color: AppColors.surfaceDefault,
+                          boxShadow: AppShadows.elevation1,
+                          border: Border.all(color: AppColors.primaryDefault, width: 2),
                         ),
-                        child: const Icon(Icons.person, color: Colors.white, size: 30),
+                        child: const Icon(Icons.person_rounded, color: AppColors.primaryDefault, size: 32),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -99,61 +100,59 @@ class _SideDrawerState extends State<SideDrawer> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isAdmin ? 'Admin User' : 'Ahmed Hossain',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                              _isAdmin ? 'Lucky Admin' : 'Ahmed Hossain',
+                              style: AppTextStyles.headingMd,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               _isAdmin ? 'Store Manager' : '+880 1xxx-xxxxxx',
-                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              style: AppTextStyles.bodySm,
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Delivery address indicator
+                  const SizedBox(height: 20),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_outlined, color: Colors.white70, size: 16),
-                      const SizedBox(width: 6),
+                      const Icon(Icons.location_on_rounded, color: AppColors.primaryDefault, size: 16),
+                      const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
                           'Gulshan 1, Dhaka',
-                          style: TextStyle(color: Colors.white, fontSize: 13),
-                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Language toggle pill: EN / বাং
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      padding: const EdgeInsets.all(3),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _LanguagePill(
-                            label: 'EN',
-                            isActive: !isBengali,
-                            onTap: () => localeNotifier.setLocale(const Locale('en')),
-                          ),
-                          _LanguagePill(
-                            label: 'বাং',
-                            isActive: isBengali,
-                            onTap: () => localeNotifier.setLocale(const Locale('bn')),
-                          ),
-                        ],
-                      ),
+                  const SizedBox(height: 20),
+                  // Language Toggle
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundSubtle,
+                      borderRadius: AppRadius.full,
+                      border: Border.all(color: AppColors.borderDefault),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _LanguagePill(
+                          label: 'English',
+                          isActive: !isBengali,
+                          onTap: () => localeNotifier.setLocale(const Locale('en')),
+                        ),
+                        _LanguagePill(
+                          label: 'বাংলা',
+                          isActive: isBengali,
+                          onTap: () => localeNotifier.setLocale(const Locale('bn')),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -163,24 +162,44 @@ class _SideDrawerState extends State<SideDrawer> {
             // Menu Items
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 children: [
-                  // Store Mode Toggle
-                  SwitchListTile(
-                    title: const Text('Store Mode', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Admin ops & aisle map', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                    value: _isAdmin,
-                    activeColor: Colors.amber,
-                    onChanged: _handleStoreModeToggle,
-                    secondary: const Icon(Icons.admin_panel_settings, color: Colors.amber),
+                  // Store Mode Toggle (Admin Exclusive Look)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: _isAdmin ? AppColors.warningSubtle : AppColors.backgroundSubtle,
+                        borderRadius: AppRadius.lg,
+                        border: Border.all(
+                          color: _isAdmin ? AppColors.warningDefault.withValues(alpha: 0.3) : AppColors.borderDefault,
+                        ),
+                      ),
+                      child: SwitchListTile(
+                        title: Text(
+                          'Store Mode', 
+                          style: AppTextStyles.labelLg.copyWith(
+                            color: _isAdmin ? AppColors.warningDark : AppColors.textPrimary,
+                          ),
+                        ),
+                        subtitle: const Text('Admin ops & aisle map', style: AppTextStyles.bodySmall),
+                        value: _isAdmin,
+                        activeColor: AppColors.warningDefault,
+                        onChanged: _handleStoreModeToggle,
+                        secondary: Icon(
+                          Icons.admin_panel_settings_rounded, 
+                          color: _isAdmin ? AppColors.warningDefault : AppColors.textMuted,
+                        ),
+                      ),
+                    ),
                   ),
-                  const Divider(color: AppTheme.shadowLight, indent: 16, endIndent: 16),
+                  const SizedBox(height: 8),
                   
                   if (_isAdmin) ...[
                     _DrawerMenuItem(
                       icon: Icons.dashboard_customize_rounded, 
                       label: 'Manager Dashboard',
-                      iconColor: Colors.blueAccent,
+                      iconColor: AppColors.primaryDefault,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
@@ -191,16 +210,16 @@ class _SideDrawerState extends State<SideDrawer> {
                     _DrawerMenuItem(
                       icon: Icons.point_of_sale_rounded, 
                       label: 'POS System',
-                      iconColor: Colors.amber,
+                      iconColor: AppColors.warningDefault,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushNamed('/pos-login');
                       },
                     ),
                     _DrawerMenuItem(
-                      icon: Icons.upload_file, 
+                      icon: Icons.upload_file_rounded, 
                       label: 'Import Inventory',
-                      iconColor: AppTheme.primaryAccent,
+                      iconColor: AppColors.secondaryDefault,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
@@ -211,7 +230,7 @@ class _SideDrawerState extends State<SideDrawer> {
                     _DrawerMenuItem(
                       icon: Icons.print_rounded, 
                       label: 'Label Printer (M102)',
-                      iconColor: AppTheme.primaryAccent,
+                      iconColor: AppColors.secondaryDefault,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
@@ -220,9 +239,9 @@ class _SideDrawerState extends State<SideDrawer> {
                       },
                     ),
                     _DrawerMenuItem(
-                      icon: Icons.map, 
+                      icon: Icons.map_rounded, 
                       label: 'Aisle Map View',
-                      iconColor: AppTheme.primaryAccent,
+                      iconColor: AppColors.primaryDefault,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
@@ -230,41 +249,58 @@ class _SideDrawerState extends State<SideDrawer> {
                         );
                       },
                     ),
-                    const Divider(color: AppTheme.shadowLight, indent: 16, endIndent: 16),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Divider(color: AppColors.borderDefault),
+                    ),
                   ],
 
-                  // Loyalty Program — top item with crown (Egg Club analogue)
                   const _DrawerMenuItem(
-                    icon: Icons.workspace_premium,
+                    icon: Icons.workspace_premium_rounded,
                     label: 'Lucky Club',
-                    subtitle: 'Your loyalty rewards',
-                    iconColor: Colors.amber,
+                    subtitle: 'Exclusive rewards for you',
+                    iconColor: AppColors.warningDefault,
                     showBadge: true,
                     badgeLabel: 'GOLD',
                   ),
-                  const Divider(color: AppTheme.shadowLight, indent: 16, endIndent: 16),
-                  const _DrawerMenuItem(icon: Icons.store_outlined, label: 'All Stores'),
-                  const _DrawerMenuItem(icon: Icons.local_offer_outlined, label: 'Offers & Deals'),
-                  const _DrawerMenuItem(icon: Icons.confirmation_number_outlined, label: 'Coupons'),
-                  const _DrawerMenuItem(icon: Icons.favorite_outline, label: 'Favorites'),
-                  const Divider(color: AppTheme.shadowLight, indent: 16, endIndent: 16),
-                  const _DrawerMenuItem(icon: Icons.receipt_long_outlined, label: 'Order History'),
-                  const _DrawerMenuItem(icon: Icons.account_balance_wallet_outlined, label: 'Payment History'),
-                  const _DrawerMenuItem(icon: Icons.monetization_on_outlined, label: 'Lucky Coins Wallet', subtitle: '50 coins available'),
-                  const Divider(color: AppTheme.shadowLight, indent: 16, endIndent: 16),
-                  const _DrawerMenuItem(icon: Icons.headset_mic_outlined, label: 'Premium Care'),
-                  const _DrawerMenuItem(icon: Icons.report_outlined, label: 'File a Complaint'),
-                  const _DrawerMenuItem(icon: Icons.help_outline, label: 'Help & FAQ'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Divider(color: AppColors.borderDefault),
+                  ),
+                  const _DrawerMenuItem(icon: Icons.storefront_rounded, label: 'All Stores'),
+                  const _DrawerMenuItem(icon: Icons.local_offer_rounded, label: 'Offers & Deals', iconColor: AppColors.dangerDefault),
+                  const _DrawerMenuItem(icon: Icons.confirmation_number_rounded, label: 'My Coupons'),
+                  const _DrawerMenuItem(icon: Icons.favorite_rounded, label: 'Favorites', iconColor: AppColors.dangerDefault),
+                  
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Divider(color: AppColors.borderDefault),
+                  ),
+                  const _DrawerMenuItem(icon: Icons.receipt_long_rounded, label: 'Order History'),
+                  const _DrawerMenuItem(icon: Icons.account_balance_wallet_rounded, label: 'Payment History'),
+                  const _DrawerMenuItem(
+                    icon: Icons.monetization_on_rounded, 
+                    label: 'Lucky Wallet', 
+                    subtitle: '50 coins available',
+                    iconColor: AppColors.warningDefault,
+                  ),
+                  
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Divider(color: AppColors.borderDefault),
+                  ),
+                  const _DrawerMenuItem(icon: Icons.headset_mic_rounded, label: 'Premium Care'),
+                  const _DrawerMenuItem(icon: Icons.help_outline_rounded, label: 'Help & FAQ'),
                 ],
               ),
             ),
 
             // Footer: App version
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: const EdgeInsets.all(24),
               child: Text(
-                'Lucky Store v1.0.0',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                'Lucky Store v1.2.0 • Build 104',
+                style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
               ),
             ),
           ],
@@ -287,17 +323,17 @@ class _LanguagePill extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: isActive ? AppColors.surfaceDefault : Colors.transparent,
+          borderRadius: AppRadius.full,
+          boxShadow: isActive ? AppShadows.elevation1 : null,
         ),
         child: Text(
           label,
-          style: TextStyle(
-            color: isActive ? AppTheme.primaryAccent : Colors.white70,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            fontSize: 13,
+          style: AppTextStyles.labelMd.copyWith(
+            color: isActive ? AppColors.primaryDefault : AppColors.textSecondary,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),
@@ -327,27 +363,40 @@ class _DrawerMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? AppTheme.textSecondary, size: 24),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (iconColor ?? AppColors.textSecondary).withValues(alpha: 0.1),
+          borderRadius: AppRadius.md,
+        ),
+        child: Icon(icon, color: iconColor ?? AppColors.textSecondary, size: 22),
+      ),
       title: Row(
         children: [
           Expanded(
-            child: Text(label, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
+            child: Text(label, style: AppTextStyles.labelLg),
           ),
           if (showBadge && badgeLabel != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Colors.amber, Colors.orange]),
-                borderRadius: BorderRadius.circular(10),
+                gradient: const LinearGradient(
+                  colors: [AppColors.warningDefault, AppColors.warningDark],
+                ),
+                borderRadius: AppRadius.full,
               ),
-              child: Text(badgeLabel!, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              child: Text(
+                badgeLabel!, 
+                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+              ),
             ),
         ],
       ),
       subtitle: subtitle != null
-          ? Text(subtitle!, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12))
+          ? Text(subtitle!, style: AppTextStyles.bodySm)
           : null,
-      trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 20),
+      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.borderStrong, size: 18),
       onTap: onTap ?? () {},
     );
   }
