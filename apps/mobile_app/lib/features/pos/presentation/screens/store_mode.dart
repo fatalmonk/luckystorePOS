@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_radius.dart';
 
 class StoreModeScreen extends StatelessWidget {
   const StoreModeScreen({super.key});
@@ -7,7 +10,7 @@ class StoreModeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.surfaceDefault,
       appBar: AppBar(
         title: const Text('Store Mode - Gulshan Branch'),
         actions: [
@@ -60,22 +63,32 @@ class StoreModeScreen extends StatelessWidget {
 
           // Bottom Routing Directions
           Positioned(
-            left: 16,
-            right: 16,
-            bottom: 30,
+            left: AppSpacing.space4,
+            right: AppSpacing.space4,
+            bottom: AppSpacing.space8,
             child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: AppTheme.neomorphicDecoration,
-              child: const Row(
+              padding: AppSpacing.insetLg,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceRaised,
+                borderRadius: AppRadius.borderMd,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
                 children: [
-                  Icon(Icons.directions_walk, color: AppTheme.primaryAccent, size: 32),
-                  SizedBox(width: 16),
+                  const Icon(Icons.directions_walk, color: AppColors.primaryDefault, size: AppSpacing.space8),
+                  const SizedBox(width: AppSpacing.space4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Next Item: Miniket Rice', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-                        Text('Aisle 4, Shelf B - 25 meters away', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                        Text('Next Item: Miniket Rice', style: AppTextStyles.labelLg),
+                        Text('Aisle 4, Shelf B - 25 meters away', style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary)),
                       ],
                     ),
                   )
@@ -93,7 +106,7 @@ class AisleMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.shadowLight
+      ..color = AppColors.borderDefault
       ..style = PaintingStyle.fill;
       
     // Draw abstract supermarket aisles

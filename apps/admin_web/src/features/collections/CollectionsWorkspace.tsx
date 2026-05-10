@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
-import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign, Users } from 'lucide-react';
+import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { EmptyState, SkeletonCard, SkeletonBlock } from '../../components/PageState';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -27,15 +27,12 @@ export const CollectionsWorkspace: React.FC = () => {
 
   // Resolve the store's cash ledger account ID for the payment modal.
   const [cashAccountId, setCashAccountId] = useState<string | null>(null);
-  const [cashAccountLoading, setCashAccountLoading] = useState(true);
 
   useEffect(() => {
     if (!storeId) {
       setCashAccountId(null);
-      setCashAccountLoading(false);
       return;
     }
-    setCashAccountLoading(true);
     supabase
       .from('ledger_accounts')
       .select('id')
@@ -44,7 +41,6 @@ export const CollectionsWorkspace: React.FC = () => {
       .maybeSingle()
       .then(({ data: acct }) => {
         setCashAccountId((acct?.id as string) ?? null);
-        setCashAccountLoading(false);
       });
   }, [storeId]);
 

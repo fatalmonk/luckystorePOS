@@ -1,0 +1,28 @@
+Analyzing mobile_app...                                         
+
+   info • Angle brackets will be interpreted as HTML • lib/core/events/event_bus.dart:6:27 • unintended_html_in_doc_comment
+  error • Fields can't be initialized in the constructor if they are final and were already initialized at their declaration • lib/core/services/printer/print_retry_queue.dart:27:9 • field_initialized_in_initializer_and_declaration
+  error • Fields can't be initialized in the constructor if they are final and were already initialized at their declaration • lib/core/services/printer/print_retry_queue.dart:28:9 • field_initialized_in_initializer_and_declaration
+  error • Fields can't be initialized in the constructor if they are final and were already initialized at their declaration • lib/core/services/printer/print_retry_queue.dart:29:9 • field_initialized_in_initializer_and_declaration
+   info • Don't invoke 'print' in production code • lib/core/utils/app_utils.dart:167:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:165:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:196:77 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:201:80 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:206:73 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:210:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:220:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:225:87 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:230:68 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:358:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:364:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:366:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/collections/presentation/screens/overdue_customers_screen.dart:384:57 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/inventory/presentation/screens/bulk_label_print_screen.dart:786:39 • deprecated_member_use
+   info • The constant name 'return_in' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_entry.dart:7:3 • constant_identifier_names
+   info • The constant name 'return_out' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_entry.dart:8:3 • constant_identifier_names
+   info • The constant name 'transfer_in' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_entry.dart:10:3 • constant_identifier_names
+   info • The constant name 'transfer_out' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_entry.dart:11:3 • constant_identifier_names
+   info • The constant name 'voided_sale' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_entry.dart:12:3 • constant_identifier_names
+   info • The constant name 'inventory_count' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_entry.dart:13:3 • constant_identifier_names
+   info • The variable name 'FilterLedgerEntries' isn't a lowerCamelCase identifier • lib/features/inventory/stock_ledger_repository.dart:200:24 • non_constant_identifier_names
+

@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import '../../network/network_config.dart';
 import '../../utils/result.dart';
 import '../../utils/app_utils.dart';
-import '../printer_constants.dart';
 import 'printer_config.dart';
 import 'printer_models.dart';
 import 'print_retry_queue.dart';
@@ -378,7 +377,6 @@ class PrinterService {
           .timeout(Duration(seconds: PrinterConfig.printTimeout));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
         return Success<PrintResult>(PrintResult(
           receiptId: job.receiptId,
           printTime: DateTime.now(),

@@ -75,10 +75,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _init() {
-    // Legacy init - _bootstrapSession handles this now
-  }
-
   void _setStatus(AuthStatus s) {
     if (_status == s) return;
     _status = s;
@@ -146,6 +142,27 @@ class AuthProvider extends ChangeNotifier {
       _signInError = 'Sign-in failed. Please try again.';
       _signInErrorCode = networkErrorCode;
       await signOut();
+      return false;
+    }
+  }
+
+  /// Verifies a manager's PIN without changing global auth state.
+  /// Used for manager overrides (voids, refunds, etc).
+  Future<bool> verifyManagerPin(String pin) async {
+    try {
+      final response = await _supabase.rpc('authenticate_staff_pin', params: {
+        'p_pin': pin,
+      });
+
+      if (response == null || (response is List && response.isEmpty)) {
+        return false;
+      }
+
+      final profile = (response is List) ? response.first as Map<String, dynamic> : response as Map<String, dynamic>;
+      final role = (profile['role'] as String? ?? '').toLowerCase();
+      return role == 'manager' || role == 'admin';
+    } catch (e) {
+      debugPrint('[AuthProvider] PIN verification failed: $e');
       return false;
     }
   }

@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 
 /// Initialize database connection
 class DatabaseConfig {

@@ -4,8 +4,6 @@ import 'stock_ledger_entry.dart';
 import 'stock_ledger_repository.dart';
 import 'audit_service.dart';
 import '../../core/utils/app_utils.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 /// Main inventory repository that coordinates stock operations
 class InventoryRepository {
@@ -43,8 +41,8 @@ class InventoryRepository {
         },
       );
 
-      if (deductionResult.isFailure) {
-        return Result<StockDeductionFailure>(failure);
+      if (deductionResult is Failure) {
+        return Failure<StockDeductionResult>((deductionResult as Failure).error);
       }
 
       // Step 2: Log audit trail
@@ -58,7 +56,7 @@ class InventoryRepository {
       );
 
       // Step 3: Parse and return result
-      final data = deductionResult.data as Map<String, dynamic>;
+      final data = (deductionResult as Success<Map<String, dynamic>>).data;
       return Success<StockDeductionResult>(StockDeductionResult.fromJson(data));
     } catch (e, stackTrace) {
       Logger.error('InventoryRepository.deductStock failed', e, stackTrace);
@@ -94,8 +92,7 @@ class InventoryRepository {
       return available >= quantity;
     } catch (e) {
       Logger.warning(
-        'InventoryRepository: Could not check stock availability',
-        e,
+        'InventoryRepository: Could not check stock availability: $e',
       );
       return false;
     }
@@ -106,12 +103,15 @@ class InventoryRepository {
     required String storeId,
     int? threshold,
   }) async {
-    return Result<List<Map<String, dynamic>>>(() async {
-      return await _inventoryService.getLowStockAlerts(
+    try {
+      final alerts = await _inventoryService.getLowStockAlerts(
         storeId: storeId,
         threshold: threshold,
       );
-    });
+      return Success<List<Map<String, dynamic>>>(alerts);
+    } catch (e) {
+      return Failure<List<Map<String, dynamic>>>('Failed to fetch low stock alerts: $e');
+    }
   }
 
   /// Fetch stock ledger entries
@@ -185,7 +185,7 @@ class InventoryRepository {
     required List<StockDeductionRequest> requests,
     String? performedBy,
   }) async {
-    final results = List<StockDeductionResult>.filled(requests.length, null);
+    final results = <StockDeductionResult>[];
     final errors = <int>[];
 
     for (int i = 0; i < requests.length; i++) {
@@ -199,15 +199,15 @@ class InventoryRepository {
         performedBy: performedBy,
       );
 
-      if (result.isSuccess) {
-        results[i] = result.data;
+      if (result is Success<StockDeductionResult>) {
+        results.add(result.data);
       } else {
         errors.add(i);
       }
     }
 
     if (errors.isEmpty) {
-      return Success<List<StockDeductionResult>>(results.whereType<StockDeductionResult>().toList());
+      return Success<List<StockDeductionResult>>(results);
     }
 
     return Failure<List<StockDeductionResult>>(
@@ -256,7 +256,7 @@ class StockValidationResult {
   }
 
   factory StockValidationResult.failure(String reason) {
-    return const StockValidationResult(isValid: false, reason: reason);
+    return StockValidationResult(isValid: false, reason: reason);
   }
 }
 

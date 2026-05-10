@@ -35,7 +35,7 @@ class _PurchaseReceivingScreenState extends State<PurchaseReceivingScreen> {
 
   Party? _selectedSupplier;
   List<Party> _supplierSuggestions = [];
-  List<ReceiptLine> _lines = [];
+  final List<ReceiptLine> _lines = [];
   bool _scanning = false;
   bool _isPosting = false;
   String? _error;

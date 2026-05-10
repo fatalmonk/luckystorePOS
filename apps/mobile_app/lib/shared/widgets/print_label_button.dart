@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_radius.dart';
 import '../../features/inventory/label_printer_screen.dart';
 
 /// Reusable Print Label button that navigates to the LabelPrinterScreen
@@ -49,28 +52,44 @@ class PrintLabelButton extends StatelessWidget {
         return FloatingActionButton.small(
           onPressed: () => _onPressed(context),
           heroTag: 'print_label_$barcode',
-          child: const Icon(Icons.print),
+          backgroundColor: AppColors.secondaryDefault,
+          foregroundColor: AppColors.secondaryOn,
+          child: const Icon(Icons.print_rounded),
         );
 
       case PrintLabelButtonStyle.icon:
         return IconButton(
           onPressed: () => _onPressed(context),
-          icon: const Icon(Icons.print),
+          icon: const Icon(Icons.print_rounded),
+          color: AppColors.secondaryDefault,
           tooltip: 'Print Label',
         );
 
       case PrintLabelButtonStyle.elevated:
         return ElevatedButton.icon(
           onPressed: () => _onPressed(context),
-          icon: const Icon(Icons.print, size: 18),
+          icon: const Icon(Icons.print_rounded, size: 18),
           label: const Text('Print Label'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.secondaryDefault,
+            foregroundColor: AppColors.secondaryOn,
+            textStyle: AppTextStyles.labelMd.copyWith(fontWeight: FontWeight.bold),
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+            elevation: 2,
+          ),
         );
 
       case PrintLabelButtonStyle.outlined:
         return OutlinedButton.icon(
           onPressed: () => _onPressed(context),
-          icon: const Icon(Icons.print, size: 18),
+          icon: const Icon(Icons.print_rounded, size: 18),
           label: const Text('Print Label'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.secondaryDefault,
+            side: const BorderSide(color: AppColors.secondaryDefault),
+            textStyle: AppTextStyles.labelMd.copyWith(fontWeight: FontWeight.bold),
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+          ),
         );
     }
   }

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:csv/csv.dart';
 import '../../features/inventory/presentation/screens/bulk_label_print_screen.dart';
 
@@ -22,7 +21,6 @@ class CsvImportService {
   final List<CsvImportError> errors = [];
   final List<CsvImportWarning> warnings = [];
 
-  bool _hasHeader = false;
   List<String> _headers = [];
 
   /// Parse CSV string and return import result
@@ -60,7 +58,6 @@ class CsvImportService {
 
       // Detect and validate headers
       _headers = _detectHeaders(rows);
-      _hasHeader = _headers.isNotEmpty;
 
       if (_headers.isEmpty) {
         errors.add(CsvImportError(

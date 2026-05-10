@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_shadows.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../shared/providers/pos_provider.dart';
 import '../../models/pos_models.dart';
 import '../../features/inventory/label_printer_screen.dart';
@@ -26,28 +29,37 @@ class ProductCard extends StatelessWidget {
         context.read<PosProvider>().addItem(item);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added to Cart - ৳${item.price.toStringAsFixed(0)}'),
+            content: Text(
+              'Added to Cart - ৳${item.price.toStringAsFixed(0)}',
+              style: AppTextStyles.labelMd.copyWith(color: AppColors.primaryOn),
+            ),
             duration: const Duration(seconds: 1),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.primaryAccent,
+            backgroundColor: AppColors.primaryDefault,
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
           ),
         );
       },
       child: Container(
-        decoration: AppTheme.neomorphicDecoration,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDefault,
+          borderRadius: AppRadius.borderMd,
+          boxShadow: AppShadows.elevation1,
+          border: Border.all(color: AppColors.borderDefault),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 40% vertical space allocated to the product image
+                // Product Image Container
                 Expanded(
                   flex: 4,
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: AppColors.backgroundSubtle,
                       image: item.imageUrl != null
                           ? DecorationImage(
                               image: NetworkImage(item.imageUrl!),
@@ -55,13 +67,22 @@ class ProductCard extends StatelessWidget {
                             )
                           : null,
                     ),
+                    child: item.imageUrl == null
+                        ? Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: AppColors.textMuted.withValues(alpha: 0.3),
+                              size: 32,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
-                // Left-aligned F-pattern typography
+                // Product Info Container
                 Expanded(
                   flex: 6,
                   child: Padding(
-                    padding: const EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -71,11 +92,7 @@ class ProductCard extends StatelessWidget {
                           children: [
                             Text(
                               item.name,
-                              style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTextStyles.labelLg.copyWith(height: 1.2),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -83,10 +100,7 @@ class ProductCard extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 weight!,
-                                style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 12,
-                                ),
+                                style: AppTextStyles.bodySm,
                               ),
                             ],
                           ],
@@ -98,19 +112,16 @@ class ProductCard extends StatelessWidget {
                             if (originalPrice != null)
                               Text(
                                 '৳${originalPrice!.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 12,
+                                style: AppTextStyles.bodySm.copyWith(
                                   decoration: TextDecoration.lineThrough,
+                                  color: AppColors.textMuted,
                                 ),
                               ),
                             // Bold pricing
                             Text(
                               '৳${item.price.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: AppTheme.primaryAccentLight,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.headingMd.copyWith(
+                                color: AppColors.primaryDefault,
                               ),
                             ),
                           ],
@@ -143,18 +154,19 @@ class ProductCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryAccent.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
+                    color: AppColors.secondaryDefault.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: AppColors.secondaryDefault.withValues(alpha: 0.2)),
                   ),
-                  child: const Icon(Icons.print, color: Colors.white, size: 18),
+                  child: const Icon(Icons.print_rounded, color: AppColors.secondaryDefault, size: 16),
                 ),
               ),
             ),
 
             // Quantity selector (shows current cart quantity)
             Positioned(
-              bottom: 10,
-              right: 10,
+              bottom: 12,
+              right: 12,
               child: Consumer<PosProvider>(
                 builder: (context, posProvider, child) {
                   final cartItem = posProvider.cart.firstWhere(
@@ -168,32 +180,25 @@ class ProductCard extends StatelessWidget {
                       onTap: () {
                         HapticFeedback.mediumImpact();
                         posProvider.addItem(item);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Added to Cart - ৳${item.price.toStringAsFixed(0)}'),
-                            duration: const Duration(seconds: 1),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: AppTheme.primaryAccent,
-                          ),
-                        );
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryAccent,
-                          shape: BoxShape.circle,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryDefault,
+                          borderRadius: AppRadius.borderMd,
+                          boxShadow: AppShadows.elevation1,
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 20),
+                        child: const Icon(Icons.add_rounded, color: AppColors.primaryOn, size: 20),
                       ),
                     );
                   }
 
-                  // Transformed State: [-] 1 [+] selector
                   return Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.backgroundElevated,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppTheme.primaryAccent),
+                      color: AppColors.surfaceDefault,
+                      borderRadius: AppRadius.borderFull,
+                      border: Border.all(color: AppColors.primaryDefault, width: 1.5),
+                      boxShadow: AppShadows.elevation1,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -208,16 +213,13 @@ class ProductCard extends StatelessWidget {
                             }
                           },
                           child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Icon(Icons.remove, color: AppTheme.textPrimary, size: 16),
+                            padding: EdgeInsets.fromLTRB(10, 6, 8, 6),
+                            child: Icon(Icons.remove_rounded, color: AppColors.textPrimary, size: 16),
                           ),
                         ),
                         Text(
                           '$quantity',
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTextStyles.labelMd.copyWith(fontWeight: FontWeight.bold),
                         ),
                         GestureDetector(
                           onTap: () {
@@ -225,8 +227,8 @@ class ProductCard extends StatelessWidget {
                             posProvider.setQty(item.id, quantity + 1);
                           },
                           child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Icon(Icons.add, color: AppTheme.primaryAccentLight, size: 16),
+                            padding: EdgeInsets.fromLTRB(8, 6, 10, 6),
+                            child: Icon(Icons.add_rounded, color: AppColors.primaryDefault, size: 16),
                           ),
                         ),
                       ],

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../models/pos_models.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_button_styles.dart';
+import '../../../../core/theme/app_radius.dart';
 // import '../../../../shared/services/printer_service.dart'; // TODO: Re-enable when printer is available
 
 /// Receipt screen shown after a successful sale.
@@ -16,7 +20,7 @@ class ReceiptScreen extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D1117),
+        backgroundColor: AppColors.surfaceDefault,
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -26,8 +30,8 @@ class ReceiptScreen extends StatelessWidget {
                   // Success header
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    color: const Color(0xFF161B22),
+                    padding: AppSpacing.insetLg,
+                    color: AppColors.surfaceRaised,
                     child: Column(
                       children: [
                         Container(
@@ -40,16 +44,16 @@ class ReceiptScreen extends StatelessWidget {
                           child: const Icon(Icons.check_rounded,
                               color: Colors.white, size: 36),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.space3),
                         const Text('Sale Complete!',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.space1),
                         Text(saleResult.saleNumber,
                             style: const TextStyle(
-                                color: Color(0xFFE8B84B),
+                                color: AppColors.primaryDefault,
                                 fontSize: 13,
                                 letterSpacing: 1)),
                       ],
@@ -59,7 +63,7 @@ class ReceiptScreen extends StatelessWidget {
                   // Receipt body
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
+                      padding: AppSpacing.insetLg,
                       child: _buildReceiptCard(),
                     ),
                   ),
@@ -217,10 +221,10 @@ class ReceiptScreen extends StatelessWidget {
 
   Widget _buildActionBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.insetLg,
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+        color: AppColors.surfaceRaised,
+        border: Border(top: BorderSide(color: AppColors.borderDefault)),
       ),
       child: Column(
         children: [
@@ -229,102 +233,50 @@ class ReceiptScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    try {
-                      // await ReceiptPrinterService().printEscPosReceipt(saleResult);
-                      debugPrint('Print BT: skipped - no printer connected');
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Printer Error: $e'),
-                          backgroundColor: Colors.red,
-                        ));
-                      }
-                    }
-                  },
-                  icon: const Icon(Icons.print_rounded, color: Colors.black, size: 18),
-                  label: const Text('Print BT',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8B84B),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
+                  onPressed: () {}, // BT skipped
+                  icon: const Icon(Icons.print_rounded, size: 18),
+                  label: const Text('Print BT'),
+                  style: AppButtonStyles.primary,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.space3),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () async {
-                    try {
-                      // await ReceiptPrinterService().printPdfReceipt(saleResult);
-                      debugPrint('PDF Share: skipped - no printer connected');
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('PDF Error: $e'),
-                          backgroundColor: Colors.red,
-                        ));
-                      }
-                    }
-                  },
-                  icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.white, size: 18),
-                  label: const Text('PDF / Share',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14)),
+                  onPressed: () {}, // PDF skipped
+                  icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
+                  label: const Text('PDF / Share'),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF30363D)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                    foregroundColor: AppColors.textPrimary,
+                    side: BorderSide(color: AppColors.borderDefault),
+                    padding: AppSpacing.insetSquishMd,
+                    shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.space3),
           Row(
             children: [
-              // New Sale — pop to PosMainScreen; cart was cleared by completeSale()
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).popUntil((r) => r.isFirst),
-                  icon: const Icon(Icons.add_shopping_cart_rounded,
-                      color: Colors.black, size: 18),
-                  label: const Text('New Sale',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w700)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2ECC71),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
+                  onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                  icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
+                  label: const Text('New Sale'),
+                  style: AppButtonStyles.secondary,
                 ),
               ),
-              const SizedBox(width: 10),
-              // Done
+              const SizedBox(width: AppSpacing.space3),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).popUntil((r) => r.isFirst),
-                  icon: const Icon(Icons.check_rounded,
-                      color: Colors.white70, size: 18),
-                  label: const Text('Done',
-                      style: TextStyle(color: Colors.white70)),
+                  onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                  icon: const Icon(Icons.check_rounded, size: 18),
+                  label: const Text('Done'),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF30363D)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.borderDefault),
+                    padding: AppSpacing.insetSquishMd,
+                    shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
                   ),
                 ),
               ),

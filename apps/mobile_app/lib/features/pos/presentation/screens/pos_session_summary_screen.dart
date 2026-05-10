@@ -129,7 +129,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
 
   Future<void> _closeSession() async {
     final approval = await _confirmClosingHealthReview();
-    if (!approval.confirmed) return;
+    if (!approval.confirmed || !mounted) return;
 
     // Show dialog to enter closing cash
     double closingCash = _expectedDrawer; // default
@@ -176,7 +176,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
       }
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       setState(() => _loading = true);
       try {
         try {
@@ -194,7 +194,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
           // Do not block physical close if review row already exists.
         }
         // Backend validated checkout
-        // 3. New record_cash_closing RPC
+        if (!mounted) return;
         final posProvider = context.read<PosProvider>();
         // Assuming we look up the cash account for the store
         final cashAccountRow = await _supabase.from('accounts')

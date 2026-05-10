@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { useNotify } from '../../components/Notification';
+import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';

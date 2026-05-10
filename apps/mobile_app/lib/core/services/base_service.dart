@@ -13,7 +13,7 @@ abstract class BaseService {
   @protected
   bool get isInitialized => _initialized;
   
-  bool _initialized = false;
+  final bool _initialized = false;
   
   /// Initialize the service
   Future<void> initialize();

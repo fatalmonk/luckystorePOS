@@ -23,13 +23,12 @@ class AppUtils {
     required VoidCallback callback,
     required Duration duration,
   }) {
-    Timer? timer;
     bool lock = false;
     return () {
       if (lock) return;
       lock = true;
       callback();
-      timer = Timer(duration, () => lock = false);
+      Timer(duration, () => lock = false);
     };
   }
   
@@ -165,6 +164,7 @@ class Logger {
     // Only send to secure crash reporting in production
     // ignore: avoid_print
     if (!_isRelease) {
+      // ignore: avoid_print
       print('$_prefix🔒 [SENSITIVE] $message (hidden in release)');
     }
   }

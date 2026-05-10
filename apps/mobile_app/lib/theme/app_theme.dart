@@ -1,93 +1,119 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
+import '../core/theme/app_radius.dart';
 
 class AppTheme {
-  // Dark mode primary background
-  static const Color background = Color(0xFF1C1D21);
-  static const Color backgroundElevated = Color(0xFF26282E); // Slightly lighter for neomorphic depth
+  // --- Design System Theme Definitions ---
 
-  // Luminous accent – updated to match web palette
-  // Primary – Yellow
-  static const Color primaryAccent = Color(0xFFFBBF24); // Yellow 400
-  // Light variant for primary (yellow)
-  static const Color primaryAccentLight = Color(0xFFFDE68A); // Yellow 300
-  // Secondary – Black
-  static const Color secondaryAccent = Color(0xFF000000);
-  // Tertiary – Emerald Green
-  static const Color tertiaryAccent = Color(0xFF10B981);
-  // Light variant for tertiary (optional)
-  static const Color tertiaryAccentLight = Color(0xFFD1FAE5);
-
-  // Typography Colors
-  static const Color textPrimary = Color(0xFFF3F3F3);
-  static const Color textSecondary = Color(0xFFA0A0A5);
-
-  static const Color errorAccent = Color(0xFFFF4B4B);
-
-  // Soft UI / Neomorphic Light & Dark shadow colors
-  static const Color shadowLight = Color(0xFF2A2B31);
-  static const Color shadowDark = Color(0xFF0E0E11);
-
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme {
     return ThemeData(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: background,
-      primaryColor: primaryAccent,
-      colorScheme: const ColorScheme.dark(
-        primary: primaryAccent,          // Yellow primary
-        secondary: secondaryAccent,       // Black secondary
-        surface: background,
-        onPrimary: Colors.white,
-        onSurface: textPrimary,
-        error: errorAccent,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.backgroundDefault,
+      primaryColor: AppColors.primaryDefault,
+      colorScheme: ColorScheme.light(
+        primary: AppColors.primaryDefault,
+        secondary: AppColors.secondaryDefault,
+        surface: AppColors.surfaceDefault,
+        onPrimary: AppColors.primaryOn,
+        onSurface: AppColors.textPrimary,
+        error: AppColors.dangerDefault,
       ),
-      fontFamily: 'Inter', // Assuming Inter for that sans-serif aesthetic, needs to be in pubspec later if using google_fonts
-      appBarTheme: const AppBarTheme(
-        backgroundColor: background,
+      fontFamily: AppTextStyles.fontFamilyPrimary,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.backgroundDefault,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: textPrimary),
-        titleTextStyle: TextStyle(
-          color: textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        titleTextStyle: AppTextStyles.headingLg,
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: backgroundElevated,
-        selectedItemColor: primaryAccent,
-        unselectedItemColor: textSecondary,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: AppColors.surfaceRaised,
+        selectedItemColor: AppColors.primaryDefault,
+        unselectedItemColor: AppColors.textSecondary,
         type: BottomNavigationBarType.fixed,
-        elevation: 10,
+        elevation: 8,
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(color: textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
-        headlineMedium: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
-        bodyLarge: TextStyle(color: textPrimary, fontSize: 16),
-        bodyMedium: TextStyle(color: textSecondary, fontSize: 14),
-        labelLarge: TextStyle(color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+      textTheme: TextTheme(
+        displayLarge: AppTextStyles.display,
+        headlineLarge: AppTextStyles.headingXl,
+        headlineMedium: AppTextStyles.headingLg,
+        headlineSmall: AppTextStyles.headingMd,
+        bodyLarge: AppTextStyles.bodyLg,
+        bodyMedium: AppTextStyles.bodyMd,
+        bodySmall: AppTextStyles.bodySm,
+        labelLarge: AppTextStyles.labelLg,
+        labelMedium: AppTextStyles.labelMd,
+        labelSmall: AppTextStyles.labelSm,
       ),
     );
   }
 
-  /// Reusable strict Neomorphic Container decoration method
-  static BoxDecoration get neomorphicDecoration {
-    return BoxDecoration(
-      color: backgroundElevated,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: const [
-        BoxShadow(
-          color: shadowDark,
-          offset: Offset(4, 4),
-          blurRadius: 10,
-          spreadRadius: 1,
+  static ThemeData get darkTheme {
+    const darkBackground = Color(0xFF0F172A);   // neutral.900
+    const darkSurface = Color(0xFF1E293B);      // neutral.800
+    const darkSurfaceRaised = Color(0xFF334155); // neutral.700
+
+    return ThemeData(
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: darkBackground,
+      primaryColor: AppColors.primaryDefault,
+      colorScheme: ColorScheme.dark(
+        primary: AppColors.primaryDefault,
+        secondary: AppColors.secondaryDefault,
+        surface: darkSurface,
+        onPrimary: AppColors.primaryOn,
+        onSurface: AppColors.primitiveNeutral50,
+        error: AppColors.dangerDefault,
+      ),
+      fontFamily: AppTextStyles.fontFamilyPrimary,
+      appBarTheme: AppBarTheme(
+        backgroundColor: darkSurface,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: AppColors.primitiveNeutral50),
+        titleTextStyle: AppTextStyles.headingLg.copyWith(color: AppColors.primitiveNeutral50),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: darkSurface,
+        selectedItemColor: AppColors.primaryDefault,
+        unselectedItemColor: AppColors.textMuted,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+      dividerColor: AppColors.primitiveNeutral800,
+      textTheme: TextTheme(
+        displayLarge: AppTextStyles.display.copyWith(color: AppColors.primitiveNeutral50),
+        headlineLarge: AppTextStyles.headingXl.copyWith(color: AppColors.primitiveNeutral50),
+        headlineMedium: AppTextStyles.headingLg.copyWith(color: AppColors.primitiveNeutral50),
+        headlineSmall: AppTextStyles.headingMd.copyWith(color: AppColors.primitiveNeutral50),
+        bodyLarge: AppTextStyles.bodyLg.copyWith(color: AppColors.primitiveNeutral100),
+        bodyMedium: AppTextStyles.bodyMd.copyWith(color: AppColors.primitiveNeutral100),
+        bodySmall: AppTextStyles.bodySm.copyWith(color: AppColors.primitiveNeutral400),
+        labelLarge: AppTextStyles.labelLg.copyWith(color: AppColors.primitiveNeutral50),
+        labelMedium: AppTextStyles.labelMd.copyWith(color: AppColors.primitiveNeutral50),
+        labelSmall: AppTextStyles.labelSm.copyWith(color: AppColors.primitiveNeutral400),
+      ),
+      cardColor: darkSurface,
+      popupMenuTheme: PopupMenuThemeData(color: darkSurfaceRaised),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkSurface,
+        labelStyle: TextStyle(color: AppColors.primitiveNeutral400),
+        hintStyle: TextStyle(color: AppColors.primitiveNeutral400),
+        border: OutlineInputBorder(
+          borderRadius: AppRadius.borderSm,
+          borderSide: const BorderSide(color: Color(0xFF334155)),
         ),
-        BoxShadow(
-          color: shadowLight,
-          offset: Offset(-4, -4),
-          blurRadius: 10,
-          spreadRadius: 1,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: AppRadius.borderSm,
+          borderSide: const BorderSide(color: Color(0xFF334155)),
         ),
-      ],
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.borderSm,
+          borderSide: const BorderSide(color: AppColors.primaryDefault, width: 2),
+        ),
+      ),
     );
   }
 }

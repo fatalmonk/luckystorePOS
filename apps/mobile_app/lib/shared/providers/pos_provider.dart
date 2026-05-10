@@ -346,8 +346,9 @@ class PosProvider extends ChangeNotifier {
     required String transactionTraceId,
   }) async {
     if (_cart.isEmpty) throw Exception('Cart is empty');
-    if (_cashierId == null || _storeId == null)
+    if (_cashierId == null || _storeId == null) {
       throw Exception('No active session');
+    }
 
     final paymentsPayload = tenders
         .map((t) => {
@@ -403,8 +404,8 @@ class PosProvider extends ChangeNotifier {
         status: SaleExecutionStatus.success,
         conflictReason: null,
         message: 'Queued for server validation',
-        adjustments: const [],
-        partialFulfillment: const [],
+        adjustments: [],
+        partialFulfillment: [],
         saleResult: null,
         transactionTraceId: null,
       );
@@ -546,6 +547,24 @@ class PosProvider extends ChangeNotifier {
     });
   }
 
+  // ── Refund sale ────────────────────────────────────────────────────────────
+
+  Future<void> processRefund(String saleId, double amount) async {
+    await _supabase.rpc('process_refund', params: {
+      'p_sale_id': saleId,
+      'p_amount': amount,
+    });
+  }
+
+  // ── Stock adjustment ───────────────────────────────────────────────────────
+
+  Future<void> adjustStock(String itemId, int delta) async {
+    await _supabase.rpc('adjust_stock', params: {
+      'p_item_id': itemId,
+      'p_delta': delta,
+    });
+  }
+
   // ── Cash closing ─────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> recordCashClosing({
@@ -669,24 +688,6 @@ class PosProvider extends ChangeNotifier {
         error: _lastPosLoadError,
       );
     }
-  }
-
-  Future<Map<String, int>> _loadStockByItemIds(List<String> itemIds) async {
-    if (_storeId == null || itemIds.isEmpty) return const {};
-    final rows = await _supabase
-        .from('stock_levels')
-        .select('item_id, qty_on_hand')
-        .eq('store_id', _storeId!)
-        .inFilter('item_id', itemIds);
-    final result = <String, int>{};
-    for (final raw in (rows as List)) {
-      final row = raw as Map<String, dynamic>;
-      final itemId = row['item_id'] as String?;
-      if (itemId == null) continue;
-      final qty = (row['qty_on_hand'] as num?)?.toInt() ?? 0;
-      result.update(itemId, (v) => v + qty, ifAbsent: () => qty);
-    }
-    return result;
   }
 
   Future<List<PosItem>> _searchItemsRpc(String query,

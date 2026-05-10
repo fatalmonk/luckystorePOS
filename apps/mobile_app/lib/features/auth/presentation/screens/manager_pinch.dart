@@ -1,5 +1,6 @@
 /// PIN (Manager) authentication flow for voids, refunds, and high-value adjustments.
 /// Requires manager-level PIN override for sensitive POS operations.
+library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -32,8 +33,12 @@ class _ManagerPinDialogState extends State<ManagerPinDialog> {
 
   @override
   void dispose() {
-    for (var c in _pinControllers) c.dispose();
-    for (var f in _focusNodes) f.dispose();
+    for (var c in _pinControllers) {
+      c.dispose();
+    }
+    for (var f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -114,7 +119,7 @@ class _ManagerPinDialogState extends State<ManagerPinDialog> {
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.authenticateStaffPin(_pin);
+      final result = await authProvider.verifyManagerPin(_pin);
 
       if (result) {
         _showSuccess();
@@ -184,12 +189,12 @@ class ManagerSecurityLayer {
     BuildContext context,
     String saleId,
   ) async {
-    final bool? confirmed = await requireManagerAuth(
+    await requireManagerAuth(
       context,
       reason: 'Void sale: $saleId',
       onAuthSuccess: () async {
         final posProvider = context.read<PosProvider>();
-        await posProvider.voidSale(saleId);
+        await posProvider.voidSale(saleId, 'Manager override: $saleId');
       },
     );
   }
@@ -202,7 +207,7 @@ class ManagerSecurityLayer {
     // Only require manager auth for high-value refunds (e.g., > $100)
     if (amount <= 100.0) return;
 
-    final bool? confirmed = await requireManagerAuth(
+    await requireManagerAuth(
       context,
       reason: 'High-value refund: \$$amount',
       onAuthSuccess: () async {
@@ -217,11 +222,12 @@ class ManagerSecurityLayer {
     String itemId,
     int delta,
   ) async {
-    final bool? confirmed = await requireManagerAuth(
+    await requireManagerAuth(
       context,
       reason: 'Stock adjustment: $itemId (delta: $delta)',
       onAuthSuccess: () async {
-        // Call adjust_stock RPC or equivalent
+        final posProvider = context.read<PosProvider>();
+        await posProvider.adjustStock(itemId, delta);
       },
     );
   }
@@ -244,19 +250,20 @@ class PinAuthorizeButton extends StatelessWidget {
       onPressed: () async {
         final authProvider = context.read<AuthProvider>();
         
-        if (authProvider.user.role == 'manager' || authProvider.user.role == 'admin') {
-          // Allow managers to proceed directly
-          onAuthorized();
-        } else {
-          // Require PIN for others
-          ManagerSecurityLayer.requireManagerAuth(
-            context,
-            reason: reason,
-            onAuthSuccess: () {
-              onAuthorized();
-            },
-          );
-        }
+          final role = authProvider.appUser?.role;
+          if (role == 'manager' || role == 'admin') {
+            // Allow managers to proceed directly
+            onAuthorized();
+          } else {
+            // Require PIN for others
+            await ManagerSecurityLayer.requireManagerAuth(
+              context,
+              reason: reason,
+              onAuthSuccess: () async {
+                onAuthorized();
+              },
+            );
+          }
       },
       child: const Text('Authorize'),
     );
