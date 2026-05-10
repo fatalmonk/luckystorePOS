@@ -1,5 +1,7 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 interface Props {
   children: ReactNode;
@@ -32,54 +34,52 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          backgroundColor: 'var(--bg-app)',
-          padding: 'var(--space-8)',
-          textAlign: 'center',
-        }}>
-          <AlertTriangle size={48} color="var(--color-warning)" style={{ marginBottom: 'var(--space-6)' }} />
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--text-main)', marginBottom: 'var(--space-4)' }}>
-            Something went wrong
-          </h1>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '400px', marginBottom: 'var(--space-6)' }}>
-            An unexpected error occurred. This has been logged. Try reloading the page.
-          </p>
-          {this.state.error && (
-            <pre style={{
-              backgroundColor: 'var(--bg-input)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--space-4)',
-              fontSize: 'var(--font-size-xs)',
-              color: 'var(--color-danger)',
-              maxWidth: '600px',
-              overflow: 'auto',
-              marginBottom: 'var(--space-6)',
-              textAlign: 'left',
-            }}>
-              {this.state.error.message}
-            </pre>
-          )}
-          <button
-            onClick={this.handleReload}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              backgroundColor: 'var(--color-primary)',
-              color: 'white',
-              padding: 'var(--space-3) var(--space-6)',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: '600',
-            }}
-          >
-            <RefreshCw size={18} /> Reload Page
-          </button>
+        <div className="min-h-screen flex items-center justify-center bg-background-default p-6 text-center">
+          <div className="w-full max-w-lg">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-warning/10 text-warning mb-8">
+              <AlertTriangle size={48} />
+            </div>
+            
+            <h1 className="text-3xl font-black text-text-primary mb-4 tracking-tight">
+              Oops! Something went wrong
+            </h1>
+            
+            <p className="text-text-secondary font-medium mb-8 max-w-md mx-auto">
+              An unexpected application error occurred. We've logged the incident and our team will look into it.
+            </p>
+
+            {this.state.error && (
+              <Card className="mb-8 p-0 border-danger/20 bg-danger/5 overflow-hidden text-left">
+                <div className="bg-danger/10 px-4 py-2 text-xs font-bold text-danger-dark uppercase tracking-wider">
+                  Error Details
+                </div>
+                <pre className="p-4 text-xs font-mono text-danger-dark overflow-auto max-h-48 whitespace-pre-wrap">
+                  {this.state.error.message}
+                </pre>
+              </Card>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                onClick={this.handleReload}
+                icon={<RefreshCw size={18} />}
+                className="h-12 px-8"
+              >
+                Reload Dashboard
+              </Button>
+              <Button 
+                variant="secondary"
+                onClick={() => window.location.href = '/'}
+                className="h-12 px-8"
+              >
+                Go to Home
+              </Button>
+            </div>
+            
+            <p className="mt-12 text-xs text-text-muted font-medium">
+              Reference ID: {Math.random().toString(36).substring(2, 10).toUpperCase()}
+            </p>
+          </div>
         </div>
       );
     }
