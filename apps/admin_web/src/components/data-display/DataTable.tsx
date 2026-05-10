@@ -25,7 +25,7 @@ const ALIGN_MAP = {
   right: 'text-right',
 };
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object>({
   columns,
   data,
   onRowClick,
@@ -74,7 +74,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   const value =
                     typeof col.accessor === 'function'
                       ? col.accessor(row)
-                      : row[col.accessor as string];
+                      : (row as any)[col.accessor as string];
                   const cellContent = col.render ? col.render(value, row) : (value as React.ReactNode);
                   return (
                     <td

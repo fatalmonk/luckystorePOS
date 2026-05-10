@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../shared/providers/pos_provider.dart';
-import '../../theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_shadows.dart';
 
 class FloatingCheckoutBar extends StatelessWidget {
   const FloatingCheckoutBar({super.key});
@@ -18,17 +21,19 @@ class FloatingCheckoutBar extends StatelessWidget {
         final bool unlockedFreeDelivery = posProvider.totalAmount >= freeDeliveryThreshold;
 
         return Positioned(
-          left: 16,
-          right: 16,
-          bottom: 16,
+          left: 12,
+          right: 12,
+          bottom: 12,
           child: GestureDetector(
             onTap: () {
-              // Navigate to Checkout
+              Navigator.of(context).pushNamed('/checkout');
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: AppTheme.neomorphicDecoration.copyWith(
-                color: AppTheme.primaryAccent,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primaryDefault,
+                borderRadius: AppRadius.xl,
+                boxShadow: AppShadows.elevation3,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -39,59 +44,79 @@ class FloatingCheckoutBar extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(6),
+                            width: 32,
+                            height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
+                              color: AppColors.primaryOn.withValues(alpha: 0.2),
+                              borderRadius: AppRadius.md,
                             ),
+                            alignment: Alignment.center,
                             child: Text(
                               '${posProvider.itemCount}',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                              style: AppTextStyles.labelLg.copyWith(
+                                color: AppColors.primaryOn,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           const Text(
-                            'Checkout',
+                            'View Checkout',
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryOn,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
                             ),
                           ),
                         ],
                       ),
                       Text(
                         '৳${posProvider.totalAmount.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
+                        style: AppTextStyles.headingLg.copyWith(
+                          color: AppColors.primaryOn,
+                          fontFamily: AppTextStyles.fontFamilyMono,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   // Gamified Progress Bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.black.withValues(alpha: 0.2),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        unlockedFreeDelivery ? const Color(0xFF4EEB9E) : Colors.white,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: AppRadius.full,
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: AppColors.primaryOn.withValues(alpha: 0.15),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            unlockedFreeDelivery ? AppColors.successDefault : AppColors.primaryOn,
+                          ),
+                          minHeight: 6,
+                        ),
                       ),
-                      minHeight: 4,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    unlockedFreeDelivery
-                      ? 'Free Delivery Unlocked! 🚚'
-                      : 'Add ৳${(freeDeliveryThreshold - posProvider.totalAmount).toStringAsFixed(0)} more for Free Delivery',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 10,
-                    ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            unlockedFreeDelivery ? Icons.local_shipping_rounded : Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.primaryOn.withValues(alpha: 0.9),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            unlockedFreeDelivery
+                              ? 'Free Delivery Unlocked! 🚚'
+                              : 'Add ৳${(freeDeliveryThreshold - posProvider.totalAmount).toStringAsFixed(0)} more for Free Delivery',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.primaryOn.withValues(alpha: 0.9),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),

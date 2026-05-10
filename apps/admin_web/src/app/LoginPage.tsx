@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { LogIn } from 'lucide-react';
+import { LogIn, ShoppingBag } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -13,91 +16,82 @@ export function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setError(error.message);
+    if (authError) {
+      setError(authError.message);
     }
     setLoading(false);
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-app)'
-    }}>
-      <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-primary)' }}>
+    <div className="min-h-screen flex items-center justify-center bg-background-default relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/5 rounded-full blur-3xl" />
+      
+      <div className="w-full max-w-md px-4 relative z-10">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-level-3 mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+            <ShoppingBag className="text-primary-on w-8 h-8" />
+          </div>
+          <h1 className="text-4xl font-black text-text-primary tracking-tight mb-2">
             Lucky Store
-          </h2>
-          <p style={{ color: 'var(--text-muted)' }}>Admin Login</p>
+          </h1>
+          <p className="text-text-muted font-medium">Admin Management Portal</p>
         </div>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>Email Address</label>
-            <input 
+        <Card className="p-8 shadow-level-3 border-border-default bg-surface/80 backdrop-blur-xl">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <Input 
+              label="Admin Email"
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@luckystore.com"
-              style={{ 
-                padding: 'var(--space-3)', 
-                borderRadius: 'var(--radius-md)', 
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--input-bg)',
-                color: 'var(--text-main)'
-              }}
               required
+              className="bg-surface"
             />
-          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>Password</label>
-            <input 
+            <Input 
+              label="Password"
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              style={{ 
-                padding: 'var(--space-3)', 
-                borderRadius: 'var(--radius-md)', 
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--input-bg)',
-                color: 'var(--text-main)'
-              }}
               required
+              className="bg-surface"
             />
+
+            {error && (
+              <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm font-medium animate-in fade-in slide-in-from-top-2">
+                {error}
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              loading={loading}
+              className="w-full h-12 text-base font-bold shadow-level-2"
+              icon={<LogIn size={20} />}
+            >
+              Sign In to Dashboard
+            </Button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-border-default text-center">
+            <p className="text-xs text-text-muted font-medium">
+              Secured by Supabase Auth • Lucky Store v1.2.0
+            </p>
           </div>
+        </Card>
 
-          {error && <p style={{ color: 'var(--color-danger)', fontSize: 'var(--font-size-sm)' }}>{error}</p>}
-
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{ 
-              backgroundColor: 'var(--color-primary)', 
-              color: 'white', 
-              padding: 'var(--space-3)', 
-              borderRadius: 'var(--radius-md)',
-              fontWeight: '600',
-              marginTop: 'var(--space-2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'var(--space-2)'
-            }}
-          >
-            {loading ? 'Logging in...' : <><LogIn size={18} /> Sign In</>}
-          </button>
-        </form>
+        <p className="mt-8 text-center text-sm text-text-muted">
+          Forgot password? <span className="text-primary font-semibold cursor-pointer hover:underline">Contact System Admin</span>
+        </p>
       </div>
     </div>
   );

@@ -4,11 +4,12 @@ import clsx from 'clsx';
 export interface CardProps {
   children: ReactNode;
   className?: string;
-  padding?: 'sm' | 'md' | 'lg';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 
 export const Card: React.FC<CardProps> = ({ children, className, padding = 'md' }) => {
   const paddingClasses = {
+    none: 'p-0',
     sm: 'p-2',
     md: 'p-4',
     lg: 'p-6',
