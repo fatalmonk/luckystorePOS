@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { Modal } from '../../components/ui/Modal';
@@ -62,11 +62,11 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
           />
 
           <div className="flex flex-col gap-1 col-span-2">
-            <label className="text-sm font-medium text-text-main">Category</label>
+            <label className="text-sm font-medium text-text-primary">Category</label>
             <select 
               value={formData.category_id} 
               onChange={e => setFormData({...formData, category_id: e.target.value})}
-              className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Select Category</option>
               {categories?.map(cat => (
@@ -98,7 +98,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
               placeholder="DDP-001"
               className="flex-1"
             />
-            <Button type="button" variant="outline" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
+            <Button type="button" variant="secondary" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
               Generate
             </Button>
           </div>
@@ -111,7 +111,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
           />
         </div>
 
-        <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-border-light">
+        <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-border-default">
           <Button variant="secondary" onClick={onClose} type="button">Cancel</Button>
           <Button type="submit" loading={createMutation.isPending} icon={<Plus size={18} />}>
             Add Product

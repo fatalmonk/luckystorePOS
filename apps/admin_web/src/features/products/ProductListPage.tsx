@@ -1,26 +1,23 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { Search, Plus, Edit2, Package, Filter } from 'lucide-react';
-import { clsx } from 'clsx';
+import { Search, Plus, Edit2, Package } from 'lucide-react';
 import { ProductEditDrawer } from './ProductEditDrawer';
 import { ProductAddModal } from './ProductAddModal';
-import { useNotify } from '../../components/NotificationContext';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { ProductDetailDrawer } from './ProductDetailDrawer';
+import { Card } from '../../components/ui/Card';
 
 const ROW_HEIGHT = 64;
 const VISIBLE_ROWS = 15;
 
 export function ProductListPage() {
-  const { notify } = useNotify();
-
   useRealtimeSubscription({
     table: 'items',
     event: '*',
@@ -51,21 +48,14 @@ export function ProductListPage() {
       p.barcode?.toLowerCase().includes(debouncedSearch.toLowerCase())
     ) ?? [];
 
-    // Apply sorting
     filtered = [...filtered].sort((a: any, b: any) => {
       switch (sortBy) {
-        case 'name-asc':
-          return a.name.localeCompare(b.name);
-        case 'name-desc':
-          return b.name.localeCompare(a.name);
-        case 'price-asc':
-          return (a.price || 0) - (b.price || 0);
-        case 'price-desc':
-          return (b.price || 0) - (a.price || 0);
-        case 'stock-asc':
-          return (a.stock || 0) - (b.stock || 0);
-        default:
-          return 0;
+        case 'name-asc': return a.name.localeCompare(b.name);
+        case 'name-desc': return b.name.localeCompare(a.name);
+        case 'price-asc': return (a.price || 0) - (b.price || 0);
+        case 'price-desc': return (b.price || 0) - (a.price || 0);
+        case 'stock-asc': return (a.stock || 0) - (b.stock || 0);
+        default: return 0;
       }
     });
 
@@ -84,13 +74,10 @@ export function ProductListPage() {
   if (error) {
     return (
       <div className="products-container">
-        <PageHeader 
-          title="Products" 
-          subtitle="Manage your shop's catalog." 
-        />
-        <div className="card">
+        <PageHeader title="Products" subtitle="Manage your shop's catalog." />
+        <Card className="mt-6">
           <ErrorState message="Failed to load products." onRetry={() => refetch()} />
-        </div>
+        </Card>
       </div>
     );
   }
@@ -108,7 +95,7 @@ export function ProductListPage() {
         className="mb-8"
       />
 
-      <div className="card flex flex-col md:flex-row gap-4 mb-6">
+      <Card className="flex flex-col md:flex-row gap-4 mb-6 p-4">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input 
@@ -116,11 +103,11 @@ export function ProductListPage() {
             placeholder="Search by name, SKU, or barcode..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full pl-10 pr-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div className="flex gap-2">
-          <select className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary">
+          <select className="px-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm">
             <option value="">All Categories</option>
             {categories?.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -129,7 +116,7 @@ export function ProductListPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm"
           >
             <option value="name-asc">Name A-Z</option>
             <option value="name-desc">Name Z-A</option>
@@ -138,33 +125,28 @@ export function ProductListPage() {
             <option value="stock-asc">Stock Low-High</option>
           </select>
         </div>
-      </div>
+      </Card>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {/* Fixed header */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)' }}>
-              <th style={{ padding: 'var(--space-4)', width: '28%' }}>Product</th>
-              <th style={{ padding: 'var(--space-4)', width: '18%' }}>SKU / Barcode</th>
-              <th style={{ padding: 'var(--space-4)', width: '12%' }}>Price</th>
-              <th style={{ padding: 'var(--space-4)', width: '12%' }}>Cost</th>
-              <th style={{ padding: 'var(--space-4)', width: '10%' }}>Stock</th>
-              <th style={{ padding: 'var(--space-4)', width: '12%' }}>Status</th>
-              <th style={{ padding: 'var(--space-4)', textAlign: 'right', width: '8%' }}>Actions</th>
-            </tr>
-          </thead>
-        </table>
+      <Card padding="none" className="overflow-hidden">
+        <div className="bg-background-subtle border-b border-border-default hidden sm:flex">
+          <div className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[28%]">Product</div>
+          <div className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[18%]">SKU / Barcode</div>
+          <div className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[12%]">Price</div>
+          <div className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[12%] text-center">Stock</div>
+          <div className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[12%]">Status</div>
+          <div className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[18%] text-right">Actions</div>
+        </div>
 
         {isLoading ? (
-          <div className="p-4">
+          <div className="p-4 space-y-4">
             {Array(5).fill(0).map((_, i) => (
-              <div key={i} className="flex gap-4 py-3">
-                <SkeletonBlock className="w-[28%] h-5" />
-                <SkeletonBlock className="w-[18%] h-5" />
-                <SkeletonBlock className="w-[12%] h-5" />
-                <SkeletonBlock className="w-[12%] h-5" />
-                <SkeletonBlock className="w-[10%] h-5" />
+              <div key={i} className="flex gap-4 items-center">
+                <SkeletonBlock className="w-[28%] h-6" />
+                <SkeletonBlock className="w-[18%] h-6" />
+                <SkeletonBlock className="w-[12%] h-6" />
+                <SkeletonBlock className="w-[12%] h-6" />
+                <SkeletonBlock className="w-[12%] h-6" />
+                <SkeletonBlock className="w-[18%] h-6 ml-auto" />
               </div>
             ))}
           </div>
@@ -178,57 +160,50 @@ export function ProductListPage() {
         ) : (
           <div
             ref={scrollRef}
-            style={{ height: `${Math.min(filteredProducts.length, VISIBLE_ROWS) * ROW_HEIGHT + 4}px`, overflow: 'auto' }}
+            className="overflow-auto"
+            style={{ height: `${Math.min(filteredProducts.length, VISIBLE_ROWS) * ROW_HEIGHT}px` }}
           >
-            <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+            <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const p = filteredProducts[virtualRow.index];
                 return (
                   <div
                     key={p.id}
                     onClick={() => setViewingProductId(p.id)}
-                    className="hover:bg-[rgba(0,0,0,0.02)] cursor-pointer transition-colors"
+                    className="flex items-center absolute w-full border-b border-border-default hover:bg-background-subtle cursor-pointer transition-colors"
                     style={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${virtualRow.start}px)`,
-                      position: 'absolute',
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      borderBottom: '1px solid var(--border-color)',
-                      fontSize: 'var(--font-size-sm)',
                     }}
                   >
-                    <div style={{ padding: 'var(--space-4)', width: '28%', minWidth: 0 }}>
-                      <div style={{ fontWeight: '600' }}>{p.name}</div>
-                      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{p.categories?.name || 'No Category'}</div>
+                    <div className="p-4 w-[28%] min-w-0">
+                      <div className="font-semibold text-text-primary truncate">{p.name}</div>
+                      <div className="text-xs text-text-muted truncate">{p.categories?.name || 'No Category'}</div>
                     </div>
-                    <div style={{ padding: 'var(--space-4)', width: '18%', minWidth: 0 }}>
-                      <div>{p.sku}</div>
-                      <div style={{ color: 'var(--text-muted)' }}>{p.barcode}</div>
+                    <div className="p-4 w-[18%] min-w-0 text-sm">
+                      <div className="text-text-primary truncate">{p.sku}</div>
+                      <div className="text-text-muted text-xs truncate">{p.barcode}</div>
                     </div>
-                    <div style={{ padding: 'var(--space-4)', width: '12%' }}>৳{p.price}</div>
-                    <div style={{ padding: 'var(--space-4)', width: '12%', color: 'var(--text-muted)' }}>৳{p.cost}</div>
-                    <div style={{ padding: 'var(--space-4)', width: '10%' }}>
-                      <span style={{
-                        fontWeight: '600',
-                        color: (p.stock || 0) <= 5 ? 'var(--color-danger)' : 'inherit'
-                      }}>
+                    <div className="p-4 w-[12%] font-mono font-bold text-text-primary whitespace-nowrap">৳{p.price}</div>
+                    <div className="p-4 w-[12%] text-center">
+                      <span className={'font-bold font-mono ' + ((p.stock || 0) <= 5 ? 'text-danger' : 'text-text-primary')}>
                         {p.stock || 0}
                       </span>
                     </div>
-                    <div style={{ padding: 'var(--space-4)', width: '12%' }}>
+                    <div className="p-4 w-[12%]">
                       <Badge variant={p.active ? 'success' : 'neutral'}>
                         {p.active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
-                    <div style={{ padding: 'var(--space-4)', textAlign: 'right', width: '8%' }}>
-                      <button 
+                    <div className="p-4 w-[18%] text-right flex justify-end gap-2">
+                      <Button 
+                        size="sm"
+                        variant="secondary"
                         onClick={(e) => { e.stopPropagation(); setEditingProduct(p); }}
-                        style={{ color: 'var(--color-primary)', padding: 'var(--space-1)' }}
+                        icon={<Edit2 size={16} />}
                       >
-                        <Edit2 size={18} />
-                      </button>
+                        Edit
+                      </Button>
                     </div>
                   </div>
                 );
@@ -236,7 +211,7 @@ export function ProductListPage() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
       <ProductEditDrawer 
         product={editingProduct} 
