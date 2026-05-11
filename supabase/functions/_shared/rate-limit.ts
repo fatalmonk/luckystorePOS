@@ -89,8 +89,8 @@ export async function checkRateLimitDB(
     console.error('check_rate_limit RPC error:', error);
     // Fail open on RPC errors — don't block legitimate traffic
     return {
-      allowed: false,
-      remaining: 0,
+      allowed: true,
+      remaining: config.maxRequests - 1,
       resetAfter: config.windowMs,
     };
   }
