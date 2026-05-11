@@ -485,7 +485,8 @@ class PosProvider extends ChangeNotifier {
     // fall back to direct RPC if not configured or on failure.
     Map<String, dynamic>? edgeResult;
     try {
-      final paymentMethodId = tenders.isNotEmpty ? tenders.first.method.id : '';
+      if (tenders.length != 1) throw Exception('edge_function_single_tender_only');
+      final paymentMethodId = tenders.first.method.id;
       final edgeItems = recordSaleItems.map((i) => {
         'item_id': i['item_id'],
         'quantity': i['quantity'],
