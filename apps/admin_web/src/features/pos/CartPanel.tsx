@@ -124,13 +124,13 @@ export function CartPanel({
                 className="bg-transparent border-none outline-none w-full px-3 py-1.5 text-right text-sm"
               />
               <button
-                className={`px-3 py-1.5 text-sm font-bold border-l border-border-color ${discountType === 'amount' ? "bg-primary text-black" : "bg-card text-text-muted hover:bg-border-light"}`}
+                className={`px-3 py-1.5 text-sm font-bold border-l border-border-color ${discountType === 'amount' ? "bg-primary text-black" : "bg-surface text-text-muted hover:bg-border-light"}`}
                 onClick={() => onSetDiscountType('amount')}
               >
                 ৳
               </button>
               <button
-                className={`px-3 py-1.5 text-sm font-bold border-l border-border-color ${discountType === 'percentage' ? "bg-primary text-black" : "bg-card text-text-muted hover:bg-border-light"}`}
+                className={`px-3 py-1.5 text-sm font-bold border-l border-border-color ${discountType === 'percentage' ? "bg-primary text-black" : "bg-surface text-text-muted hover:bg-border-light"}`}
                 onClick={() => onSetDiscountType('percentage')}
               >
                 %
