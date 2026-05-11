@@ -507,7 +507,11 @@ class PosProvider extends ChangeNotifier {
 
     final Map<String, dynamic> resultMap;
     if (edgeResult != null && edgeResult['success'] == true) {
-      resultMap = edgeResult;
+      resultMap = {
+        ...edgeResult,
+        'batch_id': edgeResult['batch_id'] ?? edgeResult['sale_id'],
+        'total_revenue': edgeResult['total_revenue'] ?? edgeResult['total'],
+      };
     } else {
       final result = await _supabase.rpc('record_sale', params: {
         'p_idempotency_key': transactionTraceId,
