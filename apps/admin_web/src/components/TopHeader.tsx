@@ -1,17 +1,32 @@
 import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
   sidebarHidden: boolean;
+  onSearchFocus?: () => void;
 }
 
-export function TopHeader({ onToggleSidebar, sidebarHidden }: TopHeaderProps) {
+export function TopHeader({ onToggleSidebar, sidebarHidden, onSearchFocus }: TopHeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut: Cmd/Ctrl+K to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        onSearchFocus?.();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onSearchFocus]);
 
   useEffect(() => {
     if (isDark) {
@@ -35,15 +50,18 @@ export function TopHeader({ onToggleSidebar, sidebarHidden }: TopHeaderProps) {
 
       <div className="header-center">
         <div className="search-container">
-          <Search className="search-icon" />
+          <Search className="search-icon" aria-hidden="true" />
           <input
+            ref={searchInputRef}
             type="text"
-            placeholder="Search or create anything..."
+            placeholder="Search or create anything... (⌘K)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
+            aria-label="Global search"
+            role="searchbox"
           />
-          <div className="search-shortcut">
+          <div className="search-shortcut" aria-hidden="true">
             <Command size={14} />
             <span>K</span>
           </div>
@@ -51,24 +69,24 @@ export function TopHeader({ onToggleSidebar, sidebarHidden }: TopHeaderProps) {
       </div>
 
       <div className="header-right">
-        <button className="header-button">
+        <button className="header-button" aria-label="Change language" type="button">
           <span className="sr-only">Language</span>
           🇺🇸
         </button>
-        <button className="header-button">
+        <button className="header-button" aria-label="View keyboard shortcuts" type="button">
           <span className="sr-only">Keyboard shortcuts</span>
           <Command size={16} />
         </button>
-        <button className="header-button">
+        <button className="header-button" aria-label="View notifications" type="button">
           <span className="sr-only">Notifications</span>
           <Bell size={16} />
         </button>
-        <button className="header-button" onClick={toggleTheme}>
+        <button className="header-button" onClick={toggleTheme} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} type="button">
           <span className="sr-only">Toggle theme</span>
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-        <div className="user-profile">
-          <div className="avatar">M</div>
+        <div className="user-profile" role="group" aria-label="User menu">
+          <div className="avatar" aria-hidden="true">M</div>
           <span className="user-name">Mohammed</span>
         </div>
       </div>
