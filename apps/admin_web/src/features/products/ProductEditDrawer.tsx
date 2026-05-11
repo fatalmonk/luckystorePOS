@@ -6,9 +6,25 @@ import { Drawer } from '../../components/ui/Drawer';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  cost: number;
+  sku?: string;
+  barcode?: string;
+  category_id?: string;
+  active: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface ProductEditDrawerProps {
-  product: unknown | null;
-  categories: unknown[] | undefined;
+  product: Product | null;
+  categories: Category[] | undefined;
   onClose: () => void;
 }
 
@@ -16,7 +32,11 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<any>({});
 
-  // Form initialized from product via key prop on parent
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name,
+        price: product.price,
         cost: product.cost,
         sku: product.sku,
         barcode: product.barcode,
@@ -27,7 +47,7 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
   }, [product]);
 
   const updateMutation = useMutation({
-    mutationFn: (updates: unknown) => api.products.update(product.id, updates),
+    mutationFn: (updates: any) => api.products.update(product!.id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
