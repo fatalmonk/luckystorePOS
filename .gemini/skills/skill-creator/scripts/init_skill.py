@@ -284,7 +284,17 @@ def main():
         print("  init_skill.py custom-skill --path /custom/location")
         sys.exit(1)
 
-    skill_name = sys.argv[1]
+    skill_name = sys.argv[1].strip()
+    if (
+        not skill_name
+        or len(skill_name) > 40
+        or skill_name.startswith('-')
+        or skill_name.endswith('-')
+        or '--' in skill_name
+        or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in skill_name)
+    ):
+        print("❌ Error: Invalid skill name. Use lowercase letters, digits, and single hyphens only (max 40 chars).")
+        sys.exit(1)
     path = sys.argv[3]
 
     print(f"🚀 Initializing skill: {skill_name}")
