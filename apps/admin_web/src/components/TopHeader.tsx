@@ -1,7 +1,12 @@
-import { Search, Command, Bell, Moon, Sun } from 'lucide-react';
+import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export function TopHeader() {
+interface TopHeaderProps {
+  onToggleSidebar: () => void;
+  sidebarHidden: boolean;
+}
+
+export function TopHeader({ onToggleSidebar, sidebarHidden }: TopHeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -22,8 +27,9 @@ export function TopHeader() {
   return (
     <header className="top-header">
       <div className="header-left">
-        <button className="header-button">
-          <span className="sr-only">Menu</span>
+        <button className="header-button" onClick={onToggleSidebar} title={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}>
+          <span className="sr-only">{sidebarHidden ? 'Show' : 'Hide'} sidebar</span>
+          {sidebarHidden ? <Menu size={20} /> : <PanelLeftClose size={20} />}
         </button>
       </div>
 
