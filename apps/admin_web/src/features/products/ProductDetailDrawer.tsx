@@ -61,9 +61,9 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
         <div className="flex flex-col gap-6">
           {/* Header Info */}
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-border-light rounded-lg flex items-center justify-center text-text-muted">
+            <div className="w-20 h-20 bg-border-light rounded-lg flex items-center justify-center text-text-muted shrink-0 overflow-hidden">
               {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
               ) : (
                 <Package size={40} />
               )}
@@ -112,7 +112,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             <div className="card p-0 overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-border-light bg-[rgba(0,0,0,0.02)] text-text-muted text-sm">
+                  <tr className="border-b border-border-light bg-background-subtle text-text-muted text-sm">
                     <th className="p-3">Date</th>
                     <th className="p-3">Change</th>
                     <th className="p-3">Reason</th>
