@@ -95,6 +95,7 @@ class QueuedOfflineTransaction {
   final String syncValidationState;
   final String fulfillmentPolicy;
   final SyncAckClassification? lastAckClassification;
+  final DateTime? leaseExpiresAt;
 
   const QueuedOfflineTransaction({
     required this.sequenceId,
@@ -121,6 +122,7 @@ class QueuedOfflineTransaction {
     required this.syncValidationState,
     required this.fulfillmentPolicy,
     this.lastAckClassification,
+    this.leaseExpiresAt,
   });
 
   QueuedOfflineTransaction copyWith({
@@ -136,6 +138,7 @@ class QueuedOfflineTransaction {
     Map<String, dynamic>? conflictMeta,
     String? syncValidationState,
     SyncAckClassification? lastAckClassification,
+    DateTime? leaseExpiresAt,
   }) {
     return QueuedOfflineTransaction(
       sequenceId: sequenceId,
@@ -163,6 +166,7 @@ class QueuedOfflineTransaction {
       syncValidationState: syncValidationState ?? this.syncValidationState,
       fulfillmentPolicy: fulfillmentPolicy,
       lastAckClassification: lastAckClassification ?? this.lastAckClassification,
+      leaseExpiresAt: leaseExpiresAt,
     );
   }
 
@@ -191,6 +195,7 @@ class QueuedOfflineTransaction {
         'sync_validation_state': syncValidationState,
         'fulfillment_policy': fulfillmentPolicy,
         'last_ack_classification': lastAckClassification?.name,
+        'lease_expires_at': leaseExpiresAt?.toIso8601String(),
       };
 
   factory QueuedOfflineTransaction.fromJson(Map<String, dynamic> json) {
@@ -247,6 +252,9 @@ class QueuedOfflineTransaction {
               (e) => e.name == json['last_ack_classification'],
               orElse: () => SyncAckClassification.unknownFailure,
             )
+          : null,
+      leaseExpiresAt: json['lease_expires_at'] != null
+          ? DateTime.parse(json['lease_expires_at'] as String)
           : null,
     );
   }
@@ -460,6 +468,28 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     notifyListeners();
     try {
       final now = DateTime.now();
+      
+      // R3 Recovery: Reclaim expired processing leases
+      bool queueMutated = false;
+      for (int i = 0; i < _queue.length; i++) {
+        final tx = _queue[i];
+        if (tx.state == OfflineSyncState.syncing &&
+            tx.leaseExpiresAt != null &&
+            tx.leaseExpiresAt!.isBefore(now)) {
+          _queue[i] = tx.copyWith(
+            state: OfflineSyncState.pending,
+            lastAckClassification: SyncAckClassification.unknownFailure,
+            lastError: 'Processing lease expired',
+            // leaseExpiresAt defaults to null in copyWith, clearing it automatically.
+          );
+          queueMutated = true;
+        }
+      }
+      if (queueMutated) {
+        await _persistQueue();
+        notifyListeners();
+      }
+
       var runHadSuccess = false;
       var runHadFailure = false;
       final candidates = _queue.where((tx) {
@@ -531,6 +561,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       tx.copyWith(
         state: OfflineSyncState.syncing,
         lastError: null,
+        leaseExpiresAt: DateTime.now().add(const Duration(minutes: 5)),
       ),
     );
     await _persistQueue();
