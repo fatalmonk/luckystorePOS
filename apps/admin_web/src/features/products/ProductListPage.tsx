@@ -46,7 +46,7 @@ export function ProductListPage() {
   });
 
   const filteredProducts = useMemo(() => {
-    let filtered = products?.filter((p: any) => {
+    let filtered = products?.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => {
       const matchesSearch =
         p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -55,7 +55,7 @@ export function ProductListPage() {
       return matchesSearch && matchesCategory;
     }) ?? [];
 
-    filtered = [...filtered].sort((a: any, b: any) => {
+    filtered = [...filtered].sort((a: unknown, b: unknown) => {
       switch (sortBy) {
         case 'name-asc': return a.name.localeCompare(b.name);
         case 'name-desc': return b.name.localeCompare(a.name);
@@ -72,9 +72,9 @@ export function ProductListPage() {
   const stats = useMemo(() => {
     const all = products ?? [];
     const total = all.length;
-    const lowStock = all.filter((p: any) => (p.stock || 0) > 0 && (p.stock || 0) <= 5).length;
-    const outOfStock = all.filter((p: any) => (p.stock || 0) === 0).length;
-    const totalValue = all.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.stock || 0)), 0);
+    const lowStock = all.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => (p.stock || 0) > 0 && (p.stock || 0) <= 5).length;
+    const outOfStock = all.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => (p.stock || 0) === 0).length;
+    const totalValue = all.reduce((sum: number, p: unknown) => sum + ((p.price || 0) * (p.stock || 0)), 0);
     return { total, lowStock, outOfStock, totalValue };
   }, [products]);
 
@@ -153,10 +153,10 @@ export function ProductListPage() {
           </div>
         ) : (
           <CategoryThumbnailGrid
-            categories={categories?.map((c: any) => ({
+            categories={categories?.map((c: unknown) => ({
               id: c.id,
               name: c.name || c.category,
-              itemCount: products?.filter((p: any) => p.category_id === c.id).length ?? 0,
+              itemCount: products?.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => p.category_id === c.id).length ?? 0,
               imageUrl: c.image_url,
               color: c.color,
               icon: c.icon,
@@ -182,7 +182,7 @@ export function ProductListPage() {
         <div className="flex gap-2">
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as unknown)}
             className="px-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm"
           >
             <option value="name-asc">Name A-Z</option>
@@ -254,7 +254,7 @@ export function ProductListPage() {
           />
         ) : viewMode === 'grid' ? (
           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredProducts.map((p: any) => (
+            {filteredProducts.map((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => (
               <div
                 key={p.id}
                 onClick={() => setViewingProductId(p.id)}

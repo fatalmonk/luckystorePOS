@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 
 interface ProductAddModalProps {
   isOpen: boolean;
-  categories: any[] | undefined;
+  categories: unknown[] | undefined;
   onClose: () => void;
 }
 
@@ -25,7 +25,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
   });
 
   const createMutation = useMutation({
-    mutationFn: (newProduct: any) => api.products.create(newProduct),
+    mutationFn: (newProduct: unknown) => api.products.create(newProduct),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setFormData({

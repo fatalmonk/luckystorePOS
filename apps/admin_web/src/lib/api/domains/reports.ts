@@ -17,22 +17,22 @@ export const reports = {
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
       .select('qty, price, item_id')
-      .in('sale_id', sales?.map((s: any) => s.id) || []);
+      .in('sale_id', sales?.map((s: Record<string, unknown>) => s.id) || []);
 
     if (itemsError) throw itemsError;
 
     // Resolve item names
-    const itemIds = [...new Set(saleItems?.map((i: any) => i.item_id) || [])];
+    const itemIds = [...new Set(saleItems?.map((i: Record<string, unknown>) => i.item_id) || [])];
     const { data: itemNames } = await supabase
       .from('items')
       .select('id, name')
       .in('id', itemIds);
 
-    const nameMap = new Map(itemNames?.map((i: any) => [i.id, i.name]) || []);
+    const nameMap = new Map(itemNames?.map((i: Record<string, unknown>) => [i.id, i.name]) || []);
 
     // Aggregate top products by quantity
     const productMap = new Map();
-    saleItems?.forEach((item: any) => {
+    saleItems?.forEach((item: Record<string, unknown>) => {
       const name = nameMap.get(item.item_id) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
       existing.quantity += item.qty || 0;
@@ -41,12 +41,12 @@ export const reports = {
     });
 
     const topProducts = Array.from(productMap.values())
-      .sort((a: any, b: any) => b.quantity - a.quantity)
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => b.quantity - a.quantity)
       .slice(0, 10);
 
     // Group sales by day
     const dailyMap = new Map();
-    sales?.forEach((sale: any) => {
+    sales?.forEach((sale: Record<string, unknown>) => {
       const day = sale.created_at.split('T')[0];
       const existing = dailyMap.get(day) || { date: day, revenue: 0, count: 0 };
       existing.revenue += sale.total_amount || 0;
@@ -54,9 +54,9 @@ export const reports = {
       dailyMap.set(day, existing);
     });
 
-    const dailySales = Array.from(dailyMap.values()).sort((a: any, b: any) => a.date.localeCompare(b.date));
+    const dailySales = Array.from(dailyMap.values()).sort((a: Record<string, unknown>, b: Record<string, unknown>) => a.date.localeCompare(b.date));
 
-    const totalRevenue = sales?.reduce((sum: number, s: any) => sum + (s.total_amount || 0), 0) || 0;
+    const totalRevenue = sales?.reduce((sum: number, s: Record<string, unknown>) => sum + (s.total_amount || 0), 0) || 0;
     const transactionCount = sales?.length || 0;
     const avgTicket = transactionCount > 0 ? totalRevenue / transactionCount : 0;
 
@@ -81,13 +81,13 @@ export const reports = {
 
     if (stockError) throw stockError;
 
-    const stockMap = new Map(stockLevels?.map((s: any) => [s.item_id, s.qty]) || []);
+    const stockMap = new Map(stockLevels?.map((s: Record<string, unknown>) => [s.item_id, s.qty]) || []);
 
     let totalValue = 0;
     let lowStockCount = 0;
     let outOfStockCount = 0;
 
-    const inventory = items?.map((item: any) => {
+    const inventory = items?.map((item: Record<string, unknown>) => {
       const qty = stockMap.get(item.id) || 0;
       const value = (item.cost || 0) * qty;
       totalValue += value;
@@ -121,17 +121,17 @@ export const reports = {
 
     if (salesError) throw salesError;
 
-    const grossRevenue = sales?.reduce((sum: number, s: any) => sum + (s.total_amount || 0), 0) || 0;
+    const grossRevenue = sales?.reduce((sum: number, s: Record<string, unknown>) => sum + (s.total_amount || 0), 0) || 0;
 
     // Get COGS from sale_items
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
       .select('qty, cost')
-      .in('sale_id', sales?.map((s: any) => s.id) || []);
+      .in('sale_id', sales?.map((s: Record<string, unknown>) => s.id) || []);
 
     if (itemsError) throw itemsError;
 
-    const cogs = saleItems?.reduce((sum: number, item: any) => sum + ((item.qty || 0) * (item.cost || 0)), 0) || 0;
+    const cogs = saleItems?.reduce((sum: number, item: Record<string, unknown>) => sum + ((item.qty || 0) * (item.cost || 0)), 0) || 0;
 
     // Get expenses
     const { data: expenses, error: expError } = await supabase
@@ -143,7 +143,7 @@ export const reports = {
 
     if (expError) throw expError;
 
-    const totalExpenses = expenses?.reduce((sum: number, e: any) => sum + (e.amount || 0), 0) || 0;
+    const totalExpenses = expenses?.reduce((sum: number, e: Record<string, unknown>) => sum + (e.amount || 0), 0) || 0;
     const grossProfit = grossRevenue - cogs;
     const netProfit = grossProfit - totalExpenses;
 
