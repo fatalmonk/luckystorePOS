@@ -70,7 +70,7 @@ export const pos = {
     const result = (data ?? {}) as unknown as SaleResultData;
     debugLog('Sale result', result);
     return {
-      status: result.status === 'success' ? 'success' : 'error',
+      status: (result.status || '').toUpperCase() === 'SUCCESS' ? 'success' : 'error',
       batchId: result.batch_id,
       totalAmount: result.total_revenue,
       error: result.status !== 'success' ? 'Sale failed' : undefined,
