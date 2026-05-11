@@ -52,15 +52,13 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
       const publicUrl = urlData?.publicUrl;
       if (!publicUrl) throw new Error('Failed to get public URL');
 
-      const { data, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('items')
         .update({ image_url: publicUrl })
-        .eq('id', product.id)
-        .select()
-        .single();
+        .eq('id', product.id);
 
       if (updateError) throw new Error(updateError.message);
-      return data;
+      return { image_url: publicUrl };
     },
     onSuccess: () => {
       notify('Image updated successfully.', 'success');
