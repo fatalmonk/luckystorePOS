@@ -252,6 +252,11 @@ CREATE POLICY "rc_write"  ON public.receipt_config FOR ALL    TO authenticated
   USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND u.role = 'admin'));
 
 -- pos_sessions: cashier sees own; manager/admin sees all for their store
+DROP POLICY IF EXISTS "ses_select_own"     ON public.pos_sessions;
+DROP POLICY IF EXISTS "ses_select_manager" ON public.pos_sessions;
+DROP POLICY IF EXISTS "ses_insert"         ON public.pos_sessions;
+DROP POLICY IF EXISTS "ses_update"         ON public.pos_sessions;
+
 CREATE POLICY "ses_select_own"     ON public.pos_sessions FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND u.id = cashier_id));
 CREATE POLICY "ses_select_manager" ON public.pos_sessions FOR SELECT TO authenticated
