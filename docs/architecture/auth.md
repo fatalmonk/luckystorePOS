@@ -1,0 +1,3 @@
+# Authentication Architecture
+
+Defines Supabase Auth and RLS policies...

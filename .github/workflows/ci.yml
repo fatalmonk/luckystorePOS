@@ -28,10 +28,10 @@ jobs:
         run: |
           cd apps/admin_web
           npx tsc --noEmit
-      - name: Lint (non-blocking — report only)
+      - name: Lint
         run: |
           cd apps/admin_web
-          npm run lint || true
+          npm run lint
       - name: Production build (fail-fast on compile errors)
         run: |
           cd apps/admin_web

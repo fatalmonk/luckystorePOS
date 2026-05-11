@@ -3,7 +3,11 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
+import { SkeletonCard, SkeletonBlock } from '../../components/PageState';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { PageContainer } from '../../layouts/PageContainer';
+import { PageHeader } from '../../layouts/PageHeader';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
 import { MetricCard } from '../../components/data-display/MetricCard';
@@ -97,11 +101,11 @@ export function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="dashboard-container">
-        <header className="mb-8">
-          <SkeletonBlock className="w-[200px] h-7" />
-          <SkeletonBlock className="w-[260px] h-[18px] mt-2" />
-        </header>
+      <PageContainer className="dashboard-container">
+        <PageHeader 
+          title="Loading Dashboard..." 
+          description="Gathering your latest statistics." 
+        />
         <div className="dashboard-grid">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -109,24 +113,24 @@ export function DashboardPage() {
           <SkeletonBlock className="w-[160px] h-[22px] mb-6" />
           <div className="card skeleton-block h-[200px] opacity-30" />
         </section>
-      </div>
+      </PageContainer>
     );
   }
 
   if (isError) {
     return (
-      <div className="dashboard-container">
+      <PageContainer className="dashboard-container">
         <ErrorState message="Failed to load dashboard data." onRetry={() => { statsQuery.refetch(); lowStockQuery.refetch(); }} />
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="dashboard-container">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary">Welcome {stats?.user?.name || 'Mohammed'}</h1>
-        <p className="text-text-muted mt-1">Here's what's happening today.</p>
-      </header>
+    <PageContainer className="dashboard-container">
+      <PageHeader 
+        title={`Welcome ${stats?.user?.name || 'Mohammed'}`}
+        description="Here's what's happening today." 
+      />
 
       <div className="dashboard-grid">
         <MetricCard
@@ -284,6 +288,6 @@ export function DashboardPage() {
           </section>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

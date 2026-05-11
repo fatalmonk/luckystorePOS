@@ -1,6 +1,11 @@
 import React from 'react';
 import clsx from 'clsx';
 
+/**
+ * @deprecated Please use the new unified DataTable system from `src/components/datatable` instead.
+ * This component will be removed in a future sprint.
+ */
+
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((row: T) => React.ReactNode);

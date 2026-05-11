@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Save } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '../../lib/zodResolver';
+import { productSchema, ProductData } from '../../schemas/product.schema';
+import { useUpdateProduct } from '../../hooks/mutations/useProductMutations';
+import { Form, FormInput, FormSelect, PriceInput, BarcodeInput, FormCheckbox, FormActions } from '../../components/forms';
 import { Drawer } from '../../components/ui/Drawer';
-import { Input } from '../../components/ui/Input';
+import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { Button } from '../../components/ui/Button';
 
 interface ProductEditDrawerProps {
@@ -13,106 +16,86 @@ interface ProductEditDrawerProps {
 }
 
 export function ProductEditDrawer({ product, categories, onClose }: ProductEditDrawerProps) {
-  const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<any>({});
+  const updateMutation = useUpdateProduct();
 
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name,
-        price: product.price,
-        cost: product.cost,
-        sku: product.sku,
-        barcode: product.barcode,
-        category_id: product.category_id,
-        active: product.active,
-      });
-    }
-  }, [product]);
-
-  const updateMutation = useMutation({
-    mutationFn: (updates: any) => api.products.update(product.id, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      onClose();
-    },
+  const form = useForm<ProductData>({
+    resolver: zodResolver(productSchema),
+    values: product ? {
+      name: product.name,
+      price: product.price,
+      cost: product.cost || 0,
+      sku: product.sku || '',
+      barcode: product.barcode || '',
+      categoryId: product.category_id || '',
+      active: product.active ?? true,
+      minStockLevel: product.minStockLevel || 5,
+    } : undefined
   });
+
+  useUnsavedChangesGuard(form.formState.isDirty);
 
   if (!product) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateMutation.mutate(formData);
+  const handleSubmit = (data: ProductData) => {
+    updateMutation.mutate({ id: product.id, data }, {
+      onSuccess: () => {
+        form.reset();
+        onClose();
+      }
+    });
   };
 
   return (
     <Drawer isOpen={!!product} onClose={onClose} title="Edit Product" className="w-[450px]">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 h-full">
-        <Input 
+      <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4 h-full">
+        <FormInput 
+          name="name"
           label="Product Name"
-          value={formData.name || ''} 
-          onChange={e => setFormData({...formData, name: e.target.value})}
-          required
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <Input 
-            label="Sales Price (৳)"
-            type="number" 
-            value={formData.price || 0} 
-            onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
-            required
+          <PriceInput 
+            name="price"
+            label="Sales Price"
           />
-          <Input 
-            label="Purchase Price (৳)"
-            type="number" 
-            value={formData.cost || 0} 
-            onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})}
-            required
+          <PriceInput 
+            name="cost"
+            label="Purchase Price"
           />
 
           <div className="flex items-end gap-2">
-            <Input 
+            <FormInput 
+              name="sku"
               label="Item Code (SKU)"
-              value={formData.sku || ''} 
-              onChange={e => setFormData({...formData, sku: e.target.value})}
               className="flex-1"
             />
-            <Button type="button" variant="secondary" onClick={() => setFormData({...formData, sku: 'GEN-' + Math.floor(Math.random()*10000)})} className="mb-[2px]">
+            <Button 
+              type="button" 
+              variant="secondary" 
+              onClick={() => form.setValue('sku', 'GEN-' + Math.floor(Math.random()*10000), { shouldDirty: true })} 
+              className="mb-[2px]"
+            >
               Gen
             </Button>
           </div>
           
-          <Input 
+          <BarcodeInput 
+            name="barcode"
             label="Barcode"
-            value={formData.barcode || ''} 
-            onChange={e => setFormData({...formData, barcode: e.target.value})}
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-text-primary">Category</label>
-          <select 
-            value={formData.category_id || ''} 
-            onChange={e => setFormData({...formData, category_id: e.target.value})}
-            className="px-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">Select Category</option>
-            {categories?.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+        <FormSelect
+          name="categoryId"
+          label="Category"
+          options={categories?.map(c => ({ label: c.name, value: c.id })) || []}
+        />
 
-        <div className="flex items-center gap-2 mt-2">
-          <input 
-            type="checkbox" 
-            id="active"
-            checked={formData.active || false} 
-            onChange={e => setFormData({...formData, active: e.target.checked})}
-            className="rounded border-border-default text-primary focus:ring-primary"
+        <div className="mt-2">
+          <FormCheckbox 
+            name="active"
+            label="Active Product"
           />
-          <label htmlFor="active" className="text-sm font-medium text-text-primary">Active Product</label>
         </div>
 
         <div className="mt-auto pt-8">
@@ -120,7 +103,7 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
             Save Changes
           </Button>
         </div>
-      </form>
+      </Form>
     </Drawer>
   );
 }

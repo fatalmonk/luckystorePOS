@@ -1,0 +1,53 @@
+
+> admin_web@0.0.0 build
+> tsc -b && vite build && node scripts/build-sw.mjs
+
+src/components/forms/FormCore.tsx(22,37): error TS2345: Argument of type '(values: TFieldValues) => void | Promise<void>' is not assignable to parameter of type 'SubmitHandler<undefined>'.
+  Types of parameters 'values' and 'data' are incompatible.
+    Type 'undefined' is not assignable to type 'TFieldValues'.
+      'TFieldValues' could be instantiated with an arbitrary type which could be unrelated to 'undefined'.
+src/components/forms/FormInputs.tsx(39,21): error TS2339: Property 'className' does not exist on type '{ children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; type?: HTMLInputTypeAttribute | undefined; min?: string | number | undefined; ... 300 more ...; src?: string | undefined; }'.
+src/components/forms/FormInputs.tsx(74,21): error TS2339: Property 'className' does not exist on type '{ children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; value?: string | number | readonly string[] | undefined; suppressHydrationWarning?: boolean | undefined; ... 284 more ...; rows?: number | undefined; }'.
+src/components/forms/FormInputs.tsx(111,21): error TS2339: Property 'className' does not exist on type '{ children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; value?: string | number | readonly string[] | undefined; suppressHydrationWarning?: boolean | undefined; ... 278 more ...; multiple?: boolean | undefined; }'.
+src/components/forms/FormInputs.tsx(152,23): error TS2339: Property 'className' does not exist on type '{ children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; min?: string | number | undefined; max?: string | number | undefined; value?: string | number | readonly string[] | undefined; ... 298 more ...; src?: string | undefined; }'.
+src/components/forms/RetailInputs.tsx(31,11): error TS2322: Type 'boolean' is not assignable to type 'true'.
+src/components/forms/RetailInputs.tsx(50,23): error TS2339: Property 'className' does not exist on type '{ min?: number | undefined; max?: number | undefined; step?: number | "any" | undefined; disabled?: boolean | undefined; children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; ... 297 more ...; src?: string | undefined; }'.
+src/components/forms/RetailInputs.tsx(70,11): error TS2322: Type 'boolean' is not assignable to type 'true'.
+src/components/forms/RetailInputs.tsx(95,23): error TS2339: Property 'className' does not exist on type '{ min?: number | undefined; max?: number | undefined; step?: number | "any" | undefined; disabled?: boolean | undefined; children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; ... 297 more ...; src?: string | undefined; }'.
+src/components/forms/RetailInputs.tsx(115,11): error TS2322: Type 'boolean' is not assignable to type 'true'.
+src/components/forms/RetailInputs.tsx(140,23): error TS2339: Property 'className' does not exist on type '{ min?: number | undefined; max?: number | undefined; step?: number | "any" | undefined; disabled?: boolean | undefined; children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; ... 297 more ...; src?: string | undefined; }'.
+src/components/forms/RetailInputs.tsx(179,23): error TS2339: Property 'className' does not exist on type '{ children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; min?: string | number | undefined; max?: string | number | undefined; value?: string | number | readonly string[] | undefined; ... 298 more ...; src?: string | undefined; }'.
+src/components/forms/RetailInputs.tsx(200,11): error TS2322: Type 'boolean' is not assignable to type 'true'.
+src/components/forms/RetailInputs.tsx(234,25): error TS2339: Property 'className' does not exist on type '{ min?: number | undefined; max?: number | undefined; step?: number | "any" | undefined; disabled?: boolean | undefined; children?: ReactNode; id?: string | undefined; role?: AriaRole | undefined; ... 297 more ...; src?: string | undefined; }'.
+src/features/inventory/InventoryListPage.tsx(98,8): error TS2741: Property 'storeId' is missing in type '{ product: InventoryListRow | null; onClose: () => void; }' but required in type 'StockUpdateDrawerProps'.
+src/features/inventory/StockHistoryPage.tsx(68,14): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps'.
+src/features/inventory/StockHistoryPage.tsx(70,50): error TS2339: Property 'target' does not exist on type 'string'.
+src/features/inventory/StockUpdateDrawer.tsx(100,15): error TS2322: Type 'UseFormReturn<{ productId: string; adjustmentQuantity: number; reason: "received" | "damaged" | "lost" | "correction" | "returned"; notes?: string | undefined; }, any, { productId: string; adjustmentQuantity: number; reason: "received" | ... 3 more ... | "returned"; notes?: string | undefined; }>' is not assignable to type 'UseFormReturn<{ productId: string; adjustmentQuantity: number; reason: "received" | "damaged" | "lost" | "correction" | "returned"; notes?: string | undefined; }, any, undefined>'.
+  Types of property 'handleSubmit' are incompatible.
+    Type 'UseFormHandleSubmit<{ productId: string; adjustmentQuantity: number; reason: "received" | "damaged" | "lost" | "correction" | "returned"; notes?: string | undefined; }, { productId: string; adjustmentQuantity: number; reason: "received" | ... 3 more ... | "returned"; notes?: string | undefined; }>' is not assignable to type 'UseFormHandleSubmit<{ productId: string; adjustmentQuantity: number; reason: "received" | "damaged" | "lost" | "correction" | "returned"; notes?: string | undefined; }, undefined>'.
+      Types of parameters 'onValid' and 'onValid' are incompatible.
+        Types of parameters 'data' and 'data' are incompatible.
+          Type '{ productId: string; adjustmentQuantity: number; reason: "received" | "damaged" | "lost" | "correction" | "returned"; notes?: string | undefined; }' is not assignable to type 'undefined'.
+src/features/products/ProductAddModal.tsx(47,13): error TS2322: Type 'UseFormReturn<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, any, { ...; }>' is not assignable to type 'UseFormReturn<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, any, undefined>'.
+  Types of property 'handleSubmit' are incompatible.
+    Type 'UseFormHandleSubmit<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, { ...; }>' is not assignable to type 'UseFormHandleSubmit<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, undefined>'.
+      Types of parameters 'onValid' and 'onValid' are incompatible.
+        Types of parameters 'data' and 'data' are incompatible.
+          Type '{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }' is not assignable to type 'undefined'.
+src/features/products/ProductEditDrawer.tsx(50,13): error TS2322: Type 'UseFormReturn<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, any, { ...; }>' is not assignable to type 'UseFormReturn<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, any, undefined>'.
+  Types of property 'handleSubmit' are incompatible.
+    Type 'UseFormHandleSubmit<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, { ...; }>' is not assignable to type 'UseFormHandleSubmit<{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }, undefined>'.
+      Types of parameters 'onValid' and 'onValid' are incompatible.
+        Types of parameters 'data' and 'data' are incompatible.
+          Type '{ name: string; price: number; minStockLevel: number; active: boolean; sku?: string | undefined; barcode?: string | undefined; categoryId?: string | undefined; cost?: number | undefined; }' is not assignable to type 'undefined'.
+src/features/system/SyncHealthDashboard.tsx(14,9): error TS2322: Type '{ title: string; description: string; }' is not assignable to type 'IntrinsicAttributes & PageHeaderProps'.
+  Property 'description' does not exist on type 'IntrinsicAttributes & PageHeaderProps'.
+src/hooks/mutations/useCreatePurchase.ts(21,15): error TS2339: Property 'data' does not exist on type 'unknown'.
+src/hooks/mutations/useCreatePurchase.ts(21,29): error TS2339: Property 'error' does not exist on type 'unknown'.
+src/hooks/mutations/useCreatePurchase.ts(22,9): error TS2739: Type 'PostgrestFilterBuilder<any, any, any, any, "record_purchase_v2", null, "RPC">' is missing the following properties from type 'Promise<unknown>': catch, finally, [Symbol.toStringTag]
+src/lib/zodResolver.ts(6,13): error TS2344: Type 'output<T>' does not satisfy the constraint 'FieldValues'.
+  Type 'unknown' is not assignable to type 'FieldValues'.
+src/lib/zodResolver.ts(16,26): error TS2339: Property 'errors' does not exist on type 'ZodError<unknown>'.
+src/lib/zodResolver.ts(17,12): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/lib/zodResolver.ts(17,17): error TS7006: Parameter 'currentError' implicitly has an 'any' type.

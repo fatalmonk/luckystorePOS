@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { X, Save, Plus, Minus, RotateCcw } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
 import { clsx } from 'clsx';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '../../lib/zodResolver';
+import { inventoryAdjustmentSchema, InventoryAdjustmentData } from '../../schemas/inventory.schema';
+import { useUpdateInventory } from '../../hooks/mutations/useUpdateInventory';
+import { Form, FormSelect, StockAdjustmentInput } from '../../components/forms';
+import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 
 interface StockUpdateDrawerProps {
   product: any | null;
-  storeId: string;
   onClose: () => void;
 }
 
@@ -21,43 +24,40 @@ const reasons = [
 
 import { useNotify } from '../../components/NotificationContext';
 
-export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDrawerProps) {
+export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) {
   const { notify } = useNotify();
-  const queryClient = useQueryClient();
   const [mode, setMode] = useState<'add' | 'remove' | 'set'>('add');
-  const [quantity, setQuantity] = useState<number>(1);
-  const [reason, setReason] = useState<string>('received');
-  const [notes, setNotes] = useState<string>('');
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const updateMutation = useUpdateInventory();
 
-  const adjustmentMutation = useMutation({
-    mutationFn: async () => {
-      if (mode === 'set') {
-        return api.inventory.set(storeId, product.id, quantity, reason, notes);
-      } else {
-        const delta = mode === 'add' ? quantity : -quantity;
-        return api.inventory.update(storeId, product.id, delta, reason, notes, idempotencyKey);
-      }
-    },
-    onSuccess: (res) => {
-      if (res.is_duplicate) {
-        notify('This update was already processed.', 'info');
-      } else {
-        notify('Stock updated successfully.', 'success');
-      }
-      queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
-      onClose();
-    },
-    onError: (err: any) => {
-      notify(err.message || 'Failed to update stock. Please try again.', 'error');
+  const form = useForm<InventoryAdjustmentData>({
+    resolver: zodResolver(inventoryAdjustmentSchema),
+    defaultValues: {
+      productId: product?.id || '',
+      adjustmentQuantity: 1,
+      reason: 'received',
+      notes: '',
     }
   });
 
+  useUnsavedChangesGuard(form.formState.isDirty);
+
   if (!product) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    adjustmentMutation.mutate();
+  const handleSubmit = (data: InventoryAdjustmentData) => {
+    updateMutation.mutate({ data, mode }, {
+      onSuccess: (res: any) => {
+        if (res?.is_duplicate) {
+          notify('This update was already processed.', 'info');
+        } else {
+          notify('Stock updated successfully.', 'success');
+        }
+        form.reset();
+        onClose();
+      },
+      onError: (err: any) => {
+        notify(err.message || 'Failed to update stock. Please try again.', 'error');
+      }
+    });
   };
 
   return (
@@ -96,8 +96,8 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
           <button onClick={onClose} style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
         </header>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', flex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-2)' }}>
+        <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1">
+          <div className="grid grid-cols-3 gap-2">
             <button 
               type="button"
               onClick={() => setMode('add')}
@@ -142,39 +142,21 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
             </button>
           </div>
 
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>
-              {mode === 'set' ? 'Target Stock' : 'Quantity to ' + (mode === 'add' ? 'Add' : 'Remove')}
-            </label>
-            <input 
-              type="number" 
-              value={quantity} 
-              onChange={e => setQuantity(parseInt(e.target.value) || 0)}
-              required
-              min={0}
-              style={{ width: '100%', padding: 'var(--space-3)', fontSize: 'var(--font-size-xl)', fontWeight: '700', textAlign: 'center', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)' }}
-            />
-          </div>
+          <StockAdjustmentInput
+            name="adjustmentQuantity"
+            label={mode === 'set' ? 'Target Stock' : 'Quantity to ' + (mode === 'add' ? 'Add' : 'Remove')}
+          />
 
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Reason for change</label>
-            <select 
-              value={reason} 
-              onChange={e => setReason(e.target.value)}
-              required
-              style={{ width: '100%', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)' }}
-            >
-              {reasons.map(r => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
+          <FormSelect
+            name="reason"
+            label="Reason for change"
+            options={reasons}
+          />
 
           <div className="form-group">
             <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Notes (optional)</label>
             <textarea 
-              value={notes} 
-              onChange={e => setNotes(e.target.value)}
+              {...form.register('notes')}
               placeholder="e.g. Broken during handling"
               style={{ width: '100%', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', minHeight: '100px' }}
             />
@@ -183,7 +165,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
           <div style={{ marginTop: 'auto', paddingTop: 'var(--space-8)' }}>
             <button 
               type="submit" 
-              disabled={adjustmentMutation.isPending}
+              disabled={updateMutation.isPending}
               style={{ 
                 width: '100%',
                 backgroundColor: 'var(--color-primary)', 
@@ -195,13 +177,13 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 'var(--space-2)',
-                opacity: adjustmentMutation.isPending ? 0.7 : 1
+                opacity: updateMutation.isPending ? 0.7 : 1
               }}
             >
-              <Save size={18} /> {adjustmentMutation.isPending ? 'Updating...' : 'Confirm Update'}
+              <Save size={18} /> {updateMutation.isPending ? 'Updating...' : 'Confirm Update'}
             </button>
           </div>
-        </form>
+        </Form>
       </div>
     </div>
   );

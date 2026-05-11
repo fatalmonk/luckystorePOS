@@ -1,20 +1,33 @@
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { History, ArrowLeft, ArrowUp, ArrowDown, User, Calendar } from 'lucide-react';
+import { ErrorState } from '../../components/PageState';
+import { ArrowLeft, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { InventoryMovementTimeline, InventoryMovement } from './InventoryMovementTimeline';
+
+const MOVEMENT_TYPES = [
+  { value: 'all', label: 'All Movements' },
+  { value: 'sale', label: 'Sales' },
+  { value: 'purchase', label: 'Purchases' },
+  { value: 'adjustment', label: 'Adjustments' },
+  { value: 'return', label: 'Returns' },
+  { value: 'damage', label: 'Damaged' },
+  { value: 'transfer', label: 'Transfers' },
+  { value: 'manual', label: 'Manual overrides' },
+];
 
 export function StockHistoryPage() {
   const { storeId } = useAuth();
+  const [movementType, setMovementType] = useState('all');
 
-  const { data: history, isLoading, error } = useQuery({
-    queryKey: ['inventory-history', storeId],
-    queryFn: () => api.inventory.history(storeId),
+  const { data: history, isLoading, error } = useQuery<InventoryMovement[]>({
+    queryKey: ['inventory-history', storeId, movementType],
+    queryFn: () => api.inventory.history(storeId, undefined, movementType === 'all' ? undefined : movementType),
   });
 
   if (error) {
@@ -32,7 +45,7 @@ export function StockHistoryPage() {
   }
 
   return (
-    <div className="history-container">
+    <div className="history-container max-w-5xl mx-auto p-4 sm:p-6">
       <header className="mb-4">
         <Link to="/inventory">
           <Button variant="secondary" size="sm" icon={<ArrowLeft size={18} />} className="mb-4">
@@ -41,63 +54,31 @@ export function StockHistoryPage() {
         </Link>
       </header>
       
-      <PageHeader 
-        title="Stock Movement History" 
-        subtitle="Audit log of all manual and automated stock changes." 
-        className="mb-8"
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+        <PageHeader 
+          title="Stock Movement Ledger" 
+          subtitle="Immutable audit log of all inventory mutations and their operational context." 
+          className="mb-0"
+        />
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-48">
+            <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10 pointer-events-none" />
+            <select 
+              value={movementType}
+              onChange={(e) => setMovementType(e.target.value)}
+              className="pl-9 w-full bg-background-main border-border-default input"
+            >
+              {MOVEMENT_TYPES.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       <Card padding="none" className="overflow-hidden">
-        {isLoading ? (
-          <div className="p-6">
-            <SkeletonBlock className="w-full h-[400px]" />
-          </div>
-        ) : history?.length === 0 ? (
-          <EmptyState
-            icon={<History size={48} />}
-            title="No stock movements yet"
-            description="Stock movements will appear here once you make adjustments."
-          />
-        ) : (
-          <div className="divide-y divide-border-default">
-            {history?.map((log: any) => (
-              <div
-                key={log.id}
-                className="flex items-center gap-6 p-4 sm:p-6 transition-colors hover:bg-background-subtle"
-              >
-                <div className={log.delta > 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger' + ' p-3 rounded-md flex items-center justify-center w-12 h-12 flex-shrink-0'}>
-                  {log.delta > 0 ? <ArrowUp size={24} /> : <ArrowDown size={24} />}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
-                    <span className="font-bold text-text-primary truncate">{log.item_name}</span>
-                    <span className={'font-mono text-lg font-bold ' + (log.delta > 0 ? 'text-success' : 'text-danger')}>
-                      {log.delta > 0 ? '+' : ''}{log.delta}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted">
-                    <span className="flex items-center gap-1 capitalize">
-                      <span className="font-semibold">Reason:</span> {log.reason.replace('_', ' ')}
-                    </span>
-                    {log.notes && (
-                      <span className="italic truncate">— "{log.notes}"</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="text-right flex-shrink-0 hidden sm:block">
-                  <div className="flex items-center justify-end gap-1.5 text-xs text-text-muted mb-1">
-                    <User size={12} /> {log.performer_name || 'System'}
-                  </div>
-                  <div className="flex items-center justify-end gap-1.5 text-xs text-text-muted">
-                    <Calendar size={12} /> {format(new Date(log.created_at), 'MMM d, h:mm a')}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <InventoryMovementTimeline movements={history} isLoading={isLoading} />
       </Card>
     </div>
   );

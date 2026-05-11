@@ -2,60 +2,58 @@
 
 ## Prerequisites
 - Node.js 20 or newer
-- Docker running locally for Supabase
+- Flutter SDK (stable)
 - npm
 
-## Install Dependencies
+## Runtime Topology
+**Local Apps -> REAL Supabase STAGING project**
+Do NOT use local Supabase Docker stack for operational validation. You are validating operational behavior, not backend primitives.
+
+## Apps Setup
+
+### 1. Admin Web
+File: `apps/admin_web/.env.local`
+
+**Required Configuration:**
+```env
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_REAL_ANON_KEY
+VITE_APP_ENV=staging
+```
+
+**Start:**
 ```bash
+cd apps/admin_web
 npm install
-```
-
-This repo uses `apps/admin_web` as the Vite frontend. Root scripts proxy into that app so every agent can use the same commands.
-
-## Configure Local Environment
-1. Copy `.env.local.example` to `.env.local`.
-2. Start Supabase locally.
-3. Run `npm run supabase:status`.
-4. Replace the placeholder anon and service-role keys in `.env.local` with the local keys shown by the status command.
-
-Do not commit `.env.local`.
-
-## Start Local Supabase
-```bash
-npm run supabase:start
-npm run supabase:status
-```
-
-Endpoints:
-- API: `http://127.0.0.1:54321`
-- Postgres: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
-- Studio: `http://127.0.0.1:54323`
-- Inbucket: `http://127.0.0.1:54324`
-
-## Reset Local Database
-Requires human approval because this deletes local data.
-
-```bash
-npm run supabase:reset
-```
-
-The reset loads schema from `schema_dump.sql` and seed data from `supabase/seed.sql`.
-
-## Generate Supabase Types
-```bash
-npm run supabase:types
-```
-
-This writes TypeScript database types to `apps/admin_web/src/lib/database.types.ts`.
-
-## Start the Frontend
-```bash
 npm run dev
 ```
 
-## Verification
+### 2. Flutter Mobile
+Use existing config system.
+
+**Required Configuration:**
+```env
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_ANON_KEY=YOUR_REAL_ANON_KEY
+APP_ENV=staging
+```
+
+**Prerequisites:**
+- Physical Android device
+- Bluetooth enabled
+- Printer paired
+
+**Start:**
 ```bash
-npm run lint
+cd apps/mobile_app
+flutter pub get
+flutter run
+```
+
+## Verification Commands
+Run these after making significant changes:
+
+```bash
 npm run typecheck
 npm run build
 ```

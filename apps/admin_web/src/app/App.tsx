@@ -1,9 +1,9 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryProvider } from './QueryProvider';
-import { Layout } from '../components/Layout';
+import { AdminLayout } from '../layouts/AdminLayout';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
-import { AuthGuard } from './AuthGuard';
+import { ProtectedRoute } from '../routes/ProtectedRoute';
 import { ErrorBoundary } from './ErrorBoundary';
 import { OAuthConsentPage } from '../features/oauth/OAuthConsentPage';
 import { NotificationProvider } from '../components/Notification';
@@ -61,7 +61,7 @@ export function App() {
               <OfflineIndicator />
               <Routes>
                 <Route path="/oauth/consent" element={<OAuthConsentPage />} />
-                <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
+                <Route path="/" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                   <Route index element={<DashboardPage />} />
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />

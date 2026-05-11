@@ -1,0 +1,30 @@
+name: Distributed Consistency Audits
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  eval-verification:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Install Top-Level Module Cache
+      run: |
+        cd apps/admin_web && npm ci
+        
+    - name: Execute Distributed Simulator Suite
+      env:
+        # In CI, run statically or pointed at ephemeral supabase staging test runner
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: node evals/distributed/chaos-runner.cjs
+      
+    - name: Execute Reconciliation Race Auditor
+      run: node evals/distributed/reconciliation-eval.cjs
