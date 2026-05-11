@@ -40,6 +40,7 @@ export const settings = {
       .from('users')
       .insert([{
         id: authId,
+        email: user.email,
         tenant_id: user.tenantId,
         store_id: storeId,
         name: user.fullName,
