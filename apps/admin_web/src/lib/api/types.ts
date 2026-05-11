@@ -85,6 +85,7 @@ export interface Reminder {
 export type ExpensePaymentType = 'Cash' | 'Bank transfer' | 'Bkash' | 'Card';
 
 export type ExpenseCategory =
+  | 'Stock Purchase'
   | 'Capital Expenditure'
   | 'Utility Expenses'
   | 'Transport & Conveyance'
@@ -93,6 +94,7 @@ export type ExpenseCategory =
   | 'All Other Expenses';
 
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
+  'Stock Purchase',
   'Capital Expenditure',
   'Utility Expenses',
   'Transport & Conveyance',
@@ -168,4 +170,33 @@ export interface ReceiptConfigUpdateInput {
   store_name: string;
   header_text: string;
   footer_text: string;
+}
+
+// =============================================================================
+// Daily Sales Domain Types
+// Aligned with public.daily_sales table
+// =============================================================================
+
+export interface DailySale {
+  id: string;
+  storeId: string;
+  saleDate: string;
+  cashAmount: number;
+  bkashAmount: number;
+  creditAmount: number;
+  totalSales: number;
+  stockPurchase: number;
+  dailyExpense: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DailySaleFormData {
+  saleDate: string;
+  cashAmount: number;
+  bkashAmount: number;
+  creditAmount: number;
+  totalSales: number;
+  stockPurchase: number;
+  dailyExpense: number;
 }

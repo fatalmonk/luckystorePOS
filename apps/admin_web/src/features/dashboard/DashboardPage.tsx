@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-react';
+import { DollarSign, AlertTriangle, Package, TrendingUp, Bell, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
 import { MetricCard } from '../../components/data-display/MetricCard';
+import { format, subDays, parseISO } from 'date-fns';
 
 export function DashboardPage() {
   const { storeId } = useAuth();
@@ -40,60 +41,78 @@ export function DashboardPage() {
     queryFn: () => api.dashboard.getLowStock(storeId),
   });
 
-  // Fetch last 7 days revenue vs expenses
-  const cashflowQuery = useQuery({
-    queryKey: ['cashflow', storeId],
+  // Fetch daily sales data for comparison
+  const dailySalesQuery = useQuery({
+    queryKey: ['daily-sales-comparison', storeId],
     queryFn: async () => {
       if (!storeId) return [];
-      const days = 7;
-      const data = [];
-      const today = new Date();
+      const { data, error } = await supabase
+        .from('daily_sales')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('sale_date', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!storeId,
+  });
 
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        const nextDate = new Date(date);
-        nextDate.setDate(nextDate.getDate() + 1);
-        const nextDateStr = nextDate.toISOString().split('T')[0];
-
-        // Get sales for this day
-        const { data: salesData } = await supabase
-          .from('sales')
-          .select('total_amount')
-          .eq('store_id', storeId)
-          .eq('status', 'completed')
-          .gte('created_at', dateStr)
-          .lt('created_at', nextDateStr);
-
-        // Get expenses for this day
-        const { data: expensesData } = await supabase
-          .from('expenses')
-          .select('amount')
-          .eq('store_id', storeId)
-          .gte('expense_date', dateStr)
-          .lt('expense_date', nextDateStr);
-
-        const revenue = salesData?.reduce((sum, s) => sum + (s.total_amount || 0), 0) || 0;
-        const expenses = expensesData?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
-
-        data.push({
-          date: dateStr,
-          label: date.toLocaleDateString('en-US', { weekday: 'short' }),
-          revenue,
-          expenses,
-        });
-      }
-      return data;
+  // Fetch expenses data including stock purchase category
+  const expensesQuery = useQuery({
+    queryKey: ['expenses-dashboard', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('expense_date', { ascending: false });
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!storeId,
   });
 
   const stats = statsQuery.data;
   const lowStock = lowStockQuery.data;
-  const cashflow = cashflowQuery.data || [];
-  const isLoading = statsQuery.isLoading || cashflowQuery.isLoading;
-  const isError = statsQuery.isError || cashflowQuery.isError;
+  const dailySales = dailySalesQuery.data || [];
+  const expenses = expensesQuery.data || [];
+  const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
+  const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
+
+  // Calculate stock purchases from expenses filtered by category
+  const totalStockPurchases = expenses
+    .filter((e: any) => e.category === 'Stock Purchase')
+    .reduce((sum: number, e: any) => sum + Number(e.amount), 0);
+
+  // Calculate totals from daily_sales
+  const dailySalesTotal = dailySales.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
+  const dailyExpensesTotal = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
+
+  // Sales vs Expenses comparison from daily_sales
+  const salesVsExpenses = dailySales
+    .slice(0, 14)
+    .reverse()
+    .map((s: any) => ({
+      date: s.sale_date,
+      label: format(parseISO(s.sale_date), 'dd MMM'),
+      sales: Number(s.total_sales || 0),
+      expenses: Number(s.daily_expense || 0),
+      stockPurchases: Number(s.stock_purchase || 0),
+    }));
+
+  // Payment breakdown from daily_sales
+  const paymentBreakdown = dailySales.reduce(
+    (acc: { cash: number; bkash: number; credit: number }, s: any) => ({
+      cash: acc.cash + Number(s.cash_amount || 0),
+      bkash: acc.bkash + Number(s.bkash_amount || 0),
+      credit: acc.credit + Number(s.credit_amount || 0),
+    }),
+    { cash: 0, bkash: 0, credit: 0 }
+  );
+
+  const totalPayments = paymentBreakdown.cash + paymentBreakdown.bkash + paymentBreakdown.credit;
 
   if (isLoading) {
     return (
@@ -103,7 +122,7 @@ export function DashboardPage() {
           <SkeletonBlock className="w-[260px] h-[18px] mt-2" />
         </header>
         <div className="dashboard-grid">
-          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
         <section className="mt-12">
           <SkeletonBlock className="w-[160px] h-[22px] mb-6" />
@@ -116,7 +135,7 @@ export function DashboardPage() {
   if (isError) {
     return (
       <div className="dashboard-container">
-        <ErrorState message="Failed to load dashboard data." onRetry={() => { statsQuery.refetch(); lowStockQuery.refetch(); }} />
+        <ErrorState message="Failed to load dashboard data." onRetry={() => { statsQuery.refetch(); lowStockQuery.refetch(); dailySalesQuery.refetch(); expensesQuery.refetch(); }} />
       </div>
     );
   }
@@ -148,8 +167,8 @@ export function DashboardPage() {
           color="success"
         />
         <MetricCard
-          title="Purchase"
-          value={`৳${stats?.total_purchases || '0.00'}`}
+          title="Stock Purchases"
+          value={`৳${totalStockPurchases.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`}
           icon={<Package size={20} />}
           color="info"
         />
@@ -161,49 +180,59 @@ export function DashboardPage() {
         />
       </div>
 
+      {/* Sales vs Expenses Comparison Section */}
       <div className="grid grid-cols-2 gap-6 mt-8">
         {/* Left Column */}
         <div className="flex flex-col gap-6">
           <section>
             <h2 className="text-xl font-semibold text-text-primary mb-4">
-              Cashflow Overview
+              Sales vs Expenses (Last 14 Days)
             </h2>
             <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
-              {cashflow.length > 0 && (
+              {salesVsExpenses.length > 0 && (
                 <>
                   <div className="flex items-center gap-6 mb-4">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-sm bg-success" />
-                      <span className="text-sm text-text-muted">Revenue</span>
+                      <span className="text-sm text-text-muted">Sales</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-sm bg-danger" />
                       <span className="text-sm text-text-muted">Expenses</span>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-info" />
+                      <span className="text-sm text-text-muted">Stock Purchases</span>
+                    </div>
                   </div>
-                  <div className="flex items-end justify-between gap-2" style={{ height: '200px' }}
-                  >
-                    {cashflow.map((day: { date: string, label: string, revenue: number, expenses: number }, idx: number) => {
-                      const maxVal = Math.max(...cashflow.map((d: { revenue: number, expenses: number }) => Math.max(d.revenue, d.expenses)), 1);
-                      const revenueHeight = maxVal > 0 ? (day.revenue / maxVal) * 100 : 0;
+                  <div className="flex items-end justify-between gap-1" style={{ height: '200px' }}>
+                    {salesVsExpenses.map((day: { date: string; label: string; sales: number; expenses: number; stockPurchases: number }, idx: number) => {
+                      const maxVal = Math.max(
+                        ...salesVsExpenses.map((d: { sales: number; expenses: number; stockPurchases: number }) => 
+                          Math.max(d.sales, d.expenses, d.stockPurchases)
+                        ),
+                        1
+                      );
+                      const salesHeight = maxVal > 0 ? (day.sales / maxVal) * 100 : 0;
                       const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
+                      const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
                       return (
                         <div key={idx} className="flex-1 flex flex-col items-center gap-1">
                           <div className="flex items-end gap-0.5 w-full justify-center" style={{ height: '100%' }}>
                             <div
                               style={{
-                                width: '40%',
-                                height: `${revenueHeight}%`,
+                                width: '28%',
+                                height: `${salesHeight}%`,
                                 backgroundColor: 'var(--color-success-default)',
                                 borderRadius: '2px 2px 0 0',
-                                minHeight: day.revenue > 0 ? 4 : 0,
+                                minHeight: day.sales > 0 ? 4 : 0,
                                 transition: 'height 0.3s ease',
                               }}
-                              title={`Revenue: ৳${day.revenue.toLocaleString()}`}
+                              title={`Sales: ৳${day.sales.toLocaleString()}`}
                             />
                             <div
                               style={{
-                                width: '40%',
+                                width: '28%',
                                 height: `${expenseHeight}%`,
                                 backgroundColor: 'var(--color-danger-default)',
                                 borderRadius: '2px 2px 0 0',
@@ -212,13 +241,31 @@ export function DashboardPage() {
                               }}
                               title={`Expenses: ৳${day.expenses.toLocaleString()}`}
                             />
+                            <div
+                              style={{
+                                width: '28%',
+                                height: `${stockHeight}%`,
+                                backgroundColor: 'var(--color-info-default)',
+                                borderRadius: '2px 2px 0 0',
+                                minHeight: day.stockPurchases > 0 ? 4 : 0,
+                                transition: 'height 0.3s ease',
+                              }}
+                              title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
+                            />
                           </div>
-                          <span className="text-xs text-text-muted">{day.label}</span>
+                          <span className="text-xs text-text-muted whitespace-nowrap" style={{ fontSize: '10px' }}>
+                            {day.label}
+                          </span>
                         </div>
                       );
                     })}
                   </div>
                 </>
+              )}
+              {salesVsExpenses.length === 0 && (
+                <div className="text-center text-text-muted py-8">
+                  No daily sales data available. <a href="/admin/daily-sales" className="text-primary-default hover:underline">Add daily sales</a>
+                </div>
               )}
             </div>
           </section>
@@ -253,6 +300,59 @@ export function DashboardPage() {
             <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-8 text-center">
               <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Current Available Balance</div>
               <div className="text-4xl font-bold text-success font-mono">৳{stats?.total_balance || '0.00'}</div>
+            </div>
+          </section>
+
+          {/* Payment Breakdown */}
+          <section>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Payment Breakdown</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
+              {totalPayments > 0 ? (
+                <>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
+                      <div className="text-sm text-text-muted">Cash</div>
+                      <div className="text-lg font-bold text-success">৳{paymentBreakdown.cash.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.cash / totalPayments) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
+                      <div className="text-sm text-text-muted">Bkash</div>
+                      <div className="text-lg font-bold text-info">৳{paymentBreakdown.bkash.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.bkash / totalPayments) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
+                      <div className="text-sm text-text-muted">Credit</div>
+                      <div className="text-lg font-bold text-warning">৳{paymentBreakdown.credit.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.credit / totalPayments) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-surface-secondary rounded-full overflow-hidden flex">
+                    {totalPayments > 0 && (
+                      <>
+                        <div 
+                          className="bg-success" 
+                          style={{ width: `${(paymentBreakdown.cash / totalPayments) * 100}%` }} 
+                        />
+                        <div 
+                          className="bg-info" 
+                          style={{ width: `${(paymentBreakdown.bkash / totalPayments) * 100}%` }} 
+                        />
+                        <div 
+                          className="bg-warning" 
+                          style={{ width: `${(paymentBreakdown.credit / totalPayments) * 100}%` }} 
+                        />
+                      </>
+                    )}
+                  </div>
+                  <div className="text-center text-sm text-text-muted mt-2">
+                    Total: ৳{totalPayments.toLocaleString('en-BD', { maximumFractionDigits: 0 })}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-text-muted py-4">
+                  No sales data available
+                </div>
+              )}
             </div>
           </section>
 
