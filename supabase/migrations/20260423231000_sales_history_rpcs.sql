@@ -5,6 +5,7 @@
 
 -- 1) RPC: get_sales_history
 -- Returns a paginated list of sales with search and date filters.
+DROP FUNCTION IF EXISTS public.get_sales_history;
 CREATE OR REPLACE FUNCTION public.get_sales_history(
   p_store_id uuid,
   p_search_query text DEFAULT NULL,
