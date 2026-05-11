@@ -13,11 +13,68 @@
   gap: var(--space-4);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .top-header {
     padding: 0 var(--space-3);
     height: 56px;
-    flex-wrap: wrap;
+  }
+  
+  .header-center {
+    margin: 0 var(--space-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .top-header {
+    padding: 0 var(--space-2);
+    height: 56px;
+    gap: var(--space-2);
+  }
+  
+  .header-left {
+    flex-shrink: 0;
+  }
+  
+  .header-center {
+    order: 3;
+    width: 100%;
+    margin: var(--space-2) 0 0;
+    max-width: none;
+  }
+  
+  .header-right {
+    flex-shrink: 0;
+    gap: var(--space-2);
+  }
+  
+  .header-button {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .header-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-header {
+    padding: 0 var(--space-2);
+  }
+  
+  .header-right {
+    gap: var(--space-1);
+  }
+  
+  .header-button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
   }
 }
 
