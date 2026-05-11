@@ -2,13 +2,19 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { Search, RefreshCw, History, Package } from 'lucide-react';
-import { clsx } from 'clsx';
+import { ErrorState } from '../../components/PageState';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, DollarSign, LayoutGrid, List as ListIcon } from 'lucide-react';
 import { StockUpdateDrawer } from './StockUpdateDrawer';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { useDebounce } from '../../hooks/useDebounce';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { Button } from '../../components/ui/Button';
+import { DataTable, Column } from '../../components/data-display/DataTable';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { MetricCard } from '../../components/data-display/MetricCard';
+import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 
 interface InventoryItem {
   id: string;
@@ -17,6 +23,9 @@ interface InventoryItem {
   current_qty: number;
   reorder_status: 'OK' | 'LOW' | 'OUT';
   last_updated?: string;
+  price?: number;
+  category_id?: string;
+  image_url?: string;
 }
 
 export function InventoryListPage() {
@@ -24,179 +33,305 @@ export function InventoryListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', storeId],
     queryFn: () => api.inventory.list(storeId),
   });
 
-  const filteredItems = useMemo(() =>
-    inventory?.filter((p: InventoryItem) =>
-      p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase())
-    ) ?? [],
-    [inventory, debouncedSearch]
-  );
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => api.categories.list(),
+  });
+
+  const filteredItems = useMemo(() => {
+    let filtered = inventory?.filter((p: InventoryItem) => {
+      const matchesSearch =
+        p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
+      return matchesSearch && matchesCategory;
+    }) ?? [];
+    return filtered;
+  }, [inventory, debouncedSearch, selectedCategoryId]);
+
+  const stats = useMemo(() => {
+    const all = inventory ?? [];
+    const total = all.length;
+    const lowStock = all.filter((p: InventoryItem) => p.reorder_status === 'LOW').length;
+    const outOfStock = all.filter((p: InventoryItem) => p.reorder_status === 'OUT').length;
+    const totalValue = all.reduce((sum: number, p: InventoryItem) => sum + ((p.price || 0) * p.current_qty), 0);
+    return { total, lowStock, outOfStock, totalValue };
+  }, [inventory]);
+
+  const columns: Column<InventoryItem>[] = [
+    {
+      header: 'Product',
+      accessor: 'name',
+      render: (_, row) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-background-subtle flex items-center justify-center overflow-hidden border border-border-default flex-shrink-0">
+            {row.image_url ? (
+              <img src={row.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <Package size={18} className="text-text-muted opacity-50" />
+            )}
+          </div>
+          <div>
+            <div className="font-semibold text-text-primary">{row.name}</div>
+            <div className="text-xs text-text-muted">SKU: {row.sku || 'N/A'}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: 'Current Stock',
+      accessor: 'current_qty',
+      render: (val) => (
+        <span className={`text-lg font-bold font-mono ${(val as number) <= 5 ? 'text-danger' : 'text-text-primary'}`}>
+          {val as number}
+        </span>
+      ),
+    },
+    {
+      header: 'Status',
+      accessor: 'reorder_status',
+      render: (val) => {
+        const status = val as string;
+        let variant: 'success' | 'warning' | 'danger' = 'success';
+        if (status === 'LOW') variant = 'warning';
+        if (status === 'OUT') variant = 'danger';
+        return (
+          <Badge variant={variant} className="font-bold px-2 py-0.5">
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      header: 'Value',
+      accessor: 'price',
+      render: (_, row) => (
+        <span className="font-mono text-text-primary">
+          ৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+        </span>
+      ),
+    },
+    {
+      header: 'Last Updated',
+      accessor: 'last_updated',
+      render: (val) => (
+        <span className="text-text-muted">
+          {val ? formatDistanceToNow(new Date(val as string)) + ' ago' : 'Never'}
+        </span>
+      ),
+    },
+    {
+      header: 'Actions',
+      accessor: 'id',
+      align: 'right',
+      render: (_, row) => (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={(e) => {
+            e.stopPropagation();
+            setAdjustingProduct(row);
+          }}
+        >
+          Update
+        </Button>
+      ),
+    },
+  ];
 
   if (error) {
     return (
       <div className="inventory-container">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-[var(--font-size-2xl)] font-bold">Stock Inventory</h1>
-            <p className="text-[var(--text-muted)]">Monitor and adjust stock levels.</p>
-          </div>
-        </header>
-        <div className="card">
+        <PageHeader
+          title="Stock Inventory"
+          subtitle="Monitor and adjust stock levels."
+        />
+        <Card className="mt-6">
           <ErrorState message="Failed to load inventory." onRetry={() => refetch()} />
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="inventory-container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700' }}>Stock Inventory</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Monitor and adjust stock levels.</p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-          <Link
-            to="/inventory/history"
-            className="button-secondary"
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              color: 'var(--text-main)',
-              padding: 'var(--space-2) var(--space-4)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              fontWeight: '600',
-              textDecoration: 'none'
-            }}
-          >
-            <History size={18} /> View History
-          </Link>
-          <button
-            onClick={() => refetch()}
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <RefreshCw size={18} />
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        title="Stock Inventory"
+        subtitle="Monitor and adjust stock levels."
+        actions={
+          <div className="flex gap-3">
+            <Link to="/inventory/history">
+              <Button variant="secondary" icon={<History size={18} />}>
+                View History
+              </Button>
+            </Link>
+            <Button variant="secondary" onClick={() => refetch()} loading={isLoading}>
+              <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+            </Button>
+          </div>
+        }
+        className="mb-6"
+      />
 
-      <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-        <div style={{ position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder="Filter by product name or SKU..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: 'var(--space-3) var(--space-3) var(--space-3) 40px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--input-bg)'
-            }}
-          />
-        </div>
+      {/* Metric Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <MetricCard
+          title="Total SKUs"
+          value={stats.total}
+          icon={<Package size={20} />}
+          color="primary"
+        />
+        <MetricCard
+          title="Low Stock"
+          value={stats.lowStock}
+          icon={<AlertTriangle size={20} />}
+          color="warning"
+          badge={stats.lowStock > 0 ? 'Reorder' : undefined}
+        />
+        <MetricCard
+          title="Out of Stock"
+          value={stats.outOfStock}
+          icon={<TrendingDown size={20} />}
+          color="danger"
+        />
+        <MetricCard
+          title="Inventory Value"
+          value={`৳${stats.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+          icon={<DollarSign size={20} />}
+          color="success"
+        />
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)' }}>
-              <th style={{ padding: 'var(--space-4)' }}>Product</th>
-              <th style={{ padding: 'var(--space-4)' }}>Current Stock</th>
-              <th style={{ padding: 'var(--space-4)' }}>Status</th>
-              <th style={{ padding: 'var(--space-4)' }}>Last Updated</th>
-              <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array(5).fill(0).map((_, i) => (
-                <tr key={i} className="border-b border-[var(--border-color)]">
-                  <td className="p-4"><SkeletonBlock className="w-[200px] h-5" /></td>
-                  <td className="p-4"><SkeletonBlock className="w-[60px] h-5" /></td>
-                  <td className="p-4"><SkeletonBlock className="w-[80px] h-5" /></td>
-                  <td className="p-4"><SkeletonBlock className="w-[100px] h-5" /></td>
-                  <td className="p-4 text-right"><SkeletonBlock className="w-[100px] h-[30px] ml-auto" /></td>
-                </tr>
-              ))
-            ) : filteredItems.length === 0 ? (
-              <tr>
-                <td colSpan={5}>
-                  <EmptyState
-                    icon={<Package size={48} />}
-                    title="No inventory items"
-                    description="Add products to start tracking stock levels."
+      {/* Category Thumbnails */}
+      <Card className="mb-6" padding="md">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">
+          Filter by Category
+        </h3>
+        <CategoryThumbnailGrid
+          categories={categories?.map((c: any) => ({
+            id: c.id,
+            name: c.name || c.category,
+            itemCount: inventory?.filter((p: any) => p.category_id === c.id).length ?? 0,
+            imageUrl: c.image_url,
+            color: c.color,
+            icon: c.icon,
+          })) ?? []}
+          selectedId={selectedCategoryId}
+          onSelect={setSelectedCategoryId}
+        />
+      </Card>
+
+      {/* Search + View Toggle */}
+      <Card className="mb-6" padding="none">
+        <div className="p-4 flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              placeholder="Filter by product name or SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="flex rounded-md border border-border-default overflow-hidden">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-2 flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-primary text-primary-on'
+                  : 'bg-surface text-text-secondary hover:bg-background-subtle'
+              }`}
+            >
+              <LayoutGrid size={16} />
+              Grid
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-2 flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-primary text-primary-on'
+                  : 'bg-surface text-text-secondary hover:bg-background-subtle'
+              }`}
+            >
+              <ListIcon size={16} />
+              List
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Content */}
+      {viewMode === 'grid' && !isLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+          {filteredItems.map((item: InventoryItem) => (
+            <Card key={item.id} padding="none" className="overflow-hidden group cursor-pointer hover:shadow-level-2 transition-shadow">
+              {/* Image / Status color bar */}
+              <div className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden">
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
                   />
-                </td>
-              </tr>
-            ) : (
-              filteredItems.map((p: any) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <div style={{ fontWeight: '600' }}>{p.name}</div>
-                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>SKU: {p.sku || 'N/A'}</div>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <span style={{ fontSize: 'var(--font-size-lg)', fontWeight: '700' }}>{p.current_qty}</span>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)' }}>
-                    <span className={clsx(
-                      'badge',
-                      p.reorder_status === 'OK' && 'badge-success',
-                      p.reorder_status === 'LOW' && 'badge-warning',
-                      p.reorder_status === 'OUT' && 'badge-danger'
-                    )} style={{
-                      fontSize: 'var(--font-size-xs)',
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontWeight: '700',
-                      backgroundColor:
-                        p.reorder_status === 'OK' ? 'rgba(16, 185, 129, 0.1)' :
-                        p.reorder_status === 'LOW' ? 'rgba(245, 158, 11, 0.1)' :
-                        'rgba(239, 68, 68, 0.1)',
-                      color:
-                        p.reorder_status === 'OK' ? 'var(--color-success)' :
-                        p.reorder_status === 'LOW' ? 'var(--color-warning)' :
-                        'var(--color-danger)'
-                    }}>
-                      {p.reorder_status}
-                    </span>
-                  </td>
-                  <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                    {p.last_updated ? formatDistanceToNow(new Date(p.last_updated)) + ' ago' : 'Never'}
-                  </td>
-                  <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
-                    <button
-                      onClick={() => setAdjustingProduct(p)}
-                      style={{
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'white',
-                        padding: 'var(--space-2) var(--space-4)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--font-size-sm)',
-                        fontWeight: '600'
-                      }}
-                    >
-                      Update
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-text-muted">
+                    <Package size={40} className="mb-2 opacity-40" />
+                    <span className="text-xs">No image</span>
+                  </div>
+                )}
+                <div className="absolute top-2 right-2">
+                  <Badge
+                    variant={
+                      item.reorder_status === 'OUT' ? 'danger' :
+                      item.reorder_status === 'LOW' ? 'warning' : 'success'
+                    }
+                    className="text-[10px] px-2 py-0.5 font-bold"
+                  >
+                    {item.reorder_status}
+                  </Badge>
+                </div>
+              </div>
+              <div className="p-3 flex flex-col gap-1.5">
+                <h4 className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight min-h-[2.5em]">
+                  {item.name}
+                </h4>
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-bold font-mono text-text-primary">
+                    {item.current_qty}
+                  </span>
+                  <span className="text-xs text-text-muted font-mono">
+                    ৳{((item.price || 0) * item.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-full mt-1"
+                  onClick={() => setAdjustingProduct(item)}
+                >
+                  Update Stock
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={filteredItems}
+          emptyMessage="No inventory items found. Add products to start tracking stock levels."
+        />
+      )}
 
       <StockUpdateDrawer
         product={adjustingProduct}

@@ -5,6 +5,8 @@ library;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
 
@@ -45,27 +47,27 @@ class _ManagerPinDialogState extends State<ManagerPinDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Manager Authentication'),
+      title: Text('Manager Authentication', style: AppTextStyles.headingMd),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Reason: ${widget.reason}'),
+          Text('Reason: ${widget.reason}', style: AppTextStyles.bodyMd),
           const SizedBox(height: 16),
           _buildPinEntry(),
           if (_errorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            Text(_errorMessage!, style: AppTextStyles.bodySm.copyWith(color: AppColors.dangerDefault)),
           ],
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel', style: AppTextStyles.labelMd.copyWith(color: AppColors.textSecondary)),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _submitPin,
-          child: _isLoading ? const CircularProgressIndicator() : const Text('Submit'),
+          child: _isLoading ? const CircularProgressIndicator() : Text('Submit', style: AppTextStyles.labelMd),
         ),
       ],
     );

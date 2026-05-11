@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import '../styles/layout.css';
@@ -27,6 +27,7 @@ const navGroups: NavGroup[] = [
     title: 'Business',
     items: [
       { icon: ShoppingCart, label: 'Sales', path: '/sales' },
+      { icon: BarChart3, label: 'Daily Sales', path: '/daily-sales' },
       { icon: Package, label: 'Products', path: '/products' },
       { icon: Warehouse, label: 'Inventory', path: '/inventory', children: [
         { label: 'Current Stock', path: '/inventory' },
@@ -57,61 +58,101 @@ const navGroups: NavGroup[] = [
   }
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  hidden?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ hidden = false, onClose }: SidebarProps) {
   const { signOut } = useAuth();
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <h2 style={{ color: 'white', fontWeight: 700, fontSize: 'var(--font-size-lg)', marginBottom: '4px' }}>Lucky Store</h2>
-        <p style={{ color: 'var(--text-sidebar)', fontSize: 'var(--font-size-sm)' }}>Admin Panel</p>
-      </div>
-
-      <div className="sidebar-nav-container">
-        {navGroups.map((group) => (
-          <div key={group.title} className="sidebar-nav-group">
-            <h3 className="sidebar-nav-title">{group.title}</h3>
-            <nav className="sidebar-nav">
-              {group.items.map((item) => (
-                <div key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    className={({ isActive }) =>
-                      isActive ? 'sidebar-nav-item active' : 'sidebar-nav-item'
-                    }
-                    end={!item.children}
-                  >
-                    <item.icon size={20} />
-                    <span>{item.label}</span>
-                  </NavLink>
-                  {item.children && (
-                    <div className="sidebar-nav-children" style={{ marginLeft: '28px', borderLeft: '1px solid var(--border-color)', paddingLeft: '12px' }}>
-                      {item.children.map((child) => (
-                        <NavLink
-                          key={child.path}
-                          to={child.path}
-                          className={({ isActive }) =>
-                            isActive ? 'sidebar-nav-item active text-sm' : 'sidebar-nav-item text-sm'
-                          }
-                        >
-                          {child.label}
-                        </NavLink>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </nav>
+    <>
+      {/* Mobile overlay backdrop */}
+      {!hidden && (
+        <div
+          className="sidebar-backdrop"
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            zIndex: 19,
+          }}
+        />
+      )}
+      <aside className={`sidebar ${hidden ? 'sidebar--hidden' : ''}`}>
+        <div className="sidebar-header">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-default shadow-level-2 transform -rotate-6 flex-shrink-0">
+              <ShoppingBag className="text-primary-on" size={24} />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-white tracking-tight leading-tight">Lucky Store</h2>
+              <p className="text-xs text-neutral-400 font-medium uppercase tracking-widest opacity-60">Admin Portal</p>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="sidebar-footer">
-        <button onClick={signOut} style={{ color: 'var(--text-sidebar)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)' }}>
-          <LogOut size={20} />
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+        <div className="sidebar-nav-container">
+          {navGroups.map((group) => (
+            <div key={group.title} className="sidebar-nav-group">
+              <h3 className="sidebar-nav-title">{group.title}</h3>
+              <nav className="sidebar-nav flex flex-col gap-1">
+                {group.items.map((item) => (
+                  <div key={item.path} className="flex flex-col gap-1">
+                    <NavLink
+                      to={item.path}
+                      onClick={() => { if (window.innerWidth < 768) onClose?.(); }}
+                      className={({ isActive }) =>
+                        `sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? 'bg-primary-default text-primary-on shadow-level-1'
+                            : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                        }`
+                      }
+                      end={!item.children}
+                    >
+                      <item.icon size={20} />
+                      <span className="font-semibold text-sm">{item.label}</span>
+                    </NavLink>
+                    {item.children && (
+                      <div className="sidebar-nav-children ml-7 border-l border-neutral-800 pl-4 my-1 flex flex-col gap-1">
+                        {item.children.map((child) => (
+                          <NavLink
+                            key={child.path}
+                            to={child.path}
+                            onClick={() => { if (window.innerWidth < 768) onClose?.(); }}
+                            className={({ isActive }) =>
+                              `sidebar-nav-item text-xs font-medium py-1.5 px-2 rounded-md transition-colors ${
+                                isActive
+                                  ? 'text-primary-default'
+                                  : 'text-neutral-500 hover:text-neutral-300'
+                              }`
+                            }
+                          >
+                            {child.label}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </nav>
+            </div>
+          ))}
+        </div>
+
+        <div className="sidebar-footer">
+          <button
+            onClick={signOut}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-danger-default hover:bg-danger/10 transition-colors font-bold text-sm"
+          >
+            <LogOut size={20} />
+            <span>Logout Session</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../../shared/providers/pos_provider.dart';
 import '../../../../shared/widgets/product_card.dart';
 import '../../../../models/pos_models.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -15,36 +21,56 @@ class _SearchTabState extends State<SearchTab> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
   Timer? _debounceTimer;
+  List<PosItem> _results = [];
+  bool _searching = false;
+  String? _error;
 
-  // Simulated flat product catalog for fuzzy/local search
-  static const _catalog = [
-    {'sku': 'SK-001', 'name': 'Miniket Rice', 'price': 340.0, 'original': 380.0, 'weight': '5 kg'},
-    {'sku': 'SK-002', 'name': 'Soyabean Oil - Fresh', 'price': 185.0, 'original': 200.0, 'weight': '2 L'},
-    {'sku': 'SK-003', 'name': 'Red Onion Premium', 'price': 55.0, 'original': 70.0, 'weight': '1 kg'},
-    {'sku': 'SK-004', 'name': 'Lentil Dal Masoor', 'price': 120.0, 'original': 130.0, 'weight': '500 g'},
-    {'sku': 'SK-005', 'name': 'Broiler Chicken Fresh', 'price': 210.0, 'original': 230.0, 'weight': '1 kg'},
-    {'sku': 'SK-006', 'name': 'Radhuni Turmeric', 'price': 40.0, 'original': 50.0, 'weight': '200 g'},
-    {'sku': 'SK-007', 'name': 'Full Cream Milk', 'price': 75.0, 'original': 80.0, 'weight': '1 L'},
-    {'sku': 'SK-008', 'name': 'Plain Yogurt', 'price': 60.0, 'original': 65.0, 'weight': '400 g'},
-  ];
-
-  // Basic fuzzy match: checks if all characters in query appear in order in name
-  bool _fuzzyMatch(String name, String query) {
-    if (query.isEmpty) return false;
-    final n = name.toLowerCase();
-    final q = query.toLowerCase();
-    int qi = 0;
-    for (int i = 0; i < n.length && qi < q.length; i++) {
-      if (n[i] == q[qi]) qi++;
+  /// Executes the search via the provider
+  Future<void> _doSearch(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _results = [];
+        _searching = false;
+        _error = null;
+      });
+      return;
     }
-    return qi == q.length;
+
+    setState(() {
+      _searching = true;
+      _error = null;
+    });
+
+    final pos = context.read<PosProvider>();
+    try {
+      final items = await pos.searchItems(query.trim());
+      if (!mounted) return;
+      setState(() {
+        _results = items;
+        _searching = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Search failed. Please try again.';
+        _searching = false;
+      });
+    }
   }
 
-  List<Map<String, Object>> get _results {
-    if (_query.isEmpty) return [];
-    return _catalog
-        .where((p) => _fuzzyMatch(p['name'] as String, _query))
-        .toList();
+  /// Handles the text input with a 300ms debounce to prevent API spam
+  void _onSearchChanged(String v) {
+    setState(() => _query = v);
+    
+    _debounceTimer?.cancel();
+    if (v.trim().isEmpty) {
+      setState(() => _results = []);
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _doSearch(v);
+    });
   }
 
   @override
@@ -62,66 +88,98 @@ class _SearchTabState extends State<SearchTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Dominant search bar
             Container(
-              decoration: AppTheme.neomorphicDecoration,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDefault,
+                borderRadius: AppRadius.borderMd,
+                boxShadow: AppShadows.elevation1,
+                border: Border.all(color: AppColors.borderDefault),
+              ),
               child: TextField(
                 controller: _controller,
                 autofocus: true,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                onChanged: (v) {
+                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textPrimary),
+                onChanged: _onSearchChanged,
+                onSubmitted: (v) {
                   _debounceTimer?.cancel();
-                  _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-                    setState(() => _query = v);
-                  });
+                  _doSearch(v);
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search... (fuzzy matching)',
-                  hintStyle: const TextStyle(color: AppTheme.textSecondary),
-                  prefixIcon: const Icon(Icons.search, color: AppTheme.secondaryAccent),
+                  hintText: 'Search products, brands, SKUs...',
+                  hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.primaryDefault),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
+                          icon: const Icon(Icons.clear, color: AppColors.textSecondary),
                           onPressed: () {
                             _controller.clear();
-                            setState(() => _query = '');
+                            _debounceTimer?.cancel();
+                            setState(() {
+                              _query = '';
+                              _results = [];
+                              _error = null;
+                            });
                           },
                         )
-                      : null,
+                      : IconButton(
+                          icon: const Icon(Icons.arrow_forward, color: AppColors.primaryDefault),
+                          onPressed: () => _doSearch(_query),
+                        ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  contentPadding: AppSpacing.insetMd,
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
-            if (_query.isEmpty)
+            if (_searching)
               const Expanded(
+                child: Center(child: CircularProgressIndicator(color: AppColors.primaryDefault)),
+              )
+            else if (_error != null)
+              Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search, color: AppTheme.textSecondary, size: 64),
-                      SizedBox(height: 12),
+                      const Icon(Icons.error_outline, color: AppColors.dangerDefault, size: 64),
+                      const SizedBox(height: AppSpacing.space3),
+                      Text(
+                        _error!,
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.dangerDefault),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (_query.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.search, color: AppColors.textSecondary, size: 64),
+                      const SizedBox(height: AppSpacing.space3),
                       Text(
                         'Start typing to find products',
-                        style: TextStyle(color: AppTheme.textSecondary),
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
                 ),
               )
             else if (_results.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search_off, color: AppTheme.textSecondary, size: 64),
-                      SizedBox(height: 12),
+                      const Icon(Icons.search_off, color: AppColors.textSecondary, size: 64),
+                      const SizedBox(height: AppSpacing.space3),
                       Text(
-                        'No products found. Try a different spelling.',
-                        style: TextStyle(color: AppTheme.textSecondary),
+                        'No products found. Try a different search.',
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -139,16 +197,11 @@ class _SearchTabState extends State<SearchTab> {
                   ),
                   itemCount: _results.length,
                   itemBuilder: (context, i) {
-                    final p = _results[i];
+                    final item = _results[i];
                     return ProductCard(
-                      item: PosItem(
-                        id: p['sku'] as String,
-                        sku: p['sku'] as String,
-                        name: p['name'] as String,
-                        price: p['price'] as double,
-                      ),
-                      originalPrice: p['original'] as double,
-                      weight: p['weight'] as String,
+                      item: item,
+                      originalPrice: item.price * 1.15,
+                      weight: '${item.qtyOnHand} in stock',
                     );
                   },
                 ),

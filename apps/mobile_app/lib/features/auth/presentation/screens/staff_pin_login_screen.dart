@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
 
@@ -106,7 +109,7 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D1117),
+        backgroundColor: AppColors.primitiveNeutral900,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -122,15 +125,13 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                    // Branded Logo
                     _BrandedLogo(),
                     const SizedBox(height: 32),
-                    
-                    const Text(
+
+                    Text(
                       'Lucky Store Staff',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
+                      style: AppTextStyles.headingXl.copyWith(
+                        color: AppColors.primitiveNeutral0,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
                       ),
@@ -138,28 +139,24 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
                     const SizedBox(height: 8),
                     Text(
                       'Enter your access PIN to continue',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 15,
+                      style: AppTextStyles.bodyMd.copyWith(
+                        color: AppColors.primitiveNeutral400,
                       ),
                     ),
                     const SizedBox(height: 48),
 
-                    // PIN Dots Display
                     _PinDots(
                       length: _pinLength,
                       currentLength: _pin.length,
                       shakeAnim: _shakeAnim,
                     ),
 
-                    // Error Message
                     if (auth.signInError != null) ...[
                       const SizedBox(height: 20),
                       Text(
                         auth.signInError!,
-                        style: const TextStyle(
-                          color: Color(0xFFFF5252),
-                          fontSize: 14,
+                        style: AppTextStyles.bodySm.copyWith(
+                          color: AppColors.dangerDefault,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -167,7 +164,6 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
 
                     const SizedBox(height: 48),
 
-                    // Numeric Pad
                     _NumericPad(
                       onDigit: _addDigit,
                       onDelete: _deleteDigit,
@@ -177,8 +173,8 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
                     const SizedBox(height: 32),
 
                             if (_loading)
-                              const CircularProgressIndicator(
-                                color: Color(0xFFE8B84B),
+                              CircularProgressIndicator(
+                                color: AppColors.primaryDefault,
                                 strokeWidth: 3,
                               ),
                           ],
@@ -203,23 +199,23 @@ class _BrandedLogo extends StatelessWidget {
       width: 88,
       height: 88,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE8B84B), Color(0xFFD4941A)],
+        gradient: LinearGradient(
+          colors: [AppColors.primaryDefault, AppColors.primaryHover],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.borderLg,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE8B84B).withValues(alpha: 0.3),
+            color: AppColors.primaryDefault.withValues(alpha: 0.3),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.store_rounded,
-        color: Colors.white,
+        color: AppColors.primaryOn,
         size: 48,
       ),
     );
@@ -259,11 +255,11 @@ class _PinDots extends StatelessWidget {
             height: filled ? 20 : 16,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: filled ? const Color(0xFFE8B84B) : Colors.white.withValues(alpha: 0.15),
+              color: filled ? AppColors.primaryDefault : AppColors.primitiveNeutral0.withValues(alpha: 0.15),
               boxShadow: filled
-                  ? [BoxShadow(color: const Color(0xFFE8B84B).withValues(alpha: 0.4), blurRadius: 10)]
+                  ? [BoxShadow(color: AppColors.primaryDefault.withValues(alpha: 0.4), blurRadius: 10)]
                   : null,
-              border: filled ? null : Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1.5),
+              border: filled ? null : Border.all(color: AppColors.primitiveNeutral0.withValues(alpha: 0.05), width: 1.5),
             ),
           );
         }),
@@ -331,15 +327,14 @@ class _NumericPad extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.05),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            color: AppColors.primitiveNeutral0.withValues(alpha: 0.05),
+            border: Border.all(color: AppColors.primitiveNeutral0.withValues(alpha: 0.1)),
           ),
           alignment: Alignment.center,
           child: Text(
             '$digit',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
+            style: AppTextStyles.display.copyWith(
+              color: AppColors.primitiveNeutral0,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -359,7 +354,7 @@ class _NumericPad extends StatelessWidget {
           height: 80,
           child: Icon(
             Icons.backspace_outlined,
-            color: Colors.white.withValues(alpha: 0.5),
+            color: AppColors.primitiveNeutral400,
             size: 28,
           ),
         ),

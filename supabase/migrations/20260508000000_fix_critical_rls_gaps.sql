@@ -188,6 +188,7 @@ CREATE POLICY "items_select_tenant_isolated"
 
 -- Verify existing write policies
 DROP POLICY IF EXISTS "Admins manage items" ON public.items;
+DROP POLICY IF EXISTS "items_manage_authorized" ON public.items;
 
 CREATE POLICY "items_manage_authorized"
   ON public.items
@@ -218,6 +219,7 @@ CREATE POLICY "items_manage_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "disc_select" ON public.discounts;
+DROP POLICY IF EXISTS "discounts_select_tenant_isolated" ON public.discounts;
 
 -- Create secure SELECT policy
 CREATE POLICY "discounts_select_tenant_isolated"
@@ -238,6 +240,7 @@ CREATE POLICY "discounts_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "disc_write" ON public.discounts;
+DROP POLICY IF EXISTS "discounts_write_authorized" ON public.discounts;
 
 CREATE POLICY "discounts_write_authorized"
   ON public.discounts
@@ -268,6 +271,7 @@ CREATE POLICY "discounts_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "item_batches_select" ON public.item_batches;
+DROP POLICY IF EXISTS "item_batches_select_tenant_isolated" ON public.item_batches;
 
 -- Create secure SELECT policy
 CREATE POLICY "item_batches_select_tenant_isolated"
@@ -288,6 +292,7 @@ CREATE POLICY "item_batches_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "item_batches_write" ON public.item_batches;
+DROP POLICY IF EXISTS "item_batches_write_authorized" ON public.item_batches;
 
 CREATE POLICY "item_batches_write_authorized"
   ON public.item_batches
@@ -318,6 +323,7 @@ CREATE POLICY "item_batches_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "pm_select" ON public.payment_methods;
+DROP POLICY IF EXISTS "payment_methods_select_tenant_isolated" ON public.payment_methods;
 
 -- Create secure SELECT policy
 CREATE POLICY "payment_methods_select_tenant_isolated"
@@ -338,6 +344,7 @@ CREATE POLICY "payment_methods_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "pm_write" ON public.payment_methods;
+DROP POLICY IF EXISTS "payment_methods_write_authorized" ON public.payment_methods;
 
 CREATE POLICY "payment_methods_write_authorized"
   ON public.payment_methods
@@ -368,6 +375,7 @@ CREATE POLICY "payment_methods_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "purchase_orders_select" ON public.purchase_orders;
+DROP POLICY IF EXISTS "purchase_orders_select_tenant_isolated" ON public.purchase_orders;
 
 -- Create secure SELECT policy
 CREATE POLICY "purchase_orders_select_tenant_isolated"
@@ -388,6 +396,7 @@ CREATE POLICY "purchase_orders_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "purchase_orders_write" ON public.purchase_orders;
+DROP POLICY IF EXISTS "purchase_orders_write_authorized" ON public.purchase_orders;
 
 CREATE POLICY "purchase_orders_write_authorized"
   ON public.purchase_orders
@@ -418,6 +427,7 @@ CREATE POLICY "purchase_orders_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "po_items_select" ON public.purchase_order_items;
+DROP POLICY IF EXISTS "purchase_order_items_select_tenant_isolated" ON public.purchase_order_items;
 
 -- Create secure SELECT policy
 CREATE POLICY "purchase_order_items_select_tenant_isolated"
@@ -444,6 +454,7 @@ CREATE POLICY "purchase_order_items_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "po_items_write" ON public.purchase_order_items;
+DROP POLICY IF EXISTS "purchase_order_items_write_authorized" ON public.purchase_order_items;
 
 CREATE POLICY "purchase_order_items_write_authorized"
   ON public.purchase_order_items
@@ -484,6 +495,7 @@ CREATE POLICY "purchase_order_items_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "rc_select" ON public.receipt_config;
+DROP POLICY IF EXISTS "receipt_config_select_tenant_isolated" ON public.receipt_config;
 
 -- Create secure SELECT policy
 CREATE POLICY "receipt_config_select_tenant_isolated"
@@ -504,6 +516,7 @@ CREATE POLICY "receipt_config_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "rc_write" ON public.receipt_config;
+DROP POLICY IF EXISTS "receipt_config_write_authorized" ON public.receipt_config;
 
 CREATE POLICY "receipt_config_write_authorized"
   ON public.receipt_config
@@ -534,6 +547,7 @@ CREATE POLICY "receipt_config_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "stock_alert_thresholds_read_all" ON public.stock_alert_thresholds;
+DROP POLICY IF EXISTS "stock_alert_thresholds_select_tenant_isolated" ON public.stock_alert_thresholds;
 
 -- Create secure SELECT policy
 CREATE POLICY "stock_alert_thresholds_select_tenant_isolated"
@@ -554,6 +568,7 @@ CREATE POLICY "stock_alert_thresholds_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "stock_alert_thresholds_write_staff" ON public.stock_alert_thresholds;
+DROP POLICY IF EXISTS "stock_alert_thresholds_write_authorized" ON public.stock_alert_thresholds;
 
 CREATE POLICY "stock_alert_thresholds_write_authorized"
   ON public.stock_alert_thresholds
@@ -584,6 +599,7 @@ CREATE POLICY "stock_alert_thresholds_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "Authenticated users can read stock levels" ON public.stock_levels;
+DROP POLICY IF EXISTS "stock_levels_select_tenant_isolated" ON public.stock_levels;
 
 -- Create secure SELECT policy
 CREATE POLICY "stock_levels_select_tenant_isolated"
@@ -604,6 +620,7 @@ CREATE POLICY "stock_levels_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "Staff roles can manage stock levels" ON public.stock_levels;
+DROP POLICY IF EXISTS "stock_levels_write_authorized" ON public.stock_levels;
 
 CREATE POLICY "stock_levels_write_authorized"
   ON public.stock_levels
@@ -634,6 +651,7 @@ CREATE POLICY "stock_levels_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "stock_transfers_read_authenticated" ON public.stock_transfers;
+DROP POLICY IF EXISTS "stock_transfers_select_tenant_isolated" ON public.stock_transfers;
 
 -- Create secure SELECT policy
 CREATE POLICY "stock_transfers_select_tenant_isolated"
@@ -654,6 +672,7 @@ CREATE POLICY "stock_transfers_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "stock_transfers_write_staff" ON public.stock_transfers;
+DROP POLICY IF EXISTS "stock_transfers_write_authorized" ON public.stock_transfers;
 
 CREATE POLICY "stock_transfers_write_authorized"
   ON public.stock_transfers
@@ -684,6 +703,7 @@ CREATE POLICY "stock_transfers_write_authorized"
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "stock_transfer_items_read_authenticated" ON public.stock_transfer_items;
+DROP POLICY IF EXISTS "stock_transfer_items_select_tenant_isolated" ON public.stock_transfer_items;
 
 -- Create secure SELECT policy
 CREATE POLICY "stock_transfer_items_select_tenant_isolated"
@@ -711,6 +731,7 @@ CREATE POLICY "stock_transfer_items_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "stock_transfer_items_write_staff" ON public.stock_transfer_items;
+DROP POLICY IF EXISTS "stock_transfer_items_write_authorized" ON public.stock_transfer_items;
 
 CREATE POLICY "stock_transfer_items_write_authorized"
   ON public.stock_transfer_items
@@ -778,6 +799,7 @@ END $$;
 
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "suppliers_select" ON public.suppliers;
+DROP POLICY IF EXISTS "suppliers_select_tenant_isolated" ON public.suppliers;
 
 -- Create secure SELECT policy
 CREATE POLICY "suppliers_select_tenant_isolated"
@@ -798,6 +820,7 @@ CREATE POLICY "suppliers_select_tenant_isolated"
 
 -- Verify write policies
 DROP POLICY IF EXISTS "suppliers_write" ON public.suppliers;
+DROP POLICY IF EXISTS "suppliers_write_authorized" ON public.suppliers;
 
 CREATE POLICY "suppliers_write_authorized"
   ON public.suppliers

@@ -168,13 +168,13 @@
 }
 
 .sidebar-nav-item:hover {
-  background-color: var(--bg-sidebar-hover);
-  color: #ffffff;
+  background-color: var(--color-background-subtle);
+  color: var(--color-primary-default);
 }
 
 .sidebar-nav-item.active {
-  background-color: var(--bg-sidebar-hover);
-  color: var(--text-sidebar-active);
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary-default);
 }
 
 .sidebar-footer {

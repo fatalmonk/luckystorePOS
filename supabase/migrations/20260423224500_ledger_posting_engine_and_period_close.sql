@@ -783,8 +783,9 @@ GRANT EXECUTE ON FUNCTION public.post_sale_to_ledger(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.process_pending_ledger_postings(uuid, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.process_pending_ledger_postings(uuid, integer) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated;
+-- Permissions handled in baseline migration (20260301000000_baseline_core_tables.sql)
+-- REVOKE ALL ON FUNCTION public.complete_sale(...) FROM PUBLIC;
+-- GRANT EXECUTE ON FUNCTION public.complete_sale(...) TO authenticated;
 
 REVOKE ALL ON FUNCTION public.validate_trial_balance(uuid, date, date) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.validate_trial_balance(uuid, date, date) TO authenticated;

@@ -151,7 +151,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                 padding: 'var(--space-4)',
                 borderRadius: 'var(--radius-lg)',
                 border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
-                backgroundColor: selectedParty?.id === p.id ? 'rgba(251, 191, 36, 0.08)' : 'var(--bg-card)',
+                backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
                 cursor: 'pointer',
                 transition: 'all var(--transition-fast)',
                 boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
@@ -176,7 +176,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             <div style={{
               padding: 'var(--space-4)',
               borderBottom: '1px solid var(--border-color)',
-              backgroundColor: 'rgba(0,0,0,0.02)',
+              backgroundColor: 'var(--color-background-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
@@ -199,7 +199,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                   <tr style={{
                     textAlign: 'left',
                     borderBottom: '1px solid var(--border-color)',
-                    backgroundColor: 'rgba(0,0,0,0.02)',
+                    backgroundColor: 'var(--color-background-subtle)',
                     color: 'var(--text-muted)',
                     fontSize: 'var(--font-size-xs)',
                     textTransform: 'uppercase',

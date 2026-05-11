@@ -12,8 +12,8 @@ WORKDIR /app
 # Copy package files
 COPY apps/admin_web/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (devDeps required for Vite + TypeScript build)
+RUN npm ci
 
 # Copy source code
 COPY apps/admin_web/ ./
@@ -21,6 +21,9 @@ COPY apps/admin_web/ ./
 # Build the application
 # Note: Environment variables should be passed at build time if needed
 RUN npm run build
+
+# Prune devDependencies to reduce final image size
+RUN npm prune --production
 
 # ==========================================
 # Stage 2: Serve with Nginx

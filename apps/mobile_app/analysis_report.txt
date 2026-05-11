@@ -1,0 +1,20 @@
+Analyzing mobile_app...                                         
+
+  error • Invalid constant value • lib/features/auth/presentation/screens/login_screen.dart:116:49 • invalid_constant
+  error • Invalid constant value • lib/features/auth/presentation/screens/login_screen.dart:119:56 • invalid_constant
+  error • Invalid constant value • lib/features/auth/presentation/screens/login_screen.dart:134:49 • invalid_constant
+  error • Invalid constant value • lib/features/auth/presentation/screens/login_screen.dart:137:56 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/bkash_checkout.dart:120:57 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/bkash_checkout.dart:121:57 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/bkash_checkout.dart:125:45 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/bkash_checkout.dart:156:49 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/checkout_screen.dart:48:56 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/checkout_screen.dart:133:68 • invalid_constant
+  error • Invalid constant value • lib/features/checkout/presentation/screens/checkout_screen.dart:147:61 • invalid_constant
+  error • Invalid constant value • lib/features/inventory/presentation/screens/inventory_import_screen.dart:316:125 • invalid_constant
+  error • Invalid constant value • lib/features/pos/presentation/screens/categories_tab.dart:170:39 • invalid_constant
+warning • Unused import: '../../../../core/theme/app_colors.dart' • lib/features/pos/presentation/screens/search_tab.dart:3:8 • unused_import
+  error • Invalid constant value • lib/features/pos/presentation/screens/search_tab.dart:97:49 • invalid_constant
+  error • Invalid constant value • lib/features/pos/presentation/screens/search_tab.dart:113:53 • invalid_constant
+warning • Unused import: '../../theme/app_theme.dart' • lib/shared/widgets/side_drawer.dart:3:8 • unused_import
+
