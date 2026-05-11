@@ -15,6 +15,7 @@ export function InstallPrompt() {
     // Check if already dismissed in this session
     const wasDismissed = sessionStorage.getItem('pwa-install-dismissed');
     if (wasDismissed) {
+      setDismissed(true);
       sessionStorage.setItem('pwa-install-dismissed', 'true');
       return;
     }
