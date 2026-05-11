@@ -27,9 +27,7 @@ export function useRealtimeSubscription({
   const queryClient = useQueryClient();
   const onEventRef = useRef(onEvent);
 
-  useEffect(() => {
-    onEventRef.current = onEvent;
-  });
+  onEventRef.current = onEvent;
 
   useEffect(() => {
     const channelName = `realtime-${table}-${event}-${filter ?? 'all'}`;

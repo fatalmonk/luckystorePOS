@@ -57,7 +57,11 @@ def package_skill(skill_path, output_dir=None):
     skill_name = skill_path.name
     if output_dir:
         output_path = Path(output_dir).resolve()
-        output_path.mkdir(parents=True, exist_ok=True)
+        try:
+            output_path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            print(f"❌ Error creating output directory: {e}")
+            return None
     else:
         output_path = Path.cwd()
 
@@ -68,7 +72,8 @@ def package_skill(skill_path, output_dir=None):
         with zipfile.ZipFile(skill_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Walk through the skill directory
             for file_path in skill_path.rglob('*'):
-                if file_path.is_file():
+                # Skip the output file itself if it's inside the skill directory
+                if file_path.is_file() and file_path != skill_filename:
                     # Calculate the relative path within the zip
                     arcname = file_path.relative_to(skill_path.parent)
                     zipf.write(file_path, arcname)

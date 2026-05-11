@@ -199,3 +199,6 @@ apps/mobile_app/flutter/
 data/*.json
 .vercel/
 
+
+# Aion session artifacts
+.aionrs/

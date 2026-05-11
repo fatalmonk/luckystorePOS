@@ -85,7 +85,10 @@ export const PurchaseEntryPage: React.FC = () => {
 
   // ── Item search ─────────────────────────────────────────────────
   useEffect(() => {
-    if (debouncedItemSearch.length < 2) return;
+    if (debouncedItemSearch.length < 2) {
+      setItemResults([]);
+      return;
+    }
     let cancelled = false;
     const fetchItems = async () => {
       const { data, error } = await supabase

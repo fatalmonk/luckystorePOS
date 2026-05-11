@@ -53,11 +53,12 @@ export const pos = {
     storeId: string;
     items: Array<{ item_id: string; quantity: number; unit_price: number }>;
     payments: Array<{ account_id: string; amount: number; party_id?: string | null }>;
+    cashierId: string;
     notes?: string | null;
   }): Promise<SaleResult> => {
     debugLog('Creating sale', saleData);
     const args: CreateSaleArgs = {
-      p_cashier_id: saleData.idempotencyKey,
+      p_cashier_id: saleData.cashierId,
       p_client_transaction_id: saleData.idempotencyKey,
       p_store_id: saleData.storeId,
       p_items: saleData.items,
