@@ -74,7 +74,9 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     setLoading(false);
   }, [partyType]);
 
-  // parties loaded via useQuery below
+  useEffect(() => {
+    fetchParties();
+  }, [fetchParties]);
 
   const fetchLedger = async (party: Party) => {
     setSelectedParty(party);
