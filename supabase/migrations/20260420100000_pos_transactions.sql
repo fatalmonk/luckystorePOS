@@ -449,8 +449,9 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) TO authenticated;
+-- Permissions handled in baseline migration (20260301000000_baseline_core_tables.sql)
+-- REVOKE ALL ON FUNCTION public.complete_sale(...) FROM PUBLIC;
+-- GRANT EXECUTE ON FUNCTION public.complete_sale(...) TO authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 10) RPC: void_sale()
