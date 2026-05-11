@@ -425,8 +425,8 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
 }
 
 function EditUserModal({ user, isOpen, onClose, onSave, isSaving }: { user: { id: string; name?: string; full_name?: string; email?: string; role?: string }; isOpen: boolean; onClose: () => void; onSave: (updates: Record<string, unknown>) => void; isSaving: boolean }) {
-  const [name, setName] = useState('');
-  const [role, setRole] = useState('cashier');
+  const [name, setName] = useState(user?.name || user?.full_name || '');
+  const [role, setRole] = useState(user?.role || 'cashier');
   const [pin, setPin] = useState('');
 
   return (
