@@ -12,7 +12,7 @@ const debugLog = createDebugLogger('POS Mapper');
  * Maps a row from search_items_pos or lookup_item_by_scan to PosProduct
  * @throws Error if critical fields (id, price) are missing or invalid
  */
-export function mapSearchItem(row: any): PosProduct {
+export function mapSearchItem(row: Record<string, unknown>): PosProduct {
   debugLog('Raw search item', row);
 
   // Fail-fast: id is non-negotiable
@@ -54,7 +54,7 @@ export function mapSearchItem(row: any): PosProduct {
  * Maps a row from get_pos_categories to PosCategory
  * @throws Error if id is missing
  */
-export function mapCategory(row: any): PosCategory {
+export function mapCategory(row: Record<string, unknown>): PosCategory {
   debugLog('Raw category', row);
 
   if (!row.id) {
@@ -77,7 +77,7 @@ export function mapCategory(row: any): PosCategory {
  * Maps an array of rows from search_items_pos to PosProduct[]
  * Handles null/empty JSONB responses gracefully
  */
-export function mapSearchItems(rows: any): PosProduct[] {
+export function mapSearchItems(rows: Record<string, unknown>): PosProduct[] {
   if (!rows) {
     debugLog('Search items response is null/empty', rows);
     return [];
@@ -101,7 +101,7 @@ export function mapSearchItems(rows: any): PosProduct[] {
  * Maps an array of rows from get_pos_categories to PosCategory[]
  * Handles null/empty JSONB responses gracefully
  */
-export function mapCategories(rows: any): PosCategory[] {
+export function mapCategories(rows: Record<string, unknown>): PosCategory[] {
   if (!rows) {
     debugLog('Categories response is null/empty', rows);
     return [];
@@ -124,7 +124,7 @@ export function mapCategories(rows: any): PosCategory[] {
 /**
  * Maps a row from reminders table / RPC to Reminder domain type
  */
-export function mapReminder(row: any): Reminder {
+export function mapReminder(row: Record<string, unknown>): Reminder {
   return {
     id: row.id,
     tenantId: row.tenant_id,
@@ -143,7 +143,7 @@ export function mapReminder(row: any): Reminder {
 /**
  * Maps an array of reminder rows to Reminder[]
  */
-export function mapReminders(rows: any): Reminder[] {
+export function mapReminders(rows: Record<string, unknown>): Reminder[] {
   if (!rows) return [];
   if (Array.isArray(rows)) return rows.map(mapReminder);
   if (typeof rows === 'object') return [mapReminder(rows)];

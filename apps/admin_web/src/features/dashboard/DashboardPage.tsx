@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { DollarSign, AlertTriangle, Package, TrendingUp, Bell, BarChart3 } from 'lucide-react';
+import { DollarSign, AlertTriangle, Package, TrendingUp, Bell } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
 import { MetricCard } from '../../components/data-display/MetricCard';
-import { format, subDays, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 export function DashboardPage() {
   const { storeId } = useAuth();
@@ -83,18 +83,14 @@ export function DashboardPage() {
 
   // Calculate stock purchases from expenses filtered by category
   const totalStockPurchases = expenses
-    .filter((e: any) => e.category === 'Stock Purchase')
-    .reduce((sum: number, e: any) => sum + Number(e.amount), 0);
-
-  // Calculate totals from daily_sales
-  const dailySalesTotal = dailySales.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
-  const dailyExpensesTotal = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
+    .filter((e: { category: string }) => e.category === 'Stock Purchase')
+    .reduce((sum: number, e: { amount: number }) => sum + Number(e.amount), 0);
 
   // Sales vs Expenses comparison from daily_sales
   const salesVsExpenses = dailySales
     .slice(0, 14)
     .reverse()
-    .map((s: any) => ({
+    .map((s: { sale_date: string; total_sales: number; daily_expense: number; stock_purchase: number }) => ({
       date: s.sale_date,
       label: format(parseISO(s.sale_date), 'dd MMM'),
       sales: Number(s.total_sales || 0),
@@ -104,7 +100,7 @@ export function DashboardPage() {
 
   // Payment breakdown from daily_sales
   const paymentBreakdown = dailySales.reduce(
-    (acc: { cash: number; bkash: number; credit: number }, s: any) => ({
+    (acc: { cash: number; bkash: number; credit: number }, s: { cash_amount: number; bkash_amount: number; credit_amount: number }) => ({
       cash: acc.cash + Number(s.cash_amount || 0),
       bkash: acc.bkash + Number(s.bkash_amount || 0),
       credit: acc.credit + Number(s.credit_amount || 0),

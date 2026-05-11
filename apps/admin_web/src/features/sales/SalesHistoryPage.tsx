@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
@@ -9,7 +9,7 @@ import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
 import { XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
-import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth, subDays } from 'date-fns';
+import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth } from 'date-fns';
 import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
 
@@ -62,7 +62,6 @@ function exportSalesToCSV(sales: { sale_number: string, created_at: string, cash
 }
 
 export function SalesHistoryPage() {
-  const { notify } = useNotify();
   const { storeId } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -81,6 +80,17 @@ export function SalesHistoryPage() {
   const { data: sales, isLoading, error, refetch } = useQuery({
     queryKey: ['sales-history', storeId, debouncedSearch, startDate, endDate],
     queryFn: () => api.sales.history(storeId, searchTerm || undefined, startDate, endDate),
+  });
+
+  const salesScrollRef = useRef<HTMLDivElement>(null);
+
+  const paginatedSales = sales?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
+
+  const salesVirtualizer = useVirtualizer({
+    count: paginatedSales.length,
+    getScrollElement: () => salesScrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
   });
 
   if (error) {
@@ -105,16 +115,6 @@ export function SalesHistoryPage() {
   const voidCount = voidedSales.length;
 
   const totalPages = Math.ceil((sales?.length ?? 0) / pageSize);
-  const paginatedSales = sales?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
-
-  const salesScrollRef = useRef<HTMLDivElement>(null);
-
-  const salesVirtualizer = useVirtualizer({
-    count: paginatedSales.length,
-    getScrollElement: () => salesScrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 5,
-  });
 
   const handleDateRangeChange = (range: DateRange) => {
     setDateRange(range);

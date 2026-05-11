@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { Banknote, Smartphone, CreditCard, Wallet, PlusCircle, AlertCircle, X, RefreshCw } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 function getPaymentIcon(name: string) {
   const lower = name.toLowerCase();
@@ -8,6 +8,11 @@ function getPaymentIcon(name: string) {
   if (lower.includes('bkash') || lower.includes('bkash') || lower.includes('mobile')) return Smartphone;
   if (lower.includes('card') || lower.includes('credit') || lower.includes('debit')) return CreditCard;
   return Wallet;
+}
+
+interface PaymentMethod {
+  id: string;
+  name: string;
 }
 
 interface PaymentModalProps {
@@ -20,7 +25,7 @@ interface PaymentModalProps {
   splitPayments: Array<{ id: string; accountId: string; amount: number }>;
   splitMethod: string | null;
   splitAmount: string;
-  paymentMethods: any[];
+  paymentMethods: PaymentMethod[];
   paidTotal: number;
   changeAmount: number;
   remainingAmount: number;
@@ -65,12 +70,12 @@ export function PaymentModal({
 }: PaymentModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [previousActiveElement, setPreviousActiveElement] = useState<Element | null>(null);
+  const previousActiveElementRef = useRef<Element | null>(null);
 
   // Store previous focus and focus modal when opened
   useEffect(() => {
     if (show) {
-      setPreviousActiveElement(document.activeElement);
+      previousActiveElementRef.current = document.activeElement;
       const timer = setTimeout(() => {
         closeButtonRef.current?.focus();
       }, 100);
@@ -80,10 +85,10 @@ export function PaymentModal({
 
   // Restore focus when closed
   useEffect(() => {
-    if (!show && previousActiveElement) {
-      (previousActiveElement as HTMLElement)?.focus();
+    if (!show && previousActiveElementRef.current) {
+      (previousActiveElementRef.current as HTMLElement)?.focus();
     }
-  }, [show, previousActiveElement]);
+  }, [show]);
 
   // Handle Escape key
   useEffect(() => {
@@ -186,7 +191,7 @@ export function PaymentModal({
             <div className="payment-section">
               <span className="payment-section-label">Payment Method</span>
               <div className="payment-methods-grid">
-                {paymentMethods.map((method: any) => {
+                {paymentMethods.map((method) => {
                   const Icon = getPaymentIcon(method.name);
                   return (
                     <button
@@ -241,7 +246,7 @@ export function PaymentModal({
                 <span className="payment-section-label">Payments Added</span>
                 <div className="split-payment-list">
                   {splitPayments.map((sp) => {
-                    const m = paymentMethods.find((pm: any) => pm.id === sp.accountId);
+                    const m = paymentMethods.find((pm) => pm.id === sp.accountId);
                     const Icon = getPaymentIcon(m?.name || '');
                     return (
                       <div key={sp.id} className="split-payment-item">
@@ -278,7 +283,7 @@ export function PaymentModal({
                 <div className="payment-section">
                   <span className="payment-section-label">Add Payment</span>
                   <div className="payment-methods-grid">
-                    {paymentMethods.map((method: any) => {
+                    {paymentMethods.map((method) => {
                       const Icon = getPaymentIcon(method.name);
                       return (
                         <button

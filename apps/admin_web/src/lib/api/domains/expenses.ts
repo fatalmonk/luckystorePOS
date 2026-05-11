@@ -17,7 +17,7 @@ export const expenses = {
     const { data, error } = await query;
     if (error) throw error;
 
-    return (data ?? []).map((row: any) => ({
+    return (data ?? []).map((row: unknown) => ({
       id: row.id,
       storeId: row.store_id,
       expenseDate: row.expense_date,
@@ -43,7 +43,7 @@ export const expenses = {
       p_category: form.category,
     });
     if (error) throw error;
-    return data as RecordExpenseResult;
+    return data as unknown as RecordExpenseResult;
   },
   update: async (expenseId: string, updates: { expenseDate?: string; vendorName?: string; description?: string; amount?: number; paymentType?: string; category?: string }) => {
     const { data, error } = await supabase

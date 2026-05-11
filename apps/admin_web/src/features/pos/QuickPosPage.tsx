@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -6,7 +6,6 @@ import { SkeletonBlock } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { Search, ScanLine, AlertCircle, X, RefreshCw, ShoppingCart, ChevronUp } from 'lucide-react';
 import { clsx } from 'clsx';
-import type { PosProduct } from '../../lib/api/types';
 import { ReceiptPreview } from './ReceiptPreview';
 import { CartPanel } from './CartPanel';
 import { PaymentModal } from './PaymentModal';
@@ -115,11 +114,6 @@ export function QuickPosPage() {
     const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  // Clear error on payment modal close
-  useEffect(() => {
-    if (!sale.showPaymentModal) setError(null);
-  }, [sale.showPaymentModal]);
 
   return (
     <div className={clsx('pos-container', showMobileCart && 'pos-container--sheet-open')}>
@@ -364,7 +358,7 @@ export function QuickPosPage() {
         changeAmount={sale.changeAmount}
         remainingAmount={sale.remainingAmount}
         error={error}
-        onClose={sale.resetPaymentModal}
+        onClose={() => { sale.resetPaymentModal(); setError(null); }}
         onSetIsSplitMode={sale.setIsSplitMode}
         onSelectPaymentMethod={sale.setSelectedPaymentMethod}
         onSetPaymentAmount={sale.setPaymentAmount}

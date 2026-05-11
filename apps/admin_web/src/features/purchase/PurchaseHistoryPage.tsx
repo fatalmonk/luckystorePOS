@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { ShoppingCart, Calendar, ChevronDown, ChevronUp, Package, DollarSign, FileText } from 'lucide-react';
+import { ShoppingCart, ChevronDown, ChevronUp, Package, DollarSign, FileText } from 'lucide-react';
 import { clsx } from 'clsx';
 
 type DateFilter = 'today' | 'week' | 'month' | 'all';
@@ -19,7 +19,7 @@ export function PurchaseHistoryPage() {
     queryKey: ['purchase-receipts', storeId, dateFilter],
     queryFn: () => {
       if (!storeId) return [];
-      const filters: any = {};
+      const filters: unknown = {};
       const today = new Date();
 
       if (dateFilter === 'today') {
@@ -155,7 +155,7 @@ export function PurchaseHistoryPage() {
                 </td>
               </tr>
             ) : (
-              filteredReceipts.map((receipt: any) => (
+              filteredReceipts.map((receipt: unknown) => (
                 <>
                   <tr
                     key={receipt.id}
@@ -210,7 +210,7 @@ export function PurchaseHistoryPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {receipt.purchase_receipt_items.map((item: any) => (
+                              {receipt.purchase_receipt_items.map((item: Record<string, unknown>) => (
                                 <tr key={item.id} className="border-t border-gray-200">
                                   <td className="py-2">{item.items?.name || 'Unknown Product'}</td>
                                   <td className="py-2 text-text-muted">{item.items?.sku || '-'}</td>

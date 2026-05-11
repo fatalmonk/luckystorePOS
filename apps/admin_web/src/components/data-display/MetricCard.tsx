@@ -32,7 +32,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   icon,
   trend,
   color = 'primary',
-  variant: _variant, // accepted but ignored — deprecated
+  variant: // accepted but ignored — deprecated
   badge,
   className,
 }) => {

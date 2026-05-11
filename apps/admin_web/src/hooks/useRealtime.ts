@@ -26,14 +26,17 @@ export function useRealtimeSubscription({
 }: RealtimeSubscriptionOptions) {
   const queryClient = useQueryClient();
   const onEventRef = useRef(onEvent);
-  onEventRef.current = onEvent;
+
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  });
 
   useEffect(() => {
     const channelName = `realtime-${table}-${event}-${filter ?? 'all'}`;
 
     let channel = supabase.channel(channelName);
 
-    const postgresChangesConfig: Record<string, unknown> = {
+    const postgresChangesConfig: { event: string; schema: string; table: string; filter?: string } = {
       event,
       schema: 'public',
       table,
@@ -42,9 +45,9 @@ export function useRealtimeSubscription({
       postgresChangesConfig.filter = filter;
     }
 
-    channel = (channel as any).on(
+    channel = channel.on(
       'postgres_changes',
-      postgresChangesConfig as { event: string; schema: string; table: string; filter?: string },
+      postgresChangesConfig,
       (payload: Record<string, unknown>) => {
         onEventRef.current?.(payload);
 
@@ -52,7 +55,7 @@ export function useRealtimeSubscription({
           queryClient.invalidateQueries({ queryKey: keys });
         }
       },
-    );
+    ) as unknown as typeof channel;
 
     channel = channel.subscribe();
 
