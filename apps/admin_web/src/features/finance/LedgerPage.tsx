@@ -78,6 +78,8 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     fetchParties();
   }, [fetchParties]);
 
+  // parties loaded via useQuery below
+
   const fetchLedger = async (party: Party) => {
     setSelectedParty(party);
     const { data, error } = await supabase

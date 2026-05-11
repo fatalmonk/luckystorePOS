@@ -59,7 +59,7 @@ Adjust sections as needed for the specific analysis type.
 
 For skills where output quality depends on seeing examples, provide input/output pairs:
 
-```markdown
+````markdown
 ## Commit message format
 
 Generate commit messages following these examples:
@@ -87,6 +87,6 @@ Use UTC timestamps consistently across report generation
 ```
 
 Follow this style: type(scope): brief description, then detailed explanation.
-```
+````
 
 Examples help Claude understand the desired style and level of detail more clearly than descriptions alone.

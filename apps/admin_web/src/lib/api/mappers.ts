@@ -143,7 +143,7 @@ export function mapReminder(row: Record<string, any>): Reminder {
 /**
  * Maps an array of reminder rows to Reminder[]
  */
-export function mapReminders(rows: Record<string, any>): Reminder[] {
+export function mapReminders(rows: any): Reminder[] {
   if (!rows) return [];
   if (Array.isArray(rows)) return rows.map(mapReminder);
   if (typeof rows === 'object') return [mapReminder(rows)];

@@ -170,7 +170,9 @@ def main():
         reader = csv.reader(f)
         headers = next(reader)
         for row in reader:
-            image_val = row[10] if len(row) > 10 else ""
+            if not row or len(row) < 11:
+                continue
+            image_val = row[10]
             if not image_val.strip() or image_val.strip().lower() in ("nan", "none", "null", ""):
                 missing_items.append({
                     "name": row[0].strip(),
@@ -292,8 +294,11 @@ def main():
             f.write("BEGIN;\n\n")
             for r in results:
                 if r["status"] == "success" and r["public_url"]:
+                    # Basic SQL escaping for single quotes
+                    safe_url = r['public_url'].replace("'", "''")
+                    safe_sku = r['sku'].replace("'", "''")
                     f.write(
-                        f"UPDATE public.items SET image_url = '{r['public_url']}' WHERE sku = '{r['sku']}' AND (image_url IS NULL OR image_url = '');\n"
+                        f"UPDATE public.items SET image_url = '{safe_url}' WHERE sku = '{safe_sku}' AND (image_url IS NULL OR image_url = '');\n"
                     )
             f.write("\nCOMMIT;\n")
         print(f"\nSQL saved to {sql_path}")

@@ -9,7 +9,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function InstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const dismissed = useMemo(() => sessionStorage.getItem('pwa-install-dismissed') === 'true', []);
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem('pwa-install-dismissed') === 'true');
 
   useEffect(() => {
     // Check if already dismissed in this session
@@ -44,7 +44,7 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     sessionStorage.setItem('pwa-install-dismissed', 'true');
-    sessionStorage.setItem('pwa-install-dismissed', '1');
+    setDismissed(true);
   };
 
   if (!prompt || dismissed) return null;

@@ -32,6 +32,7 @@ export const CollectionsWorkspace: React.FC = () => {
   useEffect(() => {
     if (!storeId) {
       cashAccountIdRef.current = null;
+      setCashAccountId(null);
       return;
     }
     supabase

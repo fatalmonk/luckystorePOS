@@ -58,7 +58,7 @@ The `message` is what the AI receives each time the task fires. It must tell the
 
 [CRON_CREATE]
 name: Weekly Meeting Reminder
-schedule: 0 9 \* \* MON
+schedule: 0 9 * * MON
 schedule_description: Every Monday at 9:00 AM
 message: Reply with a short weekly meeting reminder that includes the current date and time.
 [/CRON_CREATE]

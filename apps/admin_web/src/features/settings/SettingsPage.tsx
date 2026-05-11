@@ -429,6 +429,14 @@ function EditUserModal({ user, isOpen, onClose, onSave, isSaving }: { user: { id
   const [role, setRole] = useState(user?.role || 'cashier');
   const [pin, setPin] = useState('');
 
+  useEffect(() => {
+    if (user) {
+      setName(user.full_name || user.name || '');
+      setRole(user.role || 'cashier');
+      setPin('');
+    }
+  }, [user]);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Edit User ${user?.id ?? ''}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
