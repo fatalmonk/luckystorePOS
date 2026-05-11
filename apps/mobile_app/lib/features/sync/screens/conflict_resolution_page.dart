@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:luckystorepos/offline/db.dart';
-import 'package:luckystorepos/sync/sync_controller.dart';
+import 'package:lucky_store/offline/db.dart';
+import 'package:lucky_store/sync/sync_controller.dart';
 import 'dart:convert';
 
 class ConflictResolutionPage extends StatefulWidget {

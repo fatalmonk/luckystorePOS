@@ -1,4 +1,4 @@
-import 'package:luckystorepos/features/reconciliation/models/reconciliation_variance.dart';
+import 'package:lucky_store/features/reconciliation/models/reconciliation_variance.dart';
 
 class ReconciliationExportService {
   /// Generates a standardized plain CSV representation of variances

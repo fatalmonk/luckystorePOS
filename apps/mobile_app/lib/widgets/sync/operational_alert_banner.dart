@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:luckystorepos/sync/models/sync_status.dart';
-import 'package:luckystorepos/sync/sync_controller.dart';
+import 'package:lucky_store/sync/models/sync_status.dart';
+import 'package:lucky_store/sync/sync_controller.dart';
 
 class OperationalAlertBanner extends StatelessWidget {
   final SyncController controller;

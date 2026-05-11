@@ -17,19 +17,19 @@ class SaleTransactionIntentItem {
 
   Map<String, dynamic> toJson() => {
         'item_id': itemId,
-        'qty': quantity,
+        'quantity': quantity,
         'unit_price': requestedUnitPrice,
-        'discount': lineDiscount,
-        'cost': unitCost,
+        'discount_amount': lineDiscount,
+        'unit_cost': unitCost,
       };
 
   factory SaleTransactionIntentItem.fromJson(Map<String, dynamic> json) {
     return SaleTransactionIntentItem(
       itemId: json['item_id'] as String,
-      quantity: (json['qty'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
       requestedUnitPrice: (json['unit_price'] as num).toDouble(),
-      lineDiscount: (json['discount'] as num? ?? 0).toDouble(),
-      unitCost: (json['cost'] as num? ?? 0).toDouble(),
+      lineDiscount: (json['discount_amount'] as num? ?? 0).toDouble(),
+      unitCost: (json['unit_cost'] as num? ?? 0).toDouble(),
     );
   }
 }
@@ -95,14 +95,14 @@ class SaleTransactionIntent {
 }
 
 class SaleSnapshotItem {
-  final String productId;
+  final String itemId;
   final int quantity;
   final double unitPriceSnapshot;
   final double discountSnapshot;
   final int stockSnapshot;
 
   const SaleSnapshotItem({
-    required this.productId,
+    required this.itemId,
     required this.quantity,
     required this.unitPriceSnapshot,
     required this.discountSnapshot,
@@ -110,19 +110,20 @@ class SaleSnapshotItem {
   });
 
   Map<String, dynamic> toJson() => {
-        'product_id': productId,
+        'item_id': itemId,
         'quantity': quantity,
         'unit_price_snapshot': unitPriceSnapshot,
-        'discount_snapshot': discountSnapshot,
+        'discount_amount_snapshot': discountSnapshot,
         'stock_snapshot': stockSnapshot,
       };
 
   factory SaleSnapshotItem.fromJson(Map<String, dynamic> json) {
     return SaleSnapshotItem(
-      productId: json['product_id'] as String,
+      itemId: json['item_id'] as String,
       quantity: (json['quantity'] as num).toInt(),
       unitPriceSnapshot: (json['unit_price_snapshot'] as num).toDouble(),
-      discountSnapshot: (json['discount_snapshot'] as num? ?? 0).toDouble(),
+      discountSnapshot:
+          (json['discount_amount_snapshot'] as num? ?? 0).toDouble(),
       stockSnapshot: (json['stock_snapshot'] as num? ?? 0).toInt(),
     );
   }
@@ -183,7 +184,7 @@ class SaleTransactionSnapshot {
 
 SaleSnapshotItem snapshotItemFromCart(CartItem cartItem) {
   return SaleSnapshotItem(
-    productId: cartItem.item.id,
+    itemId: cartItem.item.id,
     quantity: cartItem.qty,
     unitPriceSnapshot: cartItem.item.price,
     discountSnapshot: cartItem.discount,

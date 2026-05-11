@@ -162,10 +162,26 @@ CREATE TABLE IF NOT EXISTS public.sales (
 
 -- Add columns that may not exist yet (idempotent)
 ALTER TABLE public.sales
+  ADD COLUMN IF NOT EXISTS sale_number     text,
+  ADD COLUMN IF NOT EXISTS cashier_id      uuid        REFERENCES public.users(id),
+  ADD COLUMN IF NOT EXISTS status          public.sale_status DEFAULT 'completed',
+  ADD COLUMN IF NOT EXISTS discount_amount numeric(12,2) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS total_amount    numeric(12,2) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS amount_tendered numeric(12,2),
+  ADD COLUMN IF NOT EXISTS change_due      numeric(12,2),
   ADD COLUMN IF NOT EXISTS session_id      uuid        REFERENCES public.pos_sessions(id),
   ADD COLUMN IF NOT EXISTS voided_by       uuid        REFERENCES public.users(id),
   ADD COLUMN IF NOT EXISTS voided_at       timestamptz,
   ADD COLUMN IF NOT EXISTS void_reason     text;
+
+UPDATE public.sales
+SET
+  sale_number = COALESCE(sale_number, receipt_number),
+  discount_amount = COALESCE(discount_amount, discount_total, 0),
+  total_amount = COALESCE(total_amount, total, 0)
+WHERE sale_number IS NULL
+   OR discount_amount IS NULL
+   OR total_amount IS NULL;
 
 CREATE OR REPLACE FUNCTION public.generate_sale_number()
 RETURNS TRIGGER AS $$
@@ -208,6 +224,17 @@ CREATE TABLE IF NOT EXISTS public.sale_items (
   UNIQUE (sale_id, item_id)  -- one row per SKU per sale; qty handles multiples
 );
 
+ALTER TABLE public.sale_items
+  ADD COLUMN IF NOT EXISTS unit_price numeric(12,2),
+  ADD COLUMN IF NOT EXISTS line_total numeric(12,2);
+
+UPDATE public.sale_items
+SET
+  unit_price = COALESCE(unit_price, price),
+  line_total = COALESCE(line_total, total)
+WHERE unit_price IS NULL
+   OR line_total IS NULL;
+
 CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON public.sale_items (sale_id);
 CREATE INDEX IF NOT EXISTS idx_sale_items_item ON public.sale_items (item_id);
 
@@ -222,6 +249,9 @@ CREATE TABLE IF NOT EXISTS public.sale_payments (
   reference           text,   -- bKash TrxID, card last-4 digits, etc.
   created_at          timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.sale_payments
+  ADD COLUMN IF NOT EXISTS payment_method_id uuid REFERENCES public.payment_methods(id);
 
 CREATE INDEX IF NOT EXISTS idx_sale_payments_sale ON public.sale_payments (sale_id);
 
@@ -435,8 +465,18 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) TO authenticated;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'complete_sale'
+      AND pg_get_function_identity_arguments(oid) = 'uuid, uuid, uuid, jsonb, jsonb, numeric, text'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) TO authenticated';
+  END IF;
+END $$;
 
 -- ---------------------------------------------------------------------------
 -- 10) RPC: void_sale()

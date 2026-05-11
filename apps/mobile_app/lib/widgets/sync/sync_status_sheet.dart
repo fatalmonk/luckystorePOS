@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:luckystorepos/features/sync/screens/conflict_resolution_page.dart';
-import 'package:luckystorepos/features/sync/screens/dead_letter_queue_page.dart';
-import 'package:luckystorepos/sync/models/sync_metrics.dart';
-import 'package:luckystorepos/sync/sync_controller.dart';
+import 'package:lucky_store/features/sync/screens/conflict_resolution_page.dart';
+import 'package:lucky_store/features/sync/screens/dead_letter_queue_page.dart';
+import 'package:lucky_store/sync/models/sync_metrics.dart';
+import 'package:lucky_store/sync/sync_controller.dart';
 
 class SyncStatusSheet extends StatelessWidget {
   final SyncController controller;

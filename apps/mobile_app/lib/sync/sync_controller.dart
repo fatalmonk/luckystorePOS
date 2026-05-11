@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:luckystorepos/offline/db.dart';
-import 'package:luckystorepos/offline/sync_engine.dart';
-import 'package:luckystorepos/sync/models/sync_metrics.dart';
-import 'package:luckystorepos/sync/models/sync_status.dart';
+import 'package:lucky_store/offline/db.dart';
+import 'package:lucky_store/offline/sync_engine.dart';
+import 'package:lucky_store/sync/models/sync_metrics.dart';
+import 'package:lucky_store/sync/models/sync_status.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SyncController {

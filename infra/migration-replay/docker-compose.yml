@@ -1,0 +1,83 @@
+version: '3.9'
+
+# Deterministic migration replay verification infrastructure
+# Requirements:
+# - isolated fresh Postgres on every container lifecycle
+# - deterministic extension state
+# - reproducible migration ordering
+# - CI-safe execution
+# - failure extraction and structural diff generation
+# - clean reset verification
+# Purpose:
+# - Verify migration determinism
+# - Detect historical replay drift
+# - Extract failure context
+# - Generate schema comparison reports
+# - Support AI diagnosis pipeline
+
+services:
+  # Isolated Postgres instance for deterministic replay
+  replay-postgres:
+    image: public.ecr.aws/supabase/postgres:17.6.1.106
+    container_name: replay-postgres-${REPLAY_RUN_ID:-local}
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      # Ensure deterministic initialization
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_stat_statements,pgaudit,pgroonga,pgroonga_database"
+    volumes:
+      # Mount migrations in deterministic order
+      - ../migrations:/migrations:ro
+      # Temporary volume for schema snapshots
+      - replay-artifacts:/artifacts
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - replay-network
+    # Ensure isolated, ephemeral container
+    tmpfs:
+      - /var/run/postgresql
+      - /tmp
+
+  # Replay verification engine
+  replay-engine:
+    build:
+      context: ../..
+      dockerfile: infra/migration-replay/Dockerfile
+    container_name: replay-engine-${REPLAY_RUN_ID:-local}
+    depends_on:
+      replay-postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@replay-postgres:5432/postgres
+      PGHOST: replay-postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      ARTIFACTS_DIR: /artifacts
+      REPLAY_MODE: full
+      # Determinism flags
+      REPLAY_STRICT: "true"
+      REPLAY_STOP_ON_FIRST_ERROR: "true"
+      REPLAY_CAPTURE_CONTEXT: "true"
+    volumes:
+      # Share artifacts directory
+      - replay-artifacts:/artifacts
+    networks:
+      - replay-network
+    command: /replay-scripts/replay.sh
+
+volumes:
+  replay-artifacts:
+    driver: local
+
+networks:
+  replay-network:
+    driver: bridge

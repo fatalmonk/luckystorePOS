@@ -285,10 +285,15 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
-REVOKE ALL ON FUNCTION public.complete_sale(
-  uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text
-) FROM PUBLIC;
-
-GRANT EXECUTE ON FUNCTION public.complete_sale(
-  uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text
-) TO authenticated;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'complete_sale'
+      AND pg_get_function_identity_arguments(oid) = 'uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text) TO authenticated';
+  END IF;
+END $$;

@@ -1,9 +1,9 @@
-import 'package:luckystorepos/telemetry/telemetry_streams.dart';
-import 'package:luckystorepos/telemetry/telemetry_storage.dart';
-import 'package:luckystorepos/telemetry/telemetry_aggregator.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/replay_latency_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/rpc_health_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/sync_health_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_streams.dart';
+import 'package:lucky_store/telemetry/telemetry_storage.dart';
+import 'package:lucky_store/telemetry/telemetry_aggregator.dart';
+import 'package:lucky_store/telemetry/telemetry_models/replay_latency_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/rpc_health_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/sync_health_metric.dart';
 
 class TelemetryService {
   final streams = TelemetryStreams();

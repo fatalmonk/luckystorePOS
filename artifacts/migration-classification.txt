@@ -1,0 +1,132 @@
+Migration Classification Report
+Generated: 2026-05-11T11:55:35.298Z
+Migrations Analyzed: 80
+
+CLASSIFICATION SUMMARY
+======================
+FOUNDATIONAL: 68
+EXTENSION: 5
+RUNTIME ONLY: 64
+HARDENING: 72
+REPLACEMENT: 13
+DEAD: 0
+UNSAFE REPLAY: 0
+
+RISK SUMMARY
+============
+CRITICAL: 6
+HIGH: 59
+MEDIUM: 13
+LOW: 2
+
+MIGRATIONS WITH RISKS (35)
+=====================
+
+20260301000000_baseline_core_tables.sql
+  [medium] complex-mutations: High mutation count: 0 DROPs, 20 ALTERs
+
+20260326100002_stores_categories_rls_tighten.sql
+  [medium] complex-mutations: High mutation count: 6 DROPs, 0 ALTERs
+
+20260327200003_analytics.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260327200004_suppliers_purchase_orders.sql
+  [medium] complex-mutations: High mutation count: 3 DROPs, 3 ALTERs
+
+20260420100000_pos_transactions.sql
+  [medium] complex-mutations: High mutation count: 5 DROPs, 10 ALTERs
+
+20260420300000_manager_dashboard_rpc.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260420300001_manager_dashboard_trend.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260423103600_fix_linter_warnings.sql
+  [medium] complex-mutations: High mutation count: 2 DROPs, 7 ALTERs
+
+20260423123000_offline_sync_idempotency.sql
+  [medium] complex-mutations: High mutation count: 5 DROPs, 2 ALTERs
+
+20260423143000_close_review_log_and_analytics.sql
+  [medium] complex-mutations: High mutation count: 3 DROPs, 1 ALTERs
+
+20260423161000_override_analytics_and_anomaly_flags.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260423182000_monthly_governance_scorecard.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260423201000_centralize_pricing_in_complete_sale.sql
+  [medium] complex-mutations: High mutation count: 3 DROPs, 0 ALTERs
+
+20260423201500_server_authoritative_override_and_partial.sql
+  [medium] complex-mutations: High mutation count: 5 DROPs, 2 ALTERs
+
+20260423213000_ledger_and_daily_reconciliation.sql
+  [medium] complex-mutations: High mutation count: 7 DROPs, 4 ALTERs
+
+20260423230000_lean_inventory_rpcs.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260425000000_ledger_reversals_and_deferred_constraints.sql
+  [medium] complex-mutations: High mutation count: 3 DROPs, 2 ALTERs
+
+20260426213606_retail_profit_control_foundation.sql
+  [medium] complex-mutations: High mutation count: 0 DROPs, 10 ALTERs
+
+20260426213841_domain_rpcs_trust_engine.sql
+  [high] non-idempotent: Migration cannot safely replay - missing IF EXISTS guards
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260427000000_advisor_security_rls_and_functions.sql
+  [medium] complex-mutations: High mutation count: 14 DROPs, 11 ALTERs
+
+20260427200000_fix_stock_ledger_rls.sql
+  [medium] complex-mutations: High mutation count: 5 DROPs, 0 ALTERs
+
+20260501000000_seed_stock_levels.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260501090000_reminders.sql
+  [high] non-idempotent: Migration cannot safely replay - missing IF EXISTS guards
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260505000000_tenant_isolation_rls.sql
+  [medium] complex-mutations: High mutation count: 16 DROPs, 0 ALTERs
+
+20260506000002_repair_missing_domain_functions.sql
+  [high] non-idempotent: Migration cannot safely replay - missing IF EXISTS guards
+
+20260506000003_repair_stock_and_reminder_functions.sql
+  [medium] complex-mutations: High mutation count: 9 DROPs, 1 ALTERs
+
+20260506000004_repair_remaining_rpc_functions.sql
+  [medium] complex-mutations: High mutation count: 5 DROPs, 8 ALTERs
+
+20260506000005_security_hardening_revoke_anon_fix_search_path.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260506010000_revoke_anon_security_definer_execute.sql
+  [high] non-idempotent: Migration cannot safely replay - missing IF EXISTS guards
+
+20260506020000_fix_function_search_path_mutable.sql
+  [high] non-idempotent: Migration cannot safely replay - missing IF EXISTS guards
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+  [medium] complex-mutations: High mutation count: 0 DROPs, 25 ALTERs
+
+20260506040000_revoke_anon_on_pos_functions.sql
+  [high] foundational-no-guards: Foundational objects lack IF NOT EXISTS protection
+
+20260506040100_fix_empty_search_path_on_security_definer_functions.sql
+  [medium] complex-mutations: High mutation count: 0 DROPs, 25 ALTERs
+
+20260508000000_fix_critical_rls_gaps.sql
+  [medium] complex-mutations: High mutation count: 73 DROPs, 2 ALTERs
+
+20260510120000_fix_recursive_rls_policies.sql
+  [medium] complex-mutations: High mutation count: 3 DROPs, 0 ALTERs
+
+20260510130000_fix_remote_rls_policies_manual.sql
+  [medium] complex-mutations: High mutation count: 12 DROPs, 2 ALTERs

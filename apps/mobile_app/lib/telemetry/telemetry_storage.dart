@@ -1,5 +1,5 @@
-import 'package:luckystorepos/telemetry/telemetry_models/replay_latency_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/rpc_health_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/replay_latency_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/rpc_health_metric.dart';
 
 class TelemetryStorage {
   // In-memory bounded buffers for recent history

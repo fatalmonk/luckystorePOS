@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:luckystorepos/sync/models/sync_status.dart';
-import 'package:luckystorepos/sync/sync_controller.dart';
-import 'package:luckystorepos/widgets/sync/sync_status_sheet.dart';
+import 'package:lucky_store/sync/models/sync_status.dart';
+import 'package:lucky_store/sync/sync_controller.dart';
+import 'package:lucky_store/widgets/sync/sync_status_sheet.dart';
 
 class SyncBadge extends StatelessWidget {
   final SyncController controller;

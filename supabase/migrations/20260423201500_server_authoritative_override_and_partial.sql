@@ -127,5 +127,15 @@ DROP FUNCTION IF EXISTS public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, num
 
 -- NOTE: Permissions for complete_sale are managed in the canonical migration (20260426213841).
 -- Keeping these here for backward compatibility if this migration is re-run:
-REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'complete_sale'
+      AND pg_get_function_identity_arguments(oid) = 'uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated';
+  END IF;
+END $$;

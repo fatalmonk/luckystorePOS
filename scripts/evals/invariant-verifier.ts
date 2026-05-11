@@ -5,6 +5,23 @@ import { resolve } from 'path';
 // Load env vars
 dotenv.config({ path: resolve(__dirname, '../../.env.local') });
 
+export enum AuthorityLevel {
+  AUTHORITATIVE = 'AUTHORITATIVE',
+  CONDITIONALLY_AUTHORITATIVE = 'CONDITIONALLY_AUTHORITATIVE',
+  TRANSITIONAL = 'TRANSITIONAL',
+  COMPATIBILITY_LAYER = 'COMPATIBILITY_LAYER',
+  NON_AUTHORITATIVE = 'NON_AUTHORITATIVE',
+  UNVERIFIED = 'UNVERIFIED'
+}
+
+export interface VerificationResult {
+  invariant: string;
+  success: boolean;
+  authority: AuthorityLevel;
+  anomalies: number;
+  driftReported?: string[];
+}
+
 export class InvariantVerifier {
   private supabase: SupabaseClient;
 
@@ -20,9 +37,10 @@ export class InvariantVerifier {
 
   /**
    * Verify SUM(quantity_delta) == current_qty for every product/store
+   * Rigor Upgrade: Also checks Latest Ledger Entry vs Current Qty
    */
-  async verifyLedgerSums() {
-    console.log('Verifying ledger sums across all stock levels...');
+  async verifyLedgerSums(): Promise<VerificationResult> {
+    console.log('[EVAL] Verifying ledger sums and sequence authority...');
     
     // Get all stock levels
     const { data: stocks, error: stockErr } = await this.supabase
@@ -32,45 +50,71 @@ export class InvariantVerifier {
     if (stockErr) throw stockErr;
     
     let anomalies = 0;
-    
+    let totalChecks = 0;
+    const drifts: string[] = [];
+    let overallAuthority = AuthorityLevel.AUTHORITATIVE;
+
     for (const stock of stocks || []) {
+      totalChecks++;
+      
+      // Mapping Drift Detection: item_id (stock_levels) -> product_id (movements)
+      // This is a TRANSITIONAL check because field names diverge.
+      if (overallAuthority === AuthorityLevel.AUTHORITATIVE) {
+        overallAuthority = AuthorityLevel.TRANSITIONAL;
+        drifts.push('Naming Drift: stock_levels.item_id -> inventory_movements.product_id');
+      }
+
       const { data: movements, error: movErr } = await this.supabase
         .from('inventory_movements')
-        .select('quantity_delta')
+        .select('quantity_delta, new_quantity, operation_id')
         .eq('store_id', stock.store_id)
-        .eq('product_id', stock.item_id);
+        .eq('product_id', stock.item_id)
+        .order('created_at', { ascending: false });
         
       if (movErr) throw movErr;
       
       const ledgerSum = movements?.reduce((acc, row) => acc + (row.quantity_delta || 0), 0) || 0;
+      const latestQuantity = movements && movements.length > 0 ? movements[0].new_quantity : 0;
       
+      // Check 1: Delta Sum matches current state
       if (ledgerSum !== stock.qty) {
-        console.error(`❌ Ledger Mismatch! Store: ${stock.store_id}, Item: ${stock.item_id}. Ledger sum: ${ledgerSum}, Current qty: ${stock.qty}`);
+        console.error(`❌ Ledger Mismatch! Store: ${stock.store_id}, Item: ${stock.item_id}. Delta sum: ${ledgerSum}, Current qty: ${stock.qty}`);
         anomalies++;
+      }
+
+      // Check 2: Latest Ledger state matches current state (Authority check)
+      if (latestQuantity !== stock.qty && movements && movements.length > 0) {
+        console.error(`❌ Authority Drift! Store: ${stock.store_id}, Item: ${stock.item_id}. Latest Row qty: ${latestQuantity}, Cache table qty: ${stock.qty}`);
+        anomalies++;
+        drifts.push(`Cache Inconsistency at Store ${stock.store_id} / Item ${stock.item_id}`);
       }
     }
     
-    if (anomalies === 0) {
-      console.log('✅ All stock levels perfectly match their ledger sums.');
-    } else {
-      throw new Error(`Found ${anomalies} anomalies where ledger sum does not match current stock.`);
-    }
+    return {
+      invariant: 'Ledger Sum & Sequence Authority',
+      success: anomalies === 0,
+      authority: overallAuthority,
+      anomalies,
+      driftReported: [...new Set(drifts)]
+    };
   }
 
   /**
    * Verify previous_quantity + quantity_delta == new_quantity across all rows
    */
-  async verifyAppendOnlyMath() {
-    console.log('Verifying sequential math inside inventory_movements...');
+  async verifyAppendOnlyMath(): Promise<VerificationResult> {
+    console.log('[EVAL] Verifying sequential math inside inventory_movements...');
     
     const { data: movements, error } = await this.supabase
       .from('inventory_movements')
-      .select('id, previous_quantity, quantity_delta, new_quantity');
+      .select('id, store_id, product_id, previous_quantity, quantity_delta, new_quantity')
+      .order('product_id, created_at', { ascending: true });
       
     if (error) throw error;
     
     let anomalies = 0;
-    
+    const drifts: string[] = [];
+
     for (const mov of movements || []) {
       if (mov.previous_quantity + mov.quantity_delta !== mov.new_quantity) {
         console.error(`❌ Math Anomaly! Row ${mov.id}: ${mov.previous_quantity} + ${mov.quantity_delta} != ${mov.new_quantity}`);
@@ -78,15 +122,34 @@ export class InvariantVerifier {
       }
     }
     
-    if (anomalies === 0) {
-      console.log('✅ All ledger rows contain perfectly valid delta math.');
-    } else {
-      throw new Error(`Found ${anomalies} anomalies where delta math was incorrect.`);
-    }
+    return {
+      invariant: 'Append-Only Math Integrity',
+      success: anomalies === 0,
+      authority: AuthorityLevel.AUTHORITATIVE, // Internal math check is authoritative over its own schema context
+      anomalies
+    };
   }
 
   async runAll() {
-    await this.verifyLedgerSums();
-    await this.verifyAppendOnlyMath();
+    const results = [
+      await this.verifyLedgerSums(),
+      await this.verifyAppendOnlyMath()
+    ];
+
+    console.log('\n--- INVARIANT VERIFICATION SUMMARY ---');
+    for (const res of results) {
+      const statusIcon = res.success ? '✅' : '❌';
+      console.log(`${statusIcon} Invariant: ${res.invariant}`);
+      console.log(`   Authority: ${res.authority}`);
+      console.log(`   Success: ${res.success}`);
+      if (res.driftReported?.length) {
+        console.log(`   Drift Detected:`);
+        res.driftReported.forEach(d => console.log(`     - ${d}`));
+      }
+    }
+
+    if (results.some(r => !r.success)) {
+        throw new Error('Invariant verification failed.');
+    }
   }
 }

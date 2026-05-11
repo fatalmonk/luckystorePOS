@@ -16,13 +16,10 @@ export interface InventoryListRow {
   id: string;
   sku: string;
   name: string;
-  category_name: string;
-  unit_cost: number;
-  unit_price: number;
-  current_stock: number;
-  min_stock_level: number;
-  status: 'active' | 'inactive';
-  vendor_name?: string;
+  current_qty: number;
+  min_qty: number;
+  reorder_status: string;
+  last_updated: string;
 }
 
 export interface SaleDetailsResponse {

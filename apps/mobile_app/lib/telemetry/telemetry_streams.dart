@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/sync_health_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/replay_latency_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/conflict_rate_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/rpc_health_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/queue_depth_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/dlq_metric.dart';
-import 'package:luckystorepos/telemetry/telemetry_models/inventory_divergence_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/sync_health_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/replay_latency_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/conflict_rate_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/rpc_health_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/queue_depth_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/dlq_metric.dart';
+import 'package:lucky_store/telemetry/telemetry_models/inventory_divergence_metric.dart';
 
 class TelemetryStreams {
   final _syncHealthCtrl = BehaviorSubject<SyncHealthMetric>();
