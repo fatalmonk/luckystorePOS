@@ -1,6 +1,9 @@
 -- Migration: Enrich get_inventory_list with category_id, price, and image_url
 -- Applied: 2026-05-11
 
+-- Drop the existing function first (it has a different return type)
+DROP FUNCTION IF EXISTS public.get_inventory_list(uuid);
+
 CREATE OR REPLACE FUNCTION public.get_inventory_list(p_store_id uuid)
 RETURNS TABLE(
     id uuid,
