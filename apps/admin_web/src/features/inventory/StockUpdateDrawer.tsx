@@ -237,7 +237,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               className={clsx(
                 'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
                 mode === 'add'
-                  ? `${modeColors.add.bg} ${modeColors.text} border-${modeColors.add.border} focus:ring-success-default`
+                  ? `${modeColors.add.bg} ${modeColors.add.text} border-${modeColors.add.border} focus:ring-success-default`
                   : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
               )}
               aria-pressed={mode === 'add'}
