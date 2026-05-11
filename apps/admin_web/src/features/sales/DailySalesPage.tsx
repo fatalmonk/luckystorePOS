@@ -71,7 +71,7 @@ export function DailySalesPage() {
 
   const filtered = useMemo(() => {
     if (!sales) return [];
-    return sales.filter((s) => {
+    return sales.filter((s: any) => {
       if (startDate && s.saleDate < startDate) return false;
       if (endDate && s.saleDate > endDate) return false;
       return true;
@@ -80,15 +80,15 @@ export function DailySalesPage() {
 
   // Time-based totals
   const todayTotal = useMemo(
-    () => filtered.filter((s) => isToday(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
+    () => filtered.filter((s: any) => isToday(new Date(s.saleDate))).reduce((sum: number, s: any) => sum + s.totalSales, 0),
     [filtered],
   );
   const weekTotal = useMemo(
-    () => filtered.filter((s) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum, s) => sum + s.totalSales, 0),
+    () => filtered.filter((s: any) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum: number, s: any) => sum + s.totalSales, 0),
     [filtered],
   );
   const monthTotal = useMemo(
-    () => filtered.filter((s) => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
+    () => filtered.filter((s: any) => isThisMonth(new Date(s.saleDate))).reduce((sum: number, s: any) => sum + s.totalSales, 0),
     [filtered],
   );
 
@@ -97,8 +97,8 @@ export function DailySalesPage() {
   // Overall statistics
   const totalStats = useMemo(() => {
     if (allSales.length === 0) return { total: 0, avg: 0, min: 0, max: 0, count: 0 };
-    const amounts = allSales.map(s => s.totalSales);
-    const total = amounts.reduce((a, b) => a + b, 0);
+    const amounts = allSales.map((s: any) => s.totalSales);
+    const total = amounts.reduce((a: number, b: number) => a + b, 0);
     return {
       total,
       avg: total / amounts.length,
@@ -111,7 +111,7 @@ export function DailySalesPage() {
   // Payment breakdown for pie chart
   const paymentBreakdown = useMemo(() => {
     const totals = { cash: 0, bkash: 0, credit: 0 };
-    allSales.forEach(s => {
+    allSales.forEach((s: any) => {
       totals.cash += s.cashAmount;
       totals.bkash += s.bkashAmount;
       totals.credit += s.creditAmount;
@@ -127,7 +127,7 @@ export function DailySalesPage() {
   // Daily trend for line chart (last 30 days)
   const dailyTrend = useMemo(() => {
     const grouped: Record<string, { sales: number; expense: number; purchase: number }> = {};
-    allSales.forEach(s => {
+    allSales.forEach((s: any) => {
       grouped[s.saleDate] = {
         sales: s.totalSales,
         expense: s.dailyExpense,
@@ -149,7 +149,7 @@ export function DailySalesPage() {
   // Monthly trend
   const monthlyTrend = useMemo(() => {
     const grouped: Record<string, { total: number; count: number }> = {};
-    allSales.forEach(s => {
+    allSales.forEach((s: any) => {
       const monthKey = s.saleDate.substring(0, 7);
       if (!grouped[monthKey]) grouped[monthKey] = { total: 0, count: 0 };
       grouped[monthKey].total += s.totalSales;
@@ -169,7 +169,7 @@ export function DailySalesPage() {
     return [...allSales]
       .sort((a, b) => b.totalSales - a.totalSales)
       .slice(0, 5)
-      .map(s => ({
+      .map((s: any) => ({
         ...s,
         date: format(new Date(s.saleDate), 'dd MMM yyyy'),
       }));
@@ -439,7 +439,7 @@ function DailySaleForm({
 
   const handleAmountChange = (field: keyof DailySaleFormData, value: string) => {
     const numValue = parseFloat(value) || 0;
-    setForm(prev => {
+    setForm((prev: any) => {
       const updated = { ...prev, [field]: numValue };
       // Auto-calculate total if cash, bkash, or credit changes
       if (field === 'cashAmount' || field === 'bkashAmount' || field === 'creditAmount') {
@@ -456,7 +456,7 @@ function DailySaleForm({
         <input
           type="date"
           value={form.saleDate}
-          onChange={(e) => setForm(prev => ({ ...prev, saleDate: e.target.value }))}
+          onChange={(e) => setForm((prev: any) => ({ ...prev, saleDate: e.target.value }))}
           className="input w-full"
           required
         />
