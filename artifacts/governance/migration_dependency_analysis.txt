@@ -1,5 +1,5 @@
 Migration Dependency Analysis
-Generated: 2026-05-11T21:18:04.464Z
+Generated: 2026-05-11T21:36:45.246Z
 Migrations: 80
 
 CRITICAL DEPENDENCY ISSUES

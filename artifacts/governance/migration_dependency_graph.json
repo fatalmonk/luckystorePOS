@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-11T21:18:04.464Z",
+  "timestamp": "2026-05-11T21:36:45.246Z",
   "migration_count": 80,
   "dependency_graph": {
     "20260301000000_baseline_core_tables.sql": {
