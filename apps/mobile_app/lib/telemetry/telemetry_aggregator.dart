@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:luckystorepos/telemetry/telemetry_streams.dart';
-import 'package:luckystorepos/telemetry/telemetry_storage.dart';
+import 'package:lucky_store/telemetry/telemetry_streams.dart';
+import 'package:lucky_store/telemetry/telemetry_storage.dart';
 
 class TelemetryAggregator {
   final TelemetryStreams streams;

@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS public.items (
     sku text,
     name text NOT NULL,
     description text,
+    image_url text,
     price numeric(12,2) NOT NULL DEFAULT 0,
     cost numeric(12,2) DEFAULT 0,
     unit text DEFAULT 'piece',
@@ -131,11 +132,15 @@ ALTER TABLE public.sale_payments ENABLE ROW LEVEL SECURITY;
 
 -- Stock tables
 CREATE TABLE IF NOT EXISTS public.stock_levels (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     store_id uuid NOT NULL,
     item_id uuid NOT NULL,
     qty integer NULL DEFAULT 0,
     reserved integer NULL DEFAULT 0,
-    CONSTRAINT stock_levels_pkey PRIMARY KEY (store_id, item_id),
+    version integer NOT NULL DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    CONSTRAINT stock_levels_store_item_unique UNIQUE (store_id, item_id),
     CONSTRAINT stock_levels_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.items(id) ON DELETE CASCADE,
     CONSTRAINT stock_levels_store_id_fkey FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE
 );

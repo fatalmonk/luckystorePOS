@@ -19,21 +19,21 @@ export const getInventoryColumns = (
   },
   {
     header: 'Current Stock',
-    accessor: 'current_stock',
+    accessor: 'current_qty',
     render: (val) => (
       <span className="text-lg font-bold font-mono">{val as number}</span>
     ),
   },
   {
     header: 'Status',
-    accessor: 'status',
+    accessor: 'reorder_status',
     render: (_, row) => {
       let status = 'OK';
       let variant: 'success' | 'warning' | 'danger' = 'success';
-      if (row.current_stock <= 0) {
+      if (row.current_qty <= 0) {
         status = 'OUT';
         variant = 'danger';
-      } else if (row.current_stock <= row.min_stock_level) {
+      } else if (row.current_qty <= row.min_qty) {
         status = 'LOW';
         variant = 'warning';
       }

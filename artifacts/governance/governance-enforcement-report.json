@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-05-11T21:18:04.578Z",
+  "artifacts_dir": "/Users/ioriimasu/dev/luckystorePOS/artifacts/governance",
+  "compare_artifacts_dir": null,
+  "baseline": "/Users/ioriimasu/dev/luckystorePOS/scripts/governance/baseline.json",
+  "counts": {
+    "security_definer_missing_search_path": 6,
+    "orphan_function_privileges": 125,
+    "forward_dependencies": 82,
+    "legacy_runtime_fields": 27
+  },
+  "regressions": {
+    "security_definer_missing_search_path": [],
+    "orphan_function_privileges": [],
+    "forward_dependencies": [],
+    "legacy_runtime_fields": [],
+    "artifact_hash_mismatches": []
+  }
+}

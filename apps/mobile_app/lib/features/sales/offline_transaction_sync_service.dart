@@ -220,6 +220,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   OfflineTransactionSyncService._();
   static final OfflineTransactionSyncService instance =
       OfflineTransactionSyncService._();
+  static const int _queueFileVersion = 2;
 
   final _random = Random();
   final _queue = <QueuedOfflineTransaction>[];
@@ -544,6 +545,11 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     return File('${dir.path}/offline_transaction_queue.json');
   }
 
+  Future<File> _legacyQueueBackupFile() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/offline_transaction_queue.legacy_v1.json');
+  }
+
   Future<File> _logFile() async {
     final dir = await getApplicationDocumentsDirectory();
     return File('${dir.path}/offline_sync_action_logs.json');
@@ -555,9 +561,32 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       if (!await file.exists()) return;
       final raw = await file.readAsString();
       if (raw.trim().isEmpty) return;
+
+      final decoded = jsonDecode(raw);
+
+      if (decoded is List<dynamic>) {
+        await _invalidateLegacyQueueFile(file, raw);
+        _queue.clear();
+        return;
+      }
+
+      if (decoded is! Map<String, dynamic>) {
+        await _rewriteQueueFile(file);
+        _queue.clear();
+        return;
+      }
+
+      final version = decoded['version'];
+      final transactions = decoded['transactions'];
+      if (version != _queueFileVersion || transactions is! List<dynamic>) {
+        await _rewriteQueueFile(file);
+        _queue.clear();
+        return;
+      }
+
       _queue
         ..clear()
-        ..addAll((jsonDecode(raw) as List<dynamic>).map(
+        ..addAll(transactions.map(
           (e) => QueuedOfflineTransaction.fromJson(
             Map<String, dynamic>.from(e as Map),
           ),
@@ -569,7 +598,24 @@ class OfflineTransactionSyncService extends ChangeNotifier {
 
   Future<void> _persistQueue() async {
     final file = await _queueFile();
-    final encoded = jsonEncode(_queue.map((e) => e.toJson()).toList());
+    final encoded = jsonEncode({
+      'version': _queueFileVersion,
+      'transactions': _queue.map((e) => e.toJson()).toList(),
+    });
+    await file.writeAsString(encoded, flush: true);
+  }
+
+  Future<void> _invalidateLegacyQueueFile(File file, String raw) async {
+    final backup = await _legacyQueueBackupFile();
+    await backup.writeAsString(raw, flush: true);
+    await _rewriteQueueFile(file);
+  }
+
+  Future<void> _rewriteQueueFile(File file) async {
+    final encoded = jsonEncode({
+      'version': _queueFileVersion,
+      'transactions': const <Map<String, dynamic>>[],
+    });
     await file.writeAsString(encoded, flush: true);
   }
 

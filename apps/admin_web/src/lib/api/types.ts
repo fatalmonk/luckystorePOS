@@ -147,14 +147,10 @@ export interface ProductCreateInput {
   name: string;
   sku?: string;
   barcode?: string;
-  short_code?: string;
-  brand?: string;
   price: number;
   cost?: number;
-  stock: number;
-  category_id?: string;
-  image_url?: string;
-  group_tag?: string;
+  category_id?: string | null;
+  is_active?: boolean;
 }
 
 export type ProductUpdateInput = Partial<ProductCreateInput>;

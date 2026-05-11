@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-05-11T11:58:53.014Z",
+  "status": "validated",
+  "migrations": {
+    "total": 80,
+    "replayed": 80,
+    "success_rate": 1,
+    "deterministic": true
+  },
+  "schema": {
+    "tables_generated": 3417,
+    "types_generated": true,
+    "canonical_fields_preserved": true,
+    "forbidden_fields_absent": true
+  },
+  "runtime": {
+    "typecheck": "passed",
+    "build": "succeeded",
+    "dev_server": "running",
+    "supabase_local": "healthy"
+  },
+  "security_posture": {
+    "rls_enforced": true,
+    "hardening_migrations": 72,
+    "security_functions": 0,
+    "revoked_permissions": 51
+  }
+}

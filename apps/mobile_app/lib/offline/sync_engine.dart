@@ -1,4 +1,5 @@
-import 'package:luckystorepos/offline/db.dart';
+import 'package:lucky_store/offline/db.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -86,7 +87,7 @@ class SyncEngine {
         // Log structured conflict
         await db.recordConflict(
           operationId: event.operationId,
-          productId: payload['product_id'] ?? payload['item_id'] ?? 'unknown',
+          productId: payload['item_id'] ?? 'unknown',
           expected: response['expected_quantity'] ?? 0,
           actual: response['actual_quantity'] ?? 0,
           payload: event.payload,

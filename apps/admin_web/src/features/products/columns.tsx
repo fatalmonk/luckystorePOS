@@ -60,7 +60,7 @@ export const getProductColumns = (
   {
     id: 'status',
     header: 'Status',
-    accessor: 'active',
+    accessor: 'is_active',
     sortable: false,
     width: '12%',
     render: (val) => (

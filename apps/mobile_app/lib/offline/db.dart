@@ -102,18 +102,19 @@ class OfflineDatabase extends _$OfflineDatabase {
         ..orderBy([(t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.asc)]))
       .get();
 
-  Stream<int> watchPendingCount() {
-    final q = selectCountOf(offlineEvents)..where((tbl) => tbl.syncStatus.isBetweenValues(0, 1));
-    return q.watchSingle();
-  }
+  Stream<int> watchPendingCount() => (select(offlineEvents)
+        ..where((tbl) => tbl.syncStatus.isBetweenValues(
+              EventSyncStatus.pending.index,
+              EventSyncStatus.processing.index,
+            )))
+      .watch()
+      .map((rows) => rows.length);
 
-  Stream<int> watchDlqCount() {
-    return selectCountOf(deadLetterEvents).watchSingle();
-  }
+  Stream<int> watchDlqCount() =>
+      select(deadLetterEvents).watch().map((rows) => rows.length);
 
-  Stream<int> watchConflictCount() {
-    return selectCountOf(syncConflicts).watchSingle();
-  }
+  Stream<int> watchConflictCount() =>
+      select(syncConflicts).watch().map((rows) => rows.length);
 
   Future<void> recordConflict({
     required String operationId,
@@ -195,4 +196,3 @@ LazyDatabase _openConnection() {
     return NativeDatabase.createInBackground(file);
   });
 }
-

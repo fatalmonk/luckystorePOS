@@ -26,7 +26,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
       sku: '',
       barcode: '',
       categoryId: '',
-      active: true,
+      isActive: true,
       minStockLevel: 5,
     }
   });

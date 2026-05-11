@@ -150,7 +150,7 @@ BEGIN
       discount numeric
     )
   LOOP
-    SELECT i.id, i.name, i.active, i.price, COALESCE(sl.qty_on_hand, 0) AS qty_on_hand
+    SELECT i.id, i.name, i.is_active AS active, i.price, COALESCE(sl.qty, 0) AS qty_on_hand
       INTO v_live
     FROM public.items i
     LEFT JOIN public.stock_levels sl
@@ -783,8 +783,18 @@ GRANT EXECUTE ON FUNCTION public.post_sale_to_ledger(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.process_pending_ledger_postings(uuid, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.process_pending_ledger_postings(uuid, integer) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'complete_sale'
+      AND pg_get_function_identity_arguments(oid) = 'uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated';
+  END IF;
+END $$;
 
 REVOKE ALL ON FUNCTION public.validate_trial_balance(uuid, date, date) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.validate_trial_balance(uuid, date, date) TO authenticated;

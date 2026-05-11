@@ -27,7 +27,7 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
       sku: product.sku || '',
       barcode: product.barcode || '',
       categoryId: product.category_id || '',
-      active: product.active ?? true,
+      isActive: product.is_active ?? true,
       minStockLevel: product.minStockLevel || 5,
     } : undefined
   });
@@ -93,7 +93,7 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
 
         <div className="mt-2">
           <FormCheckbox 
-            name="active"
+            name="isActive"
             label="Active Product"
           />
         </div>

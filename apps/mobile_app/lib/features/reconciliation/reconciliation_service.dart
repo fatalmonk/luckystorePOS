@@ -1,8 +1,8 @@
 import 'package:uuid/uuid.dart';
-import 'package:luckystorepos/offline/sync_engine.dart';
-import 'package:luckystorepos/features/reconciliation/models/reconciliation_session.dart';
-import 'package:luckystorepos/features/reconciliation/models/reconciliation_variance.dart';
-import 'package:luckystorepos/features/reconciliation/models/reconciliation_adjustment.dart';
+import 'package:lucky_store/offline/sync_engine.dart';
+import 'package:lucky_store/features/reconciliation/models/reconciliation_session.dart';
+import 'package:lucky_store/features/reconciliation/models/reconciliation_variance.dart';
+import 'package:lucky_store/features/reconciliation/models/reconciliation_adjustment.dart';
 
 class ReconciliationService {
   final SyncEngine _syncEngine;

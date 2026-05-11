@@ -4,7 +4,7 @@ import { inventoryService } from '../services/inventory/inventoryService';
 export function useInventoryList(storeId: string | null, searchQuery?: string, categoryId?: string, status?: string) {
   return useQuery({
     queryKey: ['inventory-list', storeId, searchQuery, categoryId, status],
-    queryFn: () => inventoryService.getList(storeId!, searchQuery, categoryId, status),
+    queryFn: () => inventoryService.getList(storeId!),
     enabled: !!storeId,
   });
 }
