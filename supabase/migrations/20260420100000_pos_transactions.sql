@@ -267,6 +267,15 @@ CREATE POLICY "ses_update" ON public.pos_sessions FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND (u.id = cashier_id OR u.role IN ('admin','manager'))));
 
 -- sales: cashier inserts + sees own today; manager/admin sees all for store
+DROP POLICY IF EXISTS "sales_insert"       ON public.sales;
+DROP POLICY IF EXISTS "sales_select_own"   ON public.sales;
+DROP POLICY IF EXISTS "sales_select_manager" ON public.sales;
+DROP POLICY IF EXISTS "sales_void"         ON public.sales;
+DROP POLICY IF EXISTS "si_select"          ON public.sale_items;
+DROP POLICY IF EXISTS "si_insert"          ON public.sale_items;
+DROP POLICY IF EXISTS "sp_select"          ON public.sale_payments;
+DROP POLICY IF EXISTS "sp_insert"          ON public.sale_payments;
+
 CREATE POLICY "sales_insert" ON public.sales FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND u.role IN ('admin','manager','cashier')));
 CREATE POLICY "sales_select_own" ON public.sales FOR SELECT TO authenticated
