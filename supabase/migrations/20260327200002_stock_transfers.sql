@@ -7,7 +7,7 @@
 -- ---------------------------------------------------------------------------
 -- 1) Tables and ENUM
 -- ---------------------------------------------------------------------------
-DROP TYPE IF EXISTS public.stock_transfer_status;
+DROP TYPE IF EXISTS public.stock_transfer_status CASCADE;
 CREATE TYPE public.stock_transfer_status AS ENUM ('pending', 'in_transit', 'completed', 'cancelled');
 
 CREATE TABLE IF NOT EXISTS public.stock_transfers (

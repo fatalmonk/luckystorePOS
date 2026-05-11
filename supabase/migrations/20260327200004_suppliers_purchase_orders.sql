@@ -29,7 +29,11 @@ CREATE TRIGGER set_suppliers_updated_at
 -- ---------------------------------------------------------------------------
 -- 2) purchase_orders
 -- ---------------------------------------------------------------------------
-CREATE TYPE public.po_status AS ENUM ('draft', 'ordered', 'partially_received', 'received', 'cancelled');
+DO $$ BEGIN
+  CREATE TYPE public.po_status AS ENUM ('draft', 'ordered', 'partially_received', 'received', 'cancelled');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.purchase_orders (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),

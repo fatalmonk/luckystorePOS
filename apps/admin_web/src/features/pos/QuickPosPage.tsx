@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -13,24 +13,9 @@ import { PaymentModal } from './PaymentModal';
 import { usePosCart } from './usePosCart';
 import { usePosScanner } from './usePosScanner';
 import { usePosSale } from './usePosSale';
+import { ProductCard } from '../../components/product/ProductCard';
 
 import './receipt.css';
-
-// Avatar utilities
-const getInitials = (name: string) =>
-  name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
-
-const getAvatarColor = (name: string) => {
-  const colors = [
-    'bg-emerald-100 text-emerald-600',
-    'bg-blue-100 text-blue-600',
-    'bg-purple-100 text-purple-600',
-    'bg-pink-100 text-pink-600',
-    'bg-orange-100 text-orange-600',
-    'bg-teal-100 text-teal-600',
-  ];
-  return colors[name.charCodeAt(0) % colors.length];
-};
 
 export function QuickPosPage() {
   const { storeId, tenantId } = useAuth();
@@ -231,7 +216,7 @@ export function QuickPosPage() {
           <div className="pos-grid">
             {prodLoading ? (
               Array(8).fill(0).map((_, i) => (
-                <div key={i} className="product-card">
+                <div key={i} className="product-card" aria-busy="true">
                   <div className="product-avatar">
                     <SkeletonBlock className="w-full h-full" />
                   </div>
@@ -273,32 +258,11 @@ export function QuickPosPage() {
               </div>
             ) : (
               products.map((product) => (
-                <div key={product.id} className="product-card">
-                  <div className="product-avatar">
-                    {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.name} />
-                    ) : (
-                      <span className={getAvatarColor(product.name)}>
-                        {getInitials(product.name)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="product-info">
-                    <h3 className="product-name">{product.name}</h3>
-                    <div className="product-quantity">Stock: {product.stock}</div>
-                    <div className="product-price">৳{product.price.toFixed(2)}</div>
-                  </div>
-                  <button
-                    className={clsx(
-                      'button-primary w-full mt-2',
-                      product.stock <= 0 && 'opacity-50 cursor-not-allowed'
-                    )}
-                    onClick={() => product.stock > 0 && cart.addToCart(product, 1)}
-                    disabled={product.stock <= 0}
-                  >
-                    {product.stock > 0 ? 'Click to Select' : 'Out of Stock'}
-                  </button>
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(p) => cart.addToCart(p, 1)}
+                />
               ))
             )}
           </div>
