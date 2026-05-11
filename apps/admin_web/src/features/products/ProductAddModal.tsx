@@ -69,7 +69,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
               className="px-3 py-2 rounded-md border border-border-color bg-input text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Select Category</option>
-              {categories?.map(cat => (
+              {categories?.map((cat: any) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>

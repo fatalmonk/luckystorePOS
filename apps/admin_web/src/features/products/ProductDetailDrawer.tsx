@@ -15,7 +15,7 @@ import { useNotify } from '../../components/NotificationContext';
 interface ProductDetailDrawerProps {
   productId: string | null;
   onClose: () => void;
-  onEdit: (product: any) => void;
+  onEdit: (product: { id: string; name: string; description?: string; sku?: string; barcode?: string; price: number; cost?: number; quantity: number; category?: string; image_url?: string }) => void;
 }
 
 export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetailDrawerProps) {
@@ -61,9 +61,9 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
         <div className="flex flex-col gap-6">
           {/* Header Info */}
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-border-light rounded-lg flex items-center justify-center text-text-muted">
-              {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+            <div className="w-20 h-20 bg-border-light rounded-lg flex items-center justify-center text-text-muted shrink-0 overflow-hidden">
+              {(product as any).image_url ? (
+                <img src={(product as any).image_url} alt={product.name} className="w-full h-full object-cover" />
               ) : (
                 <Package size={40} />
               )}
@@ -78,7 +78,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
                 <Badge variant="info">{product.sku || 'No SKU'}</Badge>
               </div>
             </div>
-            <Button variant="outline" onClick={() => onEdit(product)} icon={<Edit2 size={16} />}>
+            <Button variant="outline" onClick={() => onEdit(product as any)} icon={<Edit2 size={16} />}>
               Edit
             </Button>
             {product.active && (
@@ -100,7 +100,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             </div>
             <div className="card p-4">
               <div className="text-sm text-text-muted mb-1">Current Stock</div>
-              <div className="text-xl font-bold">{product.stock || 0}</div>
+              <div className="text-xl font-bold">{(product as any).stock || 0}</div>
             </div>
           </div>
 
@@ -112,7 +112,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             <div className="card p-0 overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-border-light bg-[rgba(0,0,0,0.02)] text-text-muted text-sm">
+                  <tr className="border-b border-border-light bg-background-subtle text-text-muted text-sm">
                     <th className="p-3">Date</th>
                     <th className="p-3">Change</th>
                     <th className="p-3">Reason</th>

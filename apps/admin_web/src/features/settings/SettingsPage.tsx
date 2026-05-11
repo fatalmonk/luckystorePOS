@@ -172,7 +172,7 @@ function UsersSettings({ storeId }: { storeId: string }) {
                   }}>{ROLE_LABELS[u.role] || u.role}</span>
                 </td>
                 <td style={{ padding: 'var(--space-4) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                  {u.last_login || u.last_login_at ? new Date(u.last_login || u.last_login_at).toLocaleDateString('en-GB') : 'Never'}
+                  {u.last_login || u.last_login_at ? new Date((u.last_login || u.last_login_at) as string).toLocaleDateString('en-GB') : 'Never'}
                 </td>
                 <td style={{ padding: 'var(--space-4) 0' }}>
                   <div style={{ display: 'flex', gap: 'var(--space-2)' }}>

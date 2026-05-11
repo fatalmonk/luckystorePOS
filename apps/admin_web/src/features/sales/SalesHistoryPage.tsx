@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
@@ -9,7 +9,7 @@ import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
 import { XCircle, ChevronRight, Receipt, CreditCard, X, Download, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
-import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth, subDays } from 'date-fns';
+import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth } from 'date-fns';
 import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
 
@@ -62,7 +62,6 @@ function exportSalesToCSV(sales: { sale_number: string, created_at: string, cash
 }
 
 export function SalesHistoryPage() {
-  const { notify } = useNotify();
   const { storeId } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -83,6 +82,17 @@ export function SalesHistoryPage() {
     queryFn: () => api.sales.history(storeId, searchTerm || undefined, startDate, endDate),
   });
 
+  const salesScrollRef = useRef<HTMLDivElement>(null);
+
+  const paginatedSales = (sales as any[])?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
+
+  const salesVirtualizer = useVirtualizer({
+    count: paginatedSales.length,
+    getScrollElement: () => salesScrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
+  });
+
   if (error) {
     return (
       <div className="sales-history-container">
@@ -97,24 +107,14 @@ export function SalesHistoryPage() {
     );
   }
 
-  const completedSales = (sales ?? []).filter((s: { status: string }) => s.status === 'completed');
-  const voidedSales = (sales ?? []).filter((s: { status: string }) => s.status === 'voided');
+  const completedSales = ((sales as any[]) ?? []).filter((s: any) => s.status === 'completed');
+  const voidedSales = ((sales as any[]) ?? []).filter((s: any) => s.status === 'voided');
 
-  const totalRevenue = completedSales.reduce((sum: number, s: { total_amount: number }) => sum + Number(s.total_amount || 0), 0);
+  const totalRevenue = completedSales.reduce((sum: number, s: any) => sum + Number(s.total_amount || 0), 0);
   const avgTicket = completedSales.length ? totalRevenue / completedSales.length : 0;
   const voidCount = voidedSales.length;
 
   const totalPages = Math.ceil((sales?.length ?? 0) / pageSize);
-  const paginatedSales = sales?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
-
-  const salesScrollRef = useRef<HTMLDivElement>(null);
-
-  const salesVirtualizer = useVirtualizer({
-    count: paginatedSales.length,
-    getScrollElement: () => salesScrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 5,
-  });
 
   const handleDateRangeChange = (range: DateRange) => {
     setDateRange(range);
@@ -199,7 +199,7 @@ export function SalesHistoryPage() {
 
           {/* Export Button */}
           <button
-            onClick={() => exportSalesToCSV(sales ?? [])}
+            onClick={() => exportSalesToCSV((sales as any[]) ?? [])}
             disabled={!sales?.length}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
@@ -383,8 +383,8 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
 
   const voidMutation = useMutation({
     mutationFn: (reason: string) => api.sales.void(saleId!, reason, idempotencyKey),
-    onSuccess: (res) => {
-      if (res.is_duplicate) {
+    onSuccess: (res: any) => {
+      if (res?.is_duplicate) {
         notify('This sale was already voided.', 'info');
       } else {
         notify('Sale voided successfully. Stock has been restored.', 'success');
@@ -399,7 +399,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
 
   if (!saleId) return null;
 
-  const { sale, items, payments } = data || {};
+  const { sale, items, payments } = (data || {}) as any;
 
   return (
     <div

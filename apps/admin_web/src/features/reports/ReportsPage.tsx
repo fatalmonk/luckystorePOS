@@ -1,12 +1,37 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { BarChart3, TrendingUp, Package, Calendar, Download } from 'lucide-react';
+import { BarChart3, TrendingUp, Package, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { ErrorState, SkeletonBlock } from '../../components/PageState';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { useAuth } from '../../lib/AuthContext';
 import { api } from '../../lib/api';
+
+
+interface SalesReportData {
+  totalRevenue: number;
+  transactionCount: number;
+  avgTicket: number;
+  dailySales: Array<{ date: string; revenue: number }>;
+  topProducts: Array<{ name: string; quantity: number; revenue: number }>;
+}
+
+export interface InventoryReportData {
+  totalValue: number;
+  totalItems: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  inventory: Array<{ name: string; sku?: string; qty: number; cost: number; totalValue: number }>;
+}
+
+export interface ProfitReportData {
+  grossRevenue: number;
+  cogs: number;
+  grossProfit: number;
+  totalExpenses: number;
+  netProfit: number;
+}
 
 type DateRange = 'today' | 'week' | 'month' | 'custom';
 type TabType = 'sales' | 'inventory' | 'profit';
@@ -25,12 +50,14 @@ export const ReportsPage: React.FC = () => {
     switch (dateRange) {
       case 'today':
         return { start: formatDate(today), end: formatDate(today) };
-      case 'week':
+      case 'week': {
         const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
         return { start: formatDate(weekAgo), end: formatDate(today) };
-      case 'month':
+      }
+      case 'month': {
         const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
         return { start: formatDate(monthAgo), end: formatDate(today) };
+      }
       case 'custom':
         return {
           start: customStartDate || formatDate(today),
@@ -200,8 +227,8 @@ export const ReportsPage: React.FC = () => {
 };
 
 // Sales Report Content Component
-function SalesReportContent({ data }: { data: any }) {
-  const maxDaily = Math.max(...data.dailySales.map((d: any) => d.revenue), 1);
+function SalesReportContent({ data }: { data: SalesReportData }) {
+  const maxDaily = Math.max(...data.dailySales.map((d: { date: string; revenue: number }) => d.revenue), 1);
 
   return (
     <div className="p-6 space-y-6">
@@ -241,7 +268,7 @@ function SalesReportContent({ data }: { data: any }) {
       <div className="space-y-3">
         <h3 className="font-semibold text-lg">Daily Revenue Trend</h3>
         <div className="flex items-end justify-between h-48 gap-2">
-          {data.dailySales.map((day: any, idx: number) => {
+          {data.dailySales.map((day: { date: string; revenue: number }, idx: number) => {
             const height = maxDaily > 0 ? (day.revenue / maxDaily) * 100 : 0;
             return (
               <div key={idx} className="flex flex-col items-center flex-1 gap-1">
@@ -269,7 +296,7 @@ function SalesReportContent({ data }: { data: any }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border-color">
-            {data.topProducts.map((product: any, idx: number) => (
+            {data.topProducts.map((product: { name: string; quantity: number; revenue: number }, idx: number) => (
               <tr key={idx} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{product.name}</td>
                 <td className="px-4 py-3 text-right">{product.quantity}</td>
@@ -291,7 +318,7 @@ function SalesReportContent({ data }: { data: any }) {
 }
 
 // Inventory Report Content Component
-function InventoryReportContent({ data }: { data: any }) {
+function InventoryReportContent({ data }: { data: InventoryReportData }) {
   return (
     <div className="p-6 space-y-6">
       {/* KPI Cards */}
@@ -341,7 +368,7 @@ function InventoryReportContent({ data }: { data: any }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-color">
-              {data.inventory.map((item: any, idx: number) => (
+              {data.inventory.map((item: { name: string; sku?: string; qty: number; cost: number; totalValue: number }, idx: number) => (
                 <tr key={idx} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{item.name}</td>
                   <td className="px-4 py-3 text-text-muted">{item.sku || '-'}</td>
@@ -366,7 +393,7 @@ function InventoryReportContent({ data }: { data: any }) {
 }
 
 // Profit & Loss Report Content Component
-function ProfitReportContent({ data }: { data: any }) {
+function ProfitReportContent({ data }: { data: ProfitReportData }) {
   const isProfit = data.netProfit >= 0;
 
   return (

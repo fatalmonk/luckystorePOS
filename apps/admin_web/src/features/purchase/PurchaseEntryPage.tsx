@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
+import { useQuery } from '@tanstack/react-query';
 import { Trash2, Save, Send, Search, Package } from 'lucide-react';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { SkeletonBlock } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { useDebounce } from '../../hooks/useDebounce';
 import { clsx } from 'clsx';
@@ -29,7 +30,6 @@ type ReceiptLine = {
 
 export const PurchaseEntryPage: React.FC = () => {
   // Form state
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [supplierSearch, setSupplierSearch] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
@@ -49,7 +49,6 @@ export const PurchaseEntryPage: React.FC = () => {
 
   // Status
   const [loading, setLoading] = useState(false);
-  const [suppliersLoading, setSuppliersLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -57,20 +56,18 @@ export const PurchaseEntryPage: React.FC = () => {
   const { tenantId, storeId } = useAuth();
 
   // ── Load suppliers ──────────────────────────────────────────────
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
-
-  const loadSuppliers = async () => {
-    setSuppliersLoading(true);
-    const { data, error } = await supabase
-      .from('parties')
-      .select('id, name, phone')
-      .eq('type', 'supplier')
-      .order('name');
-    if (!error && data) setSuppliers(data as Supplier[]);
-    setSuppliersLoading(false);
-  };
+  const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
+    queryKey: ['suppliers', storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('parties')
+        .select('id, name, phone')
+        .eq('type', 'supplier')
+        .order('name');
+      if (error) throw error;
+      return (data || []) as Supplier[];
+    },
+  });
 
   // ── Supplier search ─────────────────────────────────────────────
   const filteredSuppliers = supplierSearch.length < 2
@@ -92,15 +89,17 @@ export const PurchaseEntryPage: React.FC = () => {
       setItemResults([]);
       return;
     }
+    let cancelled = false;
     const fetchItems = async () => {
       const { data, error } = await supabase
         .from('inventory_items')
         .select('id, name, sku, barcode, price')
         .or(`name.ilike.%${debouncedItemSearch}%,sku.ilike.%${debouncedItemSearch}%,barcode.ilike.%${debouncedItemSearch}%`)
         .limit(8);
-      if (!error && data) setItemResults(data as Item[]);
+      if (!cancelled && !error && data) setItemResults(data as any as Item[]);
     };
     fetchItems();
+    return () => { cancelled = true; };
   }, [debouncedItemSearch]);
 
   const addItem = (item: Item) => {
@@ -152,8 +151,8 @@ export const PurchaseEntryPage: React.FC = () => {
       p_tenant_id: tenantId,
       p_store_id: storeId,
       p_supplier_id: selectedSupplier.id,
-      p_invoice_number: invoiceNumber || null,
-      p_invoice_total: invoiceTotal ? parseFloat(invoiceTotal) : null,
+      p_invoice_number: invoiceNumber || undefined,
+      p_invoice_total: invoiceTotal ? parseFloat(invoiceTotal) : undefined,
       p_items: itemsJson,
       p_amount_paid: paid,
       p_status: asDraft ? 'draft' : 'posted',

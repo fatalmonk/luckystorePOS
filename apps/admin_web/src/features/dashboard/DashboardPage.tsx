@@ -7,6 +7,37 @@ import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../compo
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
 import { MetricCard } from '../../components/data-display/MetricCard';
+import { format, parseISO } from 'date-fns';
+
+interface DashboardStats {
+  user?: { name: string };
+  to_receive?: number;
+  to_give?: number;
+  total_sales?: number;
+  total_expenses?: number;
+  total_balance?: number;
+}
+
+interface LowStockItem {
+  item_id: string;
+  item_name: string;
+  current_qty: number;
+  min_qty: number;
+  reorder_qty: number;
+  category_name: string;
+  sku: string;
+  image_url: string;
+}
+
+interface DailySale {
+  sale_date: string;
+  total_sales: number | null;
+  daily_expense: number | null;
+  stock_purchase: number | null;
+  cash_amount: number | null;
+  bkash_amount: number | null;
+  credit_amount: number | null;
+}
 
 export function DashboardPage() {
   const { storeId } = useAuth();
@@ -33,67 +64,81 @@ export function DashboardPage() {
 
   const statsQuery = useQuery({
     queryKey: ['dashboard-stats', storeId],
-    queryFn: () => api.dashboard.getStats(storeId),
+    queryFn: () => api.dashboard.getStats(storeId) as Promise<DashboardStats>,
   });
   const lowStockQuery = useQuery({
     queryKey: ['low-stock', storeId],
-    queryFn: () => api.dashboard.getLowStock(storeId),
+    queryFn: () => api.dashboard.getLowStock(storeId) as Promise<LowStockItem[]>,
   });
 
-  // Fetch last 7 days revenue vs expenses
-  const cashflowQuery = useQuery({
-    queryKey: ['cashflow', storeId],
+  // Fetch daily sales data for comparison
+  const dailySalesQuery = useQuery({
+    queryKey: ['daily-sales-comparison', storeId],
     queryFn: async () => {
       if (!storeId) return [];
-      const days = 7;
-      const data = [];
-      const today = new Date();
+      const { data, error } = await supabase
+        .from('daily_sales')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('sale_date', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!storeId,
+  });
 
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        const nextDate = new Date(date);
-        nextDate.setDate(nextDate.getDate() + 1);
-        const nextDateStr = nextDate.toISOString().split('T')[0];
-
-        // Get sales for this day
-        const { data: salesData } = await supabase
-          .from('sales')
-          .select('total_amount')
-          .eq('store_id', storeId)
-          .eq('status', 'completed')
-          .gte('created_at', dateStr)
-          .lt('created_at', nextDateStr);
-
-        // Get expenses for this day
-        const { data: expensesData } = await supabase
-          .from('expenses')
-          .select('amount')
-          .eq('store_id', storeId)
-          .gte('date', dateStr)
-          .lt('date', nextDateStr);
-
-        const revenue = salesData?.reduce((sum, s) => sum + (s.total_amount || 0), 0) || 0;
-        const expenses = expensesData?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
-
-        data.push({
-          date: dateStr,
-          label: date.toLocaleDateString('en-US', { weekday: 'short' }),
-          revenue,
-          expenses,
-        });
-      }
-      return data;
+  // Fetch expenses data including stock purchase category
+  const expensesQuery = useQuery({
+    queryKey: ['expenses-dashboard', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('expense_date', { ascending: false });
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!storeId,
   });
 
   const stats = statsQuery.data;
   const lowStock = lowStockQuery.data;
-  const cashflow = cashflowQuery.data || [];
-  const isLoading = statsQuery.isLoading || cashflowQuery.isLoading;
-  const isError = statsQuery.isError || cashflowQuery.isError;
+  const dailySales = dailySalesQuery.data || [];
+  const expenses = expensesQuery.data || [];
+  const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
+  const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
+
+  // Calculate stock purchases from expenses filtered by category
+  const totalStockPurchases = expenses
+    .filter((e: { category: string }) => e.category === 'Stock Purchase')
+    .reduce((sum: number, e: { amount: number }) => sum + Number(e.amount), 0);
+
+  // Sales vs Expenses comparison from daily_sales
+  const salesVsExpenses = (dailySales as any[])
+    .slice(0, 14)
+    .reverse()
+    .map((s: any) => ({
+      date: s.sale_date || '',
+      label: s.sale_date ? format(parseISO(s.sale_date), 'dd MMM') : '',
+      sales: Number(s.total_sales || 0),
+      expenses: Number(s.daily_expense || 0),
+      stockPurchases: Number(s.stock_purchase || 0),
+    }));
+
+  // Payment breakdown from daily_sales
+  const paymentBreakdown = (dailySales as any[]).reduce(
+    (acc: { cash: number; bkash: number; credit: number }, s) => ({
+      cash: acc.cash + Number(s.cash_amount || 0),
+      bkash: acc.bkash + Number(s.bkash_amount || 0),
+      credit: acc.credit + Number(s.credit_amount || 0),
+    }),
+    { cash: 0, bkash: 0, credit: 0 }
+  );
+
+  const totalPayments = paymentBreakdown.cash + paymentBreakdown.bkash + paymentBreakdown.credit;
 
   if (isLoading) {
     return (
@@ -103,7 +148,7 @@ export function DashboardPage() {
           <SkeletonBlock className="w-[260px] h-[18px] mt-2" />
         </header>
         <div className="dashboard-grid">
-          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
         <section className="mt-12">
           <SkeletonBlock className="w-[160px] h-[22px] mb-6" />
@@ -116,16 +161,16 @@ export function DashboardPage() {
   if (isError) {
     return (
       <div className="dashboard-container">
-        <ErrorState message="Failed to load dashboard data." onRetry={() => { statsQuery.refetch(); lowStockQuery.refetch(); }} />
+        <ErrorState message="Failed to load dashboard data." onRetry={() => { statsQuery.refetch(); lowStockQuery.refetch(); dailySalesQuery.refetch(); expensesQuery.refetch(); }} />
       </div>
     );
   }
 
   return (
     <div className="dashboard-container">
-      <header style={{ marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '700', color: 'var(--text-main)' }}>Welcome {stats?.user?.name || 'Mohammed'}</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Here's what's happening today.</p>
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-text-primary">Welcome {stats?.user?.name || 'Mohammed'}</h1>
+        <p className="text-text-muted mt-1">Here's what's happening today.</p>
       </header>
 
       <div className="dashboard-grid">
@@ -148,8 +193,8 @@ export function DashboardPage() {
           color="success"
         />
         <MetricCard
-          title="Purchase"
-          value={`৳${stats?.total_purchases || '0.00'}`}
+          title="Stock Purchases"
+          value={`৳${totalStockPurchases.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`}
           icon={<Package size={20} />}
           color="info"
         />
@@ -161,78 +206,111 @@ export function DashboardPage() {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', marginTop: 'var(--space-8)' }}>
+      {/* Sales vs Expenses Comparison Section */}
+      <div className="grid grid-cols-2 gap-6 mt-8">
         {/* Left Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <div className="flex flex-col gap-6">
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Cashflow Overview
+            <h2 className="text-xl font-semibold text-text-primary mb-4">
+              Sales vs Expenses (Last 14 Days)
             </h2>
-            <div className="card" style={{ padding: 'var(--space-6)' }}>
-              {cashflow.length > 0 && (
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
+              {salesVsExpenses.length > 0 && (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <div style={{ width: 12, height: 12, backgroundColor: 'var(--color-success)', borderRadius: 2 }}></div>
-                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Revenue</span>
+                  <div className="flex items-center gap-6 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-success" />
+                      <span className="text-sm text-text-muted">Sales</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <div style={{ width: 12, height: 12, backgroundColor: 'var(--color-danger)', borderRadius: 2 }}></div>
-                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Expenses</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-danger" />
+                      <span className="text-sm text-text-muted">Expenses</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-info" />
+                      <span className="text-sm text-text-muted">Stock Purchases</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '200px', gap: 'var(--space-2)' }}>
-                    {cashflow.map((day: { date: string, label: string, revenue: number, expenses: number }, idx: number) => {
-                      const maxVal = Math.max(...cashflow.map((d: { revenue: number, expenses: number }) => Math.max(d.revenue, d.expenses)), 1);
-                      const revenueHeight = maxVal > 0 ? (day.revenue / maxVal) * 100 : 0;
+                  <div className="flex items-end justify-between gap-1" style={{ height: '200px' }}>
+                    {salesVsExpenses.map((day: { date: string; label: string; sales: number; expenses: number; stockPurchases: number }, idx: number) => {
+                      const maxVal = Math.max(
+                        ...salesVsExpenses.map((d: { sales: number; expenses: number; stockPurchases: number }) => 
+                          Math.max(d.sales, d.expenses, d.stockPurchases)
+                        ),
+                        1
+                      );
+                      const salesHeight = maxVal > 0 ? (day.sales / maxVal) * 100 : 0;
                       const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
+                      const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
                       return (
-                        <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)' }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: '100%', width: '100%', justifyContent: 'center' }}>
+                        <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                          <div className="flex items-end gap-0.5 w-full justify-center" style={{ height: '100%' }}>
                             <div
                               style={{
-                                width: '40%',
-                                height: `${revenueHeight}%`,
-                                backgroundColor: 'var(--color-success)',
+                                width: '28%',
+                                height: `${salesHeight}%`,
+                                backgroundColor: 'var(--color-success-default)',
                                 borderRadius: '2px 2px 0 0',
-                                minHeight: day.revenue > 0 ? 4 : 0,
+                                minHeight: day.sales > 0 ? 4 : 0,
                                 transition: 'height 0.3s ease',
                               }}
-                              title={`Revenue: ৳${day.revenue.toLocaleString()}`}
+                              title={`Sales: ৳${day.sales.toLocaleString()}`}
                             />
                             <div
                               style={{
-                                width: '40%',
+                                width: '28%',
                                 height: `${expenseHeight}%`,
-                                backgroundColor: 'var(--color-danger)',
+                                backgroundColor: 'var(--color-danger-default)',
                                 borderRadius: '2px 2px 0 0',
                                 minHeight: day.expenses > 0 ? 4 : 0,
                                 transition: 'height 0.3s ease',
                               }}
                               title={`Expenses: ৳${day.expenses.toLocaleString()}`}
                             />
+                            <div
+                              style={{
+                                width: '28%',
+                                height: `${stockHeight}%`,
+                                backgroundColor: 'var(--color-info-default)',
+                                borderRadius: '2px 2px 0 0',
+                                minHeight: day.stockPurchases > 0 ? 4 : 0,
+                                transition: 'height 0.3s ease',
+                              }}
+                              title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
+                            />
                           </div>
-                          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{day.label}</span>
+                          <span className="text-xs text-text-muted whitespace-nowrap" style={{ fontSize: '10px' }}>
+                            {day.label}
+                          </span>
                         </div>
                       );
                     })}
                   </div>
                 </>
               )}
+              {salesVsExpenses.length === 0 && (
+                <div className="text-center text-text-muted py-8">
+                  No daily sales data available. <a href="/admin/daily-sales" className="text-primary-default hover:underline">Add daily sales</a>
+                </div>
+              )}
             </div>
           </section>
 
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Low Stock Alerts
-            </h2>
-            <div className="card">
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Low Stock Alerts</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1">
               {lowStock && lowStock.length > 0 ? (
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                  {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
-                    <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
-                      <span>{item.name}</span>
-                      <span style={{ color: 'var(--color-danger)', fontWeight: '600' }}>{item.quantity} left</span>
+                <ul className="divide-y divide-border-default">
+                  {lowStock.map((item: LowStockItem) => (
+                    <li key={item.item_id} className="flex justify-between items-center px-4 py-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-text-primary font-medium">{item.item_name}</span>
+                        <span className="text-xs text-text-muted">{item.category_name}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-semibold text-color-danger">{item.current_qty} left</span>
+                        <p className="text-[10px] text-text-muted">Min: {item.min_qty}</p>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -248,32 +326,81 @@ export function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <div className="flex flex-col gap-6">
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Total Balance
-            </h2>
-            <div className="card" style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
-              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>Current Available Balance</div>
-              <div style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '700', color: 'var(--color-success)' }}>৳{stats?.total_balance || '0.00'}</div>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Total Balance</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-8 text-center">
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Current Available Balance</div>
+              <div className="text-4xl font-bold text-success font-mono">৳{stats?.total_balance || '0.00'}</div>
+            </div>
+          </section>
+
+          {/* Payment Breakdown */}
+          <section>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Payment Breakdown</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
+              {totalPayments > 0 ? (
+                <>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
+                      <div className="text-sm text-text-muted">Cash</div>
+                      <div className="text-lg font-bold text-success">৳{paymentBreakdown.cash.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.cash / totalPayments) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
+                      <div className="text-sm text-text-muted">Bkash</div>
+                      <div className="text-lg font-bold text-info">৳{paymentBreakdown.bkash.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.bkash / totalPayments) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
+                      <div className="text-sm text-text-muted">Credit</div>
+                      <div className="text-lg font-bold text-warning">৳{paymentBreakdown.credit.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.credit / totalPayments) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-surface-secondary rounded-full overflow-hidden flex">
+                    {totalPayments > 0 && (
+                      <>
+                        <div 
+                          className="bg-success" 
+                          style={{ width: `${(paymentBreakdown.cash / totalPayments) * 100}%` }}
+                        />
+                        <div 
+                          className="bg-info" 
+                          style={{ width: `${(paymentBreakdown.bkash / totalPayments) * 100}%` }}
+                        />
+                        <div 
+                          className="bg-warning" 
+                          style={{ width: `${(paymentBreakdown.credit / totalPayments) * 100}%` }}
+                        />
+                      </>
+                    )}
+                  </div>
+                  <div className="text-center text-sm text-text-muted mt-2">
+                    Total: ৳{totalPayments.toLocaleString('en-BD', { maximumFractionDigits: 0 })}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-text-muted py-4">
+                  No sales data available
+                </div>
+              )}
             </div>
           </section>
 
           <section>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-              Upcoming Reminders
-            </h2>
-            <div className="card">
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Upcoming Reminders</h2>
+            <div className="bg-surface rounded-md border border-border-default shadow-level-1">
               {reminders && reminders.length > 0 ? (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <ul className="divide-y divide-border-default">
                   {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
-                    <li key={reminder.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-light)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{reminder.title}</span>
-                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{new Date(reminder.reminderDate).toLocaleDateString()}</span>
+                    <li key={reminder.id} className="flex flex-col gap-1 px-4 py-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-text-primary">{reminder.title}</span>
+                        <span className="text-xs text-text-muted">{new Date(reminder.reminderDate).toLocaleDateString()}</span>
                       </div>
                       {reminder.description && (
-                        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{reminder.description}</p>
+                        <p className="text-sm text-text-muted">{reminder.description}</p>
                       )}
                     </li>
                   ))}

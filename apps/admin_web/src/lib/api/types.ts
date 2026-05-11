@@ -151,7 +151,6 @@ export interface ProductCreateInput {
   brand?: string;
   price: number;
   cost?: number;
-  stock: number;
   category_id?: string;
   image_url?: string;
   group_tag?: string;

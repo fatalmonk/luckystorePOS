@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Download, X } from 'lucide-react';
 import { getInstallPrompt, clearInstallPrompt } from '../lib/sw-register';
 
@@ -9,12 +9,15 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function InstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem('pwa-install-dismissed') === 'true');
 
   useEffect(() => {
     // Check if already dismissed in this session
     const wasDismissed = sessionStorage.getItem('pwa-install-dismissed');
     if (wasDismissed) {
+      if (wasDismissed !== 'true') {
+        sessionStorage.setItem('pwa-install-dismissed', 'true');
+      }
       setDismissed(true);
       return;
     }
@@ -43,8 +46,8 @@ export function InstallPrompt() {
   };
 
   const handleDismiss = () => {
+    sessionStorage.setItem('pwa-install-dismissed', 'true');
     setDismissed(true);
-    sessionStorage.setItem('pwa-install-dismissed', '1');
   };
 
   if (!prompt || dismissed) return null;

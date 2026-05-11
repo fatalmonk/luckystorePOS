@@ -56,7 +56,8 @@ export function usePosSale(
   cartDiscount: number,
   storeId: string | undefined,
   tenantId: string | undefined,
-  paymentMethods: any[],
+  paymentMethods: unknown[],
+  cashierId: string | undefined,
   clearCart: () => void,
   onError: (msg: string) => void,
 ): UsePosSaleReturn {
@@ -146,38 +147,37 @@ export function usePosSale(
         }
       }
 
-      let payments: Array<{ account_id: string; amount: number; party_id: string | null }>;
+      let payments: any[];
       let paidTotalInner: number;
       let paymentMethodLabel: string;
 
       if (isSplitMode) {
         payments = splitPayments.map(p => ({
-          account_id: p.accountId,
+          payment_method_id: p.accountId,
           amount: p.amount,
-          party_id: null,
         }));
         paidTotalInner = splitPayments.reduce((sum, p) => sum + p.amount, 0);
         paymentMethodLabel = splitPayments.map(p => {
-          const m = paymentMethods.find((m: any) => m.id === p.accountId);
+          const m = paymentMethods.find((m: any) => m.id === p.accountId) as any;
           return m ? m.name : 'Unknown';
         }).join(' + ');
       } else {
         payments = [{
-          account_id: selectedPaymentMethod!,
+          payment_method_id: selectedPaymentMethod!,
           amount: parseFloat(paymentAmount),
-          party_id: null,
         }];
         paidTotalInner = parseFloat(paymentAmount);
-        paymentMethodLabel = paymentMethods.find((m: any) => m.id === selectedPaymentMethod)?.name || 'Cash';
+        paymentMethodLabel = (paymentMethods.find((m: any) => m.id === selectedPaymentMethod) as any)?.name || 'Cash';
       }
 
-      const saleData = {
+        const saleData = {
         idempotencyKey: crypto.randomUUID(),
         tenantId: tenantId || '',
         storeId: storeId || '',
+        cashierId: cashierId || '',
         items: cart.map(item => ({
           item_id: item.product.id,
-          quantity: item.qty,
+          qty: item.qty,
           unit_price: item.unitPrice,
         })),
         payments,
@@ -215,7 +215,7 @@ export function usePosSale(
     } finally {
       setIsProcessing(false);
     }
-  }, [cart, storeId, tenantId, isSplitMode, selectedPaymentMethod, paymentAmount, splitPayments, totalAmount, subtotal, cartDiscount, paymentMethods, clearCart, resetPaymentModal, onError]);
+  }, [cart, storeId, tenantId, cashierId, isSplitMode, selectedPaymentMethod, paymentAmount, splitPayments, totalAmount, subtotal, cartDiscount, paymentMethods, clearCart, resetPaymentModal, onError]);
 
   return {
     isProcessing,

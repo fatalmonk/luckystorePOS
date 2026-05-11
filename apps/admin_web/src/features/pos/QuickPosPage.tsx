@@ -33,7 +33,7 @@ const getAvatarColor = (name: string) => {
 };
 
 export function QuickPosPage() {
-  const { storeId, tenantId } = useAuth();
+  const { storeId, tenantId, user } = useAuth();
 
   // Error state (shared across hooks)
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +121,7 @@ export function QuickPosPage() {
     storeId,
     tenantId,
     paymentMethods,
+    user?.id,
     cart.clearCart,
     handleError,
   );
