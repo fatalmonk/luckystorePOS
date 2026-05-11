@@ -15,6 +15,36 @@
 
 ---
 
+## 📸 Screenshots
+
+### 📱 Mobile App (Flutter)
+
+| POS Home | Categories | Cart & Checkout |
+|:--------:|:----------:|:---------------:|
+| ![POS Home](docs/screenshots/mobile-home.png) | ![Categories](docs/screenshots/mobile-categories.png) | ![Cart](docs/screenshots/mobile-cart.png) |
+| *Product grid with category filters* | *Browse by real backend categories* | *Cash / Bkash / Credit payment* |
+
+| Inventory | Daily Sales | Barcode Scan |
+|:---------:|:-----------:|:------------:|
+| ![Inventory](docs/screenshots/mobile-inventory.png) | ![Daily Sales](docs/screenshots/mobile-daily-sales.png) | ![Scan](docs/screenshots/mobile-scan.png) |
+| *Stock levels & low-stock alerts* | *End-of-day sales entry* | *Quick product lookup* |
+
+### 💻 Admin Dashboard (React + Vite)
+
+| Dashboard | Products | Inventory |
+|:---------:|:--------:|:---------:|
+| ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Products](docs/screenshots/admin-products.png) | ![Inventory](docs/screenshots/admin-inventory.png) |
+| *Sales analytics & metrics* | *Category thumbnails & grid/list toggle* | *Stock status with image upload* |
+
+| Supplier Ledger | Collections | POS Quick Sale |
+|:---------------:|:---------:|:----------------:|
+| ![Ledger](docs/screenshots/admin-ledger.png) | ![Collections](docs/screenshots/admin-collections.png) | ![POS](docs/screenshots/admin-pos.png) |
+| *Payables & aging summary* | *Overdue customer follow-ups* | *Fast counter checkout* |
+
+> **Note:** Place screenshot files in `docs/screenshots/` and name them exactly as referenced above for them to display correctly.
+
+---
+
 ## ✨ Features
 
 <details open>
