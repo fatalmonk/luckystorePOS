@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/product_card.dart';
@@ -13,6 +14,7 @@ class SearchTab extends StatefulWidget {
 class _SearchTabState extends State<SearchTab> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
+  Timer? _debounceTimer;
 
   // Simulated flat product catalog for fuzzy/local search
   static const _catalog = [
@@ -47,6 +49,7 @@ class _SearchTabState extends State<SearchTab> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -66,7 +69,12 @@ class _SearchTabState extends State<SearchTab> {
                 controller: _controller,
                 autofocus: true,
                 style: const TextStyle(color: AppTheme.textPrimary),
-                onChanged: (v) => setState(() => _query = v),
+                onChanged: (v) {
+                  _debounceTimer?.cancel();
+                  _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                    setState(() => _query = v);
+                  });
+                },
                 decoration: InputDecoration(
                   hintText: 'Search... (fuzzy matching)',
                   hintStyle: const TextStyle(color: AppTheme.textSecondary),
