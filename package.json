@@ -16,6 +16,7 @@
     "supabase:status": "supabase status",
     "supabase:reset": "supabase db reset",
     "supabase:types": "sh -c 'mkdir -p apps/admin_web/src/lib && supabase gen types typescript --local > apps/admin_web/src/lib/database.types.ts'",
+    "supabase:sync-remote-data": "node scripts/ops/sync-supabase-data.js",
     "scrape": "node apps/scraper/scrape-shwapno.js",
     "import-competitor": "node scripts/ops/import-competitor-data.js",
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",

@@ -36,10 +36,10 @@ function loadEnv() {
     }
   }
 
-  // Also try frontend env which often holds VITE_ prefixed vars
-  const frontendEnv = join(repoRoot, 'apps', 'frontend', '.env.local');
-  if (existsSync(frontendEnv)) {
-    config({ path: frontendEnv });
+  // Also try the admin web env which holds the Vite-prefixed vars in this repo.
+  const adminWebEnv = join(repoRoot, 'apps', 'admin_web', '.env.local');
+  if (existsSync(adminWebEnv)) {
+    config({ path: adminWebEnv });
   }
 }
 
