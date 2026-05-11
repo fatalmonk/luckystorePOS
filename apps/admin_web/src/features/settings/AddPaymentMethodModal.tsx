@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { X, Plus, CreditCard } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
+import type { Database } from '../../lib/database.types';
+
+type PaymentType = Database['public']['Enums']['payment_type'];
 
 const PAYMENT_TYPES = [
   { value: 'cash', label: 'Cash' },
@@ -18,7 +21,11 @@ interface AddPaymentMethodModalProps {
 
 export function AddPaymentMethodModal({ isOpen, storeId, onClose }: AddPaymentMethodModalProps) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    type: PaymentType;
+    isActive: boolean;
+  }>({
     name: '',
     type: 'cash',
     isActive: true,
@@ -26,7 +33,8 @@ export function AddPaymentMethodModal({ isOpen, storeId, onClose }: AddPaymentMe
   const [error, setError] = useState<string | null>(null);
 
   const createMutation = useMutation({
-    mutationFn: (method: unknown) => api.settings.addPaymentMethod(storeId, method),
+    mutationFn: (method: { name: string; type: PaymentType; isActive: boolean }) =>
+      api.settings.addPaymentMethod(storeId, method),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
       setFormData({ name: '', type: 'cash', isActive: true });
@@ -138,8 +146,10 @@ export function AddPaymentMethodModal({ isOpen, storeId, onClose }: AddPaymentMe
               Type
             </label>
             <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              value={formData.type as string}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value as PaymentType })
+              }
               style={{
                 width: '100%',
                 padding: 'var(--space-3)',
