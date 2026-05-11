@@ -374,7 +374,7 @@ export const CollectionsWorkspace: React.FC = () => {
                           justifyContent: 'center',
                           padding: 'var(--space-2)',
                           borderRadius: 'var(--radius-md)',
-                          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                          backgroundColor: 'var(--color-warning-subtle)',
                           color: 'var(--color-warning)',
                           cursor: 'pointer',
                           border: 'none',
@@ -401,7 +401,7 @@ export const CollectionsWorkspace: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'var(--color-surface-overlay)',
           backdropFilter: 'blur(2px)'
         }}>
           <div className="card" style={{ width: '100%', maxWidth: '440px', padding: 'var(--space-6)' }}>
@@ -499,7 +499,7 @@ export const CollectionsWorkspace: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'var(--color-surface-overlay)',
           backdropFilter: 'blur(2px)'
         }}>
           <div className="card" style={{ width: '100%', maxWidth: '400px', padding: 'var(--space-6)' }}>

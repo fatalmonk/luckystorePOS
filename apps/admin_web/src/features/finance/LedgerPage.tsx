@@ -151,7 +151,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                 padding: 'var(--space-4)',
                 borderRadius: 'var(--radius-lg)',
                 border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
-                backgroundColor: selectedParty?.id === p.id ? 'rgba(251, 191, 36, 0.08)' : 'var(--bg-card)',
+                backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
                 cursor: 'pointer',
                 transition: 'all var(--transition-fast)',
                 boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
