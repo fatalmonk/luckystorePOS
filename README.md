@@ -468,7 +468,7 @@ Set required secrets on each edge function:
 | Document | Purpose |
 |:---------|:--------|
 | [Quick Start Checklist](docs/01-getting-started/00-QUICK-START-CHECKLIST.md) | Step-by-step onboarding |
-| [Schema Setup](docs/02-setup/02-SUPABASE-SCHEMA.md) | Database creation guide |
+| [Store Setup Guide](docs/02-setup/STORE-SETUP-GUIDE.md) | Database creation guide |
 | [Import Master Guide](docs/03-import-system/IMPORT-MASTER-GUIDE.md) | CSV/Excel product import |
 | [RLS Security Model](docs/RLS_SECURITY_MODEL.md) | Row-level security architecture |
 | [MHT-P29L Setup](docs/root-docs/MHT-P29L_SETUP.md) | Label printer configuration |
