@@ -33,7 +33,7 @@ AS $$
       p.name             AS customer_name,
       p.phone,
       COUNT(DISTINCT s.id)                   AS purchase_count,
-      COALESCE(SUM(le.credit) FILTER (WHERE le.store_id = p_store_id), 0) AS total_spent,
+      COALESCE(SUM(le.credit), 0) AS total_spent,
       MAX(s.created_at)                      AS last_purchase_date
     FROM public.parties p
     LEFT JOIN public.ledger_entries le ON le.annotation->>'party_id' = p.id::text
