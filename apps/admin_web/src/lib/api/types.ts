@@ -244,3 +244,30 @@ export interface DailyMovementItem {
   total_out: number;
   net_delta: number;
 }
+
+// =============================================================================
+// Customer & Staff Analytics Types
+// =============================================================================
+
+export interface CustomerAnalyticsItem {
+  party_id: string;
+  customer_name: string;
+  phone: string | null;
+  total_spent: number;
+  purchase_count: number;
+  avg_order_value: number;
+  last_purchase_date: string | null;
+  days_since_last: number | null;
+}
+
+export interface StaffPerformanceItem {
+  user_id: string;
+  staff_name: string;
+  role: string;
+  total_sales: number;
+  total_revenue: number;
+  avg_ticket: number;
+  total_discounts: number;
+  active_days: number;
+  revenue_per_day: number;
+}

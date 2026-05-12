@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '../../components/layout/PageHeader';
 import {
-  BarChart3, TrendingUp, Package, Calendar, Download, Activity,
+  BarChart3, TrendingUp, Package, Calendar, Download, Activity, Users, UserCheck,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
@@ -15,7 +15,7 @@ import {
 } from 'recharts';
 
 type DateRange = 'today' | 'week' | 'month' | 'custom';
-type TabType = 'sales' | 'inventory' | 'profit' | 'analytics';
+type TabType = 'sales' | 'inventory' | 'profit' | 'analytics' | 'customers' | 'staff';
 type AnalyticsSubTab = 'valuation' | 'top-sellers' | 'slow-movers' | 'movement';
 
 export const ReportsPage: React.FC = () => {
@@ -57,6 +57,26 @@ export const ReportsPage: React.FC = () => {
     queryFn: () => {
       if (!storeId) return null;
       return api.reports.getSalesReport(storeId, dateParams.start, dateParams.end);
+    },
+    enabled: !!storeId && activeTab === 'sales',
+  });
+
+  // Previous period sales for WoW/MoM comparison
+  const prevPeriodParams = useMemo(() => {
+    const currStart = new Date(dateParams.start);
+    const currEnd = new Date(dateParams.end);
+    const days = Math.ceil((currEnd.getTime() - currStart.getTime()) / (86400000)) + 1;
+    const prevEnd = new Date(currStart.getTime() - 86400000);
+    const prevStart = new Date(prevEnd.getTime() - (days - 1) * 86400000);
+    const fmt = (d: Date) => d.toISOString().split('T')[0];
+    return { start: fmt(prevStart), end: fmt(prevEnd) };
+  }, [dateParams.start, dateParams.end]);
+
+  const prevSalesQuery = useQuery({
+    queryKey: ['sales-report-prev', storeId, prevPeriodParams.start, prevPeriodParams.end],
+    queryFn: () => {
+      if (!storeId) return null;
+      return api.reports.getSalesReport(storeId, prevPeriodParams.start, prevPeriodParams.end);
     },
     enabled: !!storeId && activeTab === 'sales',
   });
@@ -118,10 +138,32 @@ export const ReportsPage: React.FC = () => {
     enabled: !!storeId && activeTab === 'analytics' && analyticsSubTab === 'movement',
   });
 
+  // Customer Analytics Query
+  const customerQuery = useQuery({
+    queryKey: ['customer-analytics', storeId],
+    queryFn: () => {
+      if (!storeId) return null;
+      return api.reports.getCustomerAnalytics(storeId);
+    },
+    enabled: !!storeId && activeTab === 'customers',
+  });
+
+  // Staff Performance Query
+  const staffQuery = useQuery({
+    queryKey: ['staff-performance', storeId],
+    queryFn: () => {
+      if (!storeId) return null;
+      return api.reports.getStaffPerformance(storeId);
+    },
+    enabled: !!storeId && activeTab === 'staff',
+  });
+
   const isLoading = salesQuery.isLoading || inventoryQuery.isLoading || profitQuery.isLoading
-    || valuationQuery.isLoading || topSellersQuery.isLoading || slowMoversQuery.isLoading || movementQuery.isLoading;
+    || valuationQuery.isLoading || topSellersQuery.isLoading || slowMoversQuery.isLoading || movementQuery.isLoading
+    || customerQuery.isLoading || staffQuery.isLoading;
   const error = salesQuery.error || inventoryQuery.error || profitQuery.error
-    || valuationQuery.error || topSellersQuery.error || slowMoversQuery.error || movementQuery.error;
+    || valuationQuery.error || topSellersQuery.error || slowMoversQuery.error || movementQuery.error
+    || customerQuery.error || staffQuery.error;
 
   if (error) {
     return (
@@ -191,6 +233,18 @@ export const ReportsPage: React.FC = () => {
         )}>
           <Activity size={18} /> Inventory Analytics
         </button>
+        <button onClick={() => setActiveTab('customers')} className={clsx(
+          'flex items-center gap-2 px-4 py-3 border-b-2 font-medium transition-colors',
+          activeTab === 'customers' ? 'border-color-primary text-text-main' : 'border-transparent text-text-muted hover:text-text-main hover:border-border-color'
+        )}>
+          <Users size={18} /> Customers
+        </button>
+        <button onClick={() => setActiveTab('staff')} className={clsx(
+          'flex items-center gap-2 px-4 py-3 border-b-2 font-medium transition-colors',
+          activeTab === 'staff' ? 'border-color-primary text-text-main' : 'border-transparent text-text-muted hover:text-text-main hover:border-border-color'
+        )}>
+          <UserCheck size={18} /> Staff
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -205,7 +259,7 @@ export const ReportsPage: React.FC = () => {
         ) : (
           <>
             {activeTab === 'sales' && salesQuery.data && (
-              <SalesReportContent data={salesQuery.data} />
+              <SalesReportContent data={salesQuery.data} prevData={prevSalesQuery.data} />
             )}
             {activeTab === 'inventory' && inventoryQuery.data && (
               <InventoryReportContent data={inventoryQuery.data} />
@@ -223,6 +277,12 @@ export const ReportsPage: React.FC = () => {
                 movementData={movementQuery.data}
               />
             )}
+            {activeTab === 'customers' && customerQuery.data && (
+              <CustomerAnalyticsContent data={customerQuery.data} />
+            )}
+            {activeTab === 'staff' && staffQuery.data && (
+              <StaffPerformanceContent data={staffQuery.data} />
+            )}
           </>
         )}
       </div>
@@ -234,8 +294,15 @@ export const ReportsPage: React.FC = () => {
 // =========================================================================
 // Sales Report Content
 // =========================================================================
-function SalesReportContent({ data }: { data: any }) {
+function SalesReportContent({ data, prevData }: { data: any; prevData?: any }) {
   const maxDaily = Math.max(...data.dailySales.map((d: any) => d.revenue), 1);
+
+  const revChange = prevData && prevData.totalRevenue > 0
+    ? ((data.totalRevenue - prevData.totalRevenue) / prevData.totalRevenue) * 100
+    : null;
+  const txnChange = prevData && prevData.transactionCount > 0
+    ? ((data.transactionCount - prevData.transactionCount) / prevData.transactionCount) * 100
+    : null;
 
   return (
     <div className="p-6 space-y-6">
@@ -253,10 +320,24 @@ function SalesReportContent({ data }: { data: any }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard title="Total Revenue" value={`৳${data.totalRevenue.toLocaleString()}`} icon={<TrendingUp size={20} />} color="success" variant="solid" />
-        <MetricCard title="Transactions" value={data.transactionCount.toString()} icon={<BarChart3 size={20} />} color="info" variant="solid" />
-        <MetricCard title="Average Ticket" value={`৳${data.avgTicket.toFixed(2)}`} icon={<TrendingUp size={20} />} color="tertiary" variant="solid" />
-        <MetricCard title="Daily Avg" value={`৳${data.dailySales.length > 0 ? (data.totalRevenue / data.dailySales.length).toFixed(0) : 0}`} icon={<Calendar size={20} />} color="warning" variant="solid" />
+        <MetricCard
+          title="Total Revenue"
+          value={`৳${data.totalRevenue.toLocaleString()}`}
+          icon={<TrendingUp size={20} />}
+          color="success"
+          trend={revChange !== null ? (revChange >= 0 ? 'up' : 'down') : undefined}
+          trendLabel={revChange !== null ? `${revChange >= 0 ? '+' : ''}${revChange.toFixed(1)}% vs prev` : undefined}
+        />
+        <MetricCard
+          title="Transactions"
+          value={data.transactionCount.toString()}
+          icon={<BarChart3 size={20} />}
+          color="info"
+          trend={txnChange !== null ? (txnChange >= 0 ? 'up' : 'down') : undefined}
+          trendLabel={txnChange !== null ? `${txnChange >= 0 ? '+' : ''}${txnChange.toFixed(1)}% vs prev` : undefined}
+        />
+        <MetricCard title="Average Ticket" value={`৳${data.avgTicket.toFixed(2)}`} icon={<TrendingUp size={20} />} color="tertiary" />
+        <MetricCard title="Daily Avg" value={`৳${data.dailySales.length > 0 ? (data.totalRevenue / data.dailySales.length).toFixed(0) : 0}`} icon={<Calendar size={20} />} color="warning" />
       </div>
 
       <div className="space-y-3">
@@ -724,6 +805,199 @@ function MovementTrendContent({ data }: { data: DailyMovementItem[] | null }) {
                 <td className={clsx('px-3 py-2 text-right font-medium', item.net_delta >= 0 ? 'text-emerald-600' : 'text-red-600')}>
                   {item.net_delta >= 0 ? '+' : ''}{item.net_delta}
                 </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// =========================================================================
+// Customer Analytics Content
+// =========================================================================
+function CustomerAnalyticsContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) return <EmptyState icon={<Users size={32} />} title="No customer data" description="Customer purchases will appear here once they make transactions." />;
+
+  const totalCustomers = data.length;
+  const totalSpent = data.reduce((s: number, c: any) => s + Number(c.total_spent), 0);
+  const avgLTV = totalCustomers > 0 ? totalSpent / totalCustomers : 0;
+  const avgFrequency = totalCustomers > 0
+    ? data.reduce((s: number, c: any) => s + Number(c.purchase_count), 0) / totalCustomers
+    : 0;
+
+  const spendBuckets = [
+    { range: '0-1k', min: 0, max: 1000, count: 0 },
+    { range: '1k-5k', min: 1000, max: 5000, count: 0 },
+    { range: '5k-10k', min: 5000, max: 10000, count: 0 },
+    { range: '10k-25k', min: 10000, max: 25000, count: 0 },
+    { range: '25k+', min: 25000, max: Infinity, count: 0 },
+  ];
+  data.forEach((c: any) => {
+    for (const bucket of spendBuckets) {
+      if (Number(c.total_spent) >= bucket.min && Number(c.total_spent) < bucket.max) {
+        bucket.count++;
+        break;
+      }
+    }
+  });
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-lg">Customer Analytics</h2>
+        <button
+          className="button-outline gap-2 text-sm"
+          onClick={() => downloadCSV(data.map((c: any) => ({
+            name: c.customer_name,
+            phone: c.phone || '',
+            totalSpent: c.total_spent,
+            purchases: c.purchase_count,
+            avgOrder: c.avg_order_value,
+            lastPurchase: c.last_purchase_date || '',
+            daysSinceLast: c.days_since_last ?? '',
+          })), `customer-analytics-${new Date().toISOString().split('T')[0]}.csv`)}
+        >
+          <Download size={16} /> Export CSV
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <MetricCard title="Total Customers" value={totalCustomers.toString()} icon={<Users size={20} />} color="primary" variant="solid" />
+        <MetricCard title="Total Revenue" value={`৳${totalSpent.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`} icon={<TrendingUp size={20} />} color="success" variant="solid" />
+        <MetricCard title="Avg LTV" value={`৳${avgLTV.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`} icon={<BarChart3 size={20} />} color="tertiary" variant="solid" />
+        <MetricCard title="Avg Frequency" value={`${avgFrequency.toFixed(1)}x`} icon={<Activity size={20} />} color="info" variant="solid" />
+      </div>
+
+      <div className="h-[250px]">
+        <h3 className="font-semibold text-sm text-text-muted mb-3">Customer Spend Distribution</h3>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={spendBuckets}>
+            <XAxis dataKey="range" tick={{ fontSize: 12 }} />
+            <YAxis allowDecimals={false} />
+            <Tooltip formatter={(value: any) => [value, 'Customers']} />
+            <Bar dataKey="count" fill="var(--color-primary-default)" radius={[4, 4, 0, 0]} name="Customers" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="overflow-x-auto">
+        <h3 className="font-semibold text-sm text-text-muted mb-3">Top Customers</h3>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b">
+            <tr className="text-left text-text-muted">
+              <th className="px-3 py-2">Customer</th>
+              <th className="px-3 py-2">Phone</th>
+              <th className="px-3 py-2 text-right">Purchases</th>
+              <th className="px-3 py-2 text-right">Total Spent</th>
+              <th className="px-3 py-2 text-right">Avg Order</th>
+              <th className="px-3 py-2 text-right">Last Purchase</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {data.slice(0, 25).map((c: any, idx: number) => (
+              <tr key={idx} className="hover:bg-gray-50">
+                <td className="px-3 py-2 font-medium">{c.customer_name}</td>
+                <td className="px-3 py-2 text-text-muted">{c.phone || '-'}</td>
+                <td className="px-3 py-2 text-right">{c.purchase_count}</td>
+                <td className="px-3 py-2 text-right font-medium">৳{Number(c.total_spent).toLocaleString()}</td>
+                <td className="px-3 py-2 text-right">৳{Number(c.avg_order_value).toLocaleString('en-BD', { maximumFractionDigits: 0 })}</td>
+                <td className="px-3 py-2 text-right text-text-muted">
+                  {c.last_purchase_date ? new Date(c.last_purchase_date).toLocaleDateString() : '-'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// =========================================================================
+// Staff Performance Content
+// =========================================================================
+function StaffPerformanceContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) return <EmptyState icon={<UserCheck size={32} />} title="No staff data" description="Staff performance will appear once sales are recorded by cashiers." />;
+
+  const totalRevenue = data.reduce((s: number, st: any) => s + Number(st.total_revenue), 0);
+  const totalSales = data.reduce((s: number, st: any) => s + Number(st.total_sales), 0);
+  const avgTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-lg">Staff Performance (30 days)</h2>
+        <button
+          className="button-outline gap-2 text-sm"
+          onClick={() => downloadCSV(data.map((st: any) => ({
+            name: st.staff_name,
+            role: st.role,
+            totalSales: st.total_sales,
+            totalRevenue: st.total_revenue,
+            avgTicket: st.avg_ticket,
+            totalDiscounts: st.total_discounts,
+            activeDays: st.active_days,
+            revenuePerDay: st.revenue_per_day,
+          })), `staff-performance-${new Date().toISOString().split('T')[0]}.csv`)}
+        >
+          <Download size={16} /> Export CSV
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <MetricCard title="Active Staff" value={data.length.toString()} icon={<UserCheck size={20} />} color="primary" variant="solid" />
+        <MetricCard title="Total Transactions" value={totalSales.toString()} icon={<Activity size={20} />} color="info" variant="solid" />
+        <MetricCard title="Total Revenue" value={`৳${totalRevenue.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`} icon={<TrendingUp size={20} />} color="success" variant="solid" />
+        <MetricCard title="Store Avg Ticket" value={`৳${avgTicket.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`} icon={<BarChart3 size={20} />} color="tertiary" variant="solid" />
+      </div>
+
+      <div className="h-[300px]">
+        <h3 className="font-semibold text-sm text-text-muted mb-3">Revenue by Staff</h3>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data.slice(0, 15)}>
+            <XAxis dataKey="staff_name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+            <YAxis tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
+            <Tooltip formatter={(value: any) => [`৳${Number(value).toLocaleString()}`, '']} />
+            <Bar dataKey="total_revenue" fill="var(--color-primary-default)" radius={[4, 4, 0, 0]} name="Revenue" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="overflow-x-auto">
+        <h3 className="font-semibold text-sm text-text-muted mb-3">Staff Details</h3>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b">
+            <tr className="text-left text-text-muted">
+              <th className="px-3 py-2">Staff</th>
+              <th className="px-3 py-2">Role</th>
+              <th className="px-3 py-2 text-right">Transactions</th>
+              <th className="px-3 py-2 text-right">Revenue</th>
+              <th className="px-3 py-2 text-right">Avg Ticket</th>
+              <th className="px-3 py-2 text-right">Discounts</th>
+              <th className="px-3 py-2 text-right">Active Days</th>
+              <th className="px-3 py-2 text-right">Rev/Day</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {data.map((st: any, idx: number) => (
+              <tr key={idx} className="hover:bg-gray-50">
+                <td className="px-3 py-2 font-medium">{st.staff_name}</td>
+                <td className="px-3 py-2">
+                  <span className={clsx(
+                    'text-xs font-semibold px-2 py-0.5 rounded-full',
+                    st.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                    st.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+                    'bg-gray-100 text-gray-700'
+                  )}>{st.role}</span>
+                </td>
+                <td className="px-3 py-2 text-right">{st.total_sales}</td>
+                <td className="px-3 py-2 text-right font-medium">৳{Number(st.total_revenue).toLocaleString()}</td>
+                <td className="px-3 py-2 text-right">৳{Number(st.avg_ticket).toLocaleString('en-BD', { maximumFractionDigits: 0 })}</td>
+                <td className="px-3 py-2 text-right text-amber-600">৳{Number(st.total_discounts).toLocaleString()}</td>
+                <td className="px-3 py-2 text-right">{st.active_days}</td>
+                <td className="px-3 py-2 text-right text-emerald-600">৳{Number(st.revenue_per_day).toLocaleString('en-BD', { maximumFractionDigits: 0 })}</td>
               </tr>
             ))}
           </tbody>
