@@ -5,6 +5,7 @@ import '../../models/sale_transaction_snapshot.dart';
 import '../../models/app_user.dart';
 import '../../models/party.dart';
 import '../../features/sales/offline_transaction_sync_service.dart';
+import '../services/edge_function_sale_service.dart';
 
 class PosCatalogLoadResult {
   final List<PosCategory> categories;
@@ -480,16 +481,50 @@ class PosProvider extends ChangeNotifier {
       };
     }).toList();
 
-    final result = await _supabase.rpc('record_sale', params: {
-      'p_idempotency_key': transactionTraceId,
-      'p_tenant_id': tenantId,
-      'p_store_id': _storeId,
-      'p_items': recordSaleItems,
-      'p_payments': recordSalePayments,
-      'p_notes': intent.sessionId != null ? 'session:${intent.sessionId}' : null,
-    });
+    // Try edge function first (rate limiting, validation, CORS);
+    // fall back to direct RPC if not configured or on failure.
+    Map<String, dynamic>? edgeResult;
+    try {
+      if (tenders.length != 1) throw Exception('edge_function_single_tender_only');
+      final paymentMethodId = tenders.first.method.id;
+      final edgeItems = recordSaleItems.map((i) => {
+        'item_id': i['item_id'],
+        'quantity': i['quantity'],
+        'price': i['unit_price'],
+      }).toList();
 
-    final resultMap = Map<String, dynamic>.from(result as Map);
+      edgeResult = await EdgeFunctionSaleService.createSale(
+        storeId: _storeId!,
+        clientTransactionId: transactionTraceId,
+        items: edgeItems,
+        paymentMethodId: paymentMethodId,
+        discount: _cartDiscount,
+        reference: intent.sessionId != null ? 'session:${intent.sessionId}' : null,
+        timeout: const Duration(seconds: 30),
+      );
+    } catch (e) {
+      debugPrint('[PosProvider] Edge function call failed: $e');
+      edgeResult = null;
+    }
+
+    final Map<String, dynamic> resultMap;
+    if (edgeResult != null && edgeResult['success'] == true) {
+      resultMap = {
+        ...edgeResult,
+        'batch_id': edgeResult['batch_id'] ?? edgeResult['sale_id'],
+        'total_revenue': edgeResult['total_revenue'] ?? edgeResult['total'],
+      };
+    } else {
+      final result = await _supabase.rpc('record_sale', params: {
+        'p_idempotency_key': transactionTraceId,
+        'p_tenant_id': tenantId,
+        'p_store_id': _storeId,
+        'p_items': recordSaleItems,
+        'p_payments': recordSalePayments,
+        'p_notes': intent.sessionId != null ? 'session:${intent.sessionId}' : null,
+      });
+      resultMap = Map<String, dynamic>.from(result as Map);
+    }
     final statusText = (resultMap['status'] as String? ?? 'error').toLowerCase();
     final isSuccess = statusText == 'success';
 

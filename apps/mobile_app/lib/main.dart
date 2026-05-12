@@ -137,7 +137,7 @@ class LuckyStoreApp extends StatelessWidget {
       routes: {
         '/checkout':       (_) => const CheckoutScreen(),
         '/bkash-checkout': (_) => BkashCheckoutScreen(
-          bkashUrl: 'https://checkout.sandbox.bKash.com/placeholder',
+          bkashUrl: 'about:blank',
           paymentId: 'PENDING_PAYMENT_ID',
           amount: 0,
         ),

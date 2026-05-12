@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
@@ -19,11 +20,14 @@ class SearchTab extends StatefulWidget {
 class _SearchTabState extends State<SearchTab> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
+  Timer? _debounceTimer;
   List<PosItem> _results = [];
   bool _searching = false;
   String? _error;
+  int _currentRequestId = 0;
 
-  Future<void> _doSearch(String query) async {
+  /// Executes the search via the provider
+  Future<void> _doSearch(String query, int requestId) async {
     if (query.trim().isEmpty) {
       setState(() {
         _results = [];
@@ -32,26 +36,54 @@ class _SearchTabState extends State<SearchTab> {
       });
       return;
     }
-    setState(() { _searching = true; _error = null; });
+
+    setState(() {
+      _searching = true;
+      _error = null;
+    });
+
     final pos = context.read<PosProvider>();
     try {
       final items = await pos.searchItems(query.trim());
       if (!mounted) return;
-      setState(() {
-        _results = items;
-        _searching = false;
-      });
+      // Only update results if this is the most recent request
+      if (requestId == _currentRequestId) {
+        setState(() {
+          _results = items;
+          _searching = false;
+        });
+      }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = 'Search failed. Please try again.';
-        _searching = false;
-      });
+      // Only update error if this is the most recent request
+      if (requestId == _currentRequestId) {
+        setState(() {
+          _error = 'Search failed. Please try again.';
+          _searching = false;
+        });
+      }
     }
+  }
+
+  /// Handles the text input with a 300ms debounce to prevent API spam
+  void _onSearchChanged(String v) {
+    setState(() => _query = v);
+    
+    _debounceTimer?.cancel();
+    if (v.trim().isEmpty) {
+      setState(() => _results = []);
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      final requestId = ++_currentRequestId;
+      _doSearch(v, requestId);
+    });
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -75,13 +107,11 @@ class _SearchTabState extends State<SearchTab> {
                 controller: _controller,
                 autofocus: true,
                 style: AppTextStyles.bodyMd.copyWith(color: AppColors.textPrimary),
-                onChanged: (v) {
-                  setState(() => _query = v);
-                  if (v.trim().isEmpty) {
-                    setState(() => _results = []);
-                  }
+                onChanged: _onSearchChanged,
+                onSubmitted: (v) {
+                  _debounceTimer?.cancel();
+                  _doSearch(v);
                 },
-                onSubmitted: (v) => _doSearch(v),
                 decoration: InputDecoration(
                   hintText: 'Search products, brands, SKUs...',
                   hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
@@ -91,9 +121,11 @@ class _SearchTabState extends State<SearchTab> {
                           icon: const Icon(Icons.clear, color: AppColors.textSecondary),
                           onPressed: () {
                             _controller.clear();
+                            _debounceTimer?.cancel();
                             setState(() {
                               _query = '';
                               _results = [];
+                              _error = null;
                             });
                           },
                         )
@@ -118,7 +150,7 @@ class _SearchTabState extends State<SearchTab> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.error_outline, color: AppColors.dangerDefault, size: 64),
+                      const Icon(Icons.error_outline, color: AppColors.dangerDefault, size: 64),
                       const SizedBox(height: AppSpacing.space3),
                       Text(
                         _error!,

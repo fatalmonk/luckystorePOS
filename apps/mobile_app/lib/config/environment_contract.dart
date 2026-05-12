@@ -27,6 +27,10 @@ class EnvironmentContract {
     'SSLCOMMERZ_IS_LIVE',
     'GEMINI_API_KEY',
     'VITE_SUPABASE_URL',
+    'BKASH_BASE_URL',
+    'BKASH_APP_KEY',
+    'BKASH_APP_SECRET',
+    'CREATE_SALE_EDGE_URL',
   ];
 
   // Kept for historical reference; should not be used by active code.
