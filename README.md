@@ -367,7 +367,7 @@ npm install
 npm run dev                  # Opens at http://localhost:5173
 
 # 5. Storybook (optional)
-cd apps/admin_web
+# Already in apps/admin_web from step 4
 npm run storybook            # Opens at http://localhost:6006
 
 # 6. Docker (optional — production-like)
