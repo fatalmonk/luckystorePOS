@@ -81,33 +81,37 @@ ALTER TABLE public.stock_ledger
 ALTER TABLE public.stock_ledger ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated users to read their store's ledger
-CREATE POLICY stock_ledger_read_authenticated 
-  ON public.stock_ledger FOR SELECT 
+DROP POLICY IF EXISTS stock_ledger_read_authenticated ON public.stock_ledger;
+CREATE POLICY stock_ledger_read_authenticated
+  ON public.stock_ledger FOR SELECT
   TO authenticated
   USING (
-    store_id IN (
-      SELECT store_id FROM public.user_stores WHERE user_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM public.users u
+      WHERE u.auth_id = auth.uid()
+        AND u.store_id = stock_ledger.store_id
     )
   );
 
 -- Allow authenticated users to insert their store's ledger entries
-CREATE POLICY stock_ledger_insert_authenticated 
-  ON public.stock_ledger FOR INSERT 
+DROP POLICY IF EXISTS stock_ledger_insert_authenticated ON public.stock_ledger;
+CREATE POLICY stock_ledger_insert_authenticated
+  ON public.stock_ledger FOR INSERT
   TO authenticated
   WITH CHECK (
-    store_id IN (
-      SELECT store_id FROM public.user_stores WHERE user_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM public.users u
+      WHERE u.auth_id = auth.uid()
+        AND u.store_id = stock_ledger.store_id
     )
   );
 
 -- Service role can do anything
-CREATE POLICY stock_ledger_service_role_all 
-  ON public.stock_ledger USING (true) 
-  TO service_role;
-
-CREATE POLICY stock_ledger_service_role_insert 
-  ON public.stock_ledger FOR INSERT 
+DROP POLICY IF EXISTS stock_ledger_service_role_all ON public.stock_ledger;
+CREATE POLICY stock_ledger_service_role_all
+  ON public.stock_ledger
   TO service_role
+  USING (true)
   WITH CHECK (true);
 
 -- -----------------------------------------------------------------------------
