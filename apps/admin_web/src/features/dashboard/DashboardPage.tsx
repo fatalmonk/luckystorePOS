@@ -42,7 +42,7 @@ export function DashboardPage() {
     queryFn: () => api.dashboard.getLowStock(storeId),
   });
 
-  // Fetch daily sales data for comparison
+  // Fetch daily sales data for comparison (ALL days, not just 30)
   const dailySalesQuery = useQuery({
     queryKey: ['daily-sales-comparison', storeId],
     queryFn: async () => {
@@ -51,8 +51,7 @@ export function DashboardPage() {
         .from('daily_sales')
         .select('*')
         .eq('store_id', storeId)
-        .order('sale_date', { ascending: false })
-        .limit(30);
+        .order('sale_date', { ascending: false });
       if (error) throw error;
       return data || [];
     },
@@ -83,13 +82,19 @@ export function DashboardPage() {
   const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
 
   // Calculate totals from daily_sales (all-time)
-  const totalRevenue = dailySales.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
+  const totalRevenue = dailySales.reduce((sum: number, s: any) => sum + Number(s.cash_amount || 0) + Number(s.bkash_amount || 0), 0);
+  const totalCredit = dailySales.reduce((sum: number, s: any) => sum + Number(s.credit_amount || 0), 0);
   const totalCash = dailySales.reduce((sum: number, s: any) => sum + Number(s.cash_amount || 0), 0);
   const totalBkash = dailySales.reduce((sum: number, s: any) => sum + Number(s.bkash_amount || 0), 0);
-  const totalCredit = dailySales.reduce((sum: number, s: any) => sum + Number(s.credit_amount || 0), 0);
   const totalExpensesAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
   const totalStockAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.stock_purchase || 0), 0);
   const netPosition = totalRevenue - totalExpensesAllTime;
+
+  // Partner capital investment (fixed)
+  const mohammedCapital = 553000;
+  const sayeedCapital = 965490;
+  const partnerCapital = mohammedCapital + sayeedCapital;
+  const availableBalance = partnerCapital + totalRevenue - totalExpensesAllTime;
 
   // Expense breakdown by category from expenses table
   const expenseCategories: Record<string, number> = expenses.reduce((acc: Record<string, number>, e: any) => {
@@ -130,7 +135,7 @@ export function DashboardPage() {
     .map((s: any) => ({
       date: s.sale_date,
       label: format(parseISO(s.sale_date), 'dd MMM'),
-      sales: Number(s.total_sales || 0),
+      sales: Number(s.cash_amount || 0) + Number(s.bkash_amount || 0),
       expenses: Number(s.daily_expense || 0),
       stockPurchases: Number(s.stock_purchase || 0),
     }));
@@ -284,15 +289,15 @@ export function DashboardPage() {
             <div className="space-y-3 mt-2">
               <div className="flex justify-between items-center py-2 border-b border-border-default">
                 <span className="text-text-secondary">Mohammed</span>
-                <span className="font-mono font-medium text-primary">৳{fmt(553000)}</span>
+                <span className="font-mono font-medium text-primary">৳{fmt(mohammedCapital)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border-default">
                 <span className="text-text-secondary">Sayeed Imam</span>
-                <span className="font-mono font-medium text-primary">৳{fmt(965490)}</span>
+                <span className="font-mono font-medium text-primary">৳{fmt(sayeedCapital)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border-default">
                 <span className="font-semibold text-text-primary">Total Capital</span>
-                <span className="font-mono font-bold text-lg text-primary">৳{fmt(1518490)}</span>
+                <span className="font-mono font-bold text-lg text-primary">৳{fmt(partnerCapital)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border-default">
                 <span className="text-text-secondary">Stock Investment</span>
@@ -437,53 +442,40 @@ export function DashboardPage() {
             <h2 className="text-xl font-semibold text-text-primary mb-4">Total Balance</h2>
             <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-8 text-center">
               <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Current Available Balance</div>
-              <div className="text-4xl font-bold text-success font-mono">৳{stats?.total_balance || '0.00'}</div>
+              <div className="text-4xl font-bold text-success font-mono">৳{fmt(availableBalance)}</div>
+              <div className="text-sm text-text-muted mt-2">Capital + Revenue − Expenses</div>
             </div>
           </section>
 
           {/* Payment Breakdown */}
           <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Payment Breakdown</h2>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Revenue Breakdown</h2>
             <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
-              {totalPayments > 0 ? (
+              {totalRevenue > 0 ? (
                 <>
                   <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="text-center p-3 bg-surface-secondary rounded-lg">
                       <div className="text-sm text-text-muted">Cash</div>
-                      <div className="text-lg font-bold text-success">৳{paymentBreakdown.cash.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
-                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.cash / totalPayments) * 100).toFixed(1) : 0}%</div>
+                      <div className="text-lg font-bold text-success">৳{fmt(totalCash)}</div>
+                      <div className="text-xs text-text-muted">{((totalCash / totalRevenue) * 100).toFixed(1)}%</div>
                     </div>
                     <div className="text-center p-3 bg-surface-secondary rounded-lg">
                       <div className="text-sm text-text-muted">Bkash</div>
-                      <div className="text-lg font-bold text-info">৳{paymentBreakdown.bkash.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
-                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.bkash / totalPayments) * 100).toFixed(1) : 0}%</div>
+                      <div className="text-lg font-bold text-info">৳{fmt(totalBkash)}</div>
+                      <div className="text-xs text-text-muted">{((totalBkash / totalRevenue) * 100).toFixed(1)}%</div>
                     </div>
                     <div className="text-center p-3 bg-surface-secondary rounded-lg">
-                      <div className="text-sm text-text-muted">Credit</div>
-                      <div className="text-lg font-bold text-warning">৳{paymentBreakdown.credit.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
-                      <div className="text-xs text-text-muted">{totalPayments > 0 ? ((paymentBreakdown.credit / totalPayments) * 100).toFixed(1) : 0}%</div>
+                      <div className="text-sm text-text-muted">Credit Due</div>
+                      <div className="text-lg font-bold text-warning">৳{fmt(totalCredit)}</div>
+                      <div className="text-xs text-text-muted">{((totalCredit / (totalRevenue + totalCredit)) * 100).toFixed(1)}%</div>
                     </div>
                   </div>
                   <div className="h-2 bg-surface-secondary rounded-full overflow-hidden flex">
-                    {totalPayments > 0 && (
-                      <>
-                        <div 
-                          className="bg-success" 
-                          style={{ width: `${(paymentBreakdown.cash / totalPayments) * 100}%` }} 
-                        />
-                        <div 
-                          className="bg-info" 
-                          style={{ width: `${(paymentBreakdown.bkash / totalPayments) * 100}%` }} 
-                        />
-                        <div 
-                          className="bg-warning" 
-                          style={{ width: `${(paymentBreakdown.credit / totalPayments) * 100}%` }} 
-                        />
-                      </>
-                    )}
+                    <div className="bg-success" style={{ width: `${(totalCash / totalRevenue) * 100}%` }} />
+                    <div className="bg-info" style={{ width: `${(totalBkash / totalRevenue) * 100}%` }} />
                   </div>
                   <div className="text-center text-sm text-text-muted mt-2">
-                    Total: ৳{totalPayments.toLocaleString('en-BD', { maximumFractionDigits: 0 })}
+                    Realized Revenue: ৳{fmt(totalRevenue)} | Total Sales: ৳{fmt(totalRevenue + totalCredit)}
                   </div>
                 </>
               ) : (
