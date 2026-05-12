@@ -75,6 +75,16 @@
   }
 }
 
+@media (min-width: 769px) {
+  .sidebar.sidebar--hidden {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
@@ -92,12 +102,6 @@
   }
   .sidebar-backdrop {
     display: block;
-  }
-}
-
-@media (min-width: 769px) {
-  .sidebar-backdrop {
-    display: none;
   }
 }
 
