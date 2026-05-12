@@ -31,6 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_items_tenant_id ON public.items(tenant_id);
 -- Drop broken policies
 DROP POLICY IF EXISTS "categories_select_tenant_isolated" ON public.categories;
 DROP POLICY IF EXISTS "Allow read to authenticated" ON public.categories;
+DROP POLICY IF EXISTS "categories_manage_authorized" ON public.categories;
 
 -- Create correct policies
 CREATE POLICY "categories_select_tenant_isolated"
