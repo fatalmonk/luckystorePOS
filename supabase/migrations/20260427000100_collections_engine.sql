@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS customer_reminders (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_customer_reminders_tenant_store ON customer_reminders(tenant_id, store_id);
-CREATE INDEX idx_customer_reminders_party ON customer_reminders(party_id);
-CREATE INDEX idx_customer_reminders_sent_at ON customer_reminders(sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_customer_reminders_tenant_store ON customer_reminders(tenant_id, store_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reminders_party ON customer_reminders(party_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reminders_sent_at ON customer_reminders(sent_at DESC);
 
 -- 2. followup_notes
 CREATE TABLE IF NOT EXISTS followup_notes (
@@ -32,9 +32,9 @@ CREATE TABLE IF NOT EXISTS followup_notes (
     created_by UUID REFERENCES users(id)
 );
 
-CREATE INDEX idx_followup_notes_tenant_store ON followup_notes(tenant_id, store_id);
-CREATE INDEX idx_followup_notes_party ON followup_notes(party_id);
-CREATE INDEX idx_followup_notes_promise_date ON followup_notes(promise_to_pay_date);
+CREATE INDEX IF NOT EXISTS idx_followup_notes_tenant_store ON followup_notes(tenant_id, store_id);
+CREATE INDEX IF NOT EXISTS idx_followup_notes_party ON followup_notes(party_id);
+CREATE INDEX IF NOT EXISTS idx_followup_notes_promise_date ON followup_notes(promise_to_pay_date);
 
 -- 3. Row Level Security
 ALTER TABLE customer_reminders ENABLE ROW LEVEL SECURITY;
