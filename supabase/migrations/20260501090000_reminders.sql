@@ -1,5 +1,5 @@
 -- Reminders table for general store reminders (payments, follow-ups, stock checks, etc.)
-CREATE TABLE reminders (
+CREATE TABLE IF NOT EXISTS reminders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
@@ -20,15 +20,19 @@ CREATE INDEX idx_reminders_completed ON reminders(is_completed);
 
 ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "reminders_select" ON reminders;
 CREATE POLICY "reminders_select" ON reminders FOR SELECT TO authenticated
     USING (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = auth.uid() AND u.tenant_id = reminders.tenant_id));
 
+DROP POLICY IF EXISTS "reminders_insert" ON reminders;
 CREATE POLICY "reminders_insert" ON reminders FOR INSERT TO authenticated
     WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = auth.uid() AND u.tenant_id = reminders.tenant_id AND u.role IN ('admin', 'manager')));
 
+DROP POLICY IF EXISTS "reminders_update" ON reminders;
 CREATE POLICY "reminders_update" ON reminders FOR UPDATE TO authenticated
     USING (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = auth.uid() AND u.tenant_id = reminders.tenant_id AND u.role IN ('admin', 'manager')));
 
+DROP POLICY IF EXISTS "reminders_delete" ON reminders;
 CREATE POLICY "reminders_delete" ON reminders FOR DELETE TO authenticated
     USING (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = auth.uid() AND u.tenant_id = reminders.tenant_id AND u.role IN ('admin', 'manager')));
 
