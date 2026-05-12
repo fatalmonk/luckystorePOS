@@ -152,7 +152,8 @@ CREATE POLICY "stock_transfer_items_select_tenant"
       SELECT 1
       FROM public.stock_transfers st
       WHERE st.id = stock_transfer_items.transfer_id
-        AND st.store_id = public.get_current_user_store_id()
+        AND (st.from_store_id = public.get_current_user_store_id()
+         OR st.to_store_id = public.get_current_user_store_id())
     )
     OR EXISTS (
       SELECT 1
