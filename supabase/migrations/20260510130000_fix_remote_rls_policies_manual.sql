@@ -142,6 +142,7 @@ END $$;
 -- Fix stock_transfer_items if needed
 DROP POLICY IF EXISTS "stock_transfer_items_read_authenticated" ON public.stock_transfer_items;
 DROP POLICY IF EXISTS "stock_transfer_items_write_staff" ON public.stock_transfer_items;
+DROP POLICY IF EXISTS "stock_transfer_items_select_tenant" ON public.stock_transfer_items;
 
 CREATE POLICY "stock_transfer_items_select_tenant"
   ON public.stock_transfer_items
@@ -166,6 +167,7 @@ CREATE POLICY "stock_transfer_items_select_tenant"
 -- Fix purchase_order_items if needed
 DROP POLICY IF EXISTS "po_items_select" ON public.purchase_order_items;
 DROP POLICY IF EXISTS "po_items_write" ON public.purchase_order_items;
+DROP POLICY IF EXISTS "purchase_order_items_select_tenant" ON public.purchase_order_items;
 
 CREATE POLICY "purchase_order_items_select_tenant"
   ON public.purchase_order_items
