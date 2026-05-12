@@ -500,8 +500,10 @@ class PosProvider extends ChangeNotifier {
         paymentMethodId: paymentMethodId,
         discount: _cartDiscount,
         reference: intent.sessionId != null ? 'session:${intent.sessionId}' : null,
+        timeout: const Duration(seconds: 30),
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[PosProvider] Edge function call failed: $e');
       edgeResult = null;
     }
 

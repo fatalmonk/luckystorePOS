@@ -23,6 +23,7 @@ class EdgeFunctionSaleService {
     double discount = 0,
     String? reference,
     String? userToken,
+    Duration timeout = const Duration(seconds: 30),
   }) async {
     if (!isConfigured) return null;
 
@@ -41,7 +42,7 @@ class EdgeFunctionSaleService {
           'payment_method_id': paymentMethodId,
           if (reference != null) 'reference': reference,
         }),
-      );
+      ).timeout(timeout);
 
       if (response.statusCode == 200) {
         return Map<String, dynamic>.from(jsonDecode(response.body) as Map);

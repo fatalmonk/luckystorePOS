@@ -42,4 +42,26 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+
+  // Inventory Analytics RPCs
+  getStockValuation: async (storeId: string, limit = 100) => {
+    const { data, error } = await supabase.rpc('get_stock_valuation', { p_store_id: storeId, p_limit: limit });
+    if (error) throw error;
+    return data;
+  },
+  getTopSellingItems: async (storeId: string, days = 30, limit = 20) => {
+    const { data, error } = await supabase.rpc('get_top_selling_items', { p_store_id: storeId, p_days: days, p_limit: limit });
+    if (error) throw error;
+    return data;
+  },
+  getSlowMovingItems: async (storeId: string, days = 30, limit = 50) => {
+    const { data, error } = await supabase.rpc('get_slow_moving_items', { p_store_id: storeId, p_days: days, p_limit: limit });
+    if (error) throw error;
+    return data;
+  },
+  getDailyMovementTrend: async (storeId: string, days = 14) => {
+    const { data, error } = await supabase.rpc('get_daily_movement_trend', { p_store_id: storeId, p_days: days });
+    if (error) throw error;
+    return data;
+  },
 };

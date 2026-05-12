@@ -27,8 +27,21 @@ DECLARE
   v_remaining   integer;
   v_reset_after integer;
 BEGIN
+  -- Validate input parameters
+  IF p_key IS NULL OR p_key = '' THEN
+    RAISE EXCEPTION 'key cannot be null or empty' USING ERRCODE = 'P0001';
+  END IF;
+  
+  IF p_max IS NULL OR p_max <= 0 THEN
+    RAISE EXCEPTION 'max must be a positive integer' USING ERRCODE = 'P0001';
+  END IF;
+  
+  IF p_window_sec IS NULL OR p_window_sec <= 0 THEN
+    RAISE EXCEPTION 'window_sec must be a positive integer' USING ERRCODE = 'P0001';
+  END IF;
+
   -- Try to read existing entry
-  SELECT * INTO v_entry FROM public.rate_limits WHERE key = p_key;
+  SELECT * INTO v_entry FROM public.rate_limits WHERE key = p_key FOR UPDATE;
 
   IF NOT FOUND OR v_now > v_entry.reset_at THEN
     -- First request or window expired: upsert with fresh window

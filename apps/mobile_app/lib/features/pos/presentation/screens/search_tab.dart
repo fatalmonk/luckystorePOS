@@ -24,9 +24,10 @@ class _SearchTabState extends State<SearchTab> {
   List<PosItem> _results = [];
   bool _searching = false;
   String? _error;
+  int _currentRequestId = 0;
 
   /// Executes the search via the provider
-  Future<void> _doSearch(String query) async {
+  Future<void> _doSearch(String query, int requestId) async {
     if (query.trim().isEmpty) {
       setState(() {
         _results = [];
@@ -45,16 +46,22 @@ class _SearchTabState extends State<SearchTab> {
     try {
       final items = await pos.searchItems(query.trim());
       if (!mounted) return;
-      setState(() {
-        _results = items;
-        _searching = false;
-      });
+      // Only update results if this is the most recent request
+      if (requestId == _currentRequestId) {
+        setState(() {
+          _results = items;
+          _searching = false;
+        });
+      }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = 'Search failed. Please try again.';
-        _searching = false;
-      });
+      // Only update error if this is the most recent request
+      if (requestId == _currentRequestId) {
+        setState(() {
+          _error = 'Search failed. Please try again.';
+          _searching = false;
+        });
+      }
     }
   }
 
@@ -69,7 +76,8 @@ class _SearchTabState extends State<SearchTab> {
     }
 
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      _doSearch(v);
+      final requestId = ++_currentRequestId;
+      _doSearch(v, requestId);
     });
   }
 

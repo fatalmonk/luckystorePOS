@@ -200,3 +200,47 @@ export interface DailySaleFormData {
   stockPurchase: number;
   dailyExpense: number;
 }
+
+// =============================================================================
+// Inventory Analytics Types
+// =============================================================================
+
+export interface StockValuationItem {
+  item_id: string;
+  item_name: string;
+  sku: string;
+  category_name: string;
+  qty_on_hand: number;
+  unit_cost: number;
+  unit_price: number;
+  total_cost: number;
+  total_value: number;
+  margin_pct: number;
+}
+
+export interface TopSellingItem {
+  item_id: string;
+  item_name: string;
+  sku: string;
+  category_name: string;
+  total_qty: number;
+  total_revenue: number;
+  total_profit: number;
+}
+
+export interface SlowMovingItem {
+  item_id: string;
+  item_name: string;
+  sku: string;
+  category_name: string;
+  qty_on_hand: number;
+  total_cost: number;
+  last_sold_at: string | null;
+}
+
+export interface DailyMovementItem {
+  trend_date: string;
+  total_in: number;
+  total_out: number;
+  net_delta: number;
+}

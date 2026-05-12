@@ -87,10 +87,11 @@ export async function checkRateLimitDB(
 
   if (error || !data) {
     console.error('check_rate_limit RPC error:', error);
-    // Fail open on RPC errors — don't block legitimate traffic
+    // Fail closed on RPC errors to prevent bypass - this is a security-critical function
+    // In production, this should trigger alerts and use a fallback rate limiter
     return {
-      allowed: true,
-      remaining: config.maxRequests - 1,
+      allowed: false,
+      remaining: 0,
       resetAfter: config.windowMs,
     };
   }

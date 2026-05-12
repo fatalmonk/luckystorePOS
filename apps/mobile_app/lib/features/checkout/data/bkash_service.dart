@@ -14,7 +14,10 @@ class BkashService {
     required String baseUrl,
     required String appKey,
     required String appSecret,
-  })  : _baseUrl = baseUrl,
+  })  : assert(baseUrl.isNotEmpty, 'baseUrl cannot be empty'),
+        assert(appKey.isNotEmpty, 'appKey cannot be empty'),
+        assert(appSecret.isNotEmpty, 'appSecret cannot be empty'),
+        _baseUrl = baseUrl,
         _appKey = appKey,
         _appSecret = appSecret;
   
