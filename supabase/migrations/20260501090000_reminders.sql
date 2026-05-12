@@ -13,10 +13,10 @@ CREATE TABLE IF NOT EXISTS reminders (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_reminders_tenant_store ON reminders(tenant_id, store_id);
-CREATE INDEX idx_reminders_date ON reminders(reminder_date);
-CREATE INDEX idx_reminders_type ON reminders(reminder_type);
-CREATE INDEX idx_reminders_completed ON reminders(is_completed);
+CREATE INDEX IF NOT EXISTS idx_reminders_tenant_store ON reminders(tenant_id, store_id);
+CREATE INDEX IF NOT EXISTS idx_reminders_date ON reminders(reminder_date);
+CREATE INDEX IF NOT EXISTS idx_reminders_type ON reminders(reminder_type);
+CREATE INDEX IF NOT EXISTS idx_reminders_completed ON reminders(is_completed);
 
 ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 
