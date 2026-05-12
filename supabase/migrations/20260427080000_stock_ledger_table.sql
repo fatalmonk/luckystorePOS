@@ -201,11 +201,13 @@ CREATE TRIGGER trg_log_stock_ledger
   EXECUTE FUNCTION public.log_stock_ledger_on_update();
 
 -- -----------------------------------------------------------------------------
--- 8) Create function to get stock status by ID (for reporting)
+-- 8) Create function to get stock status by IDs (for reporting)
 -- -----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_stock_level_by_id(p_stock_level_id uuid)
+CREATE OR REPLACE FUNCTION public.get_stock_level_by_id(
+  p_store_id uuid,
+  p_item_id uuid
+)
 RETURNS TABLE (
-  stock_level_id uuid,
   store_id uuid,
   product_id uuid,
   quantity integer,
@@ -216,8 +218,7 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
-  SELECT 
-    sl.id,
+  SELECT
     sl.store_id,
     sl.item_id,
     sl.qty,
@@ -233,7 +234,7 @@ AS $$
       ) lm
     ) AS recent_movements
   FROM public.stock_levels sl
-  WHERE sl.id = p_stock_level_id;
+  WHERE sl.store_id = p_store_id AND sl.item_id = p_item_id;
 $$;
 
 -- Grant permissions
@@ -243,7 +244,7 @@ GRANT INSERT ON TABLE public.stock_ledger TO authenticated;
 GRANT ALL ON TABLE public.stock_ledger TO service_role;
 GRANT ALL ON v_stock_ledger_recent TO authenticated;
 GRANT ALL ON v_stock_ledger_product_summary TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_stock_level_by_id(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_stock_level_by_id(uuid, uuid) TO authenticated;
 
 -- Comment on table
 COMMENT ON TABLE public.stock_ledger IS 

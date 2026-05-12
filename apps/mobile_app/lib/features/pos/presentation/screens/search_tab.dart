@@ -110,7 +110,8 @@ class _SearchTabState extends State<SearchTab> {
                 onChanged: _onSearchChanged,
                 onSubmitted: (v) {
                   _debounceTimer?.cancel();
-                  _doSearch(v);
+                  final requestId = ++_currentRequestId;
+                  _doSearch(v, requestId);
                 },
                 decoration: InputDecoration(
                   hintText: 'Search products, brands, SKUs...',
@@ -131,7 +132,7 @@ class _SearchTabState extends State<SearchTab> {
                         )
                       : IconButton(
                           icon: const Icon(Icons.arrow_forward, color: AppColors.primaryDefault),
-                          onPressed: () => _doSearch(_query),
+                          onPressed: () { final requestId = ++_currentRequestId; _doSearch(_query, requestId); },
                         ),
                   border: InputBorder.none,
                   contentPadding: AppSpacing.insetMd,
