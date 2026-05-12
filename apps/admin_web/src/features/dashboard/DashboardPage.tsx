@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { DollarSign, AlertTriangle, Package, TrendingUp, Bell, BarChart3 } from 'lucide-react';
+import { DollarSign, AlertTriangle, Package, TrendingUp, Bell, BarChart3, Wallet, ArrowUpRight, ArrowDownRight, Scale } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { format, subDays, parseISO } from 'date-fns';
+import clsx from 'clsx';
 
 export function DashboardPage() {
   const { storeId } = useAuth();
@@ -81,14 +82,46 @@ export function DashboardPage() {
   const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
   const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
 
-  // Calculate stock purchases from expenses filtered by category
-  const totalStockPurchases = expenses
-    .filter((e: any) => e.category === 'Stock Purchase')
-    .reduce((sum: number, e: any) => sum + Number(e.amount), 0);
+  // Calculate totals from daily_sales (all-time)
+  const totalRevenue = dailySales.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
+  const totalCash = dailySales.reduce((sum: number, s: any) => sum + Number(s.cash_amount || 0), 0);
+  const totalBkash = dailySales.reduce((sum: number, s: any) => sum + Number(s.bkash_amount || 0), 0);
+  const totalCredit = dailySales.reduce((sum: number, s: any) => sum + Number(s.credit_amount || 0), 0);
+  const totalExpensesAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
+  const totalStockAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.stock_purchase || 0), 0);
+  const netPosition = totalRevenue - totalExpensesAllTime;
 
-  // Calculate totals from daily_sales
-  const dailySalesTotal = dailySales.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
-  const dailyExpensesTotal = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
+  // Expense breakdown by category from expenses table
+  const expenseCategories: Record<string, number> = expenses.reduce((acc: Record<string, number>, e: any) => {
+    const cat = e.category || 'Uncategorized';
+    acc[cat] = (acc[cat] || 0) + Number(e.amount);
+    return acc;
+  }, {} as Record<string, number>);
+  const expenseTotalFromItems: number = Object.values(expenseCategories)
+    .reduce((sum: number, v) => sum + (v as number), 0);
+
+  // Map category names to display labels and colors
+  const categoryConfig: Record<string, { label: string; color: string; bg: string }> = {
+    'Stock Purchase': { label: 'Stock Purchase', color: 'text-primary', bg: 'bg-primary/15' },
+    'Capital Expenditure': { label: 'Capital', color: 'text-warning-dark', bg: 'bg-warning/15' },
+    'Staff salary': { label: 'Staff Salary', color: 'text-info', bg: 'bg-info/15' },
+    'Utility Expenses': { label: 'Utilities', color: 'text-success', bg: 'bg-success/15' },
+    'All Other Expenses': { label: 'Other', color: 'text-text-muted', bg: 'bg-surface-secondary' },
+    'Partners Take': { label: 'Partners Take', color: 'text-danger', bg: 'bg-danger/15' },
+    'Transport & Conveyance': { label: 'Transport', color: 'text-secondary', bg: 'bg-secondary/15' },
+  };
+
+  // Last 7 days vs previous 7 days for trend
+  const last7 = dailySales.filter((s: any) => s.sale_date >= format(subDays(new Date(), 7), 'yyyy-MM-dd'));
+  const prev7 = dailySales.filter((s: any) => {
+    const d = s.sale_date;
+    return d >= format(subDays(new Date(), 14), 'yyyy-MM-dd') && d < format(subDays(new Date(), 7), 'yyyy-MM-dd');
+  });
+  const last7Sales = last7.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
+  const prev7Sales = prev7.reduce((sum: number, s: any) => sum + Number(s.total_sales || 0), 0);
+  const salesTrend: 'up' | 'down' | null = last7Sales > prev7Sales ? 'up' : last7Sales < prev7Sales ? 'down' : null;
+
+  const fmt = (n: number) => n.toLocaleString('en-BD', { maximumFractionDigits: 0 });
 
   // Sales vs Expenses comparison from daily_sales
   const salesVsExpenses = dailySales
@@ -149,36 +182,141 @@ export function DashboardPage() {
 
       <div className="dashboard-grid">
         <MetricCard
-          title="To Receive"
-          value={`৳${stats?.to_receive || '0.00'}`}
-          icon={<DollarSign size={20} />}
-          color="success"
-        />
-        <MetricCard
-          title="To Give"
-          value={`৳${stats?.to_give || '0.00'}`}
-          icon={<DollarSign size={20} />}
-          color="danger"
-        />
-        <MetricCard
           title="Today Sales"
           value={`৳${stats?.total_sales || '0.00'}`}
           icon={<TrendingUp size={20} />}
           color="success"
+          trend={salesTrend ?? undefined}
+          badge={salesTrend ? `${salesTrend === 'up' ? '↑' : '↓'} vs last week` : undefined}
         />
         <MetricCard
-          title="Stock Purchases"
-          value={`৳${totalStockPurchases.toLocaleString('en-BD', { maximumFractionDigits: 0 })}`}
-          icon={<Package size={20} />}
-          color="info"
+          title="To Receive"
+          value={`৳${fmt(totalCredit)}`}
+          icon={<ArrowUpRight size={20} />}
+          color="success"
+          badge={`৳${stats?.to_receive ? Number(stats.to_receive).toLocaleString('en-BD', { maximumFractionDigits: 0 }) : '0'} outstanding`}
         />
         <MetricCard
-          title="Expense"
-          value={`৳${stats?.total_expenses || '0.00'}`}
-          icon={<AlertTriangle size={20} />}
+          title="To Give"
+          value={`৳${stats?.to_give || '0.00'}`}
+          icon={<ArrowDownRight size={20} />}
           color="danger"
         />
+        <MetricCard
+          title="Total Revenue"
+          value={`৳${fmt(totalRevenue)}`}
+          icon={<DollarSign size={20} />}
+          color="success"
+          badge={`${dailySales.length} days`}
+        />
+        <MetricCard
+          title="Total Expenses"
+          value={`৳${fmt(totalExpensesAllTime)}`}
+          icon={<AlertTriangle size={20} />}
+          color="danger"
+          badge={`${dailySales.length} days`}
+        />
+        <MetricCard
+          title="Net Position"
+          value={`৳${fmt(Math.abs(netPosition))}`}
+          icon={<Scale size={20} />}
+          color={netPosition >= 0 ? 'success' : 'danger'}
+          badge={netPosition >= 0 ? 'Profit' : 'Loss'}
+        />
       </div>
+
+      {/* Financial Overview - KPI Summary */}
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold text-text-primary mb-4">Financial Overview</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Revenue Breakdown */}
+          <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
+            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">Revenue Breakdown</h3>
+            <div className="text-2xl font-bold font-mono text-success mb-3">৳{fmt(totalRevenue)}</div>
+            <div className="space-y-2">
+              {[
+                { label: 'Cash', value: totalCash, total: totalRevenue, color: 'bg-success' },
+                { label: 'bKash', value: totalBkash, total: totalRevenue, color: 'bg-info' },
+                { label: 'Credit', value: totalCredit, total: totalRevenue, color: 'bg-warning' },
+              ].map(item => (
+                <div key={item.label}>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-text-secondary">{item.label}</span>
+                    <span className="font-mono font-medium text-text-primary">৳{fmt(item.value)}</span>
+                  </div>
+                  <div className="h-1.5 bg-surface-secondary rounded-full mt-1 overflow-hidden">
+                    <div className={item.color} style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%`, borderRadius: 'inherit', minHeight: item.value > 0 ? 4 : 0 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Expense Breakdown */}
+          <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
+            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">Expense Breakdown</h3>
+            <div className="text-2xl font-bold font-mono text-danger mb-3">৳{fmt(expenseTotalFromItems)}</div>
+            <div className="space-y-2">
+              {(Object.entries(expenseCategories as Record<string, number>) as [string, number][])
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 5)
+                .map(([cat, amount]) => {
+                  const config = categoryConfig[cat] || { label: cat, color: 'text-text-muted', bg: 'bg-surface-secondary' };
+                  const pct = expenseTotalFromItems > 0 ? (amount / expenseTotalFromItems) * 100 : 0;
+                  return (
+                    <div key={cat}>
+                      <div className="flex justify-between text-sm">
+                        <span className={config.color}>{config.label}</span>
+                        <span className="font-mono text-text-primary">৳{fmt(amount)} <span className="text-text-muted">({pct.toFixed(1)}%)</span></span>
+                      </div>
+                      <div className="h-1.5 bg-surface-secondary rounded-full mt-1 overflow-hidden">
+                        <div className={config.bg} style={{ width: `${pct}%`, borderRadius: 'inherit', minHeight: amount > 0 ? 4 : 0 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+
+          {/* Investment Summary */}
+          <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
+            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">Investment Summary</h3>
+            <div className="space-y-3 mt-2">
+              <div className="flex justify-between items-center py-2 border-b border-border-default">
+                <span className="text-text-secondary">Mohammed</span>
+                <span className="font-mono font-medium text-primary">৳{fmt(553000)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border-default">
+                <span className="text-text-secondary">Sayeed Imam</span>
+                <span className="font-mono font-medium text-primary">৳{fmt(965490)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border-default">
+                <span className="font-semibold text-text-primary">Total Capital</span>
+                <span className="font-mono font-bold text-lg text-primary">৳{fmt(1518490)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border-default">
+                <span className="text-text-secondary">Stock Investment</span>
+                <span className="font-mono font-medium text-info">৳{fmt(totalStockAllTime)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border-default">
+                <span className="text-text-secondary">Total Revenue</span>
+                <span className="font-mono font-medium text-success">৳{fmt(totalRevenue)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className={clsx('font-semibold', netPosition >= 0 ? 'text-success-dark' : 'text-danger')}>
+                  {netPosition >= 0 ? 'Net Profit' : 'Net Loss'}
+                </span>
+                <span className={clsx('font-mono font-bold text-lg', netPosition >= 0 ? 'text-success-dark' : 'text-danger')}>
+                  ৳{fmt(Math.abs(netPosition))}
+                </span>
+              </div>
+              <div className="text-xs text-text-muted mt-1">
+                Revenue covers {(totalRevenue / totalExpensesAllTime * 100).toFixed(1)}% of total expenses
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Sales vs Expenses Comparison Section */}
       <div className="grid grid-cols-2 gap-6 mt-8">
