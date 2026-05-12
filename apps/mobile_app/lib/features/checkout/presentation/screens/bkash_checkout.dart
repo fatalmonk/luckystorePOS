@@ -40,9 +40,9 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
     });
 
     final service = BkashService(
-      baseUrl: dotenv.env['BKASH_BASE_URL'] ?? throw Exception('BKASH_BASE_URL not configured'),
-      appKey: dotenv.env['BKASH_APP_KEY'] ?? throw Exception('BKASH_APP_KEY not configured'),
-      appSecret: dotenv.env['BKASH_APP_SECRET'] ?? throw Exception('BKASH_APP_SECRET not configured'),
+      baseUrl: dotenv.env['BKASH_BASE_URL'] ?? '',
+      appKey: dotenv.env['BKASH_APP_KEY'] ?? '',
+      appSecret: dotenv.env['BKASH_APP_SECRET'] ?? '',
     );
     final idToken = await service.grantToken();
     if (idToken == null) {
