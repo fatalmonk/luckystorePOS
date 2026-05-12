@@ -268,7 +268,7 @@ export function ExpensesPage() {
             <button
               className="button-outline gap-2"
               onClick={() => downloadCSV(
-                (filtered.length > 0 ? filtered : expenses || []).map((e: Expense) => ({
+                filtered.map((e: Expense) => ({
                   date: e.expenseDate, vendor: e.vendorName, description: e.description,
                   category: e.category, payment: e.paymentType, amount: e.amount,
                 })),

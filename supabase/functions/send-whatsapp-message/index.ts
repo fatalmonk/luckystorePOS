@@ -31,17 +31,35 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Verify auth
+    // Verify auth — require valid JWT with user
     const authHeader = req.headers.get('Authorization')
-    const apiKey = req.headers.get('apikey')
-    if (!authHeader && !apiKey) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
+        JSON.stringify({ error: 'Valid Bearer token required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
 
-    const body: WhatsAppRequest = await req.json()
+    const token = authHeader.slice(7)
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    // Parse and validate body
+    let body: WhatsAppRequest
+    try {
+      body = await req.json()
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
 
     if (!body.phone_number || !body.message) {
       return new Response(
