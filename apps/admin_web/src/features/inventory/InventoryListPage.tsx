@@ -173,9 +173,10 @@ export function InventoryListPage() {
               variant="secondary"
               icon={<Download size={18} />}
               onClick={() => {
+                const sanitizeCSVCell = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
                 const rows = (inventory ?? []).map((item: InventoryItem) => ({
-                  name: item.name,
-                  sku: item.sku || '',
+                  name: sanitizeCSVCell(item.name),
+                  sku: sanitizeCSVCell(item.sku || ''),
                   currentStock: item.current_qty,
                   status: item.reorder_status,
                   price: item.price || 0,
