@@ -33,12 +33,18 @@ AS $$
       p.name             AS customer_name,
       p.phone,
       COUNT(DISTINCT s.id)                   AS purchase_count,
-      COALESCE(SUM(le.credit), 0)            AS total_spent,
+      COALESCE(SUM(le.credit) FILTER (WHERE le.store_id = p_store_id), 0) AS total_spent,
       MAX(s.created_at)                      AS last_purchase_date
     FROM public.parties p
     LEFT JOIN public.ledger_entries le ON le.annotation->>'party_id' = p.id::text
     LEFT JOIN public.sales s ON s.id = le.sale_id AND s.store_id = p_store_id AND s.status = 'completed'
     WHERE p.type = 'customer'
+      AND EXISTS (
+        SELECT 1 FROM public.stores st
+        JOIN public.users u ON u.tenant_id = st.tenant_id
+        WHERE st.id = p_store_id
+          AND u.auth_id = auth.uid()
+      )
     GROUP BY p.id, p.name, p.phone
   )
   SELECT
@@ -112,6 +118,12 @@ AS $$
     AND s.store_id = p_store_id
     AND s.status = 'completed'
     AND s.created_at >= now() - (p_days || ' days')::interval
+  WHERE EXISTS (
+    SELECT 1 FROM public.stores st
+    JOIN public.users cu ON cu.tenant_id = st.tenant_id
+    WHERE st.id = p_store_id
+      AND cu.auth_id = auth.uid()
+  )
   GROUP BY u.id, u.full_name, u.name, u.email, u.role
   ORDER BY total_revenue DESC;
 $$;
