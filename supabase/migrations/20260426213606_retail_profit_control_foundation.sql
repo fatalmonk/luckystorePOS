@@ -2,7 +2,7 @@
 -- Priority sequence as defined in Execution Spec v1
 
 -- 1. tenants
-CREATE TABLE tenants (
+CREATE TABLE IF NOT EXISTS tenants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
