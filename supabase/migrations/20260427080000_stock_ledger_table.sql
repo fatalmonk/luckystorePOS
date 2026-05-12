@@ -200,43 +200,6 @@ CREATE TRIGGER trg_log_stock_ledger
   WHEN (NEW.qty IS DISTINCT FROM OLD.qty)
   EXECUTE FUNCTION public.log_stock_ledger_on_update();
 
--- -----------------------------------------------------------------------------
--- 8) Create function to get stock status by IDs (for reporting)
--- -----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_stock_level_by_id(
-  p_store_id uuid,
-  p_item_id uuid
-)
-RETURNS TABLE (
-  store_id uuid,
-  product_id uuid,
-  quantity integer,
-  last_updated timestamptz,
-  recent_movements jsonb
-)
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT
-    sl.store_id,
-    sl.item_id,
-    sl.qty,
-    sl.updated_at,
-    (
-      SELECT jsonb_agg(row_to_json(lm))
-      FROM (
-        SELECT * FROM public.stock_ledger
-        WHERE store_id = sl.store_id
-          AND product_id = sl.item_id
-        ORDER BY created_at DESC
-        LIMIT 10
-      ) lm
-    ) AS recent_movements
-  FROM public.stock_levels sl
-  WHERE sl.store_id = p_store_id AND sl.item_id = p_item_id;
-$$;
-
 -- Grant permissions
 REVOKE ALL ON TABLE public.stock_ledger FROM PUBLIC;
 GRANT SELECT ON TABLE public.stock_ledger TO authenticated;
@@ -244,7 +207,6 @@ GRANT INSERT ON TABLE public.stock_ledger TO authenticated;
 GRANT ALL ON TABLE public.stock_ledger TO service_role;
 GRANT ALL ON v_stock_ledger_recent TO authenticated;
 GRANT ALL ON v_stock_ledger_product_summary TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_stock_level_by_id(uuid, uuid) TO authenticated;
 
 -- Comment on table
 COMMENT ON TABLE public.stock_ledger IS 
