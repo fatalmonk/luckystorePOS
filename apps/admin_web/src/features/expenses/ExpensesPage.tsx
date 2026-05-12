@@ -25,6 +25,7 @@ import {
   ArrowDown,
   Building2,
   CreditCard,
+  Download,
 } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO } from 'date-fns';
 import {
@@ -32,6 +33,7 @@ import {
   EXPENSE_PAYMENT_TYPES,
 } from '../../lib/api/types';
 import type { Expense, ExpenseFormData, ExpenseCategory, ExpensePaymentType } from '../../lib/api/types';
+import { downloadCSV } from '../../lib/format';
 
 // Chart colors matching the app's design system
 const CHART_COLORS = [
@@ -262,9 +264,23 @@ export function ExpensesPage() {
         title="Expenses"
         subtitle="Track and manage store expenses."
         actions={
-          <button className="button-primary" onClick={() => setShowForm(true)}>
-            <Plus size={18} /> Add Expense
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="button-outline gap-2"
+              onClick={() => downloadCSV(
+                filtered.map((e: Expense) => ({
+                  date: e.expenseDate, vendor: e.vendorName, description: e.description,
+                  category: e.category, payment: e.paymentType, amount: e.amount,
+                })),
+                `expenses-${new Date().toISOString().split('T')[0]}.csv`
+              )}
+            >
+              <Download size={16} /> Export CSV
+            </button>
+            <button className="button-primary" onClick={() => setShowForm(true)}>
+              <Plus size={18} /> Add Expense
+            </button>
+          </div>
         }
       />
 
