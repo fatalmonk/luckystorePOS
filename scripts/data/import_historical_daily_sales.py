@@ -49,12 +49,16 @@ HEADERS = {
     "Prefer": "return=representation",
 }
 
-CSV_PATH = os.path.join(
-    os.path.dirname(__file__), "../../Lucky_Store_-Daily_Sales__10th_May.csv"
-)
-CSV_PATH = os.path.abspath(CSV_PATH)
-
 DRY_RUN = "--dry-run" in sys.argv
+
+# Find CSV path: first non-flag argument, or default
+csv_arg = None
+for arg in sys.argv[1:]:
+    if not arg.startswith("--"):
+        csv_arg = arg
+        break
+
+CSV_PATH = os.path.abspath(csv_arg) if csv_arg else os.path.abspath(os.path.join(os.path.dirname(__file__), "../../Lucky_Store_-Daily_Sales__10th_May.csv"))
 
 
 def parse_num(v):
