@@ -1,4 +1,4 @@
-const DEBUG_POS = import.meta.env.VITE_DEBUG_POS === 'true';
+const DEBUG_POS = (import.meta as any).env.VITE_DEBUG_POS === 'true';
 
 export function debugLog(label: string, data: unknown) {
   if (DEBUG_POS) {
