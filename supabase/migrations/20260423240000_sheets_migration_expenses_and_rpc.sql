@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS public.expenses (
 -- Enable RLS
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "expenses_select" ON public.expenses;
+DROP POLICY IF EXISTS "expenses_insert" ON public.expenses;
+
 CREATE POLICY "expenses_select" ON public.expenses FOR SELECT TO authenticated
 USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = auth.uid() AND u.role IN ('admin', 'manager')));
 
