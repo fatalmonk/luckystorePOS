@@ -10,6 +10,14 @@ import { MetricCard } from '../../components/data-display/MetricCard';
 import { useAuth } from '../../lib/AuthContext';
 import { api } from '../../lib/api';
 import { downloadCSV } from '../../lib/format';
+import type {
+  StockValuationItem,
+  TopSellingItem,
+  SlowMovingItem,
+  DailyMovementItem,
+  CustomerAnalyticsItem,
+  StaffPerformanceItem,
+} from '../../lib/api/types';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line,
 } from 'recharts';
