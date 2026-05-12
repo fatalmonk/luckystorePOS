@@ -130,3 +130,29 @@ $$;
 
 REVOKE ALL ON FUNCTION public.get_staff_performance(uuid, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_staff_performance(uuid, integer) TO authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 3) Repair: get_store_users (overcome signature mismatch from repair mig)
+-- ---------------------------------------------------------------------------
+DROP FUNCTION IF EXISTS public.get_store_users(uuid) CASCADE;
+CREATE OR REPLACE FUNCTION public.get_store_users(p_store_id uuid)
+RETURNS TABLE (
+  id uuid,
+  full_name text,
+  role text,
+  email text,
+  last_login timestamptz
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+STABLE
+AS $$
+  SELECT id, full_name, role, email, last_login_at
+  FROM public.users
+  WHERE store_id = p_store_id OR role = 'admin'
+  ORDER BY role ASC, full_name ASC;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_store_users(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_store_users(uuid) TO authenticated;
