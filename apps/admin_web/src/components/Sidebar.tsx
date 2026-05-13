@@ -34,11 +34,11 @@ function useNavGroups(): NavGroup[] {
         { icon: Package, label: t('nav.products'), path: '/products' },
         { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
           { label: t('nav.inventory'), path: '/inventory' },
-          { label: 'History', path: '/inventory/history' },
+          { label: t('nav.history'), path: '/inventory/history' },
         ] },
         { icon: PlusCircle, label: t('nav.purchase'), path: '/purchase', children: [
           { label: t('nav.purchase'), path: '/purchase' },
-          { label: 'History', path: '/purchase/history' },
+          { label: t('nav.history'), path: '/purchase/history' },
         ] },
       ]
     },

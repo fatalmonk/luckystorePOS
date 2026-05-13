@@ -110,7 +110,7 @@ export function DashboardPage() {
   // Map category names to display labels and colors
   const categoryConfig: Record<string, { label: string; color: string; bg: string }> = {
     'Stock Purchase': { label: 'Stock Purchase', color: 'text-primary', bg: 'bg-primary/15' },
-    [t('dashboard.capital')]: { label: 'Capital', color: 'text-warning-dark', bg: 'bg-warning/15' },
+    'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warning-dark', bg: 'bg-warning/15' },
     'Staff salary': { label: 'Staff Salary', color: 'text-info', bg: 'bg-info/15' },
     'Utility Expenses': { label: 'Utilities', color: 'text-success', bg: 'bg-success/15' },
     'All Other Expenses': { label: 'Other', color: 'text-text-muted', bg: 'bg-surface-secondary' },
