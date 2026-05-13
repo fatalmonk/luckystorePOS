@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
@@ -11,52 +12,55 @@ interface NavItem {
 }
 
 interface NavGroup {
-  title: string;
+  titleKey: string;
   items: NavItem[];
 }
 
-const navGroups: NavGroup[] = [
-  {
-    title: 'Overview',
-    items: [
-      { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-      { icon: Monitor, label: 'Quick POS', path: '/pos' },
-    ]
-  },
-  {
-    title: 'Business',
-    items: [
-      { icon: ShoppingCart, label: 'Sales', path: '/sales' },
-      { icon: BarChart3, label: 'Daily Sales', path: '/daily-sales' },
-      { icon: Package, label: 'Products', path: '/products' },
-      { icon: Warehouse, label: 'Inventory', path: '/inventory', children: [
-        { label: 'Current Stock', path: '/inventory' },
-        { label: 'History', path: '/inventory/history' },
-      ] },
-      { icon: PlusCircle, label: 'Purchase', path: '/purchase', children: [
-        { label: 'New Purchase', path: '/purchase' },
-        { label: 'History', path: '/purchase/history' },
-      ] },
-    ]
-  },
-  {
-    title: 'Finance',
-    items: [
-      { icon: Receipt, label: 'Expenses', path: '/expenses' },
-      { icon: Wallet, label: 'Supplier Ledger', path: '/finance/suppliers' },
-      { icon: Users, label: 'Customer Ledger', path: '/finance/customers' },
-      { icon: PhoneCall, label: 'Collections', path: '/collections' },
-    ]
-  },
-  {
-    title: 'Other',
-    items: [
-      { icon: Bell, label: 'Reminders', path: '/reminders' },
-      { icon: BarChart3, label: 'Reports', path: '/reports' },
-      { icon: Settings, label: 'Settings', path: '/settings' },
-    ]
-  }
-];
+function useNavGroups(): NavGroup[] {
+  const { t } = useTranslation();
+  return [
+    {
+      titleKey: t('nav.overview'),
+      items: [
+        { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/' },
+        { icon: Monitor, label: t('nav.quickPos'), path: '/pos' },
+      ]
+    },
+    {
+      titleKey: t('nav.business'),
+      items: [
+        { icon: ShoppingCart, label: t('nav.sales'), path: '/sales' },
+        { icon: BarChart3, label: t('nav.dailySales'), path: '/daily-sales' },
+        { icon: Package, label: t('nav.products'), path: '/products' },
+        { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
+          { label: t('nav.inventory'), path: '/inventory' },
+          { label: t('nav.history'), path: '/inventory/history' },
+        ] },
+        { icon: PlusCircle, label: t('nav.purchase'), path: '/purchase', children: [
+          { label: t('nav.purchase'), path: '/purchase' },
+          { label: t('nav.history'), path: '/purchase/history' },
+        ] },
+      ]
+    },
+    {
+      titleKey: t('nav.finance'),
+      items: [
+        { icon: Receipt, label: t('nav.expenses'), path: '/expenses' },
+        { icon: Wallet, label: t('nav.supplierLedger'), path: '/finance/suppliers' },
+        { icon: Users, label: t('nav.customerLedger'), path: '/finance/customers' },
+        { icon: PhoneCall, label: t('nav.collections'), path: '/collections' },
+      ]
+    },
+    {
+      titleKey: t('nav.other'),
+      items: [
+        { icon: Bell, label: t('nav.reminders'), path: '/reminders' },
+        { icon: BarChart3, label: t('nav.reports'), path: '/reports' },
+        { icon: Settings, label: t('nav.settings'), path: '/settings' },
+      ]
+    }
+  ];
+}
 
 interface SidebarProps {
   hidden?: boolean;
@@ -64,7 +68,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ hidden = false, onClose }: SidebarProps) {
+  const { t } = useTranslation();
   const { signOut } = useAuth();
+  const navGroups = useNavGroups();
 
   return (
     <>
@@ -96,9 +102,9 @@ export function Sidebar({ hidden = false, onClose }: SidebarProps) {
 
         <div className="sidebar-nav-container">
           {navGroups.map((group) => (
-            <div key={group.title} className="sidebar-nav-group">
-              <h3 className="sidebar-nav-title">{group.title}</h3>
-              <nav className="sidebar-nav flex flex-col gap-1">
+                <div key={group.titleKey} className="sidebar-nav-group">
+                  <h3 className="sidebar-nav-title">{group.titleKey}</h3>
+                  <nav className="sidebar-nav flex flex-col gap-1">
                 {group.items.map((item) => (
                   <div key={item.path} className="flex flex-col gap-1">
                     <NavLink
