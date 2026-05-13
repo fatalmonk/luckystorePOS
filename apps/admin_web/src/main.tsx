@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import './lib/i18n' // Initialize i18n before App
 import App from './app/App'
 import { registerServiceWorker } from './lib/sw-register'
 import './index.css'
