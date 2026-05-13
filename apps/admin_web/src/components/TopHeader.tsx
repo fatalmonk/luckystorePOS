@@ -1,5 +1,6 @@
-import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose } from 'lucide-react';
+import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose, Globe } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -8,12 +9,18 @@ interface TopHeaderProps {
 }
 
 export function TopHeader({ onToggleSidebar, sidebarHidden, onSearchFocus }: TopHeaderProps) {
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleLanguage = () => {
+    const next = i18n.language === 'bn' ? 'en' : 'bn';
+    i18n.changeLanguage(next);
+  };
 
   // Keyboard shortcut: Cmd/Ctrl+K to focus search
   useEffect(() => {
@@ -69,9 +76,9 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onSearchFocus }: Top
       </div>
 
       <div className="header-right">
-        <button className="header-button" aria-label="Change language" type="button">
+        <button className="header-button" onClick={toggleLanguage} aria-label="Change language" type="button">
           <span className="sr-only">Language</span>
-          🇺🇸
+          <span className="text-sm font-bold">{i18n.language === 'bn' ? 'বাংলা' : 'EN'}</span>
         </button>
         <button className="header-button" aria-label="View keyboard shortcuts" type="button">
           <span className="sr-only">Keyboard shortcuts</span>
