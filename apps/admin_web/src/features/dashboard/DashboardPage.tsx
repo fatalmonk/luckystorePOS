@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { DollarSign, AlertTriangle, Package, TrendingUp, Bell, BarChart3, Wallet, ArrowUpRight, ArrowDownRight, Scale } from 'lucide-react';
@@ -11,6 +12,7 @@ import { format, subDays, parseISO } from 'date-fns';
 import clsx from 'clsx';
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const { storeId } = useAuth();
   const { notify } = useNotify();
 
@@ -108,7 +110,7 @@ export function DashboardPage() {
   // Map category names to display labels and colors
   const categoryConfig: Record<string, { label: string; color: string; bg: string }> = {
     'Stock Purchase': { label: 'Stock Purchase', color: 'text-primary', bg: 'bg-primary/15' },
-    'Capital Expenditure': { label: 'Capital', color: 'text-warning-dark', bg: 'bg-warning/15' },
+    'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warning-dark', bg: 'bg-warning/15' },
     'Staff salary': { label: 'Staff Salary', color: 'text-info', bg: 'bg-info/15' },
     'Utility Expenses': { label: 'Utilities', color: 'text-success', bg: 'bg-success/15' },
     'All Other Expenses': { label: 'Other', color: 'text-text-muted', bg: 'bg-surface-secondary' },
@@ -181,13 +183,13 @@ export function DashboardPage() {
   return (
     <div className="dashboard-container">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary">Welcome {stats?.user?.name || 'Mohammed'}</h1>
+        <h1 className="text-3xl font-bold text-text-primary">{t('dashboard.welcome')} {stats?.user?.name || 'Mohammed'}</h1>
         <p className="text-text-muted mt-1">Here's what's happening today.</p>
       </header>
 
       <div className="dashboard-grid">
         <MetricCard
-          title="Today Sales"
+          title={t("dashboard.todaySales")}
           value={`৳${stats?.total_sales || '0.00'}`}
           icon={<TrendingUp size={20} />}
           color="success"
@@ -195,34 +197,34 @@ export function DashboardPage() {
           badge={salesTrend ? `${salesTrend === 'up' ? '↑' : '↓'} vs last week` : undefined}
         />
         <MetricCard
-          title="To Receive"
+          title={t("dashboard.toReceive")}
           value={`৳${fmt(totalCredit)}`}
           icon={<ArrowUpRight size={20} />}
           color="success"
           badge={`৳${stats?.to_receive ? Number(stats.to_receive).toLocaleString('en-BD', { maximumFractionDigits: 0 }) : '0'} outstanding`}
         />
         <MetricCard
-          title="To Give"
+          title={t("dashboard.toGive")}
           value={`৳${stats?.to_give || '0.00'}`}
           icon={<ArrowDownRight size={20} />}
           color="danger"
         />
         <MetricCard
-          title="Total Revenue"
+          title={t("dashboard.totalRevenue")}
           value={`৳${fmt(totalRevenue)}`}
           icon={<DollarSign size={20} />}
           color="success"
-          badge={`${dailySales.length} days`}
+          badge={`${dailySales.length} ${t("common.days")}`}
         />
         <MetricCard
-          title="Total Expenses"
+          title={t("dashboard.totalExpenses")}
           value={`৳${fmt(totalExpensesAllTime)}`}
           icon={<AlertTriangle size={20} />}
           color="danger"
-          badge={`${dailySales.length} days`}
+          badge={`${dailySales.length} ${t("common.days")}`}
         />
         <MetricCard
-          title="Net Position"
+          title={t("dashboard.netPosition")}
           value={`৳${fmt(Math.abs(netPosition))}`}
           icon={<Scale size={20} />}
           color={netPosition >= 0 ? 'success' : 'danger'}
@@ -236,7 +238,7 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Revenue Breakdown */}
           <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
-            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">Revenue Breakdown</h3>
+            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">{t("dashboard.revenueBreakdown")}</h3>
             <div className="text-2xl font-bold font-mono text-success mb-3">৳{fmt(totalRevenue)}</div>
             <div className="space-y-2">
               {[
@@ -259,7 +261,7 @@ export function DashboardPage() {
 
           {/* Expense Breakdown */}
           <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
-            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">Expense Breakdown</h3>
+            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">{t("dashboard.expenseBreakdown")}</h3>
             <div className="text-2xl font-bold font-mono text-danger mb-3">৳{fmt(expenseTotalFromItems)}</div>
             <div className="space-y-2">
               {(Object.entries(expenseCategories as Record<string, number>) as [string, number][])
@@ -285,7 +287,7 @@ export function DashboardPage() {
 
           {/* Investment Summary */}
           <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
-            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">Investment Summary</h3>
+            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">{t("dashboard.investmentSummary")}</h3>
             <div className="space-y-3 mt-2">
               <div className="flex justify-between items-center py-2 border-b border-border-default">
                 <span className="text-text-secondary">Mohammed</span>
@@ -300,7 +302,7 @@ export function DashboardPage() {
                 <span className="font-mono font-bold text-lg text-primary">৳{fmt(partnerCapital)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border-default">
-                <span className="text-text-secondary">Stock Investment</span>
+                <span className="text-text-secondary">{t("dashboard.stockInvestment")}</span>
                 <span className="font-mono font-medium text-info">৳{fmt(totalStockAllTime)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border-default">
@@ -309,14 +311,14 @@ export function DashboardPage() {
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className={clsx('font-semibold', netPosition >= 0 ? 'text-success-dark' : 'text-danger')}>
-                  {netPosition >= 0 ? 'Net Profit' : 'Net Loss'}
+                  {netPosition >= 0 ? t('dashboard.netProfit') : t('dashboard.netLoss')}
                 </span>
                 <span className={clsx('font-mono font-bold text-lg', netPosition >= 0 ? 'text-success-dark' : 'text-danger')}>
                   ৳{fmt(Math.abs(netPosition))}
                 </span>
               </div>
               <div className="text-xs text-text-muted mt-1">
-                Revenue covers {(totalRevenue / totalExpensesAllTime * 100).toFixed(1)}% of total expenses
+                {t("dashboard.revenueCovers")} {(totalRevenue / totalExpensesAllTime * 100).toFixed(1)}% of total expenses
               </div>
             </div>
           </div>
@@ -441,7 +443,7 @@ export function DashboardPage() {
           <section>
             <h2 className="text-xl font-semibold text-text-primary mb-4">Total Balance</h2>
             <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-8 text-center">
-              <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Current Available Balance</div>
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">{t("dashboard.currentAvailableBalance")}</div>
               <div className="text-4xl font-bold text-success font-mono">৳{fmt(availableBalance)}</div>
               <div className="text-sm text-text-muted mt-2">Capital + Revenue − Expenses</div>
             </div>
@@ -449,7 +451,7 @@ export function DashboardPage() {
 
           {/* Payment Breakdown */}
           <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Revenue Breakdown</h2>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">{t("dashboard.revenueBreakdown")}</h2>
             <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
               {totalRevenue > 0 ? (
                 <>
