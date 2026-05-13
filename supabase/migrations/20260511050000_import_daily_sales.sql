@@ -2,8 +2,16 @@
 -- Applied: 2026-05-11
 -- Store ID: 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd (Lucky Store)
 
--- Insert daily sales data (April 3 - May 13, 2026)
-INSERT INTO public.daily_sales (store_id, sale_date, cash_amount, bkash_amount, credit_amount, total_sales, stock_purchase, daily_expense) VALUES
+DO $$
+DECLARE
+  v_store_id uuid := '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.stores WHERE id = v_store_id) THEN
+    RAISE NOTICE 'Store % not found — skipping daily sales import', v_store_id;
+    RETURN;
+  END IF;
+
+  INSERT INTO public.daily_sales (store_id, sale_date, cash_amount, bkash_amount, credit_amount, total_sales, stock_purchase, daily_expense) VALUES
 ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '2026-04-03', 0, 0, 0, 0, 165013, 183763),
 ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '2026-04-04', 6300, 0, 0, 6300, 27450, 27550),
 ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '2026-04-05', 0, 0, 0, 0, 20023, 31420),
@@ -50,6 +58,10 @@ ON CONFLICT (store_id, sale_date) DO UPDATE SET
     stock_purchase = EXCLUDED.stock_purchase,
     daily_expense = EXCLUDED.daily_expense,
     updated_at = now();
+
+  RAISE NOTICE 'Imported daily sales successfully';
+END;
+$$;
 
 -- Summary comment
 -- Total records imported: 39
