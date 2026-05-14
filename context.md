@@ -1,22 +1,36 @@
-# Lucky Store POS - Implementation Context
+# Lucky Store POS Flutter
 
-## Current Status: Phase 1.1 Complete
+## Stack
+Flutter, Dart, Supabase, sqflite, Riverpod, mobile_scanner, intl
 
-### Completed Tasks
-1. **Phase 0: Foundation**
-   - Theme audit complete
-   - l10n files (en, bn)
-   - LocaleProvider, ThemeProvider
+## Current
+Overhaul UI per use cases #1-4
 
-2. **Phase 1.1: POS Layout Overflow Fix**
-   - @[apps/mobile_app/lib/features/pos/presentation/screens/pos_main_screen.dart]
-   - Changed Expanded to Flexible + ConstrainedBox
-   - Added minWidth constraints (left: 200-320px, right: 180-280px)
-   - Responsive top bar (<400px hides cashier icon)
+## Done
+- UI state analyzed: POS overflow, empty dashboard, import-only inventory, empty dues, dark-theme purchase
+- 7-phase implementation plan generated
+- Token saver protocol created for Hermes
+- POS overflow fixed: LayoutBuilder + SizedBox instead of Flexible + ConstrainedBox
+- Search bar debounced: 300ms delay to reduce RPC calls
 
-### Commits
-- [15de1aa]: Phase 0 - Foundation
-- [976e03c]: Phase 1.1 - Layout overflow fix
+## Decisions
+- Theme: light primary, dark optional via ThemeProvider
+- Offline-first: sqflite cache + background Supabase sync
+- Locale: en + bn (intl), products need name_bn column
+- State mgmt: Riverpod over Bloc
+- Scanner: mobile_scanner (ML Kit)
+- One task per Hermes session; images = analyze-only
 
-### Next: Phase 1.2
-Add ProductSearchBar widget with debounce
+## Blockers
+- Dashboard zero data binding
+- Inventory no product catalogue
+- No Bengali translation UI
+- No payment method selector (cash/bKash/card/credit)
+- No barcode scanner flow
+- Theme inconsistency (purchase dark vs POS light)
+
+## Next
+Commit Phase 1 changes OR start Phase 2 (Dashboard data binding)
+
+---
+ctx: search bar debounce | done: 5 | next: commit or Phase 2
