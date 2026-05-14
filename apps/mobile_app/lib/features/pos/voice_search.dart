@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 
 /// Bangla voice search widget for POS
 /// NOTE: speech_to_text disabled due to Flutter 3.29+ incompatibility
-class VoiceSearchButton extends StatefulWidget {
+class VoiceSearchButton extends StatelessWidget {
   final Function(String) onResult;
   final String localeId;
 
@@ -14,25 +13,16 @@ class VoiceSearchButton extends StatefulWidget {
     this.localeId = 'bn_BD',
   });
 
-  @override
-  State<VoiceSearchButton> createState() => _VoiceSearchButtonState();
-}
-
-class _VoiceSearchButtonState extends State<VoiceSearchButton> {
-  bool _isListening = false;
-
-  void _showDisabledMessage() {
-    if (!mounted) return;
+  void _showDisabledMessage(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('ভয়েস সার্চ বর্তমানে অনুপলব্ধ')),
+      const SnackBar(content: Text('ভয়েস সার্চ বর্তমানে অনুপলব্ধ')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      icon: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: AppColors.surfaceDefault,
@@ -41,11 +31,11 @@ class _VoiceSearchButtonState extends State<VoiceSearchButton> {
         ),
         child: Icon(
           Icons.mic_none,
-          color: AppColors.textDisabled,
+          color: AppColors.textMuted,
         ),
       ),
-      onPressed: _showDisabledMessage,
-      tooltip: 'ভয়েস সার্চ (অনুপলব্ধ)',
+      onPressed: () => _showDisabledMessage(context),
+      tooltip: 'ভয়েস সার্চ (অনুপলব্ধ)',
     );
   }
 }
