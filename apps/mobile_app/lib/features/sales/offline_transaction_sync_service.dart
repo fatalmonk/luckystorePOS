@@ -573,6 +573,20 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     return File('${dir.path}/offline_transaction_queue.json');
   }
 
+  /// Clears the queue for testing purposes only.
+  @visibleForTesting
+  Future<void> clearQueueForTesting() async {
+    _queue.clear();
+    try {
+      final file = await _queueFile();
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // Ignore errors during test cleanup
+    }
+  }
+
   Future<File> _logFile() async {
     final dir = await getApplicationDocumentsDirectory();
     return File('${dir.path}/offline_sync_action_logs.json');
