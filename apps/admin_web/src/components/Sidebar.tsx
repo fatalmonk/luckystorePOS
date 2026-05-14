@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag, TrendingDown } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import '../styles/layout.css';
@@ -32,6 +32,7 @@ function useNavGroups(): NavGroup[] {
         { icon: ShoppingCart, label: t('nav.sales'), path: '/sales' },
         { icon: BarChart3, label: t('nav.dailySales'), path: '/daily-sales' },
         { icon: Package, label: t('nav.products'), path: '/products' },
+        { icon: TrendingDown, label: t('nav.competitorPrices'), path: '/competitor-prices' },
         { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
           { label: t('nav.inventory'), path: '/inventory' },
           { label: t('nav.history'), path: '/inventory/history' },
