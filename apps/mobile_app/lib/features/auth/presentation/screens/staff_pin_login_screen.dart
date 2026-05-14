@@ -129,7 +129,7 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
                     const SizedBox(height: 32),
 
                     Text(
-                      'Lucky Store Staff',
+                      'Lucky Store',
                       style: AppTextStyles.headingXl.copyWith(
                         color: AppColors.primitiveNeutral0,
                         fontWeight: FontWeight.w800,
