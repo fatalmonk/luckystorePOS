@@ -154,4 +154,4 @@ $$ language plpgsql security definer;
 create trigger update_competitor_prices_updated_at
     before update on public.competitor_prices
     for each row
-    execute function public.update_updated_at_column();
+    execute function public.set_current_timestamp_updated_at();
