@@ -43,6 +43,10 @@ class AuthProvider extends ChangeNotifier {
   String? _signInErrorCode;
   String? get signInErrorCode => _signInErrorCode;
 
+  // Store last verified PIN for manager operations
+  String? _lastVerifiedPin;
+  String? get lastVerifiedPin => _lastVerifiedPin;
+
   User get currentUserOrThrow {
     final user = _supabase.auth.currentUser;
     if (user == null) {
@@ -155,14 +159,24 @@ class AuthProvider extends ChangeNotifier {
       });
 
       if (response == null || (response is List && response.isEmpty)) {
+        _lastVerifiedPin = null;
         return false;
       }
 
       final profile = (response is List) ? response.first as Map<String, dynamic> : response as Map<String, dynamic>;
       final role = (profile['role'] as String? ?? '').toLowerCase();
-      return role == 'manager' || role == 'admin';
+      final isManager = role == 'manager' || role == 'admin';
+      
+      if (isManager) {
+        _lastVerifiedPin = pin;
+      } else {
+        _lastVerifiedPin = null;
+      }
+      
+      return isManager;
     } catch (e) {
       debugPrint('[AuthProvider] PIN verification failed: $e');
+      _lastVerifiedPin = null;
       return false;
     }
   }
