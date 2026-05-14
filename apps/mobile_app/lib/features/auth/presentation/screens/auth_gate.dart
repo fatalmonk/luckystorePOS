@@ -63,6 +63,8 @@ class AuthGate extends StatelessWidget {
         };
 
         if (!access.shouldShowWarningBanner) return child;
+        // Don't show warning banner on login screen
+        if (auth.status == AuthStatus.unauthenticated) return child;
         return _WarningFrame(child: child);
       },
     );
