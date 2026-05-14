@@ -60,15 +60,16 @@ create policy "Users can view competitor prices for their store"
     for select
     using (
         exists (
-            select 1 from public.user_profiles 
+            select 1 from auth.users 
             where id = auth.uid() 
-            and current_store_id = competitor_prices.store_id
+            and raw_user_meta_data->>'current_store_id' = competitor_prices.store_id::text
         )
     );
 
 create policy "Service role can manage competitor prices"
     on public.competitor_prices
     for all
+    to service_role
     using (true)
     with check (true);
 
