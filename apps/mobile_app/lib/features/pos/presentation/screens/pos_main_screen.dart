@@ -310,6 +310,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                 ),
               ),
             ),
+          ),
           SizedBox(width: isSmallScreen ? 8 : 12),
 
           // Action icons - scrollable to prevent overflow
