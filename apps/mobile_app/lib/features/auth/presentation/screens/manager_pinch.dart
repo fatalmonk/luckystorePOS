@@ -243,10 +243,12 @@ class ManagerSecurityLayer {
 
     // If manager auth required, show PIN dialog
     if (result['requires_manager_auth'] == true) {
+      if (!context.mounted) return false;
       final authResult = await requireManagerAuth(
         context,
         reason: 'Stock adjustment >5%: $itemId (delta: $delta)',
         onAuthSuccess: () async {
+          if (!context.mounted) return;
           // Retry with PIN
           final retryResult = await posProvider.adjustStock(
             itemId: itemId,
