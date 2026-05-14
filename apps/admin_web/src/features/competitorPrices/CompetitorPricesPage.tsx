@@ -9,6 +9,7 @@ import {
   fetchPriceAlerts,
   deleteCompetitorPrice,
 } from '../../lib/api/domains/competitorPrices';
+import { AddPriceModal } from './AddPriceModal';
 import type { CompetitorPrice, PriceAlert } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
 import './competitorPrices.css';
@@ -28,6 +29,7 @@ export function CompetitorPricesPage() {
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [showAlertsOnly, setShowAlertsOnly] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: prices, isLoading: pricesLoading } = useQuery({
     queryKey: ['competitorPrices', storeId],
@@ -176,7 +178,7 @@ export function CompetitorPricesPage() {
           />
           <span>Show alerts only</span>
         </label>
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
           <Plus size={16} />
           Add Price
         </button>
@@ -188,6 +190,9 @@ export function CompetitorPricesPage() {
         columns={columns}
         emptyMessage="No competitor prices recorded yet"
       />
+
+      {/* Add Price Modal */}
+      <AddPriceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
