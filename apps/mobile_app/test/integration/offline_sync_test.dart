@@ -41,7 +41,7 @@ void main() {
     setUp(() async {
       syncService = OfflineTransactionSyncService.instance;
       // Clear queue between tests
-      await _clearQueueFile(tempDir);
+      await syncService.clearQueueForTesting();
     });
 
     group('Enqueue & Persistence', () {
@@ -314,14 +314,6 @@ void main() {
       });
     });
   });
-}
-
-// Helper function to clear queue file
-Future<void> _clearQueueFile(Directory tempDir) async {
-  final file = File('${tempDir.path}/offline_transaction_queue.json');
-  if (await file.exists()) {
-    await file.delete();
-  }
 }
 
 // Test helpers
