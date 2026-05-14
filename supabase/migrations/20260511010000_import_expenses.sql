@@ -7,7 +7,8 @@ DECLARE
 BEGIN
   SELECT id INTO v_store_id FROM stores LIMIT 1;
   IF v_store_id IS NULL THEN
-    RAISE EXCEPTION 'No store found';
+    RAISE NOTICE 'No store found — skipping expense import';
+    RETURN;
   END IF;
 
   INSERT INTO expenses (store_id, expense_date, vendor_name, description, amount, payment_type, category) VALUES (v_store_id, '2026-02-15', 'Noyon', 'Civil Works', 2000.00, 'Cash', 'Capital Expenditure');

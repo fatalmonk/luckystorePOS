@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, DollarSign, LayoutGrid, List as ListIcon } from 'lucide-react';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, DollarSign, LayoutGrid, List as ListIcon, Download } from 'lucide-react';
+import { downloadCSV } from '../../lib/format';
 import { StockUpdateDrawer } from './StockUpdateDrawer';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -168,6 +169,25 @@ export function InventoryListPage() {
         subtitle="Monitor and adjust stock levels."
         actions={
           <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              icon={<Download size={18} />}
+              onClick={() => {
+                const sanitizeCSVCell = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
+                const rows = (inventory ?? []).map((item: InventoryItem) => ({
+                  name: sanitizeCSVCell(item.name),
+                  sku: sanitizeCSVCell(item.sku || ''),
+                  currentStock: item.current_qty,
+                  status: item.reorder_status,
+                  price: item.price || 0,
+                  value: (item.price || 0) * item.current_qty,
+                  lastUpdated: item.last_updated || '',
+                }));
+                downloadCSV(rows, `inventory-${new Date().toISOString().split('T')[0]}.csv`);
+              }}
+            >
+              Export CSV
+            </Button>
             <Link to="/inventory/history">
               <Button variant="secondary" icon={<History size={18} />}>
                 View History

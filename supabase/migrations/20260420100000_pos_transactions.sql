@@ -237,17 +237,23 @@ ALTER TABLE public.sale_items       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sale_payments    ENABLE ROW LEVEL SECURITY;
 
 -- payment_methods: all authenticated can read; manager/admin can write
+DROP POLICY IF EXISTS "pm_select" ON public.payment_methods;
 CREATE POLICY "pm_select" ON public.payment_methods FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "pm_write" ON public.payment_methods;
 CREATE POLICY "pm_write"  ON public.payment_methods FOR ALL    TO authenticated
   USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND u.role IN ('admin','manager')));
 
 -- discounts: same
+DROP POLICY IF EXISTS "disc_select" ON public.discounts;
 CREATE POLICY "disc_select" ON public.discounts FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "disc_write" ON public.discounts;
 CREATE POLICY "disc_write"  ON public.discounts FOR ALL    TO authenticated
   USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND u.role IN ('admin','manager')));
 
 -- receipt_config: all read; admin only write
+DROP POLICY IF EXISTS "rc_select" ON public.receipt_config;
 CREATE POLICY "rc_select" ON public.receipt_config FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "rc_write" ON public.receipt_config;
 CREATE POLICY "rc_write"  ON public.receipt_config FOR ALL    TO authenticated
   USING (EXISTS (SELECT 1 FROM public.users u WHERE u.auth_id = (SELECT auth.uid()) AND u.role = 'admin'));
 

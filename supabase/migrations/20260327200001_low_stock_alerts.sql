@@ -37,11 +37,13 @@ EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 -- ---------------------------------------------------------------------------
 ALTER TABLE public.stock_alert_thresholds ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "stock_alert_thresholds_read_all" ON public.stock_alert_thresholds;
 CREATE POLICY "stock_alert_thresholds_read_all"
   ON public.stock_alert_thresholds FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "stock_alert_thresholds_write_staff" ON public.stock_alert_thresholds;
 CREATE POLICY "stock_alert_thresholds_write_staff"
   ON public.stock_alert_thresholds FOR ALL
   TO authenticated

@@ -132,10 +132,7 @@ class _SearchTabState extends State<SearchTab> {
                         )
                       : IconButton(
                           icon: const Icon(Icons.arrow_forward, color: AppColors.primaryDefault),
-                          onPressed: () {
-                            final requestId = ++_currentRequestId;
-                            _doSearch(_query, requestId);
-                          },
+                          onPressed: () { final requestId = ++_currentRequestId; _doSearch(_query, requestId); },
                         ),
                   border: InputBorder.none,
                   contentPadding: AppSpacing.insetMd,

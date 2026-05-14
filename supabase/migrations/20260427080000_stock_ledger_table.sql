@@ -37,27 +37,27 @@ CREATE TABLE IF NOT EXISTS public.stock_ledger (
 -- -----------------------------------------------------------------------------
 
 -- Index on store_id for filtering by store
-CREATE INDEX idx_stock_ledger_store_id ON public.stock_ledger(store_id);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_store_id ON public.stock_ledger(store_id);
 
 -- Index on product_id for filtering by product
-CREATE INDEX idx_stock_ledger_product_id ON public.stock_ledger(product_id);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_product_id ON public.stock_ledger(product_id);
 
 -- Composite index for most common query pattern: store + product + date range
-CREATE INDEX idx_stock_ledger_store_product_date 
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_store_product_date
   ON public.stock_ledger(store_id, product_id, created_at DESC);
 
 -- Index on transaction_type for filtering by type
-CREATE INDEX idx_stock_ledger_transaction_type ON public.stock_ledger(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_transaction_type ON public.stock_ledger(transaction_type);
 
 -- Index on movement_id for deduplication lookups
-CREATE INDEX idx_stock_ledger_movement_id ON public.stock_ledger(movement_id) 
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_movement_id ON public.stock_ledger(movement_id)
   WHERE movement_id IS NOT NULL;
 
 -- Index on created_at for time-based queries
-CREATE INDEX idx_stock_ledger_created_at ON public.stock_ledger(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_created_at ON public.stock_ledger(created_at DESC);
 
 -- GIN index on metadata for JSON queries
-CREATE INDEX idx_stock_ledger_metadata ON public.stock_ledger USING gin (metadata);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_metadata ON public.stock_ledger USING gin (metadata);
 
 -- -----------------------------------------------------------------------------
 -- 4) Add constraints
@@ -81,33 +81,37 @@ ALTER TABLE public.stock_ledger
 ALTER TABLE public.stock_ledger ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated users to read their store's ledger
-CREATE POLICY stock_ledger_read_authenticated 
-  ON public.stock_ledger FOR SELECT 
+DROP POLICY IF EXISTS stock_ledger_read_authenticated ON public.stock_ledger;
+CREATE POLICY stock_ledger_read_authenticated
+  ON public.stock_ledger FOR SELECT
   TO authenticated
   USING (
-    store_id IN (
-      SELECT store_id FROM public.user_stores WHERE user_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM public.users u
+      WHERE u.auth_id = auth.uid()
+        AND u.store_id = stock_ledger.store_id
     )
   );
 
 -- Allow authenticated users to insert their store's ledger entries
-CREATE POLICY stock_ledger_insert_authenticated 
-  ON public.stock_ledger FOR INSERT 
+DROP POLICY IF EXISTS stock_ledger_insert_authenticated ON public.stock_ledger;
+CREATE POLICY stock_ledger_insert_authenticated
+  ON public.stock_ledger FOR INSERT
   TO authenticated
   WITH CHECK (
-    store_id IN (
-      SELECT store_id FROM public.user_stores WHERE user_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM public.users u
+      WHERE u.auth_id = auth.uid()
+        AND u.store_id = stock_ledger.store_id
     )
   );
 
 -- Service role can do anything
-CREATE POLICY stock_ledger_service_role_all 
-  ON public.stock_ledger USING (true) 
-  TO service_role;
-
-CREATE POLICY stock_ledger_service_role_insert 
-  ON public.stock_ledger FOR INSERT 
+DROP POLICY IF EXISTS stock_ledger_service_role_all ON public.stock_ledger;
+CREATE POLICY stock_ledger_service_role_all
+  ON public.stock_ledger
   TO service_role
+  USING (true)
   WITH CHECK (true);
 
 -- -----------------------------------------------------------------------------
@@ -196,42 +200,6 @@ CREATE TRIGGER trg_log_stock_ledger
   WHEN (NEW.qty IS DISTINCT FROM OLD.qty)
   EXECUTE FUNCTION public.log_stock_ledger_on_update();
 
--- -----------------------------------------------------------------------------
--- 8) Create function to get stock status by ID (for reporting)
--- -----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_stock_level_by_id(p_stock_level_id uuid)
-RETURNS TABLE (
-  stock_level_id uuid,
-  store_id uuid,
-  product_id uuid,
-  quantity integer,
-  last_updated timestamptz,
-  recent_movements jsonb
-)
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT 
-    sl.id,
-    sl.store_id,
-    sl.item_id,
-    sl.qty,
-    sl.updated_at,
-    (
-      SELECT jsonb_agg(row_to_json(lm))
-      FROM (
-        SELECT * FROM public.stock_ledger
-        WHERE store_id = sl.store_id
-          AND product_id = sl.item_id
-        ORDER BY created_at DESC
-        LIMIT 10
-      ) lm
-    ) AS recent_movements
-  FROM public.stock_levels sl
-  WHERE sl.id = p_stock_level_id;
-$$;
-
 -- Grant permissions
 REVOKE ALL ON TABLE public.stock_ledger FROM PUBLIC;
 GRANT SELECT ON TABLE public.stock_ledger TO authenticated;
@@ -239,7 +207,6 @@ GRANT INSERT ON TABLE public.stock_ledger TO authenticated;
 GRANT ALL ON TABLE public.stock_ledger TO service_role;
 GRANT ALL ON v_stock_ledger_recent TO authenticated;
 GRANT ALL ON v_stock_ledger_product_summary TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_stock_level_by_id(uuid) TO authenticated;
 
 -- Comment on table
 COMMENT ON TABLE public.stock_ledger IS 

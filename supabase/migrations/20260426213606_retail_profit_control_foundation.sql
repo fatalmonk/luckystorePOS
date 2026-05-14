@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS tenants (
 );
 
 -- 2. stores
-CREATE TABLE stores (
+CREATE TABLE IF NOT EXISTS stores (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE stores (
 );
 
 -- 3. users
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID REFERENCES stores(id),
@@ -27,7 +27,7 @@ CREATE TABLE users (
 );
 
 -- 4. parties
-CREATE TABLE parties (
+CREATE TABLE IF NOT EXISTS parties (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('customer', 'supplier', 'employee')),
@@ -37,7 +37,7 @@ CREATE TABLE parties (
 );
 
 -- 5. accounts
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS accounts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE accounts (
 );
 
 -- 6. journal_batches
-CREATE TABLE journal_batches (
+CREATE TABLE IF NOT EXISTS journal_batches (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID REFERENCES stores(id),
@@ -57,7 +57,7 @@ CREATE TABLE journal_batches (
 );
 
 -- 7. ledger_entries
-CREATE TABLE ledger_entries (
+CREATE TABLE IF NOT EXISTS ledger_entries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID REFERENCES stores(id),
@@ -77,7 +77,7 @@ CREATE TABLE ledger_entries (
 );
 
 -- 8. inventory_items
-CREATE TABLE inventory_items (
+CREATE TABLE IF NOT EXISTS inventory_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE inventory_items (
 );
 
 -- 9. stock_movements
-CREATE TABLE stock_movements (
+CREATE TABLE IF NOT EXISTS stock_movements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID NOT NULL REFERENCES stores(id),
@@ -101,7 +101,7 @@ CREATE TABLE stock_movements (
 );
 
 -- 10. idempotency_keys
-CREATE TABLE idempotency_keys (
+CREATE TABLE IF NOT EXISTS idempotency_keys (
     idempotency_key TEXT PRIMARY KEY,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

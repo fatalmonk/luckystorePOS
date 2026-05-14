@@ -55,7 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_sale_items_item_id ON sale_items(item_id);
 -- Create index on sales for reporting
 CREATE INDEX IF NOT EXISTS idx_sales_store_id ON sales(store_id);
 CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
-CREATE INDEX IF NOT EXISTS idx_sales_receipt_number ON sales(receipt_number);
+CREATE INDEX IF NOT EXISTS idx_sales_receipt_number ON sales(sale_number);
 
 -- Create index on stock_movements for audit trail
 CREATE INDEX IF NOT EXISTS idx_stock_movements_store_id ON stock_movements(store_id);

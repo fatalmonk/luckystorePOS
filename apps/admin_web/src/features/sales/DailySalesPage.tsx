@@ -22,10 +22,11 @@ import {
   ArrowUp,
   ArrowDown,
   CreditCard,
-  Banknote,
+  Banknote, Download,
 } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO, subDays } from 'date-fns';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
+import { downloadCSV } from '../../lib/format';
 
 const CHART_COLORS = [
   'var(--color-success-default)',
@@ -225,9 +226,24 @@ export function DailySalesPage() {
         title="Daily Sales"
         subtitle="Track and analyze daily sales data."
         actions={
-          <button className="button-primary" onClick={() => setShowForm(true)}>
-            <Plus size={18} /> Add Daily Sale
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="button-outline gap-2"
+              onClick={() => downloadCSV(
+                (sales || []).map((s: DailySale) => ({
+                  date: s.saleDate, totalSales: s.totalSales, cash: s.cashAmount,
+                  bkash: s.bkashAmount, credit: s.creditAmount,
+                  stockPurchase: s.stockPurchase, dailyExpense: s.dailyExpense,
+                })),
+                `daily-sales-${new Date().toISOString().split('T')[0]}.csv`
+              )}
+            >
+              <Download size={16} /> Export CSV
+            </button>
+            <button className="button-primary" onClick={() => setShowForm(true)}>
+              <Plus size={18} /> Add Daily Sale
+            </button>
+          </div>
         }
       />
 
