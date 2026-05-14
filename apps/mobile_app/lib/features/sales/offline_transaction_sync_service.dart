@@ -226,7 +226,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   final _queue = <QueuedOfflineTransaction>[];
   final _auditLogs = <SyncActionAuditLog>[];
   final _alertEngine = const OfflineSyncOperationalAlertEngine();
-  final _conflictResolver = const ConflictResolver();
+  final _conflictResolver = ConflictResolver();
 
   SupabaseClient? _supabase;
   Timer? _workerTimer;
