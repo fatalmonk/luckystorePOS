@@ -85,6 +85,7 @@ export interface Reminder {
 export type ExpensePaymentType = 'Cash' | 'Bank transfer' | 'Bkash' | 'Card';
 
 export type ExpenseCategory =
+  | 'Stock Purchase'
   | 'Capital Expenditure'
   | 'Utility Expenses'
   | 'Transport & Conveyance'
@@ -93,6 +94,7 @@ export type ExpenseCategory =
   | 'All Other Expenses';
 
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
+  'Stock Purchase',
   'Capital Expenditure',
   'Utility Expenses',
   'Transport & Conveyance',
@@ -168,4 +170,104 @@ export interface ReceiptConfigUpdateInput {
   store_name: string;
   header_text: string;
   footer_text: string;
+}
+
+// =============================================================================
+// Daily Sales Domain Types
+// Aligned with public.daily_sales table
+// =============================================================================
+
+export interface DailySale {
+  id: string;
+  storeId: string;
+  saleDate: string;
+  cashAmount: number;
+  bkashAmount: number;
+  creditAmount: number;
+  totalSales: number;
+  stockPurchase: number;
+  dailyExpense: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DailySaleFormData {
+  saleDate: string;
+  cashAmount: number;
+  bkashAmount: number;
+  creditAmount: number;
+  totalSales: number;
+  stockPurchase: number;
+  dailyExpense: number;
+}
+
+// =============================================================================
+// Inventory Analytics Types
+// =============================================================================
+
+export interface StockValuationItem {
+  item_id: string;
+  item_name: string;
+  sku: string;
+  category_name: string;
+  qty_on_hand: number;
+  unit_cost: number;
+  unit_price: number;
+  total_cost: number;
+  total_value: number;
+  margin_pct: number;
+}
+
+export interface TopSellingItem {
+  item_id: string;
+  item_name: string;
+  sku: string;
+  category_name: string;
+  total_qty: number;
+  total_revenue: number;
+  total_profit: number;
+}
+
+export interface SlowMovingItem {
+  item_id: string;
+  item_name: string;
+  sku: string;
+  category_name: string;
+  qty_on_hand: number;
+  total_cost: number;
+  last_sold_at: string | null;
+}
+
+export interface DailyMovementItem {
+  trend_date: string;
+  total_in: number;
+  total_out: number;
+  net_delta: number;
+}
+
+// =============================================================================
+// Customer & Staff Analytics Types
+// =============================================================================
+
+export interface CustomerAnalyticsItem {
+  party_id: string;
+  customer_name: string;
+  phone: string | null;
+  total_spent: number;
+  purchase_count: number;
+  avg_order_value: number;
+  last_purchase_date: string | null;
+  days_since_last: number | null;
+}
+
+export interface StaffPerformanceItem {
+  user_id: string;
+  staff_name: string;
+  role: string;
+  total_sales: number;
+  total_revenue: number;
+  avg_ticket: number;
+  total_discounts: number;
+  active_days: number;
+  revenue_per_day: number;
 }

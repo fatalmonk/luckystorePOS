@@ -225,12 +225,15 @@ class OrderSummary extends StatelessWidget {
                     children: [
                       const Icon(Icons.bolt_rounded, color: AppColors.primaryOn, size: AppSpacing.space5),
                       const SizedBox(width: AppSpacing.space2),
-                      Text(
-                        'PLACE ORDER',
-                        style: AppTextStyles.labelLg.copyWith(
-                          color: AppColors.primaryOn,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
+                      Flexible(
+                        child: Text(
+                          'PLACE ORDER',
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.labelLg.copyWith(
+                            color: AppColors.primaryOn,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
+                          ),
                         ),
                       ),
                     ],
@@ -323,11 +326,11 @@ class CartLine extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
 
             // Line total
             SizedBox(
-              width: 70,
+              width: 60,
               child: Text(
                 '৳${cartItem.lineTotal.toStringAsFixed(0)}',
                 textAlign: TextAlign.right,

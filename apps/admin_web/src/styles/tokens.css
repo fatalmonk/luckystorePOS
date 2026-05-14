@@ -43,12 +43,12 @@
   --color-surface-raised: #FFFFFF;
   --color-surface-overlay: rgba(15, 23, 42, 0.45);
 
-  /* Primary (Indigo-Blue) */
-  --color-primary-default: #4F46E5;
-  --color-primary-hover: #4338CA;
-  --color-primary-pressed: #3730A3;
-  --color-primary-subtle: #EEF2FF;
-  --color-primary-on: #FFFFFF;
+  /* Primary (Gold-Yellow) */
+  --color-primary-default: #E8B84B;
+  --color-primary-hover: #D4941A;
+  --color-primary-pressed: #B0781A;
+  --color-primary-subtle: #FEF3C7;
+  --color-primary-on: #1E293B;
 
   /* Secondary (Teal-Green) */
   --color-secondary-default: #0D9488;
@@ -73,6 +73,11 @@
   --color-warning-dark: #D97706;
   --color-warning-subtle: #FFFBEB;
   --color-warning-on: #1E293B;
+
+  /* Semantic - Info */
+  --color-info-default: #3B82F6;
+  --color-info-subtle: #EFF6FF;
+  --color-info-on: #FFFFFF;
 
   /* Borders */
   --color-border-default: #E2E8F0;

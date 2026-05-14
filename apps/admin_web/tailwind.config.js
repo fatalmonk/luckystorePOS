@@ -47,6 +47,11 @@ export default {
           subtle: 'var(--color-warning-subtle)',
           on: 'var(--color-warning-on)',
         },
+        info: {
+          DEFAULT: 'var(--color-info-default)',
+          subtle: 'var(--color-info-subtle)',
+          on: 'var(--color-info-on)',
+        },
         border: {
           DEFAULT: 'var(--color-border-default)',
           strong: 'var(--color-border-strong)',

@@ -28,10 +28,10 @@ export const reports = {
       .select('id, name')
       .in('id', itemIds);
 
-    const nameMap = new Map(itemNames?.map((i: any) => [i.id, i.name]) || []);
+    const nameMap = new Map<any, any>(itemNames?.map((i: any) => [i.id, i.name]) || []);
 
     // Aggregate top products by quantity
-    const productMap = new Map();
+    const productMap = new Map<any, any>();
     saleItems?.forEach((item: any) => {
       const name = nameMap.get(item.item_id) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
@@ -81,7 +81,7 @@ export const reports = {
 
     if (stockError) throw stockError;
 
-    const stockMap = new Map(stockLevels?.map((s: any) => [s.item_id, s.qty]) || []);
+    const stockMap = new Map<any, any>(stockLevels?.map((s: any) => [s.item_id, s.qty]) || []);
 
     let totalValue = 0;
     let lowStockCount = 0;
@@ -148,5 +148,25 @@ export const reports = {
     const netProfit = grossProfit - totalExpenses;
 
     return { grossRevenue, cogs, grossProfit, totalExpenses, netProfit };
+  },
+
+  // Customer Analytics
+  getCustomerAnalytics: async (storeId: string, limit = 50) => {
+    const { data, error } = await supabase.rpc('get_customer_analytics', {
+      p_store_id: storeId,
+      p_limit: limit,
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  // Staff Performance
+  getStaffPerformance: async (storeId: string, days = 30) => {
+    const { data, error } = await supabase.rpc('get_staff_performance', {
+      p_store_id: storeId,
+      p_days: days,
+    });
+    if (error) throw error;
+    return data;
   },
 };

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/controllers/app_access_controller.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
@@ -77,12 +80,11 @@ class _WarningFrame extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          color: const Color(0xFF8A5A00),
-          child: const Text(
+          color: AppColors.warningDark,
+          child: Text(
             'DEGRADED HEALTH: Cached mode active while connectivity recovers.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.warningOn,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -105,7 +107,7 @@ class _CapabilityBlockedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: AppColors.primitiveNeutral900,
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 460),
@@ -114,31 +116,24 @@ class _CapabilityBlockedScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: const Color(0xFF161B22),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white12),
+                color: AppColors.primitiveNeutral800,
+                borderRadius: AppRadius.borderLg,
+                border: Border.all(color: AppColors.primitiveNeutral600.withValues(alpha: 0.3)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.policy_outlined, color: Colors.orangeAccent),
+                  Icon(Icons.policy_outlined, color: AppColors.warningDefault),
                   const SizedBox(height: 10),
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.headingMd.copyWith(color: AppColors.primitiveNeutral0),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
+                    style: AppTextStyles.bodySm.copyWith(color: AppColors.primitiveNeutral400),
                   ),
                 ],
               ),
@@ -159,17 +154,16 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF0D1117),
+    return Scaffold(
+      backgroundColor: AppColors.primitiveNeutral900,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Gold store icon
             _StoreLogo(),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             CircularProgressIndicator(
-              color: Color(0xFFE8B84B),
+              color: AppColors.primaryDefault,
               strokeWidth: 2.5,
             ),
           ],
@@ -188,21 +182,21 @@ class _StoreLogo extends StatelessWidget {
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE8B84B), Color(0xFFD4941A)],
+        gradient: LinearGradient(
+          colors: [AppColors.primaryDefault, AppColors.primaryHover],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: AppRadius.borderLg,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE8B84B).withValues(alpha: 0.35),
+            color: AppColors.primaryDefault.withValues(alpha: 0.35),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: const Icon(Icons.store_rounded, color: Colors.white, size: 42),
+      child: Icon(Icons.store_rounded, color: AppColors.primaryOn, size: 42),
     );
   }
 }

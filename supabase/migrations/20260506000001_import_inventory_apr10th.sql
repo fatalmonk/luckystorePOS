@@ -3,7 +3,12 @@
 -- Store ID: 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd
 -- Products: ~480 items with MRP support
 -- =============================================================================
+-- This is a manual import template — no-op during migration.
+-- To use: uncomment and run manually after loading CSV data.
+-- =============================================================================
+DO $$ BEGIN /* no-op: manual CSV import template */ END; $$;
 
+/*
 -- Step 1: Create temp table matching CSV structure
 DROP TABLE IF EXISTS temp_inventory_apr10th;
 
@@ -150,3 +155,4 @@ WHERE store_id = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 -- Clean up (optional - keep for debugging)
 -- DROP TABLE IF EXISTS temp_inventory_apr10th;
+*/

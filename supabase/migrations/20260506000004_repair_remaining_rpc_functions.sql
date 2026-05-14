@@ -202,6 +202,7 @@ GRANT EXECUTE ON FUNCTION public.update_receipt_config_simple(uuid, text, text, 
 -- =============================================================================
 -- 6) Settings: get_store_users
 -- =============================================================================
+DROP FUNCTION IF EXISTS public.get_store_users(uuid) CASCADE;
 CREATE OR REPLACE FUNCTION public.get_store_users(p_store_id uuid)
 RETURNS TABLE (
   id uuid,
@@ -227,6 +228,7 @@ GRANT EXECUTE ON FUNCTION public.get_store_users(uuid) TO authenticated;
 -- =============================================================================
 -- 7) Sales: get_sales_history
 -- =============================================================================
+DROP FUNCTION IF EXISTS public.get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer) CASCADE;
 CREATE OR REPLACE FUNCTION public.get_sales_history(
   p_store_id uuid,
   p_search_query text DEFAULT NULL,
