@@ -153,6 +153,14 @@ class _PosMainScreenState extends State<PosMainScreen> {
     final isTablet = screenWidth >= 600;
     final isLargeTablet = screenWidth >= 900;
 
+    // Calculate panel widths with constraints to prevent overflow
+    final leftFlex = isLargeTablet ? 70 : (isTablet ? 65 : 55);
+    final rightFlex = isLargeTablet ? 30 : (isTablet ? 35 : 45);
+    
+    // Minimum widths to prevent overflow
+    final minLeftWidth = isTablet ? 320.0 : 200.0;
+    final minRightWidth = isTablet ? 280.0 : 180.0;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
@@ -163,17 +171,20 @@ class _PosMainScreenState extends State<PosMainScreen> {
               Row(
                 children: [
                   // ── LEFT PANEL ─────────────────────────────────────────
-                  Expanded(
-                    flex: isLargeTablet ? 70 : (isTablet ? 65 : 60),
-                    child: _buildLeftPanel(),
+                  Flexible(
+                    flex: leftFlex,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: minLeftWidth),
+                      child: _buildLeftPanel(),
+                    ),
                   ),
                   // Divider
                   Container(width: 1, color: AppColors.borderDefault),
                   // ── RIGHT PANEL ────────────────────────────────────────
-                  Expanded(
-                    flex: isLargeTablet ? 30 : (isTablet ? 35 : 40),
+                  Flexible(
+                    flex: rightFlex,
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: isTablet ? 280 : 220),
+                      constraints: BoxConstraints(minWidth: minRightWidth),
                       child: _buildRightPanel(),
                     ),
                   ),
@@ -228,9 +239,14 @@ class _PosMainScreenState extends State<PosMainScreen> {
   Widget _buildTopBar() {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 600;
+    final isSmallScreen = screenWidth < 400;
+    
     return Container(
       height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmallScreen ? 8 : 16, 
+        vertical: 10,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.surfaceDefault,
         border: Border(bottom: BorderSide(color: AppColors.borderDefault)),
@@ -239,16 +255,20 @@ class _PosMainScreenState extends State<PosMainScreen> {
         children: [
           // Branded App Pill
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EdgeInsets.symmetric(
+              horizontal: isSmallScreen ? 8 : 12, 
+              vertical: 6,
+            ),
             decoration: BoxDecoration(
               color: AppColors.primaryDefault,
               borderRadius: AppRadius.borderMd,
               boxShadow: AppShadows.elevation1,
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.shopping_bag_rounded, color: AppColors.primaryOn, size: 16),
-                if (isTablet) ...[
+                if (isTablet && !isSmallScreen) ...[
                   const SizedBox(width: 8),
                   Text(
                     'LUCKY POS',
@@ -262,7 +282,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isSmallScreen ? 8 : 12),
 
           // Search bar
           Expanded(
@@ -277,7 +297,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                 controller: _searchCtrl,
                 style: AppTextStyles.bodyMd,
                 decoration: InputDecoration(
-                  hintText: 'Search products, SKU, or brands...',
+                  hintText: isSmallScreen ? 'Search...' : 'Search products, SKU...',
                   hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textMuted),
                   prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primaryDefault, size: 20),
                   suffixIcon: _searchCtrl.text.isNotEmpty
@@ -291,29 +311,32 @@ class _PosMainScreenState extends State<PosMainScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isSmallScreen ? 8 : 12),
 
           _iconButton(
             icon: Icons.qr_code_scanner_rounded,
             active: _scanning,
-            tooltip: 'Scan Barcode',
+            tooltip: 'Scan',
             onTap: () => setState(() => _scanning = !_scanning),
           ),
-          const SizedBox(width: 8),
-
-          Consumer<PosProvider>(
-            builder: (ctx, pos, _) => _iconButton(
-              icon: Icons.person_rounded,
-              tooltip: pos.cashierName ?? 'Cashier',
-              onTap: () => showCashierDialog(context, pos),
+          
+          if (!isSmallScreen) ...[
+            const SizedBox(width: 8),
+            Consumer<PosProvider>(
+              builder: (ctx, pos, _) => _iconButton(
+                icon: Icons.person_rounded,
+                tooltip: pos.cashierName ?? 'Cashier',
+                onTap: () => showCashierDialog(context, pos),
+              ),
             ),
-          ),
+          ],
+          
           const SizedBox(width: 8),
           
           _iconButton(
             icon: Icons.more_vert_rounded,
-            tooltip: 'More Actions',
-            onTap: () {}, // This will trigger the popup menu
+            tooltip: 'More',
+            onTap: () {},
             isMenu: true,
           ),
         ],
