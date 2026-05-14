@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import '../../models/sale_transaction_snapshot.dart';
 import './offline_transaction_sync_service.dart';
 
 /// Types of conflicts that can occur during sync
@@ -124,9 +121,8 @@ class ConflictResolverConfig {
 /// Intelligent conflict resolver for offline transactions
 class ConflictResolver {
   final ConflictResolverConfig config;
-  final Random _random = Random();
 
-  const ConflictResolver({
+  ConflictResolver({
     this.config = const ConflictResolverConfig(),
   });
 
@@ -376,14 +372,6 @@ class ConflictResolver {
       }
     }
 
-    final newItems = transaction.items.map((item) {
-      final id = item['product_id'] ?? item['item_id'];
-      if (adjustedItemsMap.containsKey(id)) {
-        return {...item, 'quantity': adjustedItemsMap[id]};
-      }
-      return item;
-    }).toList();
-
     return transaction.copyWith(
       syncValidationState: 'QUANTITY_ADJUSTED',
     );
@@ -394,16 +382,6 @@ class ConflictResolver {
     QueuedOfflineTransaction transaction,
     List<Map<String, dynamic>> remainingItems,
   ) {
-    // Recalculate total and payments
-    final newTotal = remainingItems.fold<double>(
-      0,
-      (sum, item) {
-        final price = (item['unit_price'] as num?)?.toDouble() ?? 0;
-        final qty = (item['quantity'] as num?)?.toInt() ?? 0;
-        return sum + (price * qty);
-      },
-    );
-
     return transaction.copyWith(
       syncValidationState: 'ITEMS_REMOVED',
     );
