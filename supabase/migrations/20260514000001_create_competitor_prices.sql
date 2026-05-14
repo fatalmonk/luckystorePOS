@@ -1,7 +1,11 @@
 -- Competitor price monitoring table
 -- Stores scraped prices from competitors for price comparison
 
-create table if not exists public.competitor_prices (
+-- Drop if exists with wrong schema (defensive)
+drop table if exists public.competitor_prices cascade;
+
+-- Create table with all columns explicitly
+create table public.competitor_prices (
     id uuid default gen_random_uuid() primary key,
     store_id uuid not null references public.stores(id) on delete cascade,
     
