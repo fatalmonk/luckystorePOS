@@ -41,15 +41,8 @@ void main() {
     setUp(() async {
       syncService = OfflineTransactionSyncService.instance;
       // Clear queue between tests
-      await _clearQueueFile();
+      await _clearQueueFile(tempDir);
     });
-
-    Future<void> _clearQueueFile() async {
-      final file = File('${tempDir.path}/offline_transaction_queue.json');
-      if (await file.exists()) {
-        await file.delete();
-      }
-    }
 
     group('Enqueue & Persistence', () {
       test('should enqueue sale transaction and persist to disk', () async {
@@ -109,7 +102,7 @@ void main() {
       late ConflictResolver resolver;
 
       setUp(() {
-        resolver = const ConflictResolver();
+        resolver = ConflictResolver();
       });
 
       test('should auto-resolve price drop (customer benefits)', () {
@@ -323,6 +316,14 @@ void main() {
   });
 }
 
+// Helper function to clear queue file
+Future<void> _clearQueueFile(Directory tempDir) async {
+  final file = File('${tempDir.path}/offline_transaction_queue.json');
+  if (await file.exists()) {
+    await file.delete();
+  }
+}
+
 // Test helpers
 SaleTransactionIntent _createTestIntent(String clientId) {
   return SaleTransactionIntent(
@@ -332,10 +333,17 @@ SaleTransactionIntent _createTestIntent(String clientId) {
     cashierId: 'cashier-001',
     sessionId: 'session-001',
     items: [
-      SaleItemIntent(productId: 'p1', variantId: null, quantity: 1, unitPrice: 10.0),
+      SaleTransactionIntentItem(
+        itemId: 'p1',
+        quantity: 1,
+        requestedUnitPrice: 10.0,
+        lineDiscount: 0.0,
+        unitCost: 5.0,
+      ),
     ],
     payments: [{'method': 'cash', 'amount': 10.0}],
     cartDiscount: 0.0,
+    createdAt: DateTime.now(),
     fulfillmentPolicy: 'STRICT',
   );
 }
