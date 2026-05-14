@@ -39,17 +39,19 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
   });
 
   const { data: searchResults } = useQuery({
-    queryKey: ['productSearch', searchQuery],
+    queryKey: ['productSearch', searchQuery.trim()],
     queryFn: async () => {
+      const trimmed = searchQuery.trim();
+      if (trimmed.length < 2) return [];
       const { data } = await supabase
         .from('items')
         .select('id, name, sku, price')
         .eq('store_id', storeId)
-        .ilike('name', `%${searchQuery}%`)
+        .ilike('name', `%${trimmed}%`)
         .limit(10);
       return data || [];
     },
-    enabled: searchQuery.length >= 2 && showProductSearch,
+    enabled: searchQuery.trim().length >= 2 && showProductSearch,
   });
 
   const addMutation = useMutation({
@@ -72,15 +74,39 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
     setShowProductSearch(false);
   };
 
+  const isValidUrl = (url: string): boolean => {
+    if (!url) return true; // optional field
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidCompetitorName = (name: string): boolean => {
+    return name.length >= 2 && name.length <= 100 && /^[\w\s\-&.()]+$/.test(name);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
     
+    if (!isValidCompetitorName(competitorName)) {
+      notify('Competitor name must be 2-100 chars (letters, numbers, spaces, - & . ())', 'error');
+      return;
+    }
+    
+    if (!isValidUrl(competitorUrl)) {
+      notify('Please enter a valid HTTP/HTTPS URL', 'error');
+      return;
+    }
+    
     addMutation.mutate({
       item_id: selectedProduct.id,
-      competitor_name: competitorName,
+      competitor_name: competitorName.trim(),
       competitor_price: parseFloat(competitorPrice),
-      competitor_url: competitorUrl || undefined,
+      competitor_url: competitorUrl.trim() || undefined,
     });
   };
 
