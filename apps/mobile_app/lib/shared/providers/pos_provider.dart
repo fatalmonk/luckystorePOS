@@ -763,4 +763,51 @@ class PosProvider extends ChangeNotifier {
     notifyListeners();
     return categories;
   }
+
+  // ============ Competitor Price Monitoring ============
+
+  /// Fetch latest competitor prices for current store
+  Future<List<Map<String, dynamic>>> fetchCompetitorPrices() async {
+    try {
+      final cutoff = DateTime.now().subtract(const Duration(days: 1));
+      if (_storeId == null) return [];
+      final response = await _supabase
+          .from('competitor_prices')
+          .select()
+          .eq('store_id', _storeId!)
+          .gte('scraped_at', cutoff.toIso8601String())
+          .order('scraped_at', ascending: false);
+
+      // Deduplicate by product_id + competitor_name (keep latest)
+      final seen = <String>{};
+      final unique = <Map<String, dynamic>>[];
+
+      for (final row in response) {
+        final key = '${row['product_id']}_${row['competitor_name']}';
+        if (!seen.contains(key)) {
+          seen.add(key);
+          unique.add(row);
+        }
+      }
+
+      return unique;
+    } catch (e) {
+      debugPrint('Error fetching competitor prices: $e');
+      return [];
+    }
+  }
+
+  /// Fetch price alerts (products > threshold above market)
+  Future<List<Map<String, dynamic>>> fetchPriceAlerts({double threshold = 0.15}) async {
+    try {
+      final response = await _supabase.rpc('check_price_alerts', params: {
+        'p_store_id': _storeId,
+        'p_threshold': threshold,
+      });
+      return List<Map<String, dynamic>>.from(response ?? []);
+    } catch (e) {
+      debugPrint('Error fetching price alerts: $e');
+      return [];
+    }
+  }
 }
