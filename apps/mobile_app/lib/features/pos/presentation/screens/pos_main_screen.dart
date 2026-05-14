@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +32,7 @@ class PosMainScreen extends StatefulWidget {
 class _PosMainScreenState extends State<PosMainScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
   final MobileScannerController _scanCtrl = MobileScannerController();
+  Timer? _searchDebounce;
 
   List<PosItem>  _items       = [];
   List<PosCategory> _categories = [];
@@ -85,7 +87,10 @@ class _PosMainScreenState extends State<PosMainScreen> {
     final q = _searchCtrl.text.trim();
     if (q == _searchQuery) return;
     _searchQuery = q;
-    _doSearch(q, _selectedCategoryId);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      _doSearch(q, _selectedCategoryId);
+    });
   }
 
   Future<void> _doSearch(String q, String? catId) async {
@@ -141,6 +146,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchCtrl.removeListener(_onSearchChanged);
     _searchCtrl.dispose();
     _scanCtrl.dispose();
@@ -149,49 +155,43 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth >= 600;
-    final isLargeTablet = screenWidth >= 900;
-
-    // Calculate panel widths with constraints to prevent overflow
-    final leftFlex = isLargeTablet ? 70 : (isTablet ? 65 : 55);
-    final rightFlex = isLargeTablet ? 30 : (isTablet ? 35 : 45);
-    
-    // Minimum widths to prevent overflow
-    final minLeftWidth = isTablet ? 320.0 : 200.0;
-    final minRightWidth = isTablet ? 280.0 : 180.0;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: AppColors.backgroundDefault,
         body: SafeArea(
-          child: Stack(
-            children: [
-              Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth = constraints.maxWidth;
+              final isTablet = availableWidth >= 600;
+              final isLargeTablet = availableWidth >= 900;
+
+              // Fixed widths for cart panel, flex for product grid
+              final rightPanelWidth = isLargeTablet ? 340.0 : (isTablet ? 320.0 : 280.0);
+              final leftPanelWidth = availableWidth - rightPanelWidth - 1; // -1 for divider
+
+              return Stack(
                 children: [
-                  // ── LEFT PANEL ─────────────────────────────────────────
-                  Flexible(
-                    flex: leftFlex,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: minLeftWidth),
-                      child: _buildLeftPanel(),
-                    ),
+                  Row(
+                    children: [
+                      // ── LEFT PANEL ─────────────────────────────────────────
+                      SizedBox(
+                        width: leftPanelWidth,
+                        child: _buildLeftPanel(),
+                      ),
+                      // Divider
+                      Container(width: 1, color: AppColors.borderDefault),
+                      // ── RIGHT PANEL ────────────────────────────────────────
+                      SizedBox(
+                        width: rightPanelWidth,
+                        child: _buildRightPanel(),
+                      ),
+                    ],
                   ),
-                  // Divider
-                  Container(width: 1, color: AppColors.borderDefault),
-                  // ── RIGHT PANEL ────────────────────────────────────────
-                  Flexible(
-                    flex: rightFlex,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: minRightWidth),
-                      child: _buildRightPanel(),
-                    ),
-                  ),
+                  if (_scanning) _buildScannerOverlay(),
                 ],
-              ),
-              if (_scanning) _buildScannerOverlay(),
-            ],
+              );
+            },
           ),
         ),
       ),
