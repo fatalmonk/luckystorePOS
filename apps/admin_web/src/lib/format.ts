@@ -16,9 +16,11 @@ export function downloadCSV(rows: Record<string, unknown>[], filename: string): 
         const v = row[h];
         if (v === null || v === undefined) return '';
         const s = String(v);
-        return s.includes(',') || s.includes('"') || s.includes('\n')
-          ? `"${s.replace(/"/g, '""')}"`
-          : s;
+        // Prevent CSV formula injection: prefix dangerous leading chars with apostrophe
+        const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+        return safe.includes(',') || safe.includes('"') || safe.includes('\n')
+          ? `"${safe.replace(/"/g, '""')}"`
+          : safe;
       }).join(',')
     ),
   ].join('\n');

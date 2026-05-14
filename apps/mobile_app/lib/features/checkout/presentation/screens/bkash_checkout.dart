@@ -39,17 +39,22 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
       _statusMessage = 'Verifying payment...';
     });
 
-    final bkashBaseUrl = dotenv.env['BKASH_BASE_URL'];
-    final bkashAppKey = dotenv.env['BKASH_APP_KEY'];
-    final bkashAppSecret = dotenv.env['BKASH_APP_SECRET'];
-    if (bkashBaseUrl == null || bkashAppKey == null || bkashAppSecret == null) {
-      throw Exception('bKash credentials not configured');
+    final baseUrl = dotenv.env['BKASH_BASE_URL'];
+    final appKey = dotenv.env['BKASH_APP_KEY'];
+    final appSecret = dotenv.env['BKASH_APP_SECRET'];
+
+    if (baseUrl == null || baseUrl.isEmpty ||
+        appKey == null || appKey.isEmpty ||
+        appSecret == null || appSecret.isEmpty) {
+      setState(() => _statusMessage = 'bKash configuration error.');
+      _isExecuting = false;
+      return;
     }
 
     final service = BkashService(
-      baseUrl: bkashBaseUrl,
-      appKey: bkashAppKey,
-      appSecret: bkashAppSecret,
+      baseUrl: baseUrl,
+      appKey: appKey,
+      appSecret: appSecret,
     );
     final idToken = await service.grantToken();
     if (idToken == null) {

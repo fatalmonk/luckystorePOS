@@ -4,7 +4,7 @@
 -- =============================================================================
 
 -- 1. customer_reminders
-CREATE TABLE customer_reminders (
+CREATE TABLE IF NOT EXISTS customer_reminders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
@@ -15,12 +15,12 @@ CREATE TABLE customer_reminders (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_customer_reminders_tenant_store ON customer_reminders(tenant_id, store_id);
-CREATE INDEX idx_customer_reminders_party ON customer_reminders(party_id);
-CREATE INDEX idx_customer_reminders_sent_at ON customer_reminders(sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_customer_reminders_tenant_store ON customer_reminders(tenant_id, store_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reminders_party ON customer_reminders(party_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reminders_sent_at ON customer_reminders(sent_at DESC);
 
 -- 2. followup_notes
-CREATE TABLE followup_notes (
+CREATE TABLE IF NOT EXISTS followup_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
@@ -32,23 +32,28 @@ CREATE TABLE followup_notes (
     created_by UUID REFERENCES users(id)
 );
 
-CREATE INDEX idx_followup_notes_tenant_store ON followup_notes(tenant_id, store_id);
-CREATE INDEX idx_followup_notes_party ON followup_notes(party_id);
-CREATE INDEX idx_followup_notes_promise_date ON followup_notes(promise_to_pay_date);
+CREATE INDEX IF NOT EXISTS idx_followup_notes_tenant_store ON followup_notes(tenant_id, store_id);
+CREATE INDEX IF NOT EXISTS idx_followup_notes_party ON followup_notes(party_id);
+CREATE INDEX IF NOT EXISTS idx_followup_notes_promise_date ON followup_notes(promise_to_pay_date);
 
 -- 3. Row Level Security
 ALTER TABLE customer_reminders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE followup_notes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "cr_select" ON customer_reminders;
 CREATE POLICY "cr_select" ON customer_reminders FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = (SELECT auth.uid()) AND u.tenant_id = customer_reminders.tenant_id));
+DROP POLICY IF EXISTS "cr_insert" ON customer_reminders;
 CREATE POLICY "cr_insert" ON customer_reminders FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = (SELECT auth.uid()) AND u.tenant_id = customer_reminders.tenant_id AND u.role IN ('admin', 'manager')));
 
+DROP POLICY IF EXISTS "fn_select" ON followup_notes;
 CREATE POLICY "fn_select" ON followup_notes FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = (SELECT auth.uid()) AND u.tenant_id = followup_notes.tenant_id));
+DROP POLICY IF EXISTS "fn_insert" ON followup_notes;
 CREATE POLICY "fn_insert" ON followup_notes FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = (SELECT auth.uid()) AND u.tenant_id = followup_notes.tenant_id AND u.role IN ('admin', 'manager')));
+DROP POLICY IF EXISTS "fn_update" ON followup_notes;
 CREATE POLICY "fn_update" ON followup_notes FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM users u WHERE u.auth_id = (SELECT auth.uid()) AND u.tenant_id = followup_notes.tenant_id AND u.role IN ('admin', 'manager')));
 
