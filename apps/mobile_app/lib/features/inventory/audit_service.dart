@@ -25,19 +25,106 @@ class AuditService {
     String? performedBy,
     Map<String, dynamic>? metadata,
   }) async {
-    // GOVERNANCE FREEZE: Client-side manual audit logging is DEPRECATED.
-    // Ledger integrity is guaranteed exclusively by backend stored procedures.
-    // We bypass the explicit HTTP write step and return success to prevent disruption.
-    return Success<StockLedgerEntry>(StockLedgerEntry(
-      id: 'audited-via-rpc',
-      storeId: storeId,
-      productId: productId,
-      productName: productName,
-      quantity: quantity,
-      entryType: entryType,
-      reason: 'Logged automatically via server RPC execution',
-      timestamp: DateTime.now(),
-    ));
+    try {
+      final url = Uri.parse(
+        '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?select=*&'
+        'if_match=*&'
+        'return=representation'
+      );
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'apikey': NetworkConfig.supabaseServiceKey,
+        'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
+      };
+
+      final payload = {
+        'store_id': storeId,
+        'product_id': productId,
+        'product_name': productName,
+        'quantity': quantity,
+        'entry_type': entryType.value,
+        'reason': reason,
+        'reference_id': referenceId,
+        'performed_by': performedBy,
+        'metadata': metadata,
+      };
+
+      // First, get previous quantity for audit trail
+      final previousQuantity = await _getPreviousStockQuantity(
+        storeId: storeId,
+        productId: productId,
+      );
+
+      // Now insert the ledger entry
+      final response = await _client
+          .post(url, headers: headers, body: jsonEncode(payload))
+          .timeout(Duration(seconds: NetworkConfig.requestTimeout));
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body)[0] as Map<String, dynamic>;
+        data['previous_quantity'] = previousQuantity;
+        
+        // Recalculate new quantity
+        final newQuantity = previousQuantity + quantity;
+        data['new_quantity'] = newQuantity;
+
+        final entry = StockLedgerEntry.fromJson(data);
+        
+        Logger.info('AuditService: Logged inventory change - ${entryType.value} of $quantity units for $productId');
+        
+        return Success<StockLedgerEntry>(entry);
+      } else {
+        final error = jsonDecode(response.body);
+        return Failure<StockLedgerEntry>(
+          'Failed to log inventory change: ${error['message'] ?? error['error'] ?? 'Unknown error'}',
+          metadata: error,
+        );
+      }
+    } catch (e, stackTrace) {
+      Logger.error('AuditService.logInventoryChange failed', e, stackTrace);
+      
+      return Failure<StockLedgerEntry>(
+        'Failed to log inventory change: ${e.toString()}',
+        exception: e is AppException ? e : DatabaseException('Database operation failed'),
+      );
+    }
+  }
+
+  /// Get previous stock quantity
+  Future<int> _getPreviousStockQuantity({
+    required String storeId,
+    required String productId,
+  }) async {
+    try {
+      final url = Uri.parse(
+        '${NetworkConfig.supabaseUrl}/rest/v1/stock_levels?stock_id.eq=$storeId&'
+        'item_id.eq=$productId&select=qty'
+      );
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'apikey': NetworkConfig.supabaseAnonKey,
+        'Authorization': 'Bearer ${NetworkConfig.supabaseAnonKey}',
+        'Prefer': 'return=representation',
+      };
+
+      final response = await _client
+          .get(url, headers: headers)
+          .timeout(Duration(seconds: NetworkConfig.requestTimeout));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> result = jsonDecode(response.body);
+        if (result.isNotEmpty) {
+          return result.first['qty'] as int? ?? 0;
+        }
+        return 0;
+      }
+      return 0;
+    } catch (e) {
+      Logger.warning('AuditService: Could not fetch previous quantity: $e');
+      return 0;
+    }
   }
 
   /// Create audit trail for stock deduction
@@ -146,7 +233,7 @@ class AuditService {
   }) async {
     try {
       var url = Uri.parse(
-        '${NetworkConfig.supabaseUrl}/rest/v1/inventory_movements?select=*&order=created_at.desc&item_id=eq.$productId'
+        '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?select=*&order=timestamp.desc&product_id=eq.$productId'
       );
 
       if (storeId != null) {

@@ -4,11 +4,8 @@ import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
 import { Plus } from 'lucide-react';
-import { SkeletonBlock, SkeletonCard } from '../../components/PageState';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { PageHeader } from '../../layouts/PageHeader';
-import { PageContainer } from '../../layouts/PageContainer';
+import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../components/PageState';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
@@ -96,23 +93,26 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
   if (loading) {
     return (
-      <PageContainer className="dashboard-container">
-        <PageHeader title="Loading Ledger..." description="Gathering records" />
+      <div className="dashboard-container">
+        <header className="mb-8">
+          <SkeletonBlock className="w-[300px] h-7" />
+          <SkeletonBlock className="w-[280px] h-[18px] mt-2" />
+        </header>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
-      </PageContainer>
+      </div>
     );
   }
 
   if (fetchError) {
     return (
-      <PageContainer className="dashboard-container">
-        <PageHeader title={title} description={subtitle} />
+      <div className="dashboard-container">
+        <PageHeader title={title} subtitle={subtitle} />
         <div className="card">
           <ErrorState message={`Failed to load ${partyType}s.`} onRetry={fetchParties} />
         </div>
-      </PageContainer>
+      </div>
     );
   }
 
@@ -122,8 +122,8 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       .reduce((acc, curr) => acc + balanceSign * (curr.debit_amount - curr.credit_amount), 0);
 
   return (
-    <PageContainer className="dashboard-container">
-      <PageHeader title={title} description={subtitle} action={
+    <div className="dashboard-container">
+      <PageHeader title={title} subtitle={subtitle} actions={
         <button className="button-primary" onClick={() => setShowAddParty(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
           <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
         </button>
@@ -293,6 +293,6 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
           </div>
         </form>
       </Drawer>
-    </PageContainer>
+    </div>
   );
 };

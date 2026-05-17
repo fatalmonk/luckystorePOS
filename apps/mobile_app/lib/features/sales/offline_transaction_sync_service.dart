@@ -10,23 +10,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/sync_action_audit_log.dart';
 import '../../models/sale_transaction_snapshot.dart';
 import './offline_sync_operational_alert_engine.dart';
+import './conflict_resolver.dart';
 
 enum OfflineSyncState { pending, syncing, synced, failed, conflict }
-
-enum SyncAckClassification {
-  success,
-  retryableNetworkFailure,
-  retryableServerFailure,
-  terminalValidationFailure,
-  terminalConflictFailure,
-  unknownFailure;
-
-  bool get isRetryable =>
-      this == SyncAckClassification.retryableNetworkFailure ||
-      this == SyncAckClassification.retryableServerFailure;
-
-  bool get isTerminal => !isRetryable && this != SyncAckClassification.success;
-}
 
 class OfflineSyncDashboardStats {
   final int queuedSalesCount;
@@ -71,7 +57,6 @@ class SyncActionActor {
 }
 
 class QueuedOfflineTransaction {
-  final int sequenceId;
   final String clientTransactionId;
   final String transactionTraceId;
   final String storeId;
@@ -94,11 +79,8 @@ class QueuedOfflineTransaction {
   final Map<String, dynamic>? snapshot;
   final String syncValidationState;
   final String fulfillmentPolicy;
-  final SyncAckClassification? lastAckClassification;
-  final DateTime? leaseExpiresAt;
 
   const QueuedOfflineTransaction({
-    required this.sequenceId,
     required this.clientTransactionId,
     required this.transactionTraceId,
     required this.storeId,
@@ -121,8 +103,6 @@ class QueuedOfflineTransaction {
     required this.snapshot,
     required this.syncValidationState,
     required this.fulfillmentPolicy,
-    this.lastAckClassification,
-    this.leaseExpiresAt,
   });
 
   QueuedOfflineTransaction copyWith({
@@ -137,11 +117,8 @@ class QueuedOfflineTransaction {
     DateTime? conflictAcknowledgedAt,
     Map<String, dynamic>? conflictMeta,
     String? syncValidationState,
-    SyncAckClassification? lastAckClassification,
-    DateTime? leaseExpiresAt,
   }) {
     return QueuedOfflineTransaction(
-      sequenceId: sequenceId,
       clientTransactionId: clientTransactionId,
       transactionTraceId: transactionTraceId,
       storeId: storeId,
@@ -165,13 +142,10 @@ class QueuedOfflineTransaction {
       snapshot: snapshot,
       syncValidationState: syncValidationState ?? this.syncValidationState,
       fulfillmentPolicy: fulfillmentPolicy,
-      lastAckClassification: lastAckClassification ?? this.lastAckClassification,
-      leaseExpiresAt: leaseExpiresAt,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'sequence_id': sequenceId,
         'client_transaction_id': clientTransactionId,
         'transaction_trace_id': transactionTraceId,
         'store_id': storeId,
@@ -194,20 +168,12 @@ class QueuedOfflineTransaction {
         'snapshot': snapshot,
         'sync_validation_state': syncValidationState,
         'fulfillment_policy': fulfillmentPolicy,
-        'last_ack_classification': lastAckClassification?.name,
-        'lease_expires_at': leaseExpiresAt?.toIso8601String(),
       };
 
   factory QueuedOfflineTransaction.fromJson(Map<String, dynamic> json) {
     final rawItems = (json['items'] as List<dynamic>? ?? const []);
     final rawPayments = (json['payments'] as List<dynamic>? ?? const []);
-    final createdAt = DateTime.parse(json['created_at'] as String);
-    
-    // Fallback to deterministic creation-time derived sequence for legacy records
-    final seqId = (json['sequence_id'] as num?)?.toInt() ?? createdAt.millisecondsSinceEpoch;
-
     return QueuedOfflineTransaction(
-      sequenceId: seqId,
       clientTransactionId: json['client_transaction_id'] as String,
       transactionTraceId: json['transaction_trace_id'] as String? ?? json['client_transaction_id'] as String,
       storeId: json['store_id'] as String,
@@ -217,7 +183,7 @@ class QueuedOfflineTransaction {
       payments:
           rawPayments.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
       discount: (json['discount'] as num? ?? 0).toDouble(),
-      createdAt: createdAt,
+      createdAt: DateTime.parse(json['created_at'] as String),
       syncedAt: json['synced_at'] != null
           ? DateTime.parse(json['synced_at'] as String)
           : null,
@@ -247,15 +213,6 @@ class QueuedOfflineTransaction {
       syncValidationState:
           json['sync_validation_state'] as String? ?? 'PENDING_SERVER_VALIDATION',
       fulfillmentPolicy: json['fulfillment_policy'] as String? ?? 'STRICT',
-      lastAckClassification: json['last_ack_classification'] != null
-          ? SyncAckClassification.values.firstWhere(
-              (e) => e.name == json['last_ack_classification'],
-              orElse: () => SyncAckClassification.unknownFailure,
-            )
-          : null,
-      leaseExpiresAt: json['lease_expires_at'] != null
-          ? DateTime.parse(json['lease_expires_at'] as String)
-          : null,
     );
   }
 }
@@ -264,22 +221,21 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   OfflineTransactionSyncService._();
   static final OfflineTransactionSyncService instance =
       OfflineTransactionSyncService._();
-  static const int _queueFileVersion = 2;
 
   final _random = Random();
   final _queue = <QueuedOfflineTransaction>[];
   final _auditLogs = <SyncActionAuditLog>[];
   final _alertEngine = const OfflineSyncOperationalAlertEngine();
+  final _conflictResolver = ConflictResolver();
 
   SupabaseClient? _supabase;
   Timer? _workerTimer;
-  Completer<void>? _syncCompleter;
+  bool _isSyncing = false;
   bool _initialized = false;
   bool _currentlyProcessing = false;
   DateTime? _lastRunAt;
   DateTime? _lastSuccessAt;
   int _consecutiveFailures = 0;
-  int _nextSequenceId = 1;
 
   List<QueuedOfflineTransaction> get queue => List.unmodifiable(_queue);
   List<SyncActionAuditLog> get auditLogs => List.unmodifiable(_auditLogs);
@@ -307,9 +263,6 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     notifyListeners();
   }
 
-  @visibleForTesting
-  Future<void> triggerSyncQueueForTesting() => _syncQueue();
-
   String generateClientTransactionId({
     required String storeId,
     required String cashierId,
@@ -330,11 +283,8 @@ class OfflineTransactionSyncService extends ChangeNotifier {
         _queue.any((q) => q.clientTransactionId == clientTransactionId);
     if (duplicate) return;
 
-    final seqId = _nextSequenceId++;
-
     _queue.add(
       QueuedOfflineTransaction(
-        sequenceId: seqId,
         clientTransactionId: clientTransactionId,
         transactionTraceId: intent.transactionTraceId,
         storeId: intent.storeId,
@@ -464,42 +414,13 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 
   Future<void> _syncQueue() async {
-    if (_supabase == null) return;
-    // If a sync is already running, wait for it to finish and return.
-    if (_syncCompleter != null) {
-      return _syncCompleter!.future;
-    }
-    
-    // Lock the gate for this cycle
-    _syncCompleter = Completer<void>();
-
+    if (_isSyncing || _supabase == null) return;
+    _isSyncing = true;
     _currentlyProcessing = true;
     _lastRunAt = DateTime.now();
     notifyListeners();
     try {
       final now = DateTime.now();
-      
-      // R3 Recovery: Reclaim expired processing leases
-      bool queueMutated = false;
-      for (int i = 0; i < _queue.length; i++) {
-        final tx = _queue[i];
-        if (tx.state == OfflineSyncState.syncing &&
-            tx.leaseExpiresAt != null &&
-            tx.leaseExpiresAt!.isBefore(now)) {
-          _queue[i] = tx.copyWith(
-            state: OfflineSyncState.pending,
-            lastAckClassification: SyncAckClassification.unknownFailure,
-            lastError: 'Processing lease expired',
-            // leaseExpiresAt defaults to null in copyWith, clearing it automatically.
-          );
-          queueMutated = true;
-        }
-      }
-      if (queueMutated) {
-        await _persistQueue();
-        notifyListeners();
-      }
-
       var runHadSuccess = false;
       var runHadFailure = false;
       final candidates = _queue.where((tx) {
@@ -514,10 +435,10 @@ class OfflineTransactionSyncService extends ChangeNotifier {
 
       for (final tx in candidates) {
         final outcome = await _syncSingle(tx);
-        if (outcome == SyncAckClassification.success) {
-          runHadSuccess = true;
-        } else {
+        if (outcome == _SyncAttemptOutcome.failed) {
           runHadFailure = true;
+        } else {
+          runHadSuccess = true;
         }
       }
 
@@ -528,52 +449,18 @@ class OfflineTransactionSyncService extends ChangeNotifier {
         _consecutiveFailures += 1;
       }
     } finally {
-      // Unlock the gate and notify anyone who was waiting
-      _syncCompleter?.complete();
-      _syncCompleter = null;
+      _isSyncing = false;
       _currentlyProcessing = false;
       notifyListeners();
     }
   }
 
-  SyncAckClassification _classifyRpcResponse(Map<String, dynamic> response) {
-    final status = (response['status'] as String? ?? 'REJECTED').toUpperCase();
-    if (status == 'SUCCESS' || status == 'ADJUSTED') {
-      return SyncAckClassification.success;
-    }
-    if (status == 'CONFLICT') {
-      return SyncAckClassification.terminalConflictFailure;
-    }
-    return SyncAckClassification.terminalValidationFailure;
-  }
-
-  SyncAckClassification _classifyException(Object e) {
-    if (e is SocketException || e is TimeoutException || e is HandshakeException) {
-      return SyncAckClassification.retryableNetworkFailure;
-    }
-    if (e is HttpException) {
-      return SyncAckClassification.retryableNetworkFailure;
-    }
-    if (e is PostgrestException) {
-      final code = e.code;
-      if (code == '40001' || code == '40P01') {
-        return SyncAckClassification.retryableServerFailure;
-      }
-      if (code != null && code.startsWith('5')) {
-        return SyncAckClassification.retryableServerFailure;
-      }
-      return SyncAckClassification.terminalValidationFailure;
-    }
-    return SyncAckClassification.unknownFailure;
-  }
-
-  Future<SyncAckClassification> _syncSingle(QueuedOfflineTransaction tx) async {
+  Future<_SyncAttemptOutcome> _syncSingle(QueuedOfflineTransaction tx) async {
     _replace(
       tx.clientTransactionId,
       tx.copyWith(
         state: OfflineSyncState.syncing,
         lastError: null,
-        leaseExpiresAt: DateTime.now().add(const Duration(minutes: 5)),
       ),
     );
     await _persistQueue();
@@ -593,75 +480,74 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       });
 
       final parsed = Map<String, dynamic>.from(result as Map);
-      final classification = _classifyRpcResponse(parsed);
+      final status = (parsed['status'] as String? ?? 'REJECTED').toUpperCase();
+      if (status == 'CONFLICT' || status == 'REJECTED') {
+        // Try to auto-resolve the conflict
+        final resolution = _conflictResolver.resolve(
+          transaction: tx,
+          serverResponse: parsed,
+          currentSnapshot: tx.snapshot,
+        );
 
-      if (classification == SyncAckClassification.success) {
-        final status = (parsed['status'] as String? ?? '').toUpperCase();
-        _replace(
-          tx.clientTransactionId,
-          tx.copyWith(
-            state: OfflineSyncState.synced,
-            syncedAt: DateTime.now(),
-            nextRetryAt: null,
-            lastError: null,
-            requiresManagerReview: false,
-            syncValidationState: status == 'ADJUSTED' ? 'MINOR_DRIFT' : 'SAFE',
-            lastAckClassification: classification,
-          ),
-        );
-        return classification;
-      } else {
-        _replace(
-          tx.clientTransactionId,
-          tx.copyWith(
-            state: OfflineSyncState.conflict,
-            conflictType: parsed['conflict_reason'] as String?,
-            lastError: parsed['message'] as String? ?? 'Conflict',
-            requiresManagerReview: true,
-            conflictMeta: parsed,
-            syncValidationState: 'MAJOR_DRIFT',
-            lastAckClassification: classification,
-            nextRetryAt: null,
-          ),
-        );
-        return classification;
+        if (resolution.requiresManagerReview || resolution.strategy == ResolutionStrategy.manualReview) {
+          // Conflict requires manual review
+          _replace(
+            tx.clientTransactionId,
+            tx.copyWith(
+              state: OfflineSyncState.conflict,
+              conflictType: parsed['conflict_reason'] as String?,
+              lastError: resolution.reason ?? parsed['message'] ?? 'Conflict',
+              requiresManagerReview: true,
+              conflictMeta: parsed,
+              syncValidationState: 'MAJOR_DRIFT',
+            ),
+          );
+          return _SyncAttemptOutcome.conflict;
+        } else if (resolution.strategy == ResolutionStrategy.cancel) {
+          // Transaction cancelled - remove from queue
+          _queue.removeWhere((q) => q.clientTransactionId == tx.clientTransactionId);
+          return _SyncAttemptOutcome.failed;
+        } else if (resolution.resolvedTransaction != null) {
+          // Auto-resolved - update transaction and retry
+          _replace(
+            tx.clientTransactionId,
+            resolution.resolvedTransaction!.copyWith(
+              state: OfflineSyncState.pending, // Reset to pending for retry
+              lastError: resolution.reason,
+              conflictMeta: parsed,
+            ),
+          );
+          // Don't return - let it retry in next cycle
+          return _SyncAttemptOutcome.synced; // Mark as handled
+        }
+        return _SyncAttemptOutcome.conflict;
       }
+
+      _replace(
+        tx.clientTransactionId,
+        tx.copyWith(
+          state: OfflineSyncState.synced,
+          syncedAt: DateTime.now(),
+          nextRetryAt: null,
+          lastError: null,
+          requiresManagerReview: false,
+          syncValidationState: status == 'ADJUSTED' ? 'MINOR_DRIFT' : 'SAFE',
+        ),
+      );
+      return _SyncAttemptOutcome.synced;
     } catch (e) {
       final retries = tx.retryCount + 1;
-      final baseClassification = _classifyException(e);
-      
-      // Establish hard cap to block silent infinite retry storms
-      final classification = retries >= 15 
-          ? SyncAckClassification.unknownFailure 
-          : baseClassification;
-      
-      if (classification.isRetryable) {
-        final backoff = _computeBackoff(retries);
-        _replace(
-          tx.clientTransactionId,
-          tx.copyWith(
-            state: OfflineSyncState.failed,
-            retryCount: retries,
-            nextRetryAt: DateTime.now().add(backoff),
-            lastError: e.toString(),
-            lastAckClassification: classification,
-          ),
-        );
-      } else {
-        _replace(
-          tx.clientTransactionId,
-          tx.copyWith(
-            state: OfflineSyncState.conflict,
-            conflictType: 'UNRECOVERABLE_SYNC_EXCEPTION',
-            lastError: e.toString(),
-            requiresManagerReview: true,
-            lastAckClassification: classification,
-            nextRetryAt: null,
-            retryCount: retries,
-          ),
-        );
-      }
-      return classification;
+      final backoff = _computeBackoff(retries);
+      _replace(
+        tx.clientTransactionId,
+        tx.copyWith(
+          state: OfflineSyncState.failed,
+          retryCount: retries,
+          nextRetryAt: DateTime.now().add(backoff),
+          lastError: e.toString(),
+        ),
+      );
+      return _SyncAttemptOutcome.failed;
     } finally {
       await _persistQueue();
       notifyListeners();
@@ -687,9 +573,18 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     return File('${dir.path}/offline_transaction_queue.json');
   }
 
-  Future<File> _legacyQueueBackupFile() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/offline_transaction_queue.legacy_v1.json');
+  /// Clears the queue for testing purposes only.
+  @visibleForTesting
+  Future<void> clearQueueForTesting() async {
+    _queue.clear();
+    try {
+      final file = await _queueFile();
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // Ignore errors during test cleanup
+    }
   }
 
   Future<File> _logFile() async {
@@ -703,70 +598,21 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       if (!await file.exists()) return;
       final raw = await file.readAsString();
       if (raw.trim().isEmpty) return;
-
-      final decoded = jsonDecode(raw);
-
-      if (decoded is List<dynamic>) {
-        await _invalidateLegacyQueueFile(file, raw);
-        _queue.clear();
-        return;
-      }
-
-      if (decoded is! Map<String, dynamic>) {
-        await _rewriteQueueFile(file);
-        _queue.clear();
-        return;
-      }
-
-      final version = decoded['version'];
-      final transactions = decoded['transactions'];
-      if (version != _queueFileVersion || transactions is! List<dynamic>) {
-        await _rewriteQueueFile(file);
-        _queue.clear();
-        return;
-      }
-
       _queue
         ..clear()
-        ..addAll(transactions.map(
+        ..addAll((jsonDecode(raw) as List<dynamic>).map(
           (e) => QueuedOfflineTransaction.fromJson(
             Map<String, dynamic>.from(e as Map),
           ),
         ));
-      _sortQueueBySequenceId();
-      _nextSequenceId = _queue.isEmpty
-          ? 1
-          : _queue.map((e) => e.sequenceId).reduce((a, b) => max(a, b)) + 1;
     } catch (_) {
       _queue.clear();
     }
   }
 
-  void _sortQueueBySequenceId() {
-    _queue.sort((a, b) => a.sequenceId.compareTo(b.sequenceId));
-  }
-
   Future<void> _persistQueue() async {
-    _sortQueueBySequenceId();
     final file = await _queueFile();
-    final encoded = jsonEncode({
-      'version': _queueFileVersion,
-      'transactions': _queue.map((e) => e.toJson()).toList(),
-    });
-    await file.writeAsString(encoded, flush: true);
-  }
-
-  Future<void> _invalidateLegacyQueueFile(File file, String raw) async {
-    final backup = await _legacyQueueBackupFile();
-    await backup.writeAsString(raw, flush: true);
-    await _rewriteQueueFile(file);
-  }
-
-  Future<void> _rewriteQueueFile(File file) async {
-    final encoded = jsonEncode({
-      'version': _queueFileVersion,
-      'transactions': const <Map<String, dynamic>>[],
-    });
+    final encoded = jsonEncode(_queue.map((e) => e.toJson()).toList());
     await file.writeAsString(encoded, flush: true);
   }
 
@@ -787,3 +633,4 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 }
 
+enum _SyncAttemptOutcome { synced, conflict, failed }

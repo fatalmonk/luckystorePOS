@@ -423,7 +423,7 @@ class _CloseRiskAnalyticsScreenState extends State<CloseRiskAnalyticsScreen> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String?>(
-            initialValue: _selectedStoreId,
+            value: _selectedStoreId,
             dropdownColor: const Color(0xFF161B22),
             decoration: const InputDecoration(
               labelText: 'Store',
@@ -451,7 +451,7 @@ class _CloseRiskAnalyticsScreenState extends State<CloseRiskAnalyticsScreen> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String?>(
-            initialValue: _selectedManagerId,
+            value: _selectedManagerId,
             dropdownColor: const Color(0xFF161B22),
             decoration: const InputDecoration(
               labelText: 'Manager',

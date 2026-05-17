@@ -239,7 +239,7 @@ class PosProvider extends ChangeNotifier {
     }
     final existing = _draftSnapshotItems[item.id];
     _draftSnapshotItems[item.id] = SaleSnapshotItem(
-      itemId: item.id,
+      productId: item.id,
       quantity: (existing?.quantity ?? 0) + qty,
       unitPriceSnapshot: existing?.unitPriceSnapshot ?? item.price,
       discountSnapshot: existing?.discountSnapshot ?? 0,
@@ -268,7 +268,7 @@ class PosProvider extends ChangeNotifier {
       final snap = _draftSnapshotItems[itemIdRef];
       if (snap != null) {
         _draftSnapshotItems[itemIdRef] = SaleSnapshotItem(
-          itemId: snap.itemId,
+          productId: snap.productId,
           quantity: qty,
           unitPriceSnapshot: snap.unitPriceSnapshot,
           discountSnapshot: snap.discountSnapshot,
@@ -288,7 +288,7 @@ class PosProvider extends ChangeNotifier {
       final snap = _draftSnapshotItems[itemIdRef];
       if (snap != null) {
         _draftSnapshotItems[itemIdRef] = SaleSnapshotItem(
-          itemId: snap.itemId,
+          productId: snap.productId,
           quantity: snap.quantity,
           unitPriceSnapshot: snap.unitPriceSnapshot,
           discountSnapshot: discount,
@@ -370,13 +370,13 @@ class PosProvider extends ChangeNotifier {
     _frozenCheckoutSnapshot = snapshot;
 
     final itemsPayload = snapshot.items.map((s) {
-      final cartLine = _cart.firstWhere((c) => c.item.id == s.itemId);
+      final cartLine = _cart.firstWhere((c) => c.item.id == s.productId);
       return {
-        'item_id': s.itemId,
-        'quantity': s.quantity,
+        'item_id': s.productId,
+        'qty': s.quantity,
         'unit_price': s.unitPriceSnapshot,
-        'unit_cost': cartLine.item.cost,
-        'discount_amount': s.discountSnapshot,
+        'cost': cartLine.item.cost,
+        'discount': s.discountSnapshot,
       };
     }).toList();
     final intent = SaleTransactionIntent(
@@ -475,7 +475,7 @@ class PosProvider extends ChangeNotifier {
 
     final recordSaleItems = snapshot.items.map((s) {
       return <String, dynamic>{
-        'item_id': s.itemId,
+        'item_id': s.productId,
         'quantity': s.quantity,
         'unit_price': s.unitPriceSnapshot,
       };

@@ -10,10 +10,9 @@
 .env.*
 !.env.example
 !.env*.example
-!.env.local.example
 
-
-.*
+apps/*/.env
+apps/*/.env.*
 
 # Secret files
 *.key
@@ -54,7 +53,6 @@ coverage/
 .next/
 .nuxt/
 .svelte-kit/
-.vite/
 
 *.tsbuildinfo
 
@@ -205,28 +203,4 @@ apps/mobile_app/assets/app.env
 apps/mobile_app/flutter/
 # Ignore local JSON secrets
 data/*.json
-.vercel/
-.env.certify.*
 
-# Local AI/session settings and raw agent output must not enter git.
-.gemini/
-.codex/
-.antigravity/
-
-# Local debug/staging dumps and one-off SQL snapshots.
-debug_output.txt
-destructive_changes.txt
-final_debug*.txt
-local_*.txt
-remote_*.sql
-staging_*.txt
-staging_*.sql
-scratch/
-
-# Generated local validation outputs.
-apps/mobile_app/analysis_out.txt
-artifacts/pre-reset/
-artifacts/quarantine/
-artifacts/governance/certification-report.json
-artifacts/governance/environment-fingerprint.json
-artifacts/governance/staging-fingerprint.json

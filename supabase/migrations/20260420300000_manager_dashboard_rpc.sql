@@ -47,7 +47,7 @@ BEGIN
     FROM public.items i
     LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
     LEFT JOIN public.stock_alert_thresholds sat ON sat.item_id = i.id AND sat.store_id = p_store_id
-    WHERE i.is_active = true
+    WHERE i.active = true
       AND COALESCE(sl.qty, 0) <= COALESCE(sat.min_qty, 5)
   ) s;
 

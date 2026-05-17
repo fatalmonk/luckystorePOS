@@ -48,7 +48,7 @@ AS $$
   FROM public.items i
   LEFT JOIN public.categories c   ON c.id = i.category_id
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
-  WHERE i.is_active = true
+  WHERE i.active = true
   ORDER BY total_value DESC
   LIMIT p_limit;
 $$;
@@ -86,8 +86,8 @@ AS $$
     i.sku,
     c.name                   AS category_name,
     SUM(si.qty)              AS total_qty,
-    SUM(si.total)            AS total_revenue,
-    SUM(si.total - (si.cost * si.qty)) AS total_profit
+    SUM(si.line_total)       AS total_revenue,
+    SUM(si.line_total - (si.cost * si.qty)) AS total_profit
   FROM public.sale_items si
   JOIN public.sales    sa ON sa.id = si.sale_id
   JOIN public.items    i  ON i.id  = si.item_id
@@ -143,7 +143,7 @@ AS $$
                                     AND sa.store_id = p_store_id
                                     AND sa.status = 'completed'
                                     AND sa.created_at >= now() - (p_days || ' days')::interval
-  WHERE i.is_active = true
+  WHERE i.active = true
     AND COALESCE(sl.qty, 0) > 0
   GROUP BY i.id, i.name, i.sku, c.name, sl.qty, i.cost
   HAVING COUNT(si.item_id) = 0   -- zero sales in window

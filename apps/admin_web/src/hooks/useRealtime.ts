@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -27,10 +26,7 @@ export function useRealtimeSubscription({
 }: RealtimeSubscriptionOptions) {
   const queryClient = useQueryClient();
   const onEventRef = useRef(onEvent);
-
-  useEffect(() => {
-    onEventRef.current = onEvent;
-  }, [onEvent]);
+  onEventRef.current = onEvent;
 
   useEffect(() => {
     const channelName = `realtime-${table}-${event}-${filter ?? 'all'}`;
@@ -46,13 +42,7 @@ export function useRealtimeSubscription({
       postgresChangesConfig.filter = filter;
     }
 
-    channel = (channel as unknown as {
-      on: (
-        type: 'postgres_changes',
-        filter: { event: string; schema: string; table: string; filter?: string },
-        callback: (payload: Record<string, unknown>) => void,
-      ) => RealtimeChannel;
-    }).on(
+    channel = (channel as any).on(
       'postgres_changes',
       postgresChangesConfig as { event: string; schema: string; table: string; filter?: string },
       (payload: Record<string, unknown>) => {

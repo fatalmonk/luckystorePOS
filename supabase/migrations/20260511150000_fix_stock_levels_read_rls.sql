@@ -8,7 +8,8 @@
 -- =============================================================================
 
 -- Drop the permissive policy
-DROP POLICY IF EXISTS "stock_levels_read" ON public.stock_levels
+DROP POLICY IF EXISTS "stock_levels_read" ON public.stock_levels;
+
 -- Create tenant/store-scoped read policy
 CREATE POLICY "stock_levels_read"
   ON public.stock_levels
@@ -30,4 +31,4 @@ CREATE POLICY "stock_levels_read"
           WHERE s.id = stock_levels.store_id
         )
     )
-  )
+  );

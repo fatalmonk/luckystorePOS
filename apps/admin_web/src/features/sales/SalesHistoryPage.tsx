@@ -1,12 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useSalesHistory, useSaleDetails, useVoidSale } from '../../hooks/useSales';
+import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { PageContainer } from '../../layouts/PageContainer';
-import { SkeletonBlock } from '../../components/PageState';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { Loader } from '../../components/ui/Loader';
+import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
@@ -65,6 +62,7 @@ function exportSalesToCSV(sales: { sale_number: string, created_at: string, cash
 }
 
 export function SalesHistoryPage() {
+  const { notify } = useNotify();
   const { storeId } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -80,16 +78,14 @@ export function SalesHistoryPage() {
 
   const { startDate, endDate } = getDateRange(dateRange, customStart, customEnd);
 
-  const { data: sales, isLoading, error, refetch } = useSalesHistory(
-    storeId, 
-    searchTerm || undefined, 
-    startDate, 
-    endDate
-  );
+  const { data: sales, isLoading, error, refetch } = useQuery({
+    queryKey: ['sales-history', storeId, debouncedSearch, startDate, endDate],
+    queryFn: () => api.sales.history(storeId, searchTerm || undefined, startDate, endDate),
+  });
 
   if (error) {
     return (
-      <PageContainer className="sales-history-container">
+      <div className="sales-history-container">
         <PageHeader 
           title="Sales History" 
           subtitle="Search and review store transactions." 
@@ -97,7 +93,7 @@ export function SalesHistoryPage() {
         <div className="card">
           <ErrorState message="Failed to load sales history." onRetry={() => refetch()} />
         </div>
-      </PageContainer>
+      </div>
     );
   }
 
@@ -126,7 +122,7 @@ export function SalesHistoryPage() {
   };
 
   return (
-    <PageContainer className="sales-history-container">
+    <div className="sales-history-container">
       <PageHeader 
         title="Sales History" 
         subtitle="Search and review store transactions." 
@@ -368,35 +364,38 @@ export function SalesHistoryPage() {
         saleId={selectedSaleId}
         onClose={() => setSelectedSaleId(null)}
       />
-    </PageContainer>
+    </div>
   );
 }
 
 function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose: () => void }) {
+  const { notify } = useNotify();
+  const queryClient = useQueryClient();
   const [voidReason, setVoidReason] = useState('');
   const [showVoidConfirm, setShowVoidConfirm] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
-  const { data, isLoading } = useSaleDetails(saleId);
-  const { notify } = useNotify();
+  const { data, isLoading } = useQuery({
+    queryKey: ['sale-details', saleId],
+    queryFn: () => api.sales.getDetails(saleId!),
+    enabled: !!saleId,
+  });
 
-  const voidMutation = useVoidSale();
-
-  const handleVoid = () => {
-    voidMutation.mutate({ saleId: saleId!, reason: voidReason, idempotencyKey }, {
-      onSuccess: (res: any) => {
-        if (res.is_duplicate) {
-          notify('This sale was already voided.', 'error');
-        } else {
-          notify('Sale voided successfully. Stock has been restored.', 'success');
-        }
-        onClose();
-      },
-      onError: (err: any) => {
-        notify(err.message || 'Failed to void sale. Please try again.', 'error');
+  const voidMutation = useMutation({
+    mutationFn: (reason: string) => api.sales.void(saleId!, reason, idempotencyKey),
+    onSuccess: (res) => {
+      if (res.is_duplicate) {
+        notify('This sale was already voided.', 'info');
+      } else {
+        notify('Sale voided successfully. Stock has been restored.', 'success');
       }
-    });
-  };
+      queryClient.invalidateQueries({ queryKey: ['sales-history'] });
+      onClose();
+    },
+    onError: (err: { message?: string }) => {
+      notify(err.message || 'Failed to void sale. Please try again.', 'error');
+    }
+  });
 
   if (!saleId) return null;
 
@@ -443,8 +442,6 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
             <SkeletonBlock className="w-full h-8" />
             <SkeletonBlock className="w-3/4 h-8" />
           </div>
-        ) : !sale ? (
-          <ErrorState message="Failed to load sale details." />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
             {/* Header Info */}
@@ -485,7 +482,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
                   </tr>
                 </thead>
                 <tbody>
-                  {(items || []).map((item: { item_name: string, sku: string, qty: number, line_total: number }, idx: number) => (
+                  {items.map((item: { item_name: string, sku: string, qty: number, line_total: number }, idx: number) => (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', fontSize: 'var(--font-size-sm)' }}>
                       <td style={{ padding: 'var(--space-2) 0' }}>
                         <div>{item.item_name}</div>
@@ -522,7 +519,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
               <h3 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '700', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CreditCard size={16} /> Payments
               </h3>
-              {(payments || []).map((p: { method_name: string, reference?: string, amount: number }, idx: number) => (
+              {payments.map((p: { method_name: string, reference?: string, amount: number }, idx: number) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-sm)', padding: 'var(--space-1) 0' }}>
                   <span>{p.method_name} {p.reference && <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>({p.reference})</span>}</span>
                   <span style={{ fontWeight: '600' }}>৳{p.amount}</span>
@@ -555,7 +552,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
                       <button onClick={() => setShowVoidConfirm(false)} style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>Cancel</button>
                       <button
                         disabled={!voidReason || voidMutation.isPending}
-                        onClick={handleVoid}
+                        onClick={() => voidMutation.mutate(voidReason)}
                         style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-danger)', color: 'white', fontWeight: '600', opacity: (!voidReason || voidMutation.isPending) ? 0.5 : 1 }}
                       >
                         {voidMutation.isPending ? 'Voiding...' : 'Confirm Void'}
@@ -576,7 +573,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
                   <strong>Reason:</strong> {sale.void_reason}
                 </div>
                 <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  By {sale.voided_by_name} on {sale.voided_at ? format(new Date(sale.voided_at), 'MMM d, HH:mm') : 'Unknown'}
+                  By {sale.voided_by_name} on {format(new Date(sale.voided_at), 'MMM d, HH:mm')}
                 </div>
               </div>
             )}

@@ -389,7 +389,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
             subtitle: Text('Validate without saving', style: AppTextStyles.bodySm),
             value: _isDryRun,
             onChanged: _isProcessing ? null : (v) => setState(() => _isDryRun = v),
-            activeThumbColor: AppColors.primaryDefault,
+            activeColor: AppColors.primaryDefault,
             contentPadding: EdgeInsets.zero,
           ),
           const SizedBox(height: AppSpacing.space4),
