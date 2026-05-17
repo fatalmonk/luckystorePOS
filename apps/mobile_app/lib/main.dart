@@ -12,6 +12,7 @@ import 'shared/controllers/app_access_controller.dart';
 import 'features/checkout/presentation/screens/checkout_screen.dart';
 import 'features/checkout/presentation/screens/bkash_checkout.dart';
 import 'features/checkout/presentation/screens/gamified_reward_screen.dart';
+import 'features/pos/presentation/providers/pos_search_provider.dart';
 import 'shared/services/startup_guard_service.dart';
 
 Future<void> main() async {
@@ -137,7 +138,7 @@ class LuckyStoreApp extends StatelessWidget {
       routes: {
         '/checkout':       (_) => const CheckoutScreen(),
         '/bkash-checkout': (_) => BkashCheckoutScreen(
-          bkashUrl: 'https://checkout.sandbox.bKash.com/placeholder',
+          bkashUrl: 'about:blank',
           paymentId: 'PENDING_PAYMENT_ID',
           amount: 0,
         ),
@@ -160,6 +161,14 @@ class LuckyStoreApp extends StatelessWidget {
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => PosProvider()),
+            ChangeNotifierProxyProvider<PosProvider, PosSearchProvider>(
+              create: (_) => PosSearchProvider(PosProvider()),
+              update: (_, pos, search) {
+                final provider = search ?? PosSearchProvider(pos);
+                // Re-initialize if PosProvider changes store
+                return provider;
+              },
+            ),
             ChangeNotifierProxyProvider<AuthProvider, AppAccessController>(
               create: (_) => AppAccessController(startupResult: startupResult),
               update: (_, auth, access) {

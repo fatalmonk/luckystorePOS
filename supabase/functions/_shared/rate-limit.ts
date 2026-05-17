@@ -1,5 +1,7 @@
-// Rate limiting utility for Supabase Edge Functions
-// Uses in-memory store with expiration (resets on function cold start)
+// Rate limiting utility for Supabase Edge Functions.
+// Prefer checkRateLimitDB() (database-backed via RPC) for production.
+// checkRateLimit() uses in-memory store and resets on cold start — only
+// suitable for development or single-instance environments.
 
 interface RateLimitEntry {
   count: number;
@@ -65,6 +67,39 @@ export function checkRateLimit(
     allowed: true,
     remaining: config.maxRequests - entry.count,
     resetAfter: entry.resetTime - now,
+  };
+}
+
+/**
+ * Check rate limit using the database-backed RPC (persisted across instances).
+ * Requires a Supabase client with service_role privileges.
+ */
+export async function checkRateLimitDB(
+  supabaseClient: any,
+  identifier: string,
+  config: RateLimitConfig = DEFAULT_CONFIG
+): Promise<{ allowed: boolean; remaining: number; resetAfter: number }> {
+  const { data, error } = await supabaseClient.rpc('check_rate_limit', {
+    p_key: identifier,
+    p_max: config.maxRequests,
+    p_window_sec: Math.ceil(config.windowMs / 1000),
+  });
+
+  if (error || !data) {
+    console.error('check_rate_limit RPC error:', error);
+    // Fail closed on RPC errors to prevent bypass - this is a security-critical function
+    // In production, this should trigger alerts and use a fallback rate limiter
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAfter: config.windowMs,
+    };
+  }
+
+  return {
+    allowed: data.allowed,
+    remaining: data.remaining,
+    resetAfter: data.reset_after_seconds * 1000,
   };
 }
 

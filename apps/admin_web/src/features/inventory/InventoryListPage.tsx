@@ -16,6 +16,8 @@ import { usePersistedTableState } from '../../hooks/usePersistedTableState';
 import { processTableData } from '../../lib/table-query';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { MetricCard } from '../../components/data-display/MetricCard';
+import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 
 import { InventoryListRow } from '../../types/rpc';
 export function InventoryListPage() {
@@ -67,6 +69,25 @@ export function InventoryListPage() {
         subtitle="Monitor and adjust stock levels."
         actions={
           <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              icon={<Download size={18} />}
+              onClick={() => {
+                const sanitizeCSVCell = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
+                const rows = (inventory ?? []).map((item: InventoryItem) => ({
+                  name: sanitizeCSVCell(item.name),
+                  sku: sanitizeCSVCell(item.sku || ''),
+                  currentStock: item.current_qty,
+                  status: item.reorder_status,
+                  price: item.price || 0,
+                  value: (item.price || 0) * item.current_qty,
+                  lastUpdated: item.last_updated || '',
+                }));
+                downloadCSV(rows, `inventory-${new Date().toISOString().split('T')[0]}.csv`);
+              }}
+            >
+              Export CSV
+            </Button>
             <Link to="/inventory/history">
               <Button variant="secondary" icon={<History size={18} />}>
                 View History
@@ -77,7 +98,7 @@ export function InventoryListPage() {
             </Button>
           </div>
         }
-        className="mb-8"
+        className="mb-6"
       />
 
       <DataTable

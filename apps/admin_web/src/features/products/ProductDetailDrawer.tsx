@@ -112,7 +112,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             <div className="card p-0 overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-border-light bg-[rgba(0,0,0,0.02)] text-text-muted text-sm">
+                  <tr className="border-b border-border-light bg-background-subtle text-text-muted text-sm">
                     <th className="p-3">Date</th>
                     <th className="p-3">Change</th>
                     <th className="p-3">Reason</th>

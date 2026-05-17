@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import { Banknote, Smartphone, CreditCard, Wallet, PlusCircle, AlertCircle, X, RefreshCw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 function getPaymentIcon(name: string) {
   const lower = name.toLowerCase();
@@ -62,19 +63,94 @@ export function PaymentModal({
   onQuickAmount,
   onCheckout,
 }: PaymentModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [previousActiveElement, setPreviousActiveElement] = useState<Element | null>(null);
+
+  // Store previous focus and focus modal when opened
+  useEffect(() => {
+    if (show) {
+      setPreviousActiveElement(document.activeElement);
+      const timer = setTimeout(() => {
+        closeButtonRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [show]);
+
+  // Restore focus when closed
+  useEffect(() => {
+    if (!show && previousActiveElement) {
+      (previousActiveElement as HTMLElement)?.focus();
+    }
+  }, [show, previousActiveElement]);
+
+  // Handle Escape key
+  useEffect(() => {
+    if (!show) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [show, onClose]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!show) return;
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    const focusableElements = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    modal.addEventListener('keydown', handleTabKey);
+    return () => modal.removeEventListener('keydown', handleTabKey);
+  }, [show]);
+
   if (!show) return null;
 
   return (
-    <div className="payment-modal" onClick={onClose}>
-      <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="payment-modal" onClick={onClose} role="presentation">
+      <div 
+        className="payment-modal-content" 
+        onClick={(e) => e.stopPropagation()}
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payment-modal-title"
+      >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
-          <h2 style={{ margin: 0 }}>Payment</h2>
+          <h2 id="payment-modal-title" style={{ margin: 0 }}>Payment</h2>
           <button
+            ref={closeButtonRef}
             className="button-secondary"
             onClick={onClose}
             style={{ padding: 'var(--space-2)', minWidth: 36, minHeight: 36 }}
+            aria-label="Close payment dialog"
+            type="button"
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 

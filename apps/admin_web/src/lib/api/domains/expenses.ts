@@ -63,13 +63,10 @@ export const expenses = {
     return data;
   },
   remove: async (expenseId: string) => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('expenses')
       .delete()
-      .eq('id', expenseId)
-      .select()
-      .single();
+      .eq('id', expenseId);
     if (error) throw error;
-    return data;
   },
 };

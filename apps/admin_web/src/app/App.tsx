@@ -26,6 +26,8 @@ const LazyReportsPage = React.lazy(() => import('../features/reports/ReportsPage
 const LazyQuickPosPage = React.lazy(() => import('../features/pos/QuickPosPage').then(m => ({ default: m.QuickPosPage })));
 const LazyRemindersPage = React.lazy(() => import('../features/reminders/RemindersPage').then(m => ({ default: m.RemindersPage })));
 const LazyExpensesPage = React.lazy(() => import('../features/expenses/ExpensesPage').then(m => ({ default: m.ExpensesPage })));
+const LazyDailySalesPage = React.lazy(() => import('../features/sales/DailySalesPage').then(m => ({ default: m.DailySalesPage })));
+const LazyCompetitorPricesPage = React.lazy(() => import('../features/competitorPrices/CompetitorPricesPage').then(m => ({ default: m.CompetitorPricesPage })));
 
 function SuspenseFallback() {
   return (

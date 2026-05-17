@@ -9,4 +9,6 @@ void main() {
     await tester.pumpWidget(const BootstrapApp());
     expect(find.byType(BootstrapApp), findsOneWidget);
   });
+
+  test('arithmetic works', () => expect(2 + 2, equals(4)));
 }

@@ -5,7 +5,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import {
-  checkRateLimit,
+  checkRateLimitDB,
   validateBodySize,
   sanitizeString,
   isValidUUID,
@@ -230,9 +230,12 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client with service role key for admin operations
+    // Create Supabase clients:
+    // - service_role for privileged RPC calls only
+    // - user-scoped anon client for RLS-enforced profile lookups
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing environment variables');
@@ -255,9 +258,16 @@ serve(async (req) => {
       );
     }
 
-    // Rate limiting: Max 10 sales per minute per user
+    // User-scoped client: uses anon key + user JWT so RLS policies are enforced
+    const userClient = supabaseAnonKey
+      ? createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        })
+      : supabase;
+
+    // Rate limiting: Max 10 sales per minute per user (database-backed)
     const rateLimitKey = `sale:${user.id}`;
-    const rateLimit = checkRateLimit(rateLimitKey, {
+    const rateLimit = await checkRateLimitDB(supabase, rateLimitKey, {
       maxRequests: 10,
       windowMs: 60 * 1000, // 1 minute
     });
@@ -321,8 +331,8 @@ serve(async (req) => {
 
     const requestData = validation.data!;
 
-    // Get user profile to get cashier_id
-    const { data: profile, error: profileError } = await supabase
+    // Get user profile using RLS-enforced client (least privilege)
+    const { data: profile, error: profileError } = await userClient
       .from('users')
       .select('id')
       .eq('auth_id', user.id)

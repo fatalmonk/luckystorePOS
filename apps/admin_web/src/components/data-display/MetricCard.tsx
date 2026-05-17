@@ -6,6 +6,7 @@ export interface MetricCardProps {
   value: string | number;
   icon?: React.ReactNode;
   trend?: 'up' | 'down';
+  trendLabel?: string;
   /** color variant for the icon badge and accent */
   color?: 'primary' | 'secondary' | 'tertiary' | 'success' | 'danger' | 'warning' | 'info' | 'neutral';
   /** @deprecated - visual variant is now always 'light'. This prop is accepted but ignored. */
@@ -31,6 +32,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   value,
   icon,
   trend,
+  trendLabel,
   color = 'primary',
   variant: _variant, // accepted but ignored — deprecated
   badge,
@@ -64,7 +66,16 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             {icon}
           </div>
         )}
-        {trendIcon && <div>{trendIcon}</div>}
+        {trendLabel && (
+          <div className={clsx(
+            'flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full',
+            trend === 'up' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'
+          )}>
+            {trendIcon}
+            <span>{trendLabel}</span>
+          </div>
+        )}
+        {!trendLabel && trendIcon && <div>{trendIcon}</div>}
       </div>
 
       <div>

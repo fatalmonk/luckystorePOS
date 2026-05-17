@@ -6,9 +6,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class BkashService {
-  final String _baseUrl = 'https://checkout.sandbox.bKash.com/v1.2.0-beta';
-  final String _appKey = 'YOUR_APP_KEY';
-  final String _appSecret = 'YOUR_APP_SECRET';
+  final String _baseUrl;
+  final String _appKey;
+  final String _appSecret;
+
+  BkashService({
+    required String baseUrl,
+    required String appKey,
+    required String appSecret,
+  })  : assert(baseUrl.isNotEmpty, 'baseUrl cannot be empty'),
+        assert(appKey.isNotEmpty, 'appKey cannot be empty'),
+        assert(appSecret.isNotEmpty, 'appSecret cannot be empty'),
+        _baseUrl = baseUrl,
+        _appKey = appKey,
+        _appSecret = appSecret;
   
   // 1. Grant Token (Server-side context ideally, but shown for flow)
   Future<String?> grantToken() async {

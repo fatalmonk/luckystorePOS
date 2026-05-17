@@ -60,40 +60,63 @@ export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) 
     });
   };
 
+  const modeColors = {
+    add: {
+      bg: 'bg-success-subtle',
+      text: 'text-success-dark',
+      border: 'border-success-default',
+    },
+    remove: {
+      bg: 'bg-danger-subtle',
+      text: 'text-danger-default',
+      border: 'border-danger-default',
+    },
+    set: {
+      bg: 'bg-primary-subtle',
+      text: 'text-primary-default',
+      border: 'border-primary-default',
+    },
+  };
+
   return (
-    <div 
-      className="drawer-overlay"
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        zIndex: 1000,
-        backdropFilter: 'blur(2px)'
-      }}
+    <div
+      className="fixed inset-0 z-50 flex"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="stock-drawer-title"
     >
-      <div 
-        className="drawer-content"
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: '450px',
-          backgroundColor: 'var(--bg-card)',
-          height: '100%',
-          boxShadow: 'var(--shadow-lg)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 'var(--space-6)'
-        }}
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 transition-opacity"
+        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Drawer Panel */}
+      <div
+        ref={drawerRef}
+        className="relative ml-auto w-full max-w-[450px] h-full bg-surface-default shadow-lg flex flex-col"
       >
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
+        {/* Header */}
+        <header className="flex justify-between items-start mb-8">
           <div>
-            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700' }}>Update Stock</h2>
-            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{product.name}</p>
+            <h2
+              id="stock-drawer-title"
+              className="text-xl font-bold text-text-primary"
+            >
+              Update Stock
+            </h2>
+            <p className="text-sm text-text-secondary mt-1">{product.name}</p>
           </div>
-          <button onClick={onClose} style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
+          <button
+            ref={closeButtonRef}
+            onClick={onClose}
+            className="flex items-center justify-center w-10 h-10 rounded-md text-text-secondary hover:text-text-primary hover:bg-background-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+            aria-label="Close drawer"
+          >
+            <X size={24} />
+          </button>
         </header>
 
         <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1">
@@ -101,44 +124,46 @@ export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) 
             <button 
               type="button"
               onClick={() => setMode('add')}
-              className={clsx('mode-btn', mode === 'add' && 'active')}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
-                backgroundColor: mode === 'add' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                color: mode === 'add' ? 'var(--color-success)' : 'var(--text-muted)',
-                fontWeight: '600'
-              }}
+              className={clsx(
+                'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                mode === 'add'
+                  ? `${modeColors.add.bg} ${modeColors.add.text} border-${modeColors.add.border} focus:ring-success-default`
+                  : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
+              )}
+              aria-pressed={mode === 'add'}
             >
-              <Plus size={20} /> Add
+              <Plus size={20} />
+              <span className="font-semibold text-sm">Add</span>
             </button>
-            <button 
+
+            <button
               type="button"
               onClick={() => setMode('remove')}
-              className={clsx('mode-btn', mode === 'remove' && 'active')}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
-                backgroundColor: mode === 'remove' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-                color: mode === 'remove' ? 'var(--color-danger)' : 'var(--text-muted)',
-                fontWeight: '600'
-              }}
+              className={clsx(
+                'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                mode === 'remove'
+                  ? `${modeColors.remove.bg} ${modeColors.remove.text} border-${modeColors.remove.border} focus:ring-danger-default`
+                  : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
+              )}
+              aria-pressed={mode === 'remove'}
             >
-              <Minus size={20} /> Remove
+              <Minus size={20} />
+              <span className="font-semibold text-sm">Remove</span>
             </button>
-            <button 
+
+            <button
               type="button"
               onClick={() => setMode('set')}
-              className={clsx('mode-btn', mode === 'set' && 'active')}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
-                backgroundColor: mode === 'set' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                color: mode === 'set' ? 'var(--color-primary)' : 'var(--text-muted)',
-                fontWeight: '600'
-              }}
+              className={clsx(
+                'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                mode === 'set'
+                  ? `${modeColors.set.bg} ${modeColors.set.text} border-${modeColors.set.border} focus:ring-primary-default`
+                  : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
+              )}
+              aria-pressed={mode === 'set'}
             >
-              <RotateCcw size={20} /> Set
+              <RotateCcw size={20} />
+              <span className="font-semibold text-sm">Set</span>
             </button>
           </div>
 
@@ -153,12 +178,14 @@ export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) 
             options={reasons}
           />
 
+          {/* Notes */}
           <div className="form-group">
             <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Notes (optional)</label>
             <textarea 
               {...form.register('notes')}
               placeholder="e.g. Broken during handling"
-              style={{ width: '100%', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', minHeight: '100px' }}
+              rows={4}
+              className="w-full px-3 py-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent resize-none"
             />
           </div>
 

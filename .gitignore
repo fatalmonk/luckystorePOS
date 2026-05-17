@@ -115,10 +115,16 @@ pnpm-debug.log*
 *~
 
 # -----------------------------------------------------------------------------
-# OS Junk
+# OS Junk / Screenshots
 # -----------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
+screenshot-*.png
+screenshot-*.jpg
+screenshot-*.jpeg
+Screenshot*.png
+Screenshot*.jpg
+Screenshot*.jpeg
 
 # -----------------------------------------------------------------------------
 # Hosting Platforms

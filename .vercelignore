@@ -3,8 +3,8 @@ node_modules/**
 .gitignore
 *.md
 .DS_Store
-dist/**
-build/**
+/dist/**
+/build/**
 coverage/**
 .env
 .env.local

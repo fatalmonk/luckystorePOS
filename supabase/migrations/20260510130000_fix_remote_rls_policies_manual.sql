@@ -31,6 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_items_tenant_id ON public.items(tenant_id);
 -- Drop broken policies
 DROP POLICY IF EXISTS "categories_select_tenant_isolated" ON public.categories;
 DROP POLICY IF EXISTS "Allow read to authenticated" ON public.categories;
+DROP POLICY IF EXISTS "categories_manage_authorized" ON public.categories;
 
 -- Create correct policies
 CREATE POLICY "categories_select_tenant_isolated"
@@ -136,6 +137,7 @@ END $$;
 -- Fix stock_transfer_items if needed
 DROP POLICY IF EXISTS "stock_transfer_items_read_authenticated" ON public.stock_transfer_items;
 DROP POLICY IF EXISTS "stock_transfer_items_write_staff" ON public.stock_transfer_items;
+DROP POLICY IF EXISTS "stock_transfer_items_select_tenant" ON public.stock_transfer_items;
 
 CREATE POLICY "stock_transfer_items_select_tenant"
   ON public.stock_transfer_items
@@ -146,7 +148,8 @@ CREATE POLICY "stock_transfer_items_select_tenant"
       SELECT 1
       FROM public.stock_transfers st
       WHERE st.id = stock_transfer_items.transfer_id
-        AND st.store_id = public.get_current_user_store_id()
+        AND (st.from_store_id = public.get_current_user_store_id()
+         OR st.to_store_id = public.get_current_user_store_id())
     )
     OR EXISTS (
       SELECT 1
@@ -159,6 +162,7 @@ CREATE POLICY "stock_transfer_items_select_tenant"
 -- Fix purchase_order_items if needed
 DROP POLICY IF EXISTS "po_items_select" ON public.purchase_order_items;
 DROP POLICY IF EXISTS "po_items_write" ON public.purchase_order_items;
+DROP POLICY IF EXISTS "purchase_order_items_select_tenant" ON public.purchase_order_items;
 
 CREATE POLICY "purchase_order_items_select_tenant"
   ON public.purchase_order_items

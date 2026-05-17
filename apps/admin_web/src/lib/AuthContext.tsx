@@ -41,48 +41,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Resolve the admin user profile whenever the auth session changes.
-  const resolveUser = async (s: Session | null) => {
-    if (!s) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Fetch the user row that joins auth.uid() → public.users
-      const { data: userRow, error } = await supabase
-        .from('users')
-        .select('id, auth_id, tenant_id, store_id, role, full_name, name')
-        .eq('auth_id', s.user.id)
-        .maybeSingle();
-
-      if (error || !userRow) {
-        console.error('[AuthContext] Could not load user profile:', error?.message);
+  useEffect(() => {
+    // Resolve the admin user profile whenever the auth session changes.
+    const resolveUser = async (s: Session | null) => {
+      if (!s) {
         setUser(null);
         setLoading(false);
         return;
       }
 
-      const resolved: AdminUser = {
-        id: userRow.id as string,
-        authId: userRow.auth_id as string,
-        tenantId: userRow.tenant_id as string,
-        storeId: userRow.store_id as string,
-        role: (userRow.role as string) ?? 'viewer',
-        name: (userRow.full_name ?? userRow.name) as string | null,
-      };
-      setUser(resolved);
+      try {
+        const { data: userRow, error } = await supabase
+          .from('users')
+          .select('id, auth_id, tenant_id, store_id, role, full_name, name')
+          .eq('auth_id', s.user.id)
+          .maybeSingle();
 
-    } catch (e) {
-      console.error('[AuthContext] Unexpected error resolving user:', e);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (error || !userRow) {
+          console.error('[AuthContext] Could not load user profile:', error?.message);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
 
-  useEffect(() => {
+        setUser({
+          id: userRow.id as string,
+          authId: userRow.auth_id as string,
+          tenantId: userRow.tenant_id as string,
+          storeId: userRow.store_id as string,
+          role: (userRow.role as string) ?? 'viewer',
+          name: (userRow.full_name ?? userRow.name) as string | null,
+        });
+      } catch (e) {
+        console.error('[AuthContext] Unexpected error resolving user:', e);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     // Load initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);

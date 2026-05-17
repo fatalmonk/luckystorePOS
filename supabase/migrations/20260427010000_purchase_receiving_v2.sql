@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.purchase_receipts (
 );
 
 -- Duplicate invoice protection: unique per tenant+supplier+invoice_number (when not null)
-CREATE UNIQUE INDEX idx_unique_supplier_invoice
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_supplier_invoice
   ON public.purchase_receipts(tenant_id, supplier_id, invoice_number)
   WHERE invoice_number IS NOT NULL AND invoice_number <> '';
 
@@ -60,10 +60,12 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- purchase_receipts policies
+DROP POLICY IF EXISTS "receipts_select" ON public.purchase_receipts;
 CREATE POLICY "receipts_select" ON public.purchase_receipts
   FOR SELECT TO authenticated
   USING (tenant_id = public.current_tenant_id());
 
+DROP POLICY IF EXISTS "receipts_write" ON public.purchase_receipts;
 CREATE POLICY "receipts_write" ON public.purchase_receipts
   FOR ALL TO authenticated
   USING (
@@ -76,6 +78,7 @@ CREATE POLICY "receipts_write" ON public.purchase_receipts
   );
 
 -- purchase_receipt_items policies
+DROP POLICY IF EXISTS "receipt_items_select" ON public.purchase_receipt_items;
 CREATE POLICY "receipt_items_select" ON public.purchase_receipt_items
   FOR SELECT TO authenticated
   USING (
@@ -86,6 +89,7 @@ CREATE POLICY "receipt_items_select" ON public.purchase_receipt_items
     )
   );
 
+DROP POLICY IF EXISTS "receipt_items_write" ON public.purchase_receipt_items;
 CREATE POLICY "receipt_items_write" ON public.purchase_receipt_items
   FOR ALL TO authenticated
   USING (
@@ -104,9 +108,9 @@ CREATE POLICY "receipt_items_write" ON public.purchase_receipt_items
 -- ---------------------------------------------------------------------------
 -- 4) Indexes for performance
 -- ---------------------------------------------------------------------------
-CREATE INDEX idx_purchase_receipts_tenant ON public.purchase_receipts(tenant_id);
-CREATE INDEX idx_purchase_receipts_supplier ON public.purchase_receipts(supplier_id);
-CREATE INDEX idx_purchase_receipts_store ON public.purchase_receipts(store_id);
-CREATE INDEX idx_purchase_receipts_status ON public.purchase_receipts(status);
-CREATE INDEX idx_purchase_receipt_items_receipt ON public.purchase_receipt_items(receipt_id);
-CREATE INDEX idx_purchase_receipt_items_item ON public.purchase_receipt_items(item_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_receipts_tenant ON public.purchase_receipts(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_receipts_supplier ON public.purchase_receipts(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_receipts_store ON public.purchase_receipts(store_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_receipts_status ON public.purchase_receipts(status);
+CREATE INDEX IF NOT EXISTS idx_purchase_receipt_items_receipt ON public.purchase_receipt_items(receipt_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_receipt_items_item ON public.purchase_receipt_items(item_id);

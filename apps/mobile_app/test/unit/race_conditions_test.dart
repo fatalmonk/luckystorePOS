@@ -6,16 +6,21 @@ void main() {
   group('Concurrent Payment Processing', () {
     test('Multiple payments for same sale should be serialized', () async {
       final payments = <Map<String, dynamic>>[];
+      final lock = Completer<void>();
 
       Future<void> submitPayment1() async {
+        await lock.future;
         payments.add({'saleId': 'sale-123', 'amount': 100, 'method': 'cash'});
       }
 
       Future<void> submitPayment2() async {
+        await lock.future;
         payments.add({'saleId': 'sale-123', 'amount': 50, 'method': 'card'});
       }
 
-      await Future.wait([submitPayment1(), submitPayment2()]);
+      final futures = [submitPayment1(), submitPayment2()];
+      lock.complete(); // Release both at same time
+      await Future.wait(futures);
 
       expect(payments.length, equals(2));
       expect(payments.any((p) => p['method'] == 'cash'), isTrue);
@@ -67,6 +72,7 @@ void main() {
 
       final successCount = results.where((r) => r).length;
       expect(successCount, lessThanOrEqualTo(5));
+      expect(currentStock, equals(0));
     });
 
     test('validate_sale_intent should catch stock issues', () {
@@ -130,6 +136,10 @@ void main() {
       await Future.wait([attemptSync(), attemptSync(), attemptSync()]);
 
       expect(syncCount, equals(1));
+      
+      // Release the lock
+      completer.complete();
+      await Future.wait(futures);
     });
   });
 
@@ -163,4 +173,27 @@ void main() {
       expect(openAttempts, equals(1));
     });
   });
+}
+
+/// Simple mutex for testing
+class _Mutex {
+  Completer<void>? _lock;
+
+  Future<void> acquire() async {
+    while (_lock != null) {
+      await _lock!.future;
+    }
+    _lock = Completer<void>();
+  }
+
+  Future<bool> tryAcquire() async {
+    if (_lock != null) return false;
+    _lock = Completer<void>();
+    return true;
+  }
+
+  void release() {
+    _lock?.complete();
+    _lock = null;
+  }
 }
