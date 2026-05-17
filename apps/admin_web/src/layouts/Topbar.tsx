@@ -4,5 +4,5 @@ import { TopHeader as OldTopHeader } from '../components/TopHeader';
 
 export function Topbar() {
   // Eventually replace with a fully standard Tailwind/Token-based topbar
-  return <OldTopHeader />;
+  return <OldTopHeader onToggleSidebar={() => {}} sidebarHidden={false} />;
 }

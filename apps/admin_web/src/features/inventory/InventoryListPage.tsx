@@ -3,7 +3,7 @@ import { useInventoryList } from '../../hooks/useInventory';
 import { useAuth } from '../../lib/AuthContext';
 import { PageContainer } from '../../layouts/PageContainer';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Search, RefreshCw, History } from 'lucide-react';
+import { Search, RefreshCw, History, Download } from 'lucide-react';
 import { StockUpdateDrawer } from './StockUpdateDrawer';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,6 +18,7 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
+import { downloadCSV } from '../../lib/format';
 
 import { InventoryListRow } from '../../types/rpc';
 export function InventoryListPage() {
@@ -32,7 +33,7 @@ export function InventoryListPage() {
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryListRow | null>(null);
 
   const { data: inventory, isLoading, error, refetch } = useInventoryList(
-    storeId, 
+    storeId,
     debouncedSearch || undefined
   );
 
@@ -51,9 +52,9 @@ export function InventoryListPage() {
   if (error) {
     return (
       <PageContainer className="inventory-container">
-        <PageHeader 
-          title="Stock Inventory" 
-          subtitle="Monitor and adjust stock levels." 
+        <PageHeader
+          title="Stock Inventory"
+          subtitle="Monitor and adjust stock levels."
         />
         <Card className="mt-6">
           <ErrorState message="Failed to load inventory." onRetry={() => refetch()} />
@@ -74,7 +75,7 @@ export function InventoryListPage() {
               icon={<Download size={18} />}
               onClick={() => {
                 const sanitizeCSVCell = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
-                const rows = (inventory ?? []).map((item: InventoryItem) => ({
+                const rows = (inventory ?? []).map((item: InventoryListRow) => ({
                   name: sanitizeCSVCell(item.name),
                   sku: sanitizeCSVCell(item.sku || ''),
                   currentStock: item.current_qty,
@@ -108,10 +109,10 @@ export function InventoryListPage() {
         sortBy={tableState.sort}
         onSortChange={setSort}
         toolbar={
-          <DataTableToolbar 
-            searchValue={tableState.search} 
-            onSearchChange={setSearch} 
-            searchPlaceholder="Filter by product name or SKU..." 
+          <DataTableToolbar
+            searchValue={tableState.search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Filter by product name or SKU..."
           />
         }
       />

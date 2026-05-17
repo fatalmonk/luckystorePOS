@@ -32,7 +32,9 @@ import {
   CreditCard,
   Download,
 } from 'lucide-react';
-import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
+import { format, isToday, isThisWeek, isThisMonth, subMonths, startOfMonth, parseISO } from 'date-fns';
+
+const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_PAYMENT_TYPES,
@@ -600,7 +602,7 @@ function AddExpenseDrawer({
   isPending: boolean;
 }) {
   const today = format(new Date(), 'yyyy-MM-dd');
-  
+
   const form = useForm<any>({
     defaultValues: {
       expenseDate: today,
@@ -619,25 +621,25 @@ function AddExpenseDrawer({
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="Add Expense">
       <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <FormInput 
+        <FormInput
           type="date"
           name="expenseDate"
           label="Date"
           required
         />
-        <FormInput 
+        <FormInput
           name="vendorName"
           label="Vendor"
           placeholder="e.g. ABC Supplies"
           required
         />
-        <FormInput 
+        <FormInput
           name="description"
           label="Description"
           placeholder="What was this for?"
           required
         />
-        <PriceInput 
+        <PriceInput
           name="amount"
           label="Amount"
         />
@@ -701,23 +703,23 @@ function EditExpenseDrawer({
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="Edit Expense">
       <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <FormInput 
+        <FormInput
           type="date"
           name="expenseDate"
           label="Date"
           required
         />
-        <FormInput 
+        <FormInput
           name="vendorName"
           label="Vendor"
           required
         />
-        <FormInput 
+        <FormInput
           name="description"
           label="Description"
           required
         />
-        <PriceInput 
+        <PriceInput
           name="amount"
           label="Amount"
         />

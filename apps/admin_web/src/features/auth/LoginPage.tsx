@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 export function LoginPage() {
@@ -8,7 +8,8 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -26,7 +27,7 @@ export function LoginPage() {
       }
 
       // Auth state change listener in AuthContext will pick up the session
-      navigate('/', { replace: true });
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred');
     } finally {

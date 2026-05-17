@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Save, Plus, Minus, RotateCcw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useForm } from 'react-hook-form';
@@ -26,6 +26,8 @@ import { useNotify } from '../../components/NotificationContext';
 
 export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) {
   const { notify } = useNotify();
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [mode, setMode] = useState<'add' | 'remove' | 'set'>('add');
   const updateMutation = useUpdateInventory();
 
@@ -121,7 +123,7 @@ export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) 
 
         <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1">
           <div className="grid grid-cols-3 gap-2">
-            <button 
+            <button
               type="button"
               onClick={() => setMode('add')}
               className={clsx(
@@ -181,7 +183,7 @@ export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) 
           {/* Notes */}
           <div className="form-group">
             <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '500', marginBottom: 'var(--space-1)' }}>Notes (optional)</label>
-            <textarea 
+            <textarea
               {...form.register('notes')}
               placeholder="e.g. Broken during handling"
               rows={4}
@@ -190,14 +192,14 @@ export function StockUpdateDrawer({ product, onClose }: StockUpdateDrawerProps) 
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: 'var(--space-8)' }}>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={updateMutation.isPending}
-              style={{ 
+              style={{
                 width: '100%',
-                backgroundColor: 'var(--color-primary)', 
-                color: 'white', 
-                padding: 'var(--space-3)', 
+                backgroundColor: 'var(--color-primary)',
+                color: 'white',
+                padding: 'var(--space-3)',
                 borderRadius: 'var(--radius-md)',
                 fontWeight: '600',
                 display: 'flex',

@@ -14,8 +14,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Not authenticated
   if (!session) {
     // Preserve the path they were trying to access to redirect them back after login
-    // Although in this simple implementation, we just redirect to login
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Authenticated, but no store selected yet (if applicable)

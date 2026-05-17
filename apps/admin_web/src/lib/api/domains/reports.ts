@@ -145,4 +145,24 @@ export const reports = {
 
     return { grossRevenue, cogs, grossProfit, totalExpenses, netProfit };
   },
+
+  // Customer Analytics
+  getCustomerAnalytics: async (storeId: string, limit = 50) => {
+    const { data, error } = await supabase.rpc('get_customer_analytics', {
+      p_store_id: storeId,
+      p_limit: limit,
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  // Staff Performance
+  getStaffPerformance: async (storeId: string, days = 30) => {
+    const { data, error } = await supabase.rpc('get_staff_performance', {
+      p_store_id: storeId,
+      p_days: days,
+    });
+    if (error) throw error;
+    return data;
+  },
 };

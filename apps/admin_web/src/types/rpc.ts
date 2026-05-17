@@ -20,6 +20,8 @@ export interface InventoryListRow {
   min_qty: number;
   reorder_status: string;
   last_updated: string;
+  price?: number;
+  cost?: number;
 }
 
 export interface SaleDetailsResponse {
