@@ -419,7 +419,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
                       if (check.hardStop && isAdminOrOwner) ...[
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: adminOverrideReasonCategory,
+                          initialValue: adminOverrideReasonCategory,
                           dropdownColor: const Color(0xFF161B22),
                           decoration: InputDecoration(
                             hintText: 'Select override category (required)',
@@ -477,7 +477,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
                         if (check.dualApprovalRequired) ...[
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
-                            value: secondaryApproverRole,
+                            initialValue: secondaryApproverRole,
                             dropdownColor: const Color(0xFF161B22),
                             decoration: InputDecoration(
                               hintText: 'Second approver role (required)',

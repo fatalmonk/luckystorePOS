@@ -1,0 +1,206 @@
+name: Migration Replay Verification
+
+# Trigger on:
+# - Push to main (production verification)
+# - Push to develop (pre-merge verification)
+# - Manual trigger with custom arguments
+# - Pull requests (validation)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'supabase/migrations/**'
+      - 'infra/migration-replay/**'
+      - 'scripts/governance/**'
+      - '.github/workflows/migration-replay.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'supabase/migrations/**'
+      - 'infra/migration-replay/**'
+      - 'scripts/governance/**'
+      - '.github/workflows/migration-replay.yml'
+  workflow_dispatch:
+    inputs:
+      replay_mode:
+        description: 'Replay mode'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - single
+          - validate
+
+jobs:
+  replay-verification:
+    name: Deterministic Migration Replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: supabase/postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Wait for Postgres
+        run: |
+          timeout 30 bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'
+          psql -h localhost -U postgres -d postgres -c "SELECT 1;" -w
+        env:
+          PGPASSWORD: postgres
+
+      - name: Run deterministic migration replay
+        run: |
+          # Execute migrations in order (Mocked for Staging Policy)
+          for migration in $(find supabase/migrations -name '*.sql' -type f | sort); do
+            echo "Replaying: $(basename $migration)"
+            if ! psql postgresql://postgres:postgres@localhost:5432/postgres \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration"; then
+              echo "Migration failed: $(basename $migration)"
+              exit 1
+            fi
+          done
+        env:
+          PGPASSWORD: postgres
+
+      - name: Generate schema snapshots
+        run: |
+          mkdir -p artifacts
+          
+          # Before migrations (empty baseline)
+          echo "-- Baseline schema (empty)" > artifacts/schema-baseline.sql
+          
+          # After migrations
+          pg_dump -h localhost -U postgres -d postgres \
+            --schema-only \
+            --no-privileges \
+            > artifacts/schema-after.sql
+        env:
+          PGPASSWORD: postgres
+
+      - name: Classify migrations
+        run: |
+          node infra/migration-replay/classify_migrations.cjs supabase/migrations artifacts
+
+      - name: Verify determinism (replay twice)
+        run: |
+          mkdir -p artifacts/run1 artifacts/run2
+          dropdb --if-exists -h localhost -U postgres replay_run1
+          dropdb --if-exists -h localhost -U postgres replay_run2
+          createdb -h localhost -U postgres replay_run1
+          createdb -h localhost -U postgres replay_run2
+
+          # Run 1
+          for migration in $(find supabase/migrations -name '*.sql' -type f | sort); do
+            psql postgresql://postgres:postgres@localhost:5432/replay_run1 \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration" > /dev/null
+          done
+
+          pg_dump -h localhost -U postgres -d replay_run1 \
+            --schema-only --no-privileges > artifacts/run1/schema.sql
+
+          # Run 2
+          for migration in $(find supabase/migrations -name '*.sql' -type f | sort); do
+            psql postgresql://postgres:postgres@localhost:5432/replay_run2 \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration" > /dev/null
+          done
+
+          pg_dump -h localhost -U postgres -d replay_run2 \
+            --schema-only --no-privileges > artifacts/run2/schema.sql
+
+          if diff artifacts/run1/schema.sql artifacts/run2/schema.sql > /dev/null; then
+            echo "✓ Determinism verified: both runs produce identical schemas"
+          else
+            echo "✗ Determinism failed: schema differs between runs"
+            diff -u artifacts/run1/schema.sql artifacts/run2/schema.sql | head -50
+            exit 1
+          fi
+        env:
+          PGPASSWORD: postgres
+
+      - name: Build governance artifacts (run 1)
+        run: |
+          mkdir -p artifacts/governance_run1
+          node infra/migration-replay/build_function_registry.cjs supabase/migrations artifacts/governance_run1
+          node infra/migration-replay/build_migration_dependencies.cjs supabase/migrations artifacts/governance_run1
+          node infra/migration-replay/build_ownership_graph.cjs supabase/migrations artifacts/governance_run1
+
+      - name: Build governance artifacts (run 2)
+        run: |
+          mkdir -p artifacts/governance_run2
+          node infra/migration-replay/build_function_registry.cjs supabase/migrations artifacts/governance_run2
+          node infra/migration-replay/build_migration_dependencies.cjs supabase/migrations artifacts/governance_run2
+          node infra/migration-replay/build_ownership_graph.cjs supabase/migrations artifacts/governance_run2
+
+      - name: Enforce governance policy
+        run: |
+          node scripts/governance/enforce-governance.cjs \
+            --repo-root . \
+            --artifacts-dir artifacts/governance_run1 \
+            --compare-artifacts-dir artifacts/governance_run2 \
+            --baseline scripts/governance/baseline.json
+
+      - name: Upload replay artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-replay-artifacts
+          path: artifacts/
+          retention-days: 30
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const reportPath = path.join(process.env.GITHUB_WORKSPACE, 'artifacts', 'replay-report.md');
+            
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf-8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+
+      - name: Fail if replay failed
+        if: failure()
+        run: |
+          echo "Migration replay verification failed"
+          [ -f artifacts/failure.json ] && cat artifacts/failure.json
+          exit 1

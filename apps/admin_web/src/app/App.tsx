@@ -1,11 +1,12 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { QueryProvider } from './QueryProvider';
-import { Layout } from '../components/Layout';
+import { AdminLayout } from '../layouts/AdminLayout';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
-import { AuthGuard } from './AuthGuard';
+import { ProtectedRoute } from '../routes/ProtectedRoute';
 import { ErrorBoundary } from './ErrorBoundary';
 import { OAuthConsentPage } from '../features/oauth/OAuthConsentPage';
+import { LoginPage } from '../features/auth/LoginPage';
 import { NotificationProvider } from '../components/Notification';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import { InstallPrompt } from '../components/InstallPrompt';
@@ -53,39 +54,101 @@ function LazyRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
+const router = createBrowserRouter([
+  {
+    path: '/oauth/consent',
+    element: <OAuthConsentPage />,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/',
+    element: (
+      <ProtectedRoute>
+        <AdminLayout>
+          <Outlet />
+        </AdminLayout>
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <DashboardPage />,
+      },
+      {
+        path: 'pos',
+        element: <LazyRoute><LazyQuickPosPage /></LazyRoute>,
+      },
+      {
+        path: 'sales',
+        element: <LazyRoute><LazySalesHistoryPage /></LazyRoute>,
+      },
+      {
+        path: 'products',
+        element: <LazyRoute><LazyProductListPage /></LazyRoute>,
+      },
+      {
+        path: 'inventory',
+        element: <LazyRoute><LazyInventoryListPage /></LazyRoute>,
+      },
+      {
+        path: 'inventory/history',
+        element: <LazyRoute><LazyStockHistoryPage /></LazyRoute>,
+      },
+      {
+        path: 'finance/suppliers',
+        element: <LazyRoute><LazySupplierLedgerPage /></LazyRoute>,
+      },
+      {
+        path: 'finance/customers',
+        element: <LazyRoute><LazyCustomerLedgerPage /></LazyRoute>,
+      },
+      {
+        path: 'collections',
+        element: <LazyRoute><LazyCollectionsWorkspace /></LazyRoute>,
+      },
+      {
+        path: 'purchase',
+        element: <LazyRoute><LazyPurchaseEntryPage /></LazyRoute>,
+      },
+      {
+        path: 'purchase/history',
+        element: <LazyRoute><LazyPurchaseHistoryPage /></LazyRoute>,
+      },
+      {
+        path: 'expenses',
+        element: <LazyRoute><LazyExpensesPage /></LazyRoute>,
+      },
+      {
+        path: 'settings',
+        element: <LazyRoute><LazySettingsPage /></LazyRoute>,
+      },
+      {
+        path: 'reports',
+        element: <LazyRoute><LazyReportsPage /></LazyRoute>,
+      },
+      {
+        path: 'reminders',
+        element: <LazyRoute><LazyRemindersPage /></LazyRoute>,
+      },
+    ],
+  },
+], {
+  basename: '/admin'
+});
+
 export function App() {
   return (
     <QueryProvider>
       <NotificationProvider>
         <AuthProvider>
-          <BrowserRouter basename="/admin">
-            <ErrorBoundary>
-              <OfflineIndicator />
-              <Routes>
-                <Route path="/oauth/consent" element={<OAuthConsentPage />} />
-                <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
-                  <Route index element={<DashboardPage />} />
-                  <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
-                  <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
-                  <Route path="products" element={<LazyRoute><LazyProductListPage /></LazyRoute>} />
-                  <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
-                  <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
-                  <Route path="inventory/history" element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />
-                  <Route path="finance/suppliers" element={<LazyRoute><LazySupplierLedgerPage /></LazyRoute>} />
-                  <Route path="finance/customers" element={<LazyRoute><LazyCustomerLedgerPage /></LazyRoute>} />
-                  <Route path="collections" element={<LazyRoute><LazyCollectionsWorkspace /></LazyRoute>} />
-                  <Route path="purchase" element={<LazyRoute><LazyPurchaseEntryPage /></LazyRoute>} />
-                  <Route path="purchase/history" element={<LazyRoute><LazyPurchaseHistoryPage /></LazyRoute>} />
-                  <Route path="expenses" element={<LazyRoute><LazyExpensesPage /></LazyRoute>} />
-                  <Route path="daily-sales" element={<LazyRoute><LazyDailySalesPage /></LazyRoute>} />
-                  <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
-                  <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
-                  <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
-                </Route>
-              </Routes>
-              <InstallPrompt />
-            </ErrorBoundary>
-          </BrowserRouter>
+          <ErrorBoundary>
+            <OfflineIndicator />
+            <RouterProvider router={router} />
+            <InstallPrompt />
+          </ErrorBoundary>
         </AuthProvider>
       </NotificationProvider>
     </QueryProvider>

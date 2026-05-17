@@ -9,13 +9,15 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function InstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return sessionStorage.getItem('pwa-install-dismissed') !== null;
+  });
 
   useEffect(() => {
-    // Check if already dismissed in this session
-    const wasDismissed = sessionStorage.getItem('pwa-install-dismissed');
-    if (wasDismissed) {
-      setDismissed(true);
+    if (dismissed) {
       return;
     }
 
@@ -30,7 +32,7 @@ export function InstallPrompt() {
     check();
     const interval = setInterval(check, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [dismissed]);
 
   const handleInstall = async () => {
     if (!prompt) return;

@@ -1,0 +1,451 @@
+Function Signature Registry
+Generated: 2026-05-17T13:43:33.434Z
+Migrations: 92
+Functions Tracked: 198
+Missing Functions: 76
+Conflicts: 125
+
+HIGH-RISK FUNCTIONS
+===================
+
+decrement_stock(uuid, uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+upsert_stock_level(uuid, uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+import_apply_stock_delta(uuid, uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+adjust_stock(uuid, uuid, integer, text, text, uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_stock_movements(uuid, uuid, integer, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_low_stock_items(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+get_inventory_summary(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+create_stock_transfer(uuid, uuid, text, jsonb)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+update_stock_transfer_status(uuid, public.stock_transfer_status, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_stock_valuation(uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_top_selling_items(uuid, integer, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_slow_moving_items(uuid, integer, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_daily_movement_trend(uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+receive_purchase_order(uuid, jsonb, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_expiring_batches(uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+add_batch_and_adjust_stock(uuid, uuid, text, integer, date, date, text, uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+void_sale(uuid, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+lookup_item_by_scan(text, uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+search_items_pos(uuid,text,uuid,integer,integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_pos_categories(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_manager_dashboard_stats(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+get_session_summary(p_session_id uuid)
+  [high] security_definer_missing_search_path: SECURITY DEFINER function must have explicit search_path
+
+close_pos_session(p_session_id uuid, p_closing_cash numeric)
+  [high] security_definer_missing_search_path: SECURITY DEFINER function must have explicit search_path
+
+search_items_pos(uuid, text, uuid, integer, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+log_sale_sync_conflict(uuid, text, text, jsonb, boolean)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_close_risk_analytics(uuid, uuid, date, date)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_monthly_governance_scorecard(uuid, uuid, date)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [high] grant_after_drop: Function granted after being dropped
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+validate_sale_intent(jsonb)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+ensure_sale_ledger_accounts(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+resolve_payment_ledger_account(uuid, uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+generate_daily_reconciliation(uuid, date)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+create_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+post_sale_to_ledger(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+process_pending_ledger_postings(uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+validate_trial_balance(uuid, date, date)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+close_accounting_period(uuid, date, date)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+replay_sale_ledger_chain(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_inventory_list(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+set_stock(uuid, uuid, integer, text, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+get_stock_history_simple(uuid, uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+get_sale_details(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+get_payment_methods(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+get_store_users(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+get_receipt_config_simple(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+update_receipt_config_simple(uuid, text, text, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+is_ledger_worker_alive(text, interval)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+renew_ledger_job_lease(text, uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+record_expense(uuid, date, text, text, numeric, text, text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+import_historical_daily_sale(uuid, date, numeric, numeric)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+authenticate_staff_pin(text)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+get_receivables_aging(UUID, UUID, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+record_customer_payment(TEXT, UUID, UUID, UUID, NUMERIC, UUID, TEXT, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+log_customer_reminder(UUID, UUID, UUID, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+add_followup_note(UUID, UUID, UUID, TEXT, DATE)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+mark_followup_resolved(UUID)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_stock_level_by_id(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+deduct_stock(uuid, uuid, integer, jsonb)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+  [medium] multiple_grants_same_role: undefined
+
+get_upcoming_reminders(p_store_id UUID,
+    p_include_completed BOOLEAN DEFAULT false)
+  [high] security_definer_missing_search_path: SECURITY DEFINER function must have explicit search_path
+
+create_reminder(p_tenant_id UUID,
+    p_store_id UUID,
+    p_title TEXT,
+    p_description TEXT,
+    p_reminder_date DATE,
+    p_reminder_type TEXT,
+    p_created_by UUID DEFAULT NULL)
+  [high] security_definer_missing_search_path: SECURITY DEFINER function must have explicit search_path
+
+update_reminder(p_reminder_id UUID,
+    p_title TEXT DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_reminder_date DATE DEFAULT NULL,
+    p_reminder_type TEXT DEFAULT NULL,
+    p_is_completed BOOLEAN DEFAULT NULL)
+  [high] security_definer_missing_search_path: SECURITY DEFINER function must have explicit search_path
+
+delete_reminder(p_reminder_id UUID)
+  [high] security_definer_missing_search_path: SECURITY DEFINER function must have explicit search_path
+
+get_upcoming_reminders(UUID, BOOLEAN)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+create_reminder(UUID, UUID, TEXT, TEXT, DATE, TEXT, UUID)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+update_reminder(UUID, TEXT, TEXT, DATE, TEXT, BOOLEAN)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+delete_reminder(UUID)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [medium] multiple_grants_same_role: undefined
+
+check_idempotency(TEXT, UUID)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+record_sale(TEXT, UUID, UUID, JSONB, JSONB, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+record_purchase(TEXT, UUID, UUID, UUID, UUID, JSONB, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_expected_cash(UUID, UUID, UUID, DATE)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+record_cash_closing(TEXT, UUID, UUID, UUID, NUMERIC, DATE, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_stock_level_by_id(uuid, uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+  [low] final_state_revoked: Function permissions revoked at end of replay
+
+record_purchase_v2(TEXT, UUID, UUID, UUID, TEXT, NUMERIC, JSONB, NUMERIC, UUID, UUID, TEXT, TEXT)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+post_draft_purchase_receipt(UUID)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_customer_analytics(uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+get_staff_performance(uuid, integer)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+is_admin_in_tenant(uuid)
+  [critical] missing_creator: Function granted before creation or after deletion
+
+OPHAN GRANTS/REVOKES
+====================
+[orphan_grant] decrement_stock(uuid, uuid, integer) (service_role)
+[orphan_grant] upsert_stock_level(uuid, uuid, integer) (service_role)
+[orphan_grant] import_apply_stock_delta(uuid, uuid, integer) (service_role)
+[orphan_grant] adjust_stock(uuid, uuid, integer, text, text, uuid) (service_role)
+[orphan_grant] get_stock_movements(uuid, uuid, integer, integer) (authenticated)
+[orphan_grant] get_low_stock_items(uuid) (authenticated)
+[orphan_grant] get_inventory_summary(uuid) (authenticated)
+[orphan_grant] create_stock_transfer(uuid, uuid, text, jsonb) (authenticated)
+[orphan_grant] update_stock_transfer_status(uuid, public.stock_transfer_status, text) (authenticated)
+[orphan_grant] get_stock_valuation(uuid, integer) (authenticated)
+[orphan_grant] get_top_selling_items(uuid, integer, integer) (authenticated)
+[orphan_grant] get_slow_moving_items(uuid, integer, integer) (authenticated)
+[orphan_grant] get_daily_movement_trend(uuid, integer) (authenticated)
+[orphan_grant] receive_purchase_order(uuid, jsonb, text) (authenticated)
+[orphan_grant] get_expiring_batches(uuid, integer) (authenticated)
+[orphan_grant] add_batch_and_adjust_stock(uuid, uuid, text, integer, date, date, text, uuid) (authenticated)
+[orphan_grant] complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text) (authenticated)
+[orphan_grant] void_sale(uuid, text) (authenticated)
+[orphan_grant] lookup_item_by_scan(text, uuid) (authenticated)
+[orphan_grant] search_items_pos(uuid,text,uuid,integer,integer) (authenticated)
+[orphan_grant] get_pos_categories(uuid) (authenticated)
+[orphan_grant] get_manager_dashboard_stats(uuid) (authenticated)
+[orphan_grant] search_items_pos(uuid, text, uuid, integer, integer) (anon)
+[orphan_grant] log_sale_sync_conflict(uuid, text, text, jsonb, boolean) (authenticated)
+[orphan_grant] complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text) (authenticated)
+[orphan_grant] get_close_risk_analytics(uuid, uuid, date, date) (authenticated)
+[orphan_grant] get_monthly_governance_scorecard(uuid, uuid, date) (authenticated)
+[orphan_grant] complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) (authenticated)
+[orphan_grant] complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, text, jsonb, text, text, text) (authenticated)
+[orphan_grant] complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) (authenticated)
+[orphan_grant] validate_sale_intent(jsonb) (authenticated)
+[orphan_grant] ensure_sale_ledger_accounts(uuid) (authenticated)
+[orphan_grant] resolve_payment_ledger_account(uuid, uuid) (authenticated)
+[orphan_grant] generate_daily_reconciliation(uuid, date) (authenticated)
+[orphan_grant] create_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) (authenticated)
+[orphan_grant] post_sale_to_ledger(uuid) (authenticated)
+[orphan_grant] process_pending_ledger_postings(uuid, integer) (authenticated)
+[orphan_grant] validate_trial_balance(uuid, date, date) (authenticated)
+[orphan_grant] close_accounting_period(uuid, date, date) (authenticated)
+[orphan_grant] replay_sale_ledger_chain(uuid) (authenticated)
+[orphan_grant] get_inventory_list(uuid) (authenticated)
+[orphan_grant] set_stock(uuid, uuid, integer, text, text) (authenticated)
+[orphan_grant] get_stock_history_simple(uuid, uuid, integer) (authenticated)
+[orphan_grant] get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer) (authenticated)
+[orphan_grant] get_sale_details(uuid) (authenticated)
+[orphan_grant] get_payment_methods(uuid) (authenticated)
+[orphan_grant] get_store_users(uuid) (authenticated)
+[orphan_grant] get_receipt_config_simple(uuid) (authenticated)
+[orphan_grant] update_receipt_config_simple(uuid, text, text, text) (authenticated)
+[orphan_grant] is_ledger_worker_alive(text, interval) (authenticated)
+[orphan_grant] renew_ledger_job_lease(text, uuid) (authenticated)
+[orphan_grant] record_expense(uuid, date, text, text, numeric, text, text) (authenticated)
+[orphan_grant] import_historical_daily_sale(uuid, date, numeric, numeric) (authenticated)
+[orphan_grant] authenticate_staff_pin(text) (authenticated)
+[orphan_grant] get_receivables_aging(UUID, UUID, TEXT) (authenticated)
+[orphan_grant] record_customer_payment(TEXT, UUID, UUID, UUID, NUMERIC, UUID, TEXT, TEXT) (authenticated)
+[orphan_grant] log_customer_reminder(UUID, UUID, UUID, TEXT) (authenticated)
+[orphan_grant] add_followup_note(UUID, UUID, UUID, TEXT, DATE) (authenticated)
+[orphan_grant] mark_followup_resolved(UUID) (authenticated)
+[orphan_grant] get_stock_level_by_id(uuid) (authenticated)
+[orphan_grant] deduct_stock(uuid, uuid, integer, jsonb) (authenticated)
+[orphan_grant] get_upcoming_reminders(UUID, BOOLEAN) (authenticated)
+[orphan_grant] create_reminder(UUID, UUID, TEXT, TEXT, DATE, TEXT, UUID) (authenticated)
+[orphan_grant] update_reminder(UUID, TEXT, TEXT, DATE, TEXT, BOOLEAN) (authenticated)
+[orphan_grant] delete_reminder(UUID) (authenticated)
+[orphan_grant] check_idempotency(TEXT, UUID) (authenticated)
+[orphan_grant] record_sale(TEXT, UUID, UUID, JSONB, JSONB, TEXT) (authenticated)
+[orphan_grant] record_purchase(TEXT, UUID, UUID, UUID, UUID, JSONB, TEXT) (authenticated)
+[orphan_grant] get_expected_cash(UUID, UUID, UUID, DATE) (authenticated)
+[orphan_grant] record_cash_closing(TEXT, UUID, UUID, UUID, NUMERIC, DATE, TEXT) (authenticated)
+[orphan_grant] get_stock_level_by_id(uuid, uuid) (authenticated)
+[orphan_grant] record_purchase_v2(TEXT, UUID, UUID, UUID, TEXT, NUMERIC, JSONB, NUMERIC, UUID, UUID, TEXT, TEXT) (authenticated)
+[orphan_grant] post_draft_purchase_receipt(UUID) (authenticated)
+[orphan_revoke] close_pos_session(UUID, NUMERIC) (PUBLIC)
+[orphan_revoke] enqueue_sale_for_ledger_posting_from_sales() (PUBLIC)
+[orphan_revoke] ensure_expense_ledger_accounts(UUID) (PUBLIC)
+[orphan_revoke] get_inventory_list(UUID) (PUBLIC)
+[orphan_revoke] get_or_create_ar_account(UUID) (PUBLIC)
+[orphan_revoke] get_pos_categories(UUID) (PUBLIC)
+[orphan_revoke] get_session_summary(UUID) (PUBLIC)
+[orphan_revoke] get_stock_history_simple(UUID, UUID, INTEGER) (PUBLIC)
+[orphan_revoke] import_historical_daily_sale(UUID, DATE, NUMERIC, NUMERIC) (PUBLIC)
+[orphan_revoke] lookup_item_by_scan(TEXT, UUID) (PUBLIC)
+[orphan_revoke] record_expense(UUID, DATE, TEXT, TEXT, NUMERIC, TEXT, TEXT) (PUBLIC)
+[orphan_revoke] search_items_pos(UUID, TEXT, UUID, INTEGER, INTEGER) (PUBLIC)
+[orphan_revoke] set_stock(UUID, UUID, INTEGER, TEXT, TEXT) (PUBLIC)
+[orphan_revoke] validate_sale_intent(JSONB) (PUBLIC)
+[orphan_revoke] record_sale(text, uuid, uuid, jsonb, jsonb, text) (anon)
+[orphan_revoke] record_purchase(text, uuid, uuid, uuid, uuid, jsonb, text) (anon)
+[orphan_revoke] record_purchase_v2(text, uuid, uuid, uuid, text, numeric, jsonb, numeric, uuid, uuid, text, text) (anon)
+[orphan_revoke] post_draft_purchase_receipt(uuid) (anon)
+[orphan_revoke] record_customer_payment(text, uuid, uuid, uuid, numeric, uuid, text, text) (anon)
+[orphan_revoke] add_followup_note(uuid, uuid, uuid, text, date) (anon)
+[orphan_revoke] mark_followup_resolved(uuid) (anon)
+[orphan_revoke] log_customer_reminder(uuid, uuid, uuid, text) (anon)
+[orphan_revoke] get_or_create_ar_account(uuid) (anon)
+[orphan_revoke] close_pos_session(uuid, numeric) (anon)
+[orphan_revoke] issue_pos_override_token(uuid, text, jsonb, integer) (anon)
+[orphan_revoke] record_cash_closing(text, uuid, uuid, uuid, numeric, date, text) (anon)
+[orphan_revoke] get_expected_cash(uuid, uuid, uuid, date) (anon)
+[orphan_revoke] process_ledger_posting_batch(text, integer, uuid) (anon)
+[orphan_revoke] claim_ledger_posting_jobs(text, integer, uuid) (anon)
+[orphan_revoke] register_ledger_worker(text) (anon)
+[orphan_revoke] deactivate_ledger_worker(text) (anon)
+[orphan_revoke] heartbeat_ledger_worker(text) (anon)
+[orphan_revoke] ensure_expense_ledger_accounts(uuid) (anon)
+[orphan_revoke] enqueue_sale_for_ledger_posting(uuid, uuid, integer) (anon)
+[orphan_revoke] enqueue_sale_for_ledger_posting_from_sales() (anon)
+[orphan_revoke] create_reminder(uuid, uuid, text, text, date, text, uuid) (anon)
+[orphan_revoke] update_reminder(uuid, text, text, date, text, boolean) (anon)
+[orphan_revoke] delete_reminder(uuid) (anon)
+[orphan_revoke] get_upcoming_reminders(uuid, boolean) (anon)
+[orphan_revoke] check_idempotency(text, uuid) (anon)
+[orphan_revoke] get_receivables_aging(uuid, uuid, text) (anon)
+[orphan_revoke] get_session_summary(uuid) (anon)
+[orphan_revoke] register_ledger_worker(text) (authenticated)
+[orphan_revoke] deactivate_ledger_worker(text) (authenticated)
+[orphan_revoke] issue_pos_override_token(uuid, text, jsonb, integer) (authenticated)
+[orphan_revoke] get_pos_categories(UUID) (anon)
+[orphan_revoke] lookup_item_by_scan(TEXT, UUID) (anon)
+[orphan_revoke] search_items_pos(UUID, TEXT, UUID, INTEGER, INTEGER) (anon)
+[orphan_revoke] validate_sale_intent(JSONB) (anon)
+[orphan_grant] get_customer_analytics(uuid, integer) (authenticated)
+[orphan_grant] get_staff_performance(uuid, integer) (authenticated)
+[orphan_grant] is_admin_in_tenant(uuid) (authenticated)

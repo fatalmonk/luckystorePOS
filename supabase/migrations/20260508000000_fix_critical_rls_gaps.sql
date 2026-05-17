@@ -43,6 +43,9 @@ $$;
 -- 1) CATEGORIES - Product categories
 -- =============================================================================
 
+-- Ensure tenant_id exists on categories (already in baseline, but defensive)
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'tenant_id') THEN ALTER TABLE public.categories ADD COLUMN tenant_id uuid; END IF; END $$;
+
 -- Drop vulnerable policies
 DROP POLICY IF EXISTS "categories_select_authenticated" ON public.categories;
 DROP POLICY IF EXISTS "categories_select_tenant_isolated" ON public.categories;
@@ -53,21 +56,8 @@ CREATE POLICY "categories_select_tenant_isolated"
   FOR SELECT
   TO authenticated
   USING (
-    -- User can see categories from their store
-    store_id = public.get_current_user_store_id()
-    OR
-    -- Admins/managers can see categories from their tenant
-    EXISTS (
-      SELECT 1
-      FROM public.users u
-      WHERE u.auth_id = (SELECT auth.uid())
-        AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.tenant_id = public.get_current_user_tenant_id()
-        AND EXISTS (
-          SELECT 1 FROM public.categories c
-          WHERE c.store_id = u.store_id
-        )
-    )
+    -- User can see categories from their tenant
+    tenant_id = public.get_current_user_tenant_id()
   );
 
 -- Verify and create INSERT policy if missing
@@ -79,12 +69,13 @@ CREATE POLICY "categories_insert_tenant_scoped"
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    EXISTS (
+    tenant_id = public.get_current_user_tenant_id()
+    AND EXISTS (
       SELECT 1
       FROM public.users u
       WHERE u.auth_id = (SELECT auth.uid())
         AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.store_id = store_id
+        AND u.tenant_id = tenant_id
     )
   );
 
@@ -97,23 +88,23 @@ CREATE POLICY "categories_update_tenant_scoped"
   FOR UPDATE
   TO authenticated
   USING (
-    store_id = public.get_current_user_store_id()
+    tenant_id = public.get_current_user_tenant_id()
     AND EXISTS (
       SELECT 1
       FROM public.users u
       WHERE u.auth_id = (SELECT auth.uid())
         AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.store_id = store_id
+        AND u.tenant_id = tenant_id
     )
   )
   WITH CHECK (
-    store_id = public.get_current_user_store_id()
+    tenant_id = public.get_current_user_tenant_id()
     AND EXISTS (
       SELECT 1
       FROM public.users u
       WHERE u.auth_id = (SELECT auth.uid())
         AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.store_id = store_id
+        AND u.tenant_id = tenant_id
     )
   );
 
@@ -126,13 +117,13 @@ CREATE POLICY "categories_delete_tenant_scoped"
   FOR DELETE
   TO authenticated
   USING (
-    store_id = public.get_current_user_store_id()
+    tenant_id = public.get_current_user_tenant_id()
     AND EXISTS (
       SELECT 1
       FROM public.users u
       WHERE u.auth_id = (SELECT auth.uid())
         AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.store_id = store_id
+        AND u.tenant_id = public.get_current_user_tenant_id()
     )
   );
 

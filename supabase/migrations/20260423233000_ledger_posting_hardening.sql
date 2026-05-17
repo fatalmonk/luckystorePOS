@@ -3,6 +3,77 @@
 -- 2) Heartbeat-aware lease reclaim semantics
 -- 3) Retry backoff to avoid retry storms
 
+CREATE TABLE IF NOT EXISTS public.ledger_workers (
+  worker_id text PRIMARY KEY,
+  active boolean NOT NULL DEFAULT true,
+  last_heartbeat timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.ledger_posting_queue (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  sale_id uuid NOT NULL REFERENCES public.sales(id) ON DELETE CASCADE,
+  store_id uuid NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'PENDING'
+    CHECK (status IN ('PENDING', 'CLAIMED', 'POSTED', 'FAILED')),
+  priority integer NOT NULL DEFAULT 0,
+  attempt_count integer NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  max_attempts integer NOT NULL DEFAULT 5 CHECK (max_attempts > 0),
+  next_retry_at timestamptz NOT NULL DEFAULT now(),
+  locked_by text REFERENCES public.ledger_workers(worker_id) ON DELETE SET NULL,
+  locked_at timestamptz,
+  lock_expires_at timestamptz,
+  last_error text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE OR REPLACE FUNCTION public.register_ledger_worker(
+  p_worker_id text
+)
+RETURNS public.ledger_workers
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_worker public.ledger_workers;
+BEGIN
+  INSERT INTO public.ledger_workers (worker_id, active, last_heartbeat, updated_at)
+  VALUES (p_worker_id, true, now(), now())
+  ON CONFLICT (worker_id)
+  DO UPDATE SET
+    active = true,
+    last_heartbeat = now(),
+    updated_at = now()
+  RETURNING * INTO v_worker;
+
+  RETURN v_worker;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.heartbeat_ledger_worker(
+  p_worker_id text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  INSERT INTO public.ledger_workers (worker_id, active, last_heartbeat, updated_at)
+  VALUES (p_worker_id, true, now(), now())
+  ON CONFLICT (worker_id)
+  DO UPDATE SET
+    active = true,
+    last_heartbeat = now(),
+    updated_at = now();
+
+  RETURN true;
+END;
+$$;
+
 ALTER TABLE public.ledger_posting_queue
   ADD COLUMN IF NOT EXISTS next_retry_at timestamptz NOT NULL DEFAULT now();
 

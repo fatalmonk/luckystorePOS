@@ -68,13 +68,22 @@ CREATE TYPE "public"."sale_status" AS ENUM (
     'refunded'
 );
 
-
-ALTER TYPE "public"."sale_status" OWNER TO "postgres";
-
-
-CREATE TYPE "public"."session_status" AS ENUM (
-    'open',
-    'closed'
+CREATE TABLE IF NOT EXISTS public.items (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+    category_id uuid REFERENCES public.categories(id) ON DELETE SET NULL,
+    sku text,
+    name text NOT NULL,
+    description text,
+    image_url text,
+    price numeric(12,2) NOT NULL DEFAULT 0,
+    cost numeric(12,2) DEFAULT 0,
+    unit text DEFAULT 'piece',
+    barcode text,
+    is_active boolean DEFAULT true,
+    has_variants boolean DEFAULT false,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
 );
 
 
@@ -2393,56 +2402,19 @@ CREATE TABLE IF NOT EXISTS "public"."payment_methods" (
 );
 
 
-ALTER TABLE "public"."payment_methods" OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_payment_methods"("p_store_id" "uuid") RETURNS SETOF "public"."payment_methods"
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public', 'pg_temp'
-    AS $$
-  SELECT * FROM public.payment_methods WHERE store_id = p_store_id ORDER BY sort_order ASC;
-$$;
-
-
-ALTER FUNCTION "public"."get_payment_methods"("p_store_id" "uuid") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_pos_categories"("p_store_id" "uuid") RETURNS "jsonb"
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
-    AS $$
-  SELECT jsonb_agg(row_to_json(r) ORDER BY r.name)
-  FROM (
-    SELECT DISTINCT
-      c.id,
-      c.name,
-      COUNT(i.id) AS item_count
-    FROM public.categories c
-    JOIN public.items i ON i.category_id = c.id AND i.active = true
-    GROUP BY c.id, c.name
-    HAVING COUNT(i.id) > 0
-  ) r;
-$$;
-
-
-ALTER FUNCTION "public"."get_pos_categories"("p_store_id" "uuid") OWNER TO "postgres";
-
-
-CREATE TABLE IF NOT EXISTS "public"."receipt_config" (
-    "store_id" "uuid" NOT NULL,
-    "store_name" "text",
-    "header_text" "text",
-    "footer_text" "text",
-    "logo_url" "text",
-    "currency_symbol" "text" DEFAULT '৳'::"text" NOT NULL,
-    "show_tax" boolean DEFAULT false NOT NULL,
-    "receipt_printer_type" "text" DEFAULT 'bluetooth_escpos'::"text",
-    "receipt_printer_name" "text",
-    "label_printer_type" "text" DEFAULT 'tspl_bluetooth'::"text",
-    "label_printer_name" "text",
-    "label_width_mm" integer DEFAULT 40,
-    "label_height_mm" integer DEFAULT 30,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
+-- Stock tables
+CREATE TABLE IF NOT EXISTS public.stock_levels (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    store_id uuid NOT NULL,
+    item_id uuid NOT NULL,
+    qty integer NULL DEFAULT 0,
+    reserved integer NULL DEFAULT 0,
+    version integer NOT NULL DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    CONSTRAINT stock_levels_store_item_unique UNIQUE (store_id, item_id),
+    CONSTRAINT stock_levels_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.items(id) ON DELETE CASCADE,
+    CONSTRAINT stock_levels_store_id_fkey FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE
 );
 
 

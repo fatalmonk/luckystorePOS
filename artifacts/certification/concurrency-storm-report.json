@@ -1,0 +1,23 @@
+{
+  "status": "VERIFIED",
+  "run_id": "storm-auth-1779045906887",
+  "database": "staging",
+  "summary": {
+    "applied": 20,
+    "idempotent": 4,
+    "conflicts": 6,
+    "errors": 0
+  },
+  "invariants": {
+    "no_lost_updates": "VERIFIED",
+    "ledger_integrity": "VERIFIED",
+    "no_negative_stock": "VERIFIED"
+  },
+  "validation": {
+    "initial_stock": 100,
+    "final_stock": 80,
+    "expected_deduction": 20,
+    "distinct_ledger_ids": 20,
+    "successful_ops": 20
+  }
+}

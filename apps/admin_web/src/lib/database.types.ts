@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -314,37 +334,83 @@ export type Database = {
       competitor_prices: {
         Row: {
           competitor_name: string
+          competitor_original_price: number | null
           competitor_price: number
-          competitor_url: string | null
-          created_at: string | null
+          competitor_product_id: string | null
+          competitor_product_url: string | null
+          created_at: string
+          currency: string | null
+          error_message: string | null
           id: string
-          item_id: string | null
-          last_updated: string | null
+          our_price: number | null
+          price_gap_percent: number | null
+          product_id: string | null
+          product_name: string
+          product_sku: string | null
+          raw_data: Json | null
+          scrape_batch_id: string | null
+          scrape_status: string | null
+          scraped_at: string
+          store_id: string
+          updated_at: string
         }
         Insert: {
           competitor_name: string
+          competitor_original_price?: number | null
           competitor_price: number
-          competitor_url?: string | null
-          created_at?: string | null
+          competitor_product_id?: string | null
+          competitor_product_url?: string | null
+          created_at?: string
+          currency?: string | null
+          error_message?: string | null
           id?: string
-          item_id?: string | null
-          last_updated?: string | null
+          our_price?: number | null
+          price_gap_percent?: number | null
+          product_id?: string | null
+          product_name: string
+          product_sku?: string | null
+          raw_data?: Json | null
+          scrape_batch_id?: string | null
+          scrape_status?: string | null
+          scraped_at?: string
+          store_id: string
+          updated_at?: string
         }
         Update: {
           competitor_name?: string
+          competitor_original_price?: number | null
           competitor_price?: number
-          competitor_url?: string | null
-          created_at?: string | null
+          competitor_product_id?: string | null
+          competitor_product_url?: string | null
+          created_at?: string
+          currency?: string | null
+          error_message?: string | null
           id?: string
-          item_id?: string | null
-          last_updated?: string | null
+          our_price?: number | null
+          price_gap_percent?: number | null
+          product_id?: string | null
+          product_name?: string
+          product_sku?: string | null
+          raw_data?: Json | null
+          scrape_batch_id?: string | null
+          scrape_status?: string | null
+          scraped_at?: string
+          store_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "competitor_prices_item_id_fkey"
-            columns: ["item_id"]
+            foreignKeyName: "competitor_prices_product_id_fkey"
+            columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitor_prices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1684,6 +1750,24 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          count: number
+          key: string
+          reset_at: string
+        }
+        Insert: {
+          count?: number
+          key: string
+          reset_at: string
+        }
+        Update: {
+          count?: number
+          key?: string
+          reset_at?: string
+        }
+        Relationships: []
+      }
       receipt_config: {
         Row: {
           currency_symbol: string
@@ -2764,6 +2848,21 @@ export type Database = {
         Args: { p_key: string; p_tenant_id: string }
         Returns: Json
       }
+      check_price_alerts: {
+        Args: { p_store_id: string; p_threshold?: number }
+        Returns: {
+          competitors: Json
+          market_avg_price: number
+          our_price: number
+          price_gap_percent: number
+          product_id: string
+          product_name: string
+        }[]
+      }
+      check_rate_limit: {
+        Args: { p_key: string; p_max: number; p_window_sec: number }
+        Returns: Json
+      }
       claim_ledger_posting_jobs: {
         Args: {
           p_batch_size?: number
@@ -2793,6 +2892,8 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      cleanup_old_competitor_prices: { Args: never; Returns: undefined }
+      cleanup_rate_limits: { Args: never; Returns: number }
       close_accounting_period: {
         Args: {
           p_period_end: string
@@ -2924,6 +3025,19 @@ export type Database = {
       }
       get_current_user_store_id: { Args: never; Returns: string }
       get_current_user_tenant_id: { Args: never; Returns: string }
+      get_customer_analytics: {
+        Args: { p_limit?: number; p_store_id: string }
+        Returns: {
+          avg_order_value: number
+          customer_name: string
+          days_since_last: number
+          last_purchase_date: string
+          party_id: string
+          phone: string
+          purchase_count: number
+          total_spent: number
+        }[]
+      }
       get_daily_movement_trend: {
         Args: { p_days?: number; p_store_id: string }
         Returns: {
@@ -3096,6 +3210,20 @@ export type Database = {
           qty_on_hand: number
           sku: string
           total_cost: number
+        }[]
+      }
+      get_staff_performance: {
+        Args: { p_days?: number; p_store_id: string }
+        Returns: {
+          active_days: number
+          avg_ticket: number
+          revenue_per_day: number
+          role: string
+          staff_name: string
+          total_discounts: number
+          total_revenue: number
+          total_sales: number
+          user_id: string
         }[]
       }
       get_stock_history_simple: {
@@ -3618,6 +3746,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       discount_type: ["percentage", "fixed"],
@@ -3640,3 +3771,4 @@ export const Constants = {
     },
   },
 } as const
+

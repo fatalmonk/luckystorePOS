@@ -1,4 +1,5 @@
 -- Repair remaining missing RPC functions
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS full_name text;
 -- Adapts definitions to match actual remote schema
 
 -- =============================================================================
@@ -44,6 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_purchase_receipts_tenant ON public.purchase_recei
 CREATE INDEX IF NOT EXISTS idx_purchase_receipts_store ON public.purchase_receipts (store_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_receipts_supplier ON public.purchase_receipts (supplier_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_receipts_status ON public.purchase_receipts (status);
+DROP FUNCTION IF EXISTS public.get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer);
 
 -- purchase_receipt_items: create if not exists
 CREATE TABLE IF NOT EXISTS public.purchase_receipt_items (
@@ -228,7 +230,7 @@ GRANT EXECUTE ON FUNCTION public.get_store_users(uuid) TO authenticated;
 -- =============================================================================
 -- 7) Sales: get_sales_history
 -- =============================================================================
-DROP FUNCTION IF EXISTS public.get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer) CASCADE;
+DROP FUNCTION IF EXISTS public.get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer);
 CREATE OR REPLACE FUNCTION public.get_sales_history(
   p_store_id uuid,
   p_search_query text DEFAULT NULL,
@@ -658,8 +660,8 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
-REVOKE ALL ON FUNCTION public.record_purchase_v2(TEXT, UUID, UUID, UUID, TEXT, NUMERIC, JSONB, NUMERIC, UUID, UUID, TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.record_purchase_v2(TEXT, UUID, UUID, UUID, TEXT, NUMERIC, JSONB, NUMERIC, UUID, UUID, TEXT, TEXT) TO authenticated;
+-- REVOKE ALL ON FUNCTION public.record_purchase_v2(TEXT, UUID, UUID, UUID, TEXT, NUMERIC, JSONB, NUMERIC, UUID, UUID, TEXT, TEXT) FROM PUBLIC;
+-- GRANT EXECUTE ON FUNCTION public.record_purchase_v2(TEXT, UUID, UUID, UUID, TEXT, NUMERIC, JSONB, NUMERIC, UUID, UUID, TEXT, TEXT) TO authenticated;
 
 -- =============================================================================
 -- 13) RPC: post_draft_purchase_receipt
@@ -723,5 +725,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
-REVOKE ALL ON FUNCTION public.post_draft_purchase_receipt(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.post_draft_purchase_receipt(UUID) TO authenticated;
+-- REVOKE ALL ON FUNCTION public.post_draft_purchase_receipt(UUID) FROM PUBLIC;
+-- GRANT EXECUTE ON FUNCTION public.post_draft_purchase_receipt(UUID) TO authenticated;

@@ -274,9 +274,18 @@ GRANT EXECUTE ON FUNCTION public.ensure_sale_ledger_accounts(uuid) TO authentica
 REVOKE ALL ON FUNCTION public.resolve_payment_ledger_account(uuid, uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.resolve_payment_ledger_account(uuid, uuid) TO authenticated;
 
--- Permissions handled in baseline migration (20260301000000_baseline_core_tables.sql)
--- REVOKE ALL ON FUNCTION public.complete_sale(...) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION public.complete_sale(...) TO authenticated;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'complete_sale'
+      AND pg_get_function_identity_arguments(oid) = 'uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb, text, text, text) TO authenticated';
+  END IF;
+END $$;
 
 REVOKE ALL ON FUNCTION public.generate_daily_reconciliation(uuid, date) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.generate_daily_reconciliation(uuid, date) TO authenticated;

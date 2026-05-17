@@ -1,5 +1,14 @@
 import { supabase } from '../../supabase';
 
+type InventoryValueRow = {
+  id: string;
+  name: string;
+  sku: string | null;
+  qty_on_hand: number;
+  cost: number;
+  totalValue: number;
+};
+
 export const reports = {
   // Sales Report - get sales data with date range
   getSalesReport: async (storeId: string, startDate: string, endDate: string) => {
@@ -65,48 +74,35 @@ export const reports = {
 
   // Inventory Value Report
   getInventoryValue: async (storeId: string) => {
-    // Get items with their stock levels
-    const { data: items, error: itemsError } = await supabase
-      .from('items')
-      .select('id, name, sku, cost, price, active')
-      .eq('active', true);
+    const { data: stockValuation, error } = await supabase
+      .rpc('get_stock_valuation', {
+        p_store_id: storeId,
+      });
 
-    if (itemsError) throw itemsError;
-
-    // Get stock levels for this store
-    const { data: stockLevels, error: stockError } = await supabase
-      .from('stock_levels')
-      .select('item_id, qty')
-      .eq('store_id', storeId);
-
-    if (stockError) throw stockError;
-
-    const stockMap = new Map<any, any>(stockLevels?.map((s: any) => [s.item_id, s.qty]) || []);
+    if (error) throw error;
 
     let totalValue = 0;
     let lowStockCount = 0;
     let outOfStockCount = 0;
 
-    const inventory = items?.map((item: any) => {
-      const qty = stockMap.get(item.id) || 0;
-      const value = (item.cost || 0) * qty;
-      totalValue += value;
-      if (qty === 0) outOfStockCount++;
-      else if (qty <= 5) lowStockCount++;
+    const inventory: InventoryValueRow[] = stockValuation?.map((item: any) => {
+      const qtyOnHand = item.qty_on_hand || 0;
+      totalValue += item.total_value || 0;
+      if (qtyOnHand === 0) outOfStockCount++;
+      else if (qtyOnHand <= 5) lowStockCount++;
       return {
-        id: item.id,
-        name: item.name,
+        id: item.item_id,
+        name: item.item_name,
         sku: item.sku,
-        qty,
-        cost: item.cost || 0,
-        totalValue: value,
+        qty_on_hand: qtyOnHand,
+        cost: item.unit_cost || 0,
+        totalValue: item.total_value || 0,
       };
     }) || [];
 
-    // Sort by total value descending
     inventory.sort((a, b) => b.totalValue - a.totalValue);
 
-    return { totalValue, totalItems: items?.length || 0, lowStockCount, outOfStockCount, inventory };
+    return { totalValue, totalItems: inventory.length, lowStockCount, outOfStockCount, inventory };
   },
 
   // Profit & Loss Report

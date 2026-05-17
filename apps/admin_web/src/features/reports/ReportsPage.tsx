@@ -438,7 +438,12 @@ function InventoryReportContent({ data }: { data: any }) {
                   <td className="px-4 py-3 font-medium">{item.name}</td>
                   <td className="px-4 py-3 text-text-muted">{item.sku || '-'}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className={clsx(item.qty === 0 ? 'text-red-600' : item.qty <= 5 ? 'text-amber-600' : '')}>{item.qty}</span>
+                    <span className={clsx(
+                      item.qty_on_hand === 0 ? 'text-red-600' :
+                      item.qty_on_hand <= 5 ? 'text-amber-600' : ''
+                    )}>
+                      {item.qty_on_hand}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-right">৳{item.cost}</td>
                   <td className="px-4 py-3 text-right font-medium">৳{item.totalValue.toLocaleString()}</td>

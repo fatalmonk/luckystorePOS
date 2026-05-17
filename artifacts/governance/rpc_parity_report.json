@@ -1,0 +1,661 @@
+{
+  "timestamp": "2026-05-17T12:57:56.581Z",
+  "match": false,
+  "drift_count": 109,
+  "drift": [
+    {
+      "rpc": "add_batch_and_adjust_stock",
+      "status": "HASH_MISMATCH",
+      "local": "c0cea276ef945992c16616ea974bbb99",
+      "staging": "85c15cf2ce9551ec3f49cc8451752156"
+    },
+    {
+      "rpc": "add_followup_note",
+      "status": "HASH_MISMATCH",
+      "local": "61415039f44f985bb97830d2f564842d",
+      "staging": "1e0dfaf4f3dc1fd8627ea78e9e6835f6"
+    },
+    {
+      "rpc": "adjust_inventory_stock",
+      "status": "MISSING_STAGING",
+      "local": "0a3cedb9131f720ed4195e95f58cafa5",
+      "staging": null
+    },
+    {
+      "rpc": "adjust_stock",
+      "status": "HASH_MISMATCH",
+      "local": "6f62b1208494e1514cd8bdeae9ff89f4",
+      "staging": "853c29de81073d3edfc8d2ca3237e85f"
+    },
+    {
+      "rpc": "approve_inventory_reconciliation",
+      "status": "MISSING_STAGING",
+      "local": "14e80e96ef12b825eefd25f3b7210602",
+      "staging": null
+    },
+    {
+      "rpc": "authenticate_staff_pin",
+      "status": "HASH_MISMATCH",
+      "local": "c35ebb4f59919549ea33972f2d9da9ba",
+      "staging": "a53aae5a1efc48d475ebd438b0ab9b96"
+    },
+    {
+      "rpc": "check_idempotency",
+      "status": "HASH_MISMATCH",
+      "local": "45235628db717f748a6d04f642e8c5af",
+      "staging": "7fa8c9ae00e18834708f793b2a3dd0d4"
+    },
+    {
+      "rpc": "check_ledger_batch_balance",
+      "status": "HASH_MISMATCH",
+      "local": "be0ae16bda2fc353f98d07d0bebfd4a0",
+      "staging": "cdf4381d0952781209053e6e0257854f"
+    },
+    {
+      "rpc": "check_rate_limit",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "9d5527c0cf8e5afca872e7eb8db85c25"
+    },
+    {
+      "rpc": "claim_ledger_posting_jobs",
+      "status": "HASH_MISMATCH",
+      "local": "61ac0ec5ad2393807117d9e305b0b505",
+      "staging": "df37de619dd358ab770ce2af2f47c519"
+    },
+    {
+      "rpc": "cleanup_rate_limits",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "ea242e232d2302790ffdc4f8013940fb"
+    },
+    {
+      "rpc": "close_accounting_period",
+      "status": "HASH_MISMATCH",
+      "local": "ea349ea16ab52588da5dc40c8d49d0bd",
+      "staging": "33718b94ed569d99315346688352dd65"
+    },
+    {
+      "rpc": "close_pos_session",
+      "status": "HASH_MISMATCH",
+      "local": "83de1b57fc7b088fbd341bdf20dfd1b3",
+      "staging": "d66ba42781adcafe3c0a3c6f272700b7"
+    },
+    {
+      "rpc": "complete_sale",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "d8ccae44ae6fae9e87665defea5e0fdc"
+    },
+    {
+      "rpc": "create_reminder",
+      "status": "HASH_MISMATCH",
+      "local": "35eee561719f862bf675ce61e54a3f57",
+      "staging": "7ff713074786e8e777b66a46f03037e9"
+    },
+    {
+      "rpc": "create_sale",
+      "status": "HASH_MISMATCH",
+      "local": "57c3aa2bec4fc1f3deca07c5ac8d6525",
+      "staging": "49394ba3d9711ef7d993276d01236168"
+    },
+    {
+      "rpc": "create_stock_transfer",
+      "status": "HASH_MISMATCH",
+      "local": "0998f526d0fbba47d245f8a4ec3e1891",
+      "staging": "ef295973bc691188032a3cf9d6c0b93f"
+    },
+    {
+      "rpc": "current_tenant_id",
+      "status": "HASH_MISMATCH",
+      "local": "34c19955dab4952e3855765b683b94d3",
+      "staging": "d11d005a726760edc456fd27d4c24ea5"
+    },
+    {
+      "rpc": "deactivate_ledger_worker",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "d53f07482de28f97f0dfa477366be0e8"
+    },
+    {
+      "rpc": "decrement_stock",
+      "status": "HASH_MISMATCH",
+      "local": "a6768a195ac4d47756af44240df68eb9",
+      "staging": "b4e221dbb56ee46378e4f9d22f1a114d"
+    },
+    {
+      "rpc": "deduct_stock",
+      "status": "HASH_MISMATCH",
+      "local": "3764125c1eb516e78a3604fc8058d9d8",
+      "staging": "9c6e738d59fee8f90e5cc5bfed17730b"
+    },
+    {
+      "rpc": "delete_reminder",
+      "status": "HASH_MISMATCH",
+      "local": "345e45b3a346bad6529dd42965778419",
+      "staging": "807fd6c5e039399caef93a0cf6bd2659"
+    },
+    {
+      "rpc": "enqueue_sale_for_ledger_posting",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "e19af1bd7b6bcc173a239c3d28362a54"
+    },
+    {
+      "rpc": "enqueue_sale_for_ledger_posting_from_sales",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "d5f85ea3cb3402e86b39291373de17a9"
+    },
+    {
+      "rpc": "ensure_expense_ledger_accounts",
+      "status": "HASH_MISMATCH",
+      "local": "37feff4914ae7241fe01e6b4db25d6f4",
+      "staging": "537986fa6233f2becab28bec69a93903"
+    },
+    {
+      "rpc": "ensure_sale_ledger_accounts",
+      "status": "HASH_MISMATCH",
+      "local": "65d37f4dfb9e006e62fd689b1d1668f1",
+      "staging": "b755696db4405da8c7ad4ca3182b283c"
+    },
+    {
+      "rpc": "generate_daily_reconciliation",
+      "status": "HASH_MISMATCH",
+      "local": "e229891c08ea99d847d610eb7c2da39b",
+      "staging": "0a56a3f1d58675ab6edbcf5917c1b7a6"
+    },
+    {
+      "rpc": "generate_po_number",
+      "status": "HASH_MISMATCH",
+      "local": "3e68f8746ccf4f2f0df50b454a430397",
+      "staging": "630c452dcd2e37116d14d052529f5ab1"
+    },
+    {
+      "rpc": "generate_sale_number",
+      "status": "HASH_MISMATCH",
+      "local": "a0fc674690ee8681e631f9c11e130434",
+      "staging": "89bf4b6067fabb7f753a9a34b61b8f80"
+    },
+    {
+      "rpc": "generate_session_number",
+      "status": "HASH_MISMATCH",
+      "local": "cdcee3f839abcc819d4044e95986c682",
+      "staging": "c5403e5cfb913f18ab134ff17830754c"
+    },
+    {
+      "rpc": "get_close_risk_analytics",
+      "status": "HASH_MISMATCH",
+      "local": "6e8db6400df79af945d6242ffd562502",
+      "staging": "30039e926c0dadac06c85b2281d0f122"
+    },
+    {
+      "rpc": "get_current_user_store_id",
+      "status": "HASH_MISMATCH",
+      "local": "ce933344a19a6bf383a57cbeb152891f",
+      "staging": "21bf8e008ac59c3b8d6891050a67653f"
+    },
+    {
+      "rpc": "get_current_user_tenant_id",
+      "status": "HASH_MISMATCH",
+      "local": "6b65a1ddb38e9ce496f3656aa664749b",
+      "staging": "b7e7fa64337b657a91e2f145269ba3b1"
+    },
+    {
+      "rpc": "get_daily_movement_trend",
+      "status": "HASH_MISMATCH",
+      "local": "a93f0e3481dbf02c5bcc89c5fdc1a219",
+      "staging": "c5c51c0a36dd3be9d08b50807ee0e4fe"
+    },
+    {
+      "rpc": "get_expected_cash",
+      "status": "HASH_MISMATCH",
+      "local": "65cf44c55da9ec426d3c80492e7027ff",
+      "staging": "4e5808f0fe66324c2cfe3629c250260c"
+    },
+    {
+      "rpc": "get_expiring_batches",
+      "status": "HASH_MISMATCH",
+      "local": "e000d8063046f6f0c21412f2258d1ea7",
+      "staging": "ddac53e8b008ae1f14ce45852b7c3428"
+    },
+    {
+      "rpc": "get_inventory_list",
+      "status": "HASH_MISMATCH",
+      "local": "16a477c7a9664f52c995ce7455c136bd",
+      "staging": "a9174cc051fcc5ffe257da6bbf58a9bc"
+    },
+    {
+      "rpc": "get_inventory_movements",
+      "status": "MISSING_STAGING",
+      "local": "6b93e318e2979fdb26d566503940e275",
+      "staging": null
+    },
+    {
+      "rpc": "get_inventory_summary",
+      "status": "HASH_MISMATCH",
+      "local": "9a35aa32deb85eb36a1913c27d629c03",
+      "staging": "c56e4625b9c035823d00120d1ac34340"
+    },
+    {
+      "rpc": "get_low_stock_items",
+      "status": "HASH_MISMATCH",
+      "local": "18066df703f2b5e90d4f373cac69bfc3",
+      "staging": "528eaf92a62834d430e83ec9463de839"
+    },
+    {
+      "rpc": "get_manager_dashboard_stats",
+      "status": "HASH_MISMATCH",
+      "local": "45bf2576bae9f4af9aa0a38e305acaa4",
+      "staging": "8582c3f50c7fa083bc08fba57b3beb05"
+    },
+    {
+      "rpc": "get_monthly_governance_scorecard",
+      "status": "HASH_MISMATCH",
+      "local": "e59a5d25b8a4f3bd068fcc1a102766ba",
+      "staging": "e1d04159f25f75531c8ea7fe23ad7443"
+    },
+    {
+      "rpc": "get_new_receipt",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "a895e4328f4386f7dcd17105727d5c25"
+    },
+    {
+      "rpc": "get_offline_sync_status",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "d5531811736750a89a93d9f9c5bde7c0"
+    },
+    {
+      "rpc": "get_or_create_ar_account",
+      "status": "HASH_MISMATCH",
+      "local": "5f7629892dfbb9ab2630cd9d1958b8b7",
+      "staging": "f73ee8e069da7897f6bd42cc9bd5dbb4"
+    },
+    {
+      "rpc": "get_payment_methods",
+      "status": "HASH_MISMATCH",
+      "local": "c507423c4d97e507bf515bebdd90900d",
+      "staging": "366e007a08d3015c6d55bfebd068bd67"
+    },
+    {
+      "rpc": "get_pos_categories",
+      "status": "HASH_MISMATCH",
+      "local": "eafb743089cad8ba828952754821b49c",
+      "staging": "e3bae270401029bf73537a7c83e1efcd"
+    },
+    {
+      "rpc": "get_receipt_config_simple",
+      "status": "HASH_MISMATCH",
+      "local": "1aeb39bd6fc49e8516caea5685ea19f4",
+      "staging": "0bf54c193548ff59ab1b79bb29f22f44"
+    },
+    {
+      "rpc": "get_receivables_aging",
+      "status": "HASH_MISMATCH",
+      "local": "dc15fc2a1f34b83caa2d9b9092c108bd",
+      "staging": "d882fc74a70a9ae88b288e3529564ddd"
+    },
+    {
+      "rpc": "get_sale_details",
+      "status": "HASH_MISMATCH",
+      "local": "c252d8dd34ea3171fb19c6af316a4167",
+      "staging": "893a6cc84feb4a06efbee9bbcb6391ef"
+    },
+    {
+      "rpc": "get_sales_history",
+      "status": "HASH_MISMATCH",
+      "local": "dd21567f6602bb899725f72658b2b336",
+      "staging": "20259ec63dccd620d1737d3e9cc6ac33"
+    },
+    {
+      "rpc": "get_session_summary",
+      "status": "HASH_MISMATCH",
+      "local": "c3b6c6876f0676def8e6f49a7e655732",
+      "staging": "d916980be065cb731a09fbb25bc08333"
+    },
+    {
+      "rpc": "get_slow_moving_items",
+      "status": "HASH_MISMATCH",
+      "local": "46dfe378221a6f3995ebfd24ba354198",
+      "staging": "782cf6374e2ae1f4a407dc624ec14cd4"
+    },
+    {
+      "rpc": "get_stock_history_simple",
+      "status": "HASH_MISMATCH",
+      "local": "ab5132c54e9266a4ae907c6f0bcfde50",
+      "staging": "05903fa26be6c70500d5e8ab34501918"
+    },
+    {
+      "rpc": "get_stock_level_by_id",
+      "status": "HASH_MISMATCH",
+      "local": "71c4a6c591ad25bb298e0e417add6ab1",
+      "staging": "898e5fbd4f6534d622e3a00e6f09af88"
+    },
+    {
+      "rpc": "get_stock_movements",
+      "status": "HASH_MISMATCH",
+      "local": "5c6b8df1e4d0ea5af2de2871e9048b8a",
+      "staging": "cad2b4648c20108eda7de6e8a1a4783b"
+    },
+    {
+      "rpc": "get_stock_valuation",
+      "status": "HASH_MISMATCH",
+      "local": "c1a4a48ea0dda8da02182094b49f4182",
+      "staging": "5d8255acd63f1e39c407a7fe0dca57f9"
+    },
+    {
+      "rpc": "get_top_selling_items",
+      "status": "HASH_MISMATCH",
+      "local": "0219852ed67f335957a13e0f4e55cf7c",
+      "staging": "cc4caa1b1c59dde59bd66938e5627200"
+    },
+    {
+      "rpc": "get_upcoming_reminders",
+      "status": "HASH_MISMATCH",
+      "local": "1ff88460cdfc6e41eed4f1630a33786e",
+      "staging": "0155495b111b8e711113538e24f62438"
+    },
+    {
+      "rpc": "handle_updated_at",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "bfb4533a112460f2d58a8233bffdcac1"
+    },
+    {
+      "rpc": "heartbeat_ledger_worker",
+      "status": "HASH_MISMATCH",
+      "local": "294c7d665a46643c6003e3624e15be36",
+      "staging": "8e8d6cc298aa40faa1857ef68d644b83"
+    },
+    {
+      "rpc": "import_apply_stock_delta",
+      "status": "HASH_MISMATCH",
+      "local": "56e18e7b91804ce1e671c1eefc76966b",
+      "staging": "00b120ee79a2f71078fe9fccb54ca6e2"
+    },
+    {
+      "rpc": "import_historical_daily_sale",
+      "status": "HASH_MISMATCH",
+      "local": "65d247ea80d03da29e14d347347b9d32",
+      "staging": "06d35fbc1c02f1ebbfbaf72aad4c1a38"
+    },
+    {
+      "rpc": "is_admin_in_tenant",
+      "status": "MISSING_STAGING",
+      "local": "0a8a6929c8e89d61c0bedd8306be6473",
+      "staging": null
+    },
+    {
+      "rpc": "is_ledger_worker_alive",
+      "status": "HASH_MISMATCH",
+      "local": "c43ce1160cd38a24118220f12b4785fb",
+      "staging": "f316ed7279c89ceb717b95f6da527be9"
+    },
+    {
+      "rpc": "is_period_closed",
+      "status": "HASH_MISMATCH",
+      "local": "5f566bd1cf80e03f781c946cd1b8e900",
+      "staging": "5ed464a3a6755c92c3f24372479b3671"
+    },
+    {
+      "rpc": "issue_pos_override_token",
+      "status": "HASH_MISMATCH",
+      "local": "5b5622bfffa1e05d4fdb3bd9cd83ab27",
+      "staging": "85440f0b830fa53a761b7cedb366ba00"
+    },
+    {
+      "rpc": "log_audit",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "7779f697819efc0320273b7160458198"
+    },
+    {
+      "rpc": "log_customer_reminder",
+      "status": "HASH_MISMATCH",
+      "local": "15a8523df211559f2933e0e75257375f",
+      "staging": "b7c810281572846902ced4b4f268fc53"
+    },
+    {
+      "rpc": "log_sale_sync_conflict",
+      "status": "HASH_MISMATCH",
+      "local": "3f3d23504c0f8c4b1a1de53496c03cfd",
+      "staging": "8c4ffa716b4c021078066a5577afb29d"
+    },
+    {
+      "rpc": "log_stock_ledger_on_update",
+      "status": "HASH_MISMATCH",
+      "local": "ad46616a4e967ee1fa146c5fec6ff7f1",
+      "staging": "a7f38561663b2ec83d1c88c2c8ad96c6"
+    },
+    {
+      "rpc": "lookup_item_by_scan",
+      "status": "HASH_MISMATCH",
+      "local": "c8485bb15c69c8288c63d802bc896119",
+      "staging": "18333a06b6abe143531798317fd5a00b"
+    },
+    {
+      "rpc": "mark_followup_resolved",
+      "status": "HASH_MISMATCH",
+      "local": "518820dd7bcae6bb3d20734c17b058c7",
+      "staging": "fa0a961b30203bb54577f091307ff791"
+    },
+    {
+      "rpc": "post_draft_purchase_receipt",
+      "status": "HASH_MISMATCH",
+      "local": "9c7a2da6fd81550d87fc988ac3c62396",
+      "staging": "89bd12017036b496b0ce0098be476715"
+    },
+    {
+      "rpc": "post_sale_to_ledger",
+      "status": "HASH_MISMATCH",
+      "local": "526abb5acafa4a4d49c5d887a939862e",
+      "staging": "e52d48e595aebfa2b4127a8eecefda91"
+    },
+    {
+      "rpc": "prevent_inventory_movement_update",
+      "status": "MISSING_STAGING",
+      "local": "843276ec3c00f99331a15e2036ab5568",
+      "staging": null
+    },
+    {
+      "rpc": "prevent_ledger_mutation",
+      "status": "HASH_MISMATCH",
+      "local": "12c7e30028a89cbf5706cb9dc223367a",
+      "staging": "24f398dc6fa2a55723703a8db0e179ff"
+    },
+    {
+      "rpc": "prevent_sale_audit_log_mutation",
+      "status": "HASH_MISMATCH",
+      "local": "99ab18b2253b0720cc027b4c9058be01",
+      "staging": "5124a52c2e68e73461b329b3fb1a753f"
+    },
+    {
+      "rpc": "process_ledger_posting_batch",
+      "status": "HASH_MISMATCH",
+      "local": "be11222b047ff55f76d73384f9680061",
+      "staging": "678fa447b4b6e0e6310f528da4d5205b"
+    },
+    {
+      "rpc": "process_pending_ledger_postings",
+      "status": "HASH_MISMATCH",
+      "local": "0d098b08a55627aacfb86fea25e59fbd",
+      "staging": "bc9908fba665b470b79436418150a0ab"
+    },
+    {
+      "rpc": "receive_purchase_order",
+      "status": "HASH_MISMATCH",
+      "local": "0857a6b5e3f88cb780389b03bf4381d0",
+      "staging": "3d73ffe1e3babf7cee3057b67e3e92e3"
+    },
+    {
+      "rpc": "reclaim_stale_ledger_locks",
+      "status": "HASH_MISMATCH",
+      "local": "0c446eadda83da89942f6abbd0cf2c70",
+      "staging": "edd02250b4cbab417f6119c60fda5627"
+    },
+    {
+      "rpc": "record_cash_closing",
+      "status": "HASH_MISMATCH",
+      "local": "9c04c99c92b71d1133e91714d9f65a09",
+      "staging": "164ace45247037d7addb6c30f116df73"
+    },
+    {
+      "rpc": "record_customer_payment",
+      "status": "HASH_MISMATCH",
+      "local": "9302e3baae1af885549e22477cde450c",
+      "staging": "9c3715d664249cf8b549e4999fed0dff"
+    },
+    {
+      "rpc": "record_expense",
+      "status": "HASH_MISMATCH",
+      "local": "fc4c4f0b21724c3e2e55bb28592980b4",
+      "staging": "439737f76b5fef2aede4fcd82ecb71b8"
+    },
+    {
+      "rpc": "record_purchase",
+      "status": "HASH_MISMATCH",
+      "local": "d5a409a5c1c189235c2fdde89f98e961",
+      "staging": "7ec721c07ec0ea8cceb23674a05696cc"
+    },
+    {
+      "rpc": "record_purchase_v2",
+      "status": "HASH_MISMATCH",
+      "local": "1542c7b935c3d6019fb7e54fd117c48d",
+      "staging": "072de97e110e8326b425ebf17c5f994d"
+    },
+    {
+      "rpc": "record_sale",
+      "status": "MISSING_STAGING",
+      "local": "b451eaba03d1e43535901b6371152c77",
+      "staging": null
+    },
+    {
+      "rpc": "register_ledger_worker",
+      "status": "HASH_MISMATCH",
+      "local": "defa3f3eb012ef7b8fd5275626f7170d",
+      "staging": "311a61303fa2ef0259f633493e11defc"
+    },
+    {
+      "rpc": "renew_ledger_job_lease",
+      "status": "HASH_MISMATCH",
+      "local": "f2a1b1f56b4d15ae0dd66c412b366245",
+      "staging": "e202152d5d14b7fef68feaeb0c80ce35"
+    },
+    {
+      "rpc": "replay_sale_ledger_chain",
+      "status": "HASH_MISMATCH",
+      "local": "04a911196808ab483bf7b23a53dd76ff",
+      "staging": "5031cbedbc7e68c8a8eebcdbd1a09bf0"
+    },
+    {
+      "rpc": "resolve_payment_ledger_account",
+      "status": "HASH_MISMATCH",
+      "local": "29d1e1f84fa2dd9289ea903e186ddb0e",
+      "staging": "afa17130e25eb88c43ae238987915751"
+    },
+    {
+      "rpc": "search_items_pos",
+      "status": "HASH_MISMATCH",
+      "local": "81f120780491589fafe2e7c2ebf7dc36",
+      "staging": "a5fe911a683d46a69bc62aa749daeaf2"
+    },
+    {
+      "rpc": "set_current_timestamp_updated_at",
+      "status": "HASH_MISMATCH",
+      "local": "db8a812c80a2d8344e1a1053430b4f33",
+      "staging": "34b47535bac7e5f7f2b78d90dc3e1cda"
+    },
+    {
+      "rpc": "set_inventory_stock",
+      "status": "MISSING_STAGING",
+      "local": "55a0daea3582876898cd74af514083eb",
+      "staging": null
+    },
+    {
+      "rpc": "set_stock",
+      "status": "HASH_MISMATCH",
+      "local": "1de93c71abb5e27af0edfea9015d1ff4",
+      "staging": "ed9af7b9c345679516bda9e1446ff38a"
+    },
+    {
+      "rpc": "set_updated_at_timestamp",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "c523daaef975bf45df0f50ef59f40347"
+    },
+    {
+      "rpc": "sync_offline_orders",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "d0ceb96175cb276b3cbcd3423ec314fd"
+    },
+    {
+      "rpc": "sync_user_name",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "6f35f4874fb8a1d86b7d3c590d2a3510"
+    },
+    {
+      "rpc": "update_competitor_price_timestamp",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "6cb73878927ccd2640d371a515d0b784"
+    },
+    {
+      "rpc": "update_receipt_config_simple",
+      "status": "HASH_MISMATCH",
+      "local": "0293b143f18136b1370060af18ade740",
+      "staging": "5019487e07abd19f7da4e6efa50b95f2"
+    },
+    {
+      "rpc": "update_reminder",
+      "status": "HASH_MISMATCH",
+      "local": "deeee5352c92157760104792dad854a3",
+      "staging": "4a9dbed2e751cfdf5acd4d0fb75cc2bf"
+    },
+    {
+      "rpc": "update_stock_transfer_status",
+      "status": "HASH_MISMATCH",
+      "local": "c6dd43f7648513705563e5471e853678",
+      "staging": "e5f01fe0560d971335e8b4540fc42bd3"
+    },
+    {
+      "rpc": "update_timestamp",
+      "status": "MISSING_LOCAL",
+      "local": null,
+      "staging": "a0fb0b054d86f31b7349564b428bfb19"
+    },
+    {
+      "rpc": "update_user_last_login",
+      "status": "HASH_MISMATCH",
+      "local": "59bfa28a705e2a676067f7a1982d6fc9",
+      "staging": "a0d08e9e5a6143285a85852d22df214a"
+    },
+    {
+      "rpc": "upsert_stock_level",
+      "status": "HASH_MISMATCH",
+      "local": "1c95b1a6a8838908ce2d20b3a9908822",
+      "staging": "c6a4f419c44182d36ec6510fb054ffe3"
+    },
+    {
+      "rpc": "validate_sale_intent",
+      "status": "HASH_MISMATCH",
+      "local": "2c21ba89cc581dbd895586e43f92935d",
+      "staging": "5687d532849099650a8c059d291ab5cc"
+    },
+    {
+      "rpc": "validate_trial_balance",
+      "status": "HASH_MISMATCH",
+      "local": "2de99a114a267eba085a02201d29e2d9",
+      "staging": "b1e2432bffe7b47627e3b0d824a04d22"
+    },
+    {
+      "rpc": "void_sale",
+      "status": "HASH_MISMATCH",
+      "local": "edab8879d9a6d1cca5abd402030728e8",
+      "staging": "07648e811dd6fe94df486a88cbe65ad4"
+    }
+  ]
+}
