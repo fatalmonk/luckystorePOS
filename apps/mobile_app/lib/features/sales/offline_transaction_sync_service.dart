@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/sync_action_audit_log.dart';
 import '../../models/sale_transaction_snapshot.dart';
 import './offline_sync_operational_alert_engine.dart';
+import './conflict_resolver.dart';
 
 enum OfflineSyncState { pending, syncing, synced, failed, conflict }
 
@@ -270,6 +271,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   final _queue = <QueuedOfflineTransaction>[];
   final _auditLogs = <SyncActionAuditLog>[];
   final _alertEngine = const OfflineSyncOperationalAlertEngine();
+  final _conflictResolver = ConflictResolver();
 
   SupabaseClient? _supabase;
   Timer? _workerTimer;

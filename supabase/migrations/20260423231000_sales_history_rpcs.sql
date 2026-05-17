@@ -5,6 +5,7 @@
 
 -- 1) RPC: get_sales_history
 -- Returns a paginated list of sales with search and date filters.
+DROP FUNCTION IF EXISTS public.get_sales_history;
 CREATE OR REPLACE FUNCTION public.get_sales_history(
   p_store_id uuid,
   p_search_query text DEFAULT NULL,
@@ -131,13 +132,14 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_payment_methods(uuid) TO authenticated;
 
 -- 4) Settings: get_store_users
+DROP FUNCTION IF EXISTS public.get_store_users;
 CREATE OR REPLACE FUNCTION public.get_store_users(p_store_id uuid)
 RETURNS TABLE (
   id uuid,
   full_name text,
   role text,
   email text,
-  last_login timestamptz
+  last_login_at timestamptz
 )
 LANGUAGE sql
 SECURITY DEFINER

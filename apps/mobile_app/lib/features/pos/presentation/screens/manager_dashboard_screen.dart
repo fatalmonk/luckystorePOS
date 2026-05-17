@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-// import 'package:fl_chart/fl_chart.dart';
+import 'package:fl_chart/fl_chart.dart';
 import './pos_session_summary_screen.dart';
 import './sync_queue_screen.dart';
 import './sync_audit_screen.dart';
@@ -523,15 +523,15 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   Widget _buildSalesTrendGraph() {
     if (_salesTrend.isEmpty) return const SizedBox.shrink();
 
-/*    List<FlSpot> spots = [];
+    List<FlSpot> spots = [];
     double maxY = 0;
-    
+
     for (int i = 0; i < _salesTrend.length; i++) {
       final double sales = (_salesTrend[i]['sales'] as num?)?.toDouble() ?? 0.0;
       spots.add(FlSpot(i.toDouble(), sales));
       if (sales > maxY) maxY = sales;
     }
-    if (maxY == 0) maxY = 100;*/
+    if (maxY == 0) maxY = 100;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -551,16 +551,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           const SizedBox(height: 24),
           SizedBox(
             height: 150,
-            child: Center(
-              child: Text(
-                'Sales Chart (Disabled for Web Test)',
-                style: TextStyle(
-                    color: Colors.white24,
-                    fontSize: 13,
-                    fontStyle: FontStyle.italic),
-              ),
-            ),
-/*            child: LineChart(
+            child: LineChart(
               LineChartData(
                 gridData: FlGridData(show: false),
                 titlesData: FlTitlesData(show: false),
@@ -584,7 +575,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                   ),
                 ],
               ),
-            ),*/
+            ),
           ),
         ],
       ),

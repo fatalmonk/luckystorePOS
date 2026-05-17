@@ -5,13 +5,20 @@
 -- Enable RLS on the table (if not already enabled)
 ALTER TABLE public.stock_levels ENABLE ROW LEVEL SECURITY;
 
--- Policy: allow any authenticated user to read stock levels.
+-- Policy: allow authenticated users to read stock levels only for stores in their tenant.
 DROP POLICY IF EXISTS "stock_levels_read" ON public.stock_levels;
 CREATE POLICY "stock_levels_read"
   ON public.stock_levels
   FOR SELECT
   TO authenticated
-  USING (true);
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.users u
+      JOIN public.stores s ON s.id = stock_levels.store_id
+      WHERE u.auth_id = (SELECT auth.uid())
+        AND u.tenant_id = s.tenant_id
+    )
+  );
 
 -- Policy: allow staff roles (admin, manager, stock) to insert, update, delete.
 DROP POLICY IF EXISTS "stock_levels_write" ON public.stock_levels;

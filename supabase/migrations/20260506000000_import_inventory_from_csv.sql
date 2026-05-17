@@ -1,12 +1,12 @@
 -- =============================================================================
 -- Inventory Import from CSV: Lucky Store Inventory with images
--- Store ID: 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd
--- Products: ~533 items
 -- =============================================================================
-
--- Enable required extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
+-- This is a manual import template — no-op during migration.
+-- To use it:
+--   1. Create temp table: CREATE TEMP TABLE temp_inventory_import (...)
+--   2. Load CSV data via Supabase dashboard or psql
+--   3. Uncomment and run the sections below
+--   4. Clean up: DROP TABLE IF EXISTS temp_inventory_import;
 -- =============================================================================
 -- Import function that reads from a temp table
 -- Run this after loading CSV data via Supabase dashboard or psql

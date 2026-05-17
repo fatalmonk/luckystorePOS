@@ -979,6 +979,22 @@ docs/root-docs/BRANCH_STRATEGY.md
 
 📞 Contact
 
+## ⭐ Star History
+
+<p align="center">
+  <a href="https://www.star-history.com/#fatalmonk/luckystorePOS&Date" target="_blank">
+    <img src="https://api.star-history.com/svg?repos=fatalmonk/luckystorePOS&type=Date" alt="Star History" width="600">
+  </a>
+</p>
+
+## Contributors
+
+<p align="center">
+  <a href="https://github.com/fatalmonk/luckystorePOS/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=fatalmonk/luckystorePOS&max=100" alt="Contributors" />
+  </a>
+</p>
+
 <div align="center">
 
 📧 Email: luckystore.1947@gmail.com￼
@@ -995,7 +1011,7 @@ docs/root-docs/BRANCH_STRATEGY.md
 
 Made with ❤️ for retailers in Bangladesh
 
-© 2024 Lucky Store. All rights reserved.
+[Report Bug](https://github.com/fatalmonk/luckystorePOS/issues) · [Request Feature](https://github.com/fatalmonk/luckystorePOS/issues)
 
 </div>
 ```

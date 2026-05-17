@@ -5,6 +5,8 @@ library;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
 
@@ -45,27 +47,27 @@ class _ManagerPinDialogState extends State<ManagerPinDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Manager Authentication'),
+      title: Text('Manager Authentication', style: AppTextStyles.headingMd),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Reason: ${widget.reason}'),
+          Text('Reason: ${widget.reason}', style: AppTextStyles.bodyMd),
           const SizedBox(height: 16),
           _buildPinEntry(),
           if (_errorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            Text(_errorMessage!, style: AppTextStyles.bodySm.copyWith(color: AppColors.dangerDefault)),
           ],
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel', style: AppTextStyles.labelMd.copyWith(color: AppColors.textSecondary)),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _submitPin,
-          child: _isLoading ? const CircularProgressIndicator() : const Text('Submit'),
+          child: _isLoading ? const CircularProgressIndicator() : Text('Submit', style: AppTextStyles.labelMd),
         ),
       ],
     );
@@ -217,19 +219,55 @@ class ManagerSecurityLayer {
     );
   }
 
-  static Future<void> processStockAdjustment(
+  static Future<bool> processStockAdjustment(
     BuildContext context,
     String itemId,
-    int delta,
-  ) async {
-    await requireManagerAuth(
-      context,
-      reason: 'Stock adjustment: $itemId (delta: $delta)',
-      onAuthSuccess: () async {
-        final posProvider = context.read<PosProvider>();
-        await posProvider.adjustStock(itemId, delta);
-      },
+    int delta, {
+    String reason = 'correction',
+    String? notes,
+  }) async {
+    final posProvider = context.read<PosProvider>();
+    
+    // First attempt without PIN
+    final result = await posProvider.adjustStock(
+      itemId: itemId,
+      delta: delta,
+      reason: reason,
+      notes: notes,
     );
+
+    // If successful or non-auth error, return result
+    if (result['success'] == true) {
+      return true;
+    }
+
+    // If manager auth required, show PIN dialog
+    if (result['requires_manager_auth'] == true) {
+      if (!context.mounted) return false;
+      final authResult = await requireManagerAuth(
+        context,
+        reason: 'Stock adjustment >5%: $itemId (delta: $delta)',
+        onAuthSuccess: () async {
+          if (!context.mounted) return;
+          // Retry with PIN
+          final retryResult = await posProvider.adjustStock(
+            itemId: itemId,
+            delta: delta,
+            reason: reason,
+            notes: notes,
+            managerPin: context.read<AuthProvider>().lastVerifiedPin,
+          );
+          
+          if (retryResult['success'] != true) {
+            throw Exception(retryResult['error'] ?? 'Stock adjustment failed');
+          }
+        },
+      );
+      return authResult;
+    }
+
+    // Other error
+    throw Exception(result['error'] ?? 'Stock adjustment failed');
   }
 }
 

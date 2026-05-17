@@ -862,6 +862,7 @@ CREATE POLICY "parties_select_tenant_isolated" ON public.parties
 -- Ensure expenses have proper RLS
 DROP POLICY IF EXISTS "expenses_select_all" ON public.expenses;
 DROP POLICY IF EXISTS "expenses_select_tenant_isolated" ON public.expenses;
+DROP POLICY IF EXISTS "expenses_select" ON public.expenses;
 
 CREATE POLICY "expenses_select_tenant_isolated" ON public.expenses
   FOR SELECT

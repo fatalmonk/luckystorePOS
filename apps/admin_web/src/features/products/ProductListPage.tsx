@@ -84,7 +84,7 @@ export function ProductListPage() {
             Add Product
           </Button>
         }
-        className="mb-8"
+        className="mb-6"
       />
 
       <DataTable
@@ -125,10 +125,10 @@ export function ProductListPage() {
         }
       />
 
-      <ProductEditDrawer 
-        product={editingProduct} 
+      <ProductEditDrawer
+        product={editingProduct}
         categories={categories}
-        onClose={() => setEditingProduct(null)} 
+        onClose={() => setEditingProduct(null)}
       />
 
       <ProductDetailDrawer
@@ -140,7 +140,7 @@ export function ProductListPage() {
         }}
       />
 
-      <ProductAddModal 
+      <ProductAddModal
         isOpen={isAddModalOpen}
         categories={categories}
         onClose={() => setIsAddModalOpen(false)}

@@ -176,8 +176,8 @@ export const CollectionsWorkspace: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--space-3)',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
+          backgroundColor: 'var(--color-danger-subtle)',
+          border: '1px solid var(--color-danger)',
           borderRadius: 'var(--radius-md)',
           padding: 'var(--space-3) var(--space-4)',
           marginBottom: 'var(--space-6)',
@@ -186,7 +186,7 @@ export const CollectionsWorkspace: React.FC = () => {
         }}>
           <AlertCircle size={16} />
           <span>{fetchError}</span>
-          <button onClick={fetchAging} style={{ marginLeft: 'var(--space-2)', background: 'none', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--color-danger)', padding: '2px 8px', fontSize: 'var(--font-size-xs)', fontWeight: '600' }}>Retry</button>
+          <button onClick={fetchAging} style={{ marginLeft: 'var(--space-2)', background: 'none', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--color-danger)', padding: '2px 8px', fontSize: 'var(--font-size-xs)', fontWeight: '600' }}>Retry</button>
           <button onClick={() => setFetchError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}>
             <X size={14} />
           </button>
@@ -249,7 +249,7 @@ export const CollectionsWorkspace: React.FC = () => {
               <tr style={{
                 textAlign: 'left',
                 borderBottom: '1px solid var(--border-color)',
-                backgroundColor: 'rgba(0,0,0,0.02)',
+                backgroundColor: 'var(--color-background-subtle)',
                 color: 'var(--text-muted)',
                 fontSize: 'var(--font-size-xs)',
                 textTransform: 'uppercase',
@@ -304,7 +304,7 @@ export const CollectionsWorkspace: React.FC = () => {
                       borderRadius: '12px',
                       fontSize: 'var(--font-size-xs)',
                       fontWeight: '600',
-                      backgroundColor: r.days_overdue > 30 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0,0,0,0.05)',
+                      backgroundColor: r.days_overdue > 30 ? 'var(--color-danger-subtle)' : 'var(--color-background-subtle)',
                       color: r.days_overdue > 30 ? 'var(--color-danger)' : 'var(--text-muted)'
                     }}>
                       {r.days_overdue}
@@ -333,7 +333,7 @@ export const CollectionsWorkspace: React.FC = () => {
                           justifyContent: 'center',
                           padding: 'var(--space-2)',
                           borderRadius: 'var(--radius-md)',
-                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          backgroundColor: 'var(--color-success-subtle)',
                           color: 'var(--color-success)',
                           cursor: 'pointer',
                           border: 'none',
@@ -352,8 +352,8 @@ export const CollectionsWorkspace: React.FC = () => {
                             justifyContent: 'center',
                             padding: 'var(--space-2)',
                             borderRadius: 'var(--radius-md)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            color: 'var(--color-info)',
+                            backgroundColor: 'var(--color-info-subtle)',
+                            color: 'var(--color-info-default)',
                             transition: 'background-color var(--transition-fast)'
                           }}
                         >
@@ -387,7 +387,7 @@ export const CollectionsWorkspace: React.FC = () => {
                           justifyContent: 'center',
                           padding: 'var(--space-2)',
                           borderRadius: 'var(--radius-md)',
-                          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                          backgroundColor: 'var(--color-warning-subtle)',
                           color: 'var(--color-warning)',
                           cursor: 'pointer',
                           border: 'none',
@@ -414,7 +414,7 @@ export const CollectionsWorkspace: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'var(--color-surface-overlay)',
           backdropFilter: 'blur(2px)'
         }}>
           <div className="card" style={{ width: '100%', maxWidth: '440px', padding: 'var(--space-6)' }}>
@@ -428,8 +428,8 @@ export const CollectionsWorkspace: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 'var(--space-2)',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
+                backgroundColor: 'var(--color-danger-subtle)',
+                border: '1px solid var(--color-danger)',
                 borderRadius: 'var(--radius-md)',
                 padding: 'var(--space-2) var(--space-3)',
                 marginBottom: 'var(--space-4)',
@@ -512,14 +512,14 @@ export const CollectionsWorkspace: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'var(--color-surface-overlay)',
           backdropFilter: 'blur(2px)'
         }}>
           <div className="card" style={{ width: '100%', maxWidth: '400px', padding: 'var(--space-6)' }}>
             <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', color: 'var(--text-main)', marginBottom: 'var(--space-4)' }}>Receive Payment</h2>
             <div style={{
-              backgroundColor: 'rgba(245, 158, 11, 0.1)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
+              backgroundColor: 'var(--color-warning-subtle)',
+              border: '1px solid var(--color-warning)',
               borderRadius: 'var(--radius-md)',
               padding: 'var(--space-4)',
               marginBottom: 'var(--space-6)'
@@ -533,8 +533,8 @@ export const CollectionsWorkspace: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 'var(--space-2)',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
+                backgroundColor: 'var(--color-danger-subtle)',
+                border: '1px solid var(--color-danger)',
                 borderRadius: 'var(--radius-md)',
                 padding: 'var(--space-2) var(--space-3)',
                 marginBottom: 'var(--space-4)',

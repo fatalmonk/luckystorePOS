@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../../../../models/pos_models.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-// import '../../../../shared/services/printer_service.dart'; // TODO: Re-enable when printer is available
 
 /// Receipt screen shown after a successful sale.
 /// Displays a clean receipt with all line items, totals, payment breakdown,
@@ -228,23 +230,22 @@ class ReceiptScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Print buttons
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {}, // BT skipped
+                  onPressed: () => _printReceipt(context),
                   icon: const Icon(Icons.print_rounded, size: 18),
-                  label: const Text('Print BT'),
+                  label: const Text('Print / PDF'),
                   style: AppButtonStyles.primary,
                 ),
               ),
               const SizedBox(width: AppSpacing.space3),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {}, // PDF skipped
-                  icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
-                  label: const Text('PDF / Share'),
+                  onPressed: () => _shareReceipt(context),
+                  icon: const Icon(Icons.share_rounded, size: 18),
+                  label: const Text('Share'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
                     side: BorderSide(color: AppColors.borderDefault),
@@ -285,6 +286,92 @@ class ReceiptScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _printReceipt(BuildContext context) async {
+    final pdf = await _buildReceiptPdf();
+    await Printing.layoutPdf(
+      onLayout: (_) => pdf,
+    );
+  }
+
+  Future<void> _shareReceipt(BuildContext context) async {
+    final pdf = await _buildReceiptPdf();
+    await Printing.sharePdf(
+      bytes: pdf,
+      filename: 'receipt-${saleResult.saleNumber}.pdf',
+    );
+  }
+
+  Future<Uint8List> _buildReceiptPdf() async {
+    final pdf = pw.Document();
+    final pricingByItemId = <String, PricingResult>{
+      for (final line in saleResult.pricingResults) line.itemId: line,
+    };
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: const PdfPageFormat(80 * PdfPageFormat.mm, 200 * PdfPageFormat.mm),
+        build: (pw.Context ctx) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Center(child: pw.Text('LUCKY STORE', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold))),
+              pw.Center(child: pw.Text('Your Neighborhood Store', style: pw.TextStyle(fontSize: 8, color: PdfColors.grey))),
+              pw.SizedBox(height: 8),
+              pw.Divider(),
+              pw.Text('Sale: ${saleResult.saleNumber}', style: pw.TextStyle(fontSize: 9)),
+              pw.SizedBox(height: 6),
+              ...?saleResult.items?.map((item) => pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Expanded(child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(item.item.name, style: pw.TextStyle(fontSize: 9)),
+                        pw.Text('${item.qty} x ${(pricingByItemId[item.item.id]?.sellingPrice ?? item.item.price).toStringAsFixed(0)}', style: pw.TextStyle(fontSize: 7, color: PdfColors.grey)),
+                      ],
+                    )),
+                    pw.Text('৳${item.lineTotal.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9)),
+                  ],
+                ),
+              )),
+              pw.SizedBox(height: 6),
+              pw.Divider(),
+              pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+                pw.Text('Subtotal', style: pw.TextStyle(fontSize: 9)),
+                pw.Text('৳${saleResult.subtotal.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9)),
+              ]),
+              if (saleResult.discount > 0)
+                pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+                  pw.Text('Discount', style: pw.TextStyle(fontSize: 9)),
+                  pw.Text('-৳${saleResult.discount.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9)),
+                ]),
+              pw.Divider(),
+              pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+                pw.Text('TOTAL', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                pw.Text('৳${saleResult.totalAmount.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+              ]),
+              pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+                pw.Text('Tendered', style: pw.TextStyle(fontSize: 9)),
+                pw.Text('৳${saleResult.tendered.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9)),
+              ]),
+              if (saleResult.changeDue > 0)
+                pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+                  pw.Text('Change', style: pw.TextStyle(fontSize: 9)),
+                  pw.Text('৳${saleResult.changeDue.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9)),
+                ]),
+              pw.SizedBox(height: 10),
+              pw.Center(child: pw.Text('Thank you!', style: pw.TextStyle(fontSize: 8, color: PdfColors.grey))),
+            ],
+          );
+        },
+      ),
+    );
+
+    return pdf.save();
   }
 }
 

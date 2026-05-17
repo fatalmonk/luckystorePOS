@@ -1,6 +1,5 @@
 -- =============================================================================
 -- Seed Stock Levels for All Active Items
--- Run this if stock_levels table is empty for a store
 -- =============================================================================
 
 -- Replace <store_id> with your actual store UUID

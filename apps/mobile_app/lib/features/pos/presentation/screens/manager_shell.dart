@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import './pos_main_screen.dart';
 import './manager_dashboard_screen.dart';
@@ -58,25 +61,25 @@ class _ManagerShellState extends State<ManagerShell> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF161B22),
-        title: const Text('Sign Out',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: const Text(
+        backgroundColor: AppColors.primitiveNeutral800,
+        title: Text('Sign Out',
+            style: AppTextStyles.headingMd.copyWith(color: AppColors.primitiveNeutral0)),
+        content: Text(
             'Are you sure you want to sign out of the manager portal?',
-            style: TextStyle(color: Colors.white70)),
+            style: AppTextStyles.bodyMd.copyWith(color: AppColors.primitiveNeutral400)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: Text('Cancel', style: AppTextStyles.labelMd.copyWith(color: AppColors.primitiveNeutral400)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE8B84B),
-              foregroundColor: Colors.black,
+              backgroundColor: AppColors.primaryDefault,
+              foregroundColor: AppColors.primaryOn,
               elevation: 0,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text('Sign Out', style: AppTextStyles.labelMd.copyWith(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -107,22 +110,22 @@ class _ManagerShellState extends State<ManagerShell> {
   Widget _buildLandscapeLayout(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: AppColors.primitiveNeutral900,
       body: Row(
         children: [
           // Rail
           NavigationRail(
-            backgroundColor: const Color(0xFF161B22),
+            backgroundColor: AppColors.primitiveNeutral800,
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onTabSelected,
             labelType: NavigationRailLabelType.all,
-            selectedIconTheme: const IconThemeData(color: Color(0xFFE8B84B)),
-            selectedLabelTextStyle: const TextStyle(
-                color: Color(0xFFE8B84B), fontWeight: FontWeight.w700, fontSize: 12),
+            selectedIconTheme: IconThemeData(color: AppColors.primaryDefault),
+            selectedLabelTextStyle: AppTextStyles.labelSm.copyWith(
+                color: AppColors.primaryDefault, fontWeight: FontWeight.w700),
             unselectedIconTheme:
-                IconThemeData(color: Colors.white.withValues(alpha: 0.45)),
-            unselectedLabelTextStyle: TextStyle(
-                color: Colors.white.withValues(alpha: 0.45), fontSize: 12),
+                IconThemeData(color: AppColors.primitiveNeutral400),
+            unselectedLabelTextStyle: AppTextStyles.labelSm.copyWith(
+                color: AppColors.primitiveNeutral400),
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
@@ -131,25 +134,25 @@ class _ManagerShellState extends State<ManagerShell> {
                   Container(
                     width: 44, height: 44,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                          colors: [Color(0xFFE8B84B), Color(0xFFD4941A)]),
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                          colors: [AppColors.primaryDefault, AppColors.primaryHover]),
+                      borderRadius: AppRadius.borderSm,
                     ),
-                    child: const Icon(Icons.store_rounded,
-                        color: Colors.white, size: 22),
+                    child: Icon(Icons.store_rounded,
+                        color: AppColors.primaryOn, size: 22),
                   ),
                   const SizedBox(height: 8),
                   // Manager name chip
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.primitiveNeutral0.withValues(alpha: 0.07),
+                      borderRadius: AppRadius.borderXs,
                     ),
                     child: Text(
                       auth.appUser?.name.split(' ').first ?? 'Manager',
-                      style: const TextStyle(
-                          color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                      style: AppTextStyles.labelXs.copyWith(
+                          color: AppColors.primitiveNeutral400, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],
@@ -160,7 +163,7 @@ class _ManagerShellState extends State<ManagerShell> {
               child: IconButton(
                 tooltip: 'Sign Out',
                 icon: Icon(Icons.logout_rounded,
-                    color: Colors.white.withValues(alpha: 0.5)),
+                    color: AppColors.primitiveNeutral400),
                 onPressed: () => _handleSignOut(context),
               ),
             ),
@@ -173,7 +176,7 @@ class _ManagerShellState extends State<ManagerShell> {
                 .toList(),
           ),
           // Vertical divider
-          Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
+          Container(width: 1, color: AppColors.primitiveNeutral600.withValues(alpha: 0.2)),
           // Page content
           Expanded(child: _pages[_selectedIndex]),
         ],
@@ -186,9 +189,9 @@ class _ManagerShellState extends State<ManagerShell> {
   Widget _buildPortraitLayout(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: AppColors.primitiveNeutral900,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: AppColors.primitiveNeutral800,
         elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 16,
@@ -197,27 +200,25 @@ class _ManagerShellState extends State<ManagerShell> {
             Container(
               width: 32, height: 32,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color(0xFFE8B84B), Color(0xFFD4941A)]),
-                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                    colors: [AppColors.primaryDefault, AppColors.primaryHover]),
+                borderRadius: AppRadius.borderXs,
               ),
-              child: const Icon(Icons.store_rounded,
-                  color: Colors.white, size: 18),
+              child: Icon(Icons.store_rounded,
+                  color: AppColors.primaryOn, size: 18),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Lucky Store',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700)),
+                  Text('Lucky Store',
+                      style: AppTextStyles.labelLg.copyWith(
+                          color: AppColors.primitiveNeutral0, fontWeight: FontWeight.w700)),
                   Text(
                     '${auth.appUser?.name ?? 'Manager'} · ${auth.appUser?.role.toUpperCase() ?? ''}',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+                    style: AppTextStyles.labelXs.copyWith(
+                        color: AppColors.primitiveNeutral400),
                   ),
                 ],
               ),
@@ -228,7 +229,7 @@ class _ManagerShellState extends State<ManagerShell> {
           IconButton(
             tooltip: 'Sign Out',
             icon: Icon(Icons.logout_rounded,
-                color: Colors.white.withValues(alpha: 0.55), size: 22),
+                color: AppColors.primitiveNeutral400, size: 22),
             onPressed: () => _handleSignOut(context),
           ),
           const SizedBox(width: 4),
@@ -237,12 +238,12 @@ class _ManagerShellState extends State<ManagerShell> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: AppColors.primitiveNeutral800,
           border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+              top: BorderSide(color: AppColors.primitiveNeutral600.withValues(alpha: 0.2))),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
+              color: AppColors.primitiveNeutral900.withValues(alpha: 0.4),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -254,11 +255,10 @@ class _ManagerShellState extends State<ManagerShell> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFFE8B84B),
-          unselectedItemColor: Colors.white.withValues(alpha: 0.4),
-          selectedLabelStyle: const TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w700),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          selectedItemColor: AppColors.primaryDefault,
+          unselectedItemColor: AppColors.primitiveNeutral400,
+          selectedLabelStyle: AppTextStyles.labelXs.copyWith(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: AppTextStyles.labelXs,
           items: _tabs
               .map((t) => BottomNavigationBarItem(
                     icon: Icon(t.icon),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -38,7 +39,23 @@ class _BkashCheckoutScreenState extends State<BkashCheckoutScreen> {
       _statusMessage = 'Verifying payment...';
     });
 
-    final service = BkashService();
+    final baseUrl = dotenv.env['BKASH_BASE_URL'];
+    final appKey = dotenv.env['BKASH_APP_KEY'];
+    final appSecret = dotenv.env['BKASH_APP_SECRET'];
+
+    if (baseUrl == null || baseUrl.isEmpty ||
+        appKey == null || appKey.isEmpty ||
+        appSecret == null || appSecret.isEmpty) {
+      setState(() => _statusMessage = 'bKash configuration error.');
+      _isExecuting = false;
+      return;
+    }
+
+    final service = BkashService(
+      baseUrl: baseUrl,
+      appKey: appKey,
+      appSecret: appSecret,
+    );
     final idToken = await service.grantToken();
     if (idToken == null) {
       setState(() => _statusMessage = 'Token error. Please try again.');

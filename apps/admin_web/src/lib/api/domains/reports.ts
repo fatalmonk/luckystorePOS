@@ -37,10 +37,10 @@ export const reports = {
       .select('id, name')
       .in('id', itemIds);
 
-    const nameMap = new Map(itemNames?.map((i: any) => [i.id, i.name]) || []);
+    const nameMap = new Map<any, any>(itemNames?.map((i: any) => [i.id, i.name]) || []);
 
     // Aggregate top products by quantity
-    const productMap = new Map();
+    const productMap = new Map<any, any>();
     saleItems?.forEach((item: any) => {
       const name = nameMap.get(item.item_id) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
