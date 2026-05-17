@@ -91,7 +91,7 @@ class _FavoriteChip extends StatelessWidget {
             color: AppColors.surfaceDefault,
             borderRadius: AppRadius.borderMd,
             border: Border.all(color: AppColors.borderDefault),
-            boxShadow: AppShadows.elevation1,
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],  // FIX: AppShadows removed, inline shadow
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

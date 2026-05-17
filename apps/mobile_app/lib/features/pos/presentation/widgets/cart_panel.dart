@@ -172,7 +172,7 @@ class CartPanel extends StatelessWidget {
         border: Border(
           top: BorderSide(color: AppColors.borderDefault),
         ),
-        boxShadow: AppShadows.elevation1,
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],  // FIX: AppShadows removed, inline shadow
       ),
       child: Column(
         children: [

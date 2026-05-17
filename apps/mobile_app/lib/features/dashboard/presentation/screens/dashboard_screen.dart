@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _todaySales = (statsResp['today_sales'] as num?)?.toDouble() ?? 0.0;
           _totalOrders = statsResp['total_orders'] as int? ?? 0;
           _lowStockCount = statsResp['low_stock_count'] as int? ?? 0;
-          _pendingSyncCount = syncResp.count ?? 0;
+          _pendingSyncCount = syncResp.count;  // FIX: count is non-nullable int
           _lastSyncAt = DateTime.now(); // Track last check time
           _isOnline = true;
           _loading = false;
