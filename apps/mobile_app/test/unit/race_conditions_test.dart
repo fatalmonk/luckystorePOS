@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -36,17 +38,29 @@ void main() {
     test('Simultaneous sales of same item should not cause negative stock', () async {
       var currentStock = 5;
       final results = <bool>[];
+      Completer<void>? completer;
 
-      final futures = <Future>[];
-      for (var i = 0; i < 10; i++) {
-        futures.add(Future(() {
+      Future<void> sellItem() async {
+        if (completer != null) return completer!.future;
+        completer = Completer<void>();
+        try {
+          // Simulate async lock
+          await Future.delayed(Duration.zero);
           if (currentStock > 0) {
             currentStock--;
             results.add(true);
           } else {
             results.add(false);
           }
-        }));
+        } finally {
+          completer!.complete();
+          completer = null;
+        }
+      }
+
+      final futures = <Future>[];
+      for (var i = 0; i < 10; i++) {
+        futures.add(sellItem());
       }
 
       await Future.wait(futures);
@@ -77,36 +91,43 @@ void main() {
 
   group('Offline Sync Race Conditions', () {
     test('Sync worker should not run concurrently', () async {
-      var isSyncing = false;
+      Completer<void>? syncCompleter;
       var syncAttempts = 0;
 
       Future<void> syncQueue() async {
-        if (isSyncing) return;
-        isSyncing = true;
-        syncAttempts++;
-        await Future.delayed(const Duration(milliseconds: 100));
-        isSyncing = false;
+        if (syncCompleter != null) return syncCompleter!.future;
+        syncCompleter = Completer<void>();
+        try {
+          syncAttempts++;
+          await Future.delayed(const Duration(milliseconds: 100));
+        } finally {
+          syncCompleter!.complete();
+          syncCompleter = null;
+        }
       }
 
       await Future.wait([syncQueue(), syncQueue(), syncQueue(), syncQueue()]);
 
-      expect(syncAttempts, lessThanOrEqualTo(1));
+      expect(syncAttempts, equals(1));
     });
 
-    test('_isSyncing flag prevents concurrent sync operations', () {
-      var isSyncing = false;
+    test('Completer pattern prevents concurrent sync operations', () async {
+      Completer<void>? syncCompleter;
       var syncCount = 0;
 
-      void attemptSync() {
-        if (isSyncing) return;
-        isSyncing = true;
-        syncCount++;
-        isSyncing = false;
+      Future<void> attemptSync() async {
+        if (syncCompleter != null) return syncCompleter!.future;
+        syncCompleter = Completer<void>();
+        try {
+          await Future.delayed(Duration.zero);
+          syncCount++;
+        } finally {
+          syncCompleter!.complete();
+          syncCompleter = null;
+        }
       }
 
-      attemptSync();
-      attemptSync();
-      attemptSync();
+      await Future.wait([attemptSync(), attemptSync(), attemptSync()]);
 
       expect(syncCount, equals(1));
     });
@@ -114,21 +135,32 @@ void main() {
 
   group('Session State Consistency', () {
     test('Session should not be opened twice concurrently', () async {
-      var sessionOpen = false;
+      Completer<bool>? sessionCompleter;
       var openAttempts = 0;
 
       Future<bool> openSession() async {
-        if (sessionOpen) return false;
-        await Future.delayed(const Duration(milliseconds: 50));
-        sessionOpen = true;
-        openAttempts++;
-        return true;
+        if (sessionCompleter != null) {
+          return sessionCompleter!.future;
+        }
+        sessionCompleter = Completer<bool>();
+
+        try {
+          await Future.delayed(const Duration(milliseconds: 50));
+          openAttempts++;
+          sessionCompleter!.complete(true);
+        } catch (e) {
+          sessionCompleter!.completeError(e);
+        }
+        // Crucially, return the shared future, not a new one.
+        return sessionCompleter!.future;
       }
 
       final results = await Future.wait([openSession(), openSession(), openSession()]);
 
-      expect(results.where((r) => r).length, lessThanOrEqualTo(1));
-      expect(openAttempts, lessThanOrEqualTo(1));
+      // All futures should complete with the same value 'true'.
+      expect(results, equals([true, true, true])); 
+      // But the core logic should only have executed once.
+      expect(openAttempts, equals(1));
     });
   });
 }

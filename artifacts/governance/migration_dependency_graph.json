@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-05-11T21:36:45.246Z",
-  "migration_count": 80,
+  "timestamp": "2026-05-17T13:43:33.493Z",
+  "migration_count": 92,
   "dependency_graph": {
     "20260301000000_baseline_core_tables.sql": {
       "sequence": 0,
@@ -129,6 +129,12 @@
             "owner": "20260423240000_sheets_migration_expenses_and_rpc.sql",
             "owner_timestamp": "20260423240000",
             "issue": "forward_dependency"
+          },
+          {
+            "object": "competitor_prices",
+            "owner": "20260514000001_competitor_prices_table.sql",
+            "owner_timestamp": "20260514000001",
+            "issue": "forward_dependency"
           }
         ]
       },
@@ -228,6 +234,12 @@
           "type": "forward_dependency",
           "object": "expenses",
           "depends_on_migration": "20260423240000_sheets_migration_expenses_and_rpc.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "competitor_prices",
+          "depends_on_migration": "20260514000001_competitor_prices_table.sql",
           "severity": "critical"
         }
       ]
@@ -389,11 +401,37 @@
         "migrations": [
           "20260327200001_low_stock_alerts.sql"
         ],
-        "satisfied": true,
-        "unsatisfied_objects": []
+        "satisfied": false,
+        "unsatisfied_objects": [
+          {
+            "object": "get_low_stock_items",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_inventory_summary",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          }
+        ]
       },
       "unsafe_assumptions": [],
-      "risks": []
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "get_low_stock_items",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_summary",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        }
+      ]
     },
     "20260327200002_stock_transfers.sql": {
       "sequence": 6,
@@ -630,14 +668,14 @@
         "unsatisfied_objects": [
           {
             "object": "lookup_item_by_scan",
-            "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-            "owner_timestamp": "20260423195000",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           },
           {
             "object": "search_items_pos",
-            "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-            "owner_timestamp": "20260423195000",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           }
         ]
@@ -656,13 +694,13 @@
         {
           "type": "forward_dependency",
           "object": "lookup_item_by_scan",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "search_items_pos",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
@@ -730,8 +768,8 @@
         "unsatisfied_objects": [
           {
             "object": "get_manager_dashboard_stats",
-            "owner": "20260420300001_manager_dashboard_trend.sql",
-            "owner_timestamp": "20260420300001",
+            "owner": "20260512150000_fix_dashboard_rpc.sql",
+            "owner_timestamp": "20260512150000",
             "issue": "forward_dependency"
           }
         ]
@@ -746,7 +784,7 @@
         {
           "type": "forward_dependency",
           "object": "get_manager_dashboard_stats",
-          "depends_on_migration": "20260420300001_manager_dashboard_trend.sql",
+          "depends_on_migration": "20260512150000_fix_dashboard_rpc.sql",
           "severity": "critical"
         },
         {
@@ -827,14 +865,14 @@
         "unsatisfied_objects": [
           {
             "object": "search_items_pos",
-            "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-            "owner_timestamp": "20260423195000",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           },
           {
             "object": "lookup_item_by_scan",
-            "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-            "owner_timestamp": "20260423195000",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           }
         ]
@@ -844,13 +882,13 @@
         {
           "type": "forward_dependency",
           "object": "search_items_pos",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "lookup_item_by_scan",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         }
       ]
@@ -1383,9 +1421,21 @@
         "satisfied": false,
         "unsatisfied_objects": [
           {
+            "object": "get_inventory_list",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
             "object": "adjust_stock",
             "owner": "20260423232000_production_hardening.sql",
             "owner_timestamp": "20260423232000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "set_stock",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           }
         ]
@@ -1394,8 +1444,20 @@
       "risks": [
         {
           "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
           "object": "adjust_stock",
           "depends_on_migration": "20260423232000_production_hardening.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
@@ -1443,8 +1505,8 @@
           },
           {
             "object": "get_store_users",
-            "owner": "20260506000004_repair_remaining_rpc_functions.sql",
-            "owner_timestamp": "20260506000004",
+            "owner": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+            "owner_timestamp": "20260512000000",
             "issue": "forward_dependency"
           },
           {
@@ -1493,7 +1555,7 @@
         {
           "type": "forward_dependency",
           "object": "get_store_users",
-          "depends_on_migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         },
         {
@@ -1931,50 +1993,26 @@
       "category": "runtime-only",
       "dependencies": {
         "objects": [
-          "record_purchase_v2",
-          "post_draft_purchase_receipt",
-          "jsonb_agg"
+          "record_purchase_v2"
         ],
         "migrations": [],
         "satisfied": false,
         "unsatisfied_objects": [
           {
             "object": "record_purchase_v2",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
-            "issue": "forward_dependency"
-          },
-          {
-            "object": "post_draft_purchase_receipt",
-            "owner": "20260506000004_repair_remaining_rpc_functions.sql",
-            "owner_timestamp": "20260506000004",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           }
         ]
       },
-      "unsafe_assumptions": [
-        {
-          "object": "jsonb_agg",
-          "issue": "object_not_found"
-        }
-      ],
+      "unsafe_assumptions": [],
       "risks": [
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
-        },
-        {
-          "type": "forward_dependency",
-          "object": "post_draft_purchase_receipt",
-          "depends_on_migration": "20260506000004_repair_remaining_rpc_functions.sql",
-          "severity": "critical"
-        },
-        {
-          "type": "missing_object",
-          "object": "jsonb_agg",
-          "severity": "high"
         },
         {
           "type": "runtime_before_foundation",
@@ -2081,8 +2119,8 @@
         "unsatisfied_objects": [
           {
             "object": "deduct_stock",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           }
         ]
@@ -2092,7 +2130,7 @@
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -2419,8 +2457,8 @@
         "unsatisfied_objects": [
           {
             "object": "deduct_stock",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           }
         ]
@@ -2430,7 +2468,7 @@
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -2449,6 +2487,7 @@
           "users",
           "stock_movements",
           "stock_ledger",
+          "get_sales_history",
           "record_purchase_v2",
           "get_current_user_tenant_id",
           "get_current_user_store_id",
@@ -2456,7 +2495,6 @@
           "get_receipt_config_simple",
           "update_receipt_config_simple",
           "get_store_users",
-          "get_sales_history",
           "get_sale_details",
           "get_stock_level_by_id",
           "post_draft_purchase_receipt",
@@ -2474,8 +2512,8 @@
         "unsatisfied_objects": [
           {
             "object": "record_purchase_v2",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           },
           {
@@ -2488,6 +2526,12 @@
             "object": "get_current_user_store_id",
             "owner": "20260508000000_fix_critical_rls_gaps.sql",
             "owner_timestamp": "20260508000000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_store_users",
+            "owner": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+            "owner_timestamp": "20260512000000",
             "issue": "forward_dependency"
           },
           {
@@ -2516,7 +2560,7 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -2529,6 +2573,12 @@
           "type": "forward_dependency",
           "object": "get_current_user_store_id",
           "depends_on_migration": "20260508000000_fix_critical_rls_gaps.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_store_users",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         },
         {
@@ -2589,10 +2639,9 @@
           "20260420300002_pos_session_backend.sql",
           "20260427010000_purchase_receiving_v2.sql",
           "20260423240000_sheets_migration_expenses_and_rpc.sql",
-          "20260423230000_lean_inventory_rpcs.sql",
           "20260427000100_collections_engine.sql",
           "20260420100001_pos_scanner_rpcs.sql",
-          "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "20260423230000_lean_inventory_rpcs.sql",
           "20260506000004_repair_remaining_rpc_functions.sql",
           "20260423204000_validate_sale_intent_server_gate.sql"
         ],
@@ -2600,8 +2649,32 @@
         "unsatisfied_objects": [
           {
             "object": "record_purchase_v2",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_inventory_list",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "lookup_item_by_scan",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "search_items_pos",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "set_stock",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           }
         ]
@@ -2616,13 +2689,37 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
           "type": "missing_object",
           "object": "enqueue_sale_for_ledger_posting_from_sales",
           "severity": "high"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "lookup_item_by_scan",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "search_items_pos",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
         }
       ]
     },
@@ -2686,9 +2783,6 @@
           "get_current_user_store_id",
           "get_current_user_tenant_id",
           "update_user_last_login",
-          "lookup_item_by_scan",
-          "get_pos_categories",
-          "search_items_pos",
           "get_manager_dashboard_stats",
           "get_close_risk_analytics",
           "get_monthly_governance_scorecard",
@@ -2719,7 +2813,6 @@
           "20260506000002_repair_missing_domain_functions.sql",
           "20260327200004_suppliers_purchase_orders.sql",
           "20260506000004_repair_remaining_rpc_functions.sql",
-          "20260423230000_lean_inventory_rpcs.sql",
           "20260327200005_batch_expiry_tracking.sql",
           "20260327200002_stock_transfers.sql",
           "20260427000100_collections_engine.sql",
@@ -2733,27 +2826,30 @@
           "20260506000003_repair_stock_and_reminder_functions.sql",
           "20260423123000_offline_sync_idempotency.sql",
           "20260427010000_purchase_receiving_v2.sql",
-          "20260423195000_add_mrp_and_pos_discount_support.sql",
-          "20260420100001_pos_scanner_rpcs.sql",
-          "20260420300001_manager_dashboard_trend.sql",
           "20260423161000_override_analytics_and_anomaly_flags.sql",
           "20260423182000_monthly_governance_scorecard.sql",
-          "20260327200001_low_stock_alerts.sql",
           "20260327200003_analytics.sql",
+          "20260423230000_lean_inventory_rpcs.sql",
           "20260327200000_stock_adjustments.sql"
         ],
         "satisfied": false,
         "unsatisfied_objects": [
           {
             "object": "record_purchase_v2",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "set_stock",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
             "issue": "forward_dependency"
           },
           {
             "object": "deduct_stock",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           },
           {
@@ -2769,9 +2865,39 @@
             "issue": "forward_dependency"
           },
           {
+            "object": "get_manager_dashboard_stats",
+            "owner": "20260512150000_fix_dashboard_rpc.sql",
+            "owner_timestamp": "20260512150000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_inventory_list",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_inventory_summary",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
             "object": "get_stock_level_by_id",
             "owner": "20260511125848_update_rpcs_for_inventory_movements.sql",
             "owner_timestamp": "20260511125848",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_low_stock_items",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "get_store_users",
+            "owner": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+            "owner_timestamp": "20260512000000",
             "issue": "forward_dependency"
           }
         ]
@@ -2794,13 +2920,19 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -2832,8 +2964,38 @@
         },
         {
           "type": "forward_dependency",
+          "object": "get_manager_dashboard_stats",
+          "depends_on_migration": "20260512150000_fix_dashboard_rpc.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_summary",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
           "object": "get_stock_level_by_id",
           "depends_on_migration": "20260511125848_update_rpcs_for_inventory_movements.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_low_stock_items",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_store_users",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         }
       ]
@@ -2887,8 +3049,8 @@
         "unsatisfied_objects": [
           {
             "object": "record_purchase_v2",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           }
         ]
@@ -2908,7 +3070,7 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         }
       ]
@@ -2968,14 +3130,44 @@
         ],
         "migrations": [
           "20260420100001_pos_scanner_rpcs.sql",
-          "20260423195000_add_mrp_and_pos_discount_support.sql",
           "20260423204000_validate_sale_intent_server_gate.sql"
         ],
-        "satisfied": true,
-        "unsatisfied_objects": []
+        "satisfied": false,
+        "unsatisfied_objects": [
+          {
+            "object": "lookup_item_by_scan",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "search_items_pos",
+            "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+            "owner_timestamp": "20260512160000",
+            "issue": "forward_dependency"
+          }
+        ]
       },
       "unsafe_assumptions": [],
-      "risks": []
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "lookup_item_by_scan",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "search_items_pos",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "runtime_before_foundation",
+          "severity": "critical",
+          "message": "Runtime migration depends on not-yet-created foundation"
+        }
+      ]
     },
     "20260506040100_fix_empty_search_path_on_security_definer_functions.sql": {
       "sequence": 69,
@@ -3228,8 +3420,8 @@
         "unsatisfied_objects": [
           {
             "object": "adjust_inventory_stock",
-            "owner": "20260511131100_serializable_rpcs.sql",
-            "owner_timestamp": "20260511131100",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
             "issue": "forward_dependency"
           }
         ]
@@ -3239,7 +3431,7 @@
         {
           "type": "forward_dependency",
           "object": "adjust_inventory_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         }
       ]
@@ -3253,8 +3445,270 @@
           "jsonb_build_object",
           "adjust_inventory_stock"
         ],
+        "migrations": [],
+        "satisfied": false,
+        "unsatisfied_objects": [
+          {
+            "object": "adjust_inventory_stock",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          }
+        ]
+      },
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        }
+      ],
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "runtime_before_foundation",
+          "severity": "critical",
+          "message": "Runtime migration depends on not-yet-created foundation"
+        }
+      ]
+    },
+    "20260511150000_fix_stock_levels_read_rls.sql": {
+      "sequence": 80,
+      "timestamp": "20260511150000",
+      "category": "hardening",
+      "dependencies": {
+        "objects": [],
+        "migrations": [],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [],
+      "risks": [
+        {
+          "type": "dangling_hardening",
+          "severity": "high",
+          "message": "Hardening migration with no explicit dependencies - may run before owner objects"
+        }
+      ]
+    },
+    "20260512000000_customer_analytics_staff_performance_rpcs.sql": {
+      "sequence": 81,
+      "timestamp": "20260512000000",
+      "category": "runtime-only",
+      "dependencies": {
+        "objects": [
+          "get_store_users",
+          "get_customer_analytics",
+          "get_staff_performance"
+        ],
         "migrations": [
-          "20260511131100_serializable_rpcs.sql"
+          "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+        ],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [],
+      "risks": []
+    },
+    "20260512090000_cleanup_overloads.sql": {
+      "sequence": 82,
+      "timestamp": "20260512090000",
+      "category": "uncategorized",
+      "dependencies": {
+        "objects": [
+          "adjust_stock",
+          "deduct_stock",
+          "void_sale",
+          "record_purchase",
+          "get_stock_level_by_id"
+        ],
+        "migrations": [
+          "20260423232000_production_hardening.sql",
+          "20260506000002_repair_missing_domain_functions.sql",
+          "20260511125848_update_rpcs_for_inventory_movements.sql"
+        ],
+        "satisfied": false,
+        "unsatisfied_objects": [
+          {
+            "object": "deduct_stock",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          }
+        ]
+      },
+      "unsafe_assumptions": [],
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "deduct_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ]
+    },
+    "20260512100000_canonical_runtime_reconciliation.sql": {
+      "sequence": 83,
+      "timestamp": "20260512100000",
+      "category": "uncategorized",
+      "dependencies": {
+        "objects": [
+          "stock_levels",
+          "jsonb_build_object",
+          "adjust_inventory_stock"
+        ],
+        "migrations": [
+          "20260325110027_stock_levels_table.sql"
+        ],
+        "satisfied": false,
+        "unsatisfied_objects": [
+          {
+            "object": "adjust_inventory_stock",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          }
+        ]
+      },
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        }
+      ],
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ]
+    },
+    "20260512120000_pillar2_governance_freeze.sql": {
+      "sequence": 84,
+      "timestamp": "20260512120000",
+      "category": "uncategorized",
+      "dependencies": {
+        "objects": [
+          "inventory_movements",
+          "inventory_reconciliations",
+          "inventory_items",
+          "adjust_inventory_stock",
+          "set_inventory_stock",
+          "deduct_stock",
+          "record_purchase_v2",
+          "approve_inventory_reconciliation",
+          "jsonb_build_object"
+        ],
+        "migrations": [
+          "20260511125509_inventory_movements_ledger.sql",
+          "20260511130416_inventory_reconciliations.sql",
+          "20260426213606_retail_profit_control_foundation.sql"
+        ],
+        "satisfied": false,
+        "unsatisfied_objects": [
+          {
+            "object": "adjust_inventory_stock",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "set_inventory_stock",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "deduct_stock",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "record_purchase_v2",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          },
+          {
+            "object": "approve_inventory_reconciliation",
+            "owner": "20260512130000_pillar3_isolation_restoration.sql",
+            "owner_timestamp": "20260512130000",
+            "issue": "forward_dependency"
+          }
+        ]
+      },
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        }
+      ],
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "deduct_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "record_purchase_v2",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "approve_inventory_reconciliation",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        }
+      ]
+    },
+    "20260512130000_pillar3_isolation_restoration.sql": {
+      "sequence": 85,
+      "timestamp": "20260512130000",
+      "category": "uncategorized",
+      "dependencies": {
+        "objects": [
+          "jsonb_build_object",
+          "adjust_inventory_stock"
+        ],
+        "migrations": [
+          "20260512130000_pillar3_isolation_restoration.sql"
         ],
         "satisfied": true,
         "unsatisfied_objects": []
@@ -3272,6 +3726,146 @@
           "severity": "high"
         }
       ]
+    },
+    "20260512140000_fix_users_recursion.sql": {
+      "sequence": 86,
+      "timestamp": "20260512140000",
+      "category": "replacement",
+      "dependencies": {
+        "objects": [
+          "is_admin_in_tenant"
+        ],
+        "migrations": [
+          "20260512140000_fix_users_recursion.sql"
+        ],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [],
+      "risks": []
+    },
+    "20260512150000_fix_dashboard_rpc.sql": {
+      "sequence": 87,
+      "timestamp": "20260512150000",
+      "category": "runtime-only",
+      "dependencies": {
+        "objects": [
+          "get_manager_dashboard_stats",
+          "jsonb_agg"
+        ],
+        "migrations": [
+          "20260512150000_fix_dashboard_rpc.sql"
+        ],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_agg",
+          "issue": "object_not_found"
+        }
+      ],
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_agg",
+          "severity": "high"
+        }
+      ]
+    },
+    "20260512160000_fix_all_rpc_qty_references.sql": {
+      "sequence": 88,
+      "timestamp": "20260512160000",
+      "category": "runtime-only",
+      "dependencies": {
+        "objects": [
+          "get_low_stock_items",
+          "get_inventory_summary",
+          "lookup_item_by_scan",
+          "search_items_pos",
+          "get_inventory_list",
+          "set_stock",
+          "jsonb_build_object",
+          "jsonb_agg"
+        ],
+        "migrations": [
+          "20260512160000_fix_all_rpc_qty_references.sql"
+        ],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        },
+        {
+          "object": "jsonb_agg",
+          "issue": "object_not_found"
+        }
+      ],
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        },
+        {
+          "type": "missing_object",
+          "object": "jsonb_agg",
+          "severity": "high"
+        }
+      ]
+    },
+    "20260514000001_competitor_prices_table.sql": {
+      "sequence": 89,
+      "timestamp": "20260514000001",
+      "category": "foundational",
+      "dependencies": {
+        "objects": [
+          "competitor_prices",
+          "cleanup_old_competitor_prices"
+        ],
+        "migrations": [
+          "20260514000001_competitor_prices_table.sql"
+        ],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [],
+      "risks": []
+    },
+    "20260517000000_fix_expenses_rls.sql": {
+      "sequence": 90,
+      "timestamp": "20260517000000",
+      "category": "hardening",
+      "dependencies": {
+        "objects": [],
+        "migrations": [],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [],
+      "risks": [
+        {
+          "type": "dangling_hardening",
+          "severity": "high",
+          "message": "Hardening migration with no explicit dependencies - may run before owner objects"
+        }
+      ]
+    },
+    "20260517114959_add_user_pos_fields.sql": {
+      "sequence": 91,
+      "timestamp": "20260517114959",
+      "category": "uncategorized",
+      "dependencies": {
+        "objects": [],
+        "migrations": [],
+        "satisfied": true,
+        "unsatisfied_objects": []
+      },
+      "unsafe_assumptions": [],
+      "risks": []
     }
   },
   "object_owners": {
@@ -3294,7 +3888,7 @@
     "stock_transfers": "20260327200002_stock_transfers.sql",
     "stock_transfer_items": "20260327200002_stock_transfers.sql",
     "expenses": "20260423240000_sheets_migration_expenses_and_rpc.sql",
-    "competitor_prices": "20260301000000_baseline_core_tables.sql",
+    "competitor_prices": "20260514000001_competitor_prices_table.sql",
     "idx_stores_tenant": "20260301000000_baseline_core_tables.sql",
     "idx_users_tenant": "20260301000000_baseline_core_tables.sql",
     "idx_users_auth_id": "20260301000000_baseline_core_tables.sql",
@@ -3320,8 +3914,8 @@
     "adjust_stock": "20260423232000_production_hardening.sql",
     "get_stock_movements": "20260327200000_stock_adjustments.sql",
     "set_current_timestamp_updated_at": "20260327200001_low_stock_alerts.sql",
-    "get_low_stock_items": "20260327200001_low_stock_alerts.sql",
-    "get_inventory_summary": "20260327200001_low_stock_alerts.sql",
+    "get_low_stock_items": "20260512160000_fix_all_rpc_qty_references.sql",
+    "get_inventory_summary": "20260512160000_fix_all_rpc_qty_references.sql",
     "stock_transfer_status": "20260327200002_stock_transfers.sql",
     "create_stock_transfer": "20260327200002_stock_transfers.sql",
     "update_stock_transfer_status": "20260327200002_stock_transfers.sql",
@@ -3358,12 +3952,12 @@
     "idx_sale_payments_sale": "20260420100000_pos_transactions.sql",
     "complete_sale": "20260423232000_production_hardening.sql",
     "void_sale": "20260423232000_production_hardening.sql",
-    "lookup_item_by_scan": "20260423195000_add_mrp_and_pos_discount_support.sql",
-    "search_items_pos": "20260423195000_add_mrp_and_pos_discount_support.sql",
+    "lookup_item_by_scan": "20260512160000_fix_all_rpc_qty_references.sql",
+    "search_items_pos": "20260512160000_fix_all_rpc_qty_references.sql",
     "get_pos_categories": "20260420100001_pos_scanner_rpcs.sql",
     "idx_items_name_trgm": "20260426240001_inventory_scale_observability.sql",
     "idx_items_brand_trgm": "20260420100001_pos_scanner_rpcs.sql",
-    "get_manager_dashboard_stats": "20260420300001_manager_dashboard_trend.sql",
+    "get_manager_dashboard_stats": "20260512150000_fix_dashboard_rpc.sql",
     "get_session_summary": "20260420300002_pos_session_backend.sql",
     "close_pos_session": "20260420300002_pos_session_backend.sql",
     "sale_sync_conflicts": "20260423123000_offline_sync_idempotency.sql",
@@ -3409,13 +4003,13 @@
     "validate_trial_balance": "20260423224500_ledger_posting_engine_and_period_close.sql",
     "close_accounting_period": "20260423224500_ledger_posting_engine_and_period_close.sql",
     "replay_sale_ledger_chain": "20260423224500_ledger_posting_engine_and_period_close.sql",
-    "get_inventory_list": "20260423230000_lean_inventory_rpcs.sql",
-    "set_stock": "20260423230000_lean_inventory_rpcs.sql",
+    "get_inventory_list": "20260512160000_fix_all_rpc_qty_references.sql",
+    "set_stock": "20260512160000_fix_all_rpc_qty_references.sql",
     "get_stock_history_simple": "20260423230000_lean_inventory_rpcs.sql",
     "get_sales_history": "20260506000004_repair_remaining_rpc_functions.sql",
     "get_sale_details": "20260506000004_repair_remaining_rpc_functions.sql",
     "get_payment_methods": "20260506000004_repair_remaining_rpc_functions.sql",
-    "get_store_users": "20260506000004_repair_remaining_rpc_functions.sql",
+    "get_store_users": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
     "get_receipt_config_simple": "20260506000004_repair_remaining_rpc_functions.sql",
     "update_receipt_config_simple": "20260506000004_repair_remaining_rpc_functions.sql",
     "ledger_workers": "20260423233000_ledger_posting_hardening.sql",
@@ -3484,8 +4078,6 @@
     "idx_purchase_receipts_status": "20260506000004_repair_remaining_rpc_functions.sql",
     "idx_purchase_receipt_items_receipt": "20260506000004_repair_remaining_rpc_functions.sql",
     "idx_purchase_receipt_items_item": "20260427010000_purchase_receiving_v2.sql",
-    "record_purchase_v2": "20260511131100_serializable_rpcs.sql",
-    "post_draft_purchase_receipt": "20260506000004_repair_remaining_rpc_functions.sql",
     "idx_users_last_login_at": "20260506000004_repair_remaining_rpc_functions.sql",
     "update_user_last_login": "20260506000004_repair_remaining_rpc_functions.sql",
     "used": "20260427080000_stock_ledger_table.sql",
@@ -3506,7 +4098,7 @@
     "log_stock_ledger_on_update": "20260506000004_repair_remaining_rpc_functions.sql",
     "to": "20260427080000_stock_ledger_table.sql",
     "get_stock_level_by_id": "20260511125848_update_rpcs_for_inventory_movements.sql",
-    "deduct_stock": "20260511131100_serializable_rpcs.sql",
+    "deduct_stock": "20260512130000_pillar3_isolation_restoration.sql",
     "silently": "20260427210000_reconcile_stock_ledger_schema.sql",
     "idx_stock_ledger_store_product": "20260427210000_reconcile_stock_ledger_schema.sql",
     "reminders": "20260506000003_repair_stock_and_reminder_functions.sql",
@@ -3522,6 +4114,8 @@
     "get_current_user_store_id": "20260508000000_fix_critical_rls_gaps.sql",
     "idx_stock_movements_tenant_id": "20260506000004_repair_remaining_rpc_functions.sql",
     "idx_stock_movements_reference": "20260506000004_repair_remaining_rpc_functions.sql",
+    "record_purchase_v2": "20260512130000_pillar3_isolation_restoration.sql",
+    "post_draft_purchase_receipt": "20260506000004_repair_remaining_rpc_functions.sql",
     "idx_items_tenant_id": "20260510130000_fix_remote_rls_policies_manual.sql",
     "movement_type": "20260511125509_inventory_movements_ledger.sql",
     "reference_type": "20260511125509_inventory_movements_ledger.sql",
@@ -3531,10 +4125,10 @@
     "idx_inv_movements_created_at": "20260511125509_inventory_movements_ledger.sql",
     "idx_inv_movements_reference": "20260511125509_inventory_movements_ledger.sql",
     "prevent_inventory_movement_update": "20260511125509_inventory_movements_ledger.sql",
-    "adjust_inventory_stock": "20260511131100_serializable_rpcs.sql",
+    "adjust_inventory_stock": "20260512130000_pillar3_isolation_restoration.sql",
     "select_inventory_movements": "20260511125509_inventory_movements_ledger.sql",
     "insert_inventory_movements": "20260511125509_inventory_movements_ledger.sql",
-    "set_inventory_stock": "20260511131100_serializable_rpcs.sql",
+    "set_inventory_stock": "20260512130000_pillar3_isolation_restoration.sql",
     "get_inventory_movements": "20260511125700_get_inventory_movements_rpc.sql",
     "reconciliation_status": "20260511130416_inventory_reconciliations.sql",
     "inventory_reconciliations": "20260511130416_inventory_reconciliations.sql",
@@ -3544,7 +4138,20 @@
     "select_reconciliations": "20260511130416_inventory_reconciliations.sql",
     "insert_reconciliations": "20260511130416_inventory_reconciliations.sql",
     "update_reconciliations": "20260511130416_inventory_reconciliations.sql",
-    "approve_inventory_reconciliation": "20260511131100_serializable_rpcs.sql"
+    "approve_inventory_reconciliation": "20260512130000_pillar3_isolation_restoration.sql",
+    "get_customer_analytics": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+    "get_staff_performance": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+    "is_admin_in_tenant": "20260512140000_fix_users_recursion.sql",
+    "with": "20260514000001_competitor_prices_table.sql",
+    "idx_competitor_prices_store_id": "20260514000001_competitor_prices_table.sql",
+    "idx_competitor_prices_product_id": "20260514000001_competitor_prices_table.sql",
+    "idx_competitor_prices_competitor": "20260514000001_competitor_prices_table.sql",
+    "idx_competitor_prices_scraped_at": "20260514000001_competitor_prices_table.sql",
+    "idx_competitor_prices_batch": "20260514000001_competitor_prices_table.sql",
+    "idx_competitor_prices_store_product_scraped": "20260514000001_competitor_prices_table.sql",
+    "cleanup_old_competitor_prices": "20260514000001_competitor_prices_table.sql",
+    "trigger_cleanup_competitor_prices": "20260514000001_competitor_prices_table.sql",
+    "check_price_alerts": "20260514000001_competitor_prices_table.sql"
   },
   "unsafe_migrations": {
     "20260301000000_baseline_core_tables.sql": {
@@ -3645,6 +4252,12 @@
           "object": "expenses",
           "depends_on_migration": "20260423240000_sheets_migration_expenses_and_rpc.sql",
           "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "competitor_prices",
+          "depends_on_migration": "20260514000001_competitor_prices_table.sql",
+          "severity": "critical"
         }
       ],
       "unsatisfied_objects": [
@@ -3743,6 +4356,12 @@
           "owner": "20260423240000_sheets_migration_expenses_and_rpc.sql",
           "owner_timestamp": "20260423240000",
           "issue": "forward_dependency"
+        },
+        {
+          "object": "competitor_prices",
+          "owner": "20260514000001_competitor_prices_table.sql",
+          "owner_timestamp": "20260514000001",
+          "issue": "forward_dependency"
         }
       ],
       "unsafe_assumptions": []
@@ -3835,6 +4454,38 @@
           "object": "adjust_stock",
           "owner": "20260423232000_production_hardening.sql",
           "owner_timestamp": "20260423232000",
+          "issue": "forward_dependency"
+        }
+      ],
+      "unsafe_assumptions": []
+    },
+    "20260327200001_low_stock_alerts.sql": {
+      "category": "uncategorized",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "get_low_stock_items",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_summary",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        }
+      ],
+      "unsatisfied_objects": [
+        {
+          "object": "get_low_stock_items",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_inventory_summary",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         }
       ],
@@ -3960,13 +4611,13 @@
         {
           "type": "forward_dependency",
           "object": "lookup_item_by_scan",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "search_items_pos",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
@@ -3988,14 +4639,14 @@
       "unsatisfied_objects": [
         {
           "object": "lookup_item_by_scan",
-          "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-          "owner_timestamp": "20260423195000",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         },
         {
           "object": "search_items_pos",
-          "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-          "owner_timestamp": "20260423195000",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         }
       ],
@@ -4041,7 +4692,7 @@
         {
           "type": "forward_dependency",
           "object": "get_manager_dashboard_stats",
-          "depends_on_migration": "20260420300001_manager_dashboard_trend.sql",
+          "depends_on_migration": "20260512150000_fix_dashboard_rpc.sql",
           "severity": "critical"
         },
         {
@@ -4058,8 +4709,8 @@
       "unsatisfied_objects": [
         {
           "object": "get_manager_dashboard_stats",
-          "owner": "20260420300001_manager_dashboard_trend.sql",
-          "owner_timestamp": "20260420300001",
+          "owner": "20260512150000_fix_dashboard_rpc.sql",
+          "owner_timestamp": "20260512150000",
           "issue": "forward_dependency"
         }
       ],
@@ -4102,27 +4753,27 @@
         {
           "type": "forward_dependency",
           "object": "search_items_pos",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "lookup_item_by_scan",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         }
       ],
       "unsatisfied_objects": [
         {
           "object": "search_items_pos",
-          "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-          "owner_timestamp": "20260423195000",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         },
         {
           "object": "lookup_item_by_scan",
-          "owner": "20260423195000_add_mrp_and_pos_discount_support.sql",
-          "owner_timestamp": "20260423195000",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         }
       ],
@@ -4392,8 +5043,20 @@
       "risks": [
         {
           "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
           "object": "adjust_stock",
           "depends_on_migration": "20260423232000_production_hardening.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
@@ -4404,9 +5067,21 @@
       ],
       "unsatisfied_objects": [
         {
+          "object": "get_inventory_list",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
           "object": "adjust_stock",
           "owner": "20260423232000_production_hardening.sql",
           "owner_timestamp": "20260423232000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "set_stock",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         }
       ],
@@ -4436,7 +5111,7 @@
         {
           "type": "forward_dependency",
           "object": "get_store_users",
-          "depends_on_migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         },
         {
@@ -4488,8 +5163,8 @@
         },
         {
           "object": "get_store_users",
-          "owner": "20260506000004_repair_remaining_rpc_functions.sql",
-          "owner_timestamp": "20260506000004",
+          "owner": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+          "owner_timestamp": "20260512000000",
           "issue": "forward_dependency"
         },
         {
@@ -4674,19 +5349,8 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
-        },
-        {
-          "type": "forward_dependency",
-          "object": "post_draft_purchase_receipt",
-          "depends_on_migration": "20260506000004_repair_remaining_rpc_functions.sql",
-          "severity": "critical"
-        },
-        {
-          "type": "missing_object",
-          "object": "jsonb_agg",
-          "severity": "high"
         },
         {
           "type": "runtime_before_foundation",
@@ -4697,23 +5361,12 @@
       "unsatisfied_objects": [
         {
           "object": "record_purchase_v2",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
-          "issue": "forward_dependency"
-        },
-        {
-          "object": "post_draft_purchase_receipt",
-          "owner": "20260506000004_repair_remaining_rpc_functions.sql",
-          "owner_timestamp": "20260506000004",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         }
       ],
-      "unsafe_assumptions": [
-        {
-          "object": "jsonb_agg",
-          "issue": "object_not_found"
-        }
-      ]
+      "unsafe_assumptions": []
     },
     "20260427064836_add_last_login_to_users.sql": {
       "category": "uncategorized",
@@ -4780,7 +5433,7 @@
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -4792,8 +5445,8 @@
       "unsatisfied_objects": [
         {
           "object": "deduct_stock",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         }
       ],
@@ -5007,7 +5660,7 @@
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -5019,8 +5672,8 @@
       "unsatisfied_objects": [
         {
           "object": "deduct_stock",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         }
       ],
@@ -5032,7 +5685,7 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -5045,6 +5698,12 @@
           "type": "forward_dependency",
           "object": "get_current_user_store_id",
           "depends_on_migration": "20260508000000_fix_critical_rls_gaps.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_store_users",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         },
         {
@@ -5077,8 +5736,8 @@
       "unsatisfied_objects": [
         {
           "object": "record_purchase_v2",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         },
         {
@@ -5091,6 +5750,12 @@
           "object": "get_current_user_store_id",
           "owner": "20260508000000_fix_critical_rls_gaps.sql",
           "owner_timestamp": "20260508000000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_store_users",
+          "owner": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+          "owner_timestamp": "20260512000000",
           "issue": "forward_dependency"
         },
         {
@@ -5121,20 +5786,68 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
           "type": "missing_object",
           "object": "enqueue_sale_for_ledger_posting_from_sales",
           "severity": "high"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "lookup_item_by_scan",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "search_items_pos",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
         }
       ],
       "unsatisfied_objects": [
         {
           "object": "record_purchase_v2",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_inventory_list",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "lookup_item_by_scan",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "search_items_pos",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "set_stock",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         }
       ],
@@ -5151,13 +5864,19 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -5189,22 +5908,58 @@
         },
         {
           "type": "forward_dependency",
+          "object": "get_manager_dashboard_stats",
+          "depends_on_migration": "20260512150000_fix_dashboard_rpc.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_summary",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
           "object": "get_stock_level_by_id",
           "depends_on_migration": "20260511125848_update_rpcs_for_inventory_movements.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_low_stock_items",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_store_users",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         }
       ],
       "unsatisfied_objects": [
         {
           "object": "record_purchase_v2",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "set_stock",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
           "issue": "forward_dependency"
         },
         {
           "object": "deduct_stock",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         },
         {
@@ -5220,9 +5975,39 @@
           "issue": "forward_dependency"
         },
         {
+          "object": "get_manager_dashboard_stats",
+          "owner": "20260512150000_fix_dashboard_rpc.sql",
+          "owner_timestamp": "20260512150000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_inventory_list",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_inventory_summary",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
           "object": "get_stock_level_by_id",
           "owner": "20260511125848_update_rpcs_for_inventory_movements.sql",
           "owner_timestamp": "20260511125848",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_low_stock_items",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "get_store_users",
+          "owner": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+          "owner_timestamp": "20260512000000",
           "issue": "forward_dependency"
         }
       ],
@@ -5252,15 +6037,15 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         }
       ],
       "unsatisfied_objects": [
         {
           "object": "record_purchase_v2",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         }
       ],
@@ -5287,6 +6072,43 @@
           "issue": "object_not_found"
         }
       ]
+    },
+    "20260506040000_revoke_anon_on_pos_functions.sql": {
+      "category": "runtime-only",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "lookup_item_by_scan",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "search_items_pos",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "runtime_before_foundation",
+          "severity": "critical",
+          "message": "Runtime migration depends on not-yet-created foundation"
+        }
+      ],
+      "unsatisfied_objects": [
+        {
+          "object": "lookup_item_by_scan",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "search_items_pos",
+          "owner": "20260512160000_fix_all_rpc_qty_references.sql",
+          "owner_timestamp": "20260512160000",
+          "issue": "forward_dependency"
+        }
+      ],
+      "unsafe_assumptions": []
     },
     "20260506040100_fix_empty_search_path_on_security_definer_functions.sql": {
       "category": "runtime-only",
@@ -5374,15 +6196,15 @@
         {
           "type": "forward_dependency",
           "object": "adjust_inventory_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         }
       ],
       "unsatisfied_objects": [
         {
           "object": "adjust_inventory_stock",
-          "owner": "20260511131100_serializable_rpcs.sql",
-          "owner_timestamp": "20260511131100",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
           "issue": "forward_dependency"
         }
       ],
@@ -5390,6 +6212,181 @@
     },
     "20260511131100_serializable_rpcs.sql": {
       "category": "runtime-only",
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "runtime_before_foundation",
+          "severity": "critical",
+          "message": "Runtime migration depends on not-yet-created foundation"
+        }
+      ],
+      "unsatisfied_objects": [
+        {
+          "object": "adjust_inventory_stock",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        }
+      ],
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        }
+      ]
+    },
+    "20260511150000_fix_stock_levels_read_rls.sql": {
+      "category": "hardening",
+      "risks": [
+        {
+          "type": "dangling_hardening",
+          "severity": "high",
+          "message": "Hardening migration with no explicit dependencies - may run before owner objects"
+        }
+      ],
+      "unsatisfied_objects": [],
+      "unsafe_assumptions": []
+    },
+    "20260512090000_cleanup_overloads.sql": {
+      "category": "uncategorized",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "deduct_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ],
+      "unsatisfied_objects": [
+        {
+          "object": "deduct_stock",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        }
+      ],
+      "unsafe_assumptions": []
+    },
+    "20260512100000_canonical_runtime_reconciliation.sql": {
+      "category": "uncategorized",
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ],
+      "unsatisfied_objects": [
+        {
+          "object": "adjust_inventory_stock",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        }
+      ],
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        }
+      ]
+    },
+    "20260512120000_pillar2_governance_freeze.sql": {
+      "category": "uncategorized",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "deduct_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "record_purchase_v2",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "approve_inventory_reconciliation",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        }
+      ],
+      "unsatisfied_objects": [
+        {
+          "object": "adjust_inventory_stock",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "set_inventory_stock",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "deduct_stock",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "record_purchase_v2",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        },
+        {
+          "object": "approve_inventory_reconciliation",
+          "owner": "20260512130000_pillar3_isolation_restoration.sql",
+          "owner_timestamp": "20260512130000",
+          "issue": "forward_dependency"
+        }
+      ],
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        }
+      ]
+    },
+    "20260512130000_pillar3_isolation_restoration.sql": {
+      "category": "uncategorized",
       "risks": [
         {
           "type": "missing_object",
@@ -5404,6 +6401,61 @@
           "issue": "object_not_found"
         }
       ]
+    },
+    "20260512150000_fix_dashboard_rpc.sql": {
+      "category": "runtime-only",
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_agg",
+          "severity": "high"
+        }
+      ],
+      "unsatisfied_objects": [],
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_agg",
+          "issue": "object_not_found"
+        }
+      ]
+    },
+    "20260512160000_fix_all_rpc_qty_references.sql": {
+      "category": "runtime-only",
+      "risks": [
+        {
+          "type": "missing_object",
+          "object": "jsonb_build_object",
+          "severity": "high"
+        },
+        {
+          "type": "missing_object",
+          "object": "jsonb_agg",
+          "severity": "high"
+        }
+      ],
+      "unsatisfied_objects": [],
+      "unsafe_assumptions": [
+        {
+          "object": "jsonb_build_object",
+          "issue": "object_not_found"
+        },
+        {
+          "object": "jsonb_agg",
+          "issue": "object_not_found"
+        }
+      ]
+    },
+    "20260517000000_fix_expenses_rls.sql": {
+      "category": "hardening",
+      "risks": [
+        {
+          "type": "dangling_hardening",
+          "severity": "high",
+          "message": "Hardening migration with no explicit dependencies - may run before owner objects"
+        }
+      ],
+      "unsatisfied_objects": [],
+      "unsafe_assumptions": []
     }
   },
   "critical_issues": [
@@ -5505,6 +6557,12 @@
           "object": "expenses",
           "depends_on_migration": "20260423240000_sheets_migration_expenses_and_rpc.sql",
           "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "competitor_prices",
+          "depends_on_migration": "20260514000001_competitor_prices_table.sql",
+          "severity": "critical"
         }
       ]
     },
@@ -5549,6 +6607,23 @@
           "type": "forward_dependency",
           "object": "adjust_stock",
           "depends_on_migration": "20260423232000_production_hardening.sql",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "migration": "20260327200001_low_stock_alerts.sql",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "get_low_stock_items",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_summary",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         }
       ]
@@ -5615,13 +6690,13 @@
         {
           "type": "forward_dependency",
           "object": "lookup_item_by_scan",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "search_items_pos",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
@@ -5648,7 +6723,7 @@
         {
           "type": "forward_dependency",
           "object": "get_manager_dashboard_stats",
-          "depends_on_migration": "20260420300001_manager_dashboard_trend.sql",
+          "depends_on_migration": "20260512150000_fix_dashboard_rpc.sql",
           "severity": "critical"
         },
         {
@@ -5664,13 +6739,13 @@
         {
           "type": "forward_dependency",
           "object": "search_items_pos",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "lookup_item_by_scan",
-          "depends_on_migration": "20260423195000_add_mrp_and_pos_discount_support.sql",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         }
       ]
@@ -5781,8 +6856,20 @@
       "risks": [
         {
           "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
           "object": "adjust_stock",
           "depends_on_migration": "20260423232000_production_hardening.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
@@ -5816,7 +6903,7 @@
         {
           "type": "forward_dependency",
           "object": "get_store_users",
-          "depends_on_migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         },
         {
@@ -5883,13 +6970,7 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
-          "severity": "critical"
-        },
-        {
-          "type": "forward_dependency",
-          "object": "post_draft_purchase_receipt",
-          "depends_on_migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -5922,7 +7003,7 @@
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -6012,7 +7093,7 @@
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -6028,7 +7109,7 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -6041,6 +7122,12 @@
           "type": "forward_dependency",
           "object": "get_current_user_store_id",
           "depends_on_migration": "20260508000000_fix_critical_rls_gaps.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_store_users",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         },
         {
@@ -6062,7 +7149,31 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "lookup_item_by_scan",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "search_items_pos",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         }
       ]
@@ -6073,13 +7184,19 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_stock",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
           "severity": "critical"
         },
         {
           "type": "forward_dependency",
           "object": "deduct_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         },
         {
@@ -6096,8 +7213,38 @@
         },
         {
           "type": "forward_dependency",
+          "object": "get_manager_dashboard_stats",
+          "depends_on_migration": "20260512150000_fix_dashboard_rpc.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_list",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_inventory_summary",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
           "object": "get_stock_level_by_id",
           "depends_on_migration": "20260511125848_update_rpcs_for_inventory_movements.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_low_stock_items",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "get_store_users",
+          "depends_on_migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
           "severity": "critical"
         }
       ]
@@ -6108,8 +7255,30 @@
         {
           "type": "forward_dependency",
           "object": "record_purchase_v2",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
+        }
+      ]
+    },
+    {
+      "migration": "20260506040000_revoke_anon_on_pos_functions.sql",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "lookup_item_by_scan",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "search_items_pos",
+          "depends_on_migration": "20260512160000_fix_all_rpc_qty_references.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "runtime_before_foundation",
+          "severity": "critical",
+          "message": "Runtime migration depends on not-yet-created foundation"
         }
       ]
     },
@@ -6119,7 +7288,80 @@
         {
           "type": "forward_dependency",
           "object": "adjust_inventory_stock",
-          "depends_on_migration": "20260511131100_serializable_rpcs.sql",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "migration": "20260511131100_serializable_rpcs.sql",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "runtime_before_foundation",
+          "severity": "critical",
+          "message": "Runtime migration depends on not-yet-created foundation"
+        }
+      ]
+    },
+    {
+      "migration": "20260512090000_cleanup_overloads.sql",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "deduct_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "migration": "20260512100000_canonical_runtime_reconciliation.sql",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "migration": "20260512120000_pillar2_governance_freeze.sql",
+      "risks": [
+        {
+          "type": "forward_dependency",
+          "object": "adjust_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "set_inventory_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "deduct_stock",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "record_purchase_v2",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
+          "severity": "critical"
+        },
+        {
+          "type": "forward_dependency",
+          "object": "approve_inventory_reconciliation",
+          "depends_on_migration": "20260512130000_pillar3_isolation_restoration.sql",
           "severity": "critical"
         }
       ]

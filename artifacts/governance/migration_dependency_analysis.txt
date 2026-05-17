@@ -1,6 +1,6 @@
 Migration Dependency Analysis
-Generated: 2026-05-11T21:36:45.246Z
-Migrations: 80
+Generated: 2026-05-17T13:43:33.493Z
+Migrations: 92
 
 CRITICAL DEPENDENCY ISSUES
 ===========================
@@ -22,6 +22,7 @@ CRITICAL DEPENDENCY ISSUES
   [CRITICAL] forward_dependency: stock_transfers
   [CRITICAL] forward_dependency: stock_transfer_items
   [CRITICAL] forward_dependency: expenses
+  [CRITICAL] forward_dependency: competitor_prices
 
 20260327100000_stock_levels_realtime_and_rpc.sql
   [CRITICAL] forward_dependency: decrement_stock
@@ -32,6 +33,10 @@ CRITICAL DEPENDENCY ISSUES
 20260327200000_stock_adjustments.sql
   [CRITICAL] forward_dependency: stock_movements
   [CRITICAL] forward_dependency: adjust_stock
+
+20260327200001_low_stock_alerts.sql
+  [CRITICAL] forward_dependency: get_low_stock_items
+  [CRITICAL] forward_dependency: get_inventory_summary
 
 20260327200002_stock_transfers.sql
   [CRITICAL] forward_dependency: adjust_stock
@@ -89,7 +94,9 @@ CRITICAL DEPENDENCY ISSUES
   [CRITICAL] forward_dependency: adjust_stock
 
 20260423230000_lean_inventory_rpcs.sql
+  [CRITICAL] forward_dependency: get_inventory_list
   [CRITICAL] forward_dependency: adjust_stock
+  [CRITICAL] forward_dependency: set_stock
   [CRITICAL] runtime_before_foundation: Runtime migration depends on not-yet-created foundation
 
 20260423231000_sales_history_rpcs.sql
@@ -113,7 +120,6 @@ CRITICAL DEPENDENCY ISSUES
 
 20260427010001_record_purchase_v2_rpc.sql
   [CRITICAL] forward_dependency: record_purchase_v2
-  [CRITICAL] forward_dependency: post_draft_purchase_receipt
   [CRITICAL] runtime_before_foundation: Runtime migration depends on not-yet-created foundation
 
 20260427080000_stock_ledger_table.sql
@@ -149,30 +155,63 @@ CRITICAL DEPENDENCY ISSUES
   [CRITICAL] forward_dependency: record_purchase_v2
   [CRITICAL] forward_dependency: get_current_user_tenant_id
   [CRITICAL] forward_dependency: get_current_user_store_id
+  [CRITICAL] forward_dependency: get_store_users
   [CRITICAL] forward_dependency: get_stock_level_by_id
   [CRITICAL] runtime_before_foundation: Runtime migration depends on not-yet-created foundation
 
 20260506000005_security_hardening_revoke_anon_fix_search_path.sql
   [CRITICAL] forward_dependency: record_purchase_v2
+  [CRITICAL] forward_dependency: get_inventory_list
+  [CRITICAL] forward_dependency: lookup_item_by_scan
+  [CRITICAL] forward_dependency: search_items_pos
+  [CRITICAL] forward_dependency: set_stock
 
 20260506010000_revoke_anon_security_definer_execute.sql
   [CRITICAL] forward_dependency: record_purchase_v2
+  [CRITICAL] forward_dependency: set_stock
   [CRITICAL] forward_dependency: deduct_stock
   [CRITICAL] forward_dependency: get_current_user_store_id
   [CRITICAL] forward_dependency: get_current_user_tenant_id
+  [CRITICAL] forward_dependency: get_manager_dashboard_stats
+  [CRITICAL] forward_dependency: get_inventory_list
+  [CRITICAL] forward_dependency: get_inventory_summary
   [CRITICAL] forward_dependency: get_stock_level_by_id
+  [CRITICAL] forward_dependency: get_low_stock_items
+  [CRITICAL] forward_dependency: get_store_users
 
 20260506020000_fix_function_search_path_mutable.sql
   [CRITICAL] forward_dependency: record_purchase_v2
 
+20260506040000_revoke_anon_on_pos_functions.sql
+  [CRITICAL] forward_dependency: lookup_item_by_scan
+  [CRITICAL] forward_dependency: search_items_pos
+  [CRITICAL] runtime_before_foundation: Runtime migration depends on not-yet-created foundation
+
 20260511130416_inventory_reconciliations.sql
   [CRITICAL] forward_dependency: adjust_inventory_stock
 
-UNSAFE MIGRATIONS (52)
+20260511131100_serializable_rpcs.sql
+  [CRITICAL] forward_dependency: adjust_inventory_stock
+  [CRITICAL] runtime_before_foundation: Runtime migration depends on not-yet-created foundation
+
+20260512090000_cleanup_overloads.sql
+  [CRITICAL] forward_dependency: deduct_stock
+
+20260512100000_canonical_runtime_reconciliation.sql
+  [CRITICAL] forward_dependency: adjust_inventory_stock
+
+20260512120000_pillar2_governance_freeze.sql
+  [CRITICAL] forward_dependency: adjust_inventory_stock
+  [CRITICAL] forward_dependency: set_inventory_stock
+  [CRITICAL] forward_dependency: deduct_stock
+  [CRITICAL] forward_dependency: record_purchase_v2
+  [CRITICAL] forward_dependency: approve_inventory_reconciliation
+
+UNSAFE MIGRATIONS (62)
 ====================
 
 20260301000000_baseline_core_tables.sql (foundational)
-  Unsatisfied: tenants, stores, users, parties, sales, sale_items, sale_payments, stock_levels, stock_movements, stock_alert_thresholds, suppliers, purchase_orders, purchase_order_items, stock_transfers, stock_transfer_items, expenses
+  Unsatisfied: tenants, stores, users, parties, sales, sale_items, sale_payments, stock_levels, stock_movements, stock_alert_thresholds, suppliers, purchase_orders, purchase_order_items, stock_transfers, stock_transfer_items, expenses, competitor_prices
 
 20260326100002_stores_categories_rls_tighten.sql (hardening)
 
@@ -181,6 +220,9 @@ UNSAFE MIGRATIONS (52)
 
 20260327200000_stock_adjustments.sql (uncategorized)
   Unsatisfied: stock_movements, adjust_stock
+
+20260327200001_low_stock_alerts.sql (uncategorized)
+  Unsatisfied: get_low_stock_items, get_inventory_summary
 
 20260327200002_stock_transfers.sql (uncategorized)
   Unsatisfied: adjust_stock
@@ -228,7 +270,4 @@ UNSAFE MIGRATIONS (52)
   Unsafe assumptions: jsonb_build_object, jsonb_agg
 
 20260423201000_centralize_pricing_in_complete_sale.sql (uncategorized)
-  Unsatisfied: complete_sale
-
-20260423201500_server_authoritative_override_and_partial.sql (uncategorized)
   Unsatisfied: complete_sale

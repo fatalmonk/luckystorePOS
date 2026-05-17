@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-05-11T21:36:45.299Z",
-  "migration_count": 80,
-  "objects_tracked": 245,
-  "conflicts_detected": 266,
+  "timestamp": "2026-05-17T13:43:33.549Z",
+  "migration_count": 92,
+  "objects_tracked": 259,
+  "conflicts_detected": 295,
   "ownership_graph": {
     "public": {
       "type": "TABLE IF NOT EXISTS",
@@ -636,6 +636,12 @@
         },
         {
           "name": "public",
+          "type": "TABLE",
+          "migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "timestamp": "20260506000004"
+        },
+        {
+          "name": "public",
           "type": "FUNCTION",
           "migration": "20260506000005_security_hardening_revoke_anon_fix_search_path.sql",
           "timestamp": "20260506000005"
@@ -981,6 +987,60 @@
           "type": "TABLE",
           "migration": "20260511130416_inventory_reconciliations.sql",
           "timestamp": "20260511130416"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512100000_canonical_runtime_reconciliation.sql",
+          "timestamp": "20260512100000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512100000_canonical_runtime_reconciliation.sql",
+          "timestamp": "20260512100000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "table",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
         }
       ],
       "drops": [
@@ -1103,6 +1163,114 @@
           "type": "FUNCTION IF EXISTS",
           "migration": "20260506000004_repair_remaining_rpc_functions.sql",
           "timestamp": "20260506000004"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "timestamp": "20260506000004"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+          "timestamp": "20260512000000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "name": "public",
+          "type": "TABLE IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "FUNCTION IF EXISTS",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "name": "public",
+          "type": "table if exists",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
         }
       ],
       "grants": [],
@@ -1731,6 +1899,16 @@
           "timestamp": "20260506000004"
         },
         {
+          "action": "ALTER",
+          "migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "timestamp": "20260506000004"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260506000004_repair_remaining_rpc_functions.sql",
+          "timestamp": "20260506000004"
+        },
+        {
           "action": "DROP",
           "migration": "20260506000004_repair_remaining_rpc_functions.sql",
           "timestamp": "20260506000004"
@@ -2024,6 +2202,136 @@
           "action": "ALTER",
           "migration": "20260511130416_inventory_reconciliations.sql",
           "timestamp": "20260511130416"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+          "timestamp": "20260512000000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512090000_cleanup_overloads.sql",
+          "timestamp": "20260512090000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512100000_canonical_runtime_reconciliation.sql",
+          "timestamp": "20260512100000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512100000_canonical_runtime_reconciliation.sql",
+          "timestamp": "20260512100000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260512120000_pillar2_governance_freeze.sql",
+          "timestamp": "20260512120000"
+        },
+        {
+          "action": "ALTER",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        },
+        {
+          "action": "DROP",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
         }
       ],
       "conflicts": []
@@ -7207,6 +7515,286 @@
         }
       ],
       "conflicts": []
+    },
+    "stock_levels_read": {
+      "type": "POLICY",
+      "owner": "20260511150000_fix_stock_levels_read_rls.sql",
+      "owner_timestamp": "20260511150000",
+      "created_at": "20260511150000",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260511150000_fix_stock_levels_read_rls.sql",
+          "timestamp": "20260511150000"
+        }
+      ],
+      "conflicts": []
+    },
+    "users_select_tenant_admin": {
+      "type": "POLICY",
+      "owner": "20260512140000_fix_users_recursion.sql",
+      "owner_timestamp": "20260512140000",
+      "created_at": "20260512140000",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260512140000_fix_users_recursion.sql",
+          "timestamp": "20260512140000"
+        }
+      ],
+      "conflicts": []
+    },
+    "users_select_self": {
+      "type": "POLICY",
+      "owner": "20260512140000_fix_users_recursion.sql",
+      "owner_timestamp": "20260512140000",
+      "created_at": "20260512140000",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260512140000_fix_users_recursion.sql",
+          "timestamp": "20260512140000"
+        }
+      ],
+      "conflicts": []
+    },
+    "users_update_self": {
+      "type": "POLICY",
+      "owner": "20260512140000_fix_users_recursion.sql",
+      "owner_timestamp": "20260512140000",
+      "created_at": "20260512140000",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260512140000_fix_users_recursion.sql",
+          "timestamp": "20260512140000"
+        }
+      ],
+      "conflicts": []
+    },
+    "with": {
+      "type": "table with all columns explicitly\ncreate table",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "idx_competitor_prices_store_id": {
+      "type": "index if not exists",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "idx_competitor_prices_product_id": {
+      "type": "index if not exists",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "idx_competitor_prices_competitor": {
+      "type": "index if not exists",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "idx_competitor_prices_scraped_at": {
+      "type": "index if not exists",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "idx_competitor_prices_batch": {
+      "type": "index if not exists",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "idx_competitor_prices_store_product_scraped": {
+      "type": "index if not exists",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "service": {
+      "type": "policy",
+      "owner": "20260514000001_competitor_prices_table.sql",
+      "owner_timestamp": "20260514000001",
+      "created_at": "20260514000001",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260514000001_competitor_prices_table.sql",
+          "timestamp": "20260514000001"
+        }
+      ],
+      "conflicts": []
+    },
+    "expenses_delete": {
+      "type": "POLICY",
+      "owner": "20260517000000_fix_expenses_rls.sql",
+      "owner_timestamp": "20260517000000",
+      "created_at": "20260517000000",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260517000000_fix_expenses_rls.sql",
+          "timestamp": "20260517000000"
+        }
+      ],
+      "conflicts": []
+    },
+    "expenses_update": {
+      "type": "POLICY",
+      "owner": "20260517000000_fix_expenses_rls.sql",
+      "owner_timestamp": "20260517000000",
+      "created_at": "20260517000000",
+      "alters": [],
+      "drops": [],
+      "grants": [],
+      "revokes": [],
+      "policies": [],
+      "extensions": [],
+      "history": [
+        {
+          "action": "CREATE",
+          "migration": "20260517000000_fix_expenses_rls.sql",
+          "timestamp": "20260517000000"
+        }
+      ],
+      "conflicts": []
     }
   },
   "conflicts": [
@@ -8643,24 +9231,6 @@
       "object": "public",
       "creators": [
         "20260427010000_purchase_receiving_v2.sql",
-        "20260427010001_record_purchase_v2_rpc.sql"
-      ],
-      "severity": "high"
-    },
-    {
-      "type": "duplicate_creator",
-      "object": "public",
-      "creators": [
-        "20260427010001_record_purchase_v2_rpc.sql",
-        "20260427010001_record_purchase_v2_rpc.sql"
-      ],
-      "severity": "high"
-    },
-    {
-      "type": "duplicate_creator",
-      "object": "public",
-      "creators": [
-        "20260427010001_record_purchase_v2_rpc.sql",
         "20260427064836_add_last_login_to_users.sql"
       ],
       "severity": "high"
@@ -9566,6 +10136,285 @@
       "severity": "high"
     },
     {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260511131100_serializable_rpcs.sql",
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512140000_fix_users_recursion.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512140000_fix_users_recursion.sql",
+        "20260512150000_fix_dashboard_rpc.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512150000_fix_dashboard_rpc.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "users",
+      "creators": [
+        "20260427000000_advisor_security_rls_and_functions.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260514000001_competitor_prices_table.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260514000001_competitor_prices_table.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
       "type": "replacement_without_owner",
       "migration": "20260506000003_repair_stock_and_reminder_functions.sql",
       "target": "security",
@@ -9690,6 +10539,11 @@
         "name": "update_reconciliations",
         "owner": "20260511130416_inventory_reconciliations.sql",
         "timestamp": "20260511130416"
+      },
+      {
+        "name": "stock_levels_read",
+        "owner": "20260511150000_fix_stock_levels_read_rls.sql",
+        "timestamp": "20260511150000"
       }
     ],
     "rpc_functions": [],
@@ -11130,24 +11984,6 @@
       "object": "public",
       "creators": [
         "20260427010000_purchase_receiving_v2.sql",
-        "20260427010001_record_purchase_v2_rpc.sql"
-      ],
-      "severity": "high"
-    },
-    {
-      "type": "duplicate_creator",
-      "object": "public",
-      "creators": [
-        "20260427010001_record_purchase_v2_rpc.sql",
-        "20260427010001_record_purchase_v2_rpc.sql"
-      ],
-      "severity": "high"
-    },
-    {
-      "type": "duplicate_creator",
-      "object": "public",
-      "creators": [
-        "20260427010001_record_purchase_v2_rpc.sql",
         "20260427064836_add_last_login_to_users.sql"
       ],
       "severity": "high"
@@ -12043,6 +12879,285 @@
       "creators": [
         "20260511131100_serializable_rpcs.sql",
         "20260511131100_serializable_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260511131100_serializable_rpcs.sql",
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512000000_customer_analytics_staff_performance_rpcs.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512100000_canonical_runtime_reconciliation.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512100000_canonical_runtime_reconciliation.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512120000_pillar2_governance_freeze.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512120000_pillar2_governance_freeze.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512130000_pillar3_isolation_restoration.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512130000_pillar3_isolation_restoration.sql",
+        "20260512140000_fix_users_recursion.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512140000_fix_users_recursion.sql",
+        "20260512150000_fix_dashboard_rpc.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512150000_fix_dashboard_rpc.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260512160000_fix_all_rpc_qty_references.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "users",
+      "creators": [
+        "20260427000000_advisor_security_rls_and_functions.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260512160000_fix_all_rpc_qty_references.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260514000001_competitor_prices_table.sql",
+        "20260514000001_competitor_prices_table.sql"
+      ],
+      "severity": "high"
+    },
+    {
+      "type": "duplicate_creator",
+      "object": "public",
+      "creators": [
+        "20260514000001_competitor_prices_table.sql",
+        "20260514000001_competitor_prices_table.sql"
       ],
       "severity": "high"
     },

@@ -1,9 +1,15 @@
 -- ============================================================================
 -- HIGH PRIORITY SECURITY FIX: Fix mutable search_path on functions
 -- ============================================================================
--- Issue: Functions without explicit search_path are vulnerable to search path injection
--- Fix: Use ALTER FUNCTION to set search_path = public, pg_temp (defensively)
--- ============================================================================
+
+-- Ensure the standard set_updated_at_timestamp helper exists
+CREATE OR REPLACE FUNCTION public.set_updated_at_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 DO $$
 DECLARE

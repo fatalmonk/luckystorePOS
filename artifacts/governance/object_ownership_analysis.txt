@@ -1,12 +1,12 @@
 Object Ownership Analysis
-Generated: 2026-05-11T21:36:45.299Z
-Migrations: 80
-Objects Tracked: 245
-Conflicts: 266
+Generated: 2026-05-17T13:43:33.549Z
+Migrations: 92
+Objects Tracked: 259
+Conflicts: 295
 
 CANONICAL OWNERSHIP
 ==================
-Ledger Tables (21)
+Ledger Tables (22)
   idx_stock_levels_store_item → 20260301000000_baseline_core_tables.sql
   idx_stock_ledger_store_id → 20260427080000_stock_ledger_table.sql
   idx_stock_ledger_product_id → 20260427080000_stock_ledger_table.sql
@@ -28,12 +28,13 @@ Ledger Tables (21)
   select_reconciliations → 20260511130416_inventory_reconciliations.sql
   insert_reconciliations → 20260511130416_inventory_reconciliations.sql
   update_reconciliations → 20260511130416_inventory_reconciliations.sql
+  stock_levels_read → 20260511150000_fix_stock_levels_read_rls.sql
 
 RPC Functions (0)
 
 Security Functions (0)
 
-HIGH-RISK CONFLICTS (265)
+HIGH-RISK CONFLICTS (294)
 ====================
 [duplicate_creator] public
 [duplicate_creator] public
@@ -200,8 +201,6 @@ HIGH-RISK CONFLICTS (265)
 [duplicate_creator] public
 [duplicate_creator] public
 [duplicate_creator] public
-[duplicate_creator] public
-[duplicate_creator] public
 [orphan_grant] v_stock_ledger_recent
 [orphan_grant] v_stock_ledger_product_summary
 [duplicate_creator] public
@@ -294,6 +293,37 @@ HIGH-RISK CONFLICTS (265)
 [duplicate_creator] public
 [duplicate_creator] public
 [duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] public
+[duplicate_creator] users
 [duplicate_creator] public
 [duplicate_creator] public
 [duplicate_creator] public

@@ -99,10 +99,9 @@ class GovernanceCertifier {
     await this.serviceClient.from('stock_movements').delete().eq('item_id', this.productId);
     await this.serviceClient.from('stock_levels').delete().eq('item_id', this.productId);
     await this.serviceClient.from('items').delete().eq('id', this.productId);
-    await this.serviceClient.from('user_stores').delete().eq('user_id', this.userId);
     await this.serviceClient.from('stores').delete().eq('id', this.storeId);
     await this.serviceClient.from('tenants').delete().eq('id', this.tenantId);
-    
+
     // Auth user deletion (hard via admin)
     const { data: users } = await this.serviceClient.auth.admin.listUsers();
     const user = users?.users.find(u => u.email === this.email);
@@ -110,7 +109,7 @@ class GovernanceCertifier {
       try {
         await this.serviceClient.auth.admin.deleteUser(user.id);
         await this.serviceClient.from('users').delete().eq('id', user.id);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     console.log('[CERTIFY] Bootstrapping deterministic state...');
@@ -120,15 +119,14 @@ class GovernanceCertifier {
       email_confirm: true,
       user_metadata: { role: 'admin' }
     });
-    
+
     this.userId = authUser?.user?.id || this.userId;
 
     await this.serializableClient.auth.signInWithPassword({ email: this.email, password: this.password });
 
     await this.serviceClient.from('tenants').insert({ id: this.tenantId, name: 'Certify Tenant' });
     await this.serviceClient.from('stores').insert({ id: this.storeId, tenant_id: this.tenantId, name: 'Certify Store', code: `STORE-${this.baseSku}` });
-    await this.serviceClient.from('users').insert({ id: this.userId, auth_id: this.userId, email: this.email, role: 'admin', tenant_id: this.tenantId });
-    await this.serviceClient.from('user_stores').insert({ user_id: this.userId, store_id: this.storeId, role: 'manager' });
+    await this.serviceClient.from('users').insert({ id: this.userId, auth_id: this.userId, email: this.email, role: 'admin', tenant_id: this.tenantId, store_id: this.storeId });
     await this.serviceClient.from('items').insert({ id: this.productId, name: 'Certify Product', sku: this.baseSku, price: 10.00, is_active: true });
 
     // Deterministic Seed
@@ -156,10 +154,10 @@ class GovernanceCertifier {
 
     // 1. Initial Deduction
     await this.serializableClient.rpc('deduct_stock', req);
-    
+
     // 2. Duplicate Replay (Idempotent)
     await this.serializableClient.rpc('deduct_stock', req);
-    
+
     // 3. Concurrent Race Condition
     const reqRace1 = { ...req, p_operation_id: getDeterministicUuid('op-race-1') };
     const reqRace2 = { ...req, p_operation_id: getDeterministicUuid('op-race-2') };
@@ -172,17 +170,17 @@ class GovernanceCertifier {
   async exportTraces(fingerprint: any) {
     console.log('[CERTIFY] Exporting immutable certification artifacts...');
     const { data: movements, error: movErr } = await this.serviceClient
-        .from('stock_movements')
-        .select('*')
-        .eq('item_id', this.productId)
-        .order('created_at', { ascending: true });
+      .from('stock_movements')
+      .select('*')
+      .eq('item_id', this.productId)
+      .order('created_at', { ascending: true });
     if (movErr) throw movErr;
 
     const { data: stock } = await this.serviceClient
-        .from('stock_levels')
-        .select('*')
-        .eq('item_id', this.productId)
-        .single();
+      .from('stock_levels')
+      .select('*')
+      .eq('item_id', this.productId)
+      .single();
 
     const artifactsDir = resolve(process.cwd(), 'artifacts/governance');
     if (!fs.existsSync(artifactsDir)) fs.mkdirSync(artifactsDir, { recursive: true });
@@ -221,22 +219,22 @@ class GovernanceCertifier {
       // Hard Governance Invariant: No certification without fingerprint parity
       const fingerprintPath = resolve(process.cwd(), 'artifacts/governance/environment-fingerprint.json');
       if (!fs.existsSync(fingerprintPath)) {
-          throw new Error('❌ GOVERNANCE VIOLATION: Missing environment-fingerprint.json. Run "npx tsx scripts/governance/fingerprint.ts" first.');
+        throw new Error('❌ GOVERNANCE VIOLATION: Missing environment-fingerprint.json. Run "npx tsx scripts/governance/fingerprint.ts" first.');
       }
       const fingerprintReport = JSON.parse(fs.readFileSync(fingerprintPath, 'utf8'));
       if (!fingerprintReport.match) {
-          throw new Error('❌ GOVERNANCE VIOLATION: Environment fingerprint mismatch. Certification blocked to prevent evidence contamination.');
+        throw new Error('❌ GOVERNANCE VIOLATION: Environment fingerprint mismatch. Certification blocked to prevent evidence contamination.');
       }
 
       const fingerprint = await this.getEnvironmentFingerprint();
       await this.bootstrapDeterministicState();
       await this.runReplayTraces();
-      
+
       console.log('\n[CERTIFY] Verifying Global Invariants...');
       await this.verifier.runAll();
 
       await this.exportTraces(fingerprint);
-      
+
       console.log('\n🎉 DETERMINISTIC CERTIFICATION COMPLETE.');
     } catch (e) {
       console.error('❌ CERTIFICATION FAILED:', e);
