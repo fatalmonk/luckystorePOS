@@ -1,514 +1,983 @@
+Below is a full replacement README.md drafted from your original README plus the fixes and current project state from our conversation.
+
 <div align="center">
-
-<img src="./docs/screenshots/admin-dashboard.png" alt="Lucky Store POS" width="100%">
-
+# 🏪 Lucky Store POS
+**A modern Point of Sale, inventory, and retail management system for businesses in Bangladesh**
+[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+[🚀 Live Demo](https://lucky-store-pos-six.vercel.app/) • [📱 Download APK](https://github.com/fatalmonk/luckystorePOS/releases) • [📖 Docs](docs/)
 </div>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-32CD32?style=flat-square" alt="Version">
-  &nbsp;
-  <img src="https://img.shields.io/badge/license-Apache--2.0-32CD32?style=flat-square&logo=apache&logoColor=white" alt="License">
-  &nbsp;
-  <img src="https://img.shields.io/badge/platform-Android%20%7C%20Web%2FPWA-6C757D?style=flat-square&logo=android&logoColor=white" alt="Platform">
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Flutter-3.29.3-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter">
-  &nbsp;
-  <img src="https://img.shields.io/badge/React-19-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React">
-  &nbsp;
-  <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
-  &nbsp;
-  <img src="https://img.shields.io/badge/Supabase-Production-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
-  &nbsp;
-  <img src="https://img.shields.io/badge/PRs-welcome-32CD32?style=flat-square" alt="PRs Welcome">
-</p>
-
 ---
-
-<p align="center">
-  <strong>A free, open-source Point of Sale system built for retail shops in Bangladesh</strong><br>
-  <em>bKash Payments | Offline-First | Bangla Interface | Bluetooth Label Printing | Real-Time Inventory | AI Price Monitoring</em>
-</p>
-
-<p align="center">
-  <a href="https://github.com/fatalmonk/luckystorePOS/releases">
-    <img src="https://img.shields.io/badge/⬇️%20Download%20APK-Latest%20Release-32CD32?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" height="50">
-  </a>
-</p>
-
+## 📌 Project Overview
+**Lucky Store POS** is a multi-platform retail management system built for Bangladeshi retail businesses. It includes:
+- A **Flutter mobile POS app** for in-store sales, inventory, customers, barcode scanning, offline support, and Bluetooth label printing.
+- A **React + Vite admin dashboard** for sales analytics, inventory control, sales history, purchases, expenses, customers, suppliers, and reports.
+- A **Supabase backend** for authentication, PostgreSQL database, row-level security, RPC functions, edge functions, and real-time capabilities.
+- A **Vercel-hosted landing page** for product presentation and APK distribution.
+The system supports both:
+1. **Remote Supabase project mode**  
+   Used for the original/production database and real business data.
+2. **Local Supabase development mode**  
+   Used for local schema replay, migrations, development testing, and safe debugging.
 ---
-
-## 📋 Quick Navigation
-
-<p align="center">
-
-[Why Lucky Store?](#-why-lucky-store-pos) ·
-[Screenshots](#-screenshots) ·
-[Features](#-features) ·
-[Tech Stack](#-tech-stack) ·
-[Quick Start](#-quick-start) ·
-[Deployment](#-deployment) ·
-[Contributing](#-contributing)
-
-</p>
-
----
-
-## 🤔 Why Lucky Store POS?
-
-**Lucky Store POS is purpose-built for the reality of Bangladeshi retail:** intermittent internet, bKash dominance, thermal label culture, and the need for both Bangla and English at the counter.
-
-| Feature | **Lucky Store POS** | Traditional POS | Cloud-Only POS |
-|:--------|:-------------------|:----------------|:---------------|
-| **Offline Mode** | Full offline with Drift SQLite; auto-syncs when back online | Paper-based fallback only | Stops working completely |
-| **bKash Payments** | Native bKash checkout built into the POS flow | Manual reconciliation | Not available |
-| **SSLCommerz Cards** | Integrated card + mobile banking gateway | Separate terminal required | May support, generic |
-| **Bluetooth Label Printing** | MHT-P29L TSPL, Code128 barcodes, 40x30mm labels | Manual price tagging | Not supported |
-| **Bangla Interface** | English + Bangla with HindSiliguri font throughout | English-only | English-only |
-| **Competitor Price Monitoring** | AI-powered scraping of Shwapno, Chaldal, AamaderBazar | Not available | Not available |
-| **Multi-Tenant Security** | Supabase RLS with tenant isolation per store | Basic auth only | Basic auth only |
-| **Deployment** | Docker one-command, Vercel free tier, APK sideload | Complex server setup | Vendor lock-in |
-| **Cost** | Free & Open Source (Apache 2.0) | License fees + hardware | Monthly SaaS fees |
-| **Realtime Inventory** | Supabase realtime subscriptions; low-stock alerts | End-of-day manual counts | Polling-based only |
-
----
-
-## 📸 Screenshots
-
-### 💻 Admin Dashboard (React + Vite)
-
-| Dashboard | Products | Inventory |
-|:---------:|:--------:|:---------:|
-| ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Products](docs/screenshots/admin-products.png) | ![Inventory](docs/screenshots/admin-inventory.png) |
-| *Sales analytics, revenue trends & key metrics* | *Category-based product grid with thumbnail images* | *Real-time stock with low-stock indicators* |
-
-| Supplier Ledger | Collections | POS Quick Sale |
-|:---------------:|:---------:|:----------------:|
-| ![Ledger](docs/screenshots/admin-ledger.png) | ![Collections](docs/screenshots/admin-collections.png) | ![POS](docs/screenshots/admin-pos.png) |
-| *Supplier payables with aging breakdown* | *Overdue customer follow-ups & payment tracking* | *Fast counter checkout with barcode lookup* |
-
-### 📱 Mobile App (Flutter) — Coming Soon
-
-> Mobile screenshots are being captured. Download the [APK from GitHub Releases](https://github.com/fatalmonk/luckystorePOS/releases) to see the Flutter POS app in action.
-
----
-
 ## ✨ Features
-
-### 📱 Mobile POS (Flutter)
-
-| Sales Management | Barcode Scanning | Offline Mode |
-|:----------------:|:---------------:|:------------:|
-| Cash, bKash, Card & Credit payments | Camera-based (Code128, EAN-13, QR) | Drift SQLite with background sync |
-
-| Inventory Tracking | Label Printing | Localization |
-|:------------------:|:-------------:|:------------:|
-| Real-time stock + low-stock alerts | MHT-P29L Bluetooth, TSPL, 40×30mm labels | English + Bangla (HindSiliguri font) |
-
-| PIN-Based Auth | Manager Dashboard | Store Operations |
-|:-------------:|:-----------------:|:----------------:|
-| Staff PIN via Supabase RPC | Close review, risk analytics, session summaries | Open/close shifts, cash reconciliation |
-
-<details>
-<summary><strong>🔍 Offline-First Architecture</strong></summary>
-
+<details open>
+<summary><b>📱 Mobile App — Flutter POS</b></summary>
 <br>
-
-- **Drift (SQLite ORM)** for full local product catalog, cart, and sale recording
-- **Background sync** via WorkManager + flutter_background_service
-- **Conflict resolution** with idempotency keys and server-authoritative override
-- **Feature toggle:** `ENABLE_OFFLINE_MODE=true`
-- See: [Conflict Resolution Policy](docs/conflict_resolution_policy.md)
-
+| Feature | Description |
+|---|---|
+| 🛒 **Sales Management** | Process retail transactions with cash, card, mobile banking, and mixed payment support. |
+| 📦 **Inventory Tracking** | Track real-time stock, low-stock alerts, stock movement, and item-level quantity. |
+| 👥 **Customer Management** | Maintain customer profiles, contact details, loyalty data, and purchase history. |
+| 🏷️ **Label Printing** | Print price labels with MRP using the MHT-P29L Bluetooth thermal printer. |
+| 📡 **Barcode Scanning** | Scan barcodes for quick product lookup and checkout. |
+| 🌐 **Offline Support** | Continue POS operations without internet and sync later when connected. |
+| 🗺️ **Google Maps Integration** | Address selection and location support for delivery workflows. |
+| 🧾 **Receipt / Sale Records** | Maintain sale, sale item, and payment history. |
+| 🔐 **Supabase Auth** | Secure user login and profile mapping. |
 </details>
-
-<details>
-<summary><strong>🔍 Payment Methods</strong></summary>
-
+<details open>
+<summary><b>💻 Admin Dashboard — React + Vite</b></summary>
 <br>
-
-- **Cash** — default tender with change calculation
-- **bKash** — native mobile banking checkout flow
-- **SSLCommerz** — card payments (Visa, Mastercard) + mobile banking gateways
-- **Credit** — customer ledger posting for deferred payment
-- **Split payments** — multiple tenders per sale
-
+| Feature | Description |
+|---|---|
+| 📊 **Dashboard Analytics** | View sales totals, order counts, low-stock items, active sessions, and recent activity. |
+| 📝 **Product Management** | Manage products, SKUs, categories, pricing, stock, and item metadata. |
+| 📦 **Inventory Management** | View current stock, minimum quantity, reorder status, and inventory alerts. |
+| 📈 **Sales History** | Search, filter, and inspect sales records by date, receipt/sale number, and store. |
+| 🧾 **Sale Details** | View sale items, payments, cashier, status, totals, discounts, and void information. |
+| 🛍️ **Purchase Entry** | Record purchases and stock intake. |
+| 💰 **Expense Tracking** | Track operational expenses. |
+| 👥 **Customer / Supplier Ledgers** | Manage account history, payments, and balances. |
+| 🔐 **Authenticated Admin Access** | User profile resolution through Supabase Auth and `public.users`. |
+| 🧩 **RPC-backed Data Layer** | Uses Supabase RPC functions for dashboard, inventory, and sales views. |
 </details>
-
-<details>
-<summary><strong>🔍 Bluetooth Label Printing (MHT-P29L)</strong></summary>
-
-<br>
-
-- Bluetooth connection via `flutter_blue_plus`
-- TSPL command format for MHT-P29L thermal printers
-- Code128 barcode generation via `barcode_widget`
-- 40×30mm labels with MRP strikethrough pricing
-- Bulk printing from CSV files
-- Print retry queue for reliability
-- See: [MHT-P29L Setup Guide](docs/root-docs/MHT-P29L_SETUP.md) · [Bulk Label Printing](docs/root-docs/BULK_LABEL_PRINTING.md)
-
-</details>
-
-<details>
-<summary><strong>🔍 Barcode Scanning</strong></summary>
-
-<br>
-
-- Camera-based scanning via `mobile_scanner` package
-- Supports Code128, EAN-13, and QR code formats
-- Instant product lookup in POS flow
-- Auto-barcode generation (EAN-13) on product import
-
-</details>
-
 ---
-
-### 💻 Admin Web (React + Vite + TypeScript)
-
-| Analytics Dashboard | POS Checkout | Product Management |
-|:------------------:|:-----------:|:-----------------:|
-| Sales trends, Recharts charts, low-stock alerts | Cart checkout, barcode lookup, receipt preview | Category thumbnails, grid/list toggle, image upload |
-
-| Inventory Control | Finance Ledgers | Collections |
-|:-----------------:|:--------------:|:-----------:|
-| Real-time stock, adjust/history, status badges | Supplier payables + Customer receivables with aging | Overdue follow-ups, payment tracking |
-
-| Purchase Management | Expense Tracking | PWA Support |
-|:------------------:|:--------------:|:-----------:|
-| Purchase entry, receiving, history | Pie/bar charts, 6 categories, 4 payment types | Installable on any device, offline caching |
-
-<details>
-<summary><strong>🔍 Dashboard & Analytics</strong></summary>
-
-<br>
-
-- **5 MetricCards:** To Receive, To Give, Today Sales, Stock Purchases, Expense
-- **Custom bar chart:** Sales vs Expenses vs Stock Purchases (14-day view)
-- **Payment breakdown:** Cash/Bkash/Credit with percentage progress bars
-- **Low-stock alerts** and **upcoming reminders** widgets
-- **Realtime toast notifications** on new sales via Supabase Realtime
-
-</details>
-
-<details>
-<summary><strong>🔍 Finance, Ledgers & Collections</strong></summary>
-
-<br>
-
-- **Supplier Ledger** — payables, aging summary, transaction history
-- **Customer Ledger** — receivables, credit history, balance tracking
-- **Collections Workspace** — overdue customer list with days-overdue, promise-to-pay dates, quick actions (call/SMS/note/payment)
-- **Expense Tracking** — pie + bar charts (Recharts), 6 categories (Stock Purchase, Capital Expenditure, Utility, Transport, Salary, Partners Take, Other), 4 payment types
-- **Daily Sales** — end-of-day manual entry with line+bar charts, period comparisons
-- **Toggle:** `ENABLE_LEDGER_POSTING=true` · `ENABLE_DAILY_RECONCILIATION=true`
-
-</details>
-
-<details>
-<summary><strong>🔍 PWA (Progressive Web App)</strong></summary>
-
-<br>
-
-- Installable on desktop, tablet, and mobile — no app store needed
-- Service worker with offline caching (custom Vite build via `build-sw.mjs`)
-- Install prompt banner and offline indicator
-- Works on any modern browser
-
-</details>
-
-<details>
-<summary><strong>🔍 Storybook Component Library</strong></summary>
-
-<br>
-
-- Storybook 8.6 with React 19 + Vite
-- Isolated component development and visual testing
-- Design tokens wired to Tailwind CSS
-- Run: `cd apps/admin_web && npm run storybook`
-
-</details>
-
+## 🧱 Tech Stack
+| Layer | Technology |
+|---|---|
+| Mobile App | Flutter |
+| Admin Web | React, Vite, TypeScript |
+| Backend | Supabase |
+| Database | PostgreSQL |
+| Auth | Supabase Auth |
+| Local Dev DB | Supabase CLI + Docker |
+| Deployment | Vercel |
+| Printer | MHT-P29L Bluetooth label printer |
+| Maps | Google Maps |
+| Payment | SSLCommerz |
+| Package Runtime | Node.js |
 ---
+## 📁 Project Structure
+```txt
+Lucky Store/
+├── apps/
+│   ├── mobile_app/              # Flutter POS app
+│   ├── admin_web/               # React + Vite admin dashboard
+│   └── scraper/                 # Product data scraper
+├── landing-page/                # Public website / marketing page
+├── supabase/
+│   ├── migrations/              # PostgreSQL schema, RLS, functions, seed repairs
+│   ├── functions/               # Supabase Edge Functions
+│   └── config.toml              # Supabase local configuration
+├── docs/                        # Project documentation
+├── data/                        # Inventory CSVs and static data assets
+├── schema_dump.sql              # Schema snapshot used for inspection/debugging
+├── AGENTS.md                    # Coding-agent instructions
+└── README.md
 
-### 🔐 Backend & Security (Supabase)
+⸻
 
-| Dimension | Count |
-|:----------|:-----|
-| Database tables | 50 |
-| SQL migrations | 86 |
-| Stored procedures (RPCs) | 80+ |
-| Edge functions (Deno) | 8 |
-| RLS policies | Tenant-isolated on every table |
+🚀 Quick Start
 
-<details>
-<summary><strong>🔍 Edge Functions</strong></summary>
+Prerequisites
 
-<br>
+# Flutter SDK
+flutter --version
+# Node.js
+node --version
+# Supabase CLI
+supabase --version
+# Docker
+docker --version
 
-| Function | Purpose |
-|:---------|:--------|
-| `create-sale` | Rate-limited sale creation with input validation, auth verification, and `complete_sale` RPC |
-| `adjust-stock` | Stock adjustment with configurable CORS |
-| `import-inventory` | CSV/XLSX import with auto-barcode (EAN-13), image upload, batch/expiry tracking, audit trail |
-| `create-card-checkout` | SSLCommerz card checkout session initiation |
-| `payment-ipn` | SSLCommerz Instant Payment Notification validator |
-| `payment-return-success` | SSLCommerz success callback handler |
-| `payment-return-fail` | SSLCommerz failure callback handler |
-| `payment-return-cancel` | SSLCommerz cancellation callback handler |
+Recommended versions:
 
-</details>
+Tool	Recommended
+Flutter	>= 3.0.0
+Node.js	>= 18.0.0
+Supabase CLI	Latest stable
+Docker	Required only for local Supabase
 
-<details>
-<summary><strong>🔍 Security Architecture</strong></summary>
+⸻
 
-<br>
+🧭 Local vs Remote Supabase
 
-- **Tenant-Isolated Row-Level Security** — every table has RLS policies isolating data per store
-- **Multi-tenant** — single Supabase project serves unlimited stores
-- **PIN-based staff auth** via `authenticate_staff_pin` RPC (separate from admin email/password)
-- **Service role key** used only in edge functions; anon key for client operations
-- **Rate limiting** via database-backed `rate_limits` table + `check_rate_limit` RPC
-- **Input validation** on all edge functions (UUID format, positive numbers, max amounts)
-- See: [RLS Security Model](docs/RLS_SECURITY_MODEL.md)
+This project can run against either a local Supabase instance or the original remote Supabase project.
 
-</details>
+Remote Supabase Mode
 
-<details>
-<summary><strong>🔍 SSLCommerz Payment Flow</strong></summary>
+Use this when you want to see the original project data.
 
-<br>
+Remote project URL:
 
-1. **Edge function** creates checkout session with sale details
-2. **Redirect** to SSLCommerz hosted payment page
-3. **IPN edge function** processes SSLCommerz callback (validates, records payment)
-4. **Success/fail/cancel** return handlers update sale status
-5. Supports **Visa, Mastercard, bKash, Nagad, Rocket** through a single gateway
+https://hvmyxyccfnkrbxqbhlnm.supabase.co
 
-</details>
+The admin web app should use:
 
----
+VITE_SUPABASE_URL=https://hvmyxyccfnkrbxqbhlnm.supabase.co
+VITE_SUPABASE_ANON_KEY=<your Supabase anon/public key>
 
-### 🕵️ Competitor Price Monitoring
+Recommended location:
 
-<details>
-<summary><strong>🔍 AI-Powered Scraping of Bangladeshi Retailers</strong></summary>
+apps/admin_web/.env.local
 
-<br>
+This file should stay local and ignored by Git.
 
-- **Puppeteer-based scraping** of major Bangladeshi retailers:
-  - **Shwapno** — Bangladesh's largest retail chain
-  - **Chaldal** — leading online grocery (per-category: biscuits, chocolates, beverages, noodles, etc.)
-  - **AamaderBazar** — competitive pricing data
-  - **Unilever Bangladesh** — brand-level pricing
-- **AI product mapping** via string-similarity algorithms (`ai-mapper.js`)
-- **Price comparison generation** (`generate-price-mapping.js`)
-- Data stored in Supabase for reporting and competitive analysis
-- Run: `cd apps/scraper && npm run update-prices`
+Do not use service-role keys in frontend code.
 
-</details>
+Local Supabase Mode
 
----
+Use this when you want to test migrations and local development behavior.
 
-## 🛠 Tech Stack
+supabase start
 
-### Mobile App
-**Flutter 3.29.3** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · esc_pos_utils_plus · pdf · printing · csv · excel · webview_flutter
+Local default URL:
 
-### Admin Web
-**React 19** · Vite 8 · TypeScript 6.0 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 4 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns · clsx
+http://127.0.0.1:54321
 
-### Backend
-**Supabase** · PostgreSQL 17 · Deno Edge Functions · Row-Level Security · Realtime Subscriptions · Storage
+Local development uses local generated/demo data unless seeded.
 
-### DevOps
-**Docker** (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions (Flutter analyze/test/build + admin TS check/build) · Vercel (landing page + admin hosting)
+⸻
 
-### Scraper
-**Node.js** · Puppeteer · string-similarity · xlsx
+🐳 Do I Need Docker?
 
----
+For remote Supabase data
 
-## 🚀 Quick Start
+No.
 
-### Prerequisites
+If the app is pointed at:
 
-| Tool | Minimum Version | Check |
-|:-----|:---------------|:------|
-| Flutter SDK | ≥ 3.29.3 | `flutter --version` |
-| Node.js | ≥ 20.0.0 | `node --version` |
-| npm | ≥ 10.0.0 | `npm --version` |
-| Supabase CLI | ≥ 1.0.0 | `supabase --version` |
-| Docker | ≥ 24.0.0 | `docker --version` *(optional)* |
+https://hvmyxyccfnkrbxqbhlnm.supabase.co
 
-### Setup
+then Docker is not required for the database. The app talks directly to the remote Supabase project.
 
-```bash
-# 1. Clone and configure
-git clone https://github.com/fatalmonk/luckystorePOS.git
-cd luckystorePOS
-cp .env.example .env
-# Edit .env with your Supabase URL and anon key
+For local Supabase
 
-# 2. Start Supabase locally
+Yes.
+
+Docker is required when running:
+
 supabase start
 supabase db reset
+supabase migration up --local
 
-# 3. Run the Flutter mobile app
+Supabase local runs PostgreSQL, Auth, PostgREST, Studio, and related services in Docker containers.
+
+⸻
+
+🔧 Environment Setup
+
+Root environment
+
+cp .env.example .env
+
+Mobile app environment
+
+cp apps/mobile_app/.env.example apps/mobile_app/.env
+
+Admin web environment
+
+Recommended:
+
+touch apps/admin_web/.env.local
+
+Example:
+
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key
+
+For local Supabase:
+
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_ANON_KEY=your-local-anon-key
+
+For the original remote database:
+
+VITE_SUPABASE_URL=https://hvmyxyccfnkrbxqbhlnm.supabase.co
+VITE_SUPABASE_ANON_KEY=<remote anon/public key>
+
+Important security rules
+
+Never commit:
+
+.env
+.env.local
+apps/admin_web/.env.local
+apps/mobile_app/.env
+service-role keys
+JWTs
+access tokens
+refresh tokens
+database passwords
+Supabase access tokens
+
+⸻
+
+📱 Mobile App Setup
+
 cd apps/mobile_app
-cp .env.example .env        # Fill in Supabase credentials
 flutter pub get
 flutter run
 
-# 4. Run the admin web dashboard
+The mobile app supports:
+
+* POS checkout
+* Barcode scanning
+* Customer management
+* Inventory sync
+* Offline operation
+* Bluetooth printer integration
+* Google Maps address support
+
+⸻
+
+💻 Admin Web Setup
+
 cd apps/admin_web
 npm install
-npm run dev                  # Opens at http://localhost:5173
+npm run dev
 
-# 5. Storybook (optional)
-# Already in apps/admin_web from step 4
-npm run storybook            # Opens at http://localhost:6006
+Default admin URL:
 
-# 6. Docker (optional — production-like)
-docker compose up -d         # Admin web at http://localhost:8080
-```
+http://localhost:5173/admin/
 
----
+From the repository root, you can also run:
 
-## 📁 Project Structure
+npm run dev
+npm run typecheck
+npm run build
 
-```
-luckystorePOS/
-├── apps/
-│   ├── mobile_app/          # Flutter POS app (95+ Dart files, 8 feature modules)
-│   ├── admin_web/           # React + Vite admin dashboard (12+ pages, 15 routes)
-│   └── scraper/             # Puppeteer competitor price scraper
-├── supabase/
-│   ├── migrations/          # 86 SQL migration files
-│   ├── functions/           # 8 Deno edge functions
-│   ├── rpc/                 # Raw stored procedure scripts
-│   ├── views/               # Database views
-│   └── public/policies/     # RLS policy definitions
-├── landing-page/            # Static HTML marketing page (Vercel)
-├── docs/                    # 50+ documentation files across 7 categories
-│   └── screenshots/         # App screenshots
-├── scripts/                 # Build, deploy, DB, seed, ops, and test scripts
-├── data/                    # Inventory CSVs, competitor data, account data
-├── docker/                  # Nginx config + seed DB Dockerfile
-├── .github/workflows/       # CI/CD (flutter-ci.yml + ci.yml)
-├── docker-compose.yml       # One-command Docker deployment
-├── Dockerfile               # Multi-stage Node 22 + Nginx 1.27 Alpine
-├── vercel.json              # Vercel routing & build config
-└── LICENSE                  # Apache 2.0
-```
+⸻
 
----
+🗄️ Supabase Local Setup
 
-## 🚢 Deployment
+Start local Supabase:
 
-<details>
-<summary><strong>🔍 Vercel (Admin Web + Landing Page)</strong></summary>
+supabase start
 
-<br>
+Reset local database:
 
-- Auto-deploys on push to `main`
-- Serves landing page at `/` and admin web at `/admin/*` from a single project
-- Build command: `bash scripts/build/vercel.sh`
-- Live demo: [lucky-store-pos-six.vercel.app](https://lucky-store-pos-six.vercel.app/)
+supabase db reset
 
-</details>
+Apply pending local migrations only:
 
-<details>
-<summary><strong>🔍 Android APK</strong></summary>
+supabase migration up --local --yes
 
-<br>
+Do not run against remote unless intentionally approved:
 
-- CI builds debug APK on every push to `main`/`develop` (see `flutter-ci.yml`)
-- Artifact available in GitHub Actions runs (7-day retention)
-- Release APKs: [GitHub Releases](https://github.com/fatalmonk/luckystorePOS/releases)
-- Google Play Store listing: planned
+supabase db push
+supabase link
 
-</details>
+These commands can modify or link remote infrastructure and should not be used casually.
 
-<details>
-<summary><strong>🔍 Docker</strong></summary>
+⸻
 
-<br>
+🔐 Authentication Model
 
-- Multi-stage build: Node 22 Alpine builds React app → Nginx 1.27 Alpine serves it
-- Non-root `appuser` (UID 1001) for security
-- Health check configured on port 80
-- Optional `seed-db` profile for database seeding
-- `docker compose up -d` for one-command deployment
+The admin app login depends on both:
 
-</details>
+1. A Supabase Auth user in auth.users
+2. A matching application profile in public.users
 
-<details>
-<summary><strong>🔍 Supabase Production</strong></summary>
+The profile must have a valid:
 
-<br>
+* auth_id
+* tenant_id
+* store_id
+* role
+* is_active
 
-```bash
-supabase link --project-ref <your-project-ref>
-supabase db push              # Apply all migrations
-supabase functions deploy <name>  # Deploy edge functions
-```
+During local development, a local admin seed migration was added to make login reproducible.
 
-Set required secrets on each edge function:
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`
-- `ALLOWED_ORIGIN` — for CORS (e.g. `https://lucky-store.vercel.app`)
+Local seeded admin:
 
-</details>
+Email: admin@luckystore.com
+Password: TempPassword123!
 
----
+This local account exists for local Supabase development only. It will not work against the original remote Supabase project unless the same account exists there.
 
-## 📖 Documentation
+For original remote data, use the real remote Supabase account credentials.
 
-| Document | Purpose |
-|:---------|:--------|
-| [Quick Start Checklist](docs/01-getting-started/00-QUICK-START-CHECKLIST.md) | Step-by-step onboarding |
-| [Store Setup Guide](docs/02-setup/STORE-SETUP-GUIDE.md) | Database creation guide |
-| [Import Master Guide](docs/03-import-system/IMPORT-MASTER-GUIDE.md) | CSV/Excel product import |
-| [RLS Security Model](docs/RLS_SECURITY_MODEL.md) | Row-level security architecture |
-| [MHT-P29L Setup](docs/root-docs/MHT-P29L_SETUP.md) | Label printer configuration |
-| [Bulk Label Printing](docs/root-docs/BULK_LABEL_PRINTING.md) | Multi-label workflow |
-| [Branch Strategy](docs/root-docs/BRANCH_STRATEGY.md) | Git workflow |
-| [Production Plan](docs/root-docs/PRODUCTION_PLAN.md) | Production readiness |
-| [Conflict Resolution](docs/conflict_resolution_policy.md) | Offline sync conflicts |
-| [Contributing Guide](docs/root-docs/CONTRIBUTING.md) | How to contribute |
+⸻
 
----
+🧩 Supabase RPC Functions
 
-## 💬 Community & Support
+The admin dashboard relies heavily on Supabase RPC functions.
 
-- **Email:** luckystore.1947@gmail.com
-- **Phone:** 01731944544
-- **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh
-- **Issues:** [GitHub Issues](https://github.com/fatalmonk/luckystorePOS/issues) — bug reports & feature requests
-- **Discussions:** [GitHub Discussions](https://github.com/fatalmonk/luckystorePOS/discussions)
+Important RPCs include:
 
----
+RPC	Purpose
+get_manager_dashboard_stats	Dashboard sales, order, session, and low-stock summary.
+get_inventory_list	Inventory list with current stock, minimum quantity, and reorder status.
+get_sales_history	Sales history table with filters and pagination.
+get_sale_details	Sale details, sale items, and payment information.
+get_low_stock_items	Low-stock inventory cards/alerts.
+get_upcoming_reminders	Dashboard reminder data.
 
-## 🤝 Contributing
+⸻
 
-We welcome contributions. See [CONTRIBUTING.md](docs/root-docs/CONTRIBUTING.md) for guidelines.
+✅ Fixes Completed So Far
 
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'feat: Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+The following issues were diagnosed and fixed during development.
 
-**Commit format:** `type(scope): message` — e.g. `feat(pos): add split payment support`, `fix(rls): tighten tenant isolation`
+1. Local Admin Login Failure
 
----
+Problem
 
-## 📄 License
+Local Supabase login failed because:
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+* No seeded auth.users account existed for the admin.
+* public.users.auth_id did not resolve after login.
+* RLS blocked profile lookup.
 
----
+Fix
+
+Added a replay-safe local admin seed migration:
+
+supabase/migrations/20260511000000_local_admin_login_seed.sql
+
+This migration creates:
+
+* local tenant
+* local store
+* confirmed local admin auth user
+* matching public.users row
+* narrow self-read RLS policy for authenticated profile lookup
+
+Committed as:
+
+1290965 fix(supabase): seed local admin and repair dashboard rpc
+
+⸻
+
+2. Dashboard RPC Schema Drift
+
+Problem
+
+Dashboard failed with:
+
+column sales.total_amount does not exist
+
+Local replay schema used:
+
+sales.total
+
+but older dashboard RPC code referenced:
+
+sales.total_amount
+
+Fix
+
+Patched local dashboard RPC migrations to use sales.total.
+
+Files:
+
+supabase/migrations/20260420300000_manager_dashboard_rpc.sql
+supabase/migrations/20260420300001_manager_dashboard_trend.sql
+
+Committed as:
+
+1290965 fix(supabase): seed local admin and repair dashboard rpc
+
+⸻
+
+3. Vite Build Failure From Stale Generated Dist
+
+Problem
+
+Build failed with:
+
+Error: ENOTEMPTY, Directory not empty:
+apps/admin_web/dist/assets
+
+Fix
+
+Removed stale generated output:
+
+rm -rf apps/admin_web/dist
+npm run typecheck
+npm run build
+
+No source code change was required.
+
+⸻
+
+4. Sales Page React Hook Crash
+
+Problem
+
+The sales page crashed with:
+
+Rendered fewer hooks than expected.
+This may be caused by an accidental early return statement.
+
+Root Cause
+
+SalesHistoryPage returned early on error before later hooks such as useRef and virtualizer setup were called.
+
+Fix
+
+Moved the error return below all hook declarations so hooks are always called in a stable order.
+
+File:
+
+apps/admin_web/src/features/sales/SalesHistoryPage.tsx
+
+Committed as:
+
+0d5caaf fix(admin): stabilize sales history hook order
+
+⸻
+
+5. Local Inventory and Sales RPC Runtime Failures
+
+Problem
+
+Local /admin/inventory and /admin/sales had repeated RPC failures.
+
+Observed errors included:
+
+column sl.updated_at does not exist
+column s.sale_number does not exist
+
+Root Cause
+
+Local replay schema differed from later POS-style schema assumptions:
+
+* stock_levels did not have updated_at
+* baseline local sales used receipt_number and total
+* some later RPCs expected sale_number and total_amount
+
+Fix
+
+Patched local RPC definitions and added a follow-up runtime repair migration:
+
+supabase/migrations/20260423230000_lean_inventory_rpcs.sql
+supabase/migrations/20260506000004_repair_remaining_rpc_functions.sql
+supabase/migrations/20260511010000_repair_inventory_sales_runtime_rpcs.sql
+
+Committed as:
+
+8e1101e fix(supabase): repair inventory and sales runtime rpcs
+
+⸻
+
+6. PWA and Dev Console Warnings
+
+Problems
+
+Local dev console showed:
+
+GET /sw.js 404
+Service worker not served with correct MIME type
+GET /pwa-192x192.png 404
+Manifest icon download error
+Deprecated apple-mobile-web-app-capable warning
+Form field should have id or name
+
+Fixes
+
+* Disabled service worker registration in dev mode.
+* Unregistered stale dev service workers.
+* Made service worker path base-aware in production.
+* Reused existing PWA icons.
+* Added mobile-web-app-capable.
+* Added stable id, name, and aria-label attributes to visible search inputs.
+
+Files:
+
+apps/admin_web/index.html
+apps/admin_web/public/manifest.json
+apps/admin_web/src/lib/sw-register.ts
+apps/admin_web/src/components/TopHeader.tsx
+apps/admin_web/src/features/inventory/InventoryListPage.tsx
+
+Committed as:
+
+4a06fad fix(admin): clean up local dev pwa warnings
+
+⸻
+
+7. Remote Supabase Configuration
+
+Problem
+
+The app was showing local/demo data instead of original project data.
+
+Root Cause
+
+The admin app was pointed at local Supabase:
+
+http://127.0.0.1:54321
+
+Fix
+
+Updated local ignored frontend env file:
+
+apps/admin_web/.env.local
+
+to point at:
+
+https://hvmyxyccfnkrbxqbhlnm.supabase.co
+
+No env values were committed.
+
+⸻
+
+8. Manifest JSON Syntax Error
+
+Problem
+
+Browser showed:
+
+manifest.json:1 Manifest: Line: 1, column: 1, Syntax error
+
+Root Cause
+
+The manifest path was being resolved through the /admin/ SPA base and could return HTML instead of JSON.
+
+Fix
+
+Changed manifest and PWA icon links to resolve correctly from the admin base:
+
+<link rel="manifest" href="../manifest.json" />
+<link rel="apple-touch-icon" href="../pwa-192x192.png" />
+
+File:
+
+apps/admin_web/index.html
+
+Committed as:
+
+9590d63 fix(admin): correct manifest asset path
+
+⸻
+
+⚠️ Known Remaining Issue
+
+Remote get_sales_history Permission / RPC Error
+
+Current browser issue:
+
+POST https://hvmyxyccfnkrbxqbhlnm.supabase.co/rest/v1/rpc/get_sales_history
+400 Bad Request
+
+A sanitized non-browser probe returned:
+
+code: 42501
+message: permission denied for function get_sales_history
+
+Likely required remote SQL permission fix:
+
+GRANT EXECUTE ON FUNCTION public.get_sales_history(
+  uuid, text, timestamptz, timestamptz, integer, integer
+) TO authenticated;
+
+This is a remote schema permission change and should only be applied deliberately.
+
+If permission is not the only issue, the browser response body should be inspected for:
+
+* code
+* message
+* details
+* hint
+
+without printing auth headers, JWTs, cookies, or tokens.
+
+⸻
+
+🧪 Validation Commands
+
+Run these before committing changes:
+
+npm run typecheck
+npm run build
+git diff --check -- apps/admin_web supabase/migrations .gitignore
+git status --short
+
+Check generated output is not committed:
+
+git status --short -- apps/admin_web/dist
+
+Check latest commits:
+
+git log --oneline -10
+
+⸻
+
+🧾 Recent Important Commits
+
+9590d63 fix(admin): correct manifest asset path
+4a06fad fix(admin): clean up local dev pwa warnings
+8e1101e fix(supabase): repair inventory and sales runtime rpcs
+0d5caaf fix(admin): stabilize sales history hook order
+1290965 fix(supabase): seed local admin and repair dashboard rpc
+
+⸻
+
+🚀 Deployment
+
+Landing Page
+
+vercel --prod
+
+Live URL:
+
+https://lucky-store-pos-six.vercel.app/
+
+Admin Web
+
+The admin web is a Vite app under:
+
+apps/admin_web
+
+Build:
+
+npm run build
+
+or:
+
+cd apps/admin_web
+npm run build
+
+Production deployment must include the correct environment variables:
+
+VITE_SUPABASE_URL=https://hvmyxyccfnkrbxqbhlnm.supabase.co
+VITE_SUPABASE_ANON_KEY=<remote anon/public key>
+
+APK Distribution
+
+Download APK builds from:
+
+https://github.com/fatalmonk/luckystorePOS/releases
+
+⸻
+
+🔌 Integrations
+
+<div align="center">
+
+Service	Purpose
+Supabase	Database, Auth, Edge Functions, RLS, RPC, Realtime
+Google Maps	Address selection and delivery location workflows
+SSLCommerz	Payment gateway for card/mobile banking payments
+MHT-P29L Printer	Bluetooth thermal label printing
+Vercel	Web deployment
+
+</div>
+
+⸻
+
+🖨️ Hardware Support
+
+MHT-P29L Label Printer
+
+Supported features:
+
+* Bluetooth connection via flutter_blue_plus
+* TSPL command format
+* Code128 barcode support
+* MRP with strikethrough pricing
+* 40x30mm label size
+* Product price label printing
+
+⸻
+
+📊 Database Notes
+
+Core business domains include:
+
+tenants
+stores
+users
+items / products
+categories
+stock_levels
+stock_movements
+sales
+sale_items
+sale_payments
+customers
+suppliers
+expenses
+reminders
+
+Schema source:
+
+supabase/migrations/
+
+Reference schema snapshot:
+
+schema_dump.sql
+
+Important distinction:
+
+* Local replay schema may differ from original remote schema.
+* Do not blindly apply local repair migrations to the remote database.
+* Remote schema changes must be based on the actual remote error and schema.
+
+⸻
+
+🧯 Troubleshooting
+
+App shows empty/demo data
+
+Check whether admin web is pointed at local Supabase:
+
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+
+To use original data, point it at remote Supabase:
+
+VITE_SUPABASE_URL=https://hvmyxyccfnkrbxqbhlnm.supabase.co
+
+Restart Vite after env changes.
+
+⸻
+
+Login works locally but not remotely
+
+The local seeded admin is only for local Supabase:
+
+admin@luckystore.com
+TempPassword123!
+
+Remote login requires a real account in the remote Supabase Auth project.
+
+⸻
+
+Dashboard says failed to load data
+
+Check RPC errors in DevTools Network tab.
+
+Common causes:
+
+* Missing function
+* Wrong function signature
+* Column drift
+* Missing GRANT EXECUTE
+* RLS denial
+* Profile row missing tenant_id or store_id
+
+⸻
+
+Sales history returns 400
+
+Check the response body from:
+
+/rest/v1/rpc/get_sales_history
+
+Capture only:
+
+code
+message
+details
+hint
+
+Possible fix if permission error:
+
+GRANT EXECUTE ON FUNCTION public.get_sales_history(
+  uuid, text, timestamptz, timestamptz, integer, integer
+) TO authenticated;
+
+⸻
+
+Manifest syntax error
+
+If you see:
+
+manifest.json:1 Manifest: Line: 1, column: 1, Syntax error
+
+the browser is likely receiving HTML instead of JSON.
+
+Current expected links:
+
+<link rel="manifest" href="../manifest.json" />
+<link rel="apple-touch-icon" href="../pwa-192x192.png" />
+
+⸻
+
+Vite build fails with ENOTEMPTY
+
+Clean generated output:
+
+rm -rf apps/admin_web/dist
+npm run build
+
+Do not commit dist.
+
+⸻
+
+Service worker warning in local dev
+
+The app disables service worker registration outside production and unregisters stale dev service workers.
+
+If warnings persist:
+
+1. Open browser DevTools.
+2. Go to Application → Service Workers.
+3. Unregister old service workers.
+4. Hard refresh.
+
+⸻
+
+🛡️ Safety Rules for Development
+
+Do not commit:
+
+.env
+.env.local
+apps/admin_web/.env.local
+apps/mobile_app/.env
+apps/admin_web/dist
+node_modules
+logs
+screenshots
+tokens
+JWTs
+service-role keys
+database passwords
+
+Do not run against remote unless explicitly approved:
+
+supabase db push
+supabase link
+
+Do not expose:
+
+Supabase anon key in logs
+service-role key
+JWT
+access token
+refresh token
+cookies
+session object
+database URL
+
+Frontend must only use the public anon key.
+
+⸻
+
+🧭 Future Steps
+
+High Priority
+
+1. Fix remote get_sales_history permission
+    * Apply the targeted GRANT EXECUTE only after confirming the remote browser error.
+    * Re-test /admin/sales.
+2. Audit all remote RPC permissions
+    * Confirm authenticated users can execute required RPCs:
+        * get_sales_history
+        * get_sale_details
+        * get_inventory_list
+        * get_manager_dashboard_stats
+        * get_low_stock_items
+        * get_upcoming_reminders
+3. Confirm remote schema compatibility
+    * Compare remote schema to local migrations.
+    * Avoid applying local replay-only fixes to remote.
+4. Verify RLS policies
+    * Ensure users can read only their tenant/store data.
+    * Confirm admin users can access required management data.
+    * Avoid broad policies.
+
+⸻
+
+Medium Priority
+
+1. Document environment modes
+    * Add clear docs for:
+        * local Supabase mode
+        * remote Supabase mode
+        * Vercel production mode
+2. Create safe SQL repair scripts
+    * Store remote-safe SQL separately from local replay migrations.
+    * Add comments marking local-only vs remote-safe migrations.
+3. Add RPC smoke test scripts
+    * Login with anon client.
+    * Call dashboard/inventory/sales RPCs.
+    * Print sanitized OK/error only.
+    * Do not print tokens.
+4. Add seed documentation
+    * Explain local admin seed account.
+    * Explain why it does not apply to remote.
+5. Improve browser verification workflow
+    * Add checklist for:
+        * Dashboard
+        * Inventory
+        * Sales
+        * Login/logout
+        * Manifest/PWA
+        * Console errors
+
+⸻
+
+Low Priority
+
+1. Improve PWA install experience
+    * Add better icons.
+    * Add maskable icon support.
+    * Add screenshots in manifest.
+    * Add app shortcuts.
+2. Improve accessibility
+    * Audit form labels.
+    * Add ARIA labels where needed.
+    * Improve keyboard navigation.
+3. Improve admin UX
+    * Better empty states.
+    * Better loading states.
+    * Better RPC error display.
+    * Retry actions for transient network failures.
+4. Add deployment docs
+    * Vercel env setup.
+    * Supabase env setup.
+    * Mobile APK release process.
+
+⸻
+
+🤝 Contributing
+
+1. Fork the repository.
+2. Create a feature branch:
+
+git checkout -b feature/amazing-feature
+
+3. Make changes.
+4. Validate:
+
+npm run typecheck
+npm run build
+
+5. Commit:
+
+git commit -m "feat: add amazing feature"
+
+6. Push:
+
+git push origin feature/amazing-feature
+
+7. Open a pull request.
+
+See:
+
+docs/root-docs/BRANCH_STRATEGY.md
+
+⸻
+
+📞 Contact
 
 ## ⭐ Star History
 
@@ -528,8 +997,21 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 <div align="center">
 
-**If you find this useful, give us a star ⭐**
+📧 Email: luckystore.1947@gmail.com￼
+
+📱 Phone: 01731944544
+
+📍 Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh
+
+</div>
+
+⸻
+
+<div align="center">
+
+Made with ❤️ for retailers in Bangladesh
 
 [Report Bug](https://github.com/fatalmonk/luckystorePOS/issues) · [Request Feature](https://github.com/fatalmonk/luckystorePOS/issues)
 
 </div>
+```

@@ -79,22 +79,92 @@ drop policy if exists "batches_no_client_access" on public.batches;
 create policy "batches_no_client_access"
   on public.batches for all to authenticated using (false) with check (false);
 
-alter table public.receipt_counters enable row level security;
+do $$
+begin
+  if exists (
+    select 1
+    from pg_tables
+    where schemaname = 'public'
+      and tablename = 'receipt_counters'
+  ) then
+    alter table public.receipt_counters enable row level security;
 
-drop policy if exists "receipt_counters_no_client_access" on public.receipt_counters;
-create policy "receipt_counters_no_client_access"
-  on public.receipt_counters for all to authenticated using (false) with check (false);
+    drop policy if exists "receipt_counters_no_client_access" on public.receipt_counters;
+    create policy "receipt_counters_no_client_access"
+      on public.receipt_counters for all to authenticated using (false) with check (false);
+  end if;
+end $$;
 
-alter table public.returns enable row level security;
+do $$
+begin
+  if exists (
+    select 1
+    from pg_tables
+    where schemaname = 'public'
+      and tablename = 'returns'
+  ) then
+    alter table public.returns enable row level security;
 
-drop policy if exists "returns_no_client_access" on public.returns;
-create policy "returns_no_client_access"
-  on public.returns for all to authenticated using (false) with check (false);
+    drop policy if exists "returns_no_client_access" on public.returns;
+    create policy "returns_no_client_access"
+      on public.returns for all to authenticated using (false) with check (false);
+  end if;
+end $$;
 
 -- Security advisor: mutable search_path on SECURITY DEFINER / RPC functions
-alter function public.decrement_stock(uuid, uuid, integer) set search_path = public, pg_temp;
-alter function public.get_new_receipt(uuid) set search_path = public, pg_temp;
-alter function public.import_apply_stock_delta(uuid, uuid, integer) set search_path = public, pg_temp;
-alter function public.update_competitor_price_timestamp() set search_path = public, pg_temp;
-alter function public.update_timestamp() set search_path = public, pg_temp;
-alter function public.upsert_stock_level(uuid, uuid, integer) set search_path = public, pg_temp;
+do $$
+begin
+  if exists (
+    select 1
+    from pg_proc
+    where proname = 'decrement_stock'
+      and pg_get_function_identity_arguments(oid) = 'uuid, uuid, integer'
+  ) then
+    execute 'alter function public.decrement_stock(uuid, uuid, integer) set search_path = public, pg_temp';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc
+    where proname = 'get_new_receipt'
+      and pg_get_function_identity_arguments(oid) = 'uuid'
+  ) then
+    execute 'alter function public.get_new_receipt(uuid) set search_path = public, pg_temp';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc
+    where proname = 'import_apply_stock_delta'
+      and pg_get_function_identity_arguments(oid) = 'uuid, uuid, integer'
+  ) then
+    execute 'alter function public.import_apply_stock_delta(uuid, uuid, integer) set search_path = public, pg_temp';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc
+    where proname = 'update_competitor_price_timestamp'
+      and pg_get_function_identity_arguments(oid) = ''
+  ) then
+    execute 'alter function public.update_competitor_price_timestamp() set search_path = public, pg_temp';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc
+    where proname = 'update_timestamp'
+      and pg_get_function_identity_arguments(oid) = ''
+  ) then
+    execute 'alter function public.update_timestamp() set search_path = public, pg_temp';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc
+    where proname = 'upsert_stock_level'
+      and pg_get_function_identity_arguments(oid) = 'uuid, uuid, integer'
+  ) then
+    execute 'alter function public.upsert_stock_level(uuid, uuid, integer) set search_path = public, pg_temp';
+  end if;
+end $$;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter/foundation.dart';
 import '../offline/db.dart';
+import '../offline/sync_engine.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 @pragma('vm:entry-point')
@@ -10,33 +11,8 @@ void callbackDispatcher() {
     try {
       final database = OfflineDatabase();
       final supabase = Supabase.instance.client;
-      
-      final pendingActions = await database.getPendingActions();
-      
-      if (pendingActions.isEmpty) {
-        return Future.value(true);
-      }
-      
-      for (final action in pendingActions) {
-        await database.updateActionStatus(action.id, SyncActionStatus.syncing);
-        
-        try {
-          final payload = action.payload;
-          
-          final response = await supabase.rpc('complete_sale', 
-            params: {'p_action': payload}
-          );
-          
-          if (response != null && (response is Map && response['success'] == true)) {
-            await database.updateActionStatus(action.id, SyncActionStatus.success);
-          } else {
-            await database.updateActionStatus(action.id, SyncActionStatus.failed);
-          }
-        } catch (e) {
-          await database.updateActionStatus(action.id, SyncActionStatus.failed);
-        }
-      }
-      
+      final engine = SyncEngine(database, supabase);
+      await engine.processQueue();
       return Future.value(true);
     } catch (e) {
       debugPrint('Background sync failed: $e');
@@ -70,4 +46,3 @@ class OfflineSyncManager {
     debugPrint('Sync task queued: $actionId');
   }
 }
-

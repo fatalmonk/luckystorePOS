@@ -233,6 +233,15 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
--- Permissions handled in baseline migration (20260301000000_baseline_core_tables.sql)
--- REVOKE ALL ON FUNCTION public.complete_sale(...) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION public.complete_sale(...) TO authenticated;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'complete_sale'
+      AND pg_get_function_identity_arguments(oid) = 'uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.complete_sale(uuid, uuid, uuid, jsonb, jsonb, numeric, text, text, jsonb) TO authenticated';
+  END IF;
+END $$;

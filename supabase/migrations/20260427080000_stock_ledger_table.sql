@@ -86,10 +86,8 @@ CREATE POLICY stock_ledger_read_authenticated
   ON public.stock_ledger FOR SELECT
   TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.auth_id = auth.uid()
-        AND u.store_id = stock_ledger.store_id
+    store_id IN (
+      SELECT store_id FROM public.users WHERE auth_id = auth.uid()
     )
   );
 
@@ -99,17 +97,19 @@ CREATE POLICY stock_ledger_insert_authenticated
   ON public.stock_ledger FOR INSERT
   TO authenticated
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.auth_id = auth.uid()
-        AND u.store_id = stock_ledger.store_id
+    store_id IN (
+      SELECT store_id FROM public.users WHERE auth_id = auth.uid()
     )
   );
 
 -- Service role can do anything
-DROP POLICY IF EXISTS stock_ledger_service_role_all ON public.stock_ledger;
-CREATE POLICY stock_ledger_service_role_all
+CREATE POLICY stock_ledger_service_role_all 
   ON public.stock_ledger
+  TO service_role
+  USING (true);
+
+CREATE POLICY stock_ledger_service_role_insert 
+  ON public.stock_ledger FOR INSERT 
   TO service_role
   USING (true)
   WITH CHECK (true);

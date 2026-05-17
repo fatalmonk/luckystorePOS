@@ -30,14 +30,14 @@ AS $$
     'group_tag',    i.group_tag,
     'image_url',    i.image_url,
     'qty_on_hand',  COALESCE(sl.qty, 0),
-    'category',     c.category
+    'category',     c.name
   )
   FROM public.items i
   LEFT JOIN public.stock_levels sl
          ON sl.item_id = i.id AND sl.store_id = p_store_id
   LEFT JOIN public.categories c
          ON c.id = i.category_id
-  WHERE i.active = true
+  WHERE i.is_active = true
     AND (
       i.sku        = p_scan_value OR
       i.barcode    = p_scan_value OR
@@ -73,7 +73,7 @@ AS $$
       i.cost,
       i.group_tag,
       i.image_url,
-      c.category AS category,
+      c.name AS category,
       c.id AS category_id,
       COALESCE(sl.qty, 0) AS qty_on_hand
     FROM public.items i
@@ -81,7 +81,7 @@ AS $$
            ON sl.item_id = i.id AND sl.store_id = p_store_id
     LEFT JOIN public.categories c
            ON c.id = i.category_id
-    WHERE i.active = true
+    WHERE i.is_active = true
       AND (
         p_query = '' OR
         i.name        ILIKE '%' || p_query || '%' OR

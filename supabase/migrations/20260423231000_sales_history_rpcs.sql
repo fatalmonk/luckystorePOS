@@ -34,7 +34,7 @@ BEGIN
     s.sale_number,
     s.total_amount,
     s.status,
-    u.full_name as cashier_name,
+    u.name as cashier_name,
     s.created_at
   FROM public.sales s
   JOIN public.users u ON u.id = s.cashier_id
@@ -76,10 +76,10 @@ BEGIN
     'status', s.status,
     'notes', s.notes,
     'created_at', s.created_at,
-    'cashier_name', u.full_name,
+    'cashier_name', u.name,
     'voided_at', s.voided_at,
     'void_reason', s.void_reason,
-    'voided_by_name', v.full_name
+    'voided_by_name', v.name
   ) INTO v_sale_info
   FROM public.sales s
   JOIN public.users u ON u.id = s.cashier_id
@@ -146,10 +146,12 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 STABLE
 AS $$
-  SELECT id, full_name, role, email, last_login_at
-  FROM public.users
+  -- Note: email is in public.users if synced, or we might need to join auth.users 
+  -- but we'll stick to public.users for simplicity in this lean app.
+  SELECT id, name AS full_name, role, email, NULL::timestamptz AS last_login
+  FROM public.users 
   WHERE store_id = p_store_id OR role = 'admin'
-  ORDER BY role ASC, full_name ASC;
+  ORDER BY role ASC, name ASC;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_store_users(uuid) TO authenticated;

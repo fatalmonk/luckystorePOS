@@ -184,7 +184,7 @@ class _SideDrawerState extends State<SideDrawer> {
                         ),
                         subtitle: Text('Admin ops & aisle map', style: AppTextStyles.bodySmall),
                         value: _isAdmin,
-                        activeColor: AppColors.warningDefault,
+                        activeThumbColor: AppColors.warningDefault,
                         onChanged: _handleStoreModeToggle,
                         secondary: Icon(
                           Icons.admin_panel_settings_rounded, 

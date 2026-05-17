@@ -61,9 +61,9 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
         <div className="flex flex-col gap-6">
           {/* Header Info */}
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-border-light rounded-lg flex items-center justify-center text-text-muted shrink-0 overflow-hidden">
-              {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            <div className="w-20 h-20 bg-border-light rounded-lg flex items-center justify-center text-text-muted">
+              {product.image_url ? (
+                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" />
               ) : (
                 <Package size={40} />
               )}
@@ -72,8 +72,8 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
               <h2 className="text-xl font-bold text-text-main">{product.name}</h2>
               <div className="text-sm text-text-muted mb-2">{product.categories?.name || 'No Category'}</div>
               <div className="flex gap-2">
-                <Badge variant={product.active ? 'success' : 'neutral'}>
-                  {product.active ? 'Active' : 'Inactive'}
+                <Badge variant={product.is_active ? 'success' : 'neutral'}>
+                  {product.is_active ? 'Active' : 'Inactive'}
                 </Badge>
                 <Badge variant="info">{product.sku || 'No SKU'}</Badge>
               </div>
@@ -81,7 +81,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             <Button variant="outline" onClick={() => onEdit(product)} icon={<Edit2 size={16} />}>
               Edit
             </Button>
-            {product.active && (
+            {product.is_active && (
               <button
                 onClick={() => setShowDeactivate(true)}
                 style={{ color: 'var(--color-danger)', cursor: 'pointer', background: 'none', border: 'none', padding: '8px' }}

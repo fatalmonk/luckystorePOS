@@ -1,0 +1,217 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (100.0.0 available)
+  analyzer 10.0.1 (13.0.0 available)
+  archive 3.6.1 (4.0.9 available)
+  cli_util 0.4.2 (0.5.1 available)
+  csv 6.0.0 (8.0.0 available)
+  dart_style 3.1.7 (3.1.9 available)
+  flutter_blue_plus 1.36.8 (2.3.2 available)
+  flutter_blue_plus_android 7.0.4 (9.0.0 available)
+  flutter_blue_plus_darwin 7.0.3 (9.0.0 available)
+  flutter_blue_plus_linux 7.0.3 (9.0.0 available)
+  flutter_blue_plus_platform_interface 7.0.0 (9.0.0 available)
+  flutter_blue_plus_web 7.0.2 (9.0.0 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  flutter_thermal_printer 1.2.1+1 (2.0.1 available)
+  google_fonts 6.3.3 (8.1.0 available)
+  image 4.3.0 (4.8.0 available)
+  json_annotation 4.11.0 (4.12.0 available)
+  lints 5.1.1 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.17.0 (1.18.2 available)
+  native_toolchain_c 0.17.6 (0.18.0 available)
+  pdf 3.11.3 (3.12.0 available)
+  qr 3.0.2 (4.0.0 available)
+  test_api 0.7.10 (0.7.12 available)
+! vector_math 2.2.0 (overridden) (2.3.0 available)
+  win32 5.15.0 (6.2.0 available)
+  workmanager 0.7.0 (0.9.0+3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+28 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart
+00:00 +0: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Concurrent Payment Processing Multiple payments for same sale should be serialized
+00:00 +1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Concurrent Payment Processing Multiple payments for same sale should be serialized
+00:00 +2: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/duplicate_submission_test.dart: Idempotency Key Generation generateClientTransactionId produces unique IDs for same inputs
+00:00 +3: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/duplicate_submission_test.dart: Idempotency Key Generation generateClientTransactionId produces unique IDs for same inputs
+00:00 +4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Concurrent Payment Processing Payment total should not exceed sale amount
+00:00 +5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Negative Stock Attempts Stock validation: available < requested should fail
+00:00 +6: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/duplicate_submission_test.dart: Idempotency Key Generation clientTransactionId format is valid
+00:00 +7: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +8: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +9: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +10: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +11: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +12: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +13: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +14: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock
+00:00 +14 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Wrong Cost Inputs Zero cost is valid (free item / promotion)
+00:00 +15 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/duplicate_submission_test.dart: RPC Idempotency record_purchase_v2 idempotency key format
+00:00 +16 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Wrong Cost Inputs Normal positive cost is valid
+00:00 +17 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Wrong Cost Inputs Extremely large cost should be flagged
+00:00 +18 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Wrong Cost Inputs Cost precision should be limited to 4 decimal places
+00:00 +19 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Purchase Receiving Validation Purchase total cost validation
+00:00 +20 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Purchase Receiving Validation Amount paid cannot exceed total cost
+00:00 +21 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Purchase Receiving Validation Amount paid equal to total cost is valid
+00:00 +22 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Purchase Receiving Validation Partial payment is valid
+00:00 +23 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Purchase Receiving Validation Negative payment amount should be rejected
+00:00 +24 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Cart Operations Validation setQty with zero or negative should remove item
+00:00 +25 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Cart Operations Validation setQty with positive value should update
+00:00 +26 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Cart Operations Validation Cart discount cannot exceed subtotal
+00:00 +27 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Cart Operations Validation Cart discount cannot be negative
+00:00 +28 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/stock_validation_test.dart: Price Validation Sale price should not be negative
+00:00 +29 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Stock Decrement Race Conditions Simultaneous sales of same item should not cause negative stock [E]
+  Expected: <0>
+    Actual: <4>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/race_conditions_test.dart 75:7            main.<fn>.<fn>
+  
+00:00 +29 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/statement_accuracy_test.dart: Ledger Entry Balance Sale creates correct debit entry (customer owes)
+00:00 +30 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/statement_accuracy_test.dart: Ledger Entry Balance Sale creates correct debit entry (customer owes)
+00:00 +31 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/statement_accuracy_test.dart: Ledger Entry Balance Sale creates correct debit entry (customer owes)
+00:00 +32 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/statement_accuracy_test.dart: Ledger Entry Balance Sale creates correct debit entry (customer owes)
+00:00 +33 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +34 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +35 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +36 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +37 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +38 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +39 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +40 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +41 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +42 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +43 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +44 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +45 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +46 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +47 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +48 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +49 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +50 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +51 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +52 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +53 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +54 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +55 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +56 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +57 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +58 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +59 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Sync worker should not run concurrently
+00:00 +60 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Offline Sync Race Conditions Completer pattern prevents concurrent sync operations
+00:00 +61 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/race_conditions_test.dart: Session State Consistency Session should not be opened twice concurrently
+00:00 +62 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Queue Persistence Queued transaction to JSON and back
+00:00 +63 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Queue Persistence Multiple queue items persist correctly
+00:00 +64 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Retry Logic & Exponential Backoff Backoff duration increases with retry count
+00:00 +65 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Retry Logic & Exponential Backoff Max backoff is capped at 5 minutes
+00:00 +66 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Conflict Detection Conflict state is set when status is CONFLICT
+00:00 +67 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Conflict Detection Synced state when status is SUCCESS
+00:00 +68 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Conflict Detection failed state on exception
+00:00 +69 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Conflict Detection Conflict requires manager review flag
+00:00 +70 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Queue State Transitions pending -> syncing -> synced (happy path)
+00:00 +71 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Queue State Transitions pending -> syncing -> failed (with retry)
+00:00 +72 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Queue State Transitions pending -> syncing -> conflict (requires review)
+00:00 +73 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Dashboard Stats Calculation Queued sales count excludes synced and conflict
+00:00 +74 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/unit/offline_queue_test.dart: Dashboard Stats Calculation Synced today count
+00:00 +75 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Duplicate Submission Prevention record_sale idempotency key format
+00:00 +76 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Duplicate Submission Prevention record_customer_payment idempotency prevents double payment
+00:00 +77 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Duplicate Submission Prevention record_purchase_v2 duplicate invoice protection
+00:00 +78 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Offline Queue Replay Flow Enqueue → Sync → Confirm state transitions
+00:00 +79 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Offline Queue Replay Flow Failed sync → retry with backoff → eventual success
+00:00 +80 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Offline Queue Replay Flow Conflict detection: price change during offline period
+00:00 +81 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Purchase Receiving Flow Purchase receiving → stock levels updated
+00:00 +82 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Purchase Receiving Flow Partial payment on purchase → supplier balance created
+00:00 +83 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Purchase Receiving Flow Draft purchase → post later flow
+00:00 +84 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Customer Payment & Ledger Customer payment → ledger entries created correctly
+00:00 +85 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Customer Payment & Ledger Customer balance updates after payment
+00:00 +86 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Customer Payment & Ledger Overpayment creates negative balance (credit)
+00:00 +87 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Collections Engine get_receivables_aging returns correct buckets
+00:00 +88 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Collections Engine log_customer_reminder creates record
+00:00 +89 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/all_systems_integration_test.dart: Integration: Statement Accuracy Ledger entries produce correct running balance
+00:00 +90 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests (setUpAll)
+00:00 +90 -1: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Enqueue & Persistence should enqueue sale transaction and persist to disk
+00:00 +90 -2: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Enqueue & Persistence should enqueue sale transaction and persist to disk [E]
+  type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>' in type cast
+  test/integration/offline_sync_test.dart 66:44  main.<fn>.<fn>.<fn>
+  
+00:00 +90 -2: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Enqueue & Persistence should deduplicate transactions with same ID
+00:00 +90 -3: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Enqueue & Persistence should deduplicate transactions with same ID [E]
+  Expected: <1>
+    Actual: <2>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/integration/offline_sync_test.dart 79:9        main.<fn>.<fn>.<fn>
+  
+00:00 +90 -3: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Enqueue & Persistence should maintain queue order (FIFO)
+00:00 +90 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +90 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Enqueue & Persistence should maintain queue order (FIFO) [E]
+  Expected: 'tx-001'
+    Actual: 'tx-test-001'
+     Which: is different.
+            Expected: tx-001
+              Actual: tx-test-001
+                         ^
+             Differ at offset 3
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/integration/offline_sync_test.dart 95:9        main.<fn>.<fn>.<fn>
+  
+00:00 +91 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +92 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +93 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +94 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +95 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +96 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +97 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +98 -4: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +98 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:00 +98 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/integration/offline_sync_test.dart: Offline Sync Integration Tests Dashboard Stats should calculate correct stats [E]
+  Expected: <2>
+    Actual: <7>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/integration/offline_sync_test.dart 289:9       main.<fn>.<fn>.<fn>
+  
+00:00 +99 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: Framework smoke test
+00:01 +100 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/widget_test.dart: arithmetic works
+00:01 +101 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/_deprecated/offline_purchase_test.dart: Offline Purchase Flow E2E - Placeholder Placeholder test for offline flow
+00:01 +102 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/_deprecated/offline_purchase_test.dart: Offline Purchase Flow E2E - Placeholder Placeholder test for offline flow
+00:01 +103 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/_deprecated/offline_purchase_test.dart: Offline Purchase Flow E2E - Placeholder Placeholder test for offline flow
+00:01 +104 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/_deprecated/offline_purchase_test.dart: Offline Purchase Flow E2E - Placeholder Placeholder test for offline flow
+00:01 +105 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/_deprecated/offline_purchase_test.dart: Offline Purchase Flow E2E - Placeholder Placeholder test for offline flow
+00:01 +106 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/_deprecated/offline_purchase_test.dart: (tearDownAll)
+Warning: integration_test plugin was not detected.
+
+If you're running the tests with `flutter drive`, please make sure your tests
+are in the `integration_test/` directory of your package and use
+`flutter test $path_to_test` to run it instead.
+
+If you're running the tests with Android instrumentation or XCTest, this means
+that you are not capturing test results properly! See the following link for
+how to set up the integration_test plugin:
+
+https://docs.flutter.dev/testing/integration-tests
+
+00:01 +106 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/offline/empirical_replay_test.dart: (setUpAll)
+00:01 +106 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/offline/empirical_replay_test.dart: COMPLETE EMPIRICAL REPLAY CERTIFICATION CASCADE
+[EXECUTION] --- SCENARIO S1: OFFLINE ENQUEUE ---
+✅ S1 COMPLETE: Physical write confirmed sequence_id = 1
+
+[EXECUTION] --- SCENARIO S2: RESTART HYDRATION ---
+✅ S2 COMPLETE: Monotonic counter hydration verified (Next ID=2)
+
+[EXECUTION] --- SCENARIO S3: LEASE EXPIRATION RECOVERY ---
+✅ S3 COMPLETE: Lease reclaimed, zombie transaction unfrozen! Current State: OfflineSyncState.failed
+
+[EXECUTION] --- SCENARIO S5: ACK TAXONOMY & RETRY CAP ---
+✅ S5 COMPLETE: Hard 15-retry cap triggered, item quarantined successfully!
+
+🎉 ALL SCENARIOS PASSED PHYSICAL EXECUTION LOGIC!
+00:01 +107 -5: /Users/ioriimasu/dev/luckystorePOS/apps/mobile_app/test/offline/empirical_replay_test.dart: (tearDownAll)
+00:01 +107 -5: Some tests failed.

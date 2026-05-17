@@ -1,0 +1,31 @@
+name: Build Production Android Binary
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers release build strictly on explicit version tagging
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure Flutter Runtime
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: true
+
+    - name: Restore Client Dependencies
+      run: cd apps/mobile_app && flutter pub get
+
+    - name: Execute Application Build Logic
+      run: cd apps/mobile_app && flutter build apk --release --split-per-abi
+
+    - name: Persist Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: lucky-store-android-bin
+        path: apps/mobile_app/build/app/outputs/flutter-apk/*.apk
+        retention-days: 7

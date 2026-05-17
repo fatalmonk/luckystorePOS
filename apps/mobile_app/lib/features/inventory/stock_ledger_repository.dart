@@ -23,7 +23,7 @@ class StockLedgerRepository {
       final params = _buildQueryParams(query);
       
       final url = Uri.parse(
-        '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?$params&select=*&order=timestamp.${query.sortOrder}&limit=${query.limit}&offset=${query.offset}'
+        '${NetworkConfig.supabaseUrl}/rest/v1/inventory_movements?$params&select=*&order=created_at.${query.sortOrder}&limit=${query.limit}&offset=${query.offset}'
       );
 
       final headers = {
@@ -81,70 +81,33 @@ class StockLedgerRepository {
     }
 
     if (query.productId != null) {
-      paramsMap['product_id.eq'] = query.productId!;
+      paramsMap['item_id.eq'] = query.productId!;
     }
 
     if (query.startDate != null) {
-      paramsMap['timestamp.gte'] = query.startDate!.toIso8601String();
+      paramsMap['created_at.gte'] = query.startDate!.toIso8601String();
     }
 
     if (query.endDate != null) {
-      paramsMap['timestamp.lte'] = query.endDate!.toIso8601String();
+      paramsMap['created_at.lte'] = query.endDate!.toIso8601String();
     }
 
     if (query.entryType != null) {
-      paramsMap['entry_type.eq'] = query.entryType!;
+      paramsMap['movement_type.eq'] = query.entryType!;
     }
 
     if (query.reason != null) {
-      paramsMap['reason.eq'] = query.reason!;
+      paramsMap['notes.eq'] = query.reason!;
     }
 
-    paramsMap['order'] = 'timestamp.${query.sortOrder}';
+    paramsMap['order'] = 'created_at.${query.sortOrder}';
     paramsMap['offset'] = query.offset.toString();
     paramsMap['limit'] = query.limit.toString();
 
     return paramsMap.entries.map((e) => '${e.key}=${e.value}').join('&');
   }
 
-  /// Get ledger summary for a date range
-  Future<Result<StockLedgerSummary>> getLedgerSummary({
-    required String storeId,
-    required DateTime startDate,
-    required DateTime endDate,
-  }) async {
-    try {
-      final url = Uri.parse(
-        '${NetworkConfig.supabaseUrl}/rpc/stock_ledger_summary?'
-        'store_id=${Uri.encodeComponent(storeId)}&'
-        'start_date=${startDate.toIso8601String()}&'
-        'end_date=${endDate.toIso8601String()}'
-      );
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'apikey': NetworkConfig.supabaseServiceKey,
-        'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
-      };
-
-      final response = await _client
-          .post(url, headers: headers)
-          .timeout(Duration(seconds: NetworkConfig.requestTimeout));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Success<StockLedgerSummary>(StockLedgerSummary.fromJson(data));
-      } else {
-        final error = json.decode(response.body);
-        return Failure<StockLedgerSummary>(
-          'Failed to fetch ledger summary: ${error['message'] ?? error['error'] ?? 'Unknown error'}',
-        );
-      }
-    } catch (e, stackTrace) {
-      Logger.error('StockLedgerRepository.getLedgerSummary failed', e, stackTrace);
-      return Failure<StockLedgerSummary>('Failed to fetch ledger summary: $e');
-    }
-  }
 
   /// Fetch ledger entries by reference ID (e.g., sale_id)
   Future<Result<List<StockLedgerEntry>>> getByReferenceId({
@@ -153,11 +116,11 @@ class StockLedgerRepository {
   }) async {
     try {
       final url = Uri.parse(
-        '${NetworkConfig.supabaseUrl}/rest/v1/stock_ledger?'
+        '${NetworkConfig.supabaseUrl}/rest/v1/inventory_movements?'
         'reference_id.eq=$referenceId&'
-        '${entryType != null ? 'entry_type.eq=$entryType&' : ''}'
+        '${entryType != null ? 'movement_type.eq=$entryType&' : ''}'
         'select=*&'
-        'order=timestamp.desc'
+        'order=created_at.desc'
       );
 
       final headers = {
@@ -229,8 +192,4 @@ typedef GetLedgerEntriesCallback = Future<Result<List<StockLedgerEntry>>> Functi
   required StockLedgerQuery query,
 });
 
-typedef GetLedgerSummaryCallback = Future<Result<StockLedgerSummary>> Function({
-  required String storeId,
-  required DateTime startDate,
-  required DateTime endDate,
-});
+
