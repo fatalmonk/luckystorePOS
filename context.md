@@ -12,6 +12,8 @@ Overhaul UI per use cases #1-4
 - Token saver protocol created for Hermes
 - POS overflow fixed: LayoutBuilder + SizedBox instead of Flexible + ConstrainedBox
 - Search bar debounced: 300ms delay to reduce RPC calls
+- Expense duplicate submission fixed: added isPending checks to all mutations
+- Expense delete/update fixed: added RLS policies for DELETE/UPDATE
 
 ## Decisions
 - Theme: light primary, dark optional via ThemeProvider
@@ -30,7 +32,7 @@ Overhaul UI per use cases #1-4
 - Theme inconsistency (purchase dark vs POS light)
 
 ## Next
-Commit Phase 1 changes OR start Phase 2 (Dashboard data binding)
+Phase 2: Dashboard data binding (Flutter)
 
 ---
-ctx: search bar debounce | done: 5 | next: commit or Phase 2
+ctx: expense issues resolved | done: 7 | next: Phase 2 dashboard data binding
