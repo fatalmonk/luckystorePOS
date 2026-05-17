@@ -229,6 +229,7 @@ GRANT EXECUTE ON FUNCTION public.get_store_users(uuid) TO authenticated;
 -- =============================================================================
 -- 7) Sales: get_sales_history
 -- =============================================================================
+DROP FUNCTION IF EXISTS public.get_sales_history(uuid, text, timestamptz, timestamptz, integer, integer);
 CREATE OR REPLACE FUNCTION public.get_sales_history(
   p_store_id uuid,
   p_search_query text DEFAULT NULL,
