@@ -3,6 +3,9 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.certify.staging', override: true });
 
 type Scenario =
   | 'duplicate_delivery'
