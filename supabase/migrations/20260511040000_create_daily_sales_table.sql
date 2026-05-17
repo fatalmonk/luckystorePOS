@@ -24,11 +24,13 @@ CREATE INDEX IF NOT EXISTS idx_daily_sales_date ON public.daily_sales(sale_date 
 -- Enable RLS
 ALTER TABLE public.daily_sales ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
+-- RLS Policies (DROP + CREATE pattern for idempotency)
+DROP POLICY IF EXISTS "Users can view daily_sales of their store" ON public.daily_sales;
 CREATE POLICY "Users can view daily_sales of their store"
     ON public.daily_sales FOR SELECT
     USING (store_id IN (SELECT store_id FROM public.users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Managers can insert daily_sales" ON public.daily_sales;
 CREATE POLICY "Managers can insert daily_sales"
     ON public.daily_sales FOR INSERT
     WITH CHECK (
@@ -36,6 +38,7 @@ CREATE POLICY "Managers can insert daily_sales"
         AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('admin', 'manager'))
     );
 
+DROP POLICY IF EXISTS "Managers can update daily_sales" ON public.daily_sales;
 CREATE POLICY "Managers can update daily_sales"
     ON public.daily_sales FOR UPDATE
     USING (
@@ -52,6 +55,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_daily_sales_updated_at ON public.daily_sales;
 CREATE TRIGGER set_daily_sales_updated_at
     BEFORE UPDATE ON public.daily_sales
     FOR EACH ROW
