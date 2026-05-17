@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:lucky_store/telemetry/telemetry_streams.dart';
 import 'package:lucky_store/telemetry/telemetry_storage.dart';
 

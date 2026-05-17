@@ -59,6 +59,32 @@ class SaleTransactionIntent {
     this.fulfillmentPolicy = 'STRICT',
   });
 
+  SaleTransactionIntent copyWith({
+    String? clientTransactionId,
+    String? transactionTraceId,
+    String? storeId,
+    String? cashierId,
+    String? sessionId,
+    List<SaleTransactionIntentItem>? items,
+    List<Map<String, dynamic>>? payments,
+    double? cartDiscount,
+    DateTime? createdAt,
+    String? fulfillmentPolicy,
+  }) {
+    return SaleTransactionIntent(
+      clientTransactionId: clientTransactionId ?? this.clientTransactionId,
+      transactionTraceId: transactionTraceId ?? this.transactionTraceId,
+      storeId: storeId ?? this.storeId,
+      cashierId: cashierId ?? this.cashierId,
+      sessionId: sessionId ?? this.sessionId,
+      items: items ?? this.items,
+      payments: payments ?? this.payments,
+      cartDiscount: cartDiscount ?? this.cartDiscount,
+      createdAt: createdAt ?? this.createdAt,
+      fulfillmentPolicy: fulfillmentPolicy ?? this.fulfillmentPolicy,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
         'client_transaction_id': clientTransactionId,
         'transaction_trace_id': transactionTraceId,

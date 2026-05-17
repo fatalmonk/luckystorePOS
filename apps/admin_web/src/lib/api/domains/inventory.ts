@@ -13,7 +13,7 @@ export const inventory = {
       const { data, error } = await supabase.rpc('adjust_inventory_stock', {
         p_tenant_id: tenantId,
         p_store_id: storeId,
-        p_product_id: itemId,
+        p_item_id: itemId,
         p_quantity_delta: delta,
         p_movement_type: 'adjustment',
         p_reference_type: 'adjustment',
@@ -30,7 +30,7 @@ export const inventory = {
       const { data, error } = await supabase.rpc('set_inventory_stock', {
         p_tenant_id: tenantId,
         p_store_id: storeId,
-        p_product_id: itemId,
+        p_item_id: itemId,
         p_new_quantity: newQty,
         p_movement_type: 'manual',
         p_reference_type: 'adjustment',
@@ -45,7 +45,7 @@ export const inventory = {
   history: async (storeId: string, itemId?: string, movementType?: string) => {
     const { data, error } = await supabase.rpc('get_inventory_movements', {
       p_store_id: storeId,
-      p_product_id: itemId || null,
+      p_item_id: itemId || null,
       p_movement_type: movementType || null
     });
     if (error) throw error;

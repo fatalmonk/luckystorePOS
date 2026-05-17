@@ -273,7 +273,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
 
   SupabaseClient? _supabase;
   Timer? _workerTimer;
-  bool _isSyncing = false;
+  Completer<void>? _syncCompleter;
   bool _initialized = false;
   bool _currentlyProcessing = false;
   DateTime? _lastRunAt;
@@ -306,6 +306,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     _initialized = true;
     notifyListeners();
   }
+
+  @visibleForTesting
+  Future<void> triggerSyncQueueForTesting() => _syncQueue();
 
   String generateClientTransactionId({
     required String storeId,
@@ -461,8 +464,15 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 
   Future<void> _syncQueue() async {
-    if (_isSyncing || _supabase == null) return;
-    _isSyncing = true;
+    if (_supabase == null) return;
+    // If a sync is already running, wait for it to finish and return.
+    if (_syncCompleter != null) {
+      return _syncCompleter!.future;
+    }
+    
+    // Lock the gate for this cycle
+    _syncCompleter = Completer<void>();
+
     _currentlyProcessing = true;
     _lastRunAt = DateTime.now();
     notifyListeners();
@@ -518,7 +528,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
         _consecutiveFailures += 1;
       }
     } finally {
-      _isSyncing = false;
+      // Unlock the gate and notify anyone who was waiting
+      _syncCompleter?.complete();
+      _syncCompleter = null;
       _currentlyProcessing = false;
       notifyListeners();
     }
@@ -645,6 +657,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
             requiresManagerReview: true,
             lastAckClassification: classification,
             nextRetryAt: null,
+            retryCount: retries,
           ),
         );
       }

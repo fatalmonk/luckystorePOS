@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { resolve } from 'path';
 
 // Load env vars
-dotenv.config({ path: resolve(__dirname, '../../.env.local') });
+dotenv.config({ path: resolve(process.cwd(), 'apps/admin_web/.env.local') });
 
 export enum AuthorityLevel {
   AUTHORITATIVE = 'AUTHORITATIVE',
@@ -45,7 +45,7 @@ export class InvariantVerifier {
     // Get all stock levels
     const { data: stocks, error: stockErr } = await this.supabase
       .from('stock_levels')
-      .select('store_id, item_id, qty');
+      .select('store_id, item_id, qty_on_hand');
       
     if (stockErr) throw stockErr;
     
@@ -57,18 +57,13 @@ export class InvariantVerifier {
     for (const stock of stocks || []) {
       totalChecks++;
       
-      // Mapping Drift Detection: item_id (stock_levels) -> product_id (movements)
-      // This is a TRANSITIONAL check because field names diverge.
-      if (overallAuthority === AuthorityLevel.AUTHORITATIVE) {
-        overallAuthority = AuthorityLevel.TRANSITIONAL;
-        drifts.push('Naming Drift: stock_levels.item_id -> inventory_movements.product_id');
-      }
+      // Lineage is now unified: item_id is used universally across both tables.
 
       const { data: movements, error: movErr } = await this.supabase
         .from('inventory_movements')
         .select('quantity_delta, new_quantity, operation_id')
         .eq('store_id', stock.store_id)
-        .eq('product_id', stock.item_id)
+        .eq('item_id', stock.item_id)
         .order('created_at', { ascending: false });
         
       if (movErr) throw movErr;
@@ -77,14 +72,14 @@ export class InvariantVerifier {
       const latestQuantity = movements && movements.length > 0 ? movements[0].new_quantity : 0;
       
       // Check 1: Delta Sum matches current state
-      if (ledgerSum !== stock.qty) {
-        console.error(`❌ Ledger Mismatch! Store: ${stock.store_id}, Item: ${stock.item_id}. Delta sum: ${ledgerSum}, Current qty: ${stock.qty}`);
+      if (ledgerSum !== stock.qty_on_hand) {
+        console.error(`❌ Ledger Mismatch! Store: ${stock.store_id}, Item: ${stock.item_id}. Delta sum: ${ledgerSum}, Current qty: ${stock.qty_on_hand}`);
         anomalies++;
       }
 
       // Check 2: Latest Ledger state matches current state (Authority check)
-      if (latestQuantity !== stock.qty && movements && movements.length > 0) {
-        console.error(`❌ Authority Drift! Store: ${stock.store_id}, Item: ${stock.item_id}. Latest Row qty: ${latestQuantity}, Cache table qty: ${stock.qty}`);
+      if (latestQuantity !== stock.qty_on_hand && movements && movements.length > 0) {
+        console.error(`❌ Authority Drift! Store: ${stock.store_id}, Item: ${stock.item_id}. Latest Row qty: ${latestQuantity}, Cache table qty: ${stock.qty_on_hand}`);
         anomalies++;
         drifts.push(`Cache Inconsistency at Store ${stock.store_id} / Item ${stock.item_id}`);
       }
@@ -107,8 +102,8 @@ export class InvariantVerifier {
     
     const { data: movements, error } = await this.supabase
       .from('inventory_movements')
-      .select('id, store_id, product_id, previous_quantity, quantity_delta, new_quantity')
-      .order('product_id, created_at', { ascending: true });
+      .select('id, store_id, item_id, previous_quantity, quantity_delta, new_quantity')
+      .order('item_id', { ascending: true });
       
     if (error) throw error;
     

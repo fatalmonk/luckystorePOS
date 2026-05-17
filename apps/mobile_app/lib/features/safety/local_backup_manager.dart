@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -27,7 +28,7 @@ class LocalBackupManager {
       await _rotateOldBackups(backupDir);
     } catch (e) {
       // Silently fail or report to telemetry if critical
-      print('Failed local backup generation: $e');
+      debugPrint('Failed local backup generation: $e');
     }
   }
 

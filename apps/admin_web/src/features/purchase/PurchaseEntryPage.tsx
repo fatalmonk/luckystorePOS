@@ -104,7 +104,7 @@ export const PurchaseEntryPage: React.FC = () => {
     }
     const fetchItems = async () => {
       const { data, error } = await supabase
-        .from('inventory_items')
+        .from('items')
         .select('id, name, sku, barcode, price')
         .or(`name.ilike.%${debouncedItemSearch}%,sku.ilike.%${debouncedItemSearch}%,barcode.ilike.%${debouncedItemSearch}%`)
         .limit(8);

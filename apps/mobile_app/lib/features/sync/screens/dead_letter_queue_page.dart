@@ -6,9 +6,9 @@ class DeadLetterQueuePage extends StatefulWidget {
   final SyncController controller;
 
   const DeadLetterQueuePage({
-    Key? key,
+    super.key,
     required this.controller,
-  }) : super(key: key);
+  });
 
   @override
   State<DeadLetterQueuePage> createState() => _DeadLetterQueuePageState();

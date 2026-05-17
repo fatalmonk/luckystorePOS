@@ -7,9 +7,9 @@ class SyncBadge extends StatelessWidget {
   final SyncController controller;
 
   const SyncBadge({
-    Key? key,
+    super.key,
     required this.controller,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class SyncBadge extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: _getColor(status).withOpacity(0.15),
+              color: _getColor(status).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: _getColor(status), width: 1.5),
             ),

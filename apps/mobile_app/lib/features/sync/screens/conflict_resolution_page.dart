@@ -7,9 +7,9 @@ class ConflictResolutionPage extends StatefulWidget {
   final SyncController controller;
 
   const ConflictResolutionPage({
-    Key? key,
+    super.key,
     required this.controller,
-  }) : super(key: key);
+  });
 
   @override
   State<ConflictResolutionPage> createState() => _ConflictResolutionPageState();

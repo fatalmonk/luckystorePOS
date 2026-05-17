@@ -13,12 +13,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // Not authenticated
   if (!session) {
-    // Save the intended destination so they can be redirected after login
-    // but in this POS, login happens outside the admin app. Just bounce them out.
-    // For now, bounce them to the OAuth consent or login root
-    // Assuming root login is on another domain or path.
-    window.location.href = '/'; 
-    return null;
+    // Preserve the path they were trying to access to redirect them back after login
+    // Although in this simple implementation, we just redirect to login
+    return <Navigate to="/login" replace />;
   }
 
   // Authenticated, but no store selected yet (if applicable)

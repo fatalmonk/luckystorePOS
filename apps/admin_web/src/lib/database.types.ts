@@ -7,6 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       accounting_periods: {
@@ -41,6 +66,13 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "accounting_periods_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "accounting_periods_closed_by_fkey"
             columns: ["closed_by"]
@@ -158,29 +190,38 @@ export type Database = {
       }
       categories: {
         Row: {
+          category: string | null
           created_at: string | null
+          description: string | null
           id: string
           name: string
           parent_id: string | null
           sort_order: number | null
+          store_id: string | null
           tenant_id: string
           updated_at: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string
           name: string
           parent_id?: string | null
           sort_order?: number | null
+          store_id?: string | null
           tenant_id: string
           updated_at?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string
           name?: string
           parent_id?: string | null
           sort_order?: number | null
+          store_id?: string | null
           tenant_id?: string
           updated_at?: string | null
         }
@@ -190,6 +231,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
           {
@@ -273,8 +321,22 @@ export type Database = {
             foreignKeyName: "close_review_log_reviewer_user_id_fkey"
             columns: ["reviewer_user_id"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "close_review_log_reviewer_user_id_fkey"
+            columns: ["reviewer_user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "close_review_log_secondary_approver_user_id_fkey"
+            columns: ["secondary_approver_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "close_review_log_secondary_approver_user_id_fkey"
@@ -390,6 +452,13 @@ export type Database = {
             foreignKeyName: "customer_reminders_sent_by_fkey"
             columns: ["sent_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "customer_reminders_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -489,6 +558,13 @@ export type Database = {
             foreignKeyName: "expenses_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "expenses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -543,6 +619,13 @@ export type Database = {
           tenant_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "followup_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "followup_notes_created_by_fkey"
             columns: ["created_by"]
@@ -656,39 +739,154 @@ export type Database = {
             foreignKeyName: "import_runs_initiated_by_fkey"
             columns: ["initiated_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "import_runs_initiated_by_fkey"
+            columns: ["initiated_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
       }
-      inventory_items: {
+      inventory_movements: {
         Row: {
-          barcode: string | null
           created_at: string
+          created_by: string | null
           id: string
-          name: string
-          sku: string | null
+          item_id: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          new_quantity: number
+          notes: string | null
+          operation_id: string | null
+          previous_quantity: number
+          quantity_delta: number
+          reference_id: string | null
+          reference_type: Database["public"]["Enums"]["reference_type"]
+          store_id: string
           tenant_id: string
         }
         Insert: {
-          barcode?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
-          name: string
-          sku?: string | null
+          item_id: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          new_quantity: number
+          notes?: string | null
+          operation_id?: string | null
+          previous_quantity: number
+          quantity_delta: number
+          reference_id?: string | null
+          reference_type: Database["public"]["Enums"]["reference_type"]
+          store_id: string
           tenant_id: string
         }
         Update: {
-          barcode?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
-          name?: string
-          sku?: string | null
+          item_id?: string
+          movement_type?: Database["public"]["Enums"]["movement_type"]
+          new_quantity?: number
+          notes?: string | null
+          operation_id?: string | null
+          previous_quantity?: number
+          quantity_delta?: number
+          reference_id?: string | null
+          reference_type?: Database["public"]["Enums"]["reference_type"]
+          store_id?: string
           tenant_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "inventory_items_tenant_id_fkey"
+            foreignKeyName: "inventory_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_reconciliations: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          counted_by: string
+          counted_quantity: number
+          created_at: string
+          difference: number
+          expected_quantity: number
+          id: string
+          item_id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["reconciliation_status"]
+          store_id: string
+          tenant_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          counted_by: string
+          counted_quantity: number
+          created_at?: string
+          difference: number
+          expected_quantity: number
+          id?: string
+          item_id: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["reconciliation_status"]
+          store_id: string
+          tenant_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          counted_by?: string
+          counted_quantity?: number
+          created_at?: string
+          difference?: number
+          expected_quantity?: number
+          id?: string
+          item_id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["reconciliation_status"]
+          store_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_reconciliations_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reconciliations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reconciliations_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -765,6 +963,7 @@ export type Database = {
       }
       items: {
         Row: {
+          active: boolean | null
           barcode: string | null
           brand: string | null
           category_id: string | null
@@ -782,10 +981,10 @@ export type Database = {
           short_code: string | null
           sku: string | null
           tenant_id: string
-          unit: string | null
           updated_at: string | null
         }
         Insert: {
+          active?: boolean | null
           barcode?: string | null
           brand?: string | null
           category_id?: string | null
@@ -803,10 +1002,10 @@ export type Database = {
           short_code?: string | null
           sku?: string | null
           tenant_id: string
-          unit?: string | null
           updated_at?: string | null
         }
         Update: {
+          active?: boolean | null
           barcode?: string | null
           brand?: string | null
           category_id?: string | null
@@ -824,7 +1023,6 @@ export type Database = {
           short_code?: string | null
           sku?: string | null
           tenant_id?: string
-          unit?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -877,8 +1075,22 @@ export type Database = {
             foreignKeyName: "journal_batches_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "journal_batches_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "journal_batches_created_by_fkey"
@@ -998,6 +1210,13 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ledger_batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "ledger_batches_created_by_fkey"
             columns: ["created_by"]
@@ -1364,6 +1583,13 @@ export type Database = {
             foreignKeyName: "pos_override_tokens_issued_by_fkey"
             columns: ["issued_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "pos_override_tokens_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1373,6 +1599,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_override_tokens_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "pos_override_tokens_used_by_fkey"
@@ -1427,6 +1660,13 @@ export type Database = {
           total_sales?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "pos_sessions_cashier_id_fkey"
+            columns: ["cashier_id"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "pos_sessions_cashier_id_fkey"
             columns: ["cashier_id"]
@@ -1539,6 +1779,13 @@ export type Database = {
             foreignKeyName: "purchase_orders_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1588,13 +1835,6 @@ export type Database = {
           unit_cost?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "purchase_receipt_items_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "inventory_items"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "purchase_receipt_items_receipt_id_fkey"
             columns: ["receipt_id"]
@@ -1648,6 +1888,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "purchase_receipts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "purchase_receipts_created_by_fkey"
             columns: ["created_by"]
@@ -1737,6 +1984,77 @@ export type Database = {
           },
         ]
       }
+      reminders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_completed: boolean
+          reminder_date: string
+          reminder_type: string
+          store_id: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          reminder_date: string
+          reminder_type: string
+          store_id: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          reminder_date?: string
+          reminder_type?: string
+          store_id?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reminders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sale_audit_log: {
         Row: {
           after_state: Json
@@ -1788,8 +2106,22 @@ export type Database = {
             foreignKeyName: "sale_audit_log_operator_user_id_fkey"
             columns: ["operator_user_id"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "sale_audit_log_operator_user_id_fkey"
+            columns: ["operator_user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_audit_log_override_user_id_fkey"
+            columns: ["override_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "sale_audit_log_override_user_id_fkey"
@@ -1958,6 +2290,13 @@ export type Database = {
             foreignKeyName: "sale_sync_conflicts_resolved_by_fkey"
             columns: ["resolved_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "sale_sync_conflicts_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -2078,6 +2417,13 @@ export type Database = {
             foreignKeyName: "sales_cashier_id_fkey"
             columns: ["cashier_id"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "sales_cashier_id_fkey"
+            columns: ["cashier_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -2115,6 +2461,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_voided_by_fkey"
+            columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "sales_voided_by_fkey"
@@ -2183,12 +2536,90 @@ export type Database = {
           },
         ]
       }
+      stock_ledger: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          movement_id: string | null
+          new_quantity: number
+          performed_by: string | null
+          previous_quantity: number
+          product_id: string
+          quantity_change: number
+          reason: string
+          reference_id: string | null
+          store_id: string
+          transaction_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          movement_id?: string | null
+          new_quantity?: number
+          performed_by?: string | null
+          previous_quantity?: number
+          product_id: string
+          quantity_change: number
+          reason: string
+          reference_id?: string | null
+          store_id: string
+          transaction_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          movement_id?: string | null
+          new_quantity?: number
+          performed_by?: string | null
+          previous_quantity?: number
+          product_id?: string
+          quantity_change?: number
+          reason?: string
+          reference_id?: string | null
+          store_id?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_ledger_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "stock_ledger_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_ledger_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_ledger_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_levels: {
         Row: {
           created_at: string | null
           id: string
           item_id: string
-          qty: number | null
+          low_stock_threshold: number | null
+          qty_on_hand: number | null
           reserved: number | null
           store_id: string
           updated_at: string | null
@@ -2198,7 +2629,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_id: string
-          qty?: number | null
+          low_stock_threshold?: number | null
+          qty_on_hand?: number | null
           reserved?: number | null
           store_id: string
           updated_at?: string | null
@@ -2208,7 +2640,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_id?: string
-          qty?: number | null
+          low_stock_threshold?: number | null
+          qty_on_hand?: number | null
           reserved?: number | null
           store_id?: string
           updated_at?: string | null
@@ -2294,6 +2727,13 @@ export type Database = {
             foreignKeyName: "stock_movements_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "stock_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -2303,6 +2743,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "stock_movements_performed_by_fkey"
@@ -2407,6 +2854,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_initiated_by_fkey"
+            columns: ["initiated_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "stock_transfers_initiated_by_fkey"
@@ -2557,8 +3011,10 @@ export type Database = {
           auth_id: string | null
           created_at: string | null
           email: string | null
+          full_name: string | null
           id: string
           is_active: boolean | null
+          last_login_at: string | null
           name: string
           pin: string | null
           pos_pin: string | null
@@ -2572,8 +3028,10 @@ export type Database = {
           auth_id?: string | null
           created_at?: string | null
           email?: string | null
+          full_name?: string | null
           id?: string
           is_active?: boolean | null
+          last_login_at?: string | null
           name: string
           pin?: string | null
           pos_pin?: string | null
@@ -2587,8 +3045,10 @@ export type Database = {
           auth_id?: string | null
           created_at?: string | null
           email?: string | null
+          full_name?: string | null
           id?: string
           is_active?: boolean | null
+          last_login_at?: string | null
           name?: string
           pin?: string | null
           pos_pin?: string | null
@@ -2617,7 +3077,116 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_stores: {
+        Row: {
+          auth_id: string | null
+          store_id: string | null
+          tenant_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auth_id?: string | null
+          store_id?: string | null
+          tenant_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auth_id?: string | null
+          store_id?: string | null
+          tenant_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_stock_ledger_product_summary: {
+        Row: {
+          first_movement: string | null
+          largest_movement: number | null
+          last_movement: string | null
+          product_id: string | null
+          product_name: string | null
+          sku: string | null
+          total_added: number | null
+          total_deducted: number | null
+          total_movements: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_ledger_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_stock_ledger_recent: {
+        Row: {
+          barcode: string | null
+          created_at: string | null
+          id: string | null
+          metadata: Json | null
+          movement_id: string | null
+          new_quantity: number | null
+          performed_by: string | null
+          performed_by_email: string | null
+          previous_quantity: number | null
+          product_id: string | null
+          product_name: string | null
+          quantity_change: number | null
+          reason: string | null
+          reference_id: string | null
+          sku: string | null
+          store_id: string | null
+          store_name: string | null
+          transaction_type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_ledger_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "user_stores"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "stock_ledger_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_ledger_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_ledger_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_batch_and_adjust_stock: {
@@ -2643,6 +3212,22 @@ export type Database = {
         }
         Returns: string
       }
+      adjust_inventory_stock: {
+        Args: {
+          p_allow_negative?: boolean
+          p_expected_quantity?: number
+          p_item_id: string
+          p_movement_type: Database["public"]["Enums"]["movement_type"]
+          p_notes?: string
+          p_operation_id?: string
+          p_quantity_delta: number
+          p_reference_id?: string
+          p_reference_type: Database["public"]["Enums"]["reference_type"]
+          p_store_id: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       adjust_stock:
         | {
             Args: {
@@ -2667,6 +3252,10 @@ export type Database = {
             }
             Returns: Json
           }
+      approve_inventory_reconciliation: {
+        Args: { p_notes?: string; p_reconciliation_id: string }
+        Returns: Json
+      }
       authenticate_staff_pin: {
         Args: { p_pin: string }
         Returns: {
@@ -2722,6 +3311,36 @@ export type Database = {
         Args: { p_closing_cash: number; p_session_id: string }
         Returns: Json
       }
+      create_reminder: {
+        Args: {
+          p_created_by?: string
+          p_description: string
+          p_reminder_date: string
+          p_reminder_type: string
+          p_store_id: string
+          p_tenant_id: string
+          p_title: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_completed: boolean
+          reminder_date: string
+          reminder_type: string
+          store_id: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reminders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_sale: {
         Args: {
           p_cashier_id: string
@@ -2753,6 +3372,38 @@ export type Database = {
         Args: { p_item_id: string; p_quantity: number; p_store_id: string }
         Returns: undefined
       }
+      deduct_stock:
+        | {
+            Args: {
+              p_expected_quantity?: number
+              p_item_id: string
+              p_metadata?: Json
+              p_operation_id?: string
+              p_quantity: number
+              p_store_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_metadata?: Json
+              p_product_id: string
+              p_quantity: number
+              p_store_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_metadata?: Json
+              p_operation_id?: string
+              p_product_id: string
+              p_quantity: number
+              p_store_id: string
+            }
+            Returns: Json
+          }
+      delete_reminder: { Args: { p_reminder_id: string }; Returns: boolean }
       ensure_expense_ledger_accounts: {
         Args: { p_store_id: string }
         Returns: undefined
@@ -2774,6 +3425,8 @@ export type Database = {
         }
         Returns: Json
       }
+      get_current_user_store_id: { Args: never; Returns: string }
+      get_current_user_tenant_id: { Args: never; Returns: string }
       get_daily_movement_trend: {
         Args: { p_days?: number; p_store_id: string }
         Returns: {
@@ -2816,6 +3469,31 @@ export type Database = {
           name: string
           reorder_status: string
           sku: string
+        }[]
+      }
+      get_inventory_movements: {
+        Args: {
+          p_limit?: number
+          p_movement_type?: Database["public"]["Enums"]["movement_type"]
+          p_offset?: number
+          p_product_id?: string
+          p_store_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string
+          id: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          new_quantity: number
+          notes: string
+          performer_name: string
+          previous_quantity: number
+          product_id: string
+          product_name: string
+          product_sku: string
+          quantity_delta: number
+          reference_id: string
+          reference_type: Database["public"]["Enums"]["reference_type"]
         }[]
       }
       get_inventory_summary: { Args: { p_store_id: string }; Returns: Json }
@@ -2919,7 +3597,7 @@ export type Database = {
           created_at: string
           id: string
           sale_number: string
-          status: Database["public"]["Enums"]["sale_status"]
+          status: string
           total_amount: number
         }[]
       }
@@ -2948,6 +3626,27 @@ export type Database = {
           reason: string
         }[]
       }
+      get_stock_level_by_id:
+        | {
+            Args: { p_stock_level_id: string }
+            Returns: {
+              last_updated: string
+              product_id: string
+              quantity: number
+              recent_movements: Json
+              stock_level_id: string
+              store_id: string
+            }[]
+          }
+        | {
+            Args: { p_item_id: string; p_store_id: string }
+            Returns: {
+              item_id: string
+              quantity: number
+              recent_movements: Json
+              store_id: string
+            }[]
+          }
       get_stock_movements: {
         Args: {
           p_item_id?: string
@@ -3007,6 +3706,28 @@ export type Database = {
           total_revenue: number
         }[]
       }
+      get_upcoming_reminders: {
+        Args: { p_include_completed?: boolean; p_store_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_completed: boolean
+          reminder_date: string
+          reminder_type: string
+          store_id: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "reminders"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       heartbeat_ledger_worker: {
         Args: { p_worker_id: string }
         Returns: boolean
@@ -3024,6 +3745,7 @@ export type Database = {
         }
         Returns: Json
       }
+      is_admin_in_tenant: { Args: { p_tenant_id: string }; Returns: boolean }
       is_ledger_worker_alive: {
         Args: { p_max_staleness?: string; p_worker_id: string }
         Returns: boolean
@@ -3065,6 +3787,10 @@ export type Database = {
         Returns: Json
       }
       mark_followup_resolved: { Args: { p_note_id: string }; Returns: boolean }
+      post_draft_purchase_receipt: {
+        Args: { p_receipt_id: string }
+        Returns: Json
+      }
       post_sale_to_ledger: { Args: { p_sale_id: string }; Returns: Json }
       process_ledger_posting_batch: {
         Args: {
@@ -3132,6 +3858,23 @@ export type Database = {
         }
         Returns: Json
       }
+      record_purchase_v2: {
+        Args: {
+          p_amount_paid?: number
+          p_idempotency_key: string
+          p_invoice_number?: string
+          p_invoice_total?: number
+          p_items?: Json
+          p_notes?: string
+          p_payable_account_id?: string
+          p_payment_account_id?: string
+          p_status?: string
+          p_store_id: string
+          p_supplier_id: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       record_sale: {
         Args: {
           p_idempotency_key: string
@@ -3178,6 +3921,20 @@ export type Database = {
         }
         Returns: Json
       }
+      set_inventory_stock: {
+        Args: {
+          p_item_id: string
+          p_movement_type: Database["public"]["Enums"]["movement_type"]
+          p_new_quantity: number
+          p_notes?: string
+          p_operation_id?: string
+          p_reference_id?: string
+          p_reference_type: Database["public"]["Enums"]["reference_type"]
+          p_store_id: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       set_stock: {
         Args: {
           p_item_id: string
@@ -3218,6 +3975,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_reminder: {
+        Args: {
+          p_description?: string
+          p_is_completed?: boolean
+          p_reminder_date?: string
+          p_reminder_id: string
+          p_reminder_type?: string
+          p_title?: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_completed: boolean
+          reminder_date: string
+          reminder_type: string
+          store_id: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reminders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_stock_transfer_status: {
         Args: {
           p_new_status: Database["public"]["Enums"]["stock_transfer_status"]
@@ -3252,6 +4038,15 @@ export type Database = {
     }
     Enums: {
       discount_type: "percentage" | "fixed"
+      movement_type:
+        | "sale"
+        | "purchase"
+        | "adjustment"
+        | "return"
+        | "damage"
+        | "transfer"
+        | "manual"
+        | "sync_repair"
       payment_type: "cash" | "mobile_banking" | "card" | "other"
       po_status:
         | "draft"
@@ -3259,6 +4054,14 @@ export type Database = {
         | "partially_received"
         | "received"
         | "cancelled"
+      reconciliation_status: "pending" | "approved" | "rejected"
+      reference_type:
+        | "sale"
+        | "purchase"
+        | "expense"
+        | "adjustment"
+        | "system"
+        | "sync"
       sale_status: "completed" | "voided" | "refunded"
       session_status: "open" | "closed"
       stock_transfer_status:
@@ -3391,9 +4194,22 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       discount_type: ["percentage", "fixed"],
+      movement_type: [
+        "sale",
+        "purchase",
+        "adjustment",
+        "return",
+        "damage",
+        "transfer",
+        "manual",
+        "sync_repair",
+      ],
       payment_type: ["cash", "mobile_banking", "card", "other"],
       po_status: [
         "draft",
@@ -3401,6 +4217,15 @@ export const Constants = {
         "partially_received",
         "received",
         "cancelled",
+      ],
+      reconciliation_status: ["pending", "approved", "rejected"],
+      reference_type: [
+        "sale",
+        "purchase",
+        "expense",
+        "adjustment",
+        "system",
+        "sync",
       ],
       sale_status: ["completed", "voided", "refunded"],
       session_status: ["open", "closed"],

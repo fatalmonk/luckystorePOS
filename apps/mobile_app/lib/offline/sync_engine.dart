@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:lucky_store/offline/db.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,7 +8,7 @@ import 'package:flutter/foundation.dart';
 class SyncEngine {
   final OfflineDatabase db;
   final SupabaseClient supabase;
-  bool _isSyncing = false;
+  Completer<void>? _syncCompleter;
 
   SyncEngine(this.db, this.supabase);
 
@@ -38,14 +39,18 @@ class SyncEngine {
   }
 
   Future<void> processQueue() async {
-    if (_isSyncing) return;
-    _isSyncing = true;
-
+    // If a sync is already running, wait for it to finish and return.
+    if (_syncCompleter != null) {
+      return _syncCompleter!.future;
+    }
+    
+    // Lock the gate for this cycle
+    _syncCompleter = Completer<void>();
+    
     try {
       final pendingEvents = await db.getPendingEvents();
       if (pendingEvents.isEmpty) {
-        _isSyncing = false;
-        return;
+        return; // Finally block will still run
       }
 
       for (final event in pendingEvents) {
@@ -54,7 +59,9 @@ class SyncEngine {
     } catch (e) {
       debugPrint('SyncEngine error: $e');
     } finally {
-      _isSyncing = false;
+      // Unlock the gate and notify anyone who was waiting
+      _syncCompleter?.complete();
+      _syncCompleter = null;
     }
   }
 

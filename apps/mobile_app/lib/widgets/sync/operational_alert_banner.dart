@@ -6,9 +6,9 @@ class OperationalAlertBanner extends StatelessWidget {
   final SyncController controller;
 
   const OperationalAlertBanner({
-    Key? key,
+    super.key,
     required this.controller,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +23,8 @@ class OperationalAlertBanner extends StatelessWidget {
         final Color color = isOffline ? Colors.grey[800]! : Colors.amber[800]!;
         
         final String message = isOffline 
-          ? "Running Disconnected. All sales are safely stored local."
-          : "Network Slow. Sending data in background now.";
+          ? 'Running Disconnected. All sales are safely stored local.'
+          : 'Network Slow. Sending data in background now.';
 
         return Material(
           elevation: 4,

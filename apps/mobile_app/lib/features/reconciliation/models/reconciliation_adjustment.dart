@@ -20,13 +20,13 @@ class ReconciliationAdjustment {
 
   Map<String, dynamic> toEventPayload() {
     return {
-      'operation_id': operationId,
-      'product_id': productId,
-      'quantity_delta': quantityDelta,
-      'movement_type': 'adjustment',
-      'reference_type': 'reconciliation',
-      'reference_id': sessionId,
-      'notes': 'Reconciliation approval by $approvedBy. Reason: $reason',
+      'p_operation_id': operationId,
+      'p_item_id': productId,
+      'p_quantity_delta': quantityDelta,
+      'p_movement_type': 'adjustment',
+      'p_reference_type': 'reconciliation',
+      'p_reference_id': sessionId,
+      'p_notes': 'Reconciliation approval by $approvedBy. Reason: $reason',
     };
   }
 }

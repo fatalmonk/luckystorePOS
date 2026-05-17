@@ -8,7 +8,7 @@ import { History } from 'lucide-react';
 
 export type InventoryMovement = {
   id: string;
-  product_id: string;
+  item_id: string;
   product_name: string;
   product_sku: string;
   movement_type: 'sale' | 'purchase' | 'adjustment' | 'return' | 'damage' | 'transfer' | 'manual' | 'sync_repair';

@@ -6,10 +6,10 @@ class FastItemScanner extends StatefulWidget {
   final VoidCallback onSubtotalTrigger;
 
   const FastItemScanner({
-    Key? key,
+    super.key,
     required this.onCodeEntered,
     required this.onSubtotalTrigger,
-  }) : super(key: key);
+  });
 
   @override
   State<FastItemScanner> createState() => _FastItemScannerState();

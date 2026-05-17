@@ -14,11 +14,19 @@
 set -euo pipefail
 
 # Configuration
-ARTIFACTS_DIR="${ARTIFACTS_DIR:-.}"
-DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/postgres}"
+ARTIFACTS_DIR="${ARTIFACTS_DIR:-artifacts/migration-replay}"
+DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:54322/postgres}"
 REPLAY_STRICT="${REPLAY_STRICT:-true}"
 REPLAY_STOP_ON_FIRST_ERROR="${REPLAY_STOP_ON_FIRST_ERROR:-true}"
 REPLAY_CAPTURE_CONTEXT="${REPLAY_CAPTURE_CONTEXT:-true}"
+
+if [ -z "${MIGRATIONS_DIR:-}" ]; then
+  if [ -d "supabase/migrations" ]; then
+    MIGRATIONS_DIR="supabase/migrations"
+  else
+    MIGRATIONS_DIR="/migrations"
+  fi
+fi
 
 # State tracking
 MIGRATION_COUNT=0
@@ -47,7 +55,7 @@ exec 2> >(tee -a "${REPLAY_ERRORS}" >&2)
 
 echo -e "${BLUE}=== Deterministic Migration Replay Engine ===${NC}"
 echo "Start time: ${REPLAY_START_TIME}"
-echo "Database URL: ${DATABASE_URL}"
+echo "Database URL: [REDACTED]"
 echo "Artifacts directory: ${ARTIFACTS_DIR}"
 echo ""
 
@@ -101,7 +109,7 @@ verify_postgres_connectivity() {
   echo -e "${BLUE}Verifying Postgres connectivity...${NC}"
   
   if ! psql "${DATABASE_URL}" -c "SELECT 1;" &>/dev/null; then
-    echo -e "${RED}FATAL: Cannot connect to Postgres at ${DATABASE_URL}${NC}"
+    echo -e "${RED}FATAL: Cannot connect to Postgres at [REDACTED]${NC}"
     exit 1
   fi
   
@@ -112,10 +120,10 @@ verify_postgres_connectivity() {
 generate_baseline_schema() {
   echo -e "${BLUE}Generating baseline schema snapshot...${NC}"
   
-  pg_dump -h "${PGHOST:-localhost}" -U "${PGUSER:-postgres}" \
+  pg_dump "${DATABASE_URL}" \
     --schema-only \
     --no-privileges \
-    -d "${PGDATABASE:-postgres}" > "${ARTIFACTS_DIR}/schema-baseline.sql" 2>/dev/null || {
+    > "${ARTIFACTS_DIR}/schema-baseline.sql" 2>/dev/null || {
     echo -e "${YELLOW}Warning: Could not generate baseline schema${NC}"
     return 1
   }
@@ -128,7 +136,7 @@ replay_migrations() {
   echo -e "${BLUE}Starting migration replay...${NC}"
   echo ""
 
-  local migration_dir="${MIGRATIONS_DIR:-/migrations}"
+  local migration_dir="${MIGRATIONS_DIR}"
   
   # Ensure migrations directory exists
   if [ ! -d "${migration_dir}" ]; then
@@ -191,10 +199,10 @@ replay_migrations() {
 generate_final_schema() {
   echo -e "${BLUE}Generating final schema snapshot...${NC}"
   
-  pg_dump -h "${PGHOST:-localhost}" -U "${PGUSER:-postgres}" \
+  pg_dump "${DATABASE_URL}" \
     --schema-only \
     --no-privileges \
-    -d "${PGDATABASE:-postgres}" > "${ARTIFACTS_DIR}/schema-after.sql" 2>/dev/null || {
+    > "${ARTIFACTS_DIR}/schema-after.sql" 2>/dev/null || {
     echo -e "${YELLOW}Warning: Could not generate final schema${NC}"
     return 1
   }
@@ -235,29 +243,37 @@ main() {
   # Generate replay report
   if command -v node &> /dev/null; then
     echo -e "${BLUE}Generating replay report...${NC}"
-    node /replay-scripts/replay_report.cjs \
-      "${REPLAY_START_TIME}" \
-      "${replay_end_time}" \
-      "${replay_duration_ms}" \
-      "${MIGRATION_COUNT}" \
-      "${MIGRATION_PASSED}" \
-      "${ARTIFACTS_DIR}"
+    if [ -f "infra/migration-replay/replay_report.cjs" ]; then
+      node infra/migration-replay/replay_report.cjs \
+        "${REPLAY_START_TIME}" \
+        "${replay_end_time}" \
+        "${replay_duration_ms}" \
+        "${MIGRATION_COUNT}" \
+        "${MIGRATION_PASSED}" \
+        "${ARTIFACTS_DIR}"
+    fi
 
     # Generate advanced analysis reports
-    echo -e "${BLUE}Generating object ownership analysis...${NC}"
-    node /replay-scripts/build_ownership_graph.cjs \
-      /migrations \
-      "${ARTIFACTS_DIR}"
+    if [ -f "infra/migration-replay/build_ownership_graph.cjs" ]; then
+      echo -e "${BLUE}Generating object ownership analysis...${NC}"
+      node infra/migration-replay/build_ownership_graph.cjs \
+        "${MIGRATIONS_DIR}" \
+        "${ARTIFACTS_DIR}"
+    fi
 
-    echo -e "${BLUE}Generating function signature registry...${NC}"
-    node /replay-scripts/build_function_registry.cjs \
-      /migrations \
-      "${ARTIFACTS_DIR}"
+    if [ -f "infra/migration-replay/build_function_registry.cjs" ]; then
+      echo -e "${BLUE}Generating function signature registry...${NC}"
+      node infra/migration-replay/build_function_registry.cjs \
+        "${MIGRATIONS_DIR}" \
+        "${ARTIFACTS_DIR}"
+    fi
 
-    echo -e "${BLUE}Generating migration dependency graph...${NC}"
-    node /replay-scripts/build_migration_dependencies.cjs \
-      /migrations \
-      "${ARTIFACTS_DIR}"
+    if [ -f "infra/migration-replay/build_migration_dependencies.cjs" ]; then
+      echo -e "${BLUE}Generating migration dependency graph...${NC}"
+      node infra/migration-replay/build_migration_dependencies.cjs \
+        "${MIGRATIONS_DIR}" \
+        "${ARTIFACTS_DIR}"
+    fi
   fi
 }
 
