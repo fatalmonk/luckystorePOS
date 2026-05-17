@@ -109,6 +109,7 @@ export function CompetitorPricesPage() {
           )}
           <button
             onClick={() => deleteMutation.mutate(row.id)}
+            disabled={deleteMutation.isPending}
             className="btn-icon btn-danger"
             title="Delete"
           >
