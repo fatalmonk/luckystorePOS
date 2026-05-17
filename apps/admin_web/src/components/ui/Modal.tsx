@@ -14,7 +14,11 @@ export const Modal = ({ isOpen, onClose, title, children, className }: ModalProp
   return (
     <div className={clsx('fixed inset-0 z-50 flex items-center justify-center')}>
       {/* backdrop */}
-      <div className="fixed inset-0 bg-surface-overlay" onClick={onClose} />
+      <div 
+        className="fixed inset-0" 
+        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
+        onClick={onClose} 
+      />
       <div
         className={clsx(
           'relative bg-surface rounded-lg shadow-level-3 border border-border-default max-w-lg w-full mx-4',

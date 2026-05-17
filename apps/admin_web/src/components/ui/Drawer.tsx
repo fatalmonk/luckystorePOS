@@ -95,7 +95,8 @@ export const Drawer = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-color-surface-overlay transition-opacity"
+        className="fixed inset-0 transition-opacity"
+        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
         onClick={preventOutsideClose ? undefined : onClose}
         aria-hidden="true"
       />
