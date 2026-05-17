@@ -12,9 +12,9 @@
 | Feature | Why It Matters | Implementation |
 |---------|---------------|----------------|
 | **Quick-add favorites grid** | Owner sells same 15–20 items daily. One-tap beats barcode. | Pin top 20 by sales velocity to POS home. |
-| **Voice search (Bangla)** | Staff not tech-savvy. Saying "চাল" is natural. | `speech_to_text` with `localeId: 'bn_BD'`. |
+| **Voice search (Bangla)** (Disabled) | Staff not tech-savvy. Saying "চাল" is natural. | `speech_to_text` with `localeId: 'bn_BD'`. |
 | **Customer phone lookup** | Credit sales common. Last 4 digits → auto-fill name/balance. | SQLite index on `customers.phone` substring. |
-| **Offline sale queue visibility** | Staff panic when internet drops. Clear badge: "Sales Queued: 3". | Drift stream listener + SnackBar. |
+| **Offline sale queue visibility** ✅ | Staff panic when internet drops. Clear badge: "Sales Queued: 3". | Drift stream listener + SnackBar. |
 | **Printer health indicator** | MHT-P29L disconnects mid-day. Show BT + battery in header. | `flutter_blue_plus` connection state stream. |
 
 ### A2. Kill Silent Failures
@@ -23,7 +23,7 @@
 |-----|-------------|----------|
 | **bKash offline queue** | Offline bKash payment: does it process on reconnect? | `pending_payments` table. Edge fn `process-bkash-queue`. |
 | **Stock adjustment fraud** | Staff could adjust stock to cover theft. | Manager PIN required for adjustments >5%. |
-| **Duplicate sale protection** | Network blip → double entry. | Idempotency key on `create-sale` edge fn. |
+| **Duplicate sale protection** ✅ | Network blip → double entry. | Idempotency key on `create-sale` edge fn. |
 
 ---
 
@@ -111,3 +111,15 @@ Month 4:   Outreach to store #2 with testimonial + case study
 **Daily active sessions on mobile POS.**
 - Target: 50+ opens/day, <30 sec per sale
 - If owner still reaches for notebook, nothing else matters.
+
+---
+
+## Immediate To-Do List
+
+### Phase A Tasks (Remaining)
+- [ ] **Quick-add favorites grid**: Implement UI on POS home.
+- [ ] **Customer phone lookup**: Implement SQLite index and lookup logic.
+- [ ] **Printer health indicator**: Complete UI for BT + battery status.
+- [ ] **bKash offline queue**: Fix compilation errors in `bkash_checkout.dart` and implement queue.
+- [ ] **Stock adjustment fraud**: Add manager PIN for adjustments.
+- [ ] **Voice search (Bangla)**: Resolve `speech_to_text` incompatibility with Flutter 3.29+.
