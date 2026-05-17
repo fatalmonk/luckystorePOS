@@ -113,9 +113,38 @@ jobs:
       - name: Verify determinism (replay twice)
         run: |
           mkdir -p artifacts/run1 artifacts/run2
-          echo "-- Mocked Schema Run 1" > artifacts/run1/schema.sql
-          echo "-- Mocked Schema Run 2" > artifacts/run2/schema.sql
-          echo "✓ Determinism verified: mocked for staging policy"
+          dropdb --if-exists -h localhost -U postgres replay_run1
+          dropdb --if-exists -h localhost -U postgres replay_run2
+          createdb -h localhost -U postgres replay_run1
+          createdb -h localhost -U postgres replay_run2
+
+          # Run 1
+          for migration in $(find supabase/migrations -name '*.sql' -type f | sort); do
+            psql postgresql://postgres:postgres@localhost:5432/replay_run1 \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration" > /dev/null
+          done
+
+          pg_dump -h localhost -U postgres -d replay_run1 \
+            --schema-only --no-privileges > artifacts/run1/schema.sql
+
+          # Run 2
+          for migration in $(find supabase/migrations -name '*.sql' -type f | sort); do
+            psql postgresql://postgres:postgres@localhost:5432/replay_run2 \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration" > /dev/null
+          done
+
+          pg_dump -h localhost -U postgres -d replay_run2 \
+            --schema-only --no-privileges > artifacts/run2/schema.sql
+
+          if diff artifacts/run1/schema.sql artifacts/run2/schema.sql > /dev/null; then
+            echo "✓ Determinism verified: both runs produce identical schemas"
+          else
+            echo "✗ Determinism failed: schema differs between runs"
+            diff -u artifacts/run1/schema.sql artifacts/run2/schema.sql | head -50
+            exit 1
+          fi
         env:
           PGPASSWORD: postgres
 
