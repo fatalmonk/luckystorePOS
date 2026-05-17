@@ -80,7 +80,13 @@ jobs:
         run: |
           # Execute migrations in order (Mocked for Staging Policy)
           for migration in $(find supabase/migrations -name '*.sql' -type f | sort); do
-            echo "Mocking Replay: $(basename $migration)"
+            echo "Replaying: $(basename $migration)"
+            if ! psql postgresql://postgres:postgres@localhost:5432/postgres \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration"; then
+              echo "Migration failed: $(basename $migration)"
+              exit 1
+            fi
           done
         env:
           PGPASSWORD: postgres
