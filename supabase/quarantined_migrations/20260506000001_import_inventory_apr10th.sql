@@ -4,28 +4,33 @@
 -- Products: ~480 items with MRP support
 -- =============================================================================
 
--- Structural sanitation: Ensure table structure is correct for import
-ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS description text;
-DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'categories_name_key') THEN ALTER TABLE public.categories ADD CONSTRAINT categories_name_key UNIQUE (name); END IF; END $$;
-ALTER TABLE public.items ADD COLUMN IF NOT EXISTS short_code text;
-ALTER TABLE public.items ADD COLUMN IF NOT EXISTS brand text;
-ALTER TABLE public.items ADD COLUMN IF NOT EXISTS active boolean DEFAULT true;
-ALTER TABLE public.items ADD COLUMN IF NOT EXISTS mrp numeric DEFAULT 0;
-
 -- Step 1: Create temp table matching CSV structure
 DROP TABLE IF EXISTS temp_inventory_apr10th;
+
 CREATE TEMP TABLE temp_inventory_apr10th (
   sl integer,
-  item_code text,
+  sku text,
+  barcode text,
   item_name text,
   category text,
   description text,
-  brand text,
-  sales_price text,
-  purchase_price text,
-  mrp text,
-  opening_stock text,
-  low_stock text
+  cost numeric,
+  mrp numeric,
+  competitor_price text,
+  ls_price numeric,
+  initial_stock_qty integer,
+  tax_paid text,
+  discount text,
+  total_cost text,
+  total_price text,
+  total_profit text,
+  profit_percent text,
+  batch_code text,
+  supplier text,
+  expiry_date date,
+  image_url text,
+  price_url text,
+  xpath text
 );
 
 -- Note: After creating this table, load the CSV via:
@@ -41,11 +46,11 @@ SELECT DISTINCT
   NOW(),
   NOW()
 FROM temp_inventory_apr10th
-WHERE trim(category) IS NOT NULL 
+WHERE trim(category) IS NOT NULL
   AND trim(category) != ''
 ON CONFLICT (name) DO NOTHING;
 
--- Step 3: Insert items
+-- Step 3: Insert items with MRP
 INSERT INTO public.items (
   id,
   sku,
@@ -53,40 +58,52 @@ INSERT INTO public.items (
   description,
   brand,
   category_id,
-  price,
-  cost,
-  mrp,
-  short_code,
+  price,           -- LS Price (sale price)
+  mrp,             -- MRP for strikethrough
+  cost,            -- Purchase cost
+  image_url,
   barcode,
-  is_active,
+  supplier,
+  batch_code,
+  expiry_date,
+  active,
   created_at,
   updated_at
 )
 SELECT
   uuid_generate_v4(),
-  item_code,
+  COALESCE(NULLIF(trim(sku), ''), 'SKU-' || sl::text),  -- Generate SKU if empty
   item_name,
-  COALESCE(NULLIF(t.description, ''), item_name),
-  brand,
+  COALESCE(NULLIF(trim(description), ''), item_name),
+  NULL,  -- Brand not in this CSV
   c.id,
-  COALESCE(sales_price::numeric, 0),
-  COALESCE(purchase_price::numeric, 0),
-  COALESCE(mrp::numeric, 0),
-  LEFT(item_code, 8),
-  item_code,
+  COALESCE(ls_price, mrp, 0),  -- Sale price (fallback to MRP)
+  COALESCE(mrp, ls_price, 0),  -- MRP (fallback to sale price)
+  COALESCE(cost, 0),           -- Cost
+  NULLIF(trim(image_url), ''),
+  NULLIF(trim(barcode), ''),
+  NULLIF(trim(supplier), ''),
+  NULLIF(trim(batch_code), ''),
+  expiry_date,
   true,
   NOW(),
   NOW()
 FROM temp_inventory_apr10th t
-LEFT JOIN public.categories c ON c.name = trim(t.category)
+LEFT JOIN public.categories c ON c.name = COALESCE(NULLIF(trim(t.category), ''), 'Uncategorized')
+WHERE trim(item_name) IS NOT NULL
+  AND trim(item_name) != ''
 ON CONFLICT (sku) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,
-  brand = EXCLUDED.brand,
   category_id = EXCLUDED.category_id,
   price = EXCLUDED.price,
-  cost = EXCLUDED.cost,
   mrp = EXCLUDED.mrp,
+  cost = EXCLUDED.cost,
+  image_url = EXCLUDED.image_url,
+  barcode = EXCLUDED.barcode,
+  supplier = EXCLUDED.supplier,
+  batch_code = EXCLUDED.batch_code,
+  expiry_date = EXCLUDED.expiry_date,
   updated_at = NOW();
 
 -- Step 4: Insert stock levels
@@ -102,19 +119,29 @@ INSERT INTO public.stock_levels (
 SELECT
   uuid_generate_v4(),
   i.id,
-  '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'::uuid,
-  COALESCE(opening_stock::integer, 0),
-  COALESCE(low_stock::integer, 5),
+  '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'::uuid,  -- Your store ID
+  COALESCE(initial_stock_qty, 0),
+  5,  -- Default low stock threshold
   NOW(),
   NOW()
 FROM temp_inventory_apr10th t
-JOIN public.items i ON i.sku = t.item_code
+JOIN public.items i ON i.sku = COALESCE(NULLIF(trim(t.sku), ''), 'SKU-' || t.sl::text)
 ON CONFLICT (item_id, store_id) DO UPDATE SET
   qty = EXCLUDED.qty,
-  low_stock_threshold = EXCLUDED.low_stock_threshold,
   updated_at = NOW();
 
--- Summary query
+-- Step 5: Verify import
+SELECT
+  'Categories' as metric,
+  COUNT(*)::text as count
+FROM public.categories
+UNION ALL
+SELECT
+  'Items with MRP' as metric,
+  COUNT(*)::text
+FROM public.items
+WHERE mrp > 0
+UNION ALL
 SELECT
   'Stock levels for store' as metric,
   COUNT(*)::text

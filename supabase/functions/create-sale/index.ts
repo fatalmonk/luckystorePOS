@@ -368,7 +368,7 @@ serve(async (req) => {
       inventory_source: 'rpc',
       created_at: new Date().toISOString(),
       items: requestData.items.map((item) => ({
-        product_id: item.item_id,
+        item_id: item.item_id,
         quantity: item.quantity,
         unit_price_snapshot: item.price,
         discount_snapshot: item.discount ?? 0,

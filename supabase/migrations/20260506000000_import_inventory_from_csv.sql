@@ -12,19 +12,43 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Run this after loading CSV data via Supabase dashboard or psql
 -- =============================================================================
 
+-- Structural sanitation: Ensure table structure is correct for import
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS description text;
+ALTER TABLE public.items ADD COLUMN IF NOT EXISTS short_code text;
+ALTER TABLE public.items ADD COLUMN IF NOT EXISTS brand text;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'items_sku_key') THEN ALTER TABLE public.items ADD CONSTRAINT items_sku_key UNIQUE (sku); END IF; END $$;
+ALTER TABLE public.stock_levels ADD COLUMN IF NOT EXISTS low_stock_threshold integer DEFAULT 5;
+
+-- Create temp table matching CSV structure
+CREATE TEMP TABLE IF NOT EXISTS temp_inventory_import (
+  "Item Code" text,
+  "Item Name" text,
+  "Category" text,
+  "Description" text,
+  "Brand" text,
+  "Sales Price" text,
+  "Purchase Price" text,
+  "Opening Stock" text,
+  "Low Stock" text,
+  "Image URL" text
+);
+
+-- Note: In a real migration, we would COPY from CSV here.
+-- For local dev replay, this might be empty unless seeded.
+
 -- First, ensure categories exist
 INSERT INTO public.categories (id, name, description, created_at, updated_at)
-SELECT
+SELECT DISTINCT ON ("Category")
   uuid_generate_v4(),
-  DISTINCT ON (category) category,
-  category || ' products',
+  "Category",
+  "Category" || ' products',
   NOW(),
   NOW()
 FROM temp_inventory_import
-WHERE category IS NOT NULL
+WHERE "Category" IS NOT NULL
   AND NOT EXISTS (
     SELECT 1 FROM public.categories c
-    WHERE c.name = temp_inventory_import.category
+    WHERE c.name = temp_inventory_import."Category"
   );
 
 -- Insert items with their categories
@@ -40,7 +64,7 @@ INSERT INTO public.items (
   image_url,
   short_code,
   barcode,
-  active,
+  is_active,
   created_at,
   updated_at
 )
@@ -48,19 +72,19 @@ SELECT
   uuid_generate_v4(),                              -- id
   "Item Code",                                      -- sku (unique identifier)
   "Item Name",                                      -- name
-  COALESCE(NULLIF(Description, ''), "Item Name"), -- description
-  Brand,                                            -- brand
+  COALESCE(NULLIF("Description", ''), "Item Name"), -- description
+  "Brand",                                            -- brand
   c.id,                                             -- category_id
   "Sales Price"::numeric,                          -- price
   "Purchase Price"::numeric,                       -- cost
   "Image URL",                                      -- image_url
   LEFT("Item Code", 8),                            -- short_code (first 8 chars)
   "Item Code",                                      -- barcode (same as sku)
-  true,                                             -- active
+  true,                                             -- is_active
   NOW(),                                           -- created_at
   NOW()                                            -- updated_at
 FROM temp_inventory_import t
-LEFT JOIN public.categories c ON c.name = t.Category
+LEFT JOIN public.categories c ON c.name = t."Category"
 ON CONFLICT (sku) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,

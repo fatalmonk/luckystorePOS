@@ -21,10 +21,10 @@ BEGIN
 END $$;
 
 -- Verify the seed
-SELECT
-  COUNT(*) as total_stock_levels,
-  COUNT(CASE WHEN qty = 0 THEN 1 END) as items_with_zero_stock,
-  COUNT(CASE WHEN qty > 0 THEN 1 END) as items_with_stock
-FROM stock_levels
-WHERE '<store_id>' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-  AND store_id = '<store_id>'::uuid;
+-- SELECT
+--   COUNT(*) as total_stock_levels,
+--   COUNT(CASE WHEN qty = 0 THEN 1 END) as items_with_zero_stock,
+--   COUNT(CASE WHEN qty > 0 THEN 1 END) as items_with_stock
+-- FROM stock_levels
+-- WHERE '<store_id>' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+--   AND store_id = '<store_id>'::uuid;
