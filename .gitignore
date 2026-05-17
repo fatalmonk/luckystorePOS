@@ -12,8 +12,8 @@
 !.env*.example
 !.env.local.example
 
-apps/*/.env
-apps/*/.env.*
+
+.*
 
 # Secret files
 *.key
