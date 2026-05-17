@@ -102,7 +102,7 @@ ADMIN_PASSWORD=your_admin_password
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Fix your assets/app.env file, then reload startup config.',
+                      'Fix your .env file, then reload startup config.',
                       style: TextStyle(color: Colors.white54, fontSize: 12),
                     ),
                     const SizedBox(height: 16),
@@ -139,7 +139,7 @@ ADMIN_PASSWORD=your_admin_password
                         iconColor: Colors.white70,
                         collapsedIconColor: Colors.white54,
                         title: const Text(
-                          'Show app.env example',
+                          'Show .env example',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 13,

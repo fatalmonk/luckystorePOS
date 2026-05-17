@@ -41,7 +41,7 @@ AS $$
          ON sl.item_id = i.id AND sl.store_id = p_store_id
   LEFT JOIN public.categories c
          ON c.id = i.category_id
-  WHERE i.is_active = true
+  WHERE i.active = true
     AND (
       i.sku        = p_scan_value OR
       i.barcode    = p_scan_value OR
@@ -92,7 +92,7 @@ AS $$
            ON sl.item_id = i.id AND sl.store_id = p_store_id
     LEFT JOIN public.categories c
            ON c.id = i.category_id
-    WHERE i.is_active = true
+    WHERE i.active = true
       AND (
         p_query = '' OR
         i.name        ILIKE '%' || p_query || '%' OR
@@ -131,7 +131,7 @@ AS $$
       c.name,
       COUNT(i.id) AS item_count
     FROM public.categories c
-    JOIN public.items i ON i.category_id = c.id AND i.is_active = true
+    JOIN public.items i ON i.category_id = c.id AND i.active = true
     GROUP BY c.id, c.name
     HAVING COUNT(i.id) > 0
   ) r;

@@ -45,11 +45,15 @@ class InventoryRepository {
         return Failure<StockDeductionResult>((deductionResult as Failure).error);
       }
 
-      // Step 2: Log audit trail (DEPRECATED - Handled Server-Side)
-      // GOVERNANCE FREEZE: The backend RPC deduct_stock natively appends to the ledger.
-      // Manual client audit insertion is decommissioned to prevent race duplication.
-      // await _auditService.forStockDeduction(...)
-
+      // Step 2: Log audit trail
+      await _auditService.forStockDeduction(
+        storeId: storeId,
+        productId: productId,
+        productName: productName,
+        quantity: quantity,
+        saleId: saleId,
+        performedBy: performedBy,
+      );
 
       // Step 3: Parse and return result
       final data = (deductionResult as Success<Map<String, dynamic>>).data;
@@ -117,7 +121,18 @@ class InventoryRepository {
     return _ledgerRepository.getLedgerEntries(query: query);
   }
 
-
+  /// Get ledger summary for a period
+  Future<Result<StockLedgerSummary>> getLedgerSummary({
+    required String storeId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return _ledgerRepository.getLedgerSummary(
+      storeId: storeId,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
 
   /// Get stock history for a product
   Future<Result<List<StockLedgerEntry>>> getProductHistory({

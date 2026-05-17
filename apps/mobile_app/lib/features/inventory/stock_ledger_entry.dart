@@ -102,19 +102,19 @@ class StockLedgerEntry {
     return StockLedgerEntry(
       id: json['id'] as String,
       storeId: json['store_id'] as String,
-      productId: (json['item_id'] ?? json['product_id'] ?? '') as String,
+      productId: json['product_id'] as String,
       productName: json['product_name'] as String? ?? '',
-      quantity: (json['quantity_delta'] ?? json['quantity'] ?? 0) as int,
+      quantity: json['quantity'] as int,
       entryType: LedgerEntryType.values.firstWhere(
-        (e) => e.value == (json['movement_type'] ?? json['entry_type']),
+        (e) => e.value == json['entry_type'],
         orElse: () => LedgerEntryType.sale,
       ),
-      reason: (json['notes'] ?? json['reason'] ?? '') as String,
+      reason: json['reason'] as String? ?? '',
       metadata: json['metadata'] != null
           ? Map<String, dynamic>.from(json['metadata'])
           : null,
       referenceId: json['reference_id'] as String?,
-      timestamp: DateTime.parse((json['created_at'] ?? json['timestamp']) as String),
+      timestamp: DateTime.parse(json['timestamp'] as String),
       performedBy: json['performed_by'] as String?,
       previousQuantity: json['previous_quantity'] as int?,
       newQuantity: json['new_quantity'] as int?,
@@ -172,6 +172,52 @@ class StockLedgerEntry {
   }
 }
 
+/// Stock ledger summary for a specific period
+@immutable
+class StockLedgerSummary {
+  /// Total entries
+  final int totalEntries;
+
+  /// Total deductions
+  final int totalDeductions;
+
+  /// Total additions
+  final int totalAdditions;
+
+  /// Net change
+  final int netChange;
+
+  /// Average entries per day
+  final double averageDailyEntries;
+
+  const StockLedgerSummary({
+    required this.totalEntries,
+    required this.totalDeductions,
+    required this.totalAdditions,
+    required this.netChange,
+    required this.averageDailyEntries,
+  });
+
+  factory StockLedgerSummary.fromJson(Map<String, dynamic> json) {
+    return StockLedgerSummary(
+      totalEntries: json['total_entries'] as int,
+      totalDeductions: json['total_deductions'] as int,
+      totalAdditions: json['total_additions'] as int,
+      netChange: json['net_change'] as int,
+      averageDailyEntries: (json['average_daily_entries'] as num).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'total_entries': totalEntries,
+      'total_deductions': totalDeductions,
+      'total_additions': totalAdditions,
+      'net_change': netChange,
+      'average_daily_entries': averageDailyEntries,
+    };
+  }
+}
 
 /// Query parameters for stock ledger queries
 class StockLedgerQuery {
@@ -203,13 +249,11 @@ class StockLedgerQuery {
     final params = <String, String>{};
 
     if (storeId != null) params['store_id.eq'] = storeId!;
-    if (productId != null) params['item_id.eq'] = productId!; // Canonical: item_id
-    if (entryType != null) params['movement_type.eq'] = entryType!; // Canonical: movement_type
-    if (reason != null) params['notes.eq'] = reason!; // Canonical: notes
+    if (productId != null) params['product_id.eq'] = productId!;
+    if (entryType != null) params['entry_type.eq'] = entryType!;
+    if (reason != null) params['reason.eq'] = reason!;
     
-    // Handle sort logic realignment from 'timestamp' to 'created_at'
-    final actualSortBy = (sortBy == 'timestamp') ? 'created_at' : sortBy;
-    if (actualSortBy != null) params['order'] = '$actualSortBy.$sortOrder';
+    if (sortBy != null) params['order'] = '$sortBy.$sortOrder';
     if (offset != null) params['offset'] = offset!.toString();
     if (limit != null) params['limit'] = limit!.toString();
 
