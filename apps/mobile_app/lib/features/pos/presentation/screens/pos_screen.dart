@@ -59,6 +59,7 @@ class _PosScreenState extends State<PosScreen> {
       }
     }
 
+    if (!mounted) return;  // FIX: Check mounted before using context after async
     await context.read<PosSearchProvider>().initialize();
   }
 

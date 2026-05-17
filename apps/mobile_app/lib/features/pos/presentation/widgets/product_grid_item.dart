@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_shadows.dart';
 import '../../../../models/pos_models.dart';
 
 class ProductGridItem extends StatelessWidget {
@@ -21,11 +20,9 @@ class ProductGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasDiscount = item.mrp > item.price;
-    final discountPercent = hasDiscount
-        ? ((item.mrp - item.price) / item.mrp * 100).round()
-        : 0;
-    final isOutOfStock = item.stock <= 0;
+    final hasDiscount = false;  // FIX: mrp field doesn't exist on PosItem
+    final discountPercent = 0;  // FIX: mrp field doesn't exist
+    final isOutOfStock = item.qtyOnHand <= 0;  // FIX: stock -> qtyOnHand
 
     return Card(
       elevation: 0,
@@ -102,25 +99,7 @@ class ProductGridItem extends StatelessWidget {
                 : _buildPlaceholder(),
           ),
         ),
-        if (hasDiscount && discountPercent > 0)
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.successDefault,
-                borderRadius: AppRadius.borderSm,
-              ),
-              child: Text(
-                '-$discountPercent%',
-                style: AppTextStyles.labelXs.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+        // FIX: Removed discount badge - PosItem has no mrp field to calculate discount
         if (isOutOfStock)
           Positioned.fill(
             child: Container(
@@ -173,16 +152,7 @@ class ProductGridItem extends StatelessWidget {
             color: AppColors.primaryDefault,
           ),
         ),
-        if (hasDiscount) ...[
-          const SizedBox(width: 8),
-          Text(
-            '৳${item.mrp.toStringAsFixed(0)}',
-            style: AppTextStyles.bodySm.copyWith(
-              color: AppColors.textMuted,
-              decoration: TextDecoration.lineThrough,
-            ),
-          ),
-        ],
+        // FIX: Removed MRP strikethrough - PosItem has no mrp field
       ],
     );
   }
@@ -195,7 +165,7 @@ class ProductGridItem extends StatelessWidget {
           decoration: BoxDecoration(
             color: isOutOfStock
                 ? AppColors.dangerSubtle
-                : item.stock < 10
+                : item.qtyOnHand < 10  // FIX: stock -> qtyOnHand
                     ? AppColors.warningSubtle
                     : AppColors.successSubtle,
             borderRadius: AppRadius.borderSm,
@@ -203,13 +173,13 @@ class ProductGridItem extends StatelessWidget {
           child: Text(
             isOutOfStock
                 ? 'No stock'
-                : item.stock < 10
-                    ? '${item.stock} left'
+                : item.qtyOnHand < 10  // FIX: stock -> qtyOnHand
+                    ? '${item.qtyOnHand} left'
                     : 'In stock',
             style: AppTextStyles.labelXs.copyWith(
               color: isOutOfStock
                   ? AppColors.dangerDefault
-                  : item.stock < 10
+                  : item.qtyOnHand < 10  // FIX: stock -> qtyOnHand
                       ? AppColors.warningDefault
                       : AppColors.successDefault,
               fontWeight: FontWeight.w600,

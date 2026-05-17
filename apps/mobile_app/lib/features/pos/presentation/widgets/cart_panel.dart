@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_shadows.dart';
 import '../../../../models/pos_models.dart';
 
 class CartPanel extends StatelessWidget {
@@ -202,7 +200,7 @@ class CartPanel extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     final textStyle = isBold
-        ? AppTextStyles.headingSm
+        ? AppTextStyles.headingMd  // FIX: headingSm undefined, use headingMd
         : AppTextStyles.bodyMd;
     
     final amountText = isDiscount

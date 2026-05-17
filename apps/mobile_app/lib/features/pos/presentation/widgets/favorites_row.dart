@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_shadows.dart';
 import '../../../../models/pos_models.dart';
 
 /// Horizontal scrollable row of favorite/quick-access products
@@ -124,7 +123,7 @@ class _FavoriteChip extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  if (item.stockQuantity != null && item.stockQuantity! > 0)
+                  if (item.qtyOnHand > 0)  // FIX: stockQuantity -> qtyOnHand
                     Container(
                       width: 8,
                       height: 8,

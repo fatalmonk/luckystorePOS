@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_shadows.dart';
 import '../../../../models/pos_models.dart';
 
 class CheckoutDialog extends StatefulWidget {
@@ -46,9 +44,9 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
   }
 
   double get _changeAmount => _tenderedAmount - widget.totalAmount;
-  bool get _canConfirm => 
-    _selectedMethod != null && 
-    (_selectedMethod!.code != 'cash' || _tenderedAmount >= widget.totalAmount);
+  bool get _canConfirm =>
+    _selectedMethod != null &&
+    (_selectedMethod!.id != 'cash' || _tenderedAmount >= widget.totalAmount);  // FIX: code -> id
 
   @override
   void dispose() {
@@ -58,7 +56,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isCash = _selectedMethod?.code == 'cash';
+    final isCash = _selectedMethod?.id == 'cash';  // FIX: code -> id
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: AppRadius.borderLg),
@@ -107,7 +105,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
           const SizedBox(width: 12),
           Text(
             'Checkout',
-            style: AppTextStyles.headingSm,
+            style: AppTextStyles.headingMd,  // FIX: headingSm -> headingMd
           ),
           const Spacer(),
           IconButton(
@@ -238,9 +236,9 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                 ),
                 Text(
                   '৳${change.abs().toStringAsFixed(0)}',
-                  style: AppTextStyles.headingSm.copyWith(
-                    color: change >= 0 
-                        ? AppColors.successDefault 
+                  style: AppTextStyles.headingMd.copyWith(  // FIX: headingSm -> headingMd
+                    color: change >= 0
+                        ? AppColors.successDefault
                         : AppColors.dangerDefault,
                     fontWeight: FontWeight.w700,
                   ),
@@ -327,7 +325,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
     final tender = PaymentTender(
       method: _selectedMethod!,
       amount: widget.totalAmount,
-      reference: _selectedMethod!.code == 'cash' 
+      reference: _selectedMethod!.id == 'cash'  // FIX: code -> id
           ? 'Cash: ৳${_tenderedAmount.toStringAsFixed(0)}'
           : null,
     );
@@ -372,10 +370,10 @@ class _PaymentMethodChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                _getIconForMethod(method.code),
+                _getIconForMethod(method.id),  // FIX: code -> id
                 size: 20,
-                color: isSelected 
-                    ? AppColors.primaryDefault 
+                color: isSelected
+                    ? AppColors.primaryDefault
                     : AppColors.textMuted,
               ),
               const SizedBox(width: 8),
