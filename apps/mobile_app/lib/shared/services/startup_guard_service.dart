@@ -36,17 +36,21 @@ class StartupGuardService {
   static bool _supabaseInitialized = false;
 
   static Future<StartupResult> validateAndBootstrap() async {
-    const envPath = 'assets/app.env';
+    // Try multiple paths for environment variables to handle web/mobile/desktop differences.
+    final envPaths = ['assets/app.env', '.env', 'assets/.env'];
     bool loaded = false;
-
-    try {
-      await dotenv.load(fileName: envPath);
-      debugPrint('[StartupGuardService] Loaded environment from $envPath');
-      loaded = true;
-    } catch (e) {
-      debugPrint('[StartupGuardService] Failed to load env from $envPath: $e');
+    
+    for (final path in envPaths) {
+      try {
+        await dotenv.load(fileName: path);
+        debugPrint('[StartupGuardService] Loaded environment from $path');
+        loaded = true;
+        break;
+      } catch (e) {
+        debugPrint('[StartupGuardService] Failed to load env from $path: $e');
+      }
     }
-
+    
     if (!loaded) {
       debugPrint('[StartupGuardService] No environment file could be loaded.');
     }

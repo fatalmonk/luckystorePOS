@@ -1,3 +1,0 @@
-# API Conventions
-
-Standard rules for edge functions, RPC endpoints, and REST interactions...

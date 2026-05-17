@@ -28,7 +28,9 @@ class Tables {
   static const String sales = 'sales';
   static const String saleItems = 'sale_items';
   static const String inventory = 'inventory';
+  static const String stockLedger = 'stock_ledger';
   static const String collections = 'collections';
+  static const String stockMovements = 'stock_movements';
   static const String users = 'users';
   static const String settings = 'settings';
   static const String syncQueue = 'sync_queue';

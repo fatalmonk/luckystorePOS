@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign } from 'lucide-react';
@@ -26,17 +26,11 @@ export const CollectionsWorkspace: React.FC = () => {
   const debouncedSearch = useDebounce(search, 300);
 
   // Resolve the store's cash ledger account ID for the payment modal.
-  const [cashAccountState, setCashAccountState] = useState<{
-    storeId: string | null;
-    accountId: string | null;
-  }>({
-    storeId: null,
-    accountId: null,
-  });
-  const cashAccountId = cashAccountState.storeId === storeId ? cashAccountState.accountId : null;
+  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!storeId) {
+      setCashAccountId(null);
       return;
     }
     supabase
@@ -46,10 +40,7 @@ export const CollectionsWorkspace: React.FC = () => {
       .eq('code', '1000_CASH')
       .maybeSingle()
       .then(({ data: acct }) => {
-        setCashAccountState({
-          storeId,
-          accountId: (acct?.id as string) ?? null,
-        });
+        setCashAccountId((acct?.id as string) ?? null);
       });
   }, [storeId]);
 
@@ -84,11 +75,7 @@ export const CollectionsWorkspace: React.FC = () => {
   }, [tenantId, storeId, debouncedSearch]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void fetchAging();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    fetchAging();
   }, [fetchAging]);
 
   const handleAddNote = async (e: React.FormEvent) => {

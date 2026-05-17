@@ -1,18 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Trash2, Send, Search, Package } from 'lucide-react';
-import { SkeletonBlock } from '../../components/PageState';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { PageHeader } from '../../layouts/PageHeader';
-import { PageContainer } from '../../layouts/PageContainer';
+import { useAuth } from '../../lib/AuthContext';
+import { Trash2, Save, Send, Search, Package } from 'lucide-react';
+import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useDebounce } from '../../hooks/useDebounce';
-import { useNotify } from '../../components/NotificationContext';
 import { clsx } from 'clsx';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '../../lib/zodResolver';
-import { purchaseEntrySchema, PurchaseEntryData } from '../../schemas/purchase.schema';
-import { useCreatePurchase } from '../../hooks/mutations/useCreatePurchase';
-import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 
 type Supplier = {
   id: string;
@@ -28,34 +21,25 @@ type Item = {
   price: number;
 };
 
+type ReceiptLine = {
+  item: Item;
+  quantity: number;
+  unitCost: number;
+};
+
 export const PurchaseEntryPage: React.FC = () => {
-  const { notify } = useNotify();
-  const createMutation = useCreatePurchase();
-
-  const form = useForm<PurchaseEntryData>({
-    resolver: zodResolver(purchaseEntrySchema),
-    defaultValues: {
-      supplierId: '',
-      invoiceNumber: '',
-      amountPaid: 0,
-      lines: [],
-    }
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'lines'
-  });
-
-  useUnsavedChangesGuard(form.formState.isDirty);
-
-  // Supplier Search State
+  // Form state
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [supplierSearch, setSupplierSearch] = useState('');
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
-  const [suppliersLoading, setSuppliersLoading] = useState(true);
 
-  // Item Search State
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [invoiceTotal, setInvoiceTotal] = useState('');
+  const [lines, setLines] = useState<ReceiptLine[]>([]);
+  const [amountPaid, setAmountPaid] = useState('0');
+
+  // Item search
   const [itemSearch, setItemSearch] = useState('');
   const debouncedItemSearch = useDebounce(itemSearch, 300);
   const [itemResults, setItemResults] = useState<Item[]>([]);
@@ -63,12 +47,16 @@ export const PurchaseEntryPage: React.FC = () => {
   const [quickQty, setQuickQty] = useState(1);
   const [quickCost, setQuickCost] = useState('');
 
-  // Calculations
-  const lines = form.watch('lines');
-  const amountPaid = form.watch('amountPaid');
-  const totalCost = lines.reduce((sum, l) => sum + l.quantity * l.unitCost, 0);
-  const payable = Math.max(0, totalCost - amountPaid);
+  // Status
+  const [loading, setLoading] = useState(false);
+  const [suppliersLoading, setSuppliersLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
+  // Auth context
+  const { tenantId, storeId } = useAuth();
+
+  // ── Load suppliers ──────────────────────────────────────────────
   useEffect(() => {
     loadSuppliers();
   }, []);
@@ -84,6 +72,7 @@ export const PurchaseEntryPage: React.FC = () => {
     setSuppliersLoading(false);
   };
 
+  // ── Supplier search ─────────────────────────────────────────────
   const filteredSuppliers = supplierSearch.length < 2
     ? suppliers
     : suppliers.filter(s =>
@@ -92,11 +81,12 @@ export const PurchaseEntryPage: React.FC = () => {
       );
 
   const selectSupplier = (s: Supplier) => {
-    form.setValue('supplierId', s.id, { shouldValidate: true, shouldDirty: true });
+    setSelectedSupplier(s);
     setSupplierSearch(s.name);
     setShowSupplierDropdown(false);
   };
 
+  // ── Item search ─────────────────────────────────────────────────
   useEffect(() => {
     if (debouncedItemSearch.length < 2) {
       setItemResults([]);
@@ -104,7 +94,7 @@ export const PurchaseEntryPage: React.FC = () => {
     }
     const fetchItems = async () => {
       const { data, error } = await supabase
-        .from('items')
+        .from('inventory_items')
         .select('id, name, sku, barcode, price')
         .or(`name.ilike.%${debouncedItemSearch}%,sku.ilike.%${debouncedItemSearch}%,barcode.ilike.%${debouncedItemSearch}%`)
         .limit(8);
@@ -115,49 +105,94 @@ export const PurchaseEntryPage: React.FC = () => {
 
   const addItem = (item: Item) => {
     const cost = quickCost ? parseFloat(quickCost) : item.price;
-    const existingIndex = lines.findIndex(l => l.itemId === item.id);
-    
-    if (existingIndex >= 0) {
-      const existing = lines[existingIndex];
-      form.setValue(`lines.${existingIndex}.quantity`, existing.quantity + quickQty, { shouldDirty: true, shouldValidate: true });
-      form.setValue(`lines.${existingIndex}.unitCost`, cost, { shouldDirty: true, shouldValidate: true });
-    } else {
-      append({
-        itemId: item.id,
-        itemName: item.name,
-        itemSku: item.sku,
-        quantity: quickQty,
-        unitCost: cost
-      });
-    }
-
+    setLines(prev => {
+      const existing = prev.findIndex(l => l.item.id === item.id);
+      if (existing >= 0) {
+        const updated = [...prev];
+        updated[existing] = {
+          ...updated[existing],
+          quantity: updated[existing].quantity + quickQty,
+          unitCost: cost,
+        };
+        return updated;
+      }
+      return [...prev, { item, quantity: quickQty, unitCost: cost }];
+    });
     setItemSearch('');
     setItemResults([]);
     setQuickQty(1);
     setQuickCost('');
   };
 
-  const onSubmit = (data: PurchaseEntryData) => {
-    createMutation.mutate(data, {
-      onSuccess: () => {
-        notify('Purchase posted successfully!', 'success');
-        form.reset();
-        setSupplierSearch('');
-      },
-      onError: (err: any) => {
-        notify(err.message || 'Submission failed', 'error');
-      }
+  const removeLine = (index: number) =>
+    setLines(prev => prev.filter((_, i) => i !== index));
+
+  // ── Calculations ────────────────────────────────────────────────
+  const totalCost = lines.reduce((sum, l) => sum + l.quantity * l.unitCost, 0);
+  const paid = parseFloat(amountPaid) || 0;
+  const payable = Math.max(0, totalCost - paid);
+
+  // ── Submit ──────────────────────────────────────────────────────
+  const submit = async (asDraft: boolean) => {
+    setError('');
+    setSuccess('');
+    if (!selectedSupplier) { setError('Please select a supplier'); return; }
+    if (lines.length === 0) { setError('Add at least one item'); return; }
+    if (paid > totalCost) { setError('Amount paid cannot exceed total cost'); return; }
+
+    setLoading(true);
+    const itemsJson = lines.map(l => ({
+      item_id: l.item.id,
+      quantity: l.quantity,
+      unit_cost: l.unitCost,
+    }));
+
+    const { error } = await supabase.rpc('record_purchase_v2', {
+      p_idempotency_key: `pr_${Date.now()}_${selectedSupplier.id}`,
+      p_tenant_id: tenantId,
+      p_store_id: storeId,
+      p_supplier_id: selectedSupplier.id,
+      p_invoice_number: invoiceNumber || null,
+      p_invoice_total: invoiceTotal ? parseFloat(invoiceTotal) : null,
+      p_items: itemsJson,
+      p_amount_paid: paid,
+      p_status: asDraft ? 'draft' : 'posted',
     });
+
+    setLoading(false);
+    if (error) {
+      setError(error.message || 'Submission failed');
+    } else {
+      setSuccess(asDraft ? 'Draft saved!' : 'Purchase posted successfully!');
+      // Reset form
+      setSelectedSupplier(null);
+      setSupplierSearch('');
+      setInvoiceNumber('');
+      setInvoiceTotal('');
+      setLines([]);
+      setAmountPaid('0');
+    }
   };
 
   return (
-    <PageContainer className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
         title="Purchase Receiving"
-        description="Record incoming stock from suppliers."
+        subtitle="Record incoming stock from suppliers."
       />
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400">
+          {success}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Form */}
         <div className="lg:col-span-2 space-y-6">
 
@@ -177,15 +212,9 @@ export const PurchaseEntryPage: React.FC = () => {
                   }}
                   onFocus={() => setShowSupplierDropdown(true)}
                   placeholder="Search supplier by name or phone..."
-                  className={clsx(
-                    "flex-1 bg-transparent border-none outline-none text-sm w-full py-2",
-                    form.formState.errors.supplierId ? "text-color-danger" : ""
-                  )}
+                  className="flex-1 bg-transparent border-none outline-none text-sm w-full py-2"
                 />
               </div>
-              {form.formState.errors.supplierId && (
-                <p className="text-color-danger text-xs mt-1">{form.formState.errors.supplierId.message}</p>
-              )}
               {showSupplierDropdown && (
                 <div className="absolute z-10 top-full left-0 right-0 mt-2 bg-card border border-border-color rounded-xl max-h-48 overflow-y-auto shadow-lg">
                   {suppliersLoading ? (
@@ -200,7 +229,6 @@ export const PurchaseEntryPage: React.FC = () => {
                   ) : filteredSuppliers.map(s => (
                     <button
                       key={s.id}
-                      type="button"
                       onClick={() => selectSupplier(s)}
                       className="w-full text-left px-4 py-3 hover:bg-border-light flex justify-between items-center transition-colors"
                     >
@@ -220,13 +248,21 @@ export const PurchaseEntryPage: React.FC = () => {
                 <label className="block text-sm text-text-muted mb-2 font-medium">Invoice # (optional)</label>
                 <input
                   type="text"
-                  {...form.register('invoiceNumber')}
+                  value={invoiceNumber}
+                  onChange={e => setInvoiceNumber(e.target.value)}
                   placeholder="INV-2026-001"
                   className="input w-full"
                 />
               </div>
               <div>
-                {/* Legacy total display replaced by auto calculation below, but keeping layout consistent if needed */}
+                <label className="block text-sm text-text-muted mb-2 font-medium">Invoice Total (৳)</label>
+                <input
+                  type="number"
+                  value={invoiceTotal}
+                  onChange={e => setInvoiceTotal(e.target.value)}
+                  placeholder="0.00"
+                  className="input w-full"
+                />
               </div>
             </div>
           </div>
@@ -249,15 +285,11 @@ export const PurchaseEntryPage: React.FC = () => {
                   className="input w-full pl-10"
                 />
               </div>
-              {form.formState.errors.lines && (
-                <p className="text-color-danger text-xs mt-1 mb-2">{form.formState.errors.lines.message}</p>
-              )}
               {showItemDropdown && itemResults.length > 0 && (
                 <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-card border border-border-color rounded-xl max-h-48 overflow-y-auto shadow-lg">
                   {itemResults.map(item => (
                     <button
                       key={item.id}
-                      type="button"
                       onClick={() => addItem(item)}
                       className="w-full text-left px-4 py-3 hover:bg-border-light flex justify-between items-center transition-colors"
                     >
@@ -300,25 +332,24 @@ export const PurchaseEntryPage: React.FC = () => {
           {/* Receipt Lines */}
           <div className="card p-0 overflow-hidden">
             <div className="p-4 border-b border-border-color">
-              <h3 className="font-semibold text-text-main">Receipt Lines ({fields.length})</h3>
+              <h3 className="font-semibold text-text-main">Receipt Lines ({lines.length})</h3>
             </div>
-            {fields.length === 0 ? (
-              <EmptyState 
-                icon={<Package size={32} />}
-                title="No items added yet"
-                description="Search or scan items above."
-              />
+            {lines.length === 0 ? (
+              <div className="p-8 text-center">
+                <Package size={32} className="mx-auto text-text-muted mb-3 opacity-50" />
+                <p className="text-text-muted text-sm">No items added yet. Search or scan items above.</p>
+              </div>
             ) : (
               <div className="divide-y divide-border-color">
-                {fields.map((field, i) => (
-                  <div key={field.id} className="p-4 flex justify-between items-center">
+                {lines.map((l, i) => (
+                  <div key={i} className="p-4 flex justify-between items-center">
                     <div>
-                      <div className="font-medium">{field.itemName}</div>
+                      <div className="font-medium">{l.item.name}</div>
                       <div className="text-text-muted text-sm">
-                        {lines[i]?.quantity} × ৳{lines[i]?.unitCost} = ৳{((lines[i]?.quantity || 0) * (lines[i]?.unitCost || 0)).toFixed(2)}
+                        {l.quantity} × ৳{l.unitCost} = ৳{(l.quantity * l.unitCost).toFixed(2)}
                       </div>
                     </div>
-                    <button type="button" onClick={() => remove(i)} className="text-color-danger hover:opacity-80 transition-opacity" aria-label="Remove item">
+                    <button onClick={() => removeLine(i)} className="text-color-danger hover:opacity-80 transition-opacity" aria-label="Remove item">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -344,12 +375,10 @@ export const PurchaseEntryPage: React.FC = () => {
                 <input
                   id="cash-paid"
                   type="number"
-                  {...form.register('amountPaid', { valueAsNumber: true })}
+                  value={amountPaid}
+                  onChange={e => setAmountPaid(e.target.value)}
                   className="input w-full"
                 />
-                {form.formState.errors.amountPaid && (
-                  <p className="text-color-danger text-xs mt-1">{form.formState.errors.amountPaid.message}</p>
-                )}
               </div>
 
               <div className="flex justify-between pt-3 border-t border-border-color">
@@ -362,17 +391,27 @@ export const PurchaseEntryPage: React.FC = () => {
 
             <div className="mt-6 space-y-3">
               <button
-                type="submit"
-                disabled={createMutation.isPending}
+                title="Post purchase receipt to ledger"
+                onClick={() => submit(false)}
+                disabled={loading}
                 className="button-primary w-full py-3 flex items-center justify-center gap-2"
               >
                 <Send size={18} />
-                {createMutation.isPending ? 'Posting...' : 'POST RECEIPT'}
+                {loading ? 'Posting...' : 'POST RECEIPT'}
+              </button>
+              <button
+                title="Save purchase as draft"
+                onClick={() => submit(true)}
+                disabled={loading}
+                className="button-outline w-full py-3 flex items-center justify-center gap-2"
+              >
+                <Save size={18} />
+                Save as Draft
               </button>
             </div>
           </div>
         </div>
-      </form>
-    </PageContainer>
+      </div>
+    </div>
   );
 };

@@ -2,28 +2,9 @@
   "name": "lucky-store",
   "private": true,
   "version": "1.0.0",
-  "type": "commonjs",
+  "type": "module",
   "description": "Lucky Store monorepo — POS frontend, Supabase backend, scrapers, and ops scripts",
   "scripts": {
-    "dev": "npm --prefix apps/admin_web run dev",
-    "build": "npm --prefix apps/admin_web run build",
-    "lint": "npm --prefix apps/admin_web run lint",
-    "preview": "npm --prefix apps/admin_web run preview",
-    "typecheck": "apps/admin_web/node_modules/.bin/tsc --noEmit -p apps/admin_web/tsconfig.json",
-    "check": "npm run lint && npm run typecheck && npm run build",
-    "governance:build": "sh -c 'mkdir -p artifacts/governance && node infra/migration-replay/build_function_registry.cjs supabase/migrations artifacts/governance && node infra/migration-replay/build_migration_dependencies.cjs supabase/migrations artifacts/governance && node infra/migration-replay/build_ownership_graph.cjs supabase/migrations artifacts/governance'",
-    "governance:check": "npm run governance:build && node scripts/governance/enforce-governance.cjs --repo-root . --artifacts-dir artifacts/governance --baseline scripts/governance/baseline.json",
-    "governance:baseline": "npm run governance:build && node scripts/governance/enforce-governance.cjs --repo-root . --artifacts-dir artifacts/governance --baseline scripts/governance/baseline.json --write-baseline",
-    "governance:certify": "npm run governance:check && npx tsx scripts/governance/certify.ts",
-    "governance:rpc-parity": "npx tsx scripts/governance/rpc_parity.ts",
-    "replay:certify": "npx tsx scripts/replay-certification/certify.ts",
-    "safety:test": "node --test scripts/safety/*.test.cjs",
-    "supabase:start": "supabase start",
-    "supabase:stop": "supabase stop",
-    "supabase:status": "supabase status",
-    "supabase:reset": "supabase db reset",
-    "supabase:types": "sh -c 'mkdir -p apps/admin_web/src/lib && supabase gen types typescript --local > apps/admin_web/src/lib/database.types.ts'",
-    "supabase:sync-remote-data": "node scripts/ops/sync-supabase-data.js",
     "scrape": "node apps/scraper/scrape-shwapno.js",
     "import-competitor": "node scripts/ops/import-competitor-data.js",
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",
@@ -32,11 +13,5 @@
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.103.3"
-  },
-  "devDependencies": {
-    "@types/node": "^25.7.0",
-    "dotenv": "^17.4.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
   }
 }

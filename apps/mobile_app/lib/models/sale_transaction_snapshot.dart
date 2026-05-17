@@ -17,19 +17,19 @@ class SaleTransactionIntentItem {
 
   Map<String, dynamic> toJson() => {
         'item_id': itemId,
-        'quantity': quantity,
+        'qty': quantity,
         'unit_price': requestedUnitPrice,
-        'discount_amount': lineDiscount,
-        'unit_cost': unitCost,
+        'discount': lineDiscount,
+        'cost': unitCost,
       };
 
   factory SaleTransactionIntentItem.fromJson(Map<String, dynamic> json) {
     return SaleTransactionIntentItem(
       itemId: json['item_id'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['qty'] as num).toInt(),
       requestedUnitPrice: (json['unit_price'] as num).toDouble(),
-      lineDiscount: (json['discount_amount'] as num? ?? 0).toDouble(),
-      unitCost: (json['unit_cost'] as num? ?? 0).toDouble(),
+      lineDiscount: (json['discount'] as num? ?? 0).toDouble(),
+      unitCost: (json['cost'] as num? ?? 0).toDouble(),
     );
   }
 }
@@ -58,32 +58,6 @@ class SaleTransactionIntent {
     required this.createdAt,
     this.fulfillmentPolicy = 'STRICT',
   });
-
-  SaleTransactionIntent copyWith({
-    String? clientTransactionId,
-    String? transactionTraceId,
-    String? storeId,
-    String? cashierId,
-    String? sessionId,
-    List<SaleTransactionIntentItem>? items,
-    List<Map<String, dynamic>>? payments,
-    double? cartDiscount,
-    DateTime? createdAt,
-    String? fulfillmentPolicy,
-  }) {
-    return SaleTransactionIntent(
-      clientTransactionId: clientTransactionId ?? this.clientTransactionId,
-      transactionTraceId: transactionTraceId ?? this.transactionTraceId,
-      storeId: storeId ?? this.storeId,
-      cashierId: cashierId ?? this.cashierId,
-      sessionId: sessionId ?? this.sessionId,
-      items: items ?? this.items,
-      payments: payments ?? this.payments,
-      cartDiscount: cartDiscount ?? this.cartDiscount,
-      createdAt: createdAt ?? this.createdAt,
-      fulfillmentPolicy: fulfillmentPolicy ?? this.fulfillmentPolicy,
-    );
-  }
 
   Map<String, dynamic> toJson() => {
         'client_transaction_id': clientTransactionId,
@@ -121,14 +95,14 @@ class SaleTransactionIntent {
 }
 
 class SaleSnapshotItem {
-  final String itemId;
+  final String productId;
   final int quantity;
   final double unitPriceSnapshot;
   final double discountSnapshot;
   final int stockSnapshot;
 
   const SaleSnapshotItem({
-    required this.itemId,
+    required this.productId,
     required this.quantity,
     required this.unitPriceSnapshot,
     required this.discountSnapshot,
@@ -136,20 +110,19 @@ class SaleSnapshotItem {
   });
 
   Map<String, dynamic> toJson() => {
-        'item_id': itemId,
+        'product_id': productId,
         'quantity': quantity,
         'unit_price_snapshot': unitPriceSnapshot,
-        'discount_amount_snapshot': discountSnapshot,
+        'discount_snapshot': discountSnapshot,
         'stock_snapshot': stockSnapshot,
       };
 
   factory SaleSnapshotItem.fromJson(Map<String, dynamic> json) {
     return SaleSnapshotItem(
-      itemId: json['item_id'] as String,
+      productId: json['product_id'] as String,
       quantity: (json['quantity'] as num).toInt(),
       unitPriceSnapshot: (json['unit_price_snapshot'] as num).toDouble(),
-      discountSnapshot:
-          (json['discount_amount_snapshot'] as num? ?? 0).toDouble(),
+      discountSnapshot: (json['discount_snapshot'] as num? ?? 0).toDouble(),
       stockSnapshot: (json['stock_snapshot'] as num? ?? 0).toInt(),
     );
   }
@@ -210,7 +183,7 @@ class SaleTransactionSnapshot {
 
 SaleSnapshotItem snapshotItemFromCart(CartItem cartItem) {
   return SaleSnapshotItem(
-    itemId: cartItem.item.id,
+    productId: cartItem.item.id,
     quantity: cartItem.qty,
     unitPriceSnapshot: cartItem.item.price,
     discountSnapshot: cartItem.discount,

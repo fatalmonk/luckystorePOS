@@ -39,7 +39,14 @@ CREATE POLICY "categories_select_tenant_isolated"
   FOR SELECT
   TO authenticated
   USING (
-    tenant_id = public.get_current_user_tenant_id()
+    store_id = public.get_current_user_store_id()
+    OR EXISTS (
+      SELECT 1
+      FROM public.users u
+      WHERE u.auth_id = auth.uid()
+        AND u.role IN ('admin', 'manager', 'advisor')
+        AND u.tenant_id = public.get_current_user_tenant_id()
+    )
   );
 
 CREATE POLICY "categories_manage_authorized"
@@ -47,23 +54,21 @@ CREATE POLICY "categories_manage_authorized"
   FOR ALL
   TO authenticated
   USING (
-    tenant_id = public.get_current_user_tenant_id()
+    store_id = public.get_current_user_store_id()
     AND EXISTS (
       SELECT 1
       FROM public.users u
       WHERE u.auth_id = auth.uid()
         AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.tenant_id = tenant_id
     )
   )
   WITH CHECK (
-    tenant_id = public.get_current_user_tenant_id()
+    store_id = public.get_current_user_store_id()
     AND EXISTS (
       SELECT 1
       FROM public.users u
       WHERE u.auth_id = auth.uid()
         AND u.role IN ('admin', 'manager', 'advisor')
-        AND u.tenant_id = tenant_id
     )
   );
 
@@ -78,8 +83,8 @@ DROP POLICY IF EXISTS "items_select_tenant_isolated" ON public.items;
 DROP POLICY IF EXISTS "items_manage_authorized" ON public.items;
 
 -- Create correct policies
-CREATE POLICY "categories_select_tenant_isolated"
-  ON public.categories
+CREATE POLICY "items_select_tenant_isolated"
+  ON public.items
   FOR SELECT
   TO authenticated
   USING (
@@ -93,8 +98,8 @@ CREATE POLICY "categories_select_tenant_isolated"
     )
   );
 
-CREATE POLICY "categories_manage_authorized"
-  ON public.categories
+CREATE POLICY "items_manage_authorized"
+  ON public.items
   FOR ALL
   TO authenticated
   USING (

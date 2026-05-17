@@ -167,7 +167,8 @@ async function wipeData() {
   await deleteByStore('stock_transfers', 'from_store_id');
 
   // 4. Stock audit tables (CASCADE on items but wipe explicitly)
-  await deleteByStore('inventory_movements');
+  await deleteByStore('stock_ledger');
+  await deleteByStore('stock_movements');
   await deleteByStore('stock_levels');
   await deleteByStore('stock_alert_thresholds');
   await deleteByStore('item_batches');
@@ -181,6 +182,7 @@ async function wipeData() {
 
   // 7. Now safe to delete items (CASCADE cleans remaining children)
   await deleteAll('items');
+  await deleteAll('inventory_items');
   await deleteAll('categories');
 
   console.log('Wipe complete.\n');
@@ -244,7 +246,19 @@ async function importData(storeId, tenantId, rows) {
   }
   console.log(`Items inserted: ${Object.keys(itemIdMap).length}`);
 
-  // ── 3. (Deprecated) inventory_items sync was removed ──────────────────────
+  // ── 3. Inventory items (for profit control) ──────────────────────
+  console.log('Inserting inventory_items...');
+  const invItems = rows.map(row => ({
+    tenant_id: tenantId,
+    name: row['Item Name'],
+    sku: row['Item Code/SKU/Barcode'] || null,
+    barcode: row['Item Code/SKU/Barcode'] || null,
+  }));
+  for (let i = 0; i < invItems.length; i += batchSize) {
+    const batch = invItems.slice(i, i + batchSize);
+    const { error } = await supabase.from('inventory_items').insert(batch);
+    if (error) console.warn(`  inventory_items batch: ${error.message}`);
+  }
 
   // ── 4. Stock levels ───────────────────────────────────────────────
   console.log('Creating stock levels...');
@@ -274,22 +288,22 @@ async function importData(storeId, tenantId, rows) {
   }
   console.log(`Stock levels created: ${stockLevels.length}`);
 
-  // ── 5. Inventory movements (audit trail) ──────────────────────────────
-  console.log('Recording inventory movements...');
+  // ── 5. Stock movements (audit trail) ──────────────────────────────
+  console.log('Recording stock movements...');
   const movements = stockLevels.map(sl => ({
     store_id: storeId,
     item_id: sl.item_id,
-    quantity_delta: sl.qty,
-    movement_type: 'manual',
-    notes: 'initial_inventory_import',
+    delta: sl.qty,
+    reason: 'import',
+    meta: JSON.stringify({ source: 'initial_inventory_import', new_qty: sl.qty }),
   }));
 
   for (let i = 0; i < movements.length; i += batchSize) {
     const batch = movements.slice(i, i + batchSize);
-    const { error } = await supabase.from('inventory_movements').insert(batch);
-    if (error) console.warn(`  inventory_movements batch: ${error.message}`);
+    const { error } = await supabase.from('stock_movements').insert(batch);
+    if (error) console.warn(`  stock_movements batch: ${error.message}`);
   }
-  console.log(`Inventory movements recorded: ${movements.length}`);
+  console.log(`Stock movements recorded: ${movements.length}`);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────

@@ -2,19 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { SkeletonBlock } from '../../components/PageState';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
-import { PageHeader } from '../../layouts/PageHeader';
-import { PageContainer } from '../../layouts/PageContainer';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
-import { useForm } from 'react-hook-form';
-import { Form, FormInput, FormSelect, PriceInput, FormActions } from '../../components/forms';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -32,14 +27,23 @@ import {
   CreditCard,
   Download,
 } from 'lucide-react';
-import { format, isToday, isThisWeek, isThisMonth, subMonths, startOfMonth, parseISO } from 'date-fns';
-
-const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO } from 'date-fns';
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_PAYMENT_TYPES,
 } from '../../lib/api/types';
-import type { Expense, ExpenseFormData } from '../../lib/api/types';
+import type { Expense, ExpenseFormData, ExpenseCategory, ExpensePaymentType } from '../../lib/api/types';
+import { downloadCSV } from '../../lib/format';
+
+// Chart colors matching the app's design system
+const CHART_COLORS = [
+  'var(--color-success-default)',
+  'var(--color-info-default)',
+  'var(--color-warning-default)',
+  'var(--color-danger-default)',
+  'var(--color-primary-default)',
+  'var(--color-secondary-default)',
+];
 
 export function ExpensesPage() {
   const { notify } = useNotify();
@@ -242,27 +246,41 @@ export function ExpensesPage() {
 
   if (error) {
     return (
-      <PageContainer className="expenses-container">
+      <div className="expenses-container">
         <PageHeader
           title="Expenses"
-          description="Track and manage store expenses."
+          subtitle="Track and manage store expenses."
         />
         <div className="card">
           <ErrorState message="Failed to load expenses." onRetry={() => refetch()} />
         </div>
-      </PageContainer>
+      </div>
     );
   }
 
   return (
-    <PageContainer className="expenses-container">
+    <div className="expenses-container">
       <PageHeader
         title="Expenses"
-        description="Track and manage store expenses."
-        action={
-          <button className="button-primary" onClick={() => setShowForm(true)}>
-            <Plus size={18} /> Add Expense
-          </button>
+        subtitle="Track and manage store expenses."
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              className="button-outline gap-2"
+              onClick={() => downloadCSV(
+                filtered.map((e: Expense) => ({
+                  date: e.expenseDate, vendor: e.vendorName, description: e.description,
+                  category: e.category, payment: e.paymentType, amount: e.amount,
+                })),
+                `expenses-${new Date().toISOString().split('T')[0]}.csv`
+              )}
+            >
+              <Download size={16} /> Export CSV
+            </button>
+            <button className="button-primary" onClick={() => setShowForm(true)}>
+              <Plus size={18} /> Add Expense
+            </button>
+          </div>
         }
       />
 
@@ -586,7 +604,7 @@ export function ExpensesPage() {
         onConfirm={() => deletingExpenseId && deleteMutation.mutate(deletingExpenseId)}
         onCancel={() => setDeletingExpenseId(null)}
       />
-    </PageContainer>
+    </div>
   );
 }
 
@@ -597,78 +615,134 @@ function AddExpenseDrawer({
   isPending,
 }: {
   isOpen: boolean;
-  onSubmit: (form: any) => void;
+  onSubmit: (form: ExpenseFormData) => void;
   onClose: () => void;
   isPending: boolean;
 }) {
   const today = format(new Date(), 'yyyy-MM-dd');
-
-  const form = useForm<any>({
-    defaultValues: {
-      expenseDate: today,
-      vendorName: '',
-      description: '',
-      amount: 0,
-      paymentType: 'Cash',
-      category: 'All Other Expenses',
-    }
+  const [form, setForm] = useState<ExpenseFormData>({
+    expenseDate: today,
+    vendorName: '',
+    description: '',
+    amount: 0,
+    paymentType: 'Cash',
+    category: 'All Other Expenses',
   });
 
-  const handleSubmit = (data: any) => {
-    onSubmit(data);
+  const set = <K extends keyof ExpenseFormData>(key: K, value: ExpenseFormData[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.vendorName.trim() || form.amount <= 0) return;
+    onSubmit(form);
   };
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="Add Expense">
-      <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <FormInput
-          type="date"
-          name="expenseDate"
-          label="Date"
-          required
-        />
-        <FormInput
-          name="vendorName"
-          label="Vendor"
-          placeholder="e.g. ABC Supplies"
-          required
-        />
-        <FormInput
-          name="description"
-          label="Description"
-          placeholder="What was this for?"
-          required
-        />
-        <PriceInput
-          name="amount"
-          label="Amount"
-        />
-        <FormSelect
-          name="category"
-          label="Category"
-          options={EXPENSE_CATEGORIES.map(c => ({ label: c, value: c }))}
-        />
-        <FormSelect
-          name="paymentType"
-          label="Payment Method"
-          options={EXPENSE_PAYMENT_TYPES.map(t => ({ label: t, value: t }))}
-        />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
+            Date
+          </label>
+          <input
+            type="date"
+            value={form.expenseDate}
+            onChange={(e) => set('expenseDate', e.target.value)}
+            className="input w-full"
+            required
+          />
+        </div>
 
-        <FormActions>
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
+            Vendor
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. ABC Supplies"
+            value={form.vendorName}
+            onChange={(e) => set('vendorName', e.target.value)}
+            className="input w-full"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
+            Description
+          </label>
+          <input
+            type="text"
+            placeholder="What was this for?"
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            className="input w-full"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
+            Amount (৳)
+          </label>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+            value={form.amount || ''}
+            onChange={(e) => set('amount', parseFloat(e.target.value) || 0)}
+            className="input w-full"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
+            Category
+          </label>
+          <select
+            value={form.category}
+            onChange={(e) => set('category', e.target.value as ExpenseCategory)}
+            className="input w-full"
+          >
+            {EXPENSE_CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-muted mb-1">
+            Payment Method
+          </label>
+          <select
+            value={form.paymentType}
+            onChange={(e) => set('paymentType', e.target.value as ExpensePaymentType)}
+            className="input w-full"
+          >
+            {EXPENSE_PAYMENT_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border-light">
           <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
           <button
             type="submit"
             className="button-primary"
-            disabled={isPending}
+            disabled={isPending || !form.vendorName.trim() || form.amount <= 0}
+            style={{ opacity: isPending || !form.vendorName.trim() || form.amount <= 0 ? 0.5 : 1 }}
           >
             {isPending ? 'Saving...' : 'Record Expense'}
           </button>
-        </FormActions>
-      </Form>
+        </div>
+      </form>
     </Drawer>
   );
 }
-
 
 function EditExpenseDrawer({
   expense,
@@ -683,63 +757,71 @@ function EditExpenseDrawer({
   onClose: () => void;
   isPending: boolean;
 }) {
-  const form = useForm<any>({
-    values: expense ? {
-      expenseDate: expense.expenseDate,
-      vendorName: expense.vendorName,
-      description: expense.description,
-      amount: expense.amount,
-      paymentType: expense.paymentType,
-      category: expense.category,
-    } : undefined
+  const [form, setForm] = useState({
+    expenseDate: '',
+    vendorName: '',
+    description: '',
+    amount: 0,
+    paymentType: 'Cash' as ExpensePaymentType,
+    category: 'All Other Expenses' as ExpenseCategory,
   });
+
+  React.useEffect(() => {
+    if (expense) {
+      setForm({
+        expenseDate: expense.expenseDate,
+        vendorName: expense.vendorName,
+        description: expense.description,
+        amount: expense.amount,
+        paymentType: expense.paymentType,
+        category: expense.category,
+      });
+    }
+  }, [expense]);
+
+  const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) =>
+    setForm(prev => ({ ...prev, [key]: value }));
 
   if (!expense) return null;
 
-  const handleSubmit = (data: any) => {
-    onSubmit(expense.id, data);
-  };
-
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="Edit Expense">
-      <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <FormInput
-          type="date"
-          name="expenseDate"
-          label="Date"
-          required
-        />
-        <FormInput
-          name="vendorName"
-          label="Vendor"
-          required
-        />
-        <FormInput
-          name="description"
-          label="Description"
-          required
-        />
-        <PriceInput
-          name="amount"
-          label="Amount"
-        />
-        <FormSelect
-          name="category"
-          label="Category"
-          options={EXPENSE_CATEGORIES.map(c => ({ label: c, value: c }))}
-        />
-        <FormSelect
-          name="paymentType"
-          label="Payment Method"
-          options={EXPENSE_PAYMENT_TYPES.map(t => ({ label: t, value: t }))}
-        />
-        <FormActions>
-          <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
+      <form onSubmit={(e) => { e.preventDefault(); onSubmit(expense.id, form); }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Date</label>
+          <input type="date" value={form.expenseDate} onChange={e => set('expenseDate', e.target.value)} className="input w-full" required />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Vendor</label>
+          <input type="text" value={form.vendorName} onChange={e => set('vendorName', e.target.value)} className="input w-full" />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Description</label>
+          <input type="text" value={form.description} onChange={e => set('description', e.target.value)} className="input w-full" />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Amount (৳)</label>
+          <input type="number" value={form.amount || ''} onChange={e => set('amount', parseFloat(e.target.value) || 0)} className="input w-full" required />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Category</label>
+          <select value={form.category} onChange={e => set('category', e.target.value as ExpenseCategory)} className="input w-full">
+            {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Payment Method</label>
+          <select value={form.paymentType} onChange={e => set('paymentType', e.target.value as ExpensePaymentType)} className="input w-full">
+            {EXPENSE_PAYMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+          <button type="button" className="button-outline" onClick={onClose} disabled={isPending}>Cancel</button>
           <button type="submit" className="button-primary" disabled={isPending}>
             {isPending ? 'Saving...' : 'Record Expense'}
           </button>
-        </FormActions>
-      </Form>
+        </div>
+      </form>
     </Drawer>
   );
 }

@@ -214,7 +214,7 @@ class _ClosingHistoryScreenState extends State<ClosingHistoryScreen> {
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   dropdownColor: const Color(0xFF161B22),
-                  initialValue: _selectedStoreId,
+                  value: _selectedStoreId,
                   decoration: const InputDecoration(
                     labelText: 'Store',
                     labelStyle: TextStyle(color: Colors.white70),
@@ -244,7 +244,7 @@ class _ClosingHistoryScreenState extends State<ClosingHistoryScreen> {
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   dropdownColor: const Color(0xFF161B22),
-                  initialValue: _selectedManagerId,
+                  value: _selectedManagerId,
                   decoration: const InputDecoration(
                     labelText: 'Manager',
                     labelStyle: TextStyle(color: Colors.white70),

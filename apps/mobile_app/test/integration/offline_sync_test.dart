@@ -25,7 +25,7 @@ class MockPathProviderPlatform extends Fake
 }
 
 void main() {
-  group('Offline Sync Integration Tests', skip: 'Stubbed for headless CI', () {
+  group('Offline Sync Integration Tests', () {
     late Directory tempDir;
     late OfflineTransactionSyncService syncService;
 
@@ -40,7 +40,8 @@ void main() {
 
     setUp(() async {
       syncService = OfflineTransactionSyncService.instance;
-      // Queue is cleared by re-initialization if needed
+      // Clear queue between tests
+      await syncService.clearQueueForTesting();
     });
 
     group('Enqueue & Persistence', () {
@@ -369,6 +370,5 @@ QueuedOfflineTransaction _createQueuedTransaction({
     snapshot: null,
     syncValidationState: 'PENDING_SERVER_VALIDATION',
     fulfillmentPolicy: 'STRICT',
-    sequenceId: 1,
   );
 }

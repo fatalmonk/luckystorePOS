@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -39,33 +38,27 @@ void main() {
     });
   });
 
-  group('Stock Decrement Race Conditions', skip: 'Stubbed for headless CI', () {
+  group('Stock Decrement Race Conditions', () {
     test('Simultaneous sales of same item should not cause negative stock', () async {
       var currentStock = 5;
       final results = <bool>[];
-      Completer<void>? completer;
-
-      Future<void> sellItem() async {
-        if (completer != null) return completer!.future;
-        completer = Completer<void>();
-        try {
-          // Simulate async lock
-          await Future.delayed(Duration.zero);
-          if (currentStock > 0) {
-            currentStock--;
-            results.add(true);
-          } else {
-            results.add(false);
-          }
-        } finally {
-          completer!.complete();
-          completer = null;
-        }
-      }
+      final mutex = _Mutex();
 
       final futures = <Future>[];
       for (var i = 0; i < 10; i++) {
-        futures.add(sellItem());
+        futures.add(() async {
+          await mutex.acquire();
+          try {
+            if (currentStock > 0) {
+              currentStock--;
+              results.add(true);
+            } else {
+              results.add(false);
+            }
+          } finally {
+            mutex.release();
+          }
+        }());
       }
 
       await Future.wait(futures);
@@ -96,76 +89,78 @@ void main() {
   });
 
   group('Offline Sync Race Conditions', () {
-    test('Sync worker should not run concurrently', () async {
-      Completer<void>? syncCompleter;
+    test('Sync worker with proper locking should not run concurrently', () async {
+      final mutex = _Mutex();
       var syncAttempts = 0;
 
       Future<void> syncQueue() async {
-        if (syncCompleter != null) return syncCompleter!.future;
-        syncCompleter = Completer<void>();
+        final acquired = await mutex.tryAcquire();
+        if (!acquired) return;
+        
         try {
           syncAttempts++;
           await Future.delayed(const Duration(milliseconds: 100));
         } finally {
-          syncCompleter!.complete();
-          syncCompleter = null;
+          mutex.release();
         }
       }
 
       await Future.wait([syncQueue(), syncQueue(), syncQueue(), syncQueue()]);
 
+      // With proper locking, only one should execute
       expect(syncAttempts, equals(1));
     });
 
-    test('Completer pattern prevents concurrent sync operations', () async {
-      Completer<void>? syncCompleter;
+    test('isSyncing flag prevents concurrent sync operations', () async {
+      final completer = Completer<void>();
+      var isSyncing = false;
       var syncCount = 0;
 
       Future<void> attemptSync() async {
-        if (syncCompleter != null) return syncCompleter!.future;
-        syncCompleter = Completer<void>();
-        try {
-          await Future.delayed(Duration.zero);
-          syncCount++;
-        } finally {
-          syncCompleter!.complete();
-          syncCompleter = null;
-        }
+        if (isSyncing) return;
+        isSyncing = true;
+        syncCount++;
+        await completer.future; // Hold the lock
+        isSyncing = false;
       }
 
-      await Future.wait([attemptSync(), attemptSync(), attemptSync()]);
-
+      // Start multiple sync attempts
+      final futures = [attemptSync(), attemptSync(), attemptSync()];
+      
+      // Only first should start, others should return early
+      await Future.delayed(const Duration(milliseconds: 50));
       expect(syncCount, equals(1));
+      
+      // Release the lock
+      completer.complete();
+      await Future.wait(futures);
     });
   });
 
   group('Session State Consistency', () {
-    test('Session should not be opened twice concurrently', () async {
-      Completer<bool>? sessionCompleter;
+    test('Session with proper locking should not open twice', () async {
+      final mutex = _Mutex();
+      var sessionOpen = false;
       var openAttempts = 0;
 
       Future<bool> openSession() async {
-        if (sessionCompleter != null) {
-          return sessionCompleter!.future;
-        }
-        sessionCompleter = Completer<bool>();
-
+        final acquired = await mutex.tryAcquire();
+        if (!acquired) return false;
+        
         try {
+          if (sessionOpen) return false;
           await Future.delayed(const Duration(milliseconds: 50));
+          sessionOpen = true;
           openAttempts++;
-          sessionCompleter!.complete(true);
-        } catch (e) {
-          sessionCompleter!.completeError(e);
+          return true;
+        } finally {
+          mutex.release();
         }
-        // Crucially, return the shared future, not a new one.
-        return sessionCompleter!.future;
       }
 
       final results = await Future.wait([openSession(), openSession(), openSession()]);
 
-      // All futures should complete with the same value 'true'.
-      expect(results, equals([true, true, true])); 
-      // But the core logic should only have executed once.
+      expect(results.where((r) => r).length, equals(1));
       expect(openAttempts, equals(1));
     });
   });
