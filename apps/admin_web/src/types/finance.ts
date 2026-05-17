@@ -6,7 +6,7 @@ export interface Party {
   phone?: string;
   email?: string;
   address?: string;
-  current_balance: number;
+  current_balance?: number;
 }
 
 export interface LedgerEntry {
