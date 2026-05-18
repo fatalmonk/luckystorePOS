@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/sync_action_audit_log.dart';
 import '../../models/sale_transaction_snapshot.dart';
 import './offline_sync_operational_alert_engine.dart';
+import './conflict_resolver.dart';
 
 enum OfflineSyncState { pending, syncing, synced, failed, conflict }
 
@@ -225,6 +226,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   final _queue = <QueuedOfflineTransaction>[];
   final _auditLogs = <SyncActionAuditLog>[];
   final _alertEngine = const OfflineSyncOperationalAlertEngine();
+  final _conflictResolver = ConflictResolver();
 
   SupabaseClient? _supabase;
   Timer? _workerTimer;
@@ -480,17 +482,44 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       final parsed = Map<String, dynamic>.from(result as Map);
       final status = (parsed['status'] as String? ?? 'REJECTED').toUpperCase();
       if (status == 'CONFLICT' || status == 'REJECTED') {
-        _replace(
-          tx.clientTransactionId,
-          tx.copyWith(
-            state: OfflineSyncState.conflict,
-            conflictType: parsed['conflict_reason'] as String?,
-            lastError: parsed['message'] as String? ?? 'Conflict',
-            requiresManagerReview: true,
-            conflictMeta: parsed,
-            syncValidationState: 'MAJOR_DRIFT',
-          ),
+        // Try to auto-resolve the conflict
+        final resolution = _conflictResolver.resolve(
+          transaction: tx,
+          serverResponse: parsed,
+          currentSnapshot: tx.snapshot,
         );
+
+        if (resolution.requiresManagerReview || resolution.strategy == ResolutionStrategy.manualReview) {
+          // Conflict requires manual review
+          _replace(
+            tx.clientTransactionId,
+            tx.copyWith(
+              state: OfflineSyncState.conflict,
+              conflictType: parsed['conflict_reason'] as String?,
+              lastError: resolution.reason ?? parsed['message'] ?? 'Conflict',
+              requiresManagerReview: true,
+              conflictMeta: parsed,
+              syncValidationState: 'MAJOR_DRIFT',
+            ),
+          );
+          return _SyncAttemptOutcome.conflict;
+        } else if (resolution.strategy == ResolutionStrategy.cancel) {
+          // Transaction cancelled - remove from queue
+          _queue.removeWhere((q) => q.clientTransactionId == tx.clientTransactionId);
+          return _SyncAttemptOutcome.failed;
+        } else if (resolution.resolvedTransaction != null) {
+          // Auto-resolved - update transaction and retry
+          _replace(
+            tx.clientTransactionId,
+            resolution.resolvedTransaction!.copyWith(
+              state: OfflineSyncState.pending, // Reset to pending for retry
+              lastError: resolution.reason,
+              conflictMeta: parsed,
+            ),
+          );
+          // Don't return - let it retry in next cycle
+          return _SyncAttemptOutcome.synced; // Mark as handled
+        }
         return _SyncAttemptOutcome.conflict;
       }
 
@@ -542,6 +571,20 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   Future<File> _queueFile() async {
     final dir = await getApplicationDocumentsDirectory();
     return File('${dir.path}/offline_transaction_queue.json');
+  }
+
+  /// Clears the queue for testing purposes only.
+  @visibleForTesting
+  Future<void> clearQueueForTesting() async {
+    _queue.clear();
+    try {
+      final file = await _queueFile();
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // Ignore errors during test cleanup
+    }
   }
 
   Future<File> _logFile() async {

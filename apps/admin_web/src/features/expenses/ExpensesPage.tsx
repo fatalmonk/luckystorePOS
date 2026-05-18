@@ -600,6 +600,7 @@ export function ExpensesPage() {
         message="Are you sure you want to delete this expense? This action cannot be undone."
         confirmLabel="Delete"
         variant="danger"
+        isPending={deleteMutation.isPending}
         onConfirm={() => deletingExpenseId && deleteMutation.mutate(deletingExpenseId)}
         onCancel={() => setDeletingExpenseId(null)}
       />
@@ -815,9 +816,9 @@ function EditExpenseDrawer({
           </select>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-          <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
+          <button type="button" className="button-outline" onClick={onClose} disabled={isPending}>Cancel</button>
           <button type="submit" className="button-primary" disabled={isPending}>
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? 'Saving...' : 'Record Expense'}
           </button>
         </div>
       </form>

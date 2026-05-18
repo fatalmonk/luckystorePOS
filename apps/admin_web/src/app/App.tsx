@@ -26,6 +26,7 @@ const LazyQuickPosPage = React.lazy(() => import('../features/pos/QuickPosPage')
 const LazyRemindersPage = React.lazy(() => import('../features/reminders/RemindersPage').then(m => ({ default: m.RemindersPage })));
 const LazyExpensesPage = React.lazy(() => import('../features/expenses/ExpensesPage').then(m => ({ default: m.ExpensesPage })));
 const LazyDailySalesPage = React.lazy(() => import('../features/sales/DailySalesPage').then(m => ({ default: m.DailySalesPage })));
+const LazyCompetitorPricesPage = React.lazy(() => import('../features/competitorPrices/CompetitorPricesPage').then(m => ({ default: m.CompetitorPricesPage })));
 
 function SuspenseFallback() {
   return (
@@ -67,6 +68,7 @@ export function App() {
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
                   <Route path="products" element={<LazyRoute><LazyProductListPage /></LazyRoute>} />
+                  <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
                   <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
                   <Route path="inventory/history" element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />
                   <Route path="finance/suppliers" element={<LazyRoute><LazySupplierLedgerPage /></LazyRoute>} />

@@ -219,19 +219,55 @@ class ManagerSecurityLayer {
     );
   }
 
-  static Future<void> processStockAdjustment(
+  static Future<bool> processStockAdjustment(
     BuildContext context,
     String itemId,
-    int delta,
-  ) async {
-    await requireManagerAuth(
-      context,
-      reason: 'Stock adjustment: $itemId (delta: $delta)',
-      onAuthSuccess: () async {
-        final posProvider = context.read<PosProvider>();
-        await posProvider.adjustStock(itemId, delta);
-      },
+    int delta, {
+    String reason = 'correction',
+    String? notes,
+  }) async {
+    final posProvider = context.read<PosProvider>();
+    
+    // First attempt without PIN
+    final result = await posProvider.adjustStock(
+      itemId: itemId,
+      delta: delta,
+      reason: reason,
+      notes: notes,
     );
+
+    // If successful or non-auth error, return result
+    if (result['success'] == true) {
+      return true;
+    }
+
+    // If manager auth required, show PIN dialog
+    if (result['requires_manager_auth'] == true) {
+      if (!context.mounted) return false;
+      final authResult = await requireManagerAuth(
+        context,
+        reason: 'Stock adjustment >5%: $itemId (delta: $delta)',
+        onAuthSuccess: () async {
+          if (!context.mounted) return;
+          // Retry with PIN
+          final retryResult = await posProvider.adjustStock(
+            itemId: itemId,
+            delta: delta,
+            reason: reason,
+            notes: notes,
+            managerPin: context.read<AuthProvider>().lastVerifiedPin,
+          );
+          
+          if (retryResult['success'] != true) {
+            throw Exception(retryResult['error'] ?? 'Stock adjustment failed');
+          }
+        },
+      );
+      return authResult;
+    }
+
+    // Other error
+    throw Exception(result['error'] ?? 'Stock adjustment failed');
   }
 }
 

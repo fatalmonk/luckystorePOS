@@ -1,0 +1,58 @@
+name: Daily Competitor Price Scraper
+
+on:
+  schedule:
+    # 2 AM Bangladesh time (UTC+6) = 8 PM UTC previous day
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/scraper/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: apps/scraper
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+      
+      - name: Run Chaldal scraper
+        working-directory: apps/scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scrape-chaldal.js --supabase
+      
+      - name: Run Shwapno scraper
+        working-directory: apps/scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scrape-shwapno.js --supabase
+      
+      - name: Run AamaderBazar scraper
+        working-directory: apps/scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scrape-aamaderbazar.js --supabase
+      
+      - name: Check price alerts
+        working-directory: apps/scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ALERT_THRESHOLD: '0.15'
+        run: node check-price-alerts.js
