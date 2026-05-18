@@ -1,14 +1,15 @@
 # Lucky Store POS Flutter
 Stack: Flutter, Dart, Supabase, sqflite, Riverpod
-Current: Inventory catalogue screen complete
+Current: Dedupe duplicate expenses fixed & pushed to PR #88
 Done:
-  - Product model with MRP/selling price logic
-  - Inventory providers (products, category filter, search)
-  - CategoryTabs widget with horizontal scroll
-  - ProductGridCard with MRP strikethrough, discount badge, stock status
-  - InventoryCatalogueScreen with search + grid
+  - Inventory catalogue screen, product grid, category tabs, search
+  - Production stabilization: RLS policies, analyze errors, LedgerPage fix
+  - Dedupe migration: fixed UUID MIN(), schema-correct columns
+  - Migration executed on Supabase via Management API
+  - Secrets stored in .env.secrets
+  - Fixed duplicate expenses migration: deleted dups by store+date+vendor+desc+amount
 Blockers: None
-Next: Wire inventory screen to navigation, test product loading
+Next: Verify PR #88 CI passes
 
 ---
-ctx: 2025-05-17 - Inventory catalogue grid complete
+ctx: dedupe migation fixed & pushed | done: 12 | next: verify PR #87 CI
