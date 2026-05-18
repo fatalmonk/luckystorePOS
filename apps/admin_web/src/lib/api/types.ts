@@ -271,3 +271,44 @@ export interface StaffPerformanceItem {
   active_days: number;
   revenue_per_day: number;
 }
+
+// =============================================================================
+// Competitor Price Domain Types
+// Aligned with public.competitor_prices table
+// =============================================================================
+
+export interface CompetitorPrice {
+  id: string;
+  item_id: string;
+  item_name?: string;  // joined from items
+  sku?: string;        // joined from items
+  competitor_name: string;
+  competitor_price: number;
+  competitor_url: string | null;
+  scraped_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PriceAlert {
+  product_id: string;
+  product_name: string;
+  our_price: number;
+  market_avg_price: number;
+  price_gap_percent: number;
+  competitors: string[];
+}
+
+export interface CompetitorPriceFormData {
+  item_id: string;
+  competitor_name: string;
+  competitor_price: number;
+  competitor_url?: string;
+}
+
+export type CompetitorPriceFilters = {
+  itemId?: string;
+  competitorName?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};

@@ -27,6 +27,7 @@ dependencies:
   flutter_thermal_printer: ^1.2.1+1
   esc_pos_utils_plus: ^2.0.3
   flutter_blue_plus: ^1.31.0
+  # speech_to_text: ^6.6.2      # DISABLED: incompatible with Flutter 3.29+
   csv: ^6.0.0
   excel: ^4.0.3
   fl_chart: ^1.2.0
@@ -37,7 +38,7 @@ dependencies:
   webview_flutter: ^4.8.0        # Google Maps address selection
   workmanager: ^0.7.0
   path: ^1.9.0
-
+  shared_preferences: ^2.2.2
 
   meta: any
 dev_dependencies:

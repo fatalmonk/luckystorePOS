@@ -6,6 +6,7 @@ void main() {
     // Complex app initialization is tested in integration tests
 
     expect(1 + 1, equals(2)); // Basic sanity check
-    test('arithmetic works', () => expect(2 + 2, equals(4)));
   });
+
+  test('arithmetic works', () => expect(2 + 2, equals(4)));
 }

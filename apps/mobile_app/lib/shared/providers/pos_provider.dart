@@ -593,11 +593,57 @@ class PosProvider extends ChangeNotifier {
 
   // ── Stock adjustment ───────────────────────────────────────────────────────
 
-  Future<void> adjustStock(String itemId, int delta) async {
-    await _supabase.rpc('adjust_stock', params: {
-      'p_item_id': itemId,
-      'p_delta': delta,
-    });
+  /// Adjust stock with fraud protection (5% threshold)
+  /// Returns: success, requiresManagerAuth, or error
+  Future<Map<String, dynamic>> adjustStock({
+    required String itemId,
+    required int delta,
+    String reason = 'correction',
+    String? notes,
+    String? managerPin,
+  }) async {
+    final storeId = _storeId;
+    if (storeId == null) {
+      return {'success': false, 'error': 'No store selected'};
+    }
+
+    try {
+      final response = await _supabase.functions.invoke(
+        'adjust-stock',
+        body: {
+          'store_id': storeId,
+          'item_id': itemId,
+          'delta': delta,
+          'reason': reason,
+          'notes': notes,
+          'manager_pin': managerPin,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>?;
+
+      if (response.status != 200) {
+        final errorCode = data?['error_code'] as String?;
+        final errorMsg = data?['error'] as String? ?? 'Stock adjustment failed';
+        
+        return {
+          'success': false,
+          'error': errorMsg,
+          'error_code': errorCode,
+          'requires_manager_auth': errorCode == 'MANAGER_AUTH_REQUIRED',
+        };
+      }
+
+      return {
+        'success': true,
+        'data': data,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
   }
 
   // ── Cash closing ─────────────────────────────────────────────────────
