@@ -194,8 +194,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 transition-opacity"
-        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity z-40"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -203,10 +202,10 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
       {/* Drawer Panel */}
       <div
         ref={drawerRef}
-        className="relative ml-auto w-full max-w-[450px] h-full bg-surface-default shadow-lg flex flex-col"
+        className="relative ml-auto w-full max-w-[450px] h-full bg-white shadow-2xl flex flex-col z-50 border-l border-slate-200"
       >
         {/* Header */}
-        <header className="flex justify-between items-start mb-8">
+        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
           <div>
             <h2
               id="stock-drawer-title"
@@ -228,7 +227,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 flex-1 overflow-y-auto"
+          className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-slate-50/50"
         >
           {/* Mode Selection */}
           <div className="grid grid-cols-3 gap-2" role="group" aria-label="Stock adjustment mode">
