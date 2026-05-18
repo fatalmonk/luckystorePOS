@@ -1,4 +1,5 @@
 import { ShoppingCart, Trash2, Minus, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { CartItem } from '../../lib/api/types';
 
 interface CartPanelProps {
@@ -73,58 +74,12 @@ export function CartPanel({
         ) : (
           <ul role="list" className="space-y-3">
             {cart.map((item) => (
-              <li
+              <CartItemRow
                 key={item.product.id}
-                className="billing-item flex items-center gap-3 p-3 bg-surface-default border border-border-default rounded-md"
-              >
-                <div className="billing-item-info flex-1 min-w-0">
-                  <div className="billing-item-name text-text-primary font-medium truncate">
-                    {item.product.name}
-                  </div>
-                  <div className="billing-item-price text-text-secondary text-sm">
-                    ৳{item.product.price.toFixed(2)} × {item.qty}
-                  </div>
-                </div>
-
-                {/* Quantity Controls */}
-                <div className="billing-item-controls flex items-center gap-2">
-                  <button
-                    onClick={() => onUpdateQty(item.product.id, Math.max(1, item.qty - 1))}
-                    className="button-outline flex items-center justify-center w-8 h-8 p-0"
-                    aria-label={`Decrease quantity of ${item.product.name}`}
-                  >
-                    <Minus size={16} />
-                  </button>
-
-                  <span
-                    className="text-text-primary font-medium min-w-[2rem] text-center"
-                    aria-live="polite"
-                  >
-                    {item.qty}
-                  </span>
-
-                  <button
-                    onClick={() => onUpdateQty(item.product.id, item.qty + 1)}
-                    className="button-outline flex items-center justify-center w-8 h-8 p-0"
-                    aria-label={`Increase quantity of ${item.product.name}`}
-                  >
-                    <Plus size={16} />
-                  </button>
-
-                  <button
-                    onClick={() => onRemoveFromCart(item.product.id)}
-                    className="text-danger-default hover:text-danger-dark hover:bg-danger-subtle rounded-md p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-danger-default focus:ring-offset-2"
-                    aria-label={`Remove ${item.product.name} from cart`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-
-                {/* Line Total */}
-                <div className="billing-item-total text-text-primary font-semibold min-w-[80px] text-right">
-                  ৳{item.lineTotal.toFixed(2)}
-                </div>
-              </li>
+                item={item}
+                onUpdateQty={onUpdateQty}
+                onRemoveFromCart={onRemoveFromCart}
+              />
             ))}
           </ul>
         )}
@@ -134,7 +89,7 @@ export function CartPanel({
       <div className="billing-summary border-t border-border-default pt-4 mt-4">
         <div className="billing-row flex justify-between items-center py-2">
           <span className="text-text-secondary">Sub Total</span>
-          <span className="text-text-primary font-medium">৳{subtotal.toFixed(2)}</span>
+          <AnimatedAmount value={subtotal} />
         </div>
 
         {/* Discount Input */}
@@ -162,7 +117,7 @@ export function CartPanel({
                 <button
                   type="button"
                   onClick={() => onSetDiscountType('amount')}
-                  className={`px-3 py-2 text-sm font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default ${
+                  className={`px-3 py-2 text-sm font-bold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-default active:scale-95 ${
                     discountType === 'amount'
                       ? 'bg-primary-default text-primary-on'
                       : 'bg-surface-default text-text-secondary hover:bg-background-subtle'
@@ -175,7 +130,7 @@ export function CartPanel({
                 <button
                   type="button"
                   onClick={() => onSetDiscountType('percentage')}
-                  className={`px-3 py-2 text-sm font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default ${
+                  className={`px-3 py-2 text-sm font-bold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-default active:scale-95 ${
                     discountType === 'percentage'
                       ? 'bg-primary-default text-primary-on'
                       : 'bg-surface-default text-text-secondary hover:bg-background-subtle'
@@ -197,13 +152,13 @@ export function CartPanel({
         <div className="billing-total flex justify-between items-center py-3 border-t border-border-default mt-3">
           <span className="text-text-primary font-semibold">Total Amount</span>
           <span className="text-success-dark font-bold text-lg">
-            ৳{totalAmount.toFixed(2)}
+            <AnimatedAmount value={totalAmount} />
           </span>
         </div>
 
         {/* Continue Button */}
         <button
-          className="button-primary w-full mt-4 py-3 px-4 bg-primary-default text-primary-on font-semibold rounded-md hover:bg-primary-hover disabled:bg-text-muted disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+          className="button-primary w-full mt-4 py-3 px-4 bg-primary-default text-primary-on font-semibold rounded-md hover:bg-primary-hover disabled:bg-text-muted disabled:cursor-not-allowed transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2 active:scale-[0.98]"
           onClick={onContinueBilling}
           disabled={isDisabled}
           aria-busy={isProcessing}
@@ -219,5 +174,108 @@ export function CartPanel({
         </button>
       </div>
     </>
+  );
+}
+
+// Animated cart item row with highlight on quantity change
+function CartItemRow({ 
+  item, 
+  onUpdateQty, 
+  onRemoveFromCart 
+}: { 
+  item: CartItem; 
+  onUpdateQty: (id: string, qty: number) => void;
+  onRemoveFromCart: (id: string) => void;
+}) {
+  const [isUpdated, setIsUpdated] = useState(false);
+
+  useEffect(() => {
+    setIsUpdated(true);
+    const timer = setTimeout(() => setIsUpdated(false), 300);
+    return () => clearTimeout(timer);
+  }, [item.qty]);
+
+  return (
+    <li
+      className={`
+        billing-item flex items-center gap-3 p-3 rounded-md
+        transition-all duration-200
+        ${isUpdated ? 'bg-primary-subtle ring-1 ring-primary-default' : 'bg-surface-default border border-border-default'}
+      `}
+    >
+      <div className="billing-item-info flex-1 min-w-0">
+        <div className="billing-item-name text-text-primary font-medium truncate">
+          {item.product.name}
+        </div>
+        <div className="billing-item-price text-text-secondary text-sm">
+          ৳{item.product.price.toFixed(2)} × {item.qty}
+        </div>
+      </div>
+
+      {/* Quantity Controls */}
+      <div className="billing-item-controls flex items-center gap-2">
+        <button
+          onClick={() => onUpdateQty(item.product.id, Math.max(1, item.qty - 1))}
+          className="button-outline flex items-center justify-center w-8 h-8 p-0 transition-transform duration-100 active:scale-95"
+          aria-label={`Decrease quantity of ${item.product.name}`}
+        >
+          <Minus size={16} />
+        </button>
+
+        <span
+          className="text-text-primary font-medium min-w-[2rem] text-center transition-all duration-200"
+          aria-live="polite"
+        >
+          {item.qty}
+        </span>
+
+        <button
+          onClick={() => onUpdateQty(item.product.id, item.qty + 1)}
+          className="button-outline flex items-center justify-center w-8 h-8 p-0 transition-transform duration-100 active:scale-95"
+          aria-label={`Increase quantity of ${item.product.name}`}
+        >
+          <Plus size={16} />
+        </button>
+
+        <button
+          onClick={() => onRemoveFromCart(item.product.id)}
+          className="text-danger-default hover:text-danger-dark hover:bg-danger-subtle rounded-md p-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-danger-default focus:ring-offset-2 active:scale-95"
+          aria-label={`Remove ${item.product.name} from cart`}
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      {/* Line Total */}
+      <div className="billing-item-total min-w-[80px] text-right">
+        <AnimatedAmount value={item.lineTotal} className="font-semibold text-text-primary" />
+      </div>
+    </li>
+  );
+}
+
+// Animated amount that highlights when it changes
+function AnimatedAmount({ value, className }: { value: number; className?: string }) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  useEffect(() => {
+    if (value !== displayValue) {
+      setIsFlashing(true);
+      setDisplayValue(value);
+      setTimeout(() => setIsFlashing(false), 300);
+    }
+  }, [value, displayValue]);
+
+  return (
+    <span 
+      className={`
+        tabular-nums transition-all duration-200
+        ${isFlashing ? 'text-success scale-105 font-bold text-lg' : ''}
+        ${className || ''}
+      `}
+    >
+      ৳{displayValue.toFixed(2)}
+    </span>
   );
 }

@@ -22,6 +22,7 @@ Overhaul UI per use cases #1-4
 - Command bar: search + category dropdown + status filter + segmented Grid/List toggle
 - Product shelf cards: vertical layout, 1:1 image area, status pills, Update Stock buttons
 - Inventory list table: sticky header, clean rows, status pills, actions with overflow menu
+- Purposeful motion: card hover (translateY -2px), button press (scale 0.98), skeleton loaders, animated KPIs, toast notifications with product highlight
 
 ## Decisions
 - Theme: light primary, dark optional via ThemeProvider
@@ -43,4 +44,4 @@ Overhaul UI per use cases #1-4
 Phase 2: Dashboard data binding (Flutter)
 
 ---
-ctx: inventory list table complete | done: 15 | next: commit and push
+ctx: purposeful motion UI complete | done: 16 | next: commit and push
