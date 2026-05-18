@@ -16,6 +16,7 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
+import { InventoryListTable } from '../../components/inventory/InventoryListTable';
 
 interface InventoryItem {
   id: string;
@@ -293,7 +294,7 @@ export function InventoryListPage() {
         </div>
       </Card>
 
-      {/* Content */}
+      {/* Content - Product Shelf Grid or List Table */}
       {viewMode === 'grid' && !isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
           {filteredItems.map((item: InventoryItem) => (
@@ -356,6 +357,14 @@ export function InventoryListPage() {
             </Card>
           ))}
         </div>
+      ) : viewMode === 'list' && !isLoading ? (
+        <InventoryListTable
+          items={filteredItems}
+          onUpdateStock={setAdjustingProduct}
+          onViewHistory={(item) => console.log('View history', item)}
+          onEditProduct={(item) => console.log('Edit', item)}
+          onDelete={(item) => console.log('Delete', item)}
+        />
       ) : (
         <DataTable
           columns={columns}
