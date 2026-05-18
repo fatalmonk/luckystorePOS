@@ -110,30 +110,25 @@ WHERE a.idempotency_key = b.idempotency_key
   AND a.ctid != b.ctid;
 
 -- ============================================
--- 8. SALE_SYNC_CONFLICTS (check for duplicate sale_id)
+-- 8. SALE_SYNC_CONFLICTS (check for duplicate client_transaction_id per store)
 -- ============================================
 DELETE FROM public.sale_sync_conflicts a
 USING (
-    SELECT MIN(id::text) as keep_id, sale_id
+    SELECT MIN(id::text) as keep_id, client_transaction_id, store_id, conflict_type
     FROM public.sale_sync_conflicts
-    GROUP BY sale_id
+    GROUP BY client_transaction_id, store_id, conflict_type
     HAVING COUNT(*) > 1
 ) b
-WHERE a.sale_id = b.sale_id
+WHERE a.client_transaction_id = b.client_transaction_id
+  AND a.store_id = b.store_id
+  AND a.conflict_type = b.conflict_type
   AND a.id::text != b.keep_id;
 
 -- ============================================
--- 9. LEDGER_POSTING_IDEMPOTENCY (should be unique by sale_id)
+-- 9. LEDGER_POSTING_IDEMPOTENCY (PK is sale_id, no id column; no dedupe needed — PK already enforces uniqueness)
 -- ============================================
-DELETE FROM public.ledger_posting_idempotency a
-USING (
-    SELECT MIN(id::text) as keep_id, sale_id
-    FROM public.ledger_posting_idempotency
-    GROUP BY sale_id
-    HAVING COUNT(*) > 1
-) b
-WHERE a.sale_id = b.sale_id
-  AND a.id::text != b.keep_id;
+-- ledger_posting_idempotency has sale_id as PRIMARY KEY, so duplicates cannot exist.
+-- No dedupe required.
 
 -- Add comments
 COMMENT ON TABLE public.items IS 'Products/items - deduplicated on barcode+tenant';
