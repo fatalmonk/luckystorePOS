@@ -165,74 +165,74 @@ export function InventoryListTable({
 
                     {/* Actions */}
                     <td className="px-4 py-4">
-                      &lt;div className="flex items-center justify-end gap-2"&gt;
-                        &lt;button
+                      <div className="flex items-center justify-end gap-2">
+                        <button
                           onClick={() => onUpdateStock(item)}
                           className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                           title="Update Stock"
-                        &gt;
-                          &lt;ArrowUpDown size={16} /&gt;
-                        &lt;/button&gt;
+                        >
+                          <ArrowUpDown size={16} />
+                        </button>
 
-                        &lt;div className="relative"&gt;
-                          &lt;button
+                        <div className="relative">
+                          <button
                             onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
                             className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                          &gt;
-                            &lt;MoreVertical size={16} /&gt;
-                          &lt;/button&gt;
+                          >
+                            <MoreVertical size={16} />
+                          </button>
 
                           {openMenuId === item.id && (
                             <>
-                              &lt;div
+                              <div
                                 className="fixed inset-0 z-40"
                                 onClick={() => setOpenMenuId(null)}
-                              /&gt;
-                              &lt;div className="absolute right-0 bottom-full mb-1 w-40 bg-white rounded-lg border border-slate-200 shadow-lg z-50 py-1"&gt;
-                                &lt;button
+                              />
+                              <div className="absolute right-0 bottom-full mb-1 w-40 bg-white rounded-lg border border-slate-200 shadow-lg z-50 py-1">
+                                <button
                                   onClick={() => {
                                     onViewHistory?.(item);
                                     setOpenMenuId(null);
                                   }}
                                   className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                                &gt;
-                                  &lt;History size={14} /&gt;
+                                >
+                                  <History size={14} />
                                   View History
-                                &lt;/button&gt;
-                                &lt;button
+                                </button>
+                                <button
                                   onClick={() => {
                                     onEditProduct?.(item);
                                     setOpenMenuId(null);
                                   }}
                                   className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                                &gt;
-                                  &lt;Pencil size={14} /&gt;
+                                >
+                                  <Pencil size={14} />
                                   Edit Product
-                                &lt;/button&gt;
-                                &lt;hr className="my-1 border-slate-100" /&gt;
-                                &lt;button
+                                </button>
+                                <hr className="my-1 border-slate-100" />
+                                <button
                                   onClick={() => {
                                     onDelete?.(item);
                                     setOpenMenuId(null);
                                   }}
                                   className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                &gt;
-                                  &lt;Trash2 size={14} /&gt;
+                                >
+                                  <Trash2 size={14} />
                                   Delete
-                                &lt;/button&gt;
-                              &lt;/div&gt;
+                                </button>
+                              </div>
                             </>
                           )}
-                        &lt;/div&gt;
-                      &lt;/div&gt;
-                    &lt;/td&gt;
-                  &lt;/tr&gt;
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 );
               })
             )}
-          &lt;/tbody&gt;
-        &lt;/table&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
