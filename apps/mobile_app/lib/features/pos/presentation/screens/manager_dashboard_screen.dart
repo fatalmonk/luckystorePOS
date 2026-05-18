@@ -127,52 +127,6 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           _recentSessions =
               statsResp['recent_sessions'] as List<dynamic>? ?? [];
           _salesTrend = statsResp['sales_trend'] as List<dynamic>? ?? [];
-
-          // Fallback mockup if RPC hasn't been updated yet:
-          if (_salesTrend.isEmpty) {
-            _salesTrend = [
-              {
-                'date': DateTime.now()
-                    .subtract(const Duration(days: 6))
-                    .toIso8601String(),
-                'sales': _stats['today_sales'] * 0.5
-              },
-              {
-                'date': DateTime.now()
-                    .subtract(const Duration(days: 5))
-                    .toIso8601String(),
-                'sales': _stats['today_sales'] * 0.7
-              },
-              {
-                'date': DateTime.now()
-                    .subtract(const Duration(days: 4))
-                    .toIso8601String(),
-                'sales': _stats['today_sales'] * 0.4
-              },
-              {
-                'date': DateTime.now()
-                    .subtract(const Duration(days: 3))
-                    .toIso8601String(),
-                'sales': _stats['today_sales'] * 0.9
-              },
-              {
-                'date': DateTime.now()
-                    .subtract(const Duration(days: 2))
-                    .toIso8601String(),
-                'sales': _stats['today_sales'] * 1.2
-              },
-              {
-                'date': DateTime.now()
-                    .subtract(const Duration(days: 1))
-                    .toIso8601String(),
-                'sales': _stats['today_sales'] * 0.8
-              },
-              {
-                'date': DateTime.now().toIso8601String(),
-                'sales': _stats['today_sales']
-              },
-            ];
-          }
           _offlineStats =
               OfflineTransactionSyncService.instance.dashboardStats();
           _syncTelemetry = OfflineTransactionSyncService.instance.telemetry;

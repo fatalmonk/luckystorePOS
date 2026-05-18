@@ -14,6 +14,10 @@ Overhaul UI per use cases #1-4
 - Search bar debounced: 300ms delay to reduce RPC calls
 - Expense duplicate submission fixed: added isPending checks to all mutations
 - Expense delete/update fixed: added RLS policies for DELETE/UPDATE
+- POS screen rewritten with responsive layout, cart panel, offline queue
+- Vercel build command fixed for landing/ folder
+- UI: transparent drawer/modal backdrops fixed via inline styles
+- Dashboard: removed sales trend mockup fallback, now shows real data or empty state
 
 ## Decisions
 - Theme: light primary, dark optional via ThemeProvider
@@ -24,7 +28,7 @@ Overhaul UI per use cases #1-4
 - One task per Hermes session; images = analyze-only
 
 ## Blockers
-- Dashboard zero data binding
+- Dashboard zero data binding ⚠️ PARTIAL: RPC exists, mockup removed
 - Inventory no product catalogue
 - No Bengali translation UI
 - No payment method selector (cash/bKash/card/credit)
@@ -35,4 +39,4 @@ Overhaul UI per use cases #1-4
 Phase 2: Dashboard data binding (Flutter)
 
 ---
-ctx: expense issues resolved | done: 7 | next: Phase 2 dashboard data binding
+ctx: dashboard data binding | done: 11 | next: dashboard empty state UX or Phase 3
