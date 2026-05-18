@@ -17,7 +17,7 @@ import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 import { InventoryListTable } from '../../components/inventory/InventoryListTable';
-import './InventoryPage.css';
+
 interface InventoryItem {
   id: string;
   name: string;
