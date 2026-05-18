@@ -19,6 +19,9 @@ Web admin inventory UI complete — awaiting next task
 - Product shelf cards: 1:1 image, status pills, Update Stock button
 - Inventory list table: sticky header, status pills, overflow menu actions
 - Dashboard sales trend: removed mockup fallback, use real RPC data
+- Vercel build: fixed JSX entities, added i18next deps
+- Categories RLS: restored permissive SELECT policy (was blocking 22 categories)
+- Stock update drawer: solid backdrop (slate-900/60), white bg, proper shadows/z-index
 
 ## Blockers
 None
@@ -27,4 +30,4 @@ None
 Apply duplicate removal migrations via `supabase db push`
 
 ---
-ctx: UI overhaul complete | done: 11 | next: migrate dedupe
+ctx: drawer visual fix | done: 13 | next: migrate dedupe
