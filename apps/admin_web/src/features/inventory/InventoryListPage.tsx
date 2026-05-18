@@ -25,6 +25,7 @@ interface InventoryItem {
   reorder_status: 'OK' | 'LOW' | 'OUT';
   last_updated?: string;
   price?: number;
+  mrp?: number;
   category_id?: string;
   image_url?: string;
 }
@@ -115,9 +116,12 @@ export function InventoryListPage() {
       header: 'Value',
       accessor: 'price',
       render: (_, row) => (
-        <span className="font-mono text-text-primary">
-          ৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-        </span>
+        <div className="font-mono text-text-primary">
+          <span>৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+          {row.mrp && row.mrp > 0 && (
+            <span className="block text-xs text-text-muted">MRP: ৳{row.mrp}</span>
+          )}
+        </div>
       ),
     },
     {
@@ -329,9 +333,16 @@ export function InventoryListPage() {
                   <span className="text-base font-bold font-mono text-text-primary">
                     {item.current_qty}
                   </span>
-                  <span className="text-xs text-text-muted font-mono">
-                    ৳{((item.price || 0) * item.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-xs text-text-muted font-mono">
+                      ৳{((item.price || 0) * item.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </span>
+                    {item.mrp && item.mrp > 0 && (
+                      <span className="block text-xs text-text-secondary">
+                        MRP: ৳{item.mrp}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <Button
                   size="sm"
