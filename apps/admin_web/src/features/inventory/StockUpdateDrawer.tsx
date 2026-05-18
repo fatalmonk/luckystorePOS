@@ -10,6 +10,8 @@ interface StockUpdateDrawerProps {
   product: any | null;
   storeId: string;
   onClose: () => void;
+  /** Called with product name after successful update, for highlighting parent card */
+  onSuccess?: (productName: string) => void;
 }
 
 const reasons = [
@@ -21,7 +23,7 @@ const reasons = [
   { value: 'other', label: 'Manual fix' },
 ];
 
-export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDrawerProps) {
+export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: StockUpdateDrawerProps) {
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<'add' | 'remove' | 'set'>('add');
@@ -137,7 +139,10 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
       if (res.is_duplicate) {
         notify('This update was already processed.', 'info');
       } else {
-        notify('Stock updated successfully.', 'success');
+        // Show toast with product name instead of generic message
+        notify(`Stock updated for ${product.name}`, 'success');
+        // Trigger highlight callback
+        onSuccess?.(product.name);
       }
       queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
       onClose();
@@ -194,7 +199,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 transition-opacity"
+        className="fixed inset-0 transition-opacity animate-fadeIn"
         style={{ backgroundColor: 'var(--color-surface-overlay)' }}
         onClick={onClose}
         aria-hidden="true"
@@ -203,10 +208,10 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
       {/* Drawer Panel */}
       <div
         ref={drawerRef}
-        className="relative ml-auto w-full max-w-[450px] h-full bg-surface-default shadow-lg flex flex-col"
+        className="relative ml-auto w-full max-w-[450px] h-full bg-surface-default shadow-lg flex flex-col animate-slideInRight"
       >
         {/* Header */}
-        <header className="flex justify-between items-start mb-8">
+        <header className="flex justify-between items-start mb-8 p-4">
           <div>
             <h2
               id="stock-drawer-title"
@@ -228,7 +233,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 flex-1 overflow-y-auto"
+          className="flex flex-col gap-6 flex-1 overflow-y-auto px-4"
         >
           {/* Mode Selection */}
           <div className="grid grid-cols-3 gap-2" role="group" aria-label="Stock adjustment mode">
@@ -236,7 +241,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               type="button"
               onClick={() => setMode('add')}
               className={clsx(
-                'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                'flex flex-col items-center gap-1 p-3 rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
                 mode === 'add'
                   ? `${modeColors.add.bg} ${modeColors.add.text} border-${modeColors.add.border} focus:ring-success-default`
                   : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
@@ -251,7 +256,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               type="button"
               onClick={() => setMode('remove')}
               className={clsx(
-                'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                'flex flex-col items-center gap-1 p-3 rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
                 mode === 'remove'
                   ? `${modeColors.remove.bg} ${modeColors.remove.text} border-${modeColors.remove.border} focus:ring-danger-default`
                   : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
@@ -266,7 +271,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               type="button"
               onClick={() => setMode('set')}
               className={clsx(
-                'flex flex-col items-center gap-1 p-3 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                'flex flex-col items-center gap-1 p-3 rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
                 mode === 'set'
                   ? `${modeColors.set.bg} ${modeColors.set.text} border-${modeColors.set.border} focus:ring-primary-default`
                   : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
@@ -377,7 +382,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
               required
               min={0}
-              className="w-full px-3 py-3 text-xl font-bold text-center rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent"
+              className="w-full px-3 py-3 text-xl font-bold text-center rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200"
             />
           </div>
 
@@ -394,7 +399,7 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
-              className="w-full px-3 py-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent"
+              className="w-full px-3 py-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200"
             >
               {reasons.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -418,16 +423,16 @@ export function StockUpdateDrawer({ product, storeId, onClose }: StockUpdateDraw
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Broken during handling"
               rows={4}
-              className="w-full px-3 py-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent resize-none"
+              className="w-full px-3 py-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent resize-none transition-all duration-200"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="mt-auto pt-8">
+          <div className="mt-auto pt-8 pb-4">
             <button
               type="submit"
               disabled={adjustmentMutation.isPending}
-              className="w-full py-3 px-4 bg-primary-default text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-primary-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+              className="w-full py-3 px-4 bg-primary-default text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-primary-hover active:scale-[0.98] transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
               aria-busy={adjustmentMutation.isPending}
             >
               <Save size={18} />

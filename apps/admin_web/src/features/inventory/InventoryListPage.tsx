@@ -16,6 +16,8 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
+import { ProductCardSkeletonGrid } from '../../components/Skeleton';
+import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
 
 interface InventoryItem {
   id: string;
@@ -36,6 +38,7 @@ export function InventoryListPage() {
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', storeId],
@@ -205,26 +208,31 @@ export function InventoryListPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           title="Total SKUs"
-          value={stats.total}
+          value={<AnimatedMetric value={stats.total} duration={800} />}
           icon={<Package size={20} />}
           color="primary"
         />
         <MetricCard
           title="Low Stock"
-          value={stats.lowStock}
+          value={<AnimatedMetric value={stats.lowStock} duration={800} />}
           icon={<AlertTriangle size={20} />}
           color="warning"
           badge={stats.lowStock > 0 ? 'Reorder' : undefined}
         />
         <MetricCard
           title="Out of Stock"
-          value={stats.outOfStock}
+          value={<AnimatedMetric value={stats.outOfStock} duration={800} />}
           icon={<TrendingDown size={20} />}
           color="danger"
         />
         <MetricCard
           title="Inventory Value"
-          value={`৳${stats.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+          value={<AnimatedMetric 
+            value={stats.totalValue} 
+            prefix="৳" 
+            duration={800} 
+            format
+          />}
           icon={<DollarSign size={20} />}
           color="success"
         />
@@ -290,10 +298,18 @@ export function InventoryListPage() {
       </Card>
 
       {/* Content */}
-      {viewMode === 'grid' && !isLoading ? (
+      {isLoading && viewMode === 'grid' ? (
+        <ProductCardSkeletonGrid count={10} />
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
           {filteredItems.map((item: InventoryItem) => (
-            <Card key={item.id} padding="none" className="overflow-hidden group cursor-pointer hover:shadow-level-2 transition-shadow">
+            <Card 
+              key={item.id} 
+              padding="none" 
+              className="overflow-hidden group cursor-pointer"
+              highlight={highlightedProductId === item.id}
+              highlightColor="emerald"
+            >
               {/* Image / Status color bar */}
               <div className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden">
                 {item.image_url ? (
@@ -349,6 +365,7 @@ export function InventoryListPage() {
         <DataTable
           columns={columns}
           data={filteredItems}
+          isLoading={isLoading}
           emptyMessage="No inventory items found. Add products to start tracking stock levels."
         />
       )}
@@ -356,7 +373,17 @@ export function InventoryListPage() {
       <StockUpdateDrawer
         product={adjustingProduct}
         storeId={storeId}
-        onClose={() => setAdjustingProduct(null)}
+        onClose={() => {
+          setAdjustingProduct(null);
+          setHighlightedProductId(null);
+        }}
+        onSuccess={(productName) => {
+          // Find product id by name and trigger highlight
+          const updated = inventory?.find((p: InventoryItem) => p.name === productName);
+          if (updated) {
+            setHighlightedProductId(updated.id);
+          }
+        }}
       />
     </div>
   );

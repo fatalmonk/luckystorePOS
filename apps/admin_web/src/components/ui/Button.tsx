@@ -41,9 +41,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
           ref={ref}
           className={clsx(
-            'inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+            'inline-flex items-center justify-center font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2',
             variantClasses[variant],
             sizeClasses[size],
+            // Press animation: scale down on active
+            'active:scale-[0.98] active:transition-transform duration-100',
             {
               'opacity-50 cursor-not-allowed': disabled || loading,
               'pointer-events-none': loading,
