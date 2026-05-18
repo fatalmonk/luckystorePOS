@@ -17,7 +17,11 @@ Overhaul UI per use cases #1-4
 - POS screen rewritten with responsive layout, cart panel, offline queue
 - Vercel build command fixed for landing/ folder
 - UI: transparent drawer/modal backdrops fixed via inline styles
-- Dashboard: removed sales trend mockup fallback, now shows real data or empty state
+- Dashboard: removed sales trend mockup fallback, now shows real data or empty state → committed f17e3e5
+- Metric cards: 4 horizontal cards with semantic colors (amber/red/emerald/slate)
+- Command bar: search + category dropdown + status filter + segmented Grid/List toggle
+- Product shelf cards: vertical layout, 1:1 image area, status pills, Update Stock buttons
+- Inventory list table: sticky header, clean rows, status pills, actions with overflow menu
 
 ## Decisions
 - Theme: light primary, dark optional via ThemeProvider
@@ -39,4 +43,4 @@ Overhaul UI per use cases #1-4
 Phase 2: Dashboard data binding (Flutter)
 
 ---
-ctx: dashboard data binding | done: 11 | next: dashboard empty state UX or Phase 3
+ctx: inventory list table complete | done: 15 | next: commit and push
