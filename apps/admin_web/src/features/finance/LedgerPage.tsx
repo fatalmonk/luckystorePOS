@@ -160,8 +160,8 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             >
               <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
               <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
-              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: p.current_balance > 0 ? balanceColorPositive : 'var(--color-success)' }}>
-                ৳ {p.current_balance.toLocaleString()}
+              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: (p.current_balance ?? 0) > 0 ? balanceColorPositive : 'var(--color-success)' }}>
+                ৳ {(p.current_balance ?? 0).toLocaleString()}
               </div>
               <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
                 {balanceLabel}
