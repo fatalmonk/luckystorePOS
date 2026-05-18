@@ -1,5 +1,6 @@
 import { ShoppingCart } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useEffect, useState } from 'react';
 import type { PosProduct } from '../../lib/api/types';
 
 interface ProductCardProps {
@@ -26,10 +27,15 @@ const getAvatarColor = (name: string) => {
 
 export function ProductCard({ product, onAddToCart, isFocused, onFocus }: ProductCardProps) {
   const isOutOfStock = product.stock <= 0;
+  // Flash animation when added to cart
+  const [isAdded, setIsAdded] = useState(false);
 
   const handleClick = () => {
     if (!isOutOfStock) {
       onAddToCart(product);
+      // Trigger flash animation
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 400);
     }
   };
 
@@ -44,7 +50,18 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
     <div
       className={clsx(
         'product-card',
-        isFocused && 'ring-2 ring-primary-default ring-offset-2'
+        // Focus styles
+        isFocused && 'ring-2 ring-primary-default ring-offset-2',
+        // Flash animation when added
+        isAdded && 'animate-flash-success',
+        // Hover lift effect for POS cards
+        !isOutOfStock && [
+          'hover:-translate-y-0.5',
+          'hover:shadow-level-2',
+          'hover:border-border-strong',
+          'transition-all duration-200 ease-out'
+        ],
+        isOutOfStock && 'opacity-60 cursor-not-allowed'
       )}
       role="button"
       tabIndex={0}
@@ -75,14 +92,19 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
       <button
         className={clsx(
           'button-primary w-full mt-2',
+          'active:scale-[0.98]', // Button press animation
+          'transition-transform duration-100',
           isOutOfStock && 'opacity-50 cursor-not-allowed'
         )}
-        onClick={handleClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClick();
+        }}
         disabled={isOutOfStock}
         aria-label={isOutOfStock ? 'Out of stock' : `Add ${product.name} to cart`}
       >
         <ShoppingCart size={16} className="mr-2 inline" aria-hidden="true" />
-        {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+        {isOutOfStock ? 'Out of Stock' : isAdded ? 'Added!' : 'Add to Cart'}
       </button>
     </div>
   );
