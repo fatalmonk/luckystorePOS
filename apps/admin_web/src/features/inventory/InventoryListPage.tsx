@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
 import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, DollarSign, LayoutGrid, List as ListIcon, Download } from 'lucide-react';
 import { downloadCSV } from '../../lib/format';
-import { StockUpdateDrawer } from './StockUpdateDrawer';
+import { StockUpdateDrawer } from './ProductUpdateDrawer';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { useDebounce } from '../../hooks/useDebounce';
