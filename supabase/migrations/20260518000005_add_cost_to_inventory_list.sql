@@ -19,7 +19,7 @@ RETURNS TABLE(
     mrp numeric,
     barcode text,
     image_url text
-LANGUAGE plpgsql
+) LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path TO 'public', 'pg_temp'
