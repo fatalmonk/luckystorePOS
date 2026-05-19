@@ -19,6 +19,7 @@ import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 import { ProductCardSkeletonGrid } from '../../components/Skeleton';
 import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
 import { InventoryListTable } from '../../components/inventory/InventoryListTable';
+import { InventoryProductCard } from './InventoryProductCard';
 
 interface InventoryItem {
   id: string;
@@ -346,76 +347,13 @@ export function InventoryListPage() {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mb-6">
           {filteredItems.map((item: InventoryItem) => (
-            <Card 
-              key={item.id} 
-              padding="none" 
-              className="overflow-hidden group cursor-pointer"
-              highlight={highlightedProductId === item.id}
-              highlightColor="emerald"
-            >
-              {/* Image / Status color bar */}
-              <div className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-text-muted">
-                    <Package size={40} className="mb-2 opacity-40" />
-                    <span className="text-xs">No image</span>
-                  </div>
-                )}
-                <div className="absolute top-2 right-2">
-                  <Badge
-                    variant={
-                      item.reorder_status === 'OUT' ? 'danger' :
-                      item.reorder_status === 'LOW' ? 'warning' : 'success'
-                    }
-                    className="text-[10px] px-2 py-0.5 font-bold"
-                  >
-                    {item.reorder_status}
-                  </Badge>
-                </div>
-              </div>
-              <div className="p-3 flex flex-col gap-1.5">
-                {/* Name - truncated with tooltip */}
-                <h4 
-                  className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight"
-                  title={item.name}
-                >
-                  {item.name}
-                </h4>
-                {/* 4 critical pts: Image, Name, Stock, Price */}
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase">Stock</span>
-                    <div className="text-lg font-bold font-mono tabular-nums text-text-primary">
-                      {item.current_qty.toLocaleString('en-IN')}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-text-muted uppercase">Price</span>
-                    <div className="text-lg font-bold font-mono tabular-nums text-text-primary">
-                      {((item.price || 0) >= 100000 
-                        ? `৳${((item.price || 0) / 100000).toFixed(2)}L`
-                        : `৳${(item.price || 0).toFixed(0)}`
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="w-full mt-1 min-h-[44px]"
-                  onClick={() => setAdjustingProduct(item)}
-                >
-                  Update Stock
-                </Button>
-              </div>
-            </Card>
+            <InventoryProductCard
+              key={item.id}
+              item={item}
+              isHighlighted={highlightedProductId === item.id}
+              onUpdateStock={setAdjustingProduct}
+              storeId={storeId}
+            />
           ))}
         </div>
       ) : viewMode === 'list' && !isLoading ? (
