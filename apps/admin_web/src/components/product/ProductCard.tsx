@@ -178,15 +178,15 @@ interface MobilePriceSheetProps {
 
 function MobilePriceSheet({ product, isOpen, onClose, onSave }: MobilePriceSheetProps) {
   const [price, setPrice] = useState(0);
-  const [mrp, setMrp] = useState('');
-  const [cost, setCost] = useState('');
+  const [mrp, setMrp] = useState<number | undefined>(undefined);
+  const [cost, setCost] = useState<number | undefined>(undefined);
   const { notify } = useNotify();
 
   useEffect(() => {
     if (product) {
       setPrice(product.price || 0);
-      setMrp(product.mrp || '');
-      setCost(product.cost || '');
+      setMrp(product.mrp ?? undefined);
+      setCost(product.cost ?? undefined);
     }
   }, [product?.id]);
 
@@ -256,7 +256,7 @@ function MobilePriceSheet({ product, isOpen, onClose, onSave }: MobilePriceSheet
                   min={0}
                   step="0.01"
                   value={mrp}
-                  onChange={(e) => setMrp(e.target.value)}
+                  onChange={(e) => setMrp(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                   className="w-full pl-8 pr-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-default focus:border-transparent"
                 />
               </div>
@@ -272,7 +272,7 @@ function MobilePriceSheet({ product, isOpen, onClose, onSave }: MobilePriceSheet
                   min={0}
                   step="0.01"
                   value={cost}
-                  onChange={(e) => setCost(e.target.value)}
+                  onChange={(e) => setCost(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                   className="w-full pl-8 pr-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-default focus:border-transparent"
                 />
               </div>

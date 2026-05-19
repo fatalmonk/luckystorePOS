@@ -32,14 +32,17 @@ Price History migration: get_price_history() RPC + price_audit_log table
 ## Done (30)
 Bulk Edit mode: BulkPriceModal (abs/% toggle) + BulkEditBar (sticky actions)
 
-## Decisions
-Light primary theme, offline-first (sqflite + Supabase sync), en+bn locale, Riverpod, mobile_scanner, 44×44px touch targets, progressive disclosure
+## Done (31)
+Price History + Bulk Edit committed & pushed to fix/production-ready-stabilization
+
+## Current
+Fix Vercel build errors (TypeScript strict mode failures)
 
 ## Blockers
 None
 
 ## Next
-Apply dedupe migrations via Supabase dashboard or db push
+Commit fixes, redeploy
 
 ---
-[f27a2cf] fix/production-ready-stabilization — migration conflict resolved, ready to apply migrations
+[bbe7977] fix/production-ready-stabilization — TypeScript errors in build

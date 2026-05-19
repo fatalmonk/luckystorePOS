@@ -44,8 +44,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
   // Pricing tab state
   const [sellingPrice, setSellingPrice] = useState<number>(0);
-  const [mrp, setMrp] = useState<number | ''>('');
-  const [costPrice, setCostPrice] = useState<number | ''>('');
+  const [mrp, setMrp] = useState<number | undefined>(undefined);
+  const [costPrice, setCostPrice] = useState<number | undefined>(undefined);
 
   // Dirty tracking
   const [stockDirty, setStockDirty] = useState(false);
@@ -55,8 +55,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   useEffect(() => {
     if (product) {
       setSellingPrice(product.price || 0);
-      setMrp(product.mrp || '');
-      setCostPrice(product.cost || '');
+      setMrp(product.mrp ?? undefined);
+      setCostPrice(product.cost ?? undefined);
     }
   }, [product?.id]);
 
@@ -65,8 +65,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     if (!product) return;
     setPricingDirty(
       sellingPrice !== (product.price || 0) ||
-      (mrp !== '' ? mrp : 0) !== (product.mrp || 0) ||
-      (costPrice !== '' ? costPrice : 0) !== (product.cost || 0)
+      (mrp ?? 0) !== (product.mrp || 0) ||
+      (costPrice ?? 0) !== (product.cost || 0)
     );
   }, [sellingPrice, mrp, costPrice, product]);
 
@@ -184,8 +184,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       const updates: any = {
         price: sellingPrice,
       };
-      if (mrp !== '') updates.mrp = Number(mrp);
-      if (costPrice !== '') updates.cost = Number(costPrice);
+      if (typeof mrp === 'number') updates.mrp = mrp;
+      if (typeof costPrice === 'number') updates.cost = costPrice;
       return api.products.update(product.id, updates);
     },
     onSuccess: () => {
@@ -483,7 +483,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     min={0}
                     step="0.01"
                     value={mrp}
-                    onChange={(e) => setMrp(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setMrp(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                     className="w-full pl-8 pr-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
                   />
                 </div>
@@ -501,7 +501,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     min={0}
                     step="0.01"
                     value={costPrice}
-                    onChange={(e) => setCostPrice(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setCostPrice(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                     className="w-full pl-8 pr-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
                   />
                 </div>
