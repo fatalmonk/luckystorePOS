@@ -186,7 +186,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       };
       if (typeof mrp === 'number') updates.mrp = mrp;
       if (typeof costPrice === 'number') updates.cost = costPrice;
-      return api.products.update(product.id, updates);
+      return api.products.update(product.id, updates, storeId);
     },
     onSuccess: () => {
       notify(`Prices updated for ${product.name}`, 'success');
