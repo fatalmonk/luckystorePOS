@@ -27,6 +27,7 @@ interface InventoryItem {
   reorder_status: 'OK' | 'LOW' | 'OUT';
   last_updated?: string;
   price?: number;
+  cost?: number;  // cost price
   category_id?: string;
   image_url?: string;
 }
@@ -115,12 +116,49 @@ export function InventoryListPage() {
       },
     },
     {
-      header: 'Value',
+      header: 'Retail',
+      accessor: 'price',
+      render: (val) => (
+        <span className="font-mono text-text-secondary text-sm">
+          ৳{(val as number || 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      header: 'Cost',
+      accessor: 'cost',
+      render: (val) => (
+        <span className="font-mono text-text-muted text-sm">
+          ৳{(val as number || 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      header: 'Margin',
+      accessor: 'cost',
+      render: (_, row) => {
+        const cost = row.cost || 0;
+        const price = row.price || 0;
+        const margin = cost > 0 ? ((price - cost) / price * 100) : 0;
+        return (
+          <span className="font-mono text-xs ${margin > 0 ? 'text-success' : 'text-text-muted'}">
+            {margin > 0 ? `+${margin.toFixed(0)}%` : '-'}
+          </span>
+        );
+      },
+    },
+    {
+      header: 'Stock Value',
       accessor: 'price',
       render: (_, row) => (
-        <span className="font-mono text-text-primary">
-          ৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-        </span>
+        <div className="text-right">
+          <div className="font-mono text-text-primary text-sm">
+            ৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </div>
+          <div className="text-[10px] text-text-muted">
+            cost: ৳{((row.cost || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </div>
+        </div>
       ),
     },
     {
@@ -301,7 +339,7 @@ export function InventoryListPage() {
       {isLoading && viewMode === 'grid' ? (
         <ProductCardSkeletonGrid count={10} />
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mb-6">
           {filteredItems.map((item: InventoryItem) => (
             <Card 
               key={item.id} 
@@ -338,21 +376,35 @@ export function InventoryListPage() {
                 </div>
               </div>
               <div className="p-3 flex flex-col gap-1.5">
-                <h4 className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight min-h-[2.5em]">
+                {/* Name - truncated with tooltip */}
+                <h4 
+                  className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight"
+                  title={item.name}
+                >
                   {item.name}
                 </h4>
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-bold font-mono text-text-primary">
-                    {item.current_qty}
-                  </span>
-                  <span className="text-xs text-text-muted font-mono">
-                    ৳{((item.price || 0) * item.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                  </span>
+                {/* 4 critical pts: Image (above), Name, Stock, Price */}
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase">Stock</span>
+                    <div className="text-lg font-bold font-mono tabular-nums text-text-primary">
+                      {item.current_qty.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-text-muted uppercase">Price</span>
+                    <div className="text-lg font-bold font-mono tabular-nums text-text-primary">
+                      {((item.price || 0) >= 100000 
+                        ? `৳${((item.price || 0) / 100000).toFixed(2)}L`
+                        : `৳${(item.price || 0).toFixed(0)}`
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="w-full mt-1"
+                  className="w-full mt-1 min-h-[44px]"
                   onClick={() => setAdjustingProduct(item)}
                 >
                   Update Stock

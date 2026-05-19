@@ -4,7 +4,7 @@
 Flutter, Dart, Supabase, sqflite, Riverpod, mobile_scanner, intl
 
 ## Current
-Overhaul UI per use cases #1-4
+Dashboard responsive overhaul complete
 
 ## Done
 - UI state analyzed: POS overflow, empty dashboard, import-only inventory, empty dues, dark-theme purchase
@@ -23,6 +23,11 @@ Overhaul UI per use cases #1-4
 - Product shelf cards: vertical layout, 1:1 image area, status pills, Update Stock buttons
 - Inventory list table: sticky header, clean rows, status pills, actions with overflow menu
 - Purposeful motion: card hover (translateY -2px), button press (scale 0.98), skeleton loaders, animated KPIs, toast notifications with product highlight
+- Dashboard responsive: sidebar → bottom nav on mobile, KPI cards horizontal scroll, product grid 2 cols tablet/1 col phone
+- Stock drawer: bottom sheet with drag handle on mobile (< lg)
+- Product cards: 4 critical data points only (image, name, stock, price), tooltips for truncated text
+- Tabular numbers: font-variant-numeric for aligned currency/quantity columns
+- Indian numbering: lakh/crore abbreviation for large values
 
 ## Decisions
 - Theme: light primary, dark optional via ThemeProvider
@@ -31,6 +36,8 @@ Overhaul UI per use cases #1-4
 - State mgmt: Riverpod over Bloc
 - Scanner: mobile_scanner (ML Kit)
 - One task per Hermes session; images = analyze-only
+- Progressive disclosure: hide MRP/SKU/Last Updated in list view, show in detail view
+- Touch targets: min 44×44px everywhere per WCAG
 
 ## Blockers
 - Dashboard zero data binding ⚠️ PARTIAL: RPC exists, mockup removed
@@ -41,7 +48,7 @@ Overhaul UI per use cases #1-4
 - Theme inconsistency (purchase dark vs POS light)
 
 ## Next
-Phase 2: Dashboard data binding (Flutter)
+Phase 2: Dashboard data binding verification
 
 ---
-ctx: purposeful motion UI complete | done: 16 | next: commit and push
+ctx: dashboard responsive overhaul | done: 21 | next: data binding verification

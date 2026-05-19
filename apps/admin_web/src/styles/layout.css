@@ -78,20 +78,21 @@
 @media (min-width: 769px) {
   .sidebar.sidebar--hidden {
     width: 0;
-    min-width: 0;
-    padding: 0;
-    border: none;
-    overflow: hidden;
-  }
-}
-
 @media (max-width: 768px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 56px 1fr 64px;
+  }
+  .app-container.sidebar-hidden {
+    grid-template-columns: 1fr;
+    grid-template-rows: 56px 1fr 64px;
+  }
   .sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    bottom: 0;
-    height: 100vh;
+    bottom: 64px;
+    height: calc(100vh - 64px);
     z-index: 20;
     transform: translateX(0);
     width: 260px;
@@ -102,6 +103,12 @@
   }
   .sidebar-backdrop {
     display: block;
+  }
+  .top-header {
+    height: 56px;
+  }
+  .main-content {
+    padding-bottom: 80px; /* Space for bottom nav */
   }
 }
 
@@ -186,8 +193,49 @@
 
 @media (max-width: 768px) {
   .dashboard-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding-bottom: 8px;
+  }
+  .dashboard-grid > * {
+    flex: 0 0 85%;
+    min-width: 260px;
+    scroll-snap-align: start;
+  }
+}
+
+/* Product grid responsive columns */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1400px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .product-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Tabular numbers utility */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 .card {

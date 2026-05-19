@@ -25,15 +25,23 @@ const getAvatarColor = (name: string) => {
   return colors[name.charCodeAt(0) % colors.length];
 };
 
+// Indian numbering formatter (lakh/crore)
+const formatIndianNum = (num: number) => {
+  if (num >= 10000000) {
+    return `₹${(num / 10000000).toFixed(2)}Cr`;
+  } else if (num >= 100000) {
+    return `₹${(num / 100000).toFixed(2)}L`;
+  }
+  return `৳${num.toFixed(2)}`;
+};
+
 export function ProductCard({ product, onAddToCart, isFocused, onFocus }: ProductCardProps) {
   const isOutOfStock = product.stock <= 0;
-  // Flash animation when added to cart
   const [isAdded, setIsAdded] = useState(false);
 
   const handleClick = () => {
     if (!isOutOfStock) {
       onAddToCart(product);
-      // Trigger flash animation
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 400);
     }
@@ -50,11 +58,8 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
     <div
       className={clsx(
         'product-card',
-        // Focus styles
         isFocused && 'ring-2 ring-primary-default ring-offset-2',
-        // Flash animation when added
         isAdded && 'animate-flash-success',
-        // Hover lift effect for POS cards
         !isOutOfStock && [
           'hover:-translate-y-0.5',
           'hover:shadow-level-2',
@@ -70,6 +75,7 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
       onFocus={onFocus}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      title={product.name.length > 24 ? product.name : undefined}
     >
       <div className="product-avatar" aria-hidden="true">
         {product.imageUrl ? (
@@ -81,18 +87,20 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
         )}
       </div>
       <div className="product-info">
-        <h3 className="product-name">{product.name}</h3>
-        <div className="product-quantity" aria-label={`Stock: ${product.stock}`}>
-          Stock: {product.stock}
+        <h3 className="product-name truncate" title={product.name.length > 24 ? product.name : undefined}>
+          {product.name}
+        </h3>
+        <div className="product-meta tabular-nums font-mono" aria-label={`Stock: ${product.stock}`}>
+          Qty: {product.stock}
         </div>
-        <div className="product-price" aria-label={`Price: ${product.price.toFixed(2)} taka`}>
-          ৳{product.price.toFixed(2)}
+        <div className="product-price tabular-nums" aria-label={`Price: ${product.price.toFixed(2)} taka`}>
+          {formatIndianNum(product.price)}
         </div>
       </div>
       <button
         className={clsx(
-          'button-primary w-full mt-2',
-          'active:scale-[0.98]', // Button press animation
+          'button-primary w-full mt-2 min-h-[44px]',
+          'active:scale-[0.98]',
           'transition-transform duration-100',
           isOutOfStock && 'opacity-50 cursor-not-allowed'
         )}

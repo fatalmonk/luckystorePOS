@@ -208,8 +208,16 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
       {/* Drawer Panel */}
       <div
         ref={drawerRef}
-        className="relative ml-auto w-full max-w-[450px] h-full bg-surface-default shadow-lg flex flex-col animate-slideInRight"
+        className={`
+          fixed z-50 bg-surface-default shadow-xl flex flex-col animate-slideInRight
+          lg:relative lg:ml-auto lg:w-full lg:max-w-[450px] lg:h-full
+          max-lg:bottom-0 max-lg:left-0 max-lg:right-0 max-lg:h-[85vh] max-lg:rounded-t-2xl max-lg:animate-slideUp
+        `}
       >
+        {/* Drag handle for mobile */}
+        <div className="lg:hidden flex justify-center pt-2 pb-1">
+          <div className="w-12 h-1 rounded-full bg-border-strong" />
+        </div>
         {/* Header */}
         <header className="flex justify-between items-start mb-8 p-4">
           <div>
