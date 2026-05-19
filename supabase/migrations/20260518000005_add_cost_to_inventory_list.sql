@@ -15,6 +15,7 @@ RETURNS TABLE(
     category_id uuid,
     price numeric,
     cost numeric,
+    mrp numeric,
     image_url text
 )
 LANGUAGE plpgsql
@@ -39,6 +40,7 @@ BEGIN
     i.category_id,
     i.price,
     i.cost,  -- now included
+    i.mrp,
     i.image_url
   FROM public.items i
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
