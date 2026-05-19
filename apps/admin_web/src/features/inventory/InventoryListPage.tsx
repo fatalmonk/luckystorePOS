@@ -16,6 +16,8 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
+import { ProductCardSkeletonGrid } from '../../components/Skeleton';
+import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
 import { InventoryListTable } from '../../components/inventory/InventoryListTable';
 
 interface InventoryItem {
@@ -26,6 +28,7 @@ interface InventoryItem {
   reorder_status: 'OK' | 'LOW' | 'OUT';
   last_updated?: string;
   price?: number;
+  cost?: number;  // cost price
   mrp?: number;
   category_id?: string;
   image_url?: string;
@@ -38,6 +41,7 @@ export function InventoryListPage() {
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', storeId],
@@ -114,7 +118,7 @@ export function InventoryListPage() {
       },
     },
     {
-      header: 'Value',
+      header: 'Retail',
       accessor: 'price',
       render: (_, row) => (
         <div className="font-mono text-text-primary">
@@ -122,6 +126,43 @@ export function InventoryListPage() {
           {row.mrp && row.mrp > 0 && (
             <span className="block text-xs text-text-muted">MRP: ৳{row.mrp}</span>
           )}
+        </div>
+      ),
+    },
+    {
+      header: 'Cost',
+      accessor: 'cost',
+      render: (val) => (
+        <span className="font-mono text-text-muted text-sm">
+          ৳{(val as number || 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      header: 'Margin',
+      accessor: 'cost',
+      render: (_, row) => {
+        const cost = row.cost || 0;
+        const price = row.price || 0;
+        const margin = cost > 0 ? ((price - cost) / price * 100) : 0;
+        return (
+          <span className="font-mono text-xs ${margin > 0 ? 'text-success' : 'text-text-muted'}">
+            {margin > 0 ? `+${margin.toFixed(0)}%` : '-'}
+          </span>
+        );
+      },
+    },
+    {
+      header: 'Stock Value',
+      accessor: 'price',
+      render: (_, row) => (
+        <div className="text-right">
+          <div className="font-mono text-text-primary text-sm">
+            ৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </div>
+          <div className="text-[10px] text-text-muted">
+            cost: ৳{((row.cost || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </div>
         </div>
       ),
     },
@@ -210,26 +251,31 @@ export function InventoryListPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           title="Total SKUs"
-          value={stats.total}
+          value={<AnimatedMetric value={stats.total} duration={800} />}
           icon={<Package size={20} />}
           color="primary"
         />
         <MetricCard
           title="Low Stock"
-          value={stats.lowStock}
+          value={<AnimatedMetric value={stats.lowStock} duration={800} />}
           icon={<AlertTriangle size={20} />}
           color="warning"
           badge={stats.lowStock > 0 ? 'Reorder' : undefined}
         />
         <MetricCard
           title="Out of Stock"
-          value={stats.outOfStock}
+          value={<AnimatedMetric value={stats.outOfStock} duration={800} />}
           icon={<TrendingDown size={20} />}
           color="danger"
         />
         <MetricCard
           title="Inventory Value"
-          value={`৳${stats.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+          value={<AnimatedMetric 
+            value={stats.totalValue} 
+            prefix="৳" 
+            duration={800} 
+            format
+          />}
           icon={<DollarSign size={20} />}
           color="success"
         />
@@ -295,10 +341,18 @@ export function InventoryListPage() {
       </Card>
 
       {/* Content - Product Shelf Grid or List Table */}
-      {viewMode === 'grid' && !isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+      {isLoading && viewMode === 'grid' ? (
+        <ProductCardSkeletonGrid count={10} />
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mb-6">
           {filteredItems.map((item: InventoryItem) => (
-            <Card key={item.id} padding="none" className="overflow-hidden group cursor-pointer hover:shadow-level-2 transition-shadow">
+            <Card 
+              key={item.id} 
+              padding="none" 
+              className="overflow-hidden group cursor-pointer"
+              highlight={highlightedProductId === item.id}
+              highlightColor="emerald"
+            >
               {/* Image / Status color bar */}
               <div className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden">
                 {item.image_url ? (
@@ -327,28 +381,35 @@ export function InventoryListPage() {
                 </div>
               </div>
               <div className="p-3 flex flex-col gap-1.5">
-                <h4 className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight min-h-[2.5em]">
+                {/* Name - truncated with tooltip */}
+                <h4 
+                  className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight"
+                  title={item.name}
+                >
                   {item.name}
                 </h4>
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-bold font-mono text-text-primary">
-                    {item.current_qty}
-                  </span>
+                {/* 4 critical pts: Image, Name, Stock, Price */}
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase">Stock</span>
+                    <div className="text-lg font-bold font-mono tabular-nums text-text-primary">
+                      {item.current_qty.toLocaleString('en-IN')}
+                    </div>
+                  </div>
                   <div className="text-right">
-                    <span className="text-xs text-text-muted font-mono">
-                      ৳{((item.price || 0) * item.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                    </span>
-                    {item.mrp && item.mrp > 0 && (
-                      <span className="block text-xs text-text-secondary">
-                        MRP: ৳{item.mrp}
-                      </span>
-                    )}
+                    <span className="text-[10px] text-text-muted uppercase">Price</span>
+                    <div className="text-lg font-bold font-mono tabular-nums text-text-primary">
+                      {((item.price || 0) >= 100000 
+                        ? `৳${((item.price || 0) / 100000).toFixed(2)}L`
+                        : `৳${(item.price || 0).toFixed(0)}`
+                      )}
+                    </div>
                   </div>
                 </div>
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="w-full mt-1"
+                  className="w-full mt-1 min-h-[44px]"
                   onClick={() => setAdjustingProduct(item)}
                 >
                   Update Stock
@@ -376,7 +437,17 @@ export function InventoryListPage() {
       <StockUpdateDrawer
         product={adjustingProduct}
         storeId={storeId}
-        onClose={() => setAdjustingProduct(null)}
+        onClose={() => {
+          setAdjustingProduct(null);
+          setHighlightedProductId(null);
+        }}
+        onSuccess={(productName) => {
+          // Find product id by name and trigger highlight
+          const updated = inventory?.find((p: InventoryItem) => p.name === productName);
+          if (updated) {
+            setHighlightedProductId(updated.id);
+          }
+        }}
       />
     </div>
   );

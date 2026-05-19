@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 export interface MetricCardProps {
   title: string;
-  value: string | number;
+  value: string | number | React.ReactNode;
   icon?: React.ReactNode;
   trend?: 'up' | 'down';
   trendLabel?: string;
@@ -51,12 +51,26 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </svg>
     ) : null;
 
+  const renderValue = () => {
+    if (typeof value === 'string' || typeof value === 'number') {
+      return (
+        <span className={clsx('text-2xl font-bold font-mono', colors.value)}>
+          {value}
+        </span>
+      );
+    }
+    // ReactNode
+    return value;
+  };
+
   return (
     <div
       className={clsx(
         'bg-surface rounded-md border border-border-default shadow-level-1 p-4',
         'flex flex-col gap-3',
-        'transition-shadow hover:shadow-level-2',
+        'transition-all duration-200 ease-out',
+        // Card hover effect: translateY(-2px) + shadow intensification
+        'hover:-translate-y-0.5 hover:shadow-level-2 hover:border-border-strong',
         className
       )}
     >
@@ -81,7 +95,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       <div>
         <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">{title}</p>
         <div className="flex items-baseline gap-2">
-          <span className={clsx('text-2xl font-bold font-mono', colors.value)}>{value}</span>
+          {renderValue()}
           {badge && (
             <span className={clsx('text-xs font-semibold px-2 py-0.5 rounded-full', colors.badge)}>
               {badge}

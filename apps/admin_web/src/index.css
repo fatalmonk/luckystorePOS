@@ -1,4 +1,29 @@
 @import './styles/tokens.css';
+@import './styles/animations.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* POS specific animations */
+
+/* Product card flash animation */
+@keyframes flash-success {
+  0%, 100% { border-color: transparent; background-color: var(--color-surface-default); }
+  50% { border-color: var(--color-success-default); background-color: var(--color-success-subtle); }
+}
+
+.animate-flash-success {
+  animation: flash-success 400ms ease-out;
+}
+
+/* Cart item highlight */
+@keyframes highlight-brief {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: var(--color-primary-subtle); }
+}
+
+/* Amount flash on update */
+@keyframes amount-flash {
+  0%, 100% { color: inherit; transform: scale(1); }
+  50% { color: var(--color-success-dark); transform: scale(1.05); }
+}
