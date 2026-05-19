@@ -154,6 +154,7 @@ export interface ProductCreateInput {
   brand?: string;
   price: number;
   cost?: number;
+  mrp?: number;
   stock: number;
   category_id?: string;
   image_url?: string;
