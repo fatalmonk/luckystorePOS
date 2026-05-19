@@ -12,7 +12,7 @@ interface BulkEditBarProps {
 
 export function BulkEditBar({
   selectedCount,
-  totalCount,
+  totalCount: _totalCount,
   onClear,
   onUpdatePrices,
   onUpdateStock,
