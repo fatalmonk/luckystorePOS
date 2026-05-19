@@ -15,4 +15,4 @@ None
 Confirm deployment success
 
 ---
-[2513de2] fix/production-ready-stabilization — build passes, auto-deploy triggered
+[2fd97f3] feat/admin-web: separate ProductCard concerns — QuickPOS simplified, Inventory enhanced with inline price edit
