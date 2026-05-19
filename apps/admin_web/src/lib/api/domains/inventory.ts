@@ -64,4 +64,13 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+  getPriceHistory: async (storeId: string, itemId: string, limit = 5) => {
+    const { data, error } = await supabase.rpc('get_price_history', {
+      p_store_id: storeId,
+      p_item_id: itemId,
+      p_limit: limit
+    });
+    if (error) throw error;
+    return data;
+  },
 };

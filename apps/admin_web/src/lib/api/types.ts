@@ -12,6 +12,7 @@ export interface PosProduct {
   brand?: string;
   price: number;
   cost?: number;
+  mrp?: number;
   stock: number;
   category?: string;
   categoryId?: string;
