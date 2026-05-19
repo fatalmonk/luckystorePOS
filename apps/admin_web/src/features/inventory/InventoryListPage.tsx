@@ -18,6 +18,7 @@ import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 import { ProductCardSkeletonGrid } from '../../components/Skeleton';
 import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
+import { InventoryListTable } from '../../components/inventory/InventoryListTable';
 
 interface InventoryItem {
   id: string;
@@ -28,6 +29,7 @@ interface InventoryItem {
   last_updated?: string;
   price?: number;
   cost?: number;  // cost price
+  mrp?: number;
   category_id?: string;
   image_url?: string;
 }
@@ -118,10 +120,13 @@ export function InventoryListPage() {
     {
       header: 'Retail',
       accessor: 'price',
-      render: (val) => (
-        <span className="font-mono text-text-secondary text-sm">
-          ৳{(val as number || 0).toFixed(2)}
-        </span>
+      render: (_, row) => (
+        <div className="font-mono text-text-primary">
+          <span>৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+          {row.mrp && row.mrp > 0 && (
+            <span className="block text-xs text-text-muted">MRP: ৳{row.mrp}</span>
+          )}
+        </div>
       ),
     },
     {
@@ -335,7 +340,7 @@ export function InventoryListPage() {
         </div>
       </Card>
 
-      {/* Content */}
+      {/* Content - Product Shelf Grid or List Table */}
       {isLoading && viewMode === 'grid' ? (
         <ProductCardSkeletonGrid count={10} />
       ) : viewMode === 'grid' ? (
@@ -383,7 +388,7 @@ export function InventoryListPage() {
                 >
                   {item.name}
                 </h4>
-                {/* 4 critical pts: Image (above), Name, Stock, Price */}
+                {/* 4 critical pts: Image, Name, Stock, Price */}
                 <div className="grid grid-cols-2 gap-2 mt-1">
                   <div>
                     <span className="text-[10px] text-text-muted uppercase">Stock</span>
@@ -413,6 +418,14 @@ export function InventoryListPage() {
             </Card>
           ))}
         </div>
+      ) : viewMode === 'list' && !isLoading ? (
+        <InventoryListTable
+          items={filteredItems}
+          onUpdateStock={setAdjustingProduct}
+          onViewHistory={(item) => console.log('View history', item)}
+          onEditProduct={(item) => console.log('Edit', item)}
+          onDelete={(item) => console.log('Delete', item)}
+        />
       ) : (
         <DataTable
           columns={columns}
