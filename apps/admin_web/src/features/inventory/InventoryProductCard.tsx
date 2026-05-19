@@ -95,7 +95,7 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, store
 
   const priceMutation = useMutation({
     mutationFn: async (newPrice: number) => {
-      return api.products.update(item.id, { price: newPrice });
+      return api.products.update(item.id, { price: newPrice }, storeId);
     },
     onSuccess: () => {
       notify(`Price updated for ${item.name}`, 'success');
