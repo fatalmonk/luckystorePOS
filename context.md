@@ -1,21 +1,19 @@
 # Lucky Store POS
 
-## Stack
-Flutter, Dart, Supabase, React, TypeScript, Tailwind
+**Stack:** Flutter, Dart, Supabase, React, TypeScript, Tailwind
 
-## Current
-UI complete — awaiting next task
+## Done (21)
+POS overflow fix, debounced search, expense dedupe/RLS, responsive POS with offline queue, Vercel build fix, drawer backdrops, dashboard real data (f17e3e5), metric cards, command bar, product shelf cards, inventory table, motion design (hover/press/skeletons/toasts), responsive dashboard (bottom nav, horizontal scroll), stock drawer (mobile sheet), 4-pt product cards, tabular nums, Indian numbering, Cat RLS fix (22 unblocked)
 
-## Done
-- Inventory: grid/table views, shelf cards, sticky headers, command bar
-- Dashboard: navigation rail, metric cards, sales trend (real RPC)
-- Fixes: Vercel build (JSX/i18n), Cat RLS (22 unblocked), drawer backdrop
+## Decisions
+Light primary theme, offline-first (sqflite + Supabase sync), en+bn locale, Riverpod, mobile_scanner, 44×44px touch targets, progressive disclosure
 
 ## Blockers
 None
 
 ## Next
-Apply dedupe migrations
+1. Apply dedupe migrations
+2. Dashboard data binding verification
 
 ---
-ctx: UI done | done: 13 | next: migrate
+[4fc2fb0] fix/production-ready-stabilization

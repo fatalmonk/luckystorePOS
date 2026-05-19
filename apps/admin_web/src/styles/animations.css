@@ -1,0 +1,66 @@
+/* Animation utilities - Add to tailwind.css or index.css */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s cubic-bezier(0.0, 0.0, 0.2, 1) forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Drawer animations */
+.animate-drawerSlideIn {
+  animation: slideInFromRight 0.3s cubic-bezier(0.0, 0.0, 0.2, 1) forwards;
+}
+
+/* Card highlight animation */
+@keyframes highlightPulse {
+  0%, 100% {
+    background-color: transparent;
+    border-color: var(--color-border-default);
+  }
+  50% {
+    background-color: var(--color-success-subtle);
+    border-color: var(--color-success-default);
+  }
+}
+
+.animate-highlight {
+  animation: highlightPulse 1s ease-out;
+}
+
+/* Button press animation - already in Button via active:scale-[0.98] */
+/* Card hover - translateY(-2px) handled via Tailwind hover:-translate-y-0.5 */
+
+/* Skeleton pulse - uses Tailwind animate-pulse */
