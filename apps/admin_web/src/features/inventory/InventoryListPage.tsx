@@ -430,7 +430,6 @@ export function InventoryListPage() {
         <DataTable
           columns={columns}
           data={filteredItems}
-          isLoading={isLoading}
           emptyMessage="No inventory items found. Add products to start tracking stock levels."
         />
       )}
