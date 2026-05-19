@@ -13,11 +13,13 @@ RETURNS TABLE(
     reorder_status text,
     last_updated timestamp with time zone,
     category_id uuid,
+    category_name text,
     price numeric,
     cost numeric,
+    mrp numeric,
+    barcode text,
     image_url text
-)
-LANGUAGE plpgsql
+) LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path TO 'public', 'pg_temp'
@@ -37,12 +39,16 @@ BEGIN
     END as reorder_status,
     i.updated_at as last_updated,
     i.category_id,
+    cat.category AS category_name,
     i.price,
-    i.cost,  -- now included
+    i.cost,
+    i.mrp,
+    i.barcode,
     i.image_url
   FROM public.items i
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
   LEFT JOIN public.stock_alert_thresholds sat ON sat.item_id = i.id AND sat.store_id = p_store_id
+  LEFT JOIN public.categories cat ON cat.id = i.category_id
   WHERE i.active = true
   ORDER BY
     CASE

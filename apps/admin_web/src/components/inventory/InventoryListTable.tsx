@@ -7,11 +7,15 @@ interface InventoryItem {
   id: string;
   name: string;
   sku?: string;
+  barcode?: string;
   current_qty: number;
   reorder_status: 'OK' | 'LOW' | 'OUT';
   last_updated?: string;
   price?: number;
+  cost?: number;
   mrp?: number;
+  category_id?: string;
+  category_name?: string;
   image_url?: string;
 }
 
@@ -51,19 +55,28 @@ export function InventoryListTable({
                 Product
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+                Category
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
                 SKU
               </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+                Barcode
+              </th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
-                Current Stock
+                Stock
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
-                Value
+              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+                Cost
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
-                Last Updated
+              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+                Price
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+                MRP
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
                 Actions
@@ -74,8 +87,8 @@ export function InventoryListTable({
           {/* Table Body */}
           <tbody>
             {items.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-sm text-slate-500">
+            <tr>
+              <td colSpan={11} className="px-4 py-12 text-center text-sm text-slate-500">
                   No inventory items found. Add products to start tracking stock levels.
                 </td>
               </tr>
@@ -112,6 +125,13 @@ export function InventoryListTable({
                       </div>
                     </td>
 
+                    {/* Category */}
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-slate-600">
+                        {item.category_name || item.category_id || '—'}
+                      </span>
+                    </td>
+
                     {/* SKU */}
                     <td className="px-4 py-4">
                       <span className="text-sm text-slate-600 font-mono">
@@ -119,7 +139,14 @@ export function InventoryListTable({
                       </span>
                     </td>
 
-                    {/* Current Stock */}
+                    {/* Barcode */}
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-slate-600 font-mono">
+                        {item.barcode || '—'}
+                      </span>
+                    </td>
+
+                    {/* Stock */}
                     <td className="px-4 py-4 text-center">
                       <span
                         className={clsx(
@@ -144,22 +171,24 @@ export function InventoryListTable({
                       </span>
                     </td>
 
-                    {/* Value */}
-                    <td className="px-4 py-4">
-                      <div className="font-mono text-sm text-slate-900">
-                        ৳{fmt((item.price || 0) * item.current_qty)}
-                      </div>
-                      {item.mrp && item.mrp > 0 && (
-                        <div className="text-xs text-slate-500">MRP: ৳{item.mrp}</div>
-                      )}
+                    {/* Cost */}
+                    <td className="px-4 py-4 text-right">
+                      <span className="font-mono text-sm text-slate-900">
+                        ৳{fmt(item.cost || 0)}
+                      </span>
                     </td>
 
-                    {/* Last Updated */}
-                    <td className="px-4 py-4">
-                      <span className="text-sm text-slate-500">
-                        {item.last_updated
-                          ? formatDistanceToNow(new Date(item.last_updated)) + ' ago'
-                          : 'Never'}
+                    {/* Price */}
+                    <td className="px-4 py-4 text-right">
+                      <span className="font-mono text-sm text-slate-900">
+                        ৳{fmt(item.price || 0)}
+                      </span>
+                    </td>
+
+                    {/* MRP */}
+                    <td className="px-4 py-4 text-right">
+                      <span className="font-mono text-sm text-slate-900">
+                        ৳{fmt(item.mrp || 0)}
                       </span>
                     </td>
 
