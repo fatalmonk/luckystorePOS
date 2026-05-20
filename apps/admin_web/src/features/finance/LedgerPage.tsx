@@ -165,7 +165,7 @@ const [searchQuery, setSearchQuery] = useState('');
               />
             </div>
           ) : (
-            (parties.filter(p => {
+            parties.filter(p => {
               const q = searchQuery.toLowerCase();
               return p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q));
             }).length === 0 ? (
