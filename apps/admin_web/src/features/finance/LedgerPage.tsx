@@ -51,10 +51,20 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [showAddParty, setShowAddParty] = useState(false);
-const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyPhone, setNewPartyPhone] = useState('');
-  const { tenantId } = useAuth();
+  const [dateFrom, setDateFrom] = useState<string | null>(null);
+  const [dateTo, setDateTo] = useState<string | null>(null);
+  // Transaction recording state
+  const [showRecordTransaction, setShowRecordTransaction] = useState(false);
+  const [transactionAmount, setTransactionAmount] = useState('');
+  const [transactionType, setTransactionType] = useState<'debit' | 'credit'>(partyType === 'customer' ? 'credit' : 'debit');
+  const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [transactionNote, setTransactionNote] = useState('');
+  const [transactionReference, setTransactionReference] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { tenantId, user } = useAuth();
   const { notify } = useNotify();
 
 
@@ -79,18 +89,35 @@ const [searchQuery, setSearchQuery] = useState('');
     fetchParties();
   }, [fetchParties]);
 
-  const fetchLedger = async (party: Party) => {
-    setSelectedParty(party);
-    const { data, error } = await supabase
+  const fetchLedger = useCallback(async () => {
+    if (!selectedParty) return;
+    // Validate date range
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      notify('From date must be before To date', 'error');
+      return;
+    }
+    let query = supabase
       .from('ledger_entries')
       .select('*')
-      .eq('party_id', party.id)
-      .order('effective_date', { ascending: false });
-
+      .eq('party_id', selectedParty.id);
+    if (dateFrom) {
+      query = query.gte('effective_date', dateFrom);
+    }
+    if (dateTo) {
+      query = query.lte('effective_date', dateTo);
+    }
+    const { data, error } = await query.order('effective_date', { ascending: false });
     if (!error && data) {
       setLedgerEntries(data as LedgerEntry[]);
     }
-  };
+  }, [selectedParty, dateFrom, dateTo, notify]);
+
+  // Refetch ledger when date range changes
+  useEffect(() => {
+    if (selectedParty) {
+      fetchLedger();
+    }
+  }, [dateFrom, dateTo, fetchLedger]);
 
   // compute running balances in chronological order
   const entriesWithBalance = useMemo(() => {
@@ -110,6 +137,38 @@ const [searchQuery, setSearchQuery] = useState('');
     });
     return withBal.reverse();
   }, [ledgerEntries, balanceSign]);
+
+  // CSV export function
+  const exportCSV = useCallback(() => {
+    if (!selectedParty || entriesWithBalance.length === 0) return;
+    const escapeCsv = (val: string | number | null) => {
+      const str = val?.toString() ?? '';
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+    const headers = ['Date', 'Reference Type', 'Reference ID', 'Debit Amount', 'Credit Amount', 'Balance'];
+    const rows = entriesWithBalance.map(entry => [
+      format(new Date(entry.effective_date), 'yyyy-MM-dd'),
+      entry.reference_type ?? '',
+      entry.reference_id ?? '',
+      entry.debit_amount ?? 0,
+      entry.credit_amount ?? 0,
+      (entry as any).runningBalance ?? 0
+    ]);
+    const csvContent = '\uFEFF' + headers.map(escapeCsv).join(',') + '\n' +
+      rows.map(row => row.map(escapeCsv).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${selectedParty.name}_ledger_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [selectedParty, entriesWithBalance]);
 
   if (loading) {
     return (
@@ -181,7 +240,12 @@ const [searchQuery, setSearchQuery] = useState('');
               }).map(p => (
                 <button
                   key={p.id}
-                  onClick={() => fetchLedger(p)}
+                  onClick={() => {
+                    setSelectedParty(p);
+                    setDateFrom(null);
+                    setDateTo(null);
+                    setLedgerEntries([]);
+                  }}
                   style={{
                     display: 'block',
                     width: '100%',
@@ -213,24 +277,77 @@ const [searchQuery, setSearchQuery] = useState('');
         {/* Ledger Detail */}
         {selectedParty ? (
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {/* Ledger Detail Header with Date Filters */}
             <div style={{
               padding: 'var(--space-4)',
               borderBottom: '1px solid var(--border-color)',
               backgroundColor: 'var(--color-background-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 'var(--space-4)'
             }}>
               <div>
                 <h2 style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedParty.name}</h2>
                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{statementSubtitle}</p>
               </div>
-              <button
-                className="button-outline"
-                onClick={() => window.print()}
-              >
-                Print Statement
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--text-muted)' }}>From</label>
+                  <input
+                    type="date"
+                    className="input"
+                    style={{ width: '140px' }}
+                    value={dateFrom || ''}
+                    onChange={e => setDateFrom(e.target.value || null)}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--text-muted)' }}>To</label>
+                  <input
+                    type="date"
+                    className="input"
+                    style={{ width: '140px' }}
+                    value={dateTo || ''}
+                    onChange={e => setDateTo(e.target.value || null)}
+                  />
+                </div>
+                {(dateFrom || dateTo) && (
+                  <button
+                    type="button"
+                    className="button-outline"
+                    onClick={() => {
+                      setDateFrom(null);
+                      setDateTo(null);
+                    }}
+                    style={{ fontSize: 'var(--font-size-xs)', padding: 'var(--space-1) var(--space-2)' }}
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  className="button-primary"
+                  onClick={() => setShowRecordTransaction(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <Plus size={16} /> Record Transaction
+                </button>
+                <button
+                  className="button-outline"
+                  onClick={() => window.print()}
+                >
+                  Print Statement
+                </button>
+                <button
+                  className="button-outline"
+                  onClick={exportCSV}
+                  disabled={entriesWithBalance.length === 0}
+                  title={entriesWithBalance.length === 0 ? 'No entries to export' : 'Export ledger to CSV'}
+                >
+                  Export CSV
+                </button>
+              </div>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -330,6 +447,133 @@ const [searchQuery, setSearchQuery] = useState('');
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
             <button type="button" className="button-outline" onClick={() => setShowAddParty(false)}>Cancel</button>
             <button type="submit" className="button-primary">Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}</button>
+          </div>
+        </form>
+      </Drawer>
+
+      {/* Record Transaction Drawer */}
+      <Drawer isOpen={showRecordTransaction} onClose={() => setShowRecordTransaction(false)} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'}>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!selectedParty) return;
+          const amount = parseFloat(transactionAmount);
+          if (!amount || amount <= 0) {
+            notify('Amount must be greater than 0', 'error');
+            return;
+          }
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const selected = new Date(transactionDate);
+          selected.setHours(0, 0, 0, 0);
+          if (selected > today) {
+            notify('Date cannot be in the future', 'error');
+            return;
+          }
+          setIsSubmitting(true);
+          const { data, error } = await supabase.from('ledger_entries').insert([{
+            tenant_id: tenantId,
+            party_id: selectedParty.id,
+            effective_date: transactionDate,
+            reference_type: transactionType === 'debit' ? (partyType === 'customer' ? 'sale' : 'purchase') : 'payment',
+            reference_id: transactionReference.trim() || null,
+            debit_amount: transactionType === 'debit' ? amount : 0,
+            credit_amount: transactionType === 'credit' ? amount : 0,
+            notes: transactionNote.trim() || null,
+            created_by: user?.id || null,
+          }]).select().single();
+          setIsSubmitting(false);
+          if (error) {
+            notify(error.message, 'error');
+            return;
+          }
+          // Optimistic update
+          const newEntry = data as LedgerEntry;
+          setLedgerEntries(prev => [newEntry, ...prev].sort((a, b) => 
+            new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
+          ));
+          // Update party balance
+          const amountChange = transactionType === 'debit' ? amount : -amount;
+          setParties(prev => prev.map(p => 
+            p.id === selectedParty.id 
+              ? { ...p, current_balance: (p.current_balance ?? 0) + balanceSign * amountChange }
+              : p
+          ));
+          // Reset form and close
+          setTransactionAmount('');
+          setTransactionType(partyType === 'customer' ? 'credit' : 'debit');
+          setTransactionDate(format(new Date(), 'yyyy-MM-dd'));
+          setTransactionNote('');
+          setTransactionReference('');
+          setShowRecordTransaction(false);
+          notify('Transaction recorded successfully', 'success');
+        }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Amount *</label>
+            <input 
+              type="number" 
+              value={transactionAmount} 
+              onChange={e => setTransactionAmount(e.target.value)} 
+              className="input w-full" 
+              placeholder="0.00" 
+              min="0.01"
+              step="0.01"
+              required 
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Type *</label>
+            <select 
+              value={transactionType} 
+              onChange={e => setTransactionType(e.target.value as 'debit' | 'credit')} 
+              className="input w-full"
+            >
+              {partyType === 'customer' ? (
+                <>
+                  <option value="credit">Payment Received</option>
+                  <option value="debit">Sale / Invoice</option>
+                </>
+              ) : (
+                <>
+                  <option value="debit">Payment Made</option>
+                  <option value="credit">Purchase / Bill</option>
+                </>
+              )}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Date *</label>
+            <input 
+              type="date" 
+              value={transactionDate} 
+              onChange={e => setTransactionDate(e.target.value)} 
+              className="input w-full" 
+              required 
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Reference</label>
+            <input 
+              type="text" 
+              value={transactionReference} 
+              onChange={e => setTransactionReference(e.target.value)} 
+              className="input w-full" 
+              placeholder="Invoice #123 or Receipt #456"
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Notes</label>
+            <textarea 
+              value={transactionNote} 
+              onChange={e => setTransactionNote(e.target.value)} 
+              className="input w-full" 
+              placeholder="Additional notes..."
+              style={{ minHeight: '80px' }}
+              rows={3}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+            <button type="button" className="button-outline" onClick={() => setShowRecordTransaction(false)}>Cancel</button>
+            <button type="submit" className="button-primary" disabled={isSubmitting}>Save Transaction</button>
           </div>
         </form>
       </Drawer>
