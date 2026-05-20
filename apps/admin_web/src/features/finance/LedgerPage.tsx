@@ -207,7 +207,7 @@ const [searchQuery, setSearchQuery] = useState('');
                 </button>
               ))
             )
-          )
+          )}
         </div>
 
         {/* Ledger Detail */}
