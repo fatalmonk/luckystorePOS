@@ -2,17 +2,20 @@
 
 **Stack:** Flutter, Dart, Supabase, React, TypeScript, Tailwind
 
-## Done (38)
-Product card separation: QuickPOS simplified (no cost, no price edit, MRP strikethrough); Inventory grid enhanced (inline price edit, cost price, margin display); MRP now showing in inventory list; Added RPC `update_item_prices` for proper JSON return; Fixed "Cannot coerce the result to a single JSON object" error on price edit; Inventory list table now shows Category, SKU, Barcode, Cost, Price, MRP columns
+## Done (49)
+- Deployed admin web to Vercel — https://lucky-store-pos-six.vercel.app
+- RPC `update_item_prices` deployed with qualified columns (items.mrp, items.cost)
+- Price edit fixed — was ambiguous column reference error
+- Added client‑side search filter to party list in LedgerPage
 
 ## Current
-Vercel deployment in progress
+Verify price edit works on deployed admin web
 
 ## Blockers
 None
 
 ## Next
-Test price edit on deployed admin web
+Test inline price edit → confirm no errors → close task
 
 ---
-[2fd97f3] feat/admin-web: separate ProductCard concerns — QuickPOS simplified, Inventory enhanced with inline price edit
+ctx: deployed, verifying price edit | done: 48 | next: test and confirm

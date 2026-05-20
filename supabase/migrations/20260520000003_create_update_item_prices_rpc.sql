@@ -6,35 +6,36 @@ DROP FUNCTION IF EXISTS public.update_item_prices(UUID, UUID, NUMERIC, NUMERIC, 
 
 CREATE OR REPLACE FUNCTION public.update_item_prices(
     p_item_id UUID,
-    p_store_id UUID,
+    p_tenant_id UUID,
     p_price NUMERIC,
     p_mrp NUMERIC DEFAULT NULL,
     p_cost NUMERIC DEFAULT NULL
 )
 RETURNS TABLE (
-    id UUID,
-    name TEXT,
-    sku TEXT,
-    price NUMERIC,
-    mrp NUMERIC,
-    cost NUMERIC,
-    updated_at TIMESTAMPTZ
+    item_id UUID,
+    item_name TEXT,
+    item_sku TEXT,
+    item_price NUMERIC,
+    item_mrp NUMERIC,
+    item_cost NUMERIC,
+    item_updated_at TIMESTAMPTZ
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public', 'pg_temp'
 AS $$
 DECLARE
-    v_old_price NUMERIC;
-    v_old_mrp NUMERIC;
-    v_old_cost NUMERIC;
-    v_result RECORD;
+    v_new_id UUID;
+    v_new_name TEXT;
+    v_new_sku TEXT;
+    v_new_price NUMERIC;
+    v_new_mrp NUMERIC;
+    v_new_cost NUMERIC;
+    v_new_updated_at TIMESTAMPTZ;
 BEGIN
-    -- Get old values for audit
-    SELECT price, mrp, cost 
-    INTO v_old_price, v_old_mrp, v_old_cost
-    FROM items 
-    WHERE id = p_item_id AND store_id = p_store_id;
+    -- Verify item belongs to tenant
+    PERFORM 1 FROM items 
+    WHERE id = p_item_id AND tenant_id = p_tenant_id;
     
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Item not found or access denied';
@@ -48,27 +49,25 @@ BEGIN
         cost = COALESCE(p_cost, items.cost),
         updated_at = NOW()
     WHERE id = p_item_id 
-      AND store_id = p_store_id
+      AND tenant_id = p_tenant_id
     RETURNING 
-        items.id AS ret_id, 
-        items.name AS ret_name, 
-        items.sku AS ret_sku, 
-        items.price AS ret_price, 
-        items.mrp AS ret_mrp, 
-        items.cost AS ret_cost, 
-        items.updated_at AS ret_updated_at
-    INTO v_result;
-    
-    -- Note: Audit logging handled by trigger trg_items_price_audit
+        items.id,
+        items.name,
+        items.sku,
+        items.price,
+        items.mrp,
+        items.cost,
+        items.updated_at
+    INTO v_new_id, v_new_name, v_new_sku, v_new_price, v_new_mrp, v_new_cost, v_new_updated_at;
     
     RETURN QUERY SELECT 
-        v_result.ret_id,
-        v_result.ret_name,
-        v_result.ret_sku,
-        v_result.ret_price,
-        v_result.ret_mrp,
-        v_result.ret_cost,
-        v_result.ret_updated_at;
+        v_new_id,
+        v_new_name,
+        v_new_sku,
+        v_new_price,
+        v_new_mrp,
+        v_new_cost,
+        v_new_updated_at;
 END;
 $$;
 
