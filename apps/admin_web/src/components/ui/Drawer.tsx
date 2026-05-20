@@ -105,10 +105,14 @@ export const Drawer = ({
       <div
         ref={drawerRef}
         className={clsx(
-          'relative ml-auto w-80 max-w-full h-full bg-surface-default shadow-lg',
+          'relative ml-auto w-80 max-w-full h-full shadow-lg',
           'transform transition-transform',
           className
         )}
+        style={{ 
+          backgroundColor: 'var(--color-surface-default, #ffffff)',
+          zIndex: 51
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border-default">
