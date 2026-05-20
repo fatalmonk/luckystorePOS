@@ -24,7 +24,7 @@ interface InventoryProductCardProps {
   item: InventoryItem;
   isHighlighted?: boolean;
   onUpdateStock: (item: InventoryItem) => void;
-  storeId?: string;
+  tenantId?: string;
 }
 
 // Currency formatting
@@ -78,7 +78,7 @@ const PackageIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export function InventoryProductCard({ item, isHighlighted, onUpdateStock, storeId }: InventoryProductCardProps) {
+export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenantId }: InventoryProductCardProps) {
   const queryClient = useQueryClient();
   const { notify } = useNotify();
   const [isEditingPrice, setIsEditingPrice] = useState(false);
@@ -95,12 +95,12 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, store
 
   const priceMutation = useMutation({
     mutationFn: async (newPrice: number) => {
-      return api.products.update(item.id, { price: newPrice }, storeId);
+      return api.products.update(item.id, { price: newPrice }, tenantId);
     },
     onSuccess: () => {
       notify(`Price updated for ${item.name}`, 'success');
-      if (storeId) {
-        queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
+      if (tenantId) {
+        queryClient.invalidateQueries({ queryKey: ['inventory', tenantId] });
       }
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsEditingPrice(false);
