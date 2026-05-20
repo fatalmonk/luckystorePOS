@@ -13,3 +13,15 @@ coverage/**
 **/*.spec.*
 **/test/**
 **/__tests__/**
+
+# Additional ignores for file count
+apps/mobile_app/**
+apps/desktop/**
+plans/**
+docs/**
+*.log
+*.sql
+supabase/migrations/**
+supabase/tests/**
+supabase/seeds/**
+supabase/*_test.sql
