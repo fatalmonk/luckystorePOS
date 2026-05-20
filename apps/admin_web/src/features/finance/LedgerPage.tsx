@@ -15,6 +15,15 @@ interface TransactionItem {
   id: string;
   description: string;
   amount: string;
+  item_id?: string;
+}
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  sku?: string;
+  price: number;
+  mrp?: number;
 }
 
 interface LedgerPageConfig {
@@ -71,7 +80,9 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [transactionReference, setTransactionReference] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [transactionItems, setTransactionItems] = useState<TransactionItem[]>([{ id: '1', description: '', amount: '' }]);
-  const { tenantId, user } = useAuth();
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [loadingInventory, setLoadingInventory] = useState(false);
+  const { tenantId, user, storeId } = useAuth();
   const { notify } = useNotify();
 
   // Calculate total from items
@@ -96,6 +107,42 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     setShowRecordTransaction(false);
     resetTransactionForm();
   }, [resetTransactionForm]);
+
+  // Fetch inventory items when modal opens
+  const fetchInventoryItems = useCallback(async () => {
+    if (!storeId) return;
+    setLoadingInventory(true);
+    const { data, error } = await supabase
+      .from('items')
+      .select('id, name, sku, price, mrp')
+      .eq('store_id', storeId)
+      .eq('active', true)
+      .order('name');
+    if (!error && data) {
+      setInventoryItems(data as InventoryItem[]);
+    }
+    setLoadingInventory(false);
+  }, [storeId]);
+
+  // Load inventory when modal opens
+  useEffect(() => {
+    if (showRecordTransaction) {
+      fetchInventoryItems();
+    }
+  }, [showRecordTransaction, fetchInventoryItems]);
+
+  // Add item from inventory
+  const addInventoryItem = useCallback((item: InventoryItem) => {
+    setTransactionItems(prev => [
+      ...prev,
+      {
+        id: String(Date.now() + Math.random()),
+        item_id: item.id,
+        description: item.name,
+        amount: String(item.price || 0)
+      }
+    ]);
+  }, []);
 
 
   const fetchParties = useCallback(async () => {
@@ -638,13 +685,39 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               </table>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-3)' }}>
-              <button
-                type="button"
-                className="button-outline"
-                onClick={() => setTransactionItems(prev => [...prev, { id: String(Date.now() + Math.random()), description: '', amount: '' }])}
-              >
-                + Add Item
-              </button>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <button
+                  type="button"
+                  className="button-outline"
+                  onClick={() => setTransactionItems(prev => [...prev, { id: String(Date.now() + Math.random()), description: '', amount: '' }])}
+                >
+                  + Add Item
+                </button>
+                {inventoryItems.length > 0 && (
+                  <select
+                    className="input"
+                    value=""
+                    onChange={e => {
+                      const itemId = e.target.value;
+                      if (itemId) {
+                        const item = inventoryItems.find(i => i.id === itemId);
+                        if (item) {
+                          addInventoryItem(item);
+                        }
+                        e.target.value = '';
+                      }
+                    }}
+                    style={{ minWidth: '180px' }}
+                  >
+                    <option value="">+ From Inventory...{loadingInventory && ' Loading...'}</option>
+                    {inventoryItems.map(item => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} (৳{item.price})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
               <div style={{ fontWeight: '700', fontSize: 'var(--font-size-lg)' }}>
                 Total: ৳ {totalAmount.toLocaleString()}
               </div>
