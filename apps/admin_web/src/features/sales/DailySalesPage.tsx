@@ -28,6 +28,8 @@ import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isT
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
 import { downloadCSV } from '../../lib/format';
 
+type TempRow = DailySale & { tempId?: string; isNew?: boolean };
+
 const CHART_COLORS = [
   'var(--color-success-default)',
   'var(--color-info-default)',
@@ -53,7 +55,8 @@ export function DailySalesPage() {
   const [savedRows, setSavedRows] = useState<Set<string>>(new Set());
   const [errorRows, setErrorRows] = useState<Set<string>>(new Set());
   const [dirtyRows, setDirtyRows] = useState<Set<string>>(new Set());
-  const [tempRows, setTempRows] = useState<Array<DailySale & { tempId?: string; isNew?: boolean }>>>([]);
+  type TempRow = DailySale & { tempId?: string; isNew?: boolean };
+  const [tempRows, setTempRows] = useState<TempRow[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const editableFields = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
@@ -81,7 +84,8 @@ export function DailySalesPage() {
   const createNewRow = () => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const tempId = `temp-${Date.now()}`;
-    const newRow: DailySale & { tempId?: string; isNew?: boolean } = {
+    const now = new Date().toISOString();
+    const newRow: TempRow = {
       id: tempId,
       tempId,
       isNew: true,
@@ -93,7 +97,8 @@ export function DailySalesPage() {
       stockPurchase: 0,
       dailyExpense: 0,
       storeId: storeId || '',
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     setTempRows(prev => [newRow, ...prev]);
     setEditingCell({ rowId: tempId, field: 'saleDate' });
