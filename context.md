@@ -12,13 +12,13 @@
 - Inline transaction recording (Record Payment drawer for ledger)
 
 ## Current
-Customer Ledger complete — ready to commit
+Ledger transaction recording uses Modal (fixed transparent backdrop)
 
 ## Blockers
 None
 
 ## Next
-Commit and push ledger enhancements
+Commit modal fix
 
 ---
-ctx: ledger features done | done: 52 | next: git commit
+ctx: modal fix done | done: 52 | next: commit
