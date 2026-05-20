@@ -49,7 +49,14 @@ BEGIN
         updated_at = NOW()
     WHERE id = p_item_id 
       AND store_id = p_store_id
-    RETURNING id, name, sku, price, mrp, cost, updated_at
+    RETURNING 
+        items.id, 
+        items.name, 
+        items.sku, 
+        items.price, 
+        items.mrp, 
+        items.cost, 
+        items.updated_at
     INTO v_result;
     
     -- Log price change to audit
