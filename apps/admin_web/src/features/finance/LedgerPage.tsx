@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
+import { Modal } from '../../components/ui/Modal';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
 
@@ -451,8 +452,8 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
         </form>
       </Drawer>
 
-      {/* Record Transaction Drawer */}
-      <Drawer isOpen={showRecordTransaction} onClose={() => setShowRecordTransaction(false)} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'}>
+      {/* Record Transaction Modal */}
+      <Modal isOpen={showRecordTransaction} onClose={() => setShowRecordTransaction(false)} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'}>
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!selectedParty) return;
@@ -576,7 +577,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             <button type="submit" className="button-primary" disabled={isSubmitting}>Save Transaction</button>
           </div>
         </form>
-      </Drawer>
+      </Modal>
     </div>
   );
 };
