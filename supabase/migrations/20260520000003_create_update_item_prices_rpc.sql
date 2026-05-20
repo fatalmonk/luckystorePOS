@@ -44,8 +44,8 @@ BEGIN
     UPDATE items 
     SET 
         price = p_price,
-        mrp = COALESCE(p_mrp, mrp),
-        cost = COALESCE(p_cost, cost),
+        mrp = COALESCE(p_mrp, items.mrp),
+        cost = COALESCE(p_cost, items.cost),
         updated_at = NOW()
     WHERE id = p_item_id 
       AND store_id = p_store_id
