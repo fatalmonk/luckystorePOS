@@ -22,11 +22,13 @@ import {
   ArrowUp,
   ArrowDown,
   CreditCard,
-  Banknote, Download,
+  Banknote, Download, Trash2,
 } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO, subDays } from 'date-fns';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
 import { downloadCSV } from '../../lib/format';
+
+type TempRow = DailySale & { tempId?: string; isNew?: boolean };
 
 const CHART_COLORS = [
   'var(--color-success-default)',
@@ -51,6 +53,10 @@ export function DailySalesPage() {
   const [editValues, setEditValues] = useState<Record<string, Partial<DailySale>>>({});
   const [savingRows, setSavingRows] = useState<Set<string>>(new Set());
   const [savedRows, setSavedRows] = useState<Set<string>>(new Set());
+  const [errorRows, setErrorRows] = useState<Set<string>>(new Set());
+  const [dirtyRows, setDirtyRows] = useState<Set<string>>(new Set());
+  type TempRow = DailySale & { tempId?: string; isNew?: boolean };
+  const [tempRows, setTempRows] = useState<TempRow[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const editableFields = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
@@ -73,6 +79,78 @@ export function DailySalesPage() {
     const salesTotal = cash + bkash + credit;
     const netTotal = salesTotal - purchase - expense;
     return { salesTotal, netTotal };
+  };
+
+  const createNewRow = () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const tempId = `temp-${Date.now()}`;
+    const now = new Date().toISOString();
+    const newRow: TempRow = {
+      id: tempId,
+      tempId,
+      isNew: true,
+      saleDate: today,
+      cashAmount: 0,
+      bkashAmount: 0,
+      creditAmount: 0,
+      totalSales: 0,
+      stockPurchase: 0,
+      dailyExpense: 0,
+      storeId: storeId || '',
+      createdAt: now,
+      updatedAt: now,
+    };
+    setTempRows(prev => [newRow, ...prev]);
+    setEditingCell({ rowId: tempId, field: 'saleDate' });
+  };
+
+  const isTempRow = (id: string) => id.startsWith('temp-');
+
+  const handleCreateFromTemp = async (tempRow: DailySale) => {
+    const edited = editValues[tempRow.id];
+    const values = {
+      saleDate: edited?.saleDate ?? tempRow.saleDate,
+      cashAmount: Number(edited?.cashAmount ?? tempRow.cashAmount ?? 0),
+      bkashAmount: Number(edited?.bkashAmount ?? tempRow.bkashAmount ?? 0),
+      creditAmount: Number(edited?.creditAmount ?? tempRow.creditAmount ?? 0),
+      stockPurchase: Number(edited?.stockPurchase ?? tempRow.stockPurchase ?? 0),
+      dailyExpense: Number(edited?.dailyExpense ?? tempRow.dailyExpense ?? 0),
+    };
+    const { salesTotal } = calculateTotals({ ...values, totalSales: 0 });
+    
+    setSavingRows(prev => new Set(prev).add(tempRow.id));
+    
+    try {
+      await createMutation.mutateAsync({
+        ...values,
+        totalSales: salesTotal,
+      });
+      setTempRows(prev => prev.filter(r => r.id !== tempRow.id));
+      setEditValues(prev => {
+        const next = { ...prev };
+        delete next[tempRow.id];
+        return next;
+      });
+    } catch (err: any) {
+      notify(err.message || 'Failed to create entry', 'error');
+      setErrorRows(prev => new Set(prev).add(tempRow.id));
+    } finally {
+      setSavingRows(prev => {
+        const next = new Set(prev);
+        next.delete(tempRow.id);
+        return next;
+      });
+      setEditingCell(null);
+    }
+  };
+
+  const handleDeleteRow = (id: string) => {
+    if (!window.confirm('Delete this entry? This cannot be undone.')) return;
+    if (isTempRow(id)) {
+      setTempRows((prev: any) => prev.filter((r: any) => r.id !== id));
+    } else {
+      deleteMutation.mutate(id);
+    }
   };
 
   const validateValue = (field: string, value: string): { valid: boolean; parsed: any } => {
@@ -103,6 +181,7 @@ export function DailySalesPage() {
       ...prev,
       [saleId]: { ...prev[saleId], [field]: parsed }
     }));
+    setDirtyRows(prev => new Set(prev).add(saleId));
   };
 
   const saveCellValue = async (sale: DailySale, field: string) => {
@@ -133,6 +212,11 @@ export function DailySalesPage() {
 
     setSavingRows(prev => new Set(prev).add(sale.id));
     setEditingCell(null);
+    setDirtyRows(prev => {
+      const next = new Set(prev);
+      next.delete(sale.id);
+      return next;
+    });
 
     const updates: Partial<DailySaleFormData> = { [field]: newValue };
     
@@ -147,6 +231,11 @@ export function DailySalesPage() {
       notify('Daily sale updated successfully.', 'success');
       queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
       setSavedRows(prev => new Set(prev).add(sale.id));
+      setErrorRows(prev => {
+        const next = new Set(prev);
+        next.delete(sale.id);
+        return next;
+      });
       setTimeout(() => {
         setSavedRows(prev => {
           const next = new Set(prev);
@@ -156,6 +245,7 @@ export function DailySalesPage() {
       }, 2000);
     } catch (err: any) {
       notify(err.message || 'Failed to save row', 'error');
+      setErrorRows(prev => new Set(prev).add(sale.id));
       // Revert to original
       setEditValues(prev => ({
         ...prev,
@@ -173,12 +263,26 @@ export function DailySalesPage() {
   const handleKeyDown = (e: React.KeyboardEvent, sale: DailySale, field: string, rowIndex: number, salesList: DailySale[]) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      saveCellValue(sale, field);
-      // Move to next row, same column
-      if (rowIndex < salesList.length - 1) {
-        setTimeout(() => {
-          setEditingCell({ rowId: salesList[rowIndex + 1].id, field });
-        }, 0);
+      const isLastRow = rowIndex === salesList.length - 1;
+      const isLastField = field === 'dailyExpense';
+      
+      if (isTempRow(sale.id)) {
+        // For temp rows, Enter saves the entire row as new entry
+        handleCreateFromTemp(sale);
+        if (isLastRow) {
+          setTimeout(() => createNewRow(), 100);
+        }
+      } else {
+        saveCellValue(sale, field);
+        // Move to next row, same column
+        if (isLastRow && isLastField) {
+          // On last row's last field, create new row
+          setTimeout(() => createNewRow(), 0);
+        } else if (!isLastRow) {
+          setTimeout(() => {
+            setEditingCell({ rowId: salesList[rowIndex + 1].id, field });
+          }, 0);
+        }
       }
     } else if (e.key === 'Escape') {
       setEditingCell(null);
@@ -186,6 +290,11 @@ export function DailySalesPage() {
         ...prev,
         [sale.id]: { ...sale }
       }));
+      setDirtyRows(prev => {
+        const next = new Set(prev);
+        next.delete(sale.id);
+        return next;
+      });
     } else if (e.key === 'Tab') {
       e.preventDefault();
       const currentFieldIndex = fieldOrder.indexOf(field);
@@ -237,15 +346,22 @@ export function DailySalesPage() {
     const value = getCellValue(sale, field);
     const isSaving = savingRows.has(sale.id);
     const isSaved = savedRows.has(sale.id);
+    const isDirty = dirtyRows.has(sale.id);
+    const hasError = errorRows.has(sale.id);
 
     if (isEditing) {
       const inputType = field === 'saleDate' ? 'date' : 'number';
       const step = field === 'saleDate' ? undefined : '0.01';
       const min = field === 'saleDate' ? undefined : '0';
-      const displayValue = field === 'saleDate' ? value : Number(value || 0);
+      const displayValue = field === 'saleDate' ? value : (value === '' || value === null || value === undefined ? '' : Number(value));
 
       return (
-        <td className="py-2 px-2" key={`${sale.id}-${field}-edit`}>
+        <td className="py-2 px-2 relative" key={`${sale.id}-${field}-edit`}
+          style={{ 
+            border: '2px solid var(--color-primary)',
+            backgroundColor: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))'
+          }}
+        >
           <input
             ref={inputRef}
             type={inputType}
@@ -255,13 +371,9 @@ export function DailySalesPage() {
             onChange={(e) => handleCellChange(sale.id, field, e.target.value)}
             onBlur={() => saveCellValue(sale, field)}
             onKeyDown={(e) => handleKeyDown(e, sale, field, rowIndex, salesList)}
-            className="w-full px-2 py-1 text-sm text-right rounded outline-none"
-            style={{
-              border: '2px solid var(--color-primary)',
-              backgroundColor: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))'
-            }}
+            className="w-full px-2 py-1 text-sm text-right rounded outline-none bg-transparent"
           />
-        </td>
+      </td>
       );
     }
 
@@ -273,13 +385,19 @@ export function DailySalesPage() {
     return (
       <td
         key={`${sale.id}-${field}`}
-        className="py-3 px-4 text-sm text-text-primary text-right cursor-pointer hover:bg-surface-secondary transition-colors"
+        className="py-3 px-4 text-sm text-text-primary text-right cursor-pointer hover:bg-surface-secondary transition-colors relative"
         onClick={() => handleCellClick(sale, field)}
         style={{ opacity: isSaving ? 0.7 : 1 }}
       >
-        {formatValue(value, field)}
+        <span>{formatValue(value, field)}</span>
+        {isDirty && !isSaved && !hasError && (
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-warning" title="Unsaved changes" />
+        )}
         {isSaved && (
-          <span className="ml-2 text-xs text-success">✓</span>
+          <span className="absolute top-1 right-1 text-success text-xs" title="Saved">✓</span>
+        )}
+        {hasError && (
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger" title="Save failed - click to retry" />
         )}
       </td>
     );
@@ -292,13 +410,26 @@ export function DailySalesPage() {
 
   const createMutation = useMutation({
     mutationFn: (form: DailySaleFormData) => api.dailySales.create(storeId, form),
-    onSuccess: () => {
+    onSuccess: (created) => {
       notify('Daily sale recorded successfully.', 'success');
       queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
+      // Remove temp row that matches this new entry
+      setTempRows(prev => prev.filter(r => r.tempId !== created.id));
       setShowForm(false);
     },
     onError: (err: any) => {
       notify(err.message || 'Failed to record daily sale.', 'error');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.dailySales.remove(id),
+    onSuccess: () => {
+      notify('Entry deleted', 'success');
+      queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
+    },
+    onError: (err: any) => {
+      notify(err.message || 'Failed to delete entry.', 'error');
     },
   });
 
@@ -654,7 +785,7 @@ export function DailySalesPage() {
 
       <div className="card p-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
-        {sales && sales.length > 0 ? (
+        {(tempRows.length > 0 || (sales && sales.length > 0)) ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -667,10 +798,11 @@ export function DailySalesPage() {
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Purchase</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Expense</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Net Total</th>
+                  <th className="w-10"></th>
                 </tr>
               </thead>
               <tbody>
-                {sales.map((s, idx) => {
+                {[...tempRows, ...(sales || [])].map((s, idx, list) => {
                   const edited = editValues[s.id] || s;
                   const salesTotal = Number(edited.cashAmount ?? s.cashAmount) + 
                                      Number(edited.bkashAmount ?? s.bkashAmount) + 
@@ -680,17 +812,37 @@ export function DailySalesPage() {
                                    Number(edited.dailyExpense ?? s.dailyExpense);
                   const netColorClass = netTotal >= 0 ? 'text-success' : 'text-danger';
                   const isSaving = savingRows.has(s.id);
+                  const isTemp = isTempRow(s.id);
                   
                   return (
-                    <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary" style={{ opacity: isSaving ? 0.7 : 1 }}>
-                      {renderEditableCell(s, 'saleDate', idx, sales)}
-                      {renderEditableCell(s, 'cashAmount', idx, sales)}
-                      {renderEditableCell(s, 'bkashAmount', idx, sales)}
-                      {renderEditableCell(s, 'creditAmount', idx, sales)}
+                    <tr 
+                      key={s.id} 
+                      className="border-b border-border-default hover:bg-surface-secondary group relative" 
+                      style={{ 
+                        opacity: isSaving ? 0.7 : 1,
+                        backgroundColor: isTemp ? 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))' : undefined
+                      }}
+                    >
+                      {renderEditableCell(s, 'saleDate', idx, list)}
+                      {renderEditableCell(s, 'cashAmount', idx, list)}
+                      {renderEditableCell(s, 'bkashAmount', idx, list)}
+                      {renderEditableCell(s, 'creditAmount', idx, list)}
                       <td className="py-3 px-4 text-sm text-text-primary text-right">৳{salesTotal.toLocaleString()}</td>
-                      {renderEditableCell(s, 'stockPurchase', idx, sales)}
-                      {renderEditableCell(s, 'dailyExpense', idx, sales)}
+                      {renderEditableCell(s, 'stockPurchase', idx, list)}
+                      {renderEditableCell(s, 'dailyExpense', idx, list)}
                       <td className={`py-3 px-4 text-sm font-semibold text-right ${netColorClass}`}>৳{netTotal.toLocaleString()}</td>
+                      <td className="py-3 px-2 w-10">
+                        <button
+                          onClick={() => handleDeleteRow(s.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-danger-subtle"
+                          title="Delete"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-danger)'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -700,10 +852,16 @@ export function DailySalesPage() {
         ) : (
           <EmptyState
             icon={<DollarSign size={48} />}
-            title="No sales data"
-            description="Add daily sales to see entries."
+            title="No entries yet"
+            description="Click '+ Add New Entry' to start."
           />
         )}
+        <button
+          onClick={createNewRow}
+          className="button-primary mt-4 flex items-center gap-2"
+        >
+          <Plus size={18} /> Add New Entry
+        </button>
       </div>
 
       <Drawer

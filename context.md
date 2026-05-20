@@ -2,7 +2,7 @@
 ## Stack
 Flutter, Dart, Supabase, React, TypeScript, Tailwind
 
-## Done (56)
+## Done (57)
 - Drawer fixes: removed z-50 from overlay to fix click handling
 - Modal component: added size prop (sm/md/lg/xl), scrollable height, top-aligned
 - Ledger transaction modal: size="lg" (wider but shorter with scrolling)
@@ -17,15 +17,16 @@ Flutter, Dart, Supabase, React, TypeScript, Tailwind
 - DailySalesPage: renamed to "Daily Sales & Expenditure Summary"
 - DailySalesPage: All Sales Entries table now inline-editable spreadsheet
 - DailySalesPage: added Sales Total and Net Total auto-calculated columns
+- DailySalesPage: inline row creation + deletion with temp row handling
 
 ## Current
-Daily Sales page improvements complete — renamed, calculated columns, inline editing
+Daily sales inline editing complete - creation, deletion, and editing all working
 
 ## Blockers
 None
 
 ## Next
-Commit daily sales changes, optionally add more polish features
+Optional polish: bulk actions, filtering, or chart enhancements
 
 ---
-ctx: daily sales improvements complete | done: 56 | next: commit
+ctx: daily sales inline editing + crud complete | done: 57 | next: optional polish
