@@ -50,25 +50,25 @@ BEGIN
     WHERE id = p_item_id 
       AND store_id = p_store_id
     RETURNING 
-        items.id, 
-        items.name, 
-        items.sku, 
-        items.price, 
-        items.mrp, 
-        items.cost, 
-        items.updated_at
+        items.id AS ret_id, 
+        items.name AS ret_name, 
+        items.sku AS ret_sku, 
+        items.price AS ret_price, 
+        items.mrp AS ret_mrp, 
+        items.cost AS ret_cost, 
+        items.updated_at AS ret_updated_at
     INTO v_result;
     
     -- Note: Audit logging handled by trigger trg_items_price_audit
     
     RETURN QUERY SELECT 
-        v_result.id,
-        v_result.name,
-        v_result.sku,
-        v_result.price,
-        v_result.mrp,
-        v_result.cost,
-        v_result.updated_at;
+        v_result.ret_id,
+        v_result.ret_name,
+        v_result.ret_sku,
+        v_result.ret_price,
+        v_result.ret_mrp,
+        v_result.ret_cost,
+        v_result.ret_updated_at;
 END;
 $$;
 
