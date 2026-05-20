@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -45,6 +45,245 @@ export function DailySalesPage() {
   const [editingSale, setEditingSale] = useState<DailySale | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  // Inline editing state for All Sales Entries table
+  const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, Partial<DailySale>>>({});
+  const [savingRows, setSavingRows] = useState<Set<string>>(new Set());
+  const [savedRows, setSavedRows] = useState<Set<string>>(new Set());
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const editableFields = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
+  const fieldOrder = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
+
+  const getCellValue = (sale: DailySale, field: string) => {
+    const edited = editValues[sale.id];
+    if (edited && field in edited) {
+      return edited[field as keyof DailySale];
+    }
+    return sale[field as keyof DailySale];
+  };
+
+  const calculateTotals = (values: Partial<DailySale>) => {
+    const cash = Number(values.cashAmount ?? 0);
+    const bkash = Number(values.bkashAmount ?? 0);
+    const credit = Number(values.creditAmount ?? 0);
+    const purchase = Number(values.stockPurchase ?? 0);
+    const expense = Number(values.dailyExpense ?? 0);
+    const salesTotal = cash + bkash + credit;
+    const netTotal = salesTotal - purchase - expense;
+    return { salesTotal, netTotal };
+  };
+
+  const validateValue = (field: string, value: string): { valid: boolean; parsed: any } => {
+    if (field === 'saleDate') {
+      return { valid: true, parsed: value };
+    }
+    const num = parseFloat(value);
+    if (isNaN(num)) return { valid: true, parsed: 0 };
+    if (num < 0) return { valid: false, parsed: 0 };
+    if (num > 999999999.99) return { valid: false, parsed: 999999999.99 };
+    return { valid: true, parsed: num };
+  };
+
+  const handleCellClick = (sale: DailySale, field: string) => {
+    if (!editableFields.includes(field)) return;
+    setEditingCell({ rowId: sale.id, field });
+    setEditValues(prev => ({
+      ...prev,
+      [sale.id]: { ...prev[sale.id], ...sale }
+    }));
+  };
+
+  const handleCellChange = (saleId: string, field: string, value: string) => {
+    const { valid, parsed } = validateValue(field, value);
+    if (!valid) return;
+    
+    setEditValues(prev => ({
+      ...prev,
+      [saleId]: { ...prev[saleId], [field]: parsed }
+    }));
+  };
+
+  const saveCellValue = async (sale: DailySale, field: string) => {
+    const edited = editValues[sale.id];
+    if (!edited) {
+      setEditingCell(null);
+      return;
+    }
+
+    const originalValue = sale[field as keyof DailySale];
+    const newValue = edited[field as keyof DailySale];
+
+    // Only save if value actually changed
+    if (JSON.stringify(originalValue) === JSON.stringify(newValue)) {
+      setEditingCell(null);
+      return;
+    }
+
+    // Validation for negative
+    if (field !== 'saleDate' && Number(newValue) < 0) {
+      notify('Amount cannot be negative', 'error');
+      setEditValues(prev => ({
+        ...prev,
+        [sale.id]: { ...prev[sale.id], [field]: 0 }
+      }));
+      return;
+    }
+
+    setSavingRows(prev => new Set(prev).add(sale.id));
+    setEditingCell(null);
+
+    const updates: Partial<DailySaleFormData> = { [field]: newValue };
+    
+    // Also update totalSales if payment amounts changed
+    if (['cashAmount', 'bkashAmount', 'creditAmount'].includes(field)) {
+      const { salesTotal } = calculateTotals(edited);
+      updates.totalSales = salesTotal;
+    }
+
+    try {
+      await api.dailySales.update(sale.id, updates);
+      notify('Daily sale updated successfully.', 'success');
+      queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
+      setSavedRows(prev => new Set(prev).add(sale.id));
+      setTimeout(() => {
+        setSavedRows(prev => {
+          const next = new Set(prev);
+          next.delete(sale.id);
+          return next;
+        });
+      }, 2000);
+    } catch (err: any) {
+      notify(err.message || 'Failed to save row', 'error');
+      // Revert to original
+      setEditValues(prev => ({
+        ...prev,
+        [sale.id]: { ...sale }
+      }));
+    } finally {
+      setSavingRows(prev => {
+        const next = new Set(prev);
+        next.delete(sale.id);
+        return next;
+      });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, sale: DailySale, field: string, rowIndex: number, salesList: DailySale[]) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveCellValue(sale, field);
+      // Move to next row, same column
+      if (rowIndex < salesList.length - 1) {
+        setTimeout(() => {
+          setEditingCell({ rowId: salesList[rowIndex + 1].id, field });
+        }, 0);
+      }
+    } else if (e.key === 'Escape') {
+      setEditingCell(null);
+      setEditValues(prev => ({
+        ...prev,
+        [sale.id]: { ...sale }
+      }));
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const currentFieldIndex = fieldOrder.indexOf(field);
+      let nextFieldIndex: number;
+      let nextRowIndex = rowIndex;
+      
+      if (e.shiftKey) {
+        // Shift+Tab: previous field
+        nextFieldIndex = currentFieldIndex - 1;
+        if (nextFieldIndex < 0) {
+          nextFieldIndex = fieldOrder.length - 1;
+          nextRowIndex = rowIndex - 1;
+        }
+      } else {
+        // Tab: next field
+        nextFieldIndex = currentFieldIndex + 1;
+        if (nextFieldIndex >= fieldOrder.length) {
+          nextFieldIndex = 0;
+          nextRowIndex = rowIndex + 1;
+        }
+      }
+      
+      if (nextRowIndex >= 0 && nextRowIndex < salesList.length) {
+        saveCellValue(sale, field);
+        setTimeout(() => {
+          setEditingCell({ rowId: salesList[nextRowIndex].id, field: fieldOrder[nextFieldIndex] });
+        }, 0);
+      }
+    }
+  };
+
+  const focusInput = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+      if (inputRef.current.type === 'text' || inputRef.current.type === 'number') {
+        inputRef.current.select();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (editingCell) {
+      focusInput();
+    }
+  }, [editingCell, focusInput]);
+
+  const renderEditableCell = (sale: DailySale, field: string, rowIndex: number, salesList: DailySale[]) => {
+    const isEditing = editingCell?.rowId === sale.id && editingCell?.field === field;
+    const value = getCellValue(sale, field);
+    const isSaving = savingRows.has(sale.id);
+    const isSaved = savedRows.has(sale.id);
+
+    if (isEditing) {
+      const inputType = field === 'saleDate' ? 'date' : 'number';
+      const step = field === 'saleDate' ? undefined : '0.01';
+      const min = field === 'saleDate' ? undefined : '0';
+      const displayValue = field === 'saleDate' ? value : Number(value || 0);
+
+      return (
+        <td className="py-2 px-2" key={`${sale.id}-${field}-edit`}>
+          <input
+            ref={inputRef}
+            type={inputType}
+            step={step}
+            min={min}
+            value={displayValue}
+            onChange={(e) => handleCellChange(sale.id, field, e.target.value)}
+            onBlur={() => saveCellValue(sale, field)}
+            onKeyDown={(e) => handleKeyDown(e, sale, field, rowIndex, salesList)}
+            className="w-full px-2 py-1 text-sm text-right rounded outline-none"
+            style={{
+              border: '2px solid var(--color-primary)',
+              backgroundColor: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))'
+            }}
+          />
+        </td>
+      );
+    }
+
+    const formatValue = (val: any, f: string) => {
+      if (f === 'saleDate') return format(new Date(val), 'dd MMM yyyy');
+      return `৳${Number(val || 0).toLocaleString()}`;
+    };
+
+    return (
+      <td
+        key={`${sale.id}-${field}`}
+        className="py-3 px-4 text-sm text-text-primary text-right cursor-pointer hover:bg-surface-secondary transition-colors"
+        onClick={() => handleCellClick(sale, field)}
+        style={{ opacity: isSaving ? 0.7 : 1 }}
+      >
+        {formatValue(value, field)}
+        {isSaved && (
+          <span className="ml-2 text-xs text-success">✓</span>
+        )}
+      </td>
+    );
+  };
 
   const { data: sales, isLoading, error, refetch } = useQuery({
     queryKey: ['dailySales', storeId],
@@ -201,7 +440,7 @@ export function DailySalesPage() {
   if (isLoading) {
     return (
       <div className="sales-container">
-        <PageHeader title="Daily Sales" subtitle="Track and analyze daily sales data." />
+        <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />
         <div className="dashboard-grid mt-6">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-24" />)}
         </div>
@@ -212,7 +451,7 @@ export function DailySalesPage() {
   if (error) {
     return (
       <div className="sales-container">
-        <PageHeader title="Daily Sales" subtitle="Track and analyze daily sales data." />
+        <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />
         <div className="card">
           <ErrorState message="Failed to load daily sales." onRetry={() => refetch()} />
         </div>
@@ -223,8 +462,8 @@ export function DailySalesPage() {
   return (
     <div className="sales-container">
       <PageHeader
-        title="Daily Sales"
-        subtitle="Track and analyze daily sales data."
+        title="Daily Sales & Expenditure Summary"
+        subtitle="Track daily sales, purchases, and expenses with auto-calculated totals."
         actions={
           <div className="flex items-center gap-2">
             <button
@@ -421,26 +660,40 @@ export function DailySalesPage() {
               <thead>
                 <tr className="border-b border-border-default">
                   <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">Date</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Total</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Cash</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Bkash</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Credit</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Sales Total</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Purchase</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Expense</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Net Total</th>
                 </tr>
               </thead>
               <tbody>
-                {sales.map((s) => (
-                  <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary">
-                    <td className="py-3 px-4 text-sm text-text-primary">{format(new Date(s.saleDate), 'dd MMM yyyy')}</td>
-                    <td className="py-3 px-4 text-sm font-semibold text-success text-right">৳{s.totalSales.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.cashAmount.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.bkashAmount.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.creditAmount.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.stockPurchase.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.dailyExpense.toLocaleString()}</td>
-                  </tr>
-                ))}
+                {sales.map((s, idx) => {
+                  const edited = editValues[s.id] || s;
+                  const salesTotal = Number(edited.cashAmount ?? s.cashAmount) + 
+                                     Number(edited.bkashAmount ?? s.bkashAmount) + 
+                                     Number(edited.creditAmount ?? s.creditAmount);
+                  const netTotal = salesTotal - 
+                                   Number(edited.stockPurchase ?? s.stockPurchase) - 
+                                   Number(edited.dailyExpense ?? s.dailyExpense);
+                  const netColorClass = netTotal >= 0 ? 'text-success' : 'text-danger';
+                  const isSaving = savingRows.has(s.id);
+                  
+                  return (
+                    <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary" style={{ opacity: isSaving ? 0.7 : 1 }}>
+                      {renderEditableCell(s, 'saleDate', idx, sales)}
+                      {renderEditableCell(s, 'cashAmount', idx, sales)}
+                      {renderEditableCell(s, 'bkashAmount', idx, sales)}
+                      {renderEditableCell(s, 'creditAmount', idx, sales)}
+                      <td className="py-3 px-4 text-sm text-text-primary text-right">৳{salesTotal.toLocaleString()}</td>
+                      {renderEditableCell(s, 'stockPurchase', idx, sales)}
+                      {renderEditableCell(s, 'dailyExpense', idx, sales)}
+                      <td className={`py-3 px-4 text-sm font-semibold text-right ${netColorClass}`}>৳{netTotal.toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
