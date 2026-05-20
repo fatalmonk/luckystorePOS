@@ -32,6 +32,19 @@ export const products = {
         p_cost: updates.cost ?? null,
       });
       if (error) throw error;
+      // Map RPC response (item_price) to expected interface (price)
+      if (data && data.length > 0) {
+        const row = data[0];
+        return {
+          id: row.item_id,
+          name: row.item_name,
+          sku: row.item_sku,
+          price: row.item_price,
+          mrp: row.item_mrp,
+          cost: row.item_cost,
+          updated_at: row.item_updated_at,
+        };
+      }
       return data;
     }
     // Otherwise fall back to direct update
