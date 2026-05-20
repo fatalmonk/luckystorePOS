@@ -206,7 +206,7 @@ const [searchQuery, setSearchQuery] = useState('');
                   </div>
                 </button>
               ))
-            ))
+            )
           )
         </div>
 
