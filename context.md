@@ -2,7 +2,8 @@
 
 **Stack:** Flutter, Dart, Supabase, React, TypeScript, Tailwind
 
-## Done (52)
+## Done (53)
+- Ledger transaction recording supports multiple line items with auto-calculated total
 - Deployed admin web to Vercel — https://lucky-store-pos-six.vercel.app
 - RPC `update_item_prices` deployed with qualified columns (items.mrp, items.cost)
 - Price edit fixed — was ambiguous column reference error
@@ -12,13 +13,13 @@
 - Inline transaction recording (Record Payment drawer for ledger)
 
 ## Current
-Ledger transaction recording uses Modal (fixed transparent backdrop)
+Multi-item transaction recording implemented — items table with per-line description/amount, auto-total, delete button (disabled for last item), notes field stores item breakdown
 
 ## Blockers
 None
 
 ## Next
-Commit modal fix
+Test multi-item transaction recording with real data
 
 ---
-ctx: modal fix done | done: 52 | next: commit
+ctx: multi-item transactions complete | done: 53 | next: test

@@ -1,15 +1,21 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useId } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { Modal } from '../../components/ui/Modal';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
+
+interface TransactionItem {
+  id: string;
+  description: string;
+  amount: string;
+}
 
 interface LedgerPageConfig {
   partyType: 'customer' | 'supplier';
@@ -59,14 +65,37 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [dateTo, setDateTo] = useState<string | null>(null);
   // Transaction recording state
   const [showRecordTransaction, setShowRecordTransaction] = useState(false);
-  const [transactionAmount, setTransactionAmount] = useState('');
   const [transactionType, setTransactionType] = useState<'debit' | 'credit'>(partyType === 'customer' ? 'credit' : 'debit');
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [transactionNote, setTransactionNote] = useState('');
   const [transactionReference, setTransactionReference] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [transactionItems, setTransactionItems] = useState<TransactionItem[]>([{ id: '1', description: '', amount: '' }]);
   const { tenantId, user } = useAuth();
   const { notify } = useNotify();
+
+  // Calculate total from items
+  const totalAmount = useMemo(() => {
+    return transactionItems.reduce((sum, item) => {
+      const amt = parseFloat(item.amount);
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
+  }, [transactionItems]);
+
+  // Reset transaction form
+  const resetTransactionForm = useCallback(() => {
+    setTransactionType(partyType === 'customer' ? 'credit' : 'debit');
+    setTransactionDate(format(new Date(), 'yyyy-MM-dd'));
+    setTransactionNote('');
+    setTransactionReference('');
+    setTransactionItems([{ id: String(Date.now() + Math.random()), description: '', amount: '' }]);
+  }, [partyType]);
+
+  // Handle close modal
+  const handleCloseModal = useCallback(() => {
+    setShowRecordTransaction(false);
+    resetTransactionForm();
+  }, [resetTransactionForm]);
 
 
   const fetchParties = useCallback(async () => {
@@ -453,15 +482,26 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       </Drawer>
 
       {/* Record Transaction Modal */}
-      <Modal isOpen={showRecordTransaction} onClose={() => setShowRecordTransaction(false)} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'}>
+      <Modal isOpen={showRecordTransaction} onClose={handleCloseModal} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'}>
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!selectedParty) return;
-          const amount = parseFloat(transactionAmount);
-          if (!amount || amount <= 0) {
-            notify('Amount must be greater than 0', 'error');
+
+          // Validate items
+          const validItems = transactionItems.filter(
+            item => item.description.trim() && parseFloat(item.amount) > 0
+          );
+          if (validItems.length === 0) {
+            notify('Please add at least one valid item with description and amount', 'error');
             return;
           }
+
+          const amount = totalAmount;
+          if (!amount || amount <= 0) {
+            notify('Total amount must be greater than 0', 'error');
+            return;
+          }
+
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const selected = new Date(transactionDate);
@@ -470,6 +510,13 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             notify('Date cannot be in the future', 'error');
             return;
           }
+
+          // Build notes with items breakdown
+          const itemsBreakdown = validItems
+            .map(item => `- ${item.description}: ৳${parseFloat(item.amount).toLocaleString()}`)
+            .join('\n');
+          const enhancedNotes = `Items:\n${itemsBreakdown}\nTotal: ৳${amount.toLocaleString()}${transactionNote.trim() ? '\n\n' + transactionNote.trim() : ''}`;
+
           setIsSubmitting(true);
           const { data, error } = await supabase.from('ledger_entries').insert([{
             tenant_id: tenantId,
@@ -479,7 +526,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             reference_id: transactionReference.trim() || null,
             debit_amount: transactionType === 'debit' ? amount : 0,
             credit_amount: transactionType === 'credit' ? amount : 0,
-            notes: transactionNote.trim() || null,
+            notes: enhancedNotes,
             created_by: user?.id || null,
           }]).select().single();
           setIsSubmitting(false);
@@ -500,27 +547,9 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               : p
           ));
           // Reset form and close
-          setTransactionAmount('');
-          setTransactionType(partyType === 'customer' ? 'credit' : 'debit');
-          setTransactionDate(format(new Date(), 'yyyy-MM-dd'));
-          setTransactionNote('');
-          setTransactionReference('');
-          setShowRecordTransaction(false);
+          handleCloseModal();
           notify('Transaction recorded successfully', 'success');
         }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Amount *</label>
-            <input 
-              type="number" 
-              value={transactionAmount} 
-              onChange={e => setTransactionAmount(e.target.value)} 
-              className="input w-full" 
-              placeholder="0.00" 
-              min="0.01"
-              step="0.01"
-              required 
-            />
-          </div>
           <div>
             <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Type *</label>
             <select 
@@ -541,6 +570,87 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               )}
             </select>
           </div>
+
+          {/* Items Section */}
+          <div>
+            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: '4px' }}>Items</label>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>Add one or more line items</p>
+            <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: 'var(--color-background-subtle)' }}>
+                    <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--text-muted)' }}>Description</th>
+                    <th style={{ padding: 'var(--space-3)', textAlign: 'right', fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--text-muted)' }}>Amount (৳)</th>
+                    <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--text-muted)', width: '50px' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactionItems.map((item, index) => (
+                    <tr key={item.id} style={{ borderTop: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: 'var(--space-3)' }}>
+                        <input
+                          type="text"
+                          className="input w-full"
+                          placeholder="Item description"
+                          value={item.description}
+                          onChange={e => {
+                            const newItems = [...transactionItems];
+                            newItems[index].description = e.target.value;
+                            setTransactionItems(newItems);
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: 'var(--space-3)' }}>
+                        <input
+                          type="number"
+                          className="input"
+                          style={{ width: '120px', textAlign: 'right' }}
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                          value={item.amount}
+                          onChange={e => {
+                            const newItems = [...transactionItems];
+                            newItems[index].amount = e.target.value;
+                            setTransactionItems(newItems);
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          className="button-outline"
+                          style={{ padding: '6px', minWidth: 'auto' }}
+                          disabled={transactionItems.length <= 1}
+                          onClick={() => {
+                            if (transactionItems.length > 1) {
+                              setTransactionItems(prev => prev.filter((_, i) => i !== index));
+                            }
+                          }}
+                          title={transactionItems.length <= 1 ? 'Must have at least one item' : 'Remove item'}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-3)' }}>
+              <button
+                type="button"
+                className="button-outline"
+                onClick={() => setTransactionItems(prev => [...prev, { id: String(Date.now() + Math.random()), description: '', amount: '' }])}
+              >
+                + Add Item
+              </button>
+              <div style={{ fontWeight: '700', fontSize: 'var(--font-size-lg)' }}>
+                Total: ৳ {totalAmount.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
           <div>
             <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Date *</label>
             <input 
@@ -573,7 +683,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-            <button type="button" className="button-outline" onClick={() => setShowRecordTransaction(false)}>Cancel</button>
+            <button type="button" className="button-outline" onClick={handleCloseModal}>Cancel</button>
             <button type="submit" className="button-primary" disabled={isSubmitting}>Save Transaction</button>
           </div>
         </form>
