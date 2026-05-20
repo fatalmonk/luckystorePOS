@@ -36,7 +36,7 @@ interface InventoryItem {
 }
 
 export function InventoryListPage() {
-  const { storeId } = useAuth();
+  const { storeId, tenantId } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
@@ -352,7 +352,7 @@ export function InventoryListPage() {
               item={item}
               isHighlighted={highlightedProductId === item.id}
               onUpdateStock={setAdjustingProduct}
-              storeId={storeId}
+              tenantId={tenantId}
             />
           ))}
         </div>

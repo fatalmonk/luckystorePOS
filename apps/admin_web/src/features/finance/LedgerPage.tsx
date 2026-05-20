@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
@@ -51,6 +51,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [showAddParty, setShowAddParty] = useState(false);
+const [searchQuery, setSearchQuery] = useState('');
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyPhone, setNewPartyPhone] = useState('');
   const { tenantId } = useAuth();
@@ -91,6 +92,25 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     }
   };
 
+  // compute running balances in chronological order
+  const entriesWithBalance = useMemo(() => {
+    if (!ledgerEntries) return [];
+    const sorted = [...ledgerEntries].sort((a, b) => {
+      const dateA = new Date(a.effective_date).getTime();
+      const dateB = new Date(b.effective_date).getTime();
+      if (dateA !== dateB) return dateA - dateB;
+      const createdA = (a as any).created_at ? new Date((a as any).created_at).getTime() : 0;
+      const createdB = (b as any).created_at ? new Date((b as any).created_at).getTime() : 0;
+      return createdA - createdB;
+    });
+    let balance = 0;
+    const withBal = sorted.map(entry => {
+      balance += balanceSign * (entry.debit_amount - entry.credit_amount);
+      return { ...entry, runningBalance: balance };
+    });
+    return withBal.reverse();
+  }, [ledgerEntries, balanceSign]);
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -116,10 +136,6 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     );
   }
 
-  const balanceAtPoint = (idx: number) =>
-    ledgerEntries
-      .slice(idx)
-      .reduce((acc, curr) => acc + balanceSign * (curr.debit_amount - curr.credit_amount), 0);
 
   return (
     <div className="dashboard-container">
@@ -131,6 +147,14 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
         {/* Party List */}
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <input
+            className="input w-full"
+            placeholder={`Search ${partyType}s...`}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
           {parties.length === 0 ? (
             <div className="card col-[1/-1]">
@@ -140,34 +164,50 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                 description={emptyDescription}
               />
             </div>
-          ) : parties.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => fetchLedger(p)}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: 'var(--space-4)',
-                borderRadius: 'var(--radius-lg)',
-                border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
-                backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast)',
-                boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
-              }}
-              className="card"
-            >
-              <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
-              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
-              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: (p.current_balance ?? 0) > 0 ? balanceColorPositive : 'var(--color-success)' }}>
-                ৳ {(p.current_balance ?? 0).toLocaleString()}
-              </div>
-              <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
-                {balanceLabel}
-              </div>
-            </button>
-          ))}
+          ) : (
+            parties.filter(p => {
+              const q = searchQuery.toLowerCase();
+              return p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q));
+            }).length === 0 ? (
+              <EmptyState
+                icon={<Icon size={48} />}
+                title="No matches found"
+                description="Try a different search term."
+              />
+            ) : (
+              parties.filter(p => {
+                const q = searchQuery.toLowerCase();
+                return p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q));
+              }).map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => fetchLedger(p)}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: 'var(--space-4)',
+                    borderRadius: 'var(--radius-lg)',
+                    border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
+                    backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                    boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
+                  }}
+                  className="card"
+                >
+                  <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
+                  <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
+                  <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: (p.current_balance ?? 0) > 0 ? balanceColorPositive : 'var(--color-success)' }}>
+                    ৳ {(p.current_balance ?? 0).toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
+                    {balanceLabel}
+                  </div>
+                </button>
+              ))
+            )
+          )}
         </div>
 
         {/* Ledger Detail */}
@@ -220,7 +260,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                         <p style={{ fontSize: 'var(--font-size-sm)' }}>Transactions will appear once sales or payments are recorded.</p>
                       </td>
                     </tr>
-                  ) : ledgerEntries.map((entry, idx) => (
+                  ) : entriesWithBalance.map((entry) => (
                     <tr key={entry.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
                         {format(new Date(entry.effective_date), 'MMM dd, yyyy')}
@@ -238,7 +278,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                         {entry.credit_amount > 0 ? `৳ ${entry.credit_amount.toLocaleString()}` : '-'}
                       </td>
                       <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>
-                        ৳ {balanceAtPoint(idx).toLocaleString()}
+                        ৳ {(entry as any).runningBalance.toLocaleString()}
                       </td>
                     </tr>
                   ))}
