@@ -529,7 +529,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       </Drawer>
 
       {/* Record Transaction Modal */}
-      <Modal isOpen={showRecordTransaction} onClose={handleCloseModal} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'}>
+      <Modal isOpen={showRecordTransaction} onClose={handleCloseModal} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'} size="lg">
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!selectedParty) return;

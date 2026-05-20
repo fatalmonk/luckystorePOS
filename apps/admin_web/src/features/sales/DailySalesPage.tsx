@@ -419,8 +419,8 @@ export function DailySalesPage() {
         )}
       </div>
 
-      {/* Add/Edit Form Drawer */}
-      <Drawer
+      {/* Add/Edit Form Modal */}
+      <Modal
         isOpen={showForm || editingSale !== null}
         onClose={() => {
           setShowForm(false);
@@ -443,7 +443,7 @@ export function DailySalesPage() {
           }}
           isLoading={createMutation.isPending || updateMutation.isPending}
         />
-      </Drawer>
+      </Modal>
     </div>
   );
 }
