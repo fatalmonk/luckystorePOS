@@ -33,13 +33,17 @@ DECLARE
     v_new_cost NUMERIC;
     v_new_updated_at TIMESTAMPTZ;
 BEGIN
-    -- Verify item belongs to tenant
+    -- Verify item belongs to tenant (handle NULL tenant_id for legacy items)
     PERFORM 1 FROM items 
-    WHERE id = p_item_id AND tenant_id = p_tenant_id;
+    WHERE id = p_item_id AND (tenant_id = p_tenant_id OR tenant_id IS NULL);
     
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Item not found or access denied';
     END IF;
+    
+    -- Also update NULL tenant_id to current user's tenant
+    UPDATE items SET tenant_id = p_tenant_id 
+    WHERE id = p_item_id AND tenant_id IS NULL;
     
     -- Perform update
     UPDATE items 
