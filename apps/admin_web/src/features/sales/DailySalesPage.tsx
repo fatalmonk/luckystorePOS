@@ -254,9 +254,7 @@ export function DailySalesPage() {
         <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<DollarSign size={20} className="text-info" />} color="info" variant="light" />
       </div>
 
-      {/* Sales Dashboard */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Overview Stats */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Sales Overview</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -283,7 +281,6 @@ export function DailySalesPage() {
           </div>
         </div>
 
-        {/* Payment Type Breakdown */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Payment Breakdown</h2>
           <div className="h-[200px]">
@@ -326,7 +323,6 @@ export function DailySalesPage() {
         </div>
       </div>
 
-      {/* Monthly Trend */}
       <div className="card p-6 mb-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Monthly Sales Trend</h2>
         {monthlyTrend.length > 0 ? (
@@ -353,7 +349,6 @@ export function DailySalesPage() {
         )}
       </div>
 
-      {/* Daily Trend Line Chart */}
       <div className="card p-6 mb-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Daily Trend (Last 30 Days)</h2>
         {dailyTrend.length > 0 ? (
@@ -382,7 +377,6 @@ export function DailySalesPage() {
         )}
       </div>
 
-      {/* Top Sales Days */}
       <div className="card p-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Top 5 Highest Sales Days</h2>
         {topSalesDays.length > 0 ? (
@@ -419,7 +413,46 @@ export function DailySalesPage() {
         )}
       </div>
 
-      {/* Add/Edit Form Drawer */}
+      <div className="card p-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
+        {sales && sales.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border-default">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">Date</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Total</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Cash</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Bkash</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Credit</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Purchase</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Expense</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.map((s) => (
+                  <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary">
+                    <td className="py-3 px-4 text-sm text-text-primary">{format(new Date(s.saleDate), 'dd MMM yyyy')}</td>
+                    <td className="py-3 px-4 text-sm font-semibold text-success text-right">৳{s.totalSales.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.cashAmount.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.bkashAmount.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.creditAmount.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.stockPurchase.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.dailyExpense.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            icon={<DollarSign size={48} />}
+            title="No sales data"
+            description="Add daily sales to see entries."
+          />
+        )}
+      </div>
+
       <Drawer
         isOpen={showForm || editingSale !== null}
         onClose={() => {
@@ -448,7 +481,6 @@ export function DailySalesPage() {
   );
 }
 
-// Form component for adding/editing daily sales
 function DailySaleForm({
   initialData,
   onSubmit,
@@ -479,7 +511,6 @@ function DailySaleForm({
     const numValue = parseFloat(value) || 0;
     setForm(prev => {
       const updated = { ...prev, [field]: numValue };
-      // Auto-calculate total if cash, bkash, or credit changes
       if (field === 'cashAmount' || field === 'bkashAmount' || field === 'creditAmount') {
         updated.totalSales = updated.cashAmount + updated.bkashAmount + updated.creditAmount;
       }
