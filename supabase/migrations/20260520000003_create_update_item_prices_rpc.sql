@@ -59,32 +59,7 @@ BEGIN
         items.updated_at
     INTO v_result;
     
-    -- Log price change to audit
-    INSERT INTO price_audit_log (
-        item_id,
-        store_id,
-        old_price,
-        new_price,
-        old_mrp,
-        new_mrp,
-        old_cost,
-        new_cost,
-        changed_by,
-        changed_at,
-        source
-    ) VALUES (
-        p_item_id,
-        p_store_id,
-        v_old_price,
-        p_price,
-        v_old_mrp,
-        COALESCE(p_mrp, v_old_mrp),
-        v_old_cost,
-        COALESCE(p_cost, v_old_cost),
-        auth.uid(),
-        NOW(),
-        'manual'
-    );
+    -- Note: Audit logging handled by trigger trg_items_price_audit
     
     RETURN QUERY SELECT 
         v_result.id,
