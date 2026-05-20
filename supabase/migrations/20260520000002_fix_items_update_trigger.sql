@@ -15,6 +15,7 @@ BEGIN
        (OLD.cost IS DISTINCT FROM NEW.cost) THEN
         INSERT INTO price_audit_log (
             item_id,
+            store_id,
             old_price,
             new_price,
             old_mrp,
@@ -25,6 +26,7 @@ BEGIN
             source
         ) VALUES (
             NEW.id,
+            public.get_current_user_store_id(),
             OLD.price,
             NEW.price,
             OLD.mrp,
