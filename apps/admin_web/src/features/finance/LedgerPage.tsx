@@ -85,6 +85,28 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const { tenantId, user, storeId } = useAuth();
   const { notify } = useNotify();
 
+  // Ledger account state (AR/AP + cash)
+  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
+  const [arAccountId, setArAccountId] = useState<string | null>(null);
+  const [apAccountId, setApAccountId] = useState<string | null>(null);
+
+  // Load AR/AP/Cash accounts for this store
+  useEffect(() => {
+    if (!storeId) return;
+    supabase
+      .from('ledger_accounts')
+      .select('id,name,code')
+      .eq('store_id', storeId)
+      .in('code', ['1000_CASH', '1300_ACCOUNTS_RECEIVABLE', '2000_ACCOUNTS_PAYABLE'])
+      .then(({ data }) => {
+        if (data) {
+          setCashAccountId(data.find((a: any) => a.code === '1000_CASH')?.id ?? null);
+          setArAccountId(data.find((a: any) => a.code === '1300_ACCOUNTS_RECEIVABLE')?.id ?? null);
+          setApAccountId(data.find((a: any) => a.code === '2000_ACCOUNTS_PAYABLE')?.id ?? null);
+        }
+      });
+  }, [storeId]);
+
   // Calculate total from items
   const totalAmount = useMemo(() => {
     return transactionItems.reduce((sum, item) => {
@@ -565,35 +587,94 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
           const enhancedNotes = `Items:\n${itemsBreakdown}\nTotal: ৳${amount.toLocaleString()}${transactionNote.trim() ? '\n\n' + transactionNote.trim() : ''}`;
 
           setIsSubmitting(true);
-          const { data, error } = await supabase.from('ledger_entries').insert([{
-            tenant_id: tenantId,
-            party_id: selectedParty.id,
-            effective_date: transactionDate,
-            reference_type: transactionType === 'debit' ? (partyType === 'customer' ? 'sale' : 'purchase') : 'payment',
-            reference_id: transactionReference.trim() || null,
-            debit_amount: transactionType === 'debit' ? amount : 0,
-            credit_amount: transactionType === 'credit' ? amount : 0,
-            notes: enhancedNotes,
-            created_by: user?.id || null,
-          }]).select().single();
+
+          // Determine if this is a payment (cash changes hands) or a credit entry (balance only)
+          const isPayment = partyType === 'customer' ? transactionType === 'credit' : transactionType === 'debit';
+          let result: { data?: any; error?: any };
+
+          if (isPayment) {
+            // Payment received from customer or payment made to supplier — use RPC for double-entry
+            if (!cashAccountId) {
+              setIsSubmitting(false);
+              notify('Cash account not configured. Contact admin.', 'error');
+              return;
+            }
+            const rpcResult = await supabase.rpc('record_customer_payment', {
+              p_idempotency_key: `pay_${Date.now()}_${selectedParty.id}`,
+              p_tenant_id: tenantId,
+              p_store_id: storeId,
+              p_party_id: selectedParty.id,
+              p_amount: amount,
+              p_payment_account_id: cashAccountId,
+              p_client_transaction_id: transactionReference.trim() || null,
+              p_notes: enhancedNotes
+            });
+            result = rpcResult;
+          } else {
+            // Credit sale (customer debit) or credit purchase (supplier credit) — direct ledger entry using production schema
+            // We need to debit AR (customer) or AP (supplier), and credit revenue/expense (no cash moves)
+            const contraAccountId = partyType === 'customer' ? arAccountId : apAccountId;
+            if (!contraAccountId) {
+              setIsSubmitting(false);
+              notify(`${partyType === 'customer' ? 'AR' : 'AP'} account not configured. Contact admin.`, 'error');
+              return;
+            }
+            // Create a ledger batch for this entry
+            const { data: batch, error: batchErr } = await supabase
+              .from('ledger_batches')
+              .insert({ store_id: storeId, source_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE', source_id: selectedParty.id, source_ref: transactionReference.trim() || null, status: 'POSTED' })
+              .select('id')
+              .single();
+            if (batchErr || !batch) {
+              setIsSubmitting(false);
+              notify(batchErr?.message || 'Failed to create journal batch', 'error');
+              return;
+            }
+
+            const { data: entry, error: insertErr } = await supabase
+              .from('ledger_entries')
+              .insert({
+                tenant_id: tenantId,
+                store_id: storeId,
+                batch_id: batch.id,
+                account_id: contraAccountId,
+                party_id: selectedParty.id,
+                debit: transactionType === 'debit' ? amount : 0,
+                credit: transactionType === 'credit' ? amount : 0,
+                debit_amount: transactionType === 'debit' ? amount : 0,
+                credit_amount: transactionType === 'credit' ? amount : 0,
+                reference_type: partyType === 'customer' ? (isPayment ? 'PAYMENT_RECEIVED' : 'CREDIT_SALE') : (isPayment ? 'PAYMENT_MADE' : 'CREDIT_PURCHASE'),
+                reference_id: transactionReference.trim() || null,
+                notes: enhancedNotes,
+                effective_date: transactionDate,
+                created_by: user?.id || null,
+              })
+              .select()
+              .single();
+            result = { data: entry, error: insertErr };
+          }
+
           setIsSubmitting(false);
-          if (error) {
-            notify(error.message, 'error');
+          if (result.error) {
+            notify(result.error.message, 'error');
             return;
           }
-          // Optimistic update
-          const newEntry = data as LedgerEntry;
-          setLedgerEntries(prev => [newEntry, ...prev].sort((a, b) => 
-            new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
-          ));
-          // Update party balance
-          const amountChange = transactionType === 'debit' ? amount : -amount;
-          setParties(prev => prev.map(p => 
-            p.id === selectedParty.id 
-              ? { ...p, current_balance: (p.current_balance ?? 0) + balanceSign * amountChange }
-              : p
-          ));
-          // Reset form and close
+
+          // Refresh ledger + party balance from DB
+          fetchLedger();
+          const { data: updatedParty } = await supabase
+            .from('parties')
+            .select('current_balance')
+            .eq('id', selectedParty.id)
+            .single();
+          if (updatedParty) {
+            setParties(prev => prev.map(p =>
+              p.id === selectedParty.id
+                ? { ...p, current_balance: updatedParty.current_balance ?? 0 }
+                : p
+            ));
+          }
+
           handleCloseModal();
           notify('Transaction recorded successfully', 'success');
         }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>

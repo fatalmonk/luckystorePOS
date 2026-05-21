@@ -1,32 +1,37 @@
 # Lucky Store POS
-## Stack
-Flutter, Dart, Supabase, React, TypeScript, Tailwind
 
-## Done (57)
-- Drawer fixes: removed z-50 from overlay to fix click handling
-- Modal component: added size prop (sm/md/lg/xl), scrollable height, top-aligned
-- Ledger transaction modal: size="lg" (wider but shorter with scrolling)
-- Inventory dropdown auto-fills description + price
-- Multi-item transaction recording with items table
-- RPC `update_item_prices` deployed with qualified columns
-- Price edit fixed — was ambiguous column reference error
-- Added client-side search filter to party list in LedgerPage
-- Date range filter added to ledger detail view (`dateFrom`, `dateTo`)
-- CSV export feature for ledger detail view
-- Inline transaction recording (Record Payment drawer for ledger)
-- DailySalesPage: renamed to "Daily Sales & Expenditure Summary"
-- DailySalesPage: All Sales Entries table now inline-editable spreadsheet
-- DailySalesPage: added Sales Total and Net Total auto-calculated columns
-- DailySalesPage: inline row creation + deletion with temp row handling
+## Stack
+React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
 
 ## Current
-Daily sales inline editing complete - creation, deletion, and editing all working
+Verify Customer Ledger tab on admin portal works with new schema + RPCs
+
+## Done
+- Created standard ledger accounts (Cash, Bank, Sales Revenue, Credit Sales) for all 53 stores
+- Tested `record_customer_payment` RPC — success, ledger entries + party balance correct
+- Migration deployed: `20260521000000_fix_customer_ledger_schema.sql`
+- Verified schema: `ledger_entries` +8 cols, `parties` +`current_balance`, `journal_batches` +4 cols
+- Verified: `idempotency_keys` table, AR/AP accounts, all 3 RPCs
+- Make `batch_id` nullable for manual entries
+- TypeScript compilation clean
+- DailySalesPage inline row creation + editing
+- Drawer → Modal migration
+- Ledger: inventory item selector, multi-item transactions
+- Ledger enhancements merged (#113)
+- Supabase auth hook calling `validate_sale_intent` DISABLED
+
+## Decisions
+- Separate concerns: Flutter POS (cashier-facing), web admin (analytics/competitor monitoring)
+- Bengali (bn_BD) + English, Hind Siliguri font
+- Products table needs name_bn column
+- Supabase DB unreachable via CLI (IPv6-only), use Mgmt API POST /v1/projects/{REF}/database/query
+- Supabase auth hook calling `validate_sale_intent` DISABLED — was breaking Vercel login
 
 ## Blockers
-None
+- None
 
 ## Next
-Optional polish: bulk actions, filtering, or chart enhancements
+Test Customer Ledger tab UI: verify `LedgerPage.tsx` loads AR/AP/Cash, payments post via RPC
 
 ---
-ctx: daily sales inline editing + crud complete | done: 57 | next: optional polish
+ctx: customer ledger schema deployed + tested | done: 15 | next: verify admin portal Customer Ledger tab

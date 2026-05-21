@@ -55,12 +55,11 @@ export function DailySalesPage() {
   const [savedRows, setSavedRows] = useState<Set<string>>(new Set());
   const [errorRows, setErrorRows] = useState<Set<string>>(new Set());
   const [dirtyRows, setDirtyRows] = useState<Set<string>>(new Set());
-  type TempRow = DailySale & { tempId?: string; isNew?: boolean };
   const [tempRows, setTempRows] = useState<TempRow[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const editableFields = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
-  const fieldOrder = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
+  const fieldOrder = editableFields;
 
   const getCellValue = (sale: DailySale, field: string) => {
     const edited = editValues[sale.id];
@@ -81,9 +80,11 @@ export function DailySalesPage() {
     return { salesTotal, netTotal };
   };
 
+  const TEMP_ROW_PREFIX = 'temp-';
+
   const createNewRow = () => {
     const today = format(new Date(), 'yyyy-MM-dd');
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `${TEMP_ROW_PREFIX}${Date.now()}`;
     const now = new Date().toISOString();
     const newRow: TempRow = {
       id: tempId,
@@ -104,7 +105,7 @@ export function DailySalesPage() {
     setEditingCell({ rowId: tempId, field: 'saleDate' });
   };
 
-  const isTempRow = (id: string) => id.startsWith('temp-');
+  const isTempRow = (id: string) => id.startsWith(TEMP_ROW_PREFIX);
 
   const handleCreateFromTemp = async (tempRow: DailySale) => {
     const edited = editValues[tempRow.id];
@@ -147,7 +148,7 @@ export function DailySalesPage() {
   const handleDeleteRow = (id: string) => {
     if (!window.confirm('Delete this entry? This cannot be undone.')) return;
     if (isTempRow(id)) {
-      setTempRows((prev: any) => prev.filter((r: any) => r.id !== id));
+      setTempRows((prev: TempRow[]) => prev.filter((r: TempRow) => r.id !== id));
     } else {
       deleteMutation.mutate(id);
     }
