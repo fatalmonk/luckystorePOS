@@ -37,7 +37,6 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   const [quantity, setQuantity] = useState<number>(1);
   const [reason, setReason] = useState<string>('received');
   const [notes, setNotes] = useState<string>('');
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -163,16 +162,12 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         return api.inventory.set(storeId, product.id, quantity, reason, notes);
       } else {
         const delta = stockMode === 'add' ? quantity : -quantity;
-        return api.inventory.update(storeId, product.id, delta, reason, notes, idempotencyKey);
+        return api.inventory.update(storeId, product.id, delta, reason, notes);
       }
     },
-    onSuccess: (res) => {
-      if (res.is_duplicate) {
-        notify('This update was already processed.', 'info');
-      } else {
-        notify(`Stock updated for ${product.name}`, 'success');
-        onSuccess?.(product.name);
-      }
+    onSuccess: () => {
+      notify(`Stock updated for ${product.name}`, 'success');
+      onSuccess?.(product.name);
       queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
       if (!pricingDirty) onClose();
     },

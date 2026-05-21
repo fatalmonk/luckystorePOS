@@ -6,14 +6,13 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
-  update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string, idempotencyKey?: string) => {
+  update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string, _idempotencyKey?: string) => {
     const { data, error } = await supabase.rpc('adjust_stock', {
       p_store_id: storeId,
       p_item_id: itemId,
       p_delta: delta,
       p_reason: reason,
       p_notes: notes,
-      p_idempotency_key: idempotencyKey
     });
     if (error) throw error;
     return data;
