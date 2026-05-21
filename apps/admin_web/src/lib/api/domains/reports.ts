@@ -68,8 +68,8 @@ export const reports = {
     // Get items with their stock levels
     const { data: items, error: itemsError } = await supabase
       .from('items')
-      .select('id, name, sku, cost, price, active')
-      .eq('active', true);
+      .select('id, name, sku, cost, price, is_active')
+      .eq('is_active', true);
 
     if (itemsError) throw itemsError;
 
