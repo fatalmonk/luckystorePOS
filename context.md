@@ -4,7 +4,7 @@
 React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
 
 ## Current
-TBD — define next feature
+PR #122 pending auto-merge — waiting for CI build check
 
 ## Done
 - Synced remote-only migration placeholders (10 files) to fix CI "Remote migration versions not found" error
@@ -19,6 +19,18 @@ TBD — define next feature
 - **Resolved:** `ledger_batches_status_check` constraint didn't allow 'DELETED' — altered constraint
 - **Resolved:** `deleted_by` FK pointed to `users.id` but RPC used `auth.uid()` (auth_id) — fixed RPC to resolve `users.id`
 - **Verified:** Delete working on local build
+- **Commit:** `ce36768` — all delete changes committed
+- **Pushed:** `feature/ledger-multi-item-transactions` → origin
+- **PR:** https://github.com/fatalmonk/luckystorePOS/pull/121
+- **Fix:** Build error — `LedgerEntry` interface missing `batch_id`, `store_id`, `tenant_id`, `runningBalance`
+- **Commit:** `abb5fdc` — type fix pushed
+- **CI:** Added `.github/workflows/ci.yml` for PR build checks
+- **Commit:** `df54f8c` — CI workflow pushed
+- **Repo config:** Enabled `allow_auto_merge`, branch protection on `main` with required `CI / build` check
+- **PR #121 merged** via auto-merge
+- **PR #122 created:** new commits on branch after #121 merge — auto-merge enabled
+- **Fix:** Migration version conflict — `20260521000001` duplicate between `create_standard_ledger_accounts` and `add_delete_ledger_transaction_rpc`
+- **Commit:** `d849154` — renamed migrations to `00005`, `00006`, `00007`, `00008`
 
 ## Decisions
 - Bengali (bn_BD) + English, Hind Siliguri font
@@ -26,12 +38,13 @@ TBD — define next feature
 - Supabase DB unreachable via CLI (IPv6-only), use Mgmt API
 - Supabase auth hook calling `validate_sale_intent` DISABLED
 - Soft-delete pattern for ledger: batch status = 'DELETED', entries remain immutable
+- Auto-merge + CI build check enabled for PRs to main
 
 ## Blockers
 - None
 
 ## Next
-TBD — define next feature
+TBD — define after PR #122 merges
 
 ---
-ctx: delete verified working | done: 21 | next: TBD
+ctx: PR #122 pending auto-merge | done: 30 | next: TBD
