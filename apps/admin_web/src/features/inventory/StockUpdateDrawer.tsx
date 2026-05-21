@@ -3,6 +3,7 @@ import { X, Save, Plus, Minus, RotateCcw, Upload, ImageIcon } from 'lucide-react
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
+import { convertToWebP } from '../../lib/images';
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 
@@ -30,7 +31,6 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
   const [quantity, setQuantity] = useState<number>(1);
   const [reason, setReason] = useState<string>('received');
   const [notes, setNotes] = useState<string>('');
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -90,12 +90,12 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
 
   const imageMutation = useMutation({
     mutationFn: async (file: File) => {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${product.id}/${crypto.randomUUID()}.${fileExt}`;
+      const webpBlob = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+      const filePath = `${product.id}/${crypto.randomUUID()}.webp`;
 
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, webpBlob, { upsert: true, contentType: 'image/webp' });
 
       if (uploadError) throw new Error(uploadError.message);
 
@@ -132,18 +132,12 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
         return api.inventory.set(storeId, product.id, quantity, reason, notes);
       } else {
         const delta = mode === 'add' ? quantity : -quantity;
-        return api.inventory.update(storeId, product.id, delta, reason, notes, idempotencyKey);
+        return api.inventory.update(storeId, product.id, delta, reason, notes);
       }
     },
-    onSuccess: (res) => {
-      if (res.is_duplicate) {
-        notify('This update was already processed.', 'info');
-      } else {
-        // Show toast with product name instead of generic message
-        notify(`Stock updated for ${product.name}`, 'success');
-        // Trigger highlight callback
-        onSuccess?.(product.name);
-      }
+    onSuccess: () => {
+      notify(`Stock updated for ${product.name}`, 'success');
+      onSuccess?.(product.name);
       queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
       onClose();
     },
