@@ -1,7 +1,5 @@
--- Migration: Fix get_inventory_list to include mrp, barcode, category_name
--- Created: 2026-05-20
-
-DROP FUNCTION IF EXISTS public.get_inventory_list(uuid);
+-- Migration: Fix get_inventory_list — column is is_active, not active
+-- Created: 2026-05-22
 
 CREATE OR REPLACE FUNCTION public.get_inventory_list(p_store_id uuid)
 RETURNS TABLE(

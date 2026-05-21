@@ -4,7 +4,7 @@
 React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
 
 ## Current
-PR #122 pending auto-merge — waiting for CI build check
+Stock update modal & inventory fixes in progress
 
 ## Done
 - Synced remote-only migration placeholders (10 files) to fix CI "Remote migration versions not found" error
@@ -31,6 +31,10 @@ PR #122 pending auto-merge — waiting for CI build check
 - **PR #122 created:** new commits on branch after #121 merge — auto-merge enabled
 - **Fix:** Migration version conflict — `20260521000001` duplicate between `create_standard_ledger_accounts` and `add_delete_ledger_transaction_rpc`
 - **Commit:** `d849154` — renamed migrations to `00005`, `00006`, `00007`, `00008`
+- **Fix:** `get_inventory_list` RPC referenced `i.active` → changed to `i.is_active` (column didn't exist)
+- **Fix:** Stock update modal — removed `p_idempotency_key` (not a param of `adjust_stock`), removed `is_duplicate` check (not in RPC response)
+- **Audit:** Image uploads accept `image/*` with zero compression — WebP conversion recommended for 50-80% size savings
+- **Done:** WebP conversion for new image uploads — `convertToWebP()` in `lib/images.ts`, integrated into StockUpdateDrawer
 
 ## Decisions
 - Bengali (bn_BD) + English, Hind Siliguri font
@@ -44,7 +48,8 @@ PR #122 pending auto-merge — waiting for CI build check
 - None
 
 ## Next
-TBD — define after PR #122 merges
+- Run batch migration to convert existing product images to WebP (one-time, can be done later)
+- Verify PR #122 merge status
 
 ---
-ctx: PR #122 pending auto-merge | done: 30 | next: TBD
+ctx: stock modal fixed | done: 40 | next: WebP conversion, PR #122 status
