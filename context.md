@@ -29,6 +29,8 @@ PR #122 pending auto-merge — waiting for CI build check
 - **Repo config:** Enabled `allow_auto_merge`, branch protection on `main` with required `CI / build` check
 - **PR #121 merged** via auto-merge
 - **PR #122 created:** new commits on branch after #121 merge — auto-merge enabled
+- **Fix:** Migration version conflict — `20260521000001` duplicate between `create_standard_ledger_accounts` and `add_delete_ledger_transaction_rpc`
+- **Commit:** `d849154` — renamed migrations to `00005`, `00006`, `00007`, `00008`
 
 ## Decisions
 - Bengali (bn_BD) + English, Hind Siliguri font
@@ -45,4 +47,4 @@ PR #122 pending auto-merge — waiting for CI build check
 TBD — define after PR #122 merges
 
 ---
-ctx: PR #122 pending auto-merge | done: 29 | next: TBD
+ctx: PR #122 pending auto-merge | done: 30 | next: TBD
