@@ -37,11 +37,13 @@ export function DashboardPage() {
 
   const statsQuery = useQuery({
     queryKey: ['dashboard-stats', storeId],
-    queryFn: () => api.dashboard.getStats(storeId),
+    queryFn: () => api.dashboard.getStats(storeId!),
+    enabled: !!storeId,
   });
   const lowStockQuery = useQuery({
     queryKey: ['low-stock', storeId],
-    queryFn: () => api.dashboard.getLowStock(storeId),
+    queryFn: () => api.dashboard.getLowStock(storeId!),
+    enabled: !!storeId,
   });
 
   // Fetch daily sales data for comparison (ALL days, not just 30)

@@ -80,6 +80,10 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [transactionReference, setTransactionReference] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [transactionItems, setTransactionItems] = useState<TransactionItem[]>([{ id: '1', description: '', amount: '' }]);
+  // Delete transaction state
+  const [deletingEntry, setDeletingEntry] = useState<LedgerEntry | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loadingInventory, setLoadingInventory] = useState(false);
   const { tenantId, user, storeId } = useAuth();
@@ -89,23 +93,44 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [cashAccountId, setCashAccountId] = useState<string | null>(null);
   const [arAccountId, setArAccountId] = useState<string | null>(null);
   const [apAccountId, setApAccountId] = useState<string | null>(null);
+  const [revenueAccountId, setRevenueAccountId] = useState<string | null>(null);
+  const [expenseAccountId, setExpenseAccountId] = useState<string | null>(null);
+  const [dbUserId, setDbUserId] = useState<string | null>(null);
 
-  // Load AR/AP/Cash accounts for this store
+  // Load AR/AP/Cash/Revenue/Expense accounts for this store + get DB user ID for FK
+  const [accountsLoaded, setAccountsLoaded] = useState(false);
   useEffect(() => {
     if (!storeId) return;
+    setAccountsLoaded(false);
+    
+    // Get DB user ID that matches auth user
+    if (user?.id) {
+      supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', user.id)
+        .single()
+        .then(({ data }) => {
+          setDbUserId(data?.id ?? null);
+        });
+    }
+    
     supabase
       .from('ledger_accounts')
       .select('id,name,code')
       .eq('store_id', storeId)
-      .in('code', ['1000_CASH', '1300_ACCOUNTS_RECEIVABLE', '2000_ACCOUNTS_PAYABLE'])
+      .in('code', ['1000_CASH', '1300_ACCOUNTS_RECEIVABLE', '2000_ACCOUNTS_PAYABLE', '4000_SALES_REVENUE', '5000_COST_OF_GOODS_SOLD'])
       .then(({ data }) => {
         if (data) {
           setCashAccountId(data.find((a: any) => a.code === '1000_CASH')?.id ?? null);
           setArAccountId(data.find((a: any) => a.code === '1300_ACCOUNTS_RECEIVABLE')?.id ?? null);
           setApAccountId(data.find((a: any) => a.code === '2000_ACCOUNTS_PAYABLE')?.id ?? null);
+          setRevenueAccountId(data.find((a: any) => a.code === '4000_SALES_REVENUE')?.id ?? null);
+          setExpenseAccountId(data.find((a: any) => a.code === '5000_COST_OF_GOODS_SOLD')?.id ?? null);
         }
+        setAccountsLoaded(true);
       });
-  }, [storeId]);
+  }, [storeId, user]);
 
   // Calculate total from items
   const totalAmount = useMemo(() => {
@@ -195,19 +220,18 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       notify('From date must be before To date', 'error');
       return;
     }
-    let query = supabase
-      .from('ledger_entries')
-      .select('*')
-      .eq('party_id', selectedParty.id);
-    if (dateFrom) {
-      query = query.gte('effective_date', dateFrom);
-    }
-    if (dateTo) {
-      query = query.lte('effective_date', dateTo);
-    }
-    const { data, error } = await query.order('effective_date', { ascending: false });
+    
+    // Use RPC to get entries excluding deleted batches
+    const { data, error } = await supabase.rpc('get_party_ledger', {
+      p_party_id: selectedParty.id,
+      p_date_from: dateFrom,
+      p_date_to: dateTo
+    });
+    
     if (!error && data) {
       setLedgerEntries(data as LedgerEntry[]);
+    } else if (error) {
+      console.error('Fetch ledger error:', error);
     }
   }, [selectedParty, dateFrom, dateTo, notify]);
 
@@ -235,7 +259,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       return { ...entry, runningBalance: balance };
     });
     return withBal.reverse();
-  }, [ledgerEntries, balanceSign]);
+  }, [ledgerEntries, balanceSign, refreshKey]);
 
   // CSV export function
   const exportCSV = useCallback(() => {
@@ -466,6 +490,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                     <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{debitLabel}</th>
                     <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{creditLabel}</th>
                     <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Balance</th>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'center', width: '60px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -495,6 +520,17 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                       </td>
                       <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>
                         ৳ {(entry as any).runningBalance.toLocaleString()}
+                      </td>
+                      <td style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          className="button-outline"
+                          style={{ padding: '6px', minWidth: 'auto', color: 'var(--color-error)' }}
+                          onClick={() => setDeletingEntry(entry)}
+                          title="Delete transaction"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -610,19 +646,20 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               p_notes: enhancedNotes
             });
             result = rpcResult;
-          } else {
+            } else {
             // Credit sale (customer debit) or credit purchase (supplier credit) — direct ledger entry using production schema
-            // We need to debit AR (customer) or AP (supplier), and credit revenue/expense (no cash moves)
-            const contraAccountId = partyType === 'customer' ? arAccountId : apAccountId;
-            if (!contraAccountId) {
+            // We need to debit AR (customer) or expense, and credit revenue or AP (no cash moves)
+            const debitAccountId = partyType === 'customer' ? arAccountId : expenseAccountId;
+            const creditAccountId = partyType === 'customer' ? revenueAccountId : apAccountId;
+            if (!debitAccountId || !creditAccountId) {
               setIsSubmitting(false);
-              notify(`${partyType === 'customer' ? 'AR' : 'AP'} account not configured. Contact admin.`, 'error');
+              notify(`${partyType === 'customer' ? 'AR or Revenue' : 'Expense or AP'} account not configured. Contact admin.`, 'error');
               return;
             }
             // Create a ledger batch for this entry
             const { data: batch, error: batchErr } = await supabase
               .from('ledger_batches')
-              .insert({ store_id: storeId, source_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE', source_id: selectedParty.id, source_ref: transactionReference.trim() || null, status: 'POSTED' })
+              .insert({ store_id: storeId, source_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE', source_id: selectedParty.id, source_ref: transactionReference.trim() || null, status: 'POSTED', created_by: dbUserId })
               .select('id')
               .single();
             if (batchErr || !batch) {
@@ -631,27 +668,47 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               return;
             }
 
-            const { data: entry, error: insertErr } = await supabase
+            // Double-entry: insert BOTH sides (debit + credit)
+            const { data: entries, error: insertErr } = await supabase
               .from('ledger_entries')
-              .insert({
-                tenant_id: tenantId,
-                store_id: storeId,
-                batch_id: batch.id,
-                account_id: contraAccountId,
-                party_id: selectedParty.id,
-                debit: transactionType === 'debit' ? amount : 0,
-                credit: transactionType === 'credit' ? amount : 0,
-                debit_amount: transactionType === 'debit' ? amount : 0,
-                credit_amount: transactionType === 'credit' ? amount : 0,
-                reference_type: partyType === 'customer' ? (isPayment ? 'PAYMENT_RECEIVED' : 'CREDIT_SALE') : (isPayment ? 'PAYMENT_MADE' : 'CREDIT_PURCHASE'),
-                reference_id: transactionReference.trim() || null,
-                notes: enhancedNotes,
-                effective_date: transactionDate,
-                created_by: user?.id || null,
-              })
-              .select()
-              .single();
-            result = { data: entry, error: insertErr };
+              .insert([
+                {
+                  // Debit side: AR (customer) or Expense (supplier)
+                  tenant_id: tenantId,
+                  store_id: storeId,
+                  batch_id: batch.id,
+                  account_id: debitAccountId,
+                  party_id: selectedParty.id,
+                  debit: amount,
+                  credit: 0,
+                  debit_amount: amount,
+                  credit_amount: 0,
+                  reference_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE',
+                  reference_id: transactionReference.trim() || null,
+                  notes: enhancedNotes,
+                  effective_date: transactionDate,
+                  created_by: dbUserId,
+                },
+                {
+                  // Credit side: Revenue (customer) or AP (supplier)
+                  tenant_id: tenantId,
+                  store_id: storeId,
+                  batch_id: batch.id,
+                  account_id: creditAccountId,
+                  party_id: partyType === 'supplier' ? selectedParty.id : null,
+                  debit: 0,
+                  credit: amount,
+                  debit_amount: 0,
+                  credit_amount: amount,
+                  reference_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE',
+                  reference_id: transactionReference.trim() || null,
+                  notes: enhancedNotes,
+                  effective_date: transactionDate,
+                  created_by: dbUserId,
+                }
+              ])
+              .select();
+            result = { data: entries, error: insertErr };
           }
 
           setIsSubmitting(false);
@@ -841,6 +898,106 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             <button type="submit" className="button-primary" disabled={isSubmitting}>Save Transaction</button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Transaction Confirmation Modal */}
+      <Modal isOpen={!!deletingEntry} onClose={() => setDeletingEntry(null)} title="Delete Transaction" size="sm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <p style={{ color: 'var(--text-muted)' }}>
+            Are you sure you want to delete this transaction?
+          </p>
+          {deletingEntry && (
+            <div style={{ backgroundColor: 'var(--color-background-subtle)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)' }}>
+              <div><strong>Date:</strong> {format(new Date(deletingEntry.effective_date), 'MMM dd, yyyy')}</div>
+              <div><strong>Type:</strong> {deletingEntry.reference_type}</div>
+              <div><strong>Amount:</strong> ৳ {(deletingEntry.debit_amount > 0 ? deletingEntry.debit_amount : deletingEntry.credit_amount).toLocaleString()}</div>
+            </div>
+          )}
+          <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>
+            This will permanently delete the transaction and update the balance. This action cannot be undone.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+            <button type="button" className="button-outline" onClick={() => setDeletingEntry(null)} disabled={isDeleting}>Cancel</button>
+            <button
+              type="button"
+              className="button-primary"
+              style={{ backgroundColor: 'var(--color-error)', borderColor: 'var(--color-error)' }}
+              disabled={isDeleting}
+              onClick={async () => {
+                if (!deletingEntry || !selectedParty) return;
+                setIsDeleting(true);
+                
+                console.log('Deleting entry:', deletingEntry);
+                console.log('Batch ID:', deletingEntry.batch_id);
+                
+                if (!deletingEntry.batch_id) {
+                  notify('Cannot delete: missing batch ID', 'error');
+                  setIsDeleting(false);
+                  return;
+                }
+                
+                // Delete via RPC (bypasses RLS)
+                const { data: deleteResult, error } = await supabase.rpc('delete_ledger_transaction', {
+                  p_batch_id: deletingEntry.batch_id,
+                  p_party_id: selectedParty.id
+                });
+                
+                console.log('Delete RPC result:', { deleteResult, error });
+                
+                if (error) {
+                  notify(error.message, 'error');
+                  setIsDeleting(false);
+                  return;
+                }
+                
+                if (deleteResult?.status === 'error') {
+                  notify(deleteResult.message, 'error');
+                  setIsDeleting(false);
+                  return;
+                }
+                
+                // Wait for cascade
+                await new Promise(r => setTimeout(r, 500));
+                
+                // Fetch updated ledger using RPC (excludes deleted)
+                const { data: updatedEntries, error: fetchError } = await supabase.rpc('get_party_ledger', {
+                  p_party_id: selectedParty.id,
+                  p_date_from: dateFrom,
+                  p_date_to: dateTo
+                });
+                
+                console.log('Fetched entries after delete:', updatedEntries?.length);
+                
+                if (!fetchError && updatedEntries) {
+                  setLedgerEntries([...updatedEntries] as LedgerEntry[]);
+                  setRefreshKey(k => k + 1);
+                } else if (fetchError) {
+                  console.error('Fetch error after delete:', fetchError);
+                }
+                
+                // Refresh party balance
+                const { data: updatedParty } = await supabase
+                  .from('parties')
+                  .select('current_balance')
+                  .eq('id', selectedParty.id)
+                  .single();
+                if (updatedParty) {
+                  setParties(prev => prev.map(p =>
+                    p.id === selectedParty.id
+                      ? { ...p, current_balance: updatedParty.current_balance ?? 0 }
+                      : p
+                  ));
+                }
+                
+                setIsDeleting(false);
+                setDeletingEntry(null);
+                notify('Transaction deleted successfully', 'success');
+              }}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
