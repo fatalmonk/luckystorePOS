@@ -20,4 +20,8 @@ export interface LedgerEntry {
   reference_type: string;
   reference_id: string;
   notes?: string;
+  batch_id: string;
+  store_id?: string;
+  tenant_id?: string | null;
+  runningBalance?: number;
 }
