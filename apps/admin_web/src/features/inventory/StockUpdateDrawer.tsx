@@ -193,7 +193,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity z-40"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity z-40"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -212,7 +212,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
           <div className="w-12 h-1 rounded-full bg-border-strong" />
         </div>
         {/* Header */}
-        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-surface-default sticky top-0 z-10">
+        <header className="flex justify-between items-start p-6 border-b border-border-default bg-surface-default sticky top-0 z-10">
           <div>
             <h2
               id="stock-drawer-title"
@@ -234,7 +234,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-slate-50/50"
+          className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-surface-default"
         >
           {/* Mode Selection */}
           <div className="grid grid-cols-3 gap-2" role="group" aria-label="Stock adjustment mode">

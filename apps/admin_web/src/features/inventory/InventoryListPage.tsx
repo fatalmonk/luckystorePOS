@@ -41,7 +41,7 @@ export function InventoryListPage() {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
