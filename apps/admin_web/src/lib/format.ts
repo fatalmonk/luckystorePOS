@@ -1,5 +1,6 @@
 export function formatCurrency(amount: number): string {
-  return `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const absAmountStr = Math.abs(amount).toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return amount < 0 ? `-৳${absAmountStr}` : `৳${absAmountStr}`;
 }
 
 export function formatCurrencyCompact(amount: number): string {

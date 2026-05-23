@@ -63,9 +63,9 @@ export function App() {
               <OfflineIndicator />
               <Routes>
                 <Route path="/oauth/consent" element={<OAuthConsentPage />} />
+                <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route index element={<DashboardPage />} />
-                  <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
                   <Route path="products" element={<LazyRoute><LazyProductListPage /></LazyRoute>} />
                   <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />

@@ -1,5 +1,6 @@
 import { ShoppingCart, Trash2, Minus, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useSwipeable } from 'react-swipeable';
+import { useState, useEffect } from 'react';
 import type { CartItem } from '../../lib/api/types';
 
 interface CartPanelProps {
@@ -189,6 +190,15 @@ function CartItemRow({
 }) {
   const [isUpdated, setIsUpdated] = useState(false);
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => onRemoveFromCart(item.product.id),
+    // Optionally add a threshold or prevent swipe on desktop
+    delta: 30,
+    preventDefaultTouchmoveEvent: true,
+    trackTouch: true,
+    trackMouse: false,
+  });
+
   useEffect(() => {
     setIsUpdated(true);
     const timer = setTimeout(() => setIsUpdated(false), 300);
@@ -197,6 +207,7 @@ function CartItemRow({
 
   return (
     <li
+      {...swipeHandlers}
       className={`
         billing-item flex items-center gap-3 p-3 rounded-md
         transition-all duration-200
@@ -254,7 +265,6 @@ function CartItemRow({
   );
 }
 
-// Animated amount that highlights when it changes
 function AnimatedAmount({ value, className }: { value: number; className?: string }) {
   const [displayValue, setDisplayValue] = useState(value);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -268,12 +278,11 @@ function AnimatedAmount({ value, className }: { value: number; className?: strin
   }, [value, displayValue]);
 
   return (
-    <span 
+    <span
       className={`
         tabular-nums transition-all duration-200
         ${isFlashing ? 'text-success scale-105 font-bold text-lg' : ''}
-        ${className || ''}
-      `}
+        ${className || ''}`}
     >
       ৳{displayValue.toFixed(2)}
     </span>

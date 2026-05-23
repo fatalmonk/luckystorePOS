@@ -27,6 +27,7 @@
     "react-hook-form": "^7.73.1",
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.14.2",
+    "react-swipeable": "^7.0.2",
     "recharts": "^3.8.1",
     "zod": "^4.3.6"
   },

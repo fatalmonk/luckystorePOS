@@ -1,8 +1,9 @@
 .app-container {
   display: grid;
   grid-template-columns: 260px 1fr;
-  grid-template-rows: 64px 1fr;
-  min-height: 100vh;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .app-container.sidebar-hidden {
@@ -96,18 +97,18 @@
 @media (max-width: 768px) {
   .app-container {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px 1fr 64px;
+    grid-template-rows: 56px 1fr 56px;
   }
   .app-container.sidebar-hidden {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px 1fr 64px;
+    grid-template-rows: 56px 1fr 56px;
   }
   .sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    bottom: 64px;
-    height: calc(100vh - 64px);
+    bottom: 56px;
+    height: calc(100vh - 56px);
     z-index: 20;
     transform: translateX(0);
     width: 260px;
@@ -167,7 +168,7 @@
 .top-header {
   grid-column: 2;
   grid-row: 1;
-  height: 64px;
+  height: 56px;
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border-default);
   display: flex;
@@ -175,7 +176,7 @@
   padding: 0 24px;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 50;
 }
 
 .app-container.sidebar-hidden .top-header {
