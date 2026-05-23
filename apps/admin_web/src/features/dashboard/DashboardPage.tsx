@@ -242,8 +242,8 @@ export function DashboardPage() {
                   const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
                   const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
                   return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                      <div className="flex items-end gap-0.5 w-full justify-center" style={{ height: '100%' }}>
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full">
+                      <div className="flex items-end gap-0.5 w-full justify-center h-full">
                         <div
                           style={{
                             width: '28%',
