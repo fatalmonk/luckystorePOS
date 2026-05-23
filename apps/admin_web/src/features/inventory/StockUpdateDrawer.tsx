@@ -212,7 +212,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
           <div className="w-12 h-1 rounded-full bg-border-strong" />
         </div>
         {/* Header */}
-        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-surface-default sticky top-0 z-10">
           <div>
             <h2
               id="stock-drawer-title"

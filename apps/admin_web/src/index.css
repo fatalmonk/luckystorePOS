@@ -4,6 +4,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   WARM DESIGN SYSTEM — Global Styles
+   ============================================ */
+
+/* Warm mode application container */
+.app-warm {
+  background-color: var(--warm-bg);
+  color: var(--warm-fg);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+/* Warm typography utilities */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono-warm {
+  font-family: var(--font-mono-warm);
+}
+
+/* Warm transition utility */
+.transition-warm {
+  transition: var(--transition-warm);
+}
+
 /* POS specific animations */
 
 /* Product card flash animation */

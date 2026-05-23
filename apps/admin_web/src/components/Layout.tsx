@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
+import { SidebarNew } from './SidebarNew';
 import { BottomNav } from './BottomNav';
 import { TopHeader } from './TopHeader';
 import '../styles/tokens.css';
@@ -9,9 +9,8 @@ import '../styles/layout.css';
 import '../styles/components.css';
 
 export function Layout() {
-  const [sidebarHidden, setSidebarHidden] = useState(() => {
-    return window.innerWidth < 768;
-  });
+  const [sidebarHidden, setSidebarHidden] = useState(() => window.innerWidth < 768);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
@@ -21,15 +20,30 @@ export function Layout() {
       if (mobile && !sidebarHidden) {
         setSidebarHidden(true);
       }
+      if (mobile) {
+        setSidebarCollapsed(false);
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [sidebarHidden]);
 
   return (
-    <div className={`app-container ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''}`}>
-      <Sidebar hidden={sidebarHidden} onClose={() => setSidebarHidden(true)} />
-      <TopHeader onToggleSidebar={() => setSidebarHidden(h => !h)} sidebarHidden={sidebarHidden} />
+    <div className={`app-container app-warm ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''} ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <SidebarNew 
+        isMobile={isMobile} 
+        collapsed={sidebarCollapsed} 
+        onToggleCollapse={() => setSidebarCollapsed(c => !c)} 
+        hidden={sidebarHidden}
+        onClose={() => setSidebarHidden(true)}
+      />
+      <TopHeader 
+        onToggleSidebar={() => setSidebarHidden(h => !h)} 
+        sidebarHidden={sidebarHidden}
+        onToggleCollapse={() => setSidebarCollapsed(c => !c)}
+        collapsed={sidebarCollapsed}
+        isMobile={isMobile}
+      />
       <main className="main-content">
         <Outlet />
       </main>

@@ -27,10 +27,10 @@ interface InventoryListTableProps {
   onDelete?: (item: InventoryItem) => void;
 }
 
-const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
-  OK: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  LOW: { bg: 'bg-amber-100', text: 'text-amber-700' },
-  OUT: { bg: 'bg-red-100', text: 'text-red-700' },
+const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  OK: { bg: 'bg-warm-success/10', text: 'text-warm-success', border: 'border-warm-success/20' },
+  LOW: { bg: 'bg-warm-warning/10', text: 'text-warm-warning', border: 'border-warm-warning/20' },
+  OUT: { bg: 'bg-warm-danger/10', text: 'text-warm-danger', border: 'border-warm-danger/20' },
 };
 
 export function InventoryListTable({
@@ -45,40 +45,40 @@ export function InventoryListTable({
   const fmt = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="w-full overflow-hidden rounded-xl border border-warm-border-warm bg-warm-surface">
       <div className="max-h-[600px] overflow-auto">
         <table className="w-full border-collapse">
           {/* Sticky Header */}
           <thead className="sticky top-0 z-10">
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+            <tr className="bg-warm-border-warm/50 border-b border-warm-border-warm">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Product
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Category
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 SKU
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Barcode
               </th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-center text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Stock
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Status
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Cost
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Price
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 MRP
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em]">
                 Actions
               </th>
             </tr>
@@ -88,7 +88,7 @@ export function InventoryListTable({
           <tbody>
             {items.length === 0 ? (
             <tr>
-              <td colSpan={11} className="px-4 py-12 text-center text-sm text-slate-500">
+              <td colSpan={11} className="px-4 py-12 text-center text-sm text-warm-dim">
                   No inventory items found. Add products to start tracking stock levels.
                 </td>
               </tr>
@@ -100,12 +100,12 @@ export function InventoryListTable({
                 return (
                   <tr
                     key={item.id}
-                    className="bg-white border-b border-slate-100 transition-colors hover:bg-slate-50"
+                    className="bg-warm-surface border-b border-warm-border-warm/50 transition-colors duration-200 hover:bg-warm-border-warm/30"
                   >
                     {/* Product */}
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-warm-border-warm flex items-center justify-center overflow-hidden flex-shrink-0">
                           {item.image_url ? (
                             <img
                               src={item.image_url}
@@ -114,11 +114,11 @@ export function InventoryListTable({
                               loading="lazy"
                             />
                           ) : (
-                            <Package size={18} className="text-slate-400" />
+                            <Package size={18} className="text-warm-dim" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-900 truncate max-w-[200px]">
+                          <div className="text-sm font-medium text-warm-fg truncate max-w-[200px] font-display">
                             {item.name}
                           </div>
                         </div>
@@ -127,21 +127,21 @@ export function InventoryListTable({
 
                     {/* Category */}
                     <td className="px-4 py-4">
-                      <span className="text-sm text-slate-600">
+                      <span className="text-sm text-warm-muted">
                         {item.category_name || item.category_id || '—'}
                       </span>
                     </td>
 
                     {/* SKU */}
                     <td className="px-4 py-4">
-                      <span className="text-sm text-slate-600 font-mono">
+                      <span className="text-sm text-warm-muted font-mono">
                         {item.sku || '—'}
                       </span>
                     </td>
 
                     {/* Barcode */}
                     <td className="px-4 py-4">
-                      <span className="text-sm text-slate-600 font-mono">
+                      <span className="text-sm text-warm-muted font-mono">
                         {item.barcode || '—'}
                       </span>
                     </td>
@@ -151,7 +151,7 @@ export function InventoryListTable({
                       <span
                         className={clsx(
                           'text-base font-mono',
-                          isLow ? 'font-bold text-red-600' : 'text-slate-700'
+                          isLow ? 'font-semibold text-warm-danger' : 'text-warm-fg'
                         )}
                       >
                         {item.current_qty}
@@ -162,9 +162,10 @@ export function InventoryListTable({
                     <td className="px-4 py-4">
                       <span
                         className={clsx(
-                          'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold',
+                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border',
                           statusStyle.bg,
-                          statusStyle.text
+                          statusStyle.text,
+                          statusStyle.border
                         )}
                       >
                         {item.reorder_status}
@@ -173,21 +174,21 @@ export function InventoryListTable({
 
                     {/* Cost */}
                     <td className="px-4 py-4 text-right">
-                      <span className="font-mono text-sm text-slate-900">
+                      <span className="font-mono text-sm text-warm-fg">
                         ৳{fmt(item.cost || 0)}
                       </span>
                     </td>
 
                     {/* Price */}
                     <td className="px-4 py-4 text-right">
-                      <span className="font-mono text-sm text-slate-900">
+                      <span className="font-mono text-sm text-warm-fg">
                         ৳{fmt(item.price || 0)}
                       </span>
                     </td>
 
                     {/* MRP */}
                     <td className="px-4 py-4 text-right">
-                      <span className="font-mono text-sm text-slate-900">
+                      <span className="font-mono text-sm text-warm-fg">
                         ৳{fmt(item.mrp || 0)}
                       </span>
                     </td>
@@ -197,7 +198,7 @@ export function InventoryListTable({
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => onUpdateStock(item)}
-                          className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                          className="p-2 rounded-lg text-warm-muted hover:bg-warm-border-warm/50 hover:text-warm-fg transition-colors"
                           title="Update Stock"
                         >
                           <ArrowUpDown size={16} />
@@ -206,7 +207,7 @@ export function InventoryListTable({
                         <div className="relative">
                           <button
                             onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
-                            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                            className="p-2 rounded-lg text-warm-muted hover:bg-warm-border-warm/50 hover:text-warm-fg transition-colors"
                           >
                             <MoreVertical size={16} />
                           </button>
@@ -217,13 +218,13 @@ export function InventoryListTable({
                                 className="fixed inset-0 z-40"
                                 onClick={() => setOpenMenuId(null)}
                               />
-                              <div className="absolute right-0 bottom-full mb-1 w-40 bg-white rounded-lg border border-slate-200 shadow-lg z-50 py-1">
+                              <div className="absolute right-0 bottom-full mb-1 w-40 bg-warm-surface rounded-lg border border-warm-border-warm shadow-lg z-50 py-1">
                                 <button
                                   onClick={() => {
                                     onViewHistory?.(item);
                                     setOpenMenuId(null);
                                   }}
-                                  className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm text-warm-fg hover:bg-warm-border-warm/50 flex items-center gap-2 transition-colors"
                                 >
                                   <History size={14} />
                                   View History
@@ -233,22 +234,22 @@ export function InventoryListTable({
                                     onEditProduct?.(item);
                                     setOpenMenuId(null);
                                   }}
-                                  className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm text-warm-fg hover:bg-warm-border-warm/50 flex items-center gap-2 transition-colors"
                                 >
                                   <Pencil size={14} />
                                   Edit Product
                                 </button>
-                                <hr className="my-1 border-slate-100" />
+                                <hr className="my-1 border-warm-border-warm" />
                                 <button
                                   onClick={() => {
                                     onDelete?.(item);
                                     setOpenMenuId(null);
                                   }}
-                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm text-warm-danger hover:bg-warm-danger/10 flex items-center gap-2 transition-colors"
                                 >
                                   <Trash2 size={14} />
-                                  Delete
-                                </button>
+                                    Delete
+                                  </button>
                               </div>
                             </>
                           )}

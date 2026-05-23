@@ -95,8 +95,7 @@ export const Drawer = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 transition-opacity"
-        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
+        className="fixed inset-0 transition-opacity bg-warm-deep/40 backdrop-blur-sm"
         onClick={preventOutsideClose ? undefined : onClose}
         aria-hidden="true"
       />
@@ -105,21 +104,20 @@ export const Drawer = ({
       <div
         ref={drawerRef}
         className={clsx(
-          'relative ml-auto w-80 max-w-full h-full shadow-lg',
+          'relative ml-auto w-80 max-w-full h-full shadow-level-3 rounded-l-xl bg-warm-surface border-l border-warm-border-warm',
           'transform transition-transform',
           className
         )}
         style={{ 
-          backgroundColor: 'var(--color-surface-default, #ffffff)',
           zIndex: 51
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border-default">
+        <div className="flex items-center justify-between p-4 border-b border-warm-border-warm">
           {title && (
             <h2
               id="drawer-title"
-              className="text-lg font-medium text-text-primary"
+              className="text-lg font-medium text-warm-fg font-display"
             >
               {title}
             </h2>
@@ -127,7 +125,7 @@ export const Drawer = ({
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="flex items-center justify-center w-10 h-10 rounded-md text-text-secondary hover:text-text-primary hover:bg-background-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+            className="flex items-center justify-center w-10 h-10 rounded-md text-warm-muted hover:text-warm-fg hover:bg-warm-bg/50 transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent/30"
             aria-label="Close drawer"
           >
             <X size={20} />

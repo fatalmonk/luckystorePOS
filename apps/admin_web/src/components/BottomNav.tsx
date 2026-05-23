@@ -16,7 +16,7 @@ export function BottomNav() {
   if (location.pathname === '/login') return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border-subtle">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-warm-surface border-t border-warm-border-warm">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
@@ -27,8 +27,8 @@ export function BottomNav() {
               to={item.path}
               className={`flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[64px] min-h-[44px] transition-colors ${
                 isActive 
-                  ? 'text-primary-default' 
-                  : 'text-text-muted hover:text-text-primary'
+                  ? 'text-warm-accent' 
+                  : 'text-warm-muted hover:text-warm-fg'
               }`}
               aria-current={isActive ? 'page' : undefined}
             >

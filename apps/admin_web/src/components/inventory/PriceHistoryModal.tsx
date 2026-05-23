@@ -47,7 +47,7 @@ export function PriceHistoryModal({ productId, storeId, productName, isOpen, onC
       <div className="absolute inset-0 bg-slate-900/50" onClick={onClose} />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-surface-default rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
