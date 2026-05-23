@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO, subDays } from 'date-fns';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
-import { downloadCSV } from '../../lib/format';
+import { downloadCSV, formatCurrency } from '../../lib/format';
 
 type TempRow = DailySale & { tempId?: string; isNew?: boolean };
 
@@ -47,6 +47,7 @@ export function DailySalesPage() {
   const [editingSale, setEditingSale] = useState<DailySale | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [hideEmptyDays, setHideEmptyDays] = useState(true);
 
   // Inline editing state for All Sales Entries table
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
@@ -555,7 +556,7 @@ export function DailySalesPage() {
         total: data.total,
         count: data.count,
       }))
-      .sort((a, b) => a.month.localeCompare(b.month));
+      .sort((a, b) => new Date(`1 ${a.month}`).getTime() - new Date(`1 ${b.month}`).getTime());
   }, [allSales]);
 
   // Top 10 highest sales days
@@ -568,7 +569,13 @@ export function DailySalesPage() {
         date: format(new Date(s.saleDate), 'dd MMM yyyy'),
       }));
   }, [allSales]);
-
+  const tableData = useMemo(() => {
+    let data = sales || [];
+    if (hideEmptyDays) {
+      data = data.filter(s => s.cashAmount !== 0 || s.bkashAmount !== 0 || s.creditAmount !== 0 || s.stockPurchase !== 0 || s.dailyExpense !== 0);
+    }
+    return data;
+  }, [sales, hideEmptyDays]);
   if (isLoading) {
     return (
       <div className="sales-container">
@@ -591,6 +598,8 @@ export function DailySalesPage() {
     );
   }
 
+  // tableData moved above loading/error checks
+
   return (
     <div className="sales-container">
       <PageHeader
@@ -611,9 +620,7 @@ export function DailySalesPage() {
             >
               <Download size={16} /> Export CSV
             </button>
-            <button className="button-primary" onClick={() => setShowForm(true)}>
-              <Plus size={18} /> Add Daily Sale
-            </button>
+            {/* Add Daily Sale button moved to All Sales Entries section */}
           </div>
         }
       />
@@ -622,7 +629,7 @@ export function DailySalesPage() {
         <MetricCard title="Today's Sales" value={`৳${todayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="This Week" value={`৳${weekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="This Month" value={`৳${monthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<DollarSign size={20} className="text-info" />} color="info" variant="light" />
+        <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<Banknote size={20} className="text-info" />} color="info" variant="light" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -727,7 +734,7 @@ export function DailySalesPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dailyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
-                <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={10} interval="preserveStartEnd" />
+                <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={10} interval="preserveStartEnd" angle={-45} textAnchor="end" height={60} />
                 <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-default)' }}
@@ -748,7 +755,7 @@ export function DailySalesPage() {
         )}
       </div>
 
-      <div className="card p-6">
+      <div className="card p-6 mb-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Top 5 Highest Sales Days</h2>
         {topSalesDays.length > 0 ? (
           <div className="overflow-x-auto">
@@ -783,10 +790,18 @@ export function DailySalesPage() {
           />
         )}
       </div>
-
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
-        {(tempRows.length > 0 || (sales && sales.length > 0)) ? (
+      <div className="card p-6 mt-0">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
+          <button className="button-primary gap-2" onClick={() => setShowForm(true)}>
+            <Plus size={18} /> Add Daily Sale
+          </button>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer text-sm text-text-muted mb-4">
+          <input type="checkbox" checked={hideEmptyDays} onChange={(e) => setHideEmptyDays(e.target.checked)} className="form-checkbox rounded text-primary" />
+          Hide Empty Activity Days
+        </label>
+        {(tempRows.length > 0 || tableData.length > 0) ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -798,12 +813,13 @@ export function DailySalesPage() {
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Sales Total</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Purchase</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Expense</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Net Total</th>
-                  <th className="w-10"></th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Daily Cash Flow</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Gross Margin</th>
+                  <th className="text-center py-3 px-4 text-sm font-medium text-text-muted w-10">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {[...tempRows, ...(sales || [])].map((s, idx, list) => {
+                {[...tempRows, ...tableData].map((s, idx, list) => {
                   const edited = editValues[s.id] || s;
                   const salesTotal = Number(edited.cashAmount ?? s.cashAmount) + 
                                      Number(edited.bkashAmount ?? s.bkashAmount) + 
@@ -828,18 +844,16 @@ export function DailySalesPage() {
                       {renderEditableCell(s, 'cashAmount', idx, list)}
                       {renderEditableCell(s, 'bkashAmount', idx, list)}
                       {renderEditableCell(s, 'creditAmount', idx, list)}
-                      <td className="py-3 px-4 text-sm text-text-primary text-right">৳{salesTotal.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(salesTotal)}</td>
                       {renderEditableCell(s, 'stockPurchase', idx, list)}
                       {renderEditableCell(s, 'dailyExpense', idx, list)}
-                      <td className={`py-3 px-4 text-sm font-semibold text-right ${netColorClass}`}>৳{netTotal.toLocaleString()}</td>
-                      <td className="py-3 px-2 w-10">
+                      <td className={`py-3 px-4 text-sm font-semibold text-right ${netColorClass}`}>{formatCurrency(netTotal)}</td>
+                      <td className="py-3 px-4 text-sm font-semibold text-right text-text-primary">{formatCurrency(salesTotal)}</td>
+                      <td className="py-3 px-2 w-10 text-center">
                         <button
                           onClick={() => handleDeleteRow(s.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-danger-subtle"
+                          className="transition-colors p-1 rounded hover:bg-danger-subtle text-danger"
                           title="Delete"
-                          style={{ color: 'var(--text-muted)' }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-danger)'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -857,12 +871,6 @@ export function DailySalesPage() {
             description="Click '+ Add New Entry' to start."
           />
         )}
-        <button
-          onClick={createNewRow}
-          className="button-primary mt-4 flex items-center gap-2"
-        >
-          <Plus size={18} /> Add New Entry
-        </button>
       </div>
 
       <Drawer

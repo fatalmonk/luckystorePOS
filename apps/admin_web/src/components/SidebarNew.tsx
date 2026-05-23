@@ -153,6 +153,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                       }
                       end={!item.children}
                       title={collapsed ? item.label : undefined}
+                      aria-label={item.label}
                     >
                       <item.icon size={18} className="flex-shrink-0" />
                       {!collapsed && <span className="truncate">{item.label}</span>}
@@ -188,7 +189,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
         </div>
 
         {/* Footer – branch selector & user menu */}
-        <footer className="p-4 border-t border-warm-border-warm flex flex-col gap-3">
+        <footer className="mt-auto p-4 border-t border-warm-border-warm flex flex-col gap-3">
           {/* Branch selector */}
           <div className={clsx('flex items-center gap-2 text-xs', collapsed && 'justify-center')}>
             <span className="w-2 h-2 rounded-full bg-warm-success flex-shrink-0" title="online"></span>
