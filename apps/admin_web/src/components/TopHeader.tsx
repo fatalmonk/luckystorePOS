@@ -1,4 +1,4 @@
-import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose, Globe } from 'lucide-react';
+import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose, Globe, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -57,13 +57,17 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, co
             className="header-button" 
             onClick={onToggleCollapse} 
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <span className="sr-only">{collapsed ? 'Expand' : 'Collapse'} sidebar</span>
             {collapsed ? <PanelLeftClose size={20} /> : <Menu size={20} />}
           </button>
         )}
-        <button className="header-button" onClick={onToggleSidebar} title={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}>
-          <span className="sr-only">{sidebarHidden ? 'Show' : 'Hide'} sidebar</span>
+        <button 
+          className="header-button" 
+          onClick={onToggleSidebar} 
+          title={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
+          aria-label={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
+        >
           {sidebarHidden ? <Menu size={20} /> : <PanelLeftClose size={20} />}
         </button>
       </div>
@@ -106,7 +110,7 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, co
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <div className="user-profile" role="group" aria-label="User menu">
-          <div className="avatar" aria-hidden="true">M</div>
+          <div className="avatar" aria-hidden="true"><User size={16} /></div>
           <span className="user-name">Mohammed</span>
         </div>
       </div>

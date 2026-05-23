@@ -39,11 +39,10 @@ React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
   - Documentation updated, branch `feature/warm-redesign` created
 - Branch: `feature/warm-redesign`
 - Fixed POS item loading issue (0-price items/corrupt items crashing mapSearchItems)
-- Fixed `search_items_pos` RPC (42703 error: `i.active` -> `i.is_active`) via migration `20260523000000_fix_pos_search_is_active.sql`
+- Fixed `search_items_pos`, `get_pos_categories`, `lookup_item_by_scan` RPCs (42703 error: `i.active` -> `i.is_active`) via migration `20260523000000_fix_pos_search_is_active.sql`
 
 ## Decisions
 - Bengali (bn_BD) + English, Hind Siliguri font
-- Supabase DB unreachable via CLI (IPv6-only), use Mgmt API
 - Theme Approach A: Tailwind extension with warm palette
 - Keep current nested sidebar structure, add collapse + branch selector
 - Keep table view for inventory (style only)
