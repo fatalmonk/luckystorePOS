@@ -49,11 +49,11 @@ React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
 - Retained `StockUpdateDrawer.tsx` per user instruction
 
 ## Blockers
-- None
+- Manual Supabase DB SQL execution required for `search_items_pos` fix
 
 ## Next
-- Review and merge PR #127
+- Execute SQL in Supabase Dashboard
 - Merge `feature/warm-redesign` to main after final review.
 
 ---
-ctx: Created PR #127 | done: 53 | next: Review and merge PR
+ctx: Fixed 42703 RPC error | done: 52 | next: execute SQL in dashboard
