@@ -22,7 +22,10 @@ export const pos = {
       p_limit: 50,
       p_offset: 0,
     });
-    if (error) throw error;
+    if (error) {
+      console.error('getProducts RPC error:', error);
+      throw error;
+    }
     debugLog('Raw products response', data);
     return mapSearchItems(data);
   },

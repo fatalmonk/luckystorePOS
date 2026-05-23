@@ -368,7 +368,7 @@ function SalesReportContent({ data, prevData }: { data: any; prevData?: any }) {
       <div>
         <h3 className="font-semibold text-lg mb-4">Top Selling Products</h3>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-border-color">
+          <thead className="bg-surface-subtle border-b border-border-color">
             <tr className="text-left text-sm text-text-muted">
               <th className="px-4 py-3 font-medium">Product</th>
               <th className="px-4 py-3 font-medium text-right">Quantity Sold</th>
@@ -377,7 +377,7 @@ function SalesReportContent({ data, prevData }: { data: any; prevData?: any }) {
           </thead>
           <tbody className="divide-y divide-border-color">
             {data.topProducts.map((product: any, idx: number) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-4 py-3 font-medium">{product.name}</td>
                 <td className="px-4 py-3 text-right">{product.quantity}</td>
                 <td className="px-4 py-3 text-right">৳{product.revenue.toLocaleString()}</td>
@@ -423,7 +423,7 @@ function InventoryReportContent({ data }: { data: any }) {
         <h3 className="font-semibold text-lg mb-4">Inventory Details</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-border-color">
+            <thead className="bg-surface-subtle border-b border-border-color">
               <tr className="text-left text-sm text-text-muted">
                 <th className="px-4 py-3 font-medium">Product</th>
                 <th className="px-4 py-3 font-medium">SKU</th>
@@ -434,7 +434,7 @@ function InventoryReportContent({ data }: { data: any }) {
             </thead>
             <tbody className="divide-y divide-border-color">
               {data.inventory.map((item: any, idx: number) => (
-                <tr key={idx} className="hover:bg-gray-50">
+                <tr key={idx} className="hover:bg-surface-subtle">
                   <td className="px-4 py-3 font-medium">{item.name}</td>
                   <td className="px-4 py-3 text-text-muted">{item.sku || '-'}</td>
                   <td className="px-4 py-3 text-right">
@@ -485,7 +485,7 @@ function ProfitReportContent({ data }: { data: any }) {
         <MetricCard title="Net Profit" value={`৳${Math.abs(data.netProfit).toLocaleString()}`} icon={<TrendingUp size={20} />} color={isProfit ? 'success' : 'danger'} variant="solid" />
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-6">
+      <div className="bg-surface-subtle rounded-lg p-6">
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b border-border-color">
             <span className="text-text-muted">Gross Revenue</span>
@@ -513,9 +513,9 @@ function ProfitReportContent({ data }: { data: any }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-blue-50 rounded-lg p-4">
+        <div className="bg-primary-subtle rounded-lg p-4">
           <div className="text-sm text-text-muted mb-1">Gross Profit Margin</div>
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-2xl font-bold text-primary-default">
             {data.grossRevenue > 0 ? ((data.grossProfit / data.grossRevenue) * 100).toFixed(1) : 0}%
           </div>
         </div>
@@ -588,9 +588,9 @@ function StockValuationContent({ data }: { data: StockValuationItem[] | null }) 
             <div className="text-sm text-text-muted">Total Cost Value</div>
             <div className="text-xl font-bold text-amber-600">৳{totalCost.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
           </div>
-          <div className="bg-blue-50 rounded-lg p-3 text-center">
+          <div className="bg-primary-subtle rounded-lg p-3 text-center">
             <div className="text-sm text-text-muted">Overall Margin</div>
-            <div className="text-xl font-bold text-blue-600">{overallMargin.toFixed(1)}%</div>
+            <div className="text-xl font-bold text-primary-default">{overallMargin.toFixed(1)}%</div>
           </div>
         </div>
         <button
@@ -617,7 +617,7 @@ function StockValuationContent({ data }: { data: StockValuationItem[] | null }) 
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-surface-subtle border-b">
             <tr className="text-left text-text-muted">
               <th className="px-3 py-2">Item</th>
               <th className="px-3 py-2 text-right">Qty</th>
@@ -629,7 +629,7 @@ function StockValuationContent({ data }: { data: StockValuationItem[] | null }) 
           </thead>
           <tbody className="divide-y">
             {data.slice(0, 20).map((item, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-3 py-2 font-medium">{item.item_name}</td>
                 <td className="px-3 py-2 text-right">{item.qty_on_hand}</td>
                 <td className="px-3 py-2 text-right">৳{item.unit_cost}</td>
@@ -676,7 +676,7 @@ function TopSellersContent({ data }: { data: TopSellingItem[] | null }) {
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-surface-subtle border-b">
             <tr className="text-left text-text-muted">
               <th className="px-3 py-2">Item</th>
               <th className="px-3 py-2">Category</th>
@@ -687,7 +687,7 @@ function TopSellersContent({ data }: { data: TopSellingItem[] | null }) {
           </thead>
           <tbody className="divide-y">
             {data.slice(0, 20).map((item, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-3 py-2 font-medium">{item.item_name}</td>
                 <td className="px-3 py-2 text-text-muted">{item.category_name || '-'}</td>
                 <td className="px-3 py-2 text-right">{item.total_qty}</td>
@@ -736,7 +736,7 @@ function SlowMoversContent({ data }: { data: SlowMovingItem[] | null }) {
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-surface-subtle border-b">
             <tr className="text-left text-text-muted">
               <th className="px-3 py-2">Item</th>
               <th className="px-3 py-2">Category</th>
@@ -747,7 +747,7 @@ function SlowMoversContent({ data }: { data: SlowMovingItem[] | null }) {
           </thead>
           <tbody className="divide-y">
             {data.slice(0, 20).map((item, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-3 py-2 font-medium">{item.item_name}</td>
                 <td className="px-3 py-2 text-text-muted">{item.category_name || '-'}</td>
                 <td className="px-3 py-2 text-right">{item.qty_on_hand}</td>
@@ -796,7 +796,7 @@ function MovementTrendContent({ data }: { data: DailyMovementItem[] | null }) {
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-surface-subtle border-b">
             <tr className="text-left text-text-muted">
               <th className="px-3 py-2">Date</th>
               <th className="px-3 py-2 text-right">Stock In</th>
@@ -806,7 +806,7 @@ function MovementTrendContent({ data }: { data: DailyMovementItem[] | null }) {
           </thead>
           <tbody className="divide-y">
             {data.map((item, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-3 py-2 font-medium">{item.trend_date}</td>
                 <td className="px-3 py-2 text-right text-emerald-600">+{item.total_in}</td>
                 <td className="px-3 py-2 text-right text-red-600">-{item.total_out}</td>
@@ -893,7 +893,7 @@ function CustomerAnalyticsContent({ data }: { data: any[] }) {
       <div className="overflow-x-auto">
         <h3 className="font-semibold text-sm text-text-muted mb-3">Top Customers</h3>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-surface-subtle border-b">
             <tr className="text-left text-text-muted">
               <th className="px-3 py-2">Customer</th>
               <th className="px-3 py-2">Phone</th>
@@ -905,7 +905,7 @@ function CustomerAnalyticsContent({ data }: { data: any[] }) {
           </thead>
           <tbody className="divide-y">
             {data.slice(0, 25).map((c: any, idx: number) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-3 py-2 font-medium">{c.customer_name}</td>
                 <td className="px-3 py-2 text-text-muted">{c.phone || '-'}</td>
                 <td className="px-3 py-2 text-right">{c.purchase_count}</td>
@@ -976,7 +976,7 @@ function StaffPerformanceContent({ data }: { data: any[] }) {
       <div className="overflow-x-auto">
         <h3 className="font-semibold text-sm text-text-muted mb-3">Staff Details</h3>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-surface-subtle border-b">
             <tr className="text-left text-text-muted">
               <th className="px-3 py-2">Staff</th>
               <th className="px-3 py-2">Role</th>
@@ -990,14 +990,14 @@ function StaffPerformanceContent({ data }: { data: any[] }) {
           </thead>
           <tbody className="divide-y">
             {data.map((st: any, idx: number) => (
-              <tr key={idx} className="hover:bg-gray-50">
+              <tr key={idx} className="hover:bg-surface-subtle">
                 <td className="px-3 py-2 font-medium">{st.staff_name}</td>
                 <td className="px-3 py-2">
                   <span className={clsx(
                     'text-xs font-semibold px-2 py-0.5 rounded-full',
                     st.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                    st.role === 'manager' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
+                    st.role === 'manager' ? 'bg-primary-subtle text-primary-hover' :
+                    'bg-surface-default text-text-secondary'
                   )}>{st.role}</span>
                 </td>
                 <td className="px-3 py-2 text-right">{st.total_sales}</td>
