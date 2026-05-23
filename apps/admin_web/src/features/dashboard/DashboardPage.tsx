@@ -114,7 +114,7 @@ export function DashboardPage() {
   const categoryConfig: Record<string, { label: string; color: string; barColor: string }> = {
     'Stock Purchase': { label: 'Stock Purchase', color: 'text-warm-accent', barColor: 'bg-warm-accent' },
     'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warm-warning', barColor: 'bg-warm-warning' },
-    'Staff salary': { label: 'Staff Salary', color: 'text-blue-600', barColor: 'bg-blue-500' },
+    'Staff salary': { label: 'Staff Salary', color: 'text-primary-default', barColor: 'bg-primary-subtle0' },
     'Utility Expenses': { label: 'Utilities', color: 'text-warm-success', barColor: 'bg-warm-success' },
     'All Other Expenses': { label: 'Other', color: 'text-warm-dim', barColor: 'bg-warm-silver' },
     'Partners Take': { label: 'Partners Take', color: 'text-warm-danger', barColor: 'bg-warm-danger' },
@@ -306,7 +306,7 @@ export function DashboardPage() {
               <div className="space-y-3">
                 {[
                   { label: 'Cash', value: totalCash, total: totalRevenue, color: 'bg-warm-success' },
-                  { label: 'bKash', value: totalBkash, total: totalRevenue, color: 'bg-blue-500' },
+                  { label: 'bKash', value: totalBkash, total: totalRevenue, color: 'bg-primary-subtle0' },
                   { label: 'Credit', value: totalCredit, total: totalRevenue, color: 'bg-warm-warning' },
                 ].map(item => (
                   <div key={item.label}>
@@ -375,7 +375,7 @@ export function DashboardPage() {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-warm-border">
                   <span className="text-warm-muted">{t('dashboard.stockInvestment')}</span>
-                  <span className="font-mono font-medium text-blue-600">৳{fmt(totalStockAllTime)}</span>
+                  <span className="font-mono font-medium text-primary-default">৳{fmt(totalStockAllTime)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className={clsx('font-semibold', netPosition >= 0 ? 'text-warm-success' : 'text-warm-danger')}>
@@ -404,7 +404,7 @@ export function DashboardPage() {
                   </div>
                   <div className="text-center p-4 bg-warm-bg rounded-lg">
                     <div className="text-sm text-warm-muted mb-1">Bkash</div>
-                    <div className="text-xl font-bold text-blue-600 font-mono">৳{fmt(totalBkash)}</div>
+                    <div className="text-xl font-bold text-primary-default font-mono">৳{fmt(totalBkash)}</div>
                     <div className="text-xs text-warm-dim mt-1">{((totalBkash / totalRevenue) * 100).toFixed(1)}%</div>
                   </div>
                   <div className="text-center p-4 bg-warm-bg rounded-lg">
@@ -415,7 +415,7 @@ export function DashboardPage() {
                 </div>
                 <div className="h-3 bg-warm-border rounded-full overflow-hidden flex">
                   <div className="bg-warm-success transition-all duration-500" style={{ width: `${(totalCash / totalRevenue) * 100}%` }} />
-                  <div className="bg-blue-500 transition-all duration-500" style={{ width: `${(totalBkash / totalRevenue) * 100}%` }} />
+                  <div className="bg-primary-subtle0 transition-all duration-500" style={{ width: `${(totalBkash / totalRevenue) * 100}%` }} />
                 </div>
                 <div className="text-center text-sm text-warm-muted mt-4">
                   Realized Revenue: ৳{fmt(totalRevenue)} | Total Sales: ৳{fmt(totalRevenue + totalCredit)}
@@ -441,7 +441,7 @@ export function DashboardPage() {
               </div>
               <a 
                 href="/admin/pos" 
-                className="bg-white text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
+                className="bg-surface-default text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-surface-default/90 transition-colors"
               >
                 Launch
               </a>

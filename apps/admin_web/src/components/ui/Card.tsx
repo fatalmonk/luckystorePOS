@@ -40,7 +40,7 @@ export const Card: React.FC<CardProps> =
   const highlightClasses = {
     emerald: 'bg-emerald-50 ring-2 ring-emerald-300',
     amber: 'bg-amber-50 ring-2 ring-amber-300',
-    blue: 'bg-blue-50 ring-2 ring-blue-300',
+    blue: 'bg-primary-subtle ring-2 ring-primary-subtle',
   };
 
   return (

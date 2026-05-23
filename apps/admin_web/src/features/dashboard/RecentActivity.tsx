@@ -18,7 +18,7 @@ interface RecentActivityProps {
 const iconMap = {
   sale: { icon: ShoppingCart, color: 'text-warm-success bg-warm-success/10' },
   customer: { icon: UserPlus, color: 'text-warm-accent bg-warm-accent/10' },
-  stock: { icon: Package, color: 'text-blue-600 bg-blue-50' },
+  stock: { icon: Package, color: 'text-primary-default bg-primary-subtle' },
   alert: { icon: AlertCircle, color: 'text-warm-danger bg-warm-danger/10' },
   expense: { icon: TrendingUp, color: 'text-warm-warning bg-warm-warning/10' },
 };
