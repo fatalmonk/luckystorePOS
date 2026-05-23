@@ -235,7 +235,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   return (
     <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity z-40" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity z-40" onClick={onClose} aria-hidden="true" />
 
       {/* Drawer Panel */}
       <div
@@ -252,7 +252,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         </div>
 
         {/* Header */}
-        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-surface-default sticky top-0 z-10">
+        <header className="flex justify-between items-start p-6 border-b border-border-default bg-surface-default sticky top-0 z-10">
           <div>
             <h2 id="drawer-title" className="text-xl font-bold text-text-primary">Update Product</h2>
             <p className="text-sm text-text-secondary mt-1">{product.name}</p>
@@ -299,7 +299,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-slate-50/50">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-surface-default">
           {activeTab === 'stock' ? (
             <>
               {/* Mode Selection */}
