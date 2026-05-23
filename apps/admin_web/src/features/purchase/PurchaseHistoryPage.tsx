@@ -105,7 +105,7 @@ export function PurchaseHistoryPage() {
               'px-4 py-2 rounded-md text-sm font-medium transition-colors',
               dateFilter === filter
                 ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-surface-default text-text-secondary hover:bg-surface-hover'
             )}
           >
             {filter === 'today' && 'Today'}
@@ -119,7 +119,7 @@ export function PurchaseHistoryPage() {
       {/* Receipts Table */}
       <div className="card overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-border-color">
+          <thead className="bg-surface-subtle border-b border-border-color">
             <tr className="text-left text-sm text-text-muted">
               <th className="px-4 py-3 font-medium">PO Number</th>
               <th className="px-4 py-3 font-medium">Supplier</th>
@@ -159,7 +159,7 @@ export function PurchaseHistoryPage() {
                 <>
                   <tr
                     key={receipt.id}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="hover:bg-surface-subtle cursor-pointer transition-colors"
                     onClick={() => setExpandedReceiptId(expandedReceiptId === receipt.id ? null : receipt.id)}
                   >
                     <td className="px-4 py-3 font-medium">{receipt.invoice_number || 'PO-' + receipt.id.slice(0, 8)}</td>
@@ -174,7 +174,7 @@ export function PurchaseHistoryPage() {
                           ? 'bg-green-100 text-green-800'
                           : receipt.status === 'draft'
                           ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
+                          : 'bg-surface-default text-text-primary'
                       )}>
                         {receipt.status || 'unknown'}
                       </span>
@@ -184,7 +184,7 @@ export function PurchaseHistoryPage() {
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-surface-default rounded"
                         onClick={(e) => {
                           e.stopPropagation();
                           setExpandedReceiptId(expandedReceiptId === receipt.id ? null : receipt.id);
@@ -196,7 +196,7 @@ export function PurchaseHistoryPage() {
                   </tr>
                   {expandedReceiptId === receipt.id && receipt.purchase_receipt_items && (
                     <tr>
-                      <td colSpan={8} className="px-4 py-4 bg-gray-50">
+                      <td colSpan={8} className="px-4 py-4 bg-surface-subtle">
                         <div className="ml-8">
                           <h4 className="font-medium mb-2 text-sm text-text-muted">Receipt Items:</h4>
                           <table className="w-full text-sm">
@@ -211,7 +211,7 @@ export function PurchaseHistoryPage() {
                             </thead>
                             <tbody>
                               {receipt.purchase_receipt_items.map((item: any) => (
-                                <tr key={item.id} className="border-t border-gray-200">
+                                <tr key={item.id} className="border-t border-border-default">
                                   <td className="py-2">{item.items?.name || 'Unknown Product'}</td>
                                   <td className="py-2 text-text-muted">{item.items?.sku || '-'}</td>
                                   <td className="py-2 text-right">{item.quantity}</td>

@@ -22,9 +22,9 @@ export function mapSearchItem(row: any): PosProduct {
     );
   }
 
-  // Fail-fast: price must exist and be > 0
+  // Allow price to be 0 for giveaways/samples/etc.
   const price = Number(row.price ?? row.unit_price ?? NaN);
-  if (Number.isNaN(price) || price <= 0) {
+  if (Number.isNaN(price) || price < 0) {
     throw new Error(
       `Item ${row.name ?? row.id ?? 'unknown'} has invalid price: ${row.price}`
     );
@@ -83,14 +83,26 @@ export function mapSearchItems(rows: any): PosProduct[] {
     return [];
   }
 
-  // If rows is already an array, map it
+  // If rows is already an array, map it safely
   if (Array.isArray(rows)) {
-    return rows.map(mapSearchItem);
+    return rows.reduce((acc: PosProduct[], row) => {
+      try {
+        acc.push(mapSearchItem(row));
+      } catch (err) {
+        console.warn('Skipping invalid POS item:', err);
+      }
+      return acc;
+    }, []);
   }
 
   // If rows is a single object, wrap it
   if (typeof rows === 'object') {
-    return [mapSearchItem(rows)];
+    try {
+      return [mapSearchItem(rows)];
+    } catch (err) {
+      console.warn('Skipping invalid POS item:', err);
+      return [];
+    }
   }
 
   debugLog('Unexpected search items response type', { type: typeof rows, rows });

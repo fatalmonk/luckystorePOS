@@ -16,7 +16,7 @@ const getInitials = (name: string) =>
 const getAvatarColor = (name: string) => {
   const colors = [
     'bg-emerald-100 text-emerald-600',
-    'bg-blue-100 text-blue-600',
+    'bg-primary-subtle text-primary-default',
     'bg-purple-100 text-purple-600',
     'bg-pink-100 text-pink-600',
     'bg-orange-100 text-orange-600',
