@@ -1,7 +1,18 @@
 -- =============================================================================
--- Fix: i.active → i.is_active across all live POS RPCs
--- Affected: search_items_pos, get_pos_categories, lookup_item_by_scan
+-- Fix: Rename i.active to i.is_active and update all live POS RPCs
+-- Affected: items, search_items_pos, get_pos_categories, lookup_item_by_scan
 -- =============================================================================
+
+-- Ensure the column is renamed safely (idempotent for environments that already did it manually)
+DO $$
+BEGIN
+  IF EXISTS(
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema='public' AND table_name='items' AND column_name='active'
+  ) THEN
+      ALTER TABLE "public"."items" RENAME COLUMN "active" TO "is_active";
+  END IF;
+END $$;
 
 -- 1) search_items_pos
 CREATE OR REPLACE FUNCTION public.search_items_pos(
@@ -16,7 +27,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = public, extensions, pg_temp
-AS $$
+AS $func$
   SELECT jsonb_agg(row_to_json(r))
   FROM (
     SELECT
@@ -52,7 +63,7 @@ AS $$
     ORDER BY i.name ASC
     LIMIT p_limit OFFSET p_offset
   ) r;
-$$;
+$func$;
 
 REVOKE ALL ON FUNCTION public.search_items_pos(uuid,text,uuid,integer,integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.search_items_pos(uuid,text,uuid,integer,integer) TO authenticated;
@@ -65,7 +76,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $$
+AS $func$
   SELECT COALESCE(jsonb_agg(row_to_json(r) ORDER BY r.name), '[]'::jsonb)
   FROM (
     SELECT
@@ -80,7 +91,7 @@ AS $$
     GROUP BY c.id, c.name, c.image_url, c.color, c.icon
     HAVING COUNT(i.id) > 0
   ) r;
-$$;
+$func$;
 
 REVOKE ALL ON FUNCTION public.get_pos_categories(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_pos_categories(uuid) TO authenticated;
@@ -96,7 +107,7 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 STABLE
-AS $$
+AS $func$
   SELECT jsonb_build_object(
     'id',           i.id,
     'sku',          i.sku,
@@ -123,7 +134,7 @@ AS $$
       i.short_code = p_scan_value
     )
   LIMIT 1;
-$$;
+$func$;
 
 REVOKE ALL ON FUNCTION public.lookup_item_by_scan(text, uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text, uuid) TO authenticated;
