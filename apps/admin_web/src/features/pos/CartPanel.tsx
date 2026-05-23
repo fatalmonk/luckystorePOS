@@ -194,7 +194,7 @@ function CartItemRow({
     onSwipedLeft: () => onRemoveFromCart(item.product.id),
     // Optionally add a threshold or prevent swipe on desktop
     delta: 30,
-    preventDefaultTouchmoveEvent: true,
+
     trackTouch: true,
     trackMouse: false,
   });
