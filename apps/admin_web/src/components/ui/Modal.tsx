@@ -24,13 +24,12 @@ export const Modal = ({ isOpen, onClose, title, children, className, size = 'md'
     <div className={clsx('fixed inset-0 z-50 flex items-start justify-center pt-12 pb-8')} style={{ overflowY: 'auto' }}>
       {/* backdrop */}
       <div 
-        className="fixed inset-0" 
-        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
+        className="fixed inset-0 bg-warm-deep/40 backdrop-blur-sm" 
         onClick={onClose} 
       />
       <div
         className={clsx(
-          'relative bg-surface rounded-lg shadow-level-3 border border-border-default w-full mx-4 flex flex-col',
+          'relative bg-warm-surface rounded-xl shadow-level-3 border border-warm-border-warm w-full mx-4 flex flex-col',
           sizeClasses[size],
           className
         )}
@@ -38,9 +37,9 @@ export const Modal = ({ isOpen, onClose, title, children, className, size = 'md'
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex items-center justify-between p-6 border-b border-border-default shrink-0">
-          {title && <h2 className="text-lg font-medium text-text-primary">{title}</h2>}
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary">
+        <div className="flex items-center justify-between p-6 border-b border-warm-border-warm shrink-0">
+          {title && <h2 className="text-lg font-medium text-warm-fg font-display">{title}</h2>}
+          <button onClick={onClose} className="text-warm-muted hover:text-warm-fg transition-colors">
             ✕
           </button>
         </div>

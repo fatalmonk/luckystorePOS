@@ -33,15 +33,15 @@ export function DataTable<T extends object>({
   emptyMessage = 'No data to display.',
 }: DataTableProps<T>) {
   return (
-    <div className={clsx('w-full overflow-x-auto rounded-md border border-border-default shadow-level-1', className)}>
+    <div className={clsx('w-full overflow-x-auto rounded-xl border border-warm-border-warm bg-warm-surface', className)}>
       <table className="min-w-full table-auto border-collapse">
         <thead>
-          <tr className="bg-background-subtle border-b border-border-default">
+          <tr className="bg-warm-border-warm/50 border-b border-warm-border-warm">
             {columns.map((col, idx) => (
               <th
                 key={idx}
                 className={clsx(
-                  'px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider',
+                  'px-4 py-3 text-xs font-semibold text-warm-muted uppercase tracking-wider',
                   ALIGN_MAP[col.align ?? 'left']
                 )}
               >
@@ -50,12 +50,12 @@ export function DataTable<T extends object>({
             ))}
           </tr>
         </thead>
-        <tbody className="bg-surface divide-y divide-border-default">
+        <tbody className="bg-warm-surface divide-y divide-warm-border-warm">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-4 py-10 text-center text-sm text-text-muted"
+                className="px-4 py-10 text-center text-sm text-warm-dim"
               >
                 {emptyMessage}
               </td>
@@ -65,8 +65,8 @@ export function DataTable<T extends object>({
               <tr
                 key={rowIdx}
                 className={clsx(
-                  'transition-colors',
-                  onRowClick && 'cursor-pointer hover:bg-background-subtle'
+                  'transition-colors duration-200',
+                  onRowClick && 'cursor-pointer hover:bg-warm-border-warm/30'
                 )}
                 onClick={() => onRowClick?.(row)}
               >
@@ -80,7 +80,7 @@ export function DataTable<T extends object>({
                     <td
                       key={colIdx}
                       className={clsx(
-                        'px-4 py-3 text-sm text-text-primary whitespace-nowrap',
+                        'px-4 py-3 text-sm text-warm-fg whitespace-nowrap',
                         ALIGN_MAP[col.align ?? 'left']
                       )}
                     >

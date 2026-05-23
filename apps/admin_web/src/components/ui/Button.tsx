@@ -12,12 +12,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-primary text-primary-on hover:bg-primary-hover border border-transparent rounded-md',
-  secondary: 'bg-surface text-text-primary border border-border-default hover:bg-background-subtle rounded-sm',
-  tertiary: 'bg-secondary text-secondary-on hover:bg-secondary-hover border border-transparent rounded-md',
-  danger: 'bg-danger text-danger-on hover:bg-danger-dark border border-transparent rounded-md',
-  outline: 'bg-transparent text-primary border border-primary hover:bg-primary-subtle rounded-md',
-  ghost: 'bg-transparent text-text-primary hover:bg-background-subtle border border-transparent rounded-md',
+  primary: 'bg-warm-accent text-white hover:bg-warm-accent-light border border-transparent rounded-md focus:ring-warm-accent/30',
+  secondary: 'bg-warm-surface text-warm-fg border border-warm-border-warm hover:bg-warm-bg/50 rounded-md focus:ring-warm-accent/20',
+  tertiary: 'bg-warm-sand text-warm-fg hover:bg-warm-border-warm border border-transparent rounded-md focus:ring-warm-accent/20',
+  danger: 'bg-warm-danger text-white hover:bg-red-700 border border-transparent rounded-md focus:ring-red-500/30',
+  outline: 'bg-transparent text-warm-accent border border-warm-accent hover:bg-warm-accent/5 rounded-md focus:ring-warm-accent/30',
+  ghost: 'bg-transparent text-warm-fg hover:bg-warm-bg/50 border border-transparent rounded-md focus:ring-warm-accent/20',
 };
 
 const sizeClasses = {

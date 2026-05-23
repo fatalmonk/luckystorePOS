@@ -5,10 +5,13 @@ import { useTranslation } from 'react-i18next';
 interface TopHeaderProps {
   onToggleSidebar: () => void;
   sidebarHidden: boolean;
+  onToggleCollapse?: () => void;
+  collapsed?: boolean;
   onSearchFocus?: () => void;
+  isMobile: boolean;
 }
 
-export function TopHeader({ onToggleSidebar, sidebarHidden, onSearchFocus }: TopHeaderProps) {
+export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, collapsed = false, onSearchFocus, isMobile }: TopHeaderProps) {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => {
@@ -49,6 +52,16 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onSearchFocus }: Top
   return (
     <header className="top-header">
       <div className="header-left">
+        {!sidebarHidden && !isMobile && onToggleCollapse && (
+          <button 
+            className="header-button" 
+            onClick={onToggleCollapse} 
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <span className="sr-only">{collapsed ? 'Expand' : 'Collapse'} sidebar</span>
+            {collapsed ? <PanelLeftClose size={20} /> : <Menu size={20} />}
+          </button>
+        )}
         <button className="header-button" onClick={onToggleSidebar} title={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}>
           <span className="sr-only">{sidebarHidden ? 'Show' : 'Hide'} sidebar</span>
           {sidebarHidden ? <Menu size={20} /> : <PanelLeftClose size={20} />}

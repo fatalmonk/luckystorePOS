@@ -1,9 +1,13 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { Drawer } from './Drawer';
 
 describe('Drawer', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
@@ -141,6 +145,6 @@ describe('Drawer', () => {
     
     // Check for focus ring classes
     expect(closeButton).toHaveClass('focus:ring-2');
-    expect(closeButton).toHaveClass('focus:ring-primary-default');
+    expect(closeButton).toHaveClass('focus:ring-warm-accent/30');
   });
 });

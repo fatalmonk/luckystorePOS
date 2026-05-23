@@ -19,7 +19,7 @@ export function BulkEditBar({
   onExport,
 }: BulkEditBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-lg animate-slideUp">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface-default border-t border-slate-200 shadow-lg animate-slideUp">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Selection Info */}
         <div className="flex items-center gap-3">

@@ -9,6 +9,10 @@
   grid-template-columns: 0px 1fr;
 }
 
+.app-container.sidebar-collapsed {
+  grid-template-columns: 72px 1fr;
+}
+
 @media (max-width: 1280px) {
   .app-container {
     grid-template-columns: 220px 1fr;
@@ -52,6 +56,10 @@
   width: 260px;
   transition: transform var(--transition-fast), width var(--transition-fast);
   overflow: hidden;
+}
+
+.sidebar.sidebar-collapsed {
+  width: 72px;
 }
 
 @media (max-width: 1280px) {

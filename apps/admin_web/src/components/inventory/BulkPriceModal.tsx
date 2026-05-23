@@ -59,7 +59,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
       <div className="absolute inset-0 bg-slate-900/50" onClick={onClose} />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-surface-default rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div>
@@ -103,7 +103,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                     'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     sellingMode === 'absolute'
                       ? 'bg-primary-default text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
                   )}
                   title="Absolute value"
                 >
@@ -116,7 +116,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                     'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     sellingMode === 'percentage'
                       ? 'bg-primary-default text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
                   )}
                   title="Percentage change"
                 >
@@ -156,7 +156,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                     'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     mrpMode === 'absolute'
                       ? 'bg-primary-default text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
                   )}
                 >
                   <Hash size={14} />
@@ -168,7 +168,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                     'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     mrpMode === 'percentage'
                       ? 'bg-primary-default text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
                   )}
                 >
                   <Percent size={14} />
@@ -202,7 +202,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                     'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     costMode === 'absolute'
                       ? 'bg-primary-default text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
                   )}
                 >
                   <Hash size={14} />
@@ -214,7 +214,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                     'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     costMode === 'percentage'
                       ? 'bg-primary-default text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
                   )}
                 >
                   <Percent size={14} />
