@@ -252,7 +252,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         </div>
 
         {/* Header */}
-        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+        <header className="flex justify-between items-start p-6 border-b border-slate-100 bg-surface-default sticky top-0 z-10">
           <div>
             <h2 id="drawer-title" className="text-xl font-bold text-text-primary">Update Product</h2>
             <p className="text-sm text-text-secondary mt-1">{product.name}</p>
@@ -275,7 +275,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             className={clsx(
               'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
               activeTab === 'stock'
-                ? 'text-primary-default border-b-2 border-primary-default bg-white'
+                ? 'text-primary-default border-b-2 border-primary-default bg-surface-default'
                 : 'text-text-secondary hover:text-text-primary hover:bg-slate-100'
             )}
           >
@@ -289,7 +289,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             className={clsx(
               'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
               activeTab === 'pricing'
-                ? 'text-primary-default border-b-2 border-primary-default bg-white'
+                ? 'text-primary-default border-b-2 border-primary-default bg-surface-default'
                 : 'text-text-secondary hover:text-text-primary hover:bg-slate-100'
             )}
           >

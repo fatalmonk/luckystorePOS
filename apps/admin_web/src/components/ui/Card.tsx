@@ -46,12 +46,12 @@ export const Card: React.FC<CardProps> =
   return (
     <div
       className={clsx(
-        'bg-surface rounded-md shadow-level-1 border border-border-default',
+        'bg-warm-surface rounded-xl shadow-level-1 border border-warm-border-warm',
         'transition-all duration-200 ease-out',
         hoverable && !isHighlighted && [
           'hover:-translate-y-0.5',
           'hover:shadow-level-2',
-          'hover:border-border-strong'
+          'hover:border-warm-ring'
         ],
         isHighlighted && highlightClasses[highlightColor],
         paddingClasses,

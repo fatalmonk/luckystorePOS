@@ -2,18 +2,19 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { DollarSign, AlertTriangle, Package, TrendingUp, Bell, BarChart3, Wallet, ArrowUpRight, ArrowDownRight, Scale } from 'lucide-react';
+import { AlertTriangle, Package, TrendingUp, Bell, ArrowUpRight, ArrowDownRight, Scale, Zap } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { SkeletonCard, SkeletonBlock, ErrorState, EmptyState } from '../../components/PageState';
+import { SkeletonCard, SkeletonBlock, ErrorState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
-import { MetricCard } from '../../components/data-display/MetricCard';
+import { HeaderStats } from './HeaderStats';
+import { RecentActivity } from './RecentActivity';
 import { format, subDays, parseISO } from 'date-fns';
 import clsx from 'clsx';
 
 export function DashboardPage() {
   const { t } = useTranslation();
-  const { storeId } = useAuth();
+  const { storeId, user } = useAuth();
   const { notify } = useNotify();
 
   const remindersQuery = useQuery({
@@ -109,15 +110,15 @@ export function DashboardPage() {
   const expenseTotalFromItems: number = Object.values(expenseCategories)
     .reduce((sum: number, v) => sum + (v as number), 0);
 
-  // Map category names to display labels and colors
-  const categoryConfig: Record<string, { label: string; color: string; bg: string }> = {
-    'Stock Purchase': { label: 'Stock Purchase', color: 'text-primary', bg: 'bg-primary/15' },
-    'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warning-dark', bg: 'bg-warning/15' },
-    'Staff salary': { label: 'Staff Salary', color: 'text-info', bg: 'bg-info/15' },
-    'Utility Expenses': { label: 'Utilities', color: 'text-success', bg: 'bg-success/15' },
-    'All Other Expenses': { label: 'Other', color: 'text-text-muted', bg: 'bg-surface-secondary' },
-    'Partners Take': { label: 'Partners Take', color: 'text-danger', bg: 'bg-danger/15' },
-    'Transport & Conveyance': { label: 'Transport', color: 'text-secondary', bg: 'bg-secondary/15' },
+  // Map category names to display labels and colors - Warm palette
+  const categoryConfig: Record<string, { label: string; color: string; barColor: string }> = {
+    'Stock Purchase': { label: 'Stock Purchase', color: 'text-warm-accent', barColor: 'bg-warm-accent' },
+    'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warm-warning', barColor: 'bg-warm-warning' },
+    'Staff salary': { label: 'Staff Salary', color: 'text-blue-600', barColor: 'bg-blue-500' },
+    'Utility Expenses': { label: 'Utilities', color: 'text-warm-success', barColor: 'bg-warm-success' },
+    'All Other Expenses': { label: 'Other', color: 'text-warm-dim', barColor: 'bg-warm-silver' },
+    'Partners Take': { label: 'Partners Take', color: 'text-warm-danger', barColor: 'bg-warm-danger' },
+    'Transport & Conveyance': { label: 'Transport', color: 'text-warm-charcoal', barColor: 'bg-warm-charcoal' },
   };
 
   // Last 7 days vs previous 7 days for trend
@@ -184,337 +185,336 @@ export function DashboardPage() {
 
   return (
     <div className="dashboard-container">
+      {/* Welcome Header */}
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary">{t('dashboard.welcome')} {stats?.user?.name || 'Mohammed'}</h1>
-        <p className="text-text-muted mt-1">Here's what's happening today.</p>
+        <h1 className="text-3xl font-bold text-warm-fg font-display">
+          {t('dashboard.welcome')}, {user?.name || stats?.user?.name || 'Mohammed'}
+        </h1>
+        <p className="text-warm-muted mt-1">Here&apos;s what&apos;s happening today.</p>
       </header>
 
-      <div className="dashboard-grid">
-        <MetricCard
-          title={t("dashboard.todaySales")}
-          value={`৳${stats?.total_sales || '0.00'}`}
-          icon={<TrendingUp size={20} />}
-          color="success"
-          trend={salesTrend ?? undefined}
-          badge={salesTrend ? `${salesTrend === 'up' ? '↑' : '↓'} vs last week` : undefined}
-        />
-        <MetricCard
-          title={t("dashboard.toReceive")}
-          value={`৳${fmt(totalCredit)}`}
-          icon={<ArrowUpRight size={20} />}
-          color="success"
-          badge={`৳${stats?.to_receive ? Number(stats.to_receive).toLocaleString('en-BD', { maximumFractionDigits: 0 }) : '0'} outstanding`}
-        />
-        <MetricCard
-          title={t("dashboard.toGive")}
-          value={`৳${stats?.to_give || '0.00'}`}
-          icon={<ArrowDownRight size={20} />}
-          color="danger"
-        />
-        <MetricCard
-          title={t("dashboard.totalRevenue")}
-          value={`৳${fmt(totalRevenue)}`}
-          icon={<DollarSign size={20} />}
-          color="success"
-          badge={`${dailySales.length} ${t("common.days")}`}
-        />
-        <MetricCard
-          title={t("dashboard.totalExpenses")}
-          value={`৳${fmt(totalExpensesAllTime)}`}
-          icon={<AlertTriangle size={20} />}
-          color="danger"
-          badge={`${dailySales.length} ${t("common.days")}`}
-        />
-        <MetricCard
-          title={t("dashboard.netPosition")}
-          value={`৳${fmt(Math.abs(netPosition))}`}
-          icon={<Scale size={20} />}
-          color={netPosition >= 0 ? 'success' : 'danger'}
-          badge={netPosition >= 0 ? 'Profit' : 'Loss'}
-        />
-      </div>
+      {/* Header Stats */}
+      <HeaderStats
+        todaySales={`৳${stats?.total_sales || '0.00'}`}
+        totalRevenue={fmt(totalRevenue)}
+        totalCustomers="128"
+        netProfit={fmt(Math.abs(netPosition))}
+        salesTrend={salesTrend || undefined}
+        profitTrend={netPosition >= 0 ? 'up' : 'down'}
+      />
 
-      {/* Financial Overview - KPI Summary */}
-      <section className="mt-8">
-        <h2 className="text-xl font-semibold text-text-primary mb-4">Financial Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Revenue Breakdown */}
-          <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
-            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">{t("dashboard.revenueBreakdown")}</h3>
-            <div className="text-2xl font-bold font-mono text-success mb-3">৳{fmt(totalRevenue)}</div>
-            <div className="space-y-2">
-              {[
-                { label: 'Cash', value: totalCash, total: totalRevenue, color: 'bg-success' },
-                { label: 'bKash', value: totalBkash, total: totalRevenue, color: 'bg-info' },
-                { label: 'Credit', value: totalCredit, total: totalRevenue, color: 'bg-warning' },
-              ].map(item => (
-                <div key={item.label}>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-text-secondary">{item.label}</span>
-                    <span className="font-mono font-medium text-text-primary">৳{fmt(item.value)}</span>
-                  </div>
-                  <div className="h-1.5 bg-surface-secondary rounded-full mt-1 overflow-hidden">
-                    <div className={item.color} style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%`, borderRadius: 'inherit', minHeight: item.value > 0 ? 4 : 0 }} />
-                  </div>
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Charts & Tables */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Sales vs Expenses Chart */}
+          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-warm-fg font-display">
+                Sales vs Expenses (Last 14 Days)
+              </h2>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-warm-success" />
+                  <span className="text-warm-muted">Sales</span>
                 </div>
-              ))}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-warm-danger" />
+                  <span className="text-warm-muted">Expenses</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-warm-accent" />
+                  <span className="text-warm-muted">Stock</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Expense Breakdown */}
-          <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
-            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">{t("dashboard.expenseBreakdown")}</h3>
-            <div className="text-2xl font-bold font-mono text-danger mb-3">৳{fmt(expenseTotalFromItems)}</div>
-            <div className="space-y-2">
-              {(Object.entries(expenseCategories as Record<string, number>) as [string, number][])
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 5)
-                .map(([cat, amount]) => {
-                  const config = categoryConfig[cat] || { label: cat, color: 'text-text-muted', bg: 'bg-surface-secondary' };
-                  const pct = expenseTotalFromItems > 0 ? (amount / expenseTotalFromItems) * 100 : 0;
+            {salesVsExpenses.length > 0 ? (
+              <div className="flex items-end justify-between gap-1" style={{ height: '240px' }}>
+                {salesVsExpenses.map((day, idx: number) => {
+                  const maxVal = Math.max(
+                    ...salesVsExpenses.map((d: { sales: number; expenses: number; stockPurchases: number }) => 
+                      Math.max(d.sales, d.expenses, d.stockPurchases)
+                    ),
+                    1
+                  );
+                  const salesHeight = maxVal > 0 ? (day.sales / maxVal) * 100 : 0;
+                  const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
+                  const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
                   return (
-                    <div key={cat}>
-                      <div className="flex justify-between text-sm">
-                        <span className={config.color}>{config.label}</span>
-                        <span className="font-mono text-text-primary">৳{fmt(amount)} <span className="text-text-muted">({pct.toFixed(1)}%)</span></span>
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                      <div className="flex items-end gap-0.5 w-full justify-center" style={{ height: '100%' }}>
+                        <div
+                          style={{
+                            width: '28%',
+                            height: `${salesHeight}%`,
+                            backgroundColor: 'var(--warm-success)',
+                            borderRadius: '2px 2px 0 0',
+                            minHeight: day.sales > 0 ? 4 : 0,
+                            transition: 'height 0.3s ease',
+                          }}
+                          title={`Sales: ৳${day.sales.toLocaleString()}`}
+                        />
+                        <div
+                          style={{
+                            width: '28%',
+                            height: `${expenseHeight}%`,
+                            backgroundColor: 'var(--warm-danger)',
+                            borderRadius: '2px 2px 0 0',
+                            minHeight: day.expenses > 0 ? 4 : 0,
+                            transition: 'height 0.3s ease',
+                          }}
+                          title={`Expenses: ৳${day.expenses.toLocaleString()}`}
+                        />
+                        <div
+                          style={{
+                            width: '28%',
+                            height: `${stockHeight}%`,
+                            backgroundColor: 'var(--warm-accent)',
+                            borderRadius: '2px 2px 0 0',
+                            minHeight: day.stockPurchases > 0 ? 4 : 0,
+                            transition: 'height 0.3s ease',
+                          }}
+                          title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
+                        />
                       </div>
-                      <div className="h-1.5 bg-surface-secondary rounded-full mt-1 overflow-hidden">
-                        <div className={config.bg} style={{ width: `${pct}%`, borderRadius: 'inherit', minHeight: amount > 0 ? 4 : 0 }} />
-                      </div>
+                      <span className="text-[10px] text-warm-dim whitespace-nowrap">
+                        {day.label}
+                      </span>
                     </div>
                   );
                 })}
-            </div>
-          </div>
+              </div>
+            ) : (
+              <div className="text-center text-warm-muted py-12">
+                No daily sales data available.{' '}
+                <a href="/admin/daily-sales" className="text-warm-accent hover:underline">
+                  Add daily sales
+                </a>
+              </div>
+            )}
+          </section>
 
-          {/* Investment Summary */}
-          <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-5">
-            <h3 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-3">{t("dashboard.investmentSummary")}</h3>
-            <div className="space-y-3 mt-2">
-              <div className="flex justify-between items-center py-2 border-b border-border-default">
-                <span className="text-text-secondary">Mohammed</span>
-                <span className="font-mono font-medium text-primary">৳{fmt(mohammedCapital)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border-default">
-                <span className="text-text-secondary">Sayeed Imam</span>
-                <span className="font-mono font-medium text-primary">৳{fmt(sayeedCapital)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border-default">
-                <span className="font-semibold text-text-primary">Total Capital</span>
-                <span className="font-mono font-bold text-lg text-primary">৳{fmt(partnerCapital)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border-default">
-                <span className="text-text-secondary">{t("dashboard.stockInvestment")}</span>
-                <span className="font-mono font-medium text-info">৳{fmt(totalStockAllTime)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border-default">
-                <span className="text-text-secondary">Total Revenue</span>
-                <span className="font-mono font-medium text-success">৳{fmt(totalRevenue)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className={clsx('font-semibold', netPosition >= 0 ? 'text-success-dark' : 'text-danger')}>
-                  {netPosition >= 0 ? t('dashboard.netProfit') : t('dashboard.netLoss')}
-                </span>
-                <span className={clsx('font-mono font-bold text-lg', netPosition >= 0 ? 'text-success-dark' : 'text-danger')}>
-                  ৳{fmt(Math.abs(netPosition))}
-                </span>
-              </div>
-              <div className="text-xs text-text-muted mt-1">
-                {t("dashboard.revenueCovers")} {(totalRevenue / totalExpensesAllTime * 100).toFixed(1)}% of total expenses
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sales vs Expenses Comparison Section */}
-      <div className="grid grid-cols-2 gap-6 mt-8">
-        {/* Left Column */}
-        <div className="flex flex-col gap-6">
-          <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">
-              Sales vs Expenses (Last 14 Days)
-            </h2>
-            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
-              {salesVsExpenses.length > 0 && (
-                <>
-                  <div className="flex items-center gap-6 mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-sm bg-success" />
-                      <span className="text-sm text-text-muted">Sales</span>
+          {/* Financial Overview Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Revenue Breakdown */}
+            <div className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+              <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
+                {t('dashboard.revenueBreakdown')}
+              </h3>
+              <div className="text-2xl font-bold text-warm-success font-mono mb-4">৳{fmt(totalRevenue)}</div>
+              <div className="space-y-3">
+                {[
+                  { label: 'Cash', value: totalCash, total: totalRevenue, color: 'bg-warm-success' },
+                  { label: 'bKash', value: totalBkash, total: totalRevenue, color: 'bg-blue-500' },
+                  { label: 'Credit', value: totalCredit, total: totalRevenue, color: 'bg-warm-warning' },
+                ].map(item => (
+                  <div key={item.label}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-warm-muted">{item.label}</span>
+                      <span className="font-mono font-medium text-warm-fg">৳{fmt(item.value)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-sm bg-danger" />
-                      <span className="text-sm text-text-muted">Expenses</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-sm bg-info" />
-                      <span className="text-sm text-text-muted">Stock Purchases</span>
+                    <div className="h-1.5 bg-warm-border rounded-full overflow-hidden">
+                      <div 
+                        className={item.color} 
+                        style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%`, height: '100%' }} 
+                      />
                     </div>
                   </div>
-                  <div className="flex items-end justify-between gap-1" style={{ height: '200px' }}>
-                    {salesVsExpenses.map((day: { date: string; label: string; sales: number; expenses: number; stockPurchases: number }, idx: number) => {
-                      const maxVal = Math.max(
-                        ...salesVsExpenses.map((d: { sales: number; expenses: number; stockPurchases: number }) => 
-                          Math.max(d.sales, d.expenses, d.stockPurchases)
-                        ),
-                        1
-                      );
-                      const salesHeight = maxVal > 0 ? (day.sales / maxVal) * 100 : 0;
-                      const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
-                      const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
-                      return (
-                        <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                          <div className="flex items-end gap-0.5 w-full justify-center" style={{ height: '100%' }}>
-                            <div
-                              style={{
-                                width: '28%',
-                                height: `${salesHeight}%`,
-                                backgroundColor: 'var(--color-success-default)',
-                                borderRadius: '2px 2px 0 0',
-                                minHeight: day.sales > 0 ? 4 : 0,
-                                transition: 'height 0.3s ease',
-                              }}
-                              title={`Sales: ৳${day.sales.toLocaleString()}`}
-                            />
-                            <div
-                              style={{
-                                width: '28%',
-                                height: `${expenseHeight}%`,
-                                backgroundColor: 'var(--color-danger-default)',
-                                borderRadius: '2px 2px 0 0',
-                                minHeight: day.expenses > 0 ? 4 : 0,
-                                transition: 'height 0.3s ease',
-                              }}
-                              title={`Expenses: ৳${day.expenses.toLocaleString()}`}
-                            />
-                            <div
-                              style={{
-                                width: '28%',
-                                height: `${stockHeight}%`,
-                                backgroundColor: 'var(--color-info-default)',
-                                borderRadius: '2px 2px 0 0',
-                                minHeight: day.stockPurchases > 0 ? 4 : 0,
-                                transition: 'height 0.3s ease',
-                              }}
-                              title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
-                            />
-                          </div>
-                          <span className="text-xs text-text-muted whitespace-nowrap" style={{ fontSize: '10px' }}>
-                            {day.label}
+                ))}
+              </div>
+            </div>
+
+            {/* Expense Breakdown */}
+            <div className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+              <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
+                {t('dashboard.expenseBreakdown')}
+              </h3>
+              <div className="text-2xl font-bold text-warm-danger font-mono mb-4">৳{fmt(expenseTotalFromItems)}</div>
+              <div className="space-y-3">
+                {(Object.entries(expenseCategories as Record<string, number>) as [string, number][])
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 5)
+                  .map(([cat, amount]) => {
+                    const config = categoryConfig[cat] || { label: cat, color: 'text-warm-dim', barColor: 'bg-warm-silver' };
+                    const pct = expenseTotalFromItems > 0 ? (amount / expenseTotalFromItems) * 100 : 0;
+                    return (
+                      <div key={cat}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className={config.color}>{config.label}</span>
+                          <span className="font-mono text-warm-fg">
+                            ৳{fmt(amount)} <span className="text-warm-dim">({pct.toFixed(0)}%)</span>
                           </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-              {salesVsExpenses.length === 0 && (
-                <div className="text-center text-text-muted py-8">
-                  No daily sales data available. <a href="/admin/daily-sales" className="text-primary-default hover:underline">Add daily sales</a>
-                </div>
-              )}
+                        <div className="h-1.5 bg-warm-border rounded-full overflow-hidden">
+                          <div className={config.barColor} style={{ width: `${pct}%`, height: '100%' }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
-          </section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Low Stock Alerts</h2>
-            <div className="bg-surface rounded-md border border-border-default shadow-level-1">
-              {lowStock && lowStock.length > 0 ? (
-                <ul className="divide-y divide-border-default">
-                  {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
-                    <li key={item.id} className="flex justify-between items-center px-4 py-3">
-                      <span className="text-sm text-text-primary">{item.name}</span>
-                      <span className="text-sm font-semibold text-danger">{item.quantity} left</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <EmptyState
-                  icon={<AlertTriangle size={48} />}
-                  title="Stock is healthy"
-                  description="No items are currently running low."
-                />
-              )}
+            {/* Investment Summary */}
+            <div className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+              <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
+                {t('dashboard.investmentSummary')}
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-warm-border">
+                  <span className="text-warm-muted">Mohammed</span>
+                  <span className="font-mono font-medium text-warm-accent">৳{fmt(mohammedCapital)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-warm-border">
+                  <span className="text-warm-muted">Sayeed Imam</span>
+                  <span className="font-mono font-medium text-warm-accent">৳{fmt(sayeedCapital)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-warm-border">
+                  <span className="font-semibold text-warm-fg">Total Capital</span>
+                  <span className="font-mono font-bold text-lg text-warm-accent">৳{fmt(partnerCapital)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-warm-border">
+                  <span className="text-warm-muted">{t('dashboard.stockInvestment')}</span>
+                  <span className="font-mono font-medium text-blue-600">৳{fmt(totalStockAllTime)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className={clsx('font-semibold', netPosition >= 0 ? 'text-warm-success' : 'text-warm-danger')}>
+                    {netPosition >= 0 ? t('dashboard.netProfit') : t('dashboard.netLoss')}
+                  </span>
+                  <span className={clsx('font-mono font-bold text-lg', netPosition >= 0 ? 'text-warm-success' : 'text-warm-danger')}>
+                    ৳{fmt(Math.abs(netPosition))}
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Payment Breakdown */}
+          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-warm-fg font-display mb-6">
+              {t('dashboard.revenueBreakdown')}
+            </h2>
+            {totalRevenue > 0 ? (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="text-center p-4 bg-warm-bg rounded-lg">
+                    <div className="text-sm text-warm-muted mb-1">Cash</div>
+                    <div className="text-xl font-bold text-warm-success font-mono">৳{fmt(totalCash)}</div>
+                    <div className="text-xs text-warm-dim mt-1">{((totalCash / totalRevenue) * 100).toFixed(1)}%</div>
+                  </div>
+                  <div className="text-center p-4 bg-warm-bg rounded-lg">
+                    <div className="text-sm text-warm-muted mb-1">Bkash</div>
+                    <div className="text-xl font-bold text-blue-600 font-mono">৳{fmt(totalBkash)}</div>
+                    <div className="text-xs text-warm-dim mt-1">{((totalBkash / totalRevenue) * 100).toFixed(1)}%</div>
+                  </div>
+                  <div className="text-center p-4 bg-warm-bg rounded-lg">
+                    <div className="text-sm text-warm-muted mb-1">Credit Due</div>
+                    <div className="text-xl font-bold text-warm-warning font-mono">৳{fmt(totalCredit)}</div>
+                    <div className="text-xs text-warm-dim mt-1">{((totalCredit / (totalRevenue + totalCredit)) * 100).toFixed(1)}%</div>
+                  </div>
+                </div>
+                <div className="h-3 bg-warm-border rounded-full overflow-hidden flex">
+                  <div className="bg-warm-success transition-all duration-500" style={{ width: `${(totalCash / totalRevenue) * 100}%` }} />
+                  <div className="bg-blue-500 transition-all duration-500" style={{ width: `${(totalBkash / totalRevenue) * 100}%` }} />
+                </div>
+                <div className="text-center text-sm text-warm-muted mt-4">
+                  Realized Revenue: ৳{fmt(totalRevenue)} | Total Sales: ৳{fmt(totalRevenue + totalCredit)}
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-warm-muted py-8">No sales data available</div>
+            )}
           </section>
         </div>
 
-        {/* Right Column */}
-        <div className="flex flex-col gap-6">
-          <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Total Balance</h2>
-            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-8 text-center">
-              <div className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">{t("dashboard.currentAvailableBalance")}</div>
-              <div className="text-4xl font-bold text-success font-mono">৳{fmt(availableBalance)}</div>
-              <div className="text-sm text-text-muted mt-2">Capital + Revenue − Expenses</div>
+        {/* Right Column - Activity & Quick Actions */}
+        <div className="space-y-8">
+          {/* Quick POS Shortcut */}
+          <section className="bg-gradient-to-br from-warm-accent to-warm-accent-light rounded-xl shadow-sm p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Zap size={20} />
+                  Quick POS
+                </h3>
+                <p className="text-white/80 text-sm mt-1">Start a quick sale</p>
+              </div>
+              <a 
+                href="/admin/pos" 
+                className="bg-white text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
+              >
+                Launch
+              </a>
             </div>
           </section>
 
-          {/* Payment Breakdown */}
-          <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">{t("dashboard.revenueBreakdown")}</h2>
-            <div className="bg-surface rounded-md border border-border-default shadow-level-1 p-6">
-              {totalRevenue > 0 ? (
-                <>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
-                      <div className="text-sm text-text-muted">Cash</div>
-                      <div className="text-lg font-bold text-success">৳{fmt(totalCash)}</div>
-                      <div className="text-xs text-text-muted">{((totalCash / totalRevenue) * 100).toFixed(1)}%</div>
-                    </div>
-                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
-                      <div className="text-sm text-text-muted">Bkash</div>
-                      <div className="text-lg font-bold text-info">৳{fmt(totalBkash)}</div>
-                      <div className="text-xs text-text-muted">{((totalBkash / totalRevenue) * 100).toFixed(1)}%</div>
-                    </div>
-                    <div className="text-center p-3 bg-surface-secondary rounded-lg">
-                      <div className="text-sm text-text-muted">Credit Due</div>
-                      <div className="text-lg font-bold text-warning">৳{fmt(totalCredit)}</div>
-                      <div className="text-xs text-text-muted">{((totalCredit / (totalRevenue + totalCredit)) * 100).toFixed(1)}%</div>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-surface-secondary rounded-full overflow-hidden flex">
-                    <div className="bg-success" style={{ width: `${(totalCash / totalRevenue) * 100}%` }} />
-                    <div className="bg-info" style={{ width: `${(totalBkash / totalRevenue) * 100}%` }} />
-                  </div>
-                  <div className="text-center text-sm text-text-muted mt-2">
-                    Realized Revenue: ৳{fmt(totalRevenue)} | Total Sales: ৳{fmt(totalRevenue + totalCredit)}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center text-text-muted py-4">
-                  No sales data available
-                </div>
-              )}
+          {/* Total Balance Card */}
+          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6 text-center">
+            <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2">
+              {t('dashboard.currentAvailableBalance')}
             </div>
+            <div className="text-4xl font-bold text-warm-success font-mono">৳{fmt(availableBalance)}</div>
+            <div className="text-sm text-warm-muted mt-1">Capital + Revenue − Expenses</div>
           </section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Upcoming Reminders</h2>
-            <div className="bg-surface rounded-md border border-border-default shadow-level-1">
-              {reminders && reminders.length > 0 ? (
-                <ul className="divide-y divide-border-default">
-                  {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
-                    <li key={reminder.id} className="flex flex-col gap-1 px-4 py-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold text-text-primary">{reminder.title}</span>
-                        <span className="text-xs text-text-muted">{new Date(reminder.reminderDate).toLocaleDateString()}</span>
-                      </div>
-                      {reminder.description && (
-                        <p className="text-sm text-text-muted">{reminder.description}</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <EmptyState
-                  icon={<Bell size={48} />}
-                  title="No upcoming reminders"
-                  description="You are all caught up."
-                />
-              )}
+          {/* Recent Activity */}
+          <RecentActivity />
+
+          {/* Low Stock Alerts */}
+          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
+            <div className="px-6 py-4 border-b border-warm-border">
+              <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
+                <AlertTriangle size={18} className="text-warm-warning" />
+                Low Stock Alerts
+              </h3>
             </div>
+            {lowStock && lowStock.length > 0 ? (
+              <ul className="divide-y divide-warm-border">
+                {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
+                  <li key={item.id} className="flex justify-between items-center px-6 py-3">
+                    <span className="text-sm text-warm-fg">{item.name}</span>
+                    <span className="text-sm font-semibold text-warm-danger">{item.quantity} left</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-6 py-8 text-center text-warm-muted">
+                <Package size={32} className="mx-auto mb-2 text-warm-success" />
+                <p>Stock is healthy</p>
+                <p className="text-sm text-warm-dim">No items are currently running low.</p>
+              </div>
+            )}
+          </section>
+
+          {/* Reminders */}
+          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
+            <div className="px-6 py-4 border-b border-warm-border">
+              <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
+                <Bell size={18} className="text-warm-accent" />
+                Upcoming Reminders
+              </h3>
+            </div>
+            {reminders && reminders.length > 0 ? (
+              <ul className="divide-y divide-warm-border">
+                {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
+                  <li key={reminder.id} className="flex flex-col gap-1 px-6 py-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-warm-fg">{reminder.title}</span>
+                      <span className="text-xs text-warm-muted">
+                        {format(parseISO(reminder.reminderDate), 'dd MMM')}
+                      </span>
+                    </div>
+                    {reminder.description && (
+                      <span className="text-xs text-warm-muted line-clamp-1">{reminder.description}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-6 py-8 text-center text-warm-muted">
+                <p>No upcoming reminders</p>
+              </div>
+            )}
           </section>
         </div>
       </div>
