@@ -80,6 +80,14 @@ class PosProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  String? _selectedPaymentMethodId;
+  String? get selectedPaymentMethodId => _selectedPaymentMethodId;
+
+  void setSelectedPaymentMethodId(String? id) {
+    _selectedPaymentMethodId = id;
+    notifyListeners();
+  }
+
   // ── Cart ───────────────────────────────────────────────────────────────────
   final List<CartItem> _cart = [];
   final Map<String, SaleSnapshotItem> _draftSnapshotItems = {};
@@ -90,9 +98,22 @@ class PosProvider extends ChangeNotifier {
   double _cartDiscount = 0; // sale-level discount in ৳
   double get cartDiscount => _cartDiscount;
 
-  double get subtotal => _cart.fold(0, (sum, c) => sum + c.lineTotal);
-  double get totalAmount =>
-      (subtotal - _cartDiscount).clamp(0, double.infinity);
+  double get subtotal {
+    return _cart.fold(0.0, (sum, item) {
+      PaymentMethod? method;
+      for (final m in _paymentMethods) {
+        if (m.id == _selectedPaymentMethodId) {
+          method = m;
+          break;
+        }
+      }
+      final isCredit = method?.name.toLowerCase().contains('credit') ?? false;
+      final unitPrice = isCredit ? item.item.mrp : item.item.price;
+      return sum + (unitPrice * item.qty);
+    });
+  }
+
+  double get totalAmount => subtotal;
   int get itemCount => _cart.fold(0, (sum, c) => sum + c.qty);
 
   // ── Payment methods ────────────────────────────────────────────────────────
@@ -808,5 +829,41 @@ class PosProvider extends ChangeNotifier {
     _catalogLoadFailed = false;
     notifyListeners();
     return categories;
+  }
+
+  String _scanBuffer = '';
+  DateTime _lastKeyTime = DateTime.now();
+
+  void handleScannerKeypress(String char) {
+    final now = DateTime.now();
+    
+    // Reset buffer if >100ms gap (new scan)
+    if (now.difference(_lastKeyTime).inMilliseconds > 100) {
+      _scanBuffer = '';
+    }
+    _lastKeyTime = now;
+    
+    if (char == '\n' || char == '\r') {
+      // Process complete barcode
+      if (_scanBuffer.isNotEmpty) {
+        lookupAndAddProduct(_scanBuffer.trim());
+        _scanBuffer = '';
+      }
+    } else {
+      _scanBuffer += char;
+    }
+  }
+
+  Future<void> lookupAndAddProduct(String code) async {
+    try {
+      final product = await scanItem(code);
+      if (product != null) {
+        addItem(product);
+      } else {
+        _setError('Item not found: $code');
+      }
+    } catch (e) {
+      _setError('Scan error: $e');
+    }
   }
 }

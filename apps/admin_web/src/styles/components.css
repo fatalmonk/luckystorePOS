@@ -357,46 +357,37 @@
 .pos-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background-color: var(--bg-app);
   color: var(--text-main);
 }
 
-.pos-content {
-  display: grid;
-  grid-template-columns: 220px 1fr 340px;
-  flex: 1;
-  overflow: hidden;
-  gap: var(--space-4);
-  padding: var(--space-4);
-}
-
-@media (max-width: 1280px) {
   .pos-content {
-    grid-template-columns: 200px 1fr 300px;
-    gap: var(--space-3);
-    padding: var(--space-3);
+    display: grid;
+    grid-template-columns: 1fr 350px !important;
+    flex: 1;
+    overflow: hidden;
+    gap: var(--space-4);
+    padding: var(--space-4);
   }
-}
 
-@media (max-width: 1024px) {
-  .pos-content {
-    grid-template-columns: 180px 1fr 280px;
+  @media (max-width: 1280px) {
+    .pos-content {
+      grid-template-columns: 1fr 350px;
+      gap: var(--space-3);
+      padding: var(--space-3);
+    }
   }
-}
 
-@media (max-width: 768px) {
-  .pos-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    overflow-y: auto;
+  @media (max-width: 1024px) {
+    .pos-content {
+      grid-template-columns: 1fr 350px;
+    }
   }
-}
 
 .pos-products {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   gap: var(--space-4);
 }
 
@@ -474,9 +465,8 @@
 .pos-sidebar {
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
+  background-color: var(--color-surface-default);
+  border-right: 1px solid var(--color-border-default);
   padding: var(--space-4);
   gap: var(--space-4);
   overflow-y: auto;
@@ -537,12 +527,15 @@
 }
 
 .category-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background-color: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-label-md-size);
   font-weight: 500;
   text-align: left;
   cursor: pointer;
@@ -552,15 +545,15 @@
 
 @media (max-width: 1280px) {
   .category-pill {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-xs);
+    padding: var(--space-3) var(--space-3);
+    font-size: var(--font-label-md-size);
   }
 }
 
 @media (max-width: 768px) {
   .category-pill {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-xs);
+    padding: var(--space-3) var(--space-3);
+    font-size: var(--font-label-md-size);
   }
 }
 
@@ -570,10 +563,27 @@
 }
 
 .category-pill.active {
-  background-color: var(--color-primary);
-  color: #000;
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary-default);
   font-weight: 600;
 }
+
+/* ============================================
+   Product Card Adjustments
+   ============================================ */
+.product-meta {
+  margin-top: auto; /* push price section to bottom */
+}
+
+/* Hide mobile navigation and widgets on tablet POS */
+@media (min-width: 768px) {
+  .mobile-bottom-nav,
+  .beach-widget,
+  .global-search-bar {
+    display: none !important;
+  }
+}
+
 
 .pos-grid {
   display: grid;
@@ -618,8 +628,10 @@
   gap: var(--space-2);
   min-width: 0;
   overflow: hidden;
+  min-height: 180px;
+  cursor: pointer;
   /* Motion: smooth hover transitions */
-  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out, border-color 100ms ease-out;
 }
 
 .product-card:hover:not([aria-disabled="true"]) {
@@ -630,7 +642,7 @@
 }
 
 .product-card:active:not([aria-disabled="true"]) {
-  transform: translateY(0) scale(0.99);
+  transform: scale(0.98);
   box-shadow: var(--shadow-sm);
 }
 
@@ -686,24 +698,23 @@
 .product-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   gap: var(--space-1);
   width: 100%;
   min-width: 0;
 }
 
 .product-name {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-family: var(--font-body);
+  font-size: var(--font-heading-md-size);
+  font-weight: var(--font-heading-md-weight);
   color: var(--text-main);
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  width: 100%;
   overflow: hidden;
-  word-break: break-word;
-  hyphens: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 1280px) {
@@ -736,22 +747,33 @@
 }
 
 .product-price {
-  font-size: var(--font-size-base);
+  font-size: 20px;
   font-weight: 700;
-  color: var(--color-primary-hover);
+  color: var(--color-primary);
   white-space: nowrap;
 }
 
 @media (max-width: 1280px) {
   .product-price {
-    font-size: var(--font-size-sm);
+    font-size: 18px;
   }
 }
 
 @media (max-width: 768px) {
   .product-price {
-    font-size: var(--font-size-sm);
+    font-size: 18px;
   }
+}
+
+/* Cart item spacing & tap targets */
+.cart-item {
+  min-height: 64px;
+}
+
+/* Numpad buttons */
+.numpad-key {
+  min-height: 56px;
+  font-size: 18px;
 }
 
 /* POS Billing Panel */
@@ -2467,4 +2489,16 @@ a.button-outline {
   .button-outline {
     border-width: 0.5px;
   }
+}
+
+/* POS Checkout Button */
+.pos-checkout-btn {
+  background-color: var(--color-primary-default);
+  color: var(--color-primary-on);
+}
+.pos-checkout-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+.pos-checkout-btn:active:not(:disabled) {
+  background-color: var(--color-primary-pressed);
 }

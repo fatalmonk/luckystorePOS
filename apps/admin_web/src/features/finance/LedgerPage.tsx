@@ -9,6 +9,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { Modal } from '../../components/ui/Modal';
 import { useAuth } from '../../lib/AuthContext';
+import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 
 interface TransactionItem {
@@ -320,7 +321,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
 
   return (
-    <div className="dashboard-container">
+    <div className={clsx('app-warm dashboard-container')}>
       <PageHeader title={title} subtitle={subtitle} actions={
         <button className="button-primary" onClick={() => setShowAddParty(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
           <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}

@@ -33,6 +33,10 @@ export function QuickPosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showMobileCart, setShowMobileCart] = useState(false);
 
+  // Refs for focusing
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const scannerInputRef = useRef<HTMLInputElement>(null);
+
   // Cart hook
   const cart = usePosCart(handleError);
 
@@ -121,39 +125,84 @@ export function QuickPosPage() {
     if (!sale.showPaymentModal) setError(null);
   }, [sale.showPaymentModal]);
 
+  // Auto focus scanner input when scanning mode is active
+  useEffect(() => {
+    if (scanner.isScanning) {
+      setTimeout(() => scannerInputRef.current?.focus(), 100);
+    }
+  }, [scanner.isScanning]);
+
+  // Keyboard Shortcuts: F2, F12, Ctrl+K, Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape clears cart
+      if (e.key === 'Escape') {
+        const activeEl = document.activeElement;
+        if (activeEl?.tagName !== 'INPUT' && activeEl?.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          cart.clearCart();
+        }
+      }
+      
+      // F2 toggles scanner
+      if (e.key === 'F2') {
+        e.preventDefault();
+        scanner.setIsScanning(prev => !prev);
+      }
+      
+      // F12 continues billing / opens payment modal
+      if (e.key === 'F12') {
+        e.preventDefault();
+        if (cart.cart.length > 0 && !sale.showPaymentModal) {
+          sale.setShowPaymentModal(true);
+        }
+      }
+      
+      // Ctrl + K focuses search
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, scanner, sale]);
+
   return (
     <div className={clsx('pos-container', showMobileCart && 'pos-container--sheet-open')}>
       <div className="pos-content">
-        {/* Left Panel - Categories */}
-        <div className="pos-sidebar">
-          <h2 className="text-sm font-bold text-text-muted mb-2 px-2 uppercase tracking-wider">Categories</h2>
-          <div className="pos-categories">
+        {/* Left Fluid Area */}
+        <div className="pos-left-pane">
+          {/* Category Filters (Horizontal) */}
+          <div className="pos-categories-horizontal flex gap-2 overflow-x-auto pb-2 scrollbar-hide shrink-0">
             <button
               className={`category-pill ${activeCategory === null ? 'active' : ''}`}
               onClick={() => setActiveCategory(null)}
+              style={{ whiteSpace: 'nowrap' }}
             >
               All Categories
             </button>
             {catLoading ? (
-              <div className="category-pill">Loading...</div>
+              <div className="category-pill" style={{ whiteSpace: 'nowrap' }}>Loading...</div>
             ) : catError ? (
-              <div className="category-pill text-danger">Error loading</div>
+              <div className="category-pill text-danger" style={{ whiteSpace: 'nowrap' }}>Error loading</div>
             ) : (
               categories.map((category) => (
                 <button
                   key={category.id}
                   className={`category-pill ${activeCategory === category.id ? 'active' : ''}`}
                   onClick={() => setActiveCategory(category.id)}
+                  style={{ whiteSpace: 'nowrap' }}
                 >
                   {category.name} ({category.itemCount})
                 </button>
               ))
             )}
           </div>
-        </div>
 
-        {/* Center Panel - Products */}
-        <div className="pos-products">
+          {/* Center Panel - Products */}
+          <div className="pos-products">
           {/* Action Bar */}
           <div className="pos-action-bar">
             <h1 className="text-xl font-bold">Quick POS</h1>
@@ -161,15 +210,16 @@ export function QuickPosPage() {
               <div className="pos-search">
                 <Search className="search-icon" />
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Search items..."
+                  placeholder="Search items... (Ctrl+K)"
                   className="search-input"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <button className="button-primary" onClick={() => scanner.setIsScanning(!scanner.isScanning)}>
-                <ScanLine size={16} /> Scan Code
+                <ScanLine size={16} /> Scan Code (F2)
               </button>
             </div>
           </div>
@@ -178,6 +228,7 @@ export function QuickPosPage() {
           {scanner.isScanning && (
             <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
               <input
+                ref={scannerInputRef}
                 type="text"
                 placeholder="Scan barcode or SKU... (Press Enter)"
                 className="search-input"
@@ -265,6 +316,7 @@ export function QuickPosPage() {
                 />
               ))
             )}
+          </div>
           </div>
         </div>
 

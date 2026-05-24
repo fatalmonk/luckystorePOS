@@ -3,7 +3,6 @@ import '../../../../models/pos_models.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_button_styles.dart';
 
@@ -132,153 +131,89 @@ class ProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outOfStock = item.qtyOnHand <= 0;
+    final isOutOfStock = item.qtyOnHand <= 0;
 
-    return GestureDetector(
-      onTap: outOfStock ? null : onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDefault,
-          borderRadius: AppRadius.borderMd,
-          boxShadow: AppShadows.elevation1,
-          border: Border.all(color: AppColors.borderDefault),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Product image
-                Expanded(
-                  flex: 5,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundSubtle,
-                    ),
-                    child: item.imageUrl != null
-                        ? Image.network(
-                            item.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder(),
-                          )
-                        : _placeholder(),
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.borderDefault),
+      ),
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: isOutOfStock ? null : onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Circular avatar with stock badge
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: AppColors.backgroundSubtle,
+                    backgroundImage: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                      ? NetworkImage(item.imageUrl!)
+                      : null,
+                    child: item.imageUrl == null || item.imageUrl!.isEmpty
+                      ? const Icon(Icons.inventory_2, size: 32, color: AppColors.textMuted)
+                      : null,
                   ),
-                ),
-                // Product info
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            item.name,
-                            style: AppTextStyles.labelMd.copyWith(
-                              height: 1.1,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                  if (item.qtyOnHand < 10)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isOutOfStock 
+                            ? AppColors.dangerDefault 
+                            : AppColors.warningDefault,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          isOutOfStock ? '0' : '${item.qtyOnHand}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const Spacer(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '৳${item.price.toStringAsFixed(0)}',
-                              style: AppTextStyles.labelLg.copyWith(
-                                color: AppColors.primaryDefault,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: item.qtyOnHand > 5 
-                                  ? AppColors.successDefault.withValues(alpha: 0.1)
-                                  : item.qtyOnHand > 0 
-                                    ? AppColors.warningDefault.withValues(alpha: 0.1)
-                                    : AppColors.dangerDefault.withValues(alpha: 0.1),
-                                borderRadius: AppRadius.borderXs,
-                              ),
-                              child: Text(
-                                '${item.qtyOnHand}',
-                                style: AppTextStyles.bodyXs.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: item.qtyOnHand > 5 
-                                    ? AppColors.successDefault
-                                    : item.qtyOnHand > 0 
-                                      ? AppColors.warningDefault
-                                      : AppColors.dangerDefault,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Out of stock overlay
-            if (outOfStock)
-              Positioned.fill(
-                child: Container(
-                  color: AppColors.backgroundDefault.withValues(alpha: 0.6),
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: AppColors.dangerDefault,
-                      borderRadius: AppRadius.borderSm,
-                    ),
-                    child: Text(
-                      'SOLD OUT',
-                      style: AppTextStyles.labelXs.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.0,
                       ),
                     ),
-                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              
+              // Product name
+              Text(
+                item.name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 4),
+              
+              // Price
+              Text(
+                '৳${item.price.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryDefault,
                 ),
               ),
-
-            // Add indicator (top-right)
-            if (!outOfStock)
-              Positioned(
-                top: 6,
-                right: 6,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryDefault.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: AppShadows.elevation1,
-                  ),
-                  child: const Icon(Icons.add_rounded, color: AppColors.primaryOn, size: 18),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _placeholder() {
-    return Center(
-      child: Icon(
-        Icons.image_not_supported_rounded,
-        color: AppColors.textMuted.withValues(alpha: 0.2),
-        size: 32,
       ),
     );
   }

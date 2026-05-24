@@ -39,6 +39,7 @@ export function mapSearchItem(row: any): PosProduct {
     brand: row.brand,
     price,
     cost: row.cost ? Number(row.cost) : undefined,
+    mrp: row.mrp ? Number(row.mrp) : undefined,
     stock: Number(row.qty_on_hand ?? row.stock ?? 0),
     category: row.category,
     categoryId: row.category_id,

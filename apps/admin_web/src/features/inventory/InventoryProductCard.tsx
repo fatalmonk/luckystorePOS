@@ -140,12 +140,19 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
     <Card
       padding="none"
       className={clsx(
-        "overflow-hidden group cursor-pointer transition-all duration-300",
+        "overflow-hidden group cursor-pointer transition-all duration-300 border",
         isHighlighted && "ring-2 ring-emerald-500 ring-offset-2"
       )}
+      style={{
+        borderColor: 'var(--color-border-default)',
+        borderRadius: 'var(--radius-md)'
+      }}
     >
       {/* Image / Status */}
-      <div className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden">
+      <div 
+        className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden"
+        onClick={() => onUpdateStock(item)}
+      >
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -159,21 +166,41 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
             <span className="text-xs">No image</span>
           </div>
         )}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
           <div
-            className={clsx(
-              "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase",
-              item.reorder_status === 'OUT' && "bg-rose-100 text-rose-700",
-              item.reorder_status === 'LOW' && "bg-amber-100 text-amber-700",
-              item.reorder_status === 'OK' && "bg-emerald-100 text-emerald-700"
-            )}
+            className="text-[10px] px-2 py-0.5 font-bold uppercase"
+            style={{
+              borderRadius: 'var(--radius-full)',
+              ...(item.reorder_status === 'OUT' && {
+                backgroundColor: 'var(--color-danger-subtle)',
+                color: 'var(--color-danger-default)'
+              }),
+              ...(item.reorder_status === 'LOW' && {
+                backgroundColor: 'var(--color-warning-subtle)',
+                color: 'var(--color-warning-default)'
+              }),
+              ...(item.reorder_status === 'OK' && {
+                backgroundColor: 'var(--color-success-subtle)',
+                color: 'var(--color-success-default)'
+              })
+            }}
           >
             {item.reorder_status}
           </div>
+          {/* Minimized Update Stock action icon */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onUpdateStock(item); }}
+            className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+            style={{ color: 'var(--color-primary-default)' }}
+            title="Update Stock"
+            aria-label="Update Stock"
+          >
+            <EditIcon className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      <div className="p-3 flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5" style={{ padding: 'var(--inset-md)' }}>
         {/* Name */}
         <h4
           className="text-sm font-semibold text-text-primary line-clamp-2 leading-tight"
@@ -211,7 +238,10 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
                   className="group/edit flex items-center gap-1"
                   title="Click to edit selling price"
                 >
-                  <span className="text-lg font-bold tabular-nums text-slate-900 group-hover/edit:text-primary transition-colors">
+                  <span 
+                    className="text-lg font-bold tabular-nums transition-colors px-2 py-0.5 rounded-md"
+                    style={{ backgroundColor: 'var(--color-primary-subtle)', color: 'var(--color-primary-default)' }}
+                  >
                     {formatSelling(item.price)}
                   </span>
                   <EditIcon className="w-3 h-3 text-text-muted opacity-0 group-hover/edit:opacity-100 transition-opacity" />
@@ -288,15 +318,6 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
             </div>
           )}
         </div>
-
-        <Button
-          size="sm"
-          variant="secondary"
-          className="w-full mt-1 min-h-[44px]"
-          onClick={() => onUpdateStock(item)}
-        >
-          Update Stock
-        </Button>
       </div>
     </Card>
   );
