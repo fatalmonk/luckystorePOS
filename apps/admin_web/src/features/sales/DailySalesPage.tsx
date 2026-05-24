@@ -24,7 +24,7 @@ import {
   CreditCard,
   Banknote, Download, Trash2,
 } from 'lucide-react';
-import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO, subDays } from 'date-fns';
+import { format, startOfDay, startOfWeek, startOfMonth, endOfWeek, endOfMonth, isToday, isThisWeek, isThisMonth, isSameDay, subMonths, subWeeks, parseISO, subDays } from 'date-fns';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
 import { downloadCSV, formatCurrency } from '../../lib/format';
 
@@ -48,6 +48,8 @@ export function DailySalesPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [hideEmptyDays, setHideEmptyDays] = useState(true);
+  // Selected month filter (format: 'yyyy-MM')
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
 
   // Inline editing state for All Sales Entries table
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
@@ -448,42 +450,77 @@ export function DailySalesPage() {
     },
   });
 
-  const filtered = useMemo(() => {
-    if (!sales) return [];
-    return sales.filter((s) => {
-      if (startDate && s.saleDate < startDate) return false;
-      if (endDate && s.saleDate > endDate) return false;
-      return true;
-    });
-  }, [sales, startDate, endDate]);
-
-  // Time-based totals
-  const todayTotal = useMemo(
-    () => filtered.filter((s) => isToday(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
-    [filtered],
-  );
-  const weekTotal = useMemo(
-    () => filtered.filter((s) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum, s) => sum + s.totalSales, 0),
-    [filtered],
-  );
-  const monthTotal = useMemo(
-    () => filtered.filter((s) => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
-    [filtered],
-  );
+  
 
   const allSales = sales || [];
 
-  // Overall statistics
+  // Time-based totals
+  const todayTotal = useMemo(
+    () => allSales.filter((s) => isToday(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
+    [allSales],
+  );
+
+  // Yesterday's total
+  const yesterdayDate = subDays(new Date(), 1);
+  const yesterdayTotal = useMemo(
+    () => allSales.filter((s) => isSameDay(new Date(s.saleDate), yesterdayDate)).reduce((sum, s) => sum + s.totalSales, 0),
+    [allSales],
+  );
+  const weekTotal = useMemo(
+    () => allSales.filter((s) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum, s) => sum + s.totalSales, 0),
+    [allSales],
+  );
+  // Last week's total (previous week)
+  const startPrevWeek = startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
+  const endPrevWeek = endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
+  const lastWeekTotal = useMemo(
+    () => allSales.filter((s) => {
+      const d = new Date(s.saleDate);
+      return d >= startPrevWeek && d <= endPrevWeek;
+    }).reduce((sum, s) => sum + s.totalSales, 0),
+    [allSales],
+  );
+  const monthTotal = useMemo(
+    () => allSales.filter((s) => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
+    [allSales],
+  );
+  // Last month's total (previous month)
+  const startPrevMonth = startOfMonth(subMonths(new Date(), 1));
+  const endPrevMonth = endOfMonth(subMonths(new Date(), 1));
+  const lastMonthTotal = useMemo(
+    () => allSales.filter((s) => {
+      const d = new Date(s.saleDate);
+      return d >= startPrevMonth && d <= endPrevMonth;
+    }).reduce((sum, s) => sum + s.totalSales, 0),
+    [allSales],
+  );
+
+  // Days with sales since April 4th
+  const salesStartDate = new Date('2026-04-04');
+  const daysSinceStartCount = useMemo(() => {
+    const dateSet = new Set<string>();
+    allSales.forEach(s => {
+      const d = new Date(s.saleDate);
+      if (d >= salesStartDate) {
+        dateSet.add(s.saleDate);
+      }
+    });
+    return dateSet.size;
+  }, [allSales]);
+  // Duplicate startDate block removed
+
   const totalStats = useMemo(() => {
-    if (allSales.length === 0) return { total: 0, avg: 0, min: 0, max: 0, count: 0 };
-    const amounts = allSales.map(s => s.totalSales);
+    // Only count days with actual sales since store opening (April 4th)
+    const salesOnly = allSales.filter(s => new Date(s.saleDate) >= salesStartDate && s.totalSales > 0);
+    if (salesOnly.length === 0) return { total: 0, avg: 0, min: 0, max: 0, count: 0 };
+    const amounts = salesOnly.map(s => s.totalSales);
     const total = amounts.reduce((a, b) => a + b, 0);
     return {
       total,
       avg: total / amounts.length,
       min: Math.min(...amounts),
       max: Math.max(...amounts),
-      count: amounts.length,
+      count: salesOnly.length,
     };
   }, [allSales]);
 
@@ -627,8 +664,11 @@ export function DailySalesPage() {
 
       <div className="dashboard-grid mt-6 mb-6">
         <MetricCard title="Today's Sales" value={`৳${todayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Yesterday's Sales" value={`৳${yesterdayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="This Week" value={`৳${weekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Last Week" value={`৳${lastWeekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="This Month" value={`৳${monthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Last Month" value={`৳${lastMonthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<Banknote size={20} className="text-info" />} color="info" variant="light" />
       </div>
 

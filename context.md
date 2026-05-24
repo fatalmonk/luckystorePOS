@@ -7,6 +7,14 @@ React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
 **Redesign Phase Complete** — Warm Anthropic-inspired redesign fully implemented, verified, build-tested, and documented.
 
 ## Done
+- PR #121 merged (ledger multi-item)
+- SidebarNew, Mobile overlay, User menu footer
+- WebP image conversion
+- `redesignimplementationplan.md` (10-phase plan)
+- Phase 1: tokens.ts, warm Tailwind palette, CSS vars
+- Token Saver ON (concise)
+- Phase 2: SidebarNew collapse + branch selector
+- Phase 3: Layout.tsx dual state, TopHeader collapse, CSS grid
 - PR #121 merged ✓ (ledger multi-item transactions)
 - SidebarNew component added
 - Mobile overlay behavior added
@@ -14,6 +22,7 @@ React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
 - WebP conversion for image uploads
 - Created `redesignimplementationplan.md` — 10-phase plan for warm Anthropic-inspired redesign
 - **Phase 1 Done:** `theme/tokens.ts` + Tailwind warm palette + CSS vars for redesign
+- Token Saver activated (concise mode)
 - **Phase 2 Done:** SidebarNew with collapse, branch selector, user menu
 - **Phase 3 Done:** Layout.tsx dual state, TopHeader collapse prop, CSS grid collapsed width
 - **Phase 4 Done:** Dashboard redesign complete:
