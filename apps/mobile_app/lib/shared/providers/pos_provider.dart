@@ -234,22 +234,32 @@ class PosProvider extends ChangeNotifier {
   }
 
   Future<void> _loadPaymentMethods() async {
-    if (_storeId == null) return;
+    if (_storeId == null) {
+      debugPrint('[PosProvider] _loadPaymentMethods: skipped — _storeId is null');
+      return;
+    }
     try {
+      debugPrint('[PosProvider] _loadPaymentMethods: querying for storeId=$_storeId');
       final rows = await _supabase
           .from('payment_methods')
           .select()
           .eq('store_id', _storeId!)
           .eq('is_active', true)
           .order('sort_order');
+      debugPrint('[PosProvider] _loadPaymentMethods: got ${(rows as List).length} rows: $rows');
       _paymentMethods = (rows as List)
           .map((r) => PaymentMethod.fromJson(r as Map<String, dynamic>))
           .toList();
+      debugPrint('[PosProvider] _loadPaymentMethods: parsed ${_paymentMethods.length} methods: ${_paymentMethods.map((m) => m.name).join(', ')}');
       notifyListeners();
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('[PosProvider] _loadPaymentMethods ERROR: $e\n$st');
+    }
   }
 
-  // ── Cart operations ────────────────────────────────────────────────────────
+  /// Public refresh — called from PaymentScreen.initState to ensure methods are always fresh.
+  Future<void> refreshPaymentMethods() => _loadPaymentMethods();
+
 
   void addItem(PosItem item, {int qty = 1}) {
     final idx = _cart.indexWhere((c) => c.item.id == item.id);
