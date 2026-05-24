@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarNew } from './SidebarNew';
 import { BottomNav } from './BottomNav';
 import { TopHeader } from './TopHeader';
@@ -9,8 +9,11 @@ import '../styles/layout.css';
 import '../styles/components.css';
 
 export function Layout() {
+  const location = useLocation();
+  const isPosPage = location.pathname.includes('/pos');
+  
   const [sidebarHidden, setSidebarHidden] = useState(() => window.innerWidth < 768);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(isPosPage);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
@@ -28,6 +31,13 @@ export function Layout() {
     return () => window.removeEventListener('resize', handleResize);
   }, [sidebarHidden]);
 
+  // Force sidebar collapse when entering POS mode (desktop)
+  useEffect(() => {
+    if (isPosPage && !isMobile) {
+      setSidebarCollapsed(true);
+    }
+  }, [isPosPage, isMobile]);
+
   return (
     <div className={`app-container app-warm ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''} ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <SidebarNew 
@@ -44,7 +54,7 @@ export function Layout() {
         collapsed={sidebarCollapsed}
         isMobile={isMobile}
       />
-      <main className="main-content">
+      <main className={`main-content ${isPosPage ? 'pos-main-content' : ''}`}>
         <Outlet />
       </main>
       {isMobile && <BottomNav />}

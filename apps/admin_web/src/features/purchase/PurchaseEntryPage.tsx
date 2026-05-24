@@ -175,7 +175,7 @@ export const PurchaseEntryPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className={clsx('app-warm p-6 max-w-5xl mx-auto')}>
       <PageHeader
         title="Purchase Receiving"
         subtitle="Record incoming stock from suppliers."

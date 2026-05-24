@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Save, Plus, Minus, RotateCcw, Upload, ImageIcon, Package, DollarSign } from 'lucide-react';
+import { X, Save, Plus, Minus, RotateCcw, Upload, ImageIcon, Package, DollarSign, Info, Activity } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
@@ -30,7 +30,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   const drawerRef = useRef<HTMLDivElement>(null);
 
   // Tabs
-  const [activeTab, setActiveTab] = useState<'stock' | 'pricing'>('stock');
+  const [activeTab, setActiveTab] = useState<'info' | 'stock' | 'pricing'>('info');
 
   // Stock tab state
   const [stockMode, setStockMode] = useState<'add' | 'remove' | 'set'>('add');
@@ -214,7 +214,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   const stockColors = {
     add: { bg: 'bg-success-subtle', text: 'text-success-dark', border: 'border-success-default' },
     remove: { bg: 'bg-danger-subtle', text: 'text-danger-default', border: 'border-danger-default' },
-    set: { bg: 'bg-primary-subtle', text: 'text-primary-default', border: 'border-primary-default' },
+    set: { bg: 'bg-primary-subtle', text: 'text-warm-accent', border: 'border-primary-default' },
   };
 
   // Button label logic
@@ -240,27 +240,27 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       {/* Drawer Panel */}
       <div
         ref={drawerRef}
-        className={`
-          fixed z-50 bg-surface-default shadow-xl flex flex-col animate-slideInRight
+        className={`app-warm
+          fixed z-50 bg-warm-surface shadow-xl flex flex-col animate-slideInRight
           lg:relative lg:ml-auto lg:w-full lg:max-w-[450px] lg:h-full
           max-lg:bottom-0 max-lg:left-0 max-lg:right-0 max-lg:h-[85vh] max-lg:rounded-t-2xl max-lg:animate-slideUp
         `}
       >
         {/* Drag handle for mobile */}
         <div className="lg:hidden flex justify-center pt-2 pb-1">
-          <div className="w-12 h-1 rounded-full bg-border-strong" />
+          <div className="w-12 h-1 rounded-full bg-warm-border-warm" />
         </div>
 
         {/* Header */}
-        <header className="flex justify-between items-start p-6 border-b border-border-default bg-surface-default sticky top-0 z-10">
+        <header className="flex justify-between items-start p-6 border-b border-warm-border-warm bg-warm-surface sticky top-0 z-10">
           <div>
-            <h2 id="drawer-title" className="text-xl font-bold text-text-primary">Update Product</h2>
-            <p className="text-sm text-text-secondary mt-1">{product.name}</p>
+            <h2 id="drawer-title" className="text-xl font-bold text-warm-fg font-display">Update Product</h2>
+            <p className="text-sm text-warm-muted mt-1">{product.name}</p>
           </div>
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="flex items-center justify-center w-10 h-10 rounded-md text-text-secondary hover:text-text-primary hover:bg-background-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+            className="flex items-center justify-center w-10 h-10 rounded-md text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50 transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
             aria-label="Close drawer"
           >
             <X size={24} />
@@ -268,20 +268,33 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         </header>
 
         {/* Tabs */}
-        <div className="flex border-b border-border-default bg-slate-50">
+        <div className="flex border-b border-warm-border-warm bg-warm-surface">
+          <button
+            type="button"
+            onClick={() => setActiveTab('info')}
+            className={clsx(
+              'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
+              activeTab === 'info'
+                ? 'text-warm-accent border-b-2 border-warm-accent bg-warm-surface'
+                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50'
+            )}
+          >
+            <Info size={16} />
+            Info
+          </button>
           <button
             type="button"
             onClick={() => setActiveTab('stock')}
             className={clsx(
               'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
               activeTab === 'stock'
-                ? 'text-primary-default border-b-2 border-primary-default bg-surface-default'
-                : 'text-text-secondary hover:text-text-primary hover:bg-slate-100'
+                ? 'text-warm-accent border-b-2 border-warm-accent bg-warm-surface'
+                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50'
             )}
           >
             <Package size={16} />
             Stock
-            {stockDirty && <span className="w-2 h-2 rounded-full bg-success-default" />}
+            {stockDirty && <span className="w-2 h-2 rounded-full bg-warm-success" />}
           </button>
           <button
             type="button"
@@ -289,18 +302,63 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             className={clsx(
               'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
               activeTab === 'pricing'
-                ? 'text-primary-default border-b-2 border-primary-default bg-surface-default'
-                : 'text-text-secondary hover:text-text-primary hover:bg-slate-100'
+                ? 'text-warm-accent border-b-2 border-warm-accent bg-warm-surface'
+                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50'
             )}
           >
             <DollarSign size={16} />
             Pricing
-            {pricingDirty && <span className="w-2 h-2 rounded-full bg-success-default" />}
+            {pricingDirty && <span className="w-2 h-2 rounded-full bg-warm-success" />}
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-surface-default">
-          {activeTab === 'stock' ? (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6 flex-1 overflow-y-auto p-6 bg-warm-surface">
+          {activeTab === 'info' ? (
+            <div className="flex flex-col gap-4 animate-fadeIn">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">SKU</p>
+                  <p className="text-sm font-medium text-warm-fg font-mono">{product.sku || '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">Barcode</p>
+                  <p className="text-sm font-medium text-warm-fg font-mono">{product.barcode || '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">Current Stock</p>
+                  <p className="text-sm font-semibold text-warm-fg">{product.current_qty ?? '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">Category</p>
+                  <p className="text-sm font-medium text-warm-fg">{product.category_name || product.category_id || '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">Cost (Per Unit)</p>
+                  <p className="text-sm font-semibold text-warm-fg">৳{product.cost ?? '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">Selling Price</p>
+                  <p className="text-sm font-semibold text-warm-fg">৳{product.price ?? '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">MRP</p>
+                  <p className="text-sm font-medium text-warm-fg">৳{product.mrp ?? '—'}</p>
+                </div>
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
+                  <p className="text-xs text-warm-muted mb-1">Status</p>
+                  <p className="text-sm font-medium text-warm-fg">{product.reorder_status || (product.is_active ? 'Active' : 'Inactive')}</p>
+                </div>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-lg border border-warm-border-warm mt-2">
+                 <div className="flex items-center gap-2 mb-2">
+                    <Activity size={16} className="text-warm-muted"/>
+                    <h3 className="text-sm font-semibold text-warm-fg">History & Insights</h3>
+                 </div>
+                 <p className="text-sm text-warm-muted mb-1">Last Purchased: <span className="text-warm-fg font-medium">{product.last_purchased_date ? new Date(product.last_purchased_date).toLocaleDateString() : 'Unknown'}</span></p>
+                 <p className="text-sm text-warm-muted">To view detailed price history or ledger entries, please visit the item's ledger page.</p>
+              </div>
+            </div>
+          ) : activeTab === 'stock' ? (
             <>
               {/* Mode Selection */}
               <div className="grid grid-cols-3 gap-2" role="group" aria-label="Stock adjustment mode">
@@ -311,7 +369,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     'flex flex-col items-center gap-1 p-3 rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
                     stockMode === 'add'
                       ? `${stockColors.add.bg} ${stockColors.add.text} border-${stockColors.add.border} focus:ring-success-default`
-                      : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
+                      : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
                   aria-pressed={stockMode === 'add'}
                 >
@@ -324,7 +382,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     'flex flex-col items-center gap-1 p-3 rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
                     stockMode === 'remove'
                       ? `${stockColors.remove.bg} ${stockColors.remove.text} border-${stockColors.remove.border} focus:ring-danger-default`
-                      : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
+                      : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
                   aria-pressed={stockMode === 'remove'}
                 >
@@ -336,8 +394,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                   className={clsx(
                     'flex flex-col items-center gap-1 p-3 rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
                     stockMode === 'set'
-                      ? `${stockColors.set.bg} ${stockColors.set.text} border-${stockColors.set.border} focus:ring-primary-default`
-                      : 'bg-transparent text-text-secondary border-border-default hover:bg-background-subtle focus:ring-primary-default'
+                      ? `${stockColors.set.bg} ${stockColors.set.text} border-${stockColors.set.border} focus:ring-warm-accent`
+                      : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
                   aria-pressed={stockMode === 'set'}
                 >
@@ -347,10 +405,10 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
               {/* Product Image */}
               <div className="form-group">
-                <label className="block text-sm font-medium text-text-secondary mb-2">Product Image</label>
+                <label className="block text-sm font-medium text-warm-muted mb-2">Product Image</label>
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-[72px] h-[72px] rounded-md overflow-hidden border border-border-default bg-surface-default flex-shrink-0"
+                    className="w-[72px] h-[72px] rounded-md overflow-hidden border border-warm-border-warm bg-warm-surface flex-shrink-0"
                     role="img"
                     aria-label={product.image_url || imagePreview ? `Product image of ${product.name}` : 'No product image'}
                   >
@@ -359,7 +417,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     ) : product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-text-muted"><ImageIcon size={28} /></div>
+                      <div className="w-full h-full flex items-center justify-center text-warm-dim"><ImageIcon size={28} /></div>
                     )}
                   </div>
                   <div className="flex flex-col gap-2 flex-1">
@@ -374,7 +432,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-3 py-2 rounded-md border border-border-default bg-surface-default text-text-primary text-sm font-medium hover:bg-background-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+                      className="flex items-center gap-2 px-3 py-2 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm font-medium hover:bg-background-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
                     >
                       <Upload size={16} />
                       {imageFile ? 'Change Image' : 'Upload Image'}
@@ -385,14 +443,14 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                           type="button"
                           onClick={() => imageMutation.mutate(imageFile)}
                           disabled={imageMutation.isPending}
-                          className="flex-1 px-3 py-2 rounded-md border-none bg-primary-default text-white text-sm font-semibold cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed hover:bg-primary-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+                          className="flex-1 px-3 py-2 rounded-md border-none bg-warm-accent text-white text-sm font-semibold cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed hover:bg-warm-accent-light transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
                         >
                           {imageMutation.isPending ? 'Uploading...' : 'Save Image'}
                         </button>
                         <button
                           type="button"
                           onClick={() => { setImageFile(null); setImagePreview(null); }}
-                          className="px-2 py-2 rounded-md border border-border-default bg-surface-default text-text-secondary hover:text-text-primary hover:bg-background-subtle transition-colors"
+                          className="px-2 py-2 rounded-md border border-warm-border-warm bg-warm-surface text-warm-muted hover:text-warm-fg hover:bg-background-subtle transition-colors"
                           aria-label="Remove selected image"
                         ><X size={16} /></button>
                       </div>
@@ -403,7 +461,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
               {/* Quantity Input */}
               <div className="form-group">
-                <label htmlFor="quantity-input" className="block text-sm font-medium text-text-secondary mb-1">
+                <label htmlFor="quantity-input" className="block text-sm font-medium text-warm-muted mb-1">
                   {stockMode === 'set' ? 'Target Stock' : `Quantity to ${stockMode === 'add' ? 'Add' : 'Remove'}`}
                 </label>
                 <input
@@ -413,19 +471,19 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                   required
                   min={0}
-                  className="w-full px-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
+                  className="w-full px-3 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent transition-all duration-200 h-12 text-base"
                 />
               </div>
 
               {/* Reason Selection */}
               <div className="form-group">
-                <label htmlFor="reason-select" className="block text-sm font-medium text-text-secondary mb-1">Reason for change</label>
+                <label htmlFor="reason-select" className="block text-sm font-medium text-warm-muted mb-1">Reason for change</label>
                 <select
                   id="reason-select"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   required
-                  className="w-full px-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
+                  className="w-full px-3 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent transition-all duration-200 h-12 text-base"
                 >
                   {stockReasons.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))}
                 </select>
@@ -433,14 +491,14 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
               {/* Notes */}
               <div className="form-group">
-                <label htmlFor="notes-textarea" className="block text-sm font-medium text-text-secondary mb-1">Notes <span className="text-text-muted font-normal">(optional)</span></label>
+                <label htmlFor="notes-textarea" className="block text-sm font-medium text-warm-muted mb-1">Notes <span className="text-warm-dim font-normal">(optional)</span></label>
                 <textarea
                   id="notes-textarea"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Broken during handling"
                   rows={4}
-                  className="w-full px-3 py-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent resize-none transition-all duration-200"
+                  className="w-full px-3 py-3 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent resize-none transition-all duration-200"
                 />
               </div>
             </>
@@ -449,7 +507,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             <>
               {/* Selling Price */}
               <div className="form-group">
-                <label htmlFor="selling-price" className="block text-sm font-medium text-text-secondary mb-1">
+                <label htmlFor="selling-price" className="block text-sm font-medium text-warm-muted mb-1">
                   Selling Price <span className="text-danger-default">*</span>
                 </label>
                 <div className="relative">
@@ -462,14 +520,14 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     required
                     value={sellingPrice || ''}
                     onChange={(e) => setSellingPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full pl-8 pr-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
+                    className="w-full pl-8 pr-3 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent transition-all duration-200 h-12 text-base"
                   />
                 </div>
               </div>
 
               {/* MRP */}
               <div className="form-group">
-                <label htmlFor="mrp" className="block text-sm font-medium text-text-secondary mb-1">MRP</label>
+                <label htmlFor="mrp" className="block text-sm font-medium text-warm-muted mb-1">MRP</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">৳</span>
                   <input
@@ -479,15 +537,15 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     step="0.01"
                     value={mrp}
                     onChange={(e) => setMrp(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
-                    className="w-full pl-8 pr-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
+                    className="w-full pl-8 pr-3 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent transition-all duration-200 h-12 text-base"
                   />
                 </div>
-                <p className="text-xs text-text-muted mt-1">Shown to customers as reference price</p>
+                <p className="text-xs text-warm-dim mt-1">Shown to customers as reference price</p>
               </div>
 
               {/* Cost Price */}
               <div className="form-group">
-                <label htmlFor="cost-price" className="block text-sm font-medium text-text-secondary mb-1">Cost Price</label>
+                <label htmlFor="cost-price" className="block text-sm font-medium text-warm-muted mb-1">Cost Price</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">৳</span>
                   <input
@@ -497,21 +555,21 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     step="0.01"
                     value={costPrice}
                     onChange={(e) => setCostPrice(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
-                    className="w-full pl-8 pr-3 rounded-md border border-border-default bg-input text-text-primary focus:ring-2 focus:ring-primary-default focus:border-transparent transition-all duration-200 h-12 text-base"
+                    className="w-full pl-8 pr-3 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent transition-all duration-200 h-12 text-base"
                   />
                 </div>
-                <p className="text-xs text-text-muted mt-1">For margin calculation</p>
+                <p className="text-xs text-warm-dim mt-1">For margin calculation</p>
               </div>
 
               {/* Live Margin Preview */}
               <div className="p-4 rounded-lg bg-slate-100 border border-slate-200">
-                <p className="text-sm text-text-secondary mb-1">Profit margin</p>
+                <p className="text-sm text-warm-muted mb-1">Profit margin</p>
                 {margin ? (
                   <p className="text-lg font-semibold text-success-default tabular-nums">
                     ৳{margin.profit.toFixed(2)} ({margin.pct}%)
                   </p>
                 ) : (
-                  <p className="text-sm text-text-muted">Enter cost and selling price to see margin</p>
+                  <p className="text-sm text-warm-dim">Enter cost and selling price to see margin</p>
                 )}
               </div>
             </>
@@ -522,7 +580,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             <button
               type="submit"
               disabled={isButtonDisabled}
-              className="w-full py-3 px-4 bg-primary-default text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-hover active:scale-[0.98] transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+              className="w-full py-3 px-4 bg-warm-accent text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-warm-accent-light active:scale-[0.98] transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
               aria-busy={stockMutation.isPending || priceMutation.isPending}
             >
               <Save size={18} />

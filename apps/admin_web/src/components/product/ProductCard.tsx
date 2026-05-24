@@ -54,13 +54,14 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
     }
   };
 
-  const hasMrp = typeof product.mrp === 'number' && product.mrp > 0;
+  const numericMrp = Number(product.mrp);
+  const hasMrp = !isNaN(numericMrp) && numericMrp > 0;
 
   return (
     <div
       className={clsx(
-        'product-card',
-        isFocused && 'ring-2 ring-primary-default ring-offset-2',
+        'product-card relative flex flex-col items-center justify-between',
+        isFocused && 'ring-2 ring-primary ring-offset-2',
         isAdded && 'animate-flash-success',
         !isOutOfStock && [
           'hover:-translate-y-0.5',
@@ -77,54 +78,91 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
       onFocus={onFocus}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      style={{
+        backgroundColor: 'var(--color-surface-default)',
+        borderColor: 'var(--color-border-default)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--inset-md)',
+        position: 'relative',
+        height: '180px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        gap: 'var(--space-2)'
+      }}
       title={product.name.length > 24 ? product.name : undefined}
     >
-      <div className="product-avatar" aria-hidden="true">
+      {/* Stock badge IF < 10 and > 0 */}
+      {!isOutOfStock && product.stock < 10 && (
+        <span 
+          className="absolute top-2 right-2 px-2 py-0.5 text-xs font-bold rounded-full bg-orange-100 text-orange-700 border border-orange-200"
+          style={{ fontSize: '10px' }}
+        >
+          {product.stock} left
+        </span>
+      )}
+      
+      {/* Out of stock badge */}
+      {isOutOfStock && (
+        <span 
+          className="absolute top-2 right-2 px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200"
+          style={{ fontSize: '10px' }}
+        >
+          Out of Stock
+        </span>
+      )}
+
+      {/* 64px circle avatar */}
+      <div 
+        className="w-16 h-16 flex items-center justify-center rounded-full overflow-hidden shrink-0 border border-border-light bg-background-subtle" 
+        aria-hidden="true"
+      >
         {product.imageUrl ? (
-          <img src={product.imageUrl} alt="" />
+          <img 
+            src={product.imageUrl} 
+            alt="" 
+            className="w-full h-full object-cover" 
+          />
         ) : (
-          <span className={getAvatarColor(product.name)}>
+          <span className={clsx(getAvatarColor(product.name), 'w-full h-full flex items-center justify-center text-2xl font-bold rounded-full')}>
             {getInitials(product.name)}
           </span>
         )}
       </div>
-      <div className="product-info">
-        <h3 className="product-name truncate" title={product.name.length > 24 ? product.name : undefined}>
+
+      {/* Product Name & SKU */}
+      <div className="w-full flex flex-col items-center gap-0.5">
+        <h3 className="w-full text-base font-semibold text-main truncate px-1" title={product.name}>
           {product.name}
         </h3>
-        <div className="product-meta tabular-nums font-mono" aria-label={`Stock: ${product.stock}`}>
-          Qty: {product.stock}
-        </div>
-
-        {/* Price display with MRP strikethrough */}
-        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border-default min-h-[2rem]">
-          {hasMrp && (
-            <span className="text-sm text-text-muted line-through tabular-nums">
-              {formatPrice(product.mrp!)}
-            </span>
-          )}
-          <span className="text-lg font-bold text-slate-900 tabular-nums">
-            {formatPrice(product.price)}
+        {product.sku && (
+          <span 
+            className="text-[10px] text-muted font-mono tracking-wider truncate max-w-full"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            {product.sku}
           </span>
-        </div>
-      </div>
-      <button
-        className={clsx(
-          'button-primary w-full mt-2 min-h-[44px]',
-          'active:scale-[0.98]',
-          'transition-transform duration-100',
-          isOutOfStock && 'opacity-50 cursor-not-allowed'
         )}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClick();
-        }}
-        disabled={isOutOfStock}
-        aria-label={isOutOfStock ? 'Out of stock' : `Add ${product.name} to cart`}
-      >
-        <ShoppingCart size={16} className="mr-2 inline" aria-hidden="true" />
-        {isOutOfStock ? 'Out of Stock' : isAdded ? 'Added!' : 'Add to Cart'}
-      </button>
+      </div>
+
+      {/* Price display with MRP strikethrough */}
+      <div className="flex items-center justify-center gap-2 w-full">
+        {hasMrp && (
+          <span 
+            className="tabular-nums line-through text-xs text-muted"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            {formatPrice(numericMrp)}
+          </span>
+        )}
+        <span 
+          className="product-price tabular-nums"
+        >
+          {formatPrice(product.price)}
+        </span>
+      </div>
     </div>
   );
 }

@@ -17,6 +17,7 @@ class PosItem {
   final String name;
   final String? brand;
   final double price;
+  final double mrp;
   final double cost;
   final String? imageUrl;
   final String? category;
@@ -32,6 +33,7 @@ class PosItem {
     required this.name,
     this.brand,
     required this.price,
+    required this.mrp,
     this.cost = 0,
     this.imageUrl,
     this.category,
@@ -49,6 +51,7 @@ class PosItem {
       name:       json['name']        as String,
       brand:      json['brand']       as String?,
       price:      (json['price']      as num).toDouble(),
+      mrp:        (json['mrp']        as num? ?? 0).toDouble(),
       cost:       (json['cost']       as num? ?? 0).toDouble(),
       imageUrl:   json['image_url']   as String?,
       category:   json['category']    as String?,

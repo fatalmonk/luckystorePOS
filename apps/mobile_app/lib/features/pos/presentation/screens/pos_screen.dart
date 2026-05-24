@@ -14,7 +14,7 @@ import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_breakpoints.dart';
 import './payment_screen.dart';
-import '../widgets/category_bar.dart';
+import '../widgets/category_pills.dart';
 import '../widgets/product_grid.dart';
 import '../widgets/cart_panel.dart';
 import '../widgets/favorites_row.dart';
@@ -45,6 +45,7 @@ class _PosScreenState extends State<PosScreen> {
   void initState() {
     super.initState();
     _searchCtrl.addListener(_onSearchChanged);
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) => _init());
   }
 
@@ -101,49 +102,98 @@ class _PosScreenState extends State<PosScreen> {
     _searchCtrl.removeListener(_onSearchChanged);
     _searchCtrl.dispose();
     _scanCtrl.dispose();
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     super.dispose();
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    
+    final char = event.character;
+    if (char != null) {
+      context.read<PosProvider>().handleScannerKeypress(char);
+    }
+    
+    if (event.logicalKey == LogicalKeyboardKey.enter) {
+      context.read<PosProvider>().handleScannerKeypress('\n');
+    }
+    
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final layout = AppBreakpoints.getLayout(screenWidth);
-    final flex = AppBreakpoints.getPanelFlex(layout);
-    final constraints = AppBreakpoints.getPanelConstraints(layout);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundDefault,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 600;
+          
+          return Scaffold(
+            backgroundColor: AppColors.backgroundDefault,
+            body: SafeArea(
+              child: Stack(
                 children: [
-                  // ── LEFT PANEL ─────────────────────────────────────────
-                  Flexible(
-                    flex: flex.left,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: constraints.minLeft),
-                      child: _buildLeftPanel(layout),
-                    ),
-                  ),
-                  // Divider
-                  Container(width: 1, color: AppColors.borderDefault),
-                  // ── RIGHT PANEL ────────────────────────────────────────
-                  Flexible(
-                    flex: flex.right,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: constraints.minRight),
-                      child: _buildRightPanel(),
-                    ),
-                  ),
+                  isWide
+                      ? Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: _buildLeftPanel(layout),
+                            ),
+                            Container(width: 1, color: AppColors.borderDefault),
+                            SizedBox(
+                              width: 360,
+                              child: _buildRightPanel(),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            Expanded(
+                              child: _buildLeftPanel(layout),
+                            ),
+                          ],
+                        ),
+                  if (_scanning) _buildScannerOverlay(),
                 ],
               ),
-              if (_scanning) _buildScannerOverlay(),
-            ],
-          ),
-        ),
+            ),
+            floatingActionButton: !isWide
+                ? FloatingActionButton.extended(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => Container(
+                          decoration: const BoxDecoration(
+                            color: AppColors.surfaceDefault,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          height: MediaQuery.of(context).size.height * 0.85,
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                            child: _buildRightPanel(),
+                          ),
+                        ),
+                      );
+                    },
+                    backgroundColor: AppColors.primaryDefault,
+                    icon: const Icon(Icons.shopping_cart_rounded, color: AppColors.primaryOn),
+                    label: Consumer<PosProvider>(
+                      builder: (context, pos, _) => Text(
+                        'Cart (${pos.itemCount})',
+                        style: const TextStyle(color: AppColors.primaryOn, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )
+                : null,
+          );
+        },
       ),
     );
   }
@@ -155,7 +205,7 @@ class _PosScreenState extends State<PosScreen> {
         if (kDebugMode) _buildDebugBanner(),
         Selector<PosSearchProvider, ({List<PosCategory> cats, String? selected})>(
           selector: (_, p) => (cats: p.categories, selected: p.selectedCategoryId),
-          builder: (_, data, __) => CategoryBar(
+          builder: (_, data, __) => CategoryPills(
             categories: data.cats,
             selectedCategoryId: data.selected,
             onCategorySelected: (catId) {
@@ -350,22 +400,30 @@ class _PosScreenState extends State<PosScreen> {
 
   Widget _buildRightPanel() {
     return Consumer<PosProvider>(
-      builder: (ctx, pos, _) => CartPanel(
-        cartItems: pos.cart,
-        itemCount: pos.itemCount,
-        cartIsEmpty: pos.cartIsEmpty,
-        subtotal: pos.subtotal,
-        cartDiscount: pos.cartDiscount,
-        totalAmount: pos.totalAmount,
-        onClearCart: () => showClearCartDialog(context, pos),
-        onShowDiscountDialog: () => showDiscountDialog(context, pos),
-        onCharge: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PaymentScreen()),
-        ),
-        onRemoveItemAt: (int index) => () => pos.removeItem(pos.cart[index].item.id),
-        onQtyChangedAt: (int index) => (int q) => pos.setQty(pos.cart[index].item.id, q),
-      ),
+      builder: (ctx, pos, _) {
+        PaymentMethod? method;
+        for (final m in pos.paymentMethods) {
+          if (m.id == pos.selectedPaymentMethodId) {
+            method = m;
+            break;
+          }
+        }
+        return CartPanel(
+          cartItems: pos.cart,
+          itemCount: pos.itemCount,
+          cartIsEmpty: pos.cartIsEmpty,
+          subtotal: pos.subtotal,
+          totalAmount: pos.totalAmount,
+          selectedPaymentMethod: method,
+          onClearCart: () => showClearCartDialog(context, pos),
+          onContinue: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PaymentScreen()),
+          ),
+          onRemoveItemAt: (int index) => () => pos.removeItem(pos.cart[index].item.id),
+          onQtyChangedAt: (int index) => (int q) => pos.setQty(pos.cart[index].item.id, q),
+        );
+      },
     );
   }
 
