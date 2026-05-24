@@ -204,3 +204,14 @@ apps/mobile_app/flutter/
 # Ignore local JSON secrets
 data/*.json
 
+# -----------------------------------------------------------------------------
+# Local AI Workspaces / Outputs (Keep Local)
+# -----------------------------------------------------------------------------
+.gemini/
+.hermes/
+.ai/
+artifacts/
+docs/testing/
+test_out.txt
+graphify-out/
+VibeCoderOutput/
