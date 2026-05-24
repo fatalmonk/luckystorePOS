@@ -147,7 +147,7 @@ export function QuickPosPage() {
       // F2 toggles scanner
       if (e.key === 'F2') {
         e.preventDefault();
-        scanner.setIsScanning(prev => !prev);
+        scanner.setIsScanning(!scanner.isScanning);
       }
       
       // F12 continues billing / opens payment modal

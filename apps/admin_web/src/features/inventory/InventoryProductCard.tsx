@@ -143,10 +143,6 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
         "overflow-hidden group cursor-pointer transition-all duration-300 border",
         isHighlighted && "ring-2 ring-emerald-500 ring-offset-2"
       )}
-      style={{
-        borderColor: 'var(--color-border-default)',
-        borderRadius: 'var(--radius-md)'
-      }}
     >
       {/* Image / Status */}
       <div 
