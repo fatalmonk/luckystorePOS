@@ -5,23 +5,15 @@ import '../../../../models/pos_models.dart';
 import '../../../../models/party.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import '../../../../core/theme/app_motion.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_button_styles.dart';
 import './receipt_screen.dart';
 
-/// Cashier-optimised payment screen.
-///
-/// Layout (landscape / wide tablet):
-///   LEFT 55% — numpad + quick-exact buttons + tendered list
-///   RIGHT 45% — order summary + change-due callout
-///
-/// On portrait / narrow: single column, summary collapses to a top card.
-///
-/// Design goals:
-///   • Zero soft-keyboard fumbling — the built-in numpad is the primary input.
-///   • One-tap "Exact Cash" for the most common case.
-///   • Split-payment support via "Add" before switching methods.
-///   • Green COMPLETE button appears only once fully paid.
+/// Cashier-optimised, single-method payment screen for cashier tablets.
+/// 
+/// Business Rules applied:
+///   1. Pricing: Credit sales charge MRP, all others (Cash/Bkash/Card) charge discounted Price.
+///   2. Orientations: Portrait + Landscape responsive layouts.
+///   3. No split payments: Single payment method per transaction.
+///   4. No manual discount: Pricing auto-applies based on payment method selection.
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
 
@@ -30,13 +22,11 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  final List<PaymentTender> _tenders = [];
   PaymentMethod? _selectedMethod;
 
   // Numpad accumulator — stored as a string to handle leading zeros cleanly.
   String _numpadValue = '';
   String? _referenceText;
-  bool _showReferenceField = false;
   final TextEditingController _refCtrl = TextEditingController();
 
   bool _processing = false;
@@ -49,16 +39,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return double.tryParse(_numpadValue) ?? 0;
   }
 
-  double get _tenderTotal => _tenders.fold(0, (s, t) => s + t.amount);
-
-  double _remaining(PosProvider pos) =>
-      (pos.totalAmount - _tenderTotal).clamp(0, double.infinity);
-
-  bool _isPaid(PosProvider pos) => _tenderTotal >= pos.totalAmount;
-
-  double _change(PosProvider pos) =>
-      (_tenderTotal - pos.totalAmount).clamp(0, double.infinity);
-
   // ── Initialize ───────────────────────────────────────────────────────────────
 
   @override
@@ -70,20 +50,55 @@ class _PaymentScreenState extends State<PaymentScreen> {
         (m) => m.type == 'cash',
         orElse: () => pos.paymentMethods.first,
       );
+      // Auto-set payment method in provider to trigger correct pricing (MRP vs Discounted)
+      pos.setSelectedPaymentMethodId(_selectedMethod?.id);
     }
-    // Seed numpad with the total so cashier just has to press CHARGE for exact
+    // Seed numpad with the total so cashier just has to press CHARGE/COMPLETE for exact
     _numpadValue = pos.totalAmount.toStringAsFixed(0);
+    
+    // Register physical keyboard and scanner wedge key interceptors
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     _refCtrl.dispose();
     super.dispose();
+  }
+
+  // ── Keyboard wedging and shortcuts ──────────────────────────────────────────
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.backspace) {
+      _numpadTap('⌫');
+      return true;
+    } else if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+      final pos = context.read<PosProvider>();
+      if (!_processing && _canCompleteSale(pos)) {
+        _completeSale(pos);
+      }
+      return true;
+    } else if (key == LogicalKeyboardKey.escape) {
+      Navigator.pop(context);
+      return true;
+    } else {
+      final char = event.character;
+      if (char != null && '0123456789.'.contains(char)) {
+        _numpadTap(char);
+        return true;
+      }
+    }
+    return false;
   }
 
   // ── Numpad logic ─────────────────────────────────────────────────────────────
 
   void _numpadTap(String key) {
+    if (_selectedMethod?.type != 'cash') return; // Numpad only relevant for Cash
     setState(() {
       _error = null;
       if (key == '⌫') {
@@ -106,92 +121,78 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _setExact(PosProvider pos) {
-    setState(() => _numpadValue = _remaining(pos).toStringAsFixed(0));
+    setState(() => _numpadValue = pos.totalAmount.toStringAsFixed(0));
   }
-
-  // ── Quick amount presets ─────────────────────────────────────────────────────
 
   void _setPreset(double amount) {
     setState(() => _numpadValue = amount.toStringAsFixed(0));
   }
 
-  List<double> _presets(PosProvider pos) {
-    final total = pos.totalAmount;
-    final rounded = <double>[];
-    // Round-up presets: 10, 50, 100 above total
-    for (final step in [10.0, 50.0, 100.0, 500.0]) {
-      final v = (total / step).ceil() * step;
-      if (!rounded.contains(v) && v != total) rounded.add(v);
-      if (rounded.length >= 3) break;
+  List<double> _presets(double total) {
+    final list = <double>[];
+    if (total <= 0) return [100, 500, 1000];
+    
+    final bills = [10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0];
+    for (final bill in bills) {
+      if (bill > total && list.length < 3) {
+        list.add(bill);
+      }
     }
-    return rounded;
+    while (list.length < 3) {
+      final last = list.isEmpty ? total : list.last;
+      list.add(last + 100);
+    }
+    return list;
   }
 
-  // ── Tender management ────────────────────────────────────────────────────────
+  // ── Validation and Checkout logic ───────────────────────────────────────────
 
-  void _addTender(PosProvider pos) {
-    final amount = _parsedAmount;
-    if (amount <= 0) {
-      setState(() => _error = 'Enter an amount first');
-      return;
+  bool _isCredit(PaymentMethod? method) {
+    if (method == null) return false;
+    return method.name.toLowerCase().contains('credit') || method.type.toLowerCase().contains('credit');
+  }
+
+  bool _canCompleteSale(PosProvider pos) {
+    if (_selectedMethod == null) return false;
+    
+    // Credit check
+    if (_isCredit(_selectedMethod) && pos.selectedParty == null) {
+      return false;
     }
-    if (_selectedMethod == null) {
-      setState(() => _error = 'Select a payment method');
-      return;
+    
+    // Cash short check
+    if (_selectedMethod!.type == 'cash') {
+      final entered = _parsedAmount > 0 ? _parsedAmount : pos.totalAmount;
+      if (entered < pos.totalAmount) {
+        return false;
+      }
     }
+    
+    return true;
+  }
+
+  Future<void> _completeSale(PosProvider pos) async {
+    if (!_canCompleteSale(pos)) return;
+    
+    final amount = _selectedMethod!.type == 'cash'
+        ? (_parsedAmount > 0 ? _parsedAmount : pos.totalAmount)
+        : pos.totalAmount;
 
     final tender = PaymentTender(
       method: _selectedMethod!,
       amount: amount,
-      reference:
-          _referenceText?.trim().isEmpty == true ? null : _referenceText?.trim(),
+      reference: _referenceText?.trim().isEmpty == true ? null : _referenceText?.trim(),
     );
 
     setState(() {
-      _tenders.add(tender);
-      // Seed next numpad with remaining
-      final rem = _remaining(pos);
-      _numpadValue = rem > 0 ? rem.toStringAsFixed(0) : '';
-      _referenceText = null;
-      _refCtrl.clear();
-      _showReferenceField = false;
+      _processing = true;
       _error = null;
     });
-  }
 
-  void _removeTender(int index) {
-    setState(() {
-      _tenders.removeAt(index);
-      _error = null;
-    });
-  }
-
-  // ── Complete sale ────────────────────────────────────────────────────────────
-
-  Future<void> _completeSale(PosProvider pos) async {
-    List<PaymentTender> finalisedTenders = List.from(_tenders);
-
-    // If no tenders added yet, treat current numpad value as single payment
-    if (finalisedTenders.isEmpty) {
-      final amount = _parsedAmount;
-      if (amount <= 0 || _selectedMethod == null) {
-        setState(() => _error = 'Enter an amount to charge');
-        return;
-      }
-      finalisedTenders.add(PaymentTender(
-        method: _selectedMethod!,
-        amount: amount,
-        reference:
-            _referenceText?.trim().isEmpty == true ? null : _referenceText?.trim(),
-      ));
-    }
-
-    setState(() { _processing = true; _error = null; });
     try {
-      final traceId =
-          'trace-${DateTime.now().microsecondsSinceEpoch}-${identityHashCode(this)}';
+      final traceId = 'trace-${DateTime.now().microsecondsSinceEpoch}-${identityHashCode(this)}';
       final response = await pos.completeSale(
-        finalisedTenders,
+        [tender],
         transactionTraceId: traceId,
       );
       if (!mounted) return;
@@ -228,195 +229,849 @@ class _PaymentScreenState extends State<PaymentScreen> {
           backgroundColor: const Color(0xFF161B22),
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.white70, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text('Payment',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600)),
+          title: const Text(
+            'Checkout & Payment',
+            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child:
-                Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+            child: Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
           ),
         ),
         body: LayoutBuilder(builder: (ctx, constraints) {
-          final wide = constraints.maxWidth > 680;
+          final wide = constraints.maxWidth > 720;
           if (wide) {
             return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(flex: 55, child: _buildLeftPanel(pos)),
-                Container(
-                    width: 1, color: Colors.white.withValues(alpha: 0.06)),
-                Expanded(flex: 45, child: _buildSummaryPanel(pos)),
+                Expanded(flex: 50, child: _buildLeftPanel(pos, wide)),
+                Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
+                Expanded(flex: 50, child: _buildRightContextPanel(pos)),
               ],
             );
           }
-          // Portrait: stack summary card on top, controls below
-          return Column(
-            children: [
-              _buildCompactSummary(pos),
-              Expanded(child: _buildLeftPanel(pos)),
-            ],
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildLeftPanel(pos, false),
+                Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+                _buildRightContextPanel(pos),
+              ],
+            ),
           );
         }),
       ),
     );
   }
 
-  // ── Left panel: method selector + numpad + action ─────────────────────────
+  // ── Left Column: Totals, Customer Selection, Payment grid ─────────────────
 
-  Widget _buildLeftPanel(PosProvider pos) {
-    return Column(
-      children: [
-        // Total due / remaining display
-        _buildAmountDisplay(pos),
+  Widget _buildLeftPanel(PosProvider pos, bool isWide) {
+    final isCreditSelected = _isCredit(_selectedMethod);
 
-        // Customer selection
-        _buildCustomerSelection(pos),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Total amount card
+          _buildTotalDisplay(pos),
+          const SizedBox(height: 16),
 
-        // Payment method chips
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: _buildMethodChips(pos),
-        ),
+          // Customer selection block
+          _buildCustomerSelection(pos),
+          const SizedBox(height: 16),
 
-        // Reference field (mobile banking / card)
-        if (_showReferenceField)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-            child: TextField(
-              controller: _refCtrl,
-              autofocus: true,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: _selectedMethod?.type == 'mobile_banking'
-                    ? 'bKash / Nagad Trx ID…'
-                    : 'Last 4 digits…',
-                hintStyle: const TextStyle(color: Colors.white30),
-                prefixIcon: const Icon(Icons.tag_rounded,
-                    color: Colors.white38, size: 18),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.06),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide:
-                        const BorderSide(color: Color(0xFFE8B84B))),
-              ),
-              onChanged: (v) => _referenceText = v,
+          // Pricing dynamic rule badge
+          _buildPricingRuleBadge(pos, isCreditSelected),
+          const SizedBox(height: 16),
+
+          // Payment methods title
+          const Text(
+            'SELECT PAYMENT METHOD',
+            style: TextStyle(
+              color: Colors.white38,
+              fontSize: 11,
+              letterSpacing: 1,
+              fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 8),
 
-        // Tender list
-        if (_tenders.isNotEmpty) _buildTenderList(pos),
+          // Grid / Wrap of large payment method cards
+          _buildPaymentMethodGrid(pos),
+          const SizedBox(height: 16),
 
-        const Spacer(),
-
-        // Error
-        if (_error != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border:
-                    Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline_rounded,
-                      color: Colors.red, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: Text(_error!,
-                          style: const TextStyle(
-                              color: Colors.red, fontSize: 12))),
-                ],
+          // Simple order preview
+          if (isWide) ...[
+            const Text(
+              'ORDER SUMMARY',
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 11,
+                letterSpacing: 1,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
+            const SizedBox(height: 8),
+            _buildOrderSummaryWidget(pos),
+          ],
+        ],
+      ),
+    );
+  }
 
-        // Quick presets + numpad
-        _buildQuickPresets(pos),
-        _buildNumpad(pos),
-        _buildActionButton(pos),
-        const SizedBox(height: 8),
-      ],
+  Widget _buildTotalDisplay(PosProvider pos) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161B22),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TOTAL AMOUNT DUE',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.45),
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '৳ ${pos.totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Color(0xFFE8B84B),
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${pos.itemCount} items',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildCustomerSelection(PosProvider pos) {
     final party = pos.selectedParty;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: InkWell(
-        onTap: () => _showCustomerSearchDialog(pos),
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
+    return InkWell(
+      onTap: () => _showCustomerSearchDialog(pos),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: party != null
+              ? const Color(0xFFE8B84B).withValues(alpha: 0.08)
+              : Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
             color: party != null
-                ? const Color(0xFFE8B84B).withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.04),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-                color: party != null
-                    ? const Color(0xFFE8B84B).withValues(alpha: 0.3)
-                    : Colors.white.withValues(alpha: 0.08)),
+                ? const Color(0xFFE8B84B).withValues(alpha: 0.3)
+                : Colors.white.withValues(alpha: 0.06),
           ),
-          child: Row(
-            children: [
-              Icon(
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: party != null
+                    ? const Color(0xFFE8B84B).withValues(alpha: 0.15)
+                    : Colors.white.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
                 party != null ? Icons.person_rounded : Icons.person_add_alt_1_rounded,
                 color: party != null ? const Color(0xFFE8B84B) : Colors.white38,
-                size: 18,
+                size: 20,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    party?.name ?? 'Select Customer (Walk-in)',
+                    style: TextStyle(
+                      color: party != null ? Colors.white : Colors.white54,
+                      fontSize: 14,
+                      fontWeight: party != null ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                  if (party != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Phone: ${party.phone ?? "No phone"}  •  Balance: ৳ ${party.currentBalance.toStringAsFixed(0)}',
+                      style: const TextStyle(color: Colors.white38, fontSize: 11),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (party != null)
+              IconButton(
+                icon: const Icon(Icons.close_rounded, color: Colors.white38, size: 18),
+                onPressed: () {
+                  pos.setSelectedParty(null);
+                  if (_isCredit(_selectedMethod)) {
+                    setState(() {});
+                  }
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              )
+            else
+              const Icon(Icons.chevron_right_rounded, color: Colors.white24, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPricingRuleBadge(PosProvider pos, bool isCreditSelected) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isCreditSelected
+            ? const Color(0xFFD97706).withValues(alpha: 0.12)
+            : const Color(0xFF22C55E).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isCreditSelected
+              ? const Color(0xFFD97706).withValues(alpha: 0.3)
+              : const Color(0xFF22C55E).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isCreditSelected ? Icons.info_outline : Icons.check_circle_outline,
+            color: isCreditSelected ? const Color(0xFFFBBF24) : const Color(0xFF22C55E),
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              isCreditSelected
+                  ? 'Credit Account: Charged Maximum Retail Price (MRP).'
+                  : 'Cash/MFS/Card checkout: Charges Discounted Price.',
+              style: TextStyle(
+                color: isCreditSelected ? const Color(0xFFFBBF24) : const Color(0xFF22C55E),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodGrid(PosProvider pos) {
+    if (pos.paymentMethods.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Text('No payment methods configured.', style: TextStyle(color: Colors.white38, fontSize: 13)),
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        mainAxisExtent: 64,
+      ),
+      itemCount: pos.paymentMethods.length,
+      itemBuilder: (ctx, i) {
+        final m = pos.paymentMethods[i];
+        final isSelected = _selectedMethod?.id == m.id;
+        final isCreditType = _isCredit(m);
+
+        return InkWell(
+          onTap: () {
+            setState(() {
+              _selectedMethod = m;
+              pos.setSelectedPaymentMethodId(m.id);
+              _refCtrl.clear();
+              _referenceText = null;
+              
+              // Seed numpad with recalculating total amount
+              _numpadValue = pos.totalAmount.toStringAsFixed(0);
+            });
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: AppMotion.durationNormal,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? const Color(0xFFE8B84B)
+                  : Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFFE8B84B)
+                    : Colors.white.withValues(alpha: 0.08),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _methodIcon(m.type),
+                  color: isSelected ? Colors.black : (isCreditType ? const Color(0xFFFBBF24) : Colors.white70),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      party?.name ?? 'Select Customer (Walk-in)',
+                      m.name.toUpperCase(),
                       style: TextStyle(
-                        color: party != null ? Colors.white : Colors.white38,
+                        color: isSelected ? Colors.black : Colors.white,
+                        fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        fontWeight: party != null ? FontWeight.w600 : FontWeight.w400,
                       ),
                     ),
-                    if (party != null)
-                      Text(
-                        'Current Balance: ৳ ${party.currentBalance.toStringAsFixed(2)}',
-                        style: const TextStyle(color: Colors.white38, fontSize: 11),
+                    const SizedBox(height: 2),
+                    Text(
+                      isCreditType ? 'MRP' : 'DISCOUNTED',
+                      style: TextStyle(
+                        color: isSelected ? Colors.black.withValues(alpha: 0.6) : Colors.white38,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
                       ),
+                    ),
                   ],
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOrderSummaryWidget(PosProvider pos) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 180),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161B22).withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(12),
+        itemCount: pos.cart.length,
+        separatorBuilder: (_, __) => Divider(color: Colors.white.withValues(alpha: 0.04), height: 12),
+        itemBuilder: (ctx, i) {
+          final c = pos.cart[i];
+          final isCreditSelected = _isCredit(_selectedMethod);
+          final price = isCreditSelected ? c.item.mrp : c.item.price;
+          final lineTotal = price * c.qty;
+          return Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${c.item.name} × ${c.qty}',
+                  style: const TextStyle(color: Colors.white60, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              if (party != null)
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, color: Colors.white38, size: 16),
-                  onPressed: () => pos.setSelectedParty(null),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                )
-              else
-                const Icon(Icons.chevron_right_rounded, color: Colors.white24, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                '৳${lineTotal.toStringAsFixed(0)}',
+                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Right Column: Numpads & Contextual Complete flow ───────────────────────
+
+  Widget _buildRightContextPanel(PosProvider pos) {
+    if (_selectedMethod == null) {
+      return const Center(child: Text('Select payment method to proceed', style: TextStyle(color: Colors.white38)));
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Render based on selected method type
+          if (_selectedMethod!.type == 'cash') ...[
+            _buildCashCheckoutFlow(pos),
+          ] else if (_selectedMethod!.type == 'mobile_banking' || _selectedMethod!.type == 'card') ...[
+            _buildReferenceCheckoutFlow(pos),
+          ] else if (_isCredit(_selectedMethod)) ...[
+            _buildCreditCheckoutFlow(pos),
+          ] else ...[
+            _buildGenericCheckoutFlow(pos),
+          ],
+          
+          const Spacer(),
+
+          // Error Panel
+          if (_error != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // Universal Big Complete Button
+          _buildCompleteActionButton(pos),
+        ],
+      ),
+    );
+  }
+
+  // Context-specific layout 1: CASH
+  Widget _buildCashCheckoutFlow(PosProvider pos) {
+    final double entered = _parsedAmount > 0 ? _parsedAmount : pos.totalAmount;
+    final double change = (entered - pos.totalAmount).clamp(0, double.infinity);
+    final double short = (pos.totalAmount - entered).clamp(0, double.infinity);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Cash entry indicator header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'CASH TENDERED',
+              style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+            if (short > 0)
+              Text(
+                'SHORT BY ৳${short.toStringAsFixed(0)}',
+                style: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold),
+              )
+            else if (change > 0)
+              Text(
+                'CHANGE DUE: ৳${change.toStringAsFixed(0)}',
+                style: const TextStyle(color: Color(0xFF2ECC71), fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Big numeric amount box
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161B22),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: short > 0 
+                  ? Colors.redAccent.withValues(alpha: 0.3) 
+                  : (change > 0 ? const Color(0xFF2ECC71).withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.08)),
+              width: 1.5,
+            ),
+          ),
+          alignment: Alignment.centerRight,
+          child: Text(
+            '৳ ${_numpadValue.isEmpty ? "0" : _numpadValue}',
+            style: TextStyle(
+              color: short > 0 
+                  ? Colors.redAccent 
+                  : (change > 0 ? const Color(0xFF2ECC71) : Colors.white),
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Preset Bill shortcuts
+        Row(
+          children: [
+            Expanded(
+              child: _presetBillButton('EXACT', onTap: () => _setExact(pos), isSpecial: true),
+            ),
+            const SizedBox(width: 8),
+            ..._presets(pos.totalAmount).map((p) => Expanded(
+                  child: _presetBillButton('৳${p.toStringAsFixed(0)}', onTap: () => _setPreset(p)),
+                )),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Built-in touch numpad
+        _buildNumpadGridWidget(),
+      ],
+    );
+  }
+
+  Widget _presetBillButton(String label, {required VoidCallback onTap, bool isSpecial = false}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: isSpecial 
+              ? const Color(0xFF2ECC71).withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSpecial 
+                ? const Color(0xFF2ECC71).withValues(alpha: 0.3)
+                : Colors.white.withValues(alpha: 0.08),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSpecial ? const Color(0xFF2ECC71) : Colors.white70,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
     );
   }
+
+  Widget _buildNumpadGridWidget() {
+    const keys = [
+      ['7', '8', '9'],
+      ['4', '5', '6'],
+      ['1', '2', '3'],
+      ['.', '0', '⌫'],
+    ];
+
+    return Column(
+      children: keys.map((row) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: row.map((key) {
+              final isBackspace = key == '⌫';
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: InkWell(
+                    onTap: () => _numpadTap(key),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: isBackspace
+                            ? Colors.white.withValues(alpha: 0.03)
+                            : Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+                      alignment: Alignment.center,
+                      child: isBackspace
+                          ? const Icon(Icons.backspace_outlined, color: Colors.white60, size: 20)
+                          : Text(
+                              key,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // Context-specific layout 2: MOBILE CHECKOUT / CARDS
+  Widget _buildReferenceCheckoutFlow(PosProvider pos) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 12),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8B84B).withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _selectedMethod?.type == 'mobile_banking' ? Icons.phone_android : Icons.credit_card,
+              color: const Color(0xFFE8B84B),
+              size: 40,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: Text(
+            'Swipe card or verify transfer of ৳${pos.totalAmount.toStringAsFixed(2)}',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'TRANSACTION REFERENCE / LAST 4 DIGITS',
+          style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _refCtrl,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+          decoration: InputDecoration(
+            hintText: _selectedMethod?.type == 'mobile_banking'
+                ? 'bKash / Nagad Transaction ID...'
+                : 'Last 4 digits of card...',
+            hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
+            prefixIcon: const Icon(Icons.tag, color: Colors.white38, size: 20),
+            filled: true,
+            fillColor: const Color(0xFF161B22),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE8B84B), width: 1.5),
+            ),
+          ),
+          onChanged: (v) => _referenceText = v,
+        ),
+      ],
+    );
+  }
+
+  // Context-specific layout 3: CREDIT
+  Widget _buildCreditCheckoutFlow(PosProvider pos) {
+    final party = pos.selectedParty;
+    if (party == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD97706).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFFBBF24), size: 44),
+            const SizedBox(height: 12),
+            const Text(
+              'CUSTOMER REGISTRATION REQUIRED',
+              style: TextStyle(color: Color(0xFFFBBF24), fontWeight: FontWeight.bold, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Credit sales require associating the checkout with an existing customer ledger.',
+              style: TextStyle(color: Colors.white54, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => _showCustomerSearchDialog(pos),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD97706),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(Icons.person_search, size: 18),
+              label: const Text('Find Customer', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final newBalance = party.currentBalance + pos.totalAmount;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161B22),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'CREDIT ACCOUNT DETAIL',
+            style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+          ),
+          const SizedBox(height: 12),
+          _ledgerRow('Customer Account', party.name),
+          _ledgerRow('Phone Number', party.phone ?? 'No phone'),
+          const Divider(color: Colors.white10, height: 20),
+          _ledgerRow('Current Ledger Balance', '৳${party.currentBalance.toStringAsFixed(2)}', valueColor: const Color(0xFFFBBF24)),
+          _ledgerRow('This Transaction Cost', '৳${pos.totalAmount.toStringAsFixed(2)}', valueColor: const Color(0xFFE8B84B)),
+          const Divider(color: Colors.white10, height: 20),
+          _ledgerRow(
+            'New Outstanding Balance', 
+            '৳${newBalance.toStringAsFixed(2)}', 
+            valueColor: const Color(0xFFEF4444),
+            isBold: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ledgerRow(String label, String value, {Color valueColor = Colors.white, bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+          Text(
+            value,
+            style: TextStyle(
+              color: valueColor,
+              fontSize: 13,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenericCheckoutFlow(PosProvider pos) {
+    return Center(
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          const Icon(Icons.payment, color: Colors.white38, size: 48),
+          const SizedBox(height: 12),
+          Text(
+            'Proceeding with ${_selectedMethod?.name ?? "selected method"} checkout',
+            style: const TextStyle(color: Colors.white60),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompleteActionButton(PosProvider pos) {
+    final isEnabled = _canCompleteSale(pos);
+    
+    Color btnColor = const Color(0xFF2ECC71); // Default green
+    String label = 'COMPLETE SALE';
+
+    if (_selectedMethod?.type == 'cash') {
+      final double entered = _parsedAmount > 0 ? _parsedAmount : pos.totalAmount;
+      final double change = (entered - pos.totalAmount).clamp(0, double.infinity);
+      final double short = (pos.totalAmount - entered).clamp(0, double.infinity);
+      
+      if (short > 0) {
+        btnColor = Colors.white.withValues(alpha: 0.1);
+        label = 'SHORT BY ৳${short.toStringAsFixed(0)}';
+      } else if (change > 0) {
+        label = 'COMPLETE  •  Change ৳${change.toStringAsFixed(0)}';
+      }
+    } else if (_isCredit(_selectedMethod) && pos.selectedParty == null) {
+      btnColor = Colors.white.withValues(alpha: 0.1);
+      label = 'CUSTOMER REQUIRED';
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _processing || !isEnabled ? null : () => _completeSale(pos),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: btnColor,
+          foregroundColor: Colors.black,
+          disabledBackgroundColor: Colors.white.withValues(alpha: 0.08),
+          disabledForegroundColor: Colors.white24,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: _processing
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check_circle, size: 22, color: Colors.black),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  // ── Customer Search Dialog ─────────────────────────────────────────────────
 
   void _showCustomerSearchDialog(PosProvider pos) {
     final ctrl = TextEditingController();
@@ -425,22 +1080,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF161B22),
-          title: const Text('Find Customer', style: TextStyle(color: Colors.white, fontSize: 16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text(
+            'Find Ledger Customer',
+            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           content: SizedBox(
-            width: 400,
+            width: 440,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: ctrl,
                   autofocus: true,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Search by name or phone...',
+                    hintText: 'Search by name or mobile number...',
+                    hintStyle: const TextStyle(color: Colors.white30),
                     prefixIcon: const Icon(Icons.search, color: Colors.white38),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.06),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                    fillColor: Colors.white.withValues(alpha: 0.04),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                   ),
                   onChanged: (v) => setDialogState(() {}),
                 ),
@@ -449,23 +1109,32 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   future: pos.searchParties(ctrl.text),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+                      return const Center(
+                        child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator(color: Color(0xFFE8B84B))),
+                      );
                     }
                     final parties = snapshot.data ?? [];
                     if (parties.isEmpty && ctrl.text.isNotEmpty) {
-                      return const Padding(padding: EdgeInsets.all(20), child: Text('No customers found', style: TextStyle(color: Colors.white38)));
+                      return const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('No customers match your query', style: TextStyle(color: Colors.white38, fontSize: 13)),
+                      );
                     }
                     return SizedBox(
                       height: 250,
-                      child: ListView.builder(
+                      child: ListView.separated(
                         itemCount: parties.length,
+                        separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
                         itemBuilder: (ctx, i) => ListTile(
-                          title: Text(parties[i].name, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                          subtitle: Text(parties[i].phone ?? 'No phone', style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                          trailing: Text('৳ ${parties[i].currentBalance}', style: const TextStyle(color: Color(0xFFE8B84B), fontSize: 12)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                          title: Text(parties[i].name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                          subtitle: Text(parties[i].phone ?? 'No phone number', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                          trailing: Text('৳ ${parties[i].currentBalance.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFFE8B84B), fontSize: 13, fontWeight: FontWeight.bold)),
                           onTap: () {
                             pos.setSelectedParty(parties[i]);
                             Navigator.pop(ctx);
+                            // Refresh outer state if in credit check
+                            setState(() {});
                           },
                         ),
                       ),
@@ -476,423 +1145,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: Colors.white38))),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ── Amount display ────────────────────────────────────────────────────────
-
-  Widget _buildAmountDisplay(PosProvider pos) {
-    final isPaid = _isPaid(pos);
-    final change = _change(pos);
-    final remaining = _remaining(pos);
-    final entered = _parsedAmount;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: isPaid
-                ? const Color(0xFF2ECC71).withValues(alpha: 0.4)
-                : Colors.white.withValues(alpha: 0.06)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(isPaid ? 'PAID ✓' : 'TOTAL DUE',
-                  style: TextStyle(
-                      color: isPaid
-                          ? const Color(0xFF2ECC71)
-                          : Colors.white.withValues(alpha: 0.45),
-                      fontSize: 10,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.w700)),
-              const SizedBox(height: 2),
-              Text('৳ ${pos.totalAmount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      color: Color(0xFFE8B84B),
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800)),
-            ],
-          ),
-          if (!isPaid)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text('ENTERING',
-                    style: TextStyle(
-                        color: Colors.white30,
-                        fontSize: 10,
-                        letterSpacing: 1)),
-                const SizedBox(height: 2),
-                Text(
-                  entered > 0
-                      ? '৳ ${entered.toStringAsFixed(2)}'
-                      : '৳ —',
-                  style: TextStyle(
-                      color: entered > 0
-                          ? Colors.white
-                          : Colors.white30,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700),
-                ),
-                if (_tenders.isNotEmpty)
-                  Text('Remaining: ৳ ${remaining.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                          color: Colors.white38, fontSize: 11)),
-              ],
-            )
-          else
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2ECC71).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                children: [
-                  const Text('CHANGE',
-                      style: TextStyle(
-                          color: Color(0xFF2ECC71),
-                          fontSize: 10,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.w700)),
-                  Text('৳ ${change.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                          color: Color(0xFF2ECC71),
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800)),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // ── Payment method chips ──────────────────────────────────────────────────
-
-  Widget _buildMethodChips(PosProvider pos) {
-    if (pos.paymentMethods.isEmpty) {
-      return const Text('No payment methods configured',
-          style: TextStyle(color: Colors.white38, fontSize: 12));
-    }
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: pos.paymentMethods.map((m) {
-        final sel = _selectedMethod?.id == m.id;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedMethod = m;
-              _showReferenceField =
-                  m.type == 'mobile_banking' || m.type == 'card';
-              _refCtrl.clear();
-              _referenceText = null;
-            });
-          },
-          child: AnimatedContainer(
-            duration: AppMotion.durationNormal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: sel
-                  ? const Color(0xFFE8B84B)
-                  : Colors.white.withValues(alpha: 0.07),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color: sel
-                      ? const Color(0xFFE8B84B)
-                      : Colors.white.withValues(alpha: 0.12)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(_methodIcon(m.type),
-                    color: sel ? Colors.black : Colors.white70,
-                    size: 16),
-                const SizedBox(width: 6),
-                Text(m.name,
-                    style: TextStyle(
-                        color: sel ? Colors.black : Colors.white,
-                        fontWeight:
-                            sel ? FontWeight.w700 : FontWeight.w400,
-                        fontSize: 13)),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  // ── Tender list ───────────────────────────────────────────────────────────
-
-  Widget _buildTenderList(PosProvider pos) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Payments Added  (৳ ${_tenderTotal.toStringAsFixed(2)})',
-              style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500)),
-          const SizedBox(height: 6),
-          ..._tenders.asMap().entries.map((e) {
-            final t = e.value;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 4),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(_methodIcon(t.method.type),
-                      color: const Color(0xFFE8B84B), size: 14),
-                  const SizedBox(width: 8),
-                  Text(t.method.name,
-                      style: const TextStyle(
-                          color: Colors.white70, fontSize: 12)),
-                  if (t.reference != null) ...[
-                    const SizedBox(width: 4),
-                    Text('(${t.reference})',
-                        style: const TextStyle(
-                            color: Colors.white30, fontSize: 11)),
-                  ],
-                  const Spacer(),
-                  Text('৳ ${t.amount.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => _removeTender(e.key),
-                    child: const Icon(Icons.close_rounded,
-                        color: Colors.white30, size: 16),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ── Quick amount presets ─────────────────────────────────────────────────
-
-  Widget _buildQuickPresets(PosProvider pos) {
-    final presets = _presets(pos);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      child: Row(
-        children: [
-          // Exact button
-          Expanded(
-            child: _presetButton(
-              label: 'Exact\n৳${_remaining(pos).toStringAsFixed(0)}',
-              color: const Color(0xFF2ECC71),
-              onTap: () => _setExact(pos),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ...presets.expand((p) => <Widget>[
-                Expanded(
-                  child: _presetButton(
-                    label: '৳${p.toStringAsFixed(0)}',
-                    onTap: () => _setPreset(p),
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ]),
-        ],
-      ),
-    );
-  }
-
-  Widget _presetButton({
-    required String label,
-    required VoidCallback onTap,
-    Color color = const Color(0xFF30363D),
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
-        ),
-        alignment: Alignment.center,
-        child: Text(label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: color == const Color(0xFF30363D)
-                    ? Colors.white70
-                    : color,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                height: 1.2)),
-      ),
-    );
-  }
-
-  // ── Numpad ────────────────────────────────────────────────────────────────
-
-  Widget _buildNumpad(PosProvider pos) {
-    const keys = [
-      ['7', '8', '9'],
-      ['4', '5', '6'],
-      ['1', '2', '3'],
-      ['.', '0', '⌫'],
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      child: Column(
-        children: keys.map((row) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: row.map((key) {
-                final isBack = key == '⌫';
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _numpadTap(key),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: isBack
-                                ? Colors.white.withValues(alpha: 0.04)
-                                : Colors.white.withValues(alpha: 0.07),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.08)),
-                          ),
-                          alignment: Alignment.center,
-                          child: isBack
-                              ? Icon(Icons.backspace_outlined,
-                                  color: Colors.white54, size: 20)
-                              : Text(key,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500)),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  // ── Action button ─────────────────────────────────────────────────────────
-
-  Widget _buildActionButton(PosProvider pos) {
-    final isPaid = _isPaid(pos);
-    final change = _change(pos);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(AppSpacing.space4, AppSpacing.space2, AppSpacing.space4, AppSpacing.space1),
-      child: Row(
-        children: [
-          // Add split payment (only visible when not yet fully paid)
-          if (!isPaid && _tenders.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(right: AppSpacing.space2),
-              child: OutlinedButton(
-                onPressed: () => _addTender(pos),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF30363D)),
-                  padding: AppSpacing.insetSquishMd,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('+ Add',
-                    style: TextStyle(color: Colors.white70, fontSize: 13)),
-              ),
-            ),
-
-          // Main action
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _processing ? null : () => _completeSale(pos),
-              style: AppButtonStyles.primary.copyWith(
-                backgroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.disabled)) return Colors.white.withValues(alpha: 0.1);
-                  return isPaid ? const Color(0xFF2ECC71) : const Color(0xFFE8B84B);
-                }),
-                minimumSize: WidgetStateProperty.all(const Size(double.infinity, 52)),
-              ),
-              child: _processing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                          color: Colors.black, strokeWidth: 2),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          isPaid
-                              ? Icons.check_circle_rounded
-                              : Icons.payment_rounded,
-                          color: Colors.black,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          isPaid
-                              ? (change > 0
-                                  ? 'COMPLETE  •  Change ৳${change.toStringAsFixed(2)}'
-                                  : 'COMPLETE SALE')
-                              : 'CHARGE  ৳${_parsedAmount > 0 ? _parsedAmount.toStringAsFixed(2) : pos.totalAmount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.3),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _showServerOutcomeDialog(SaleExecutionResult response) {
     final partialLines = response.partialFulfillment
-        .map((e) =>
-            '${e['item_id']}: fulfilled ${e['fulfilled_qty']} / backordered ${e['backordered_qty']}')
+        .map((e) => '${e['item_id']}: fulfilled ${e['fulfilled_qty']} / backordered ${e['backordered_qty']}')
         .join('\n');
     final details = [
       if (response.message != null) response.message!,
@@ -902,156 +1167,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Server Result: ${response.status.name.toUpperCase()}'),
-        content: Text(details.isEmpty ? 'No additional details.' : details),
+        backgroundColor: const Color(0xFF161B22),
+        title: Text('Server Result: ${response.status.name.toUpperCase()}', style: const TextStyle(color: Colors.white)),
+        content: Text(details.isEmpty ? 'No additional details.' : details, style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: const Text('OK', style: TextStyle(color: Color(0xFFE8B84B))),
           ),
         ],
       ),
     );
   }
-
-  // ── Right panel: order summary ────────────────────────────────────────────
-
-  Widget _buildSummaryPanel(PosProvider pos) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Order Summary',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView.separated(
-              itemCount: pos.cart.length,
-              separatorBuilder: (_, __) => Divider(
-                  color: Colors.white.withValues(alpha: 0.05), height: 16),
-              itemBuilder: (ctx, i) {
-                final c = pos.cart[i];
-                return Row(
-                  children: [
-                    Expanded(
-                        child: Text('${c.item.name} × ${c.qty}',
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 12),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis)),
-                    Text('৳${c.lineTotal.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 12)),
-                  ],
-                );
-              },
-            ),
-          ),
-          const Divider(color: Color(0xFF30363D)),
-          if (pos.cartDiscount > 0) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Subtotal',
-                    style: TextStyle(color: Colors.white54, fontSize: 13)),
-                Text('৳ ${pos.subtotal.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 13)),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Discount',
-                    style: TextStyle(
-                        color: Color(0xFF2ECC71), fontSize: 13)),
-                Text('- ৳ ${pos.cartDiscount.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        color: Color(0xFF2ECC71), fontSize: 13)),
-              ],
-            ),
-            const SizedBox(height: 4),
-          ],
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('TOTAL',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700)),
-              Text('৳ ${pos.totalAmount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      color: Color(0xFFE8B84B),
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800)),
-            ],
-          ),
-
-          // Change callout
-          if (_isPaid(pos)) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2ECC71).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                    color: const Color(0xFF2ECC71).withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                children: [
-                  const Text('CHANGE DUE',
-                      style: TextStyle(
-                          color: Color(0xFF2ECC71),
-                          fontSize: 11,
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 4),
-                  Text(
-                    '৳ ${_change(pos).toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        color: Color(0xFF2ECC71),
-                        fontSize: 36,
-                        fontWeight: FontWeight.w800),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // ── Compact summary (portrait top card) ──────────────────────────────────
-
-  Widget _buildCompactSummary(PosProvider pos) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: const Color(0xFF161B22),
-      child: Row(
-        children: [
-          Text('${pos.itemCount} item${pos.itemCount != 1 ? "s" : ""}',
-              style: const TextStyle(color: Colors.white54, fontSize: 13)),
-          const Spacer(),
-          Text('৳ ${pos.totalAmount.toStringAsFixed(2)}',
-              style: const TextStyle(
-                  color: Color(0xFFE8B84B),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800)),
-        ],
-      ),
-    );
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   IconData _methodIcon(String type) {
     switch (type) {
@@ -1059,6 +1186,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         return Icons.phone_android_rounded;
       case 'card':
         return Icons.credit_card_rounded;
+      case 'credit':
+        return Icons.account_balance_wallet_rounded;
       default:
         return Icons.payments_rounded;
     }

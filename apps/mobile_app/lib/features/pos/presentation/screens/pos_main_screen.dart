@@ -376,22 +376,30 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
   Widget _buildRightPanel() {
     return Consumer<PosProvider>(
-      builder: (ctx, pos, _) => CartPanel(
-        cartItems: pos.cart,
-        itemCount: pos.itemCount,
-        cartIsEmpty: pos.cartIsEmpty,
-        subtotal: pos.subtotal,
-        cartDiscount: pos.cartDiscount,
-        totalAmount: pos.totalAmount,
-        onClearCart: () => showClearCartDialog(context, pos),
-        onShowDiscountDialog: () => showDiscountDialog(context, pos),
-        onCharge: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PaymentScreen()),
-        ),
-        onRemoveItemAt: (int index) => () => pos.removeItem(pos.cart[index].item.id),
-        onQtyChangedAt: (int index) => (int q) => pos.setQty(pos.cart[index].item.id, q),
-      ),
+      builder: (ctx, pos, _) {
+        PaymentMethod? method;
+        for (final m in pos.paymentMethods) {
+          if (m.id == pos.selectedPaymentMethodId) {
+            method = m;
+            break;
+          }
+        }
+        return CartPanel(
+          cartItems: pos.cart,
+          itemCount: pos.itemCount,
+          cartIsEmpty: pos.cartIsEmpty,
+          subtotal: pos.subtotal,
+          totalAmount: pos.totalAmount,
+          selectedPaymentMethod: method,
+          onClearCart: () => showClearCartDialog(context, pos),
+          onContinue: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PaymentScreen()),
+          ),
+          onRemoveItemAt: (int index) => () => pos.removeItem(pos.cart[index].item.id),
+          onQtyChangedAt: (int index) => (int q) => pos.setQty(pos.cart[index].item.id, q),
+        );
+      },
     );
   }
 

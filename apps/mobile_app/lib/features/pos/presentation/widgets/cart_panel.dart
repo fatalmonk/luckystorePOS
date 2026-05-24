@@ -9,14 +9,13 @@ class CartPanel extends StatelessWidget {
   final int itemCount;
   final bool cartIsEmpty;
   final double subtotal;
-  final double cartDiscount;
   final double totalAmount;
   final VoidCallback onClearCart;
-  final VoidCallback onShowDiscountDialog;
-  final VoidCallback onCharge;
+  final VoidCallback onContinue;
   final VoidCallback Function(int index) onRemoveItemAt;
   final Function(int) Function(int index) onQtyChangedAt;
   final int? pendingSyncCount;
+  final PaymentMethod? selectedPaymentMethod;
 
   const CartPanel({
     super.key,
@@ -24,14 +23,13 @@ class CartPanel extends StatelessWidget {
     required this.itemCount,
     required this.cartIsEmpty,
     required this.subtotal,
-    required this.cartDiscount,
     required this.totalAmount,
     required this.onClearCart,
-    required this.onShowDiscountDialog,
-    required this.onCharge,
+    required this.onContinue,
     required this.onRemoveItemAt,
     required this.onQtyChangedAt,
     this.pendingSyncCount,
+    this.selectedPaymentMethod,
   });
 
   @override
@@ -48,8 +46,7 @@ class CartPanel extends StatelessWidget {
                 ? _buildEmptyState()
                 : _buildCartList(),
           ),
-          _buildTotalsSection(),
-          _buildCheckoutButton(),
+          _buildFooter(),
         ],
       ),
     );
@@ -65,7 +62,7 @@ class CartPanel extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.shopping_cart_outlined, 
+          const Icon(Icons.shopping_cart_outlined, 
             color: AppColors.primaryDefault, 
             size: 20),
           const SizedBox(width: 8),
@@ -85,7 +82,7 @@ class CartPanel extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: Icon(Icons.delete_outline, 
+              icon: const Icon(Icons.delete_outline, 
                 color: AppColors.dangerDefault, 
                 size: 20),
               onPressed: onClearCart,
@@ -104,7 +101,7 @@ class CartPanel extends StatelessWidget {
       color: AppColors.warningSubtle,
       child: Row(
         children: [
-          Icon(Icons.sync_outlined, 
+          const Icon(Icons.sync_outlined, 
             color: AppColors.warningDefault, 
             size: 16),
           const SizedBox(width: 8),
@@ -160,125 +157,84 @@ class CartPanel extends StatelessWidget {
         cartItem: cartItems[index],
         onRemove: onRemoveItemAt(index),
         onQtyChanged: onQtyChangedAt(index),
+        selectedPaymentMethod: selectedPaymentMethod,
       ),
     );
   }
 
-  Widget _buildTotalsSection() {
+  Widget _buildFooter() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surfaceDefault,
         border: Border(
           top: BorderSide(color: AppColors.borderDefault),
         ),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],  // FIX: AppShadows removed, inline shadow
       ),
       child: Column(
         children: [
-          _buildTotalRow('Subtotal', subtotal, isBold: false),
-          if (cartDiscount > 0) ...[
-            const SizedBox(height: 8),
-            _buildTotalRow('Discount', -cartDiscount, 
-              isBold: false, 
-              isDiscount: true,
-              onTap: onShowDiscountDialog),
-          ],
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1),
-          ),
-          _buildTotalRow('Total', totalAmount, isBold: true),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTotalRow(String label, double amount, {
-    required bool isBold,
-    bool isDiscount = false,
-    VoidCallback? onTap,
-  }) {
-    final textStyle = isBold
-        ? AppTextStyles.headingMd  // FIX: headingSm undefined, use headingMd
-        : AppTextStyles.bodyMd;
-    
-    final amountText = isDiscount
-        ? '-৳${amount.abs().toStringAsFixed(0)}'
-        : '৳${amount.toStringAsFixed(0)}';
-
-    Widget content = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: textStyle.copyWith(
-            color: isDiscount ? AppColors.successDefault : AppColors.textPrimary,
-            fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-        Text(
-          amountText,
-          style: textStyle.copyWith(
-            color: isDiscount ? AppColors.successDefault : AppColors.textPrimary,
-            fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-
-    if (onTap != null) {
-      content = InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.borderSm,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: content,
-        ),
-      );
-    }
-
-    return content;
-  }
-
-  Widget _buildCheckoutButton() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDefault,
-        border: Border(
-          top: BorderSide(color: AppColors.borderDefault),
-        ),
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: ElevatedButton(
-          onPressed: cartIsEmpty ? null : onCharge,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryDefault,
-            foregroundColor: AppColors.primaryOn,
-            disabledBackgroundColor: AppColors.backgroundSubtle,
-            disabledForegroundColor: AppColors.textMuted,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: AppRadius.borderLg,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Subtotal
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.payment_rounded, size: 20),
-              const SizedBox(width: 8),
+              Text('Subtotal', style: AppTextStyles.bodyMd),
               Text(
-                'Charge ৳${totalAmount.toStringAsFixed(0)}',
-                style: AppTextStyles.labelLg.copyWith(
-                  fontWeight: FontWeight.w600,
+                '৳${subtotal.toStringAsFixed(2)}',
+                style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          
+          const Divider(height: 24),
+          
+          // Total (calculated based on payment method)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('TOTAL', style: AppTextStyles.headingMd),
+              Text(
+                '৳${totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.successDark,
                 ),
               ),
             ],
           ),
-        ),
+          
+          const SizedBox(height: 16),
+          
+          // Continue button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: cartIsEmpty ? null : onContinue,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryDefault,
+                foregroundColor: AppColors.primaryOn,
+                disabledBackgroundColor: AppColors.backgroundSubtle,
+                disabledForegroundColor: AppColors.textMuted,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.borderLg,
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.payment_rounded, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Continue',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -288,17 +244,21 @@ class _CartItemTile extends StatelessWidget {
   final CartItem cartItem;
   final VoidCallback onRemove;
   final Function(int) onQtyChanged;
+  final PaymentMethod? selectedPaymentMethod;
 
   const _CartItemTile({
     required this.cartItem,
     required this.onRemove,
     required this.onQtyChanged,
+    this.selectedPaymentMethod,
   });
 
   @override
   Widget build(BuildContext context) {
     final item = cartItem.item;
-    final lineTotal = cartItem.lineTotal;
+    final isCredit = selectedPaymentMethod?.name.toLowerCase().contains('credit') ?? false;
+    final unitPrice = isCredit ? item.mrp : item.price;
+    final lineTotal = unitPrice * cartItem.qty;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -323,7 +283,7 @@ class _CartItemTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '৳${item.price.toStringAsFixed(0)} each',
+                  '৳${unitPrice.toStringAsFixed(0)} each',
                   style: AppTextStyles.bodySm.copyWith(
                     color: AppColors.textMuted,
                   ),
