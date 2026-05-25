@@ -1,0 +1,13 @@
+node_modules/
+.next/
+dist/
+build/
+.dart_tool/
+*.g.dart
+*.freezed.dart
+*.generated.ts
+.git/
+.github/
+.vercel/
+.idea/
+.vscode/

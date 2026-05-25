@@ -1,0 +1,918 @@
+[
+  {
+    "sku": "SN-DOD-DLT-300G",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Stick+N"
+  },
+  {
+    "sku": "SN-DOD-GEN-150G",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Stick+N"
+  },
+  {
+    "sku": "DY-DIP-GEN-200G",
+    "image_url": "https://placehold.co/400x400/png?text=Diploma+IFCMP+2"
+  },
+  {
+    "sku": "SN-DTS-NCH-30G",
+    "image_url": "https://placehold.co/400x400/png?text=Detos+Nacho+Che"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Instant"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-2",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Instant"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-4",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Instant"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-3",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Instant"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-1",
+    "image_url": "https://placehold.co/400x400/png?text=Doodles+Instant"
+  },
+  {
+    "sku": "SN-POP-CNC-25G",
+    "image_url": "https://placehold.co/400x400/png?text=Poppers+Corn+Co"
+  },
+  {
+    "sku": "STORM-ITEM",
+    "image_url": "https://placehold.co/400x400/png?text=Concurrency+Sto"
+  },
+  {
+    "sku": "SN-DTS-SWC-30G",
+    "image_url": "https://placehold.co/400x400/png?text=Detos+Sweet+Chi"
+  },
+  {
+    "sku": "BC-BLM-BTT-200G",
+    "image_url": "https://placehold.co/400x400/png?text=Bellame+Butter+"
+  },
+  {
+    "sku": "BC-BLM-CHL-240G",
+    "image_url": "https://placehold.co/400x400/png?text=Bellame+Choco+L"
+  },
+  {
+    "sku": "BC-BLM-DGB-135G",
+    "image_url": "https://placehold.co/400x400/png?text=Bellame+Digesti"
+  },
+  {
+    "sku": "RG-NZR-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Nazirshail+25KG"
+  },
+  {
+    "sku": "RG-NZR-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Nazirshail+25KG"
+  },
+  {
+    "sku": "SKU-03FC77D0",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "BC-BLM-CHF-176G",
+    "image_url": "https://placehold.co/400x400/png?text=Bellame+Chocola"
+  },
+  {
+    "sku": "BC-BLM-CHD-135G",
+    "image_url": "https://placehold.co/400x400/png?text=Bellame+Chocola"
+  },
+  {
+    "sku": "RG-KTR-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Katari+Atob+%28Ra"
+  },
+  {
+    "sku": "RG-NZR-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Nazirshail+%28Rah"
+  },
+  {
+    "sku": "BC-BLM-PNB-240G",
+    "image_url": "https://placehold.co/400x400/png?text=Bellame+Peanut+"
+  },
+  {
+    "sku": "RG-KTR-ATB",
+    "image_url": "https://placehold.co/400x400/png?text=Katari+Atob+25K"
+  },
+  {
+    "sku": "RG-MNK-ATB",
+    "image_url": "https://placehold.co/400x400/png?text=Miniket+Atob+25"
+  },
+  {
+    "sku": "RG-KTR-LSE-1",
+    "image_url": "https://placehold.co/400x400/png?text=Katari+C+%28Noban"
+  },
+  {
+    "sku": "RG-KTR-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Katari+C+25KG+%28"
+  },
+  {
+    "sku": "RG-MNK-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Miniket+Atob+%28S"
+  },
+  {
+    "sku": "RG-NZR-GEN-2",
+    "image_url": "https://placehold.co/400x400/png?text=Nazirshail+25KG"
+  },
+  {
+    "sku": "RG-JRS-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Jirashail+%28Noba"
+  },
+  {
+    "sku": "RG-BSM-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Basmati+%28Golden"
+  },
+  {
+    "sku": "RG-MNK-LSE-1",
+    "image_url": "https://placehold.co/400x400/png?text=Miniket+C+%28Nouk"
+  },
+  {
+    "sku": "RG-JRS-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Jirashail+25KG+"
+  },
+  {
+    "sku": "RG-JRS-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Jirashail+25KG+"
+  },
+  {
+    "sku": "SKU-b1a6fe70",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+b1a6"
+  },
+  {
+    "sku": "RG-KTR-PRM",
+    "image_url": "https://placehold.co/400x400/png?text=Katari+Atob+25K"
+  },
+  {
+    "sku": "CK-POT-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Potatoes+-+alu"
+  },
+  {
+    "sku": "RG-JRS-GEN-2",
+    "image_url": "https://placehold.co/400x400/png?text=Jirashail+25KG+"
+  },
+  {
+    "sku": "CK-ONN-ONI",
+    "image_url": "https://placehold.co/400x400/png?text=Onions+-+piyaj"
+  },
+  {
+    "sku": "RG-SHK-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Shukran+Rice+At"
+  },
+  {
+    "sku": "CK-ATA-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Ata+-+loose"
+  },
+  {
+    "sku": "CK-CHN-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Chona+Boot"
+  },
+  {
+    "sku": "RG-MTR-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Motor+Daal"
+  },
+  {
+    "sku": "RG-PJM-BLD",
+    "image_url": "https://placehold.co/400x400/png?text=Paijam+Atob+25K"
+  },
+  {
+    "sku": "OL-RPC-SYO-2L",
+    "image_url": "https://placehold.co/400x400/png?text=Rupchanda+Soyab"
+  },
+  {
+    "sku": "OL-RPC-SYO-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Rupchanda+Soyab"
+  },
+  {
+    "sku": "OL-RPC-SYO-5L",
+    "image_url": "https://placehold.co/400x400/png?text=Rupchanda+Soyab"
+  },
+  {
+    "sku": "RG-LNT-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Lentils+-+Masur"
+  },
+  {
+    "sku": "SKU-67b1a879",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+67b1"
+  },
+  {
+    "sku": "CK-MDA-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Moida+-+loose"
+  },
+  {
+    "sku": "RG-RPC-CNR",
+    "image_url": "https://placehold.co/400x400/png?text=Rupchanda+Chini"
+  },
+  {
+    "sku": "SKU-1ee1baa5",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+1ee1"
+  },
+  {
+    "sku": "BY-HTP-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Baby+Oats+Healt"
+  },
+  {
+    "sku": "CC-KIT-1F",
+    "image_url": "https://placehold.co/400x400/png?text=Kitkat+1+Finger"
+  },
+  {
+    "sku": "CC-CTR-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Center+Fresh+Ch"
+  },
+  {
+    "sku": "SKU-c73dfc8e",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+c73d"
+  },
+  {
+    "sku": "CC-KIT-3F",
+    "image_url": "https://placehold.co/400x400/png?text=Kitkat+3+Finger"
+  },
+  {
+    "sku": "SN-MRD-CCK",
+    "image_url": "https://placehold.co/400x400/png?text=Meridian+Chicke"
+  },
+  {
+    "sku": "CC-KIT-4F",
+    "image_url": "https://placehold.co/400x400/png?text=Kitkat+4+Finger"
+  },
+  {
+    "sku": "CK-ISB-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Isubgul"
+  },
+  {
+    "sku": "CC-MNT-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Mentos"
+  },
+  {
+    "sku": "SN-REL-PTC",
+    "image_url": "https://placehold.co/400x400/png?text=Real+Potato+Chi"
+  },
+  {
+    "sku": "SN-NMK-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Nimki+Small"
+  },
+  {
+    "sku": "DE-EGG-LSE-1",
+    "image_url": "https://placehold.co/400x400/png?text=Eggs+-+White+%28L"
+  },
+  {
+    "sku": "CK-TSM-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Tastemaker+-+Ta"
+  },
+  {
+    "sku": "SN-MRD-SHC",
+    "image_url": "https://placehold.co/400x400/png?text=Meridian+Shrimp"
+  },
+  {
+    "sku": "DE-EGG-LSE",
+    "image_url": "https://placehold.co/400x400/png?text=Eggs+-+Red+%28Loo"
+  },
+  {
+    "sku": "SN-NMK-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Nimki+Big"
+  },
+  {
+    "sku": "SKU-a9c858f0",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+a9c8"
+  },
+  {
+    "sku": "SKU-411b425c",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+411b"
+  },
+  {
+    "sku": "SKU-479a6089",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+479a"
+  },
+  {
+    "sku": "SKU-0d953488",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+0d95"
+  },
+  {
+    "sku": "BV-TNG-ORR-200G",
+    "image_url": "https://placehold.co/400x400/png?text=Tang+Orange+Ref"
+  },
+  {
+    "sku": "SKU-76114fde",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+7611"
+  },
+  {
+    "sku": "BV-TNG-ORR-500G",
+    "image_url": "https://placehold.co/400x400/png?text=Tang+Orange+Ref"
+  },
+  {
+    "sku": "SKU-4ee2a80c",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+4ee2"
+  },
+  {
+    "sku": "SKU-2e5f78e5",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+2e5f"
+  },
+  {
+    "sku": "CC-SAF-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Safari"
+  },
+  {
+    "sku": "CC-SNK-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Sneakers"
+  },
+  {
+    "sku": "SN-\u9226\u71ecT-JHC-300G",
+    "image_url": "https://placehold.co/400x400/png?text=%E9%88%A6%E7%87%ACtarship+Jhal+"
+  },
+  {
+    "sku": "EL-TTC-PN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+LED+Br"
+  },
+  {
+    "sku": "EL-TTC-CHR-1",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+LED+Br"
+  },
+  {
+    "sku": "EL-TTC-PN",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+LED+Br"
+  },
+  {
+    "sku": "EL-TTC-PN-2",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+LED+Br"
+  },
+  {
+    "sku": "CC-\u9226\u71d7R-ASL",
+    "image_url": "https://placehold.co/400x400/png?text=%E9%88%A6%E7%87%97ril+Assorted+"
+  },
+  {
+    "sku": "EL-TTC-CHR",
+    "image_url": "https://placehold.co/400x400/png?text=Transtac+LED+Br"
+  },
+  {
+    "sku": "SKU-21c0caa8",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+21c0"
+  },
+  {
+    "sku": "CC-ARL-CHG",
+    "image_url": "https://placehold.co/400x400/png?text=Aril+Chewing+Gu"
+  },
+  {
+    "sku": "EL-TTC-CHR-2",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+Backup"
+  },
+  {
+    "sku": "EL-TTC-PN-3",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+Backup"
+  },
+  {
+    "sku": "EL-TTC-PN-4",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+Backup"
+  },
+  {
+    "sku": "EL-TTC-CHR-3",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+Backup"
+  },
+  {
+    "sku": "IC-SAV-CRB",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Crunchyba"
+  },
+  {
+    "sku": "IC-SAV-CHB",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Chocbar"
+  },
+  {
+    "sku": "IC-SAV-LOL",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Lolly+%28le"
+  },
+  {
+    "sku": "IC-SAV-CHN",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Chocolate"
+  },
+  {
+    "sku": "SKU-fb4f2e39",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+fb4f"
+  },
+  {
+    "sku": "IC-SAV-DKD-1KG",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Dark+Desi"
+  },
+  {
+    "sku": "IC-IGL-MCH",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Macho"
+  },
+  {
+    "sku": "IC-IGL-LOL",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Lolly+%28or"
+  },
+  {
+    "sku": "IC-SAV-GLD-1KG",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Golden+1k"
+  },
+  {
+    "sku": "SKU-eadd3881",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+eadd"
+  },
+  {
+    "sku": "EL-TTC-MSB",
+    "image_url": "https://placehold.co/400x400/png?text=Transtec+Mosqui"
+  },
+  {
+    "sku": "IC-SAV-VNL-1KG",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Vanilla+1"
+  },
+  {
+    "sku": "IC-SAV-DSC",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Discone"
+  },
+  {
+    "sku": "IC-SAV-SHC",
+    "image_url": "https://placehold.co/400x400/png?text=Savoy+Shell+%26+C"
+  },
+  {
+    "sku": "IC-IGL-VNL",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Vanilla+%28"
+  },
+  {
+    "sku": "IC-IGL-VNL-2L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Vanilla+%28"
+  },
+  {
+    "sku": "IC-IGL-FIR",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Firni+%28cu"
+  },
+  {
+    "sku": "IC-IGL-CHL-2L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Chocolate"
+  },
+  {
+    "sku": "IC-IGL-VNL-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Vanilla+1"
+  },
+  {
+    "sku": "IC-IGL-STW-2L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Strawberr"
+  },
+  {
+    "sku": "IC-IGL-STW-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Strawberr"
+  },
+  {
+    "sku": "IC-IGL-CHL-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Chocolate"
+  },
+  {
+    "sku": "IC-IGL-FVL-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+French+Va"
+  },
+  {
+    "sku": "CK-HKO-AGR-20G",
+    "image_url": "https://placehold.co/400x400/png?text=Haiko+Agar+Agar"
+  },
+  {
+    "sku": "IC-IGL-FIR-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Firni+1L"
+  },
+  {
+    "sku": "IC-IGL-DOI-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Doi+1L"
+  },
+  {
+    "sku": "IC-IGL-MGM-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Mango+Mel"
+  },
+  {
+    "sku": "IC-IGL-CKE-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Cake+1L"
+  },
+  {
+    "sku": "CK-RGD-KWR-200ML",
+    "image_url": "https://placehold.co/400x400/png?text=Regard+Keora+Wa"
+  },
+  {
+    "sku": "BY-PMP-BWV",
+    "image_url": "https://placehold.co/400x400/png?text=Pampers+Sensiti"
+  },
+  {
+    "sku": "SKU-56e14e9f",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item+56e1"
+  },
+  {
+    "sku": "CC-MRS-CHL-32G",
+    "image_url": "https://placehold.co/400x400/png?text=Mars+Fruit+%26+Nu"
+  },
+  {
+    "sku": "SKU-FDF43880",
+    "image_url": "https://placehold.co/400x400/png?text=Concurrency+Sto"
+  },
+  {
+    "sku": "CC-SNI-CHL-32G",
+    "image_url": "https://placehold.co/400x400/png?text=Snickers+Fruit+"
+  },
+  {
+    "sku": "EL-MIX-QCR",
+    "image_url": "https://placehold.co/400x400/png?text=MI+9se+18W+Quic"
+  },
+  {
+    "sku": "SN-MBR-PRD",
+    "image_url": "https://placehold.co/400x400/png?text=Mabroom+Premium"
+  },
+  {
+    "sku": "EL-MVC-FCC",
+    "image_url": "https://placehold.co/400x400/png?text=Movilcell+M15+F"
+  },
+  {
+    "sku": "EL-SFT-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Safe+Touch+0034"
+  },
+  {
+    "sku": "EL-SFT-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Safe+Touch+0032"
+  },
+  {
+    "sku": "EL-SFT-GEN-2",
+    "image_url": "https://placehold.co/400x400/png?text=Safe+Touch+0032"
+  },
+  {
+    "sku": "PC-KOD-CRM-40G",
+    "image_url": "https://placehold.co/400x400/png?text=Kodomo+Toothpas"
+  },
+  {
+    "sku": "SKU-6784FDA9",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "CC-CHP-GEN-72G",
+    "image_url": "https://placehold.co/400x400/png?text=Chupa+Chups+Bes"
+  },
+  {
+    "sku": "CD-KKM-SYS-1L",
+    "image_url": "https://placehold.co/400x400/png?text=Kikkoman+All+Pu"
+  },
+  {
+    "sku": "BK-SAF-GEN-100G",
+    "image_url": "https://placehold.co/400x400/png?text=Saf+Instant+Yea"
+  },
+  {
+    "sku": "BK-MHD-BSD-86G",
+    "image_url": "https://placehold.co/400x400/png?text=Mohammad+Baking"
+  },
+  {
+    "sku": "BK-MHD-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Mohammad+Yeast"
+  },
+  {
+    "sku": "SKU-D1B5178E",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "SKU-DAC3907B",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "SP-RNG-MXH-30G",
+    "image_url": "https://placehold.co/400x400/png?text=Rangdhanu+Mixed"
+  },
+  {
+    "sku": "BY-KOD-GEN-40G",
+    "image_url": "https://placehold.co/400x400/png?text=Kodomo+Bubble+F"
+  },
+  {
+    "sku": "SP-HKO-BTS-80G",
+    "image_url": "https://placehold.co/400x400/png?text=Haiko+Bit+Salt+"
+  },
+  {
+    "sku": "PE-PTB-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Patabahar+Coil+"
+  },
+  {
+    "sku": "BK-FST-BKP-225G",
+    "image_url": "https://placehold.co/400x400/png?text=Foster+Clarks+B"
+  },
+  {
+    "sku": "EL-MXL-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Maxline+ML-073+"
+  },
+  {
+    "sku": "BK-RYN-CNF-400G",
+    "image_url": "https://placehold.co/400x400/png?text=Rayners+Corn+Fl"
+  },
+  {
+    "sku": "BY-LCG-GEN-350G",
+    "image_url": "https://placehold.co/400x400/png?text=Lactogen+2+350g"
+  },
+  {
+    "sku": "BY-LCG-GEN-350G-1",
+    "image_url": "https://placehold.co/400x400/png?text=Lactogen+3+350g"
+  },
+  {
+    "sku": "BY-NAN-OPT-350G",
+    "image_url": "https://placehold.co/400x400/png?text=Nan+Opti+Pro+2+"
+  },
+  {
+    "sku": "SKU-170FBB23",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "SKU-4D7FDF4C",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "BY-NAN-OPT-300G",
+    "image_url": "https://placehold.co/400x400/png?text=Nan+Opti+Pro+1+"
+  },
+  {
+    "sku": "BY-LCG-GEN-1350G",
+    "image_url": "https://placehold.co/400x400/png?text=Lactogen+1350g"
+  },
+  {
+    "sku": "BY-NAN-OPT-350G-1",
+    "image_url": "https://placehold.co/400x400/png?text=Nan+Opti+Pro+3+"
+  },
+  {
+    "sku": "BY-CRL-S1-350G",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+1"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-1",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelace+Stage+"
+  },
+  {
+    "sku": "SKU-9085-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-5617-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-0498-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-5617-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "SKU-9085-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "SKU-0498-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-4",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+I"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-2",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+I"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-3",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+I"
+  },
+  {
+    "sku": "TEST-SKU",
+    "image_url": "https://placehold.co/400x400/png?text=Replay+Item"
+  },
+  {
+    "sku": "SKU-7484-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "SKU-4546-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-2674-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-7484-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-4546-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-5",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+I"
+  },
+  {
+    "sku": "SKU-2674-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-6",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+I"
+  },
+  {
+    "sku": "BY-CRL-S5-350G",
+    "image_url": "https://placehold.co/400x400/png?text=Cerelac+Stage+V"
+  },
+  {
+    "sku": "TC-NST-ICT-18G",
+    "image_url": "https://placehold.co/400x400/png?text=Nestea+Ice+Tea+"
+  },
+  {
+    "sku": "SKU-7124-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-1100-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "SKU-7124-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "SKU-1197-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-1197-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "SKU-1100-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "BC-KZF-MFL-8G-1",
+    "image_url": "https://placehold.co/400x400/png?text=Muffin+Lata+Cho"
+  },
+  {
+    "sku": "SKU-EA43E13F",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "SKU-0652-O",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Omega"
+  },
+  {
+    "sku": "SKU-0652-A",
+    "image_url": "https://placehold.co/400x400/png?text=Item+Alpha"
+  },
+  {
+    "sku": "BC-TIP-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Tip+-Standard+P"
+  },
+  {
+    "sku": "BV-GLU-MNI",
+    "image_url": "https://placehold.co/400x400/png?text=Glucose+mini"
+  },
+  {
+    "sku": "IC-IGL-SHC",
+    "image_url": "https://placehold.co/400x400/png?text=Igloo+Shell+%26+C"
+  },
+  {
+    "sku": "BV-GLU-GEN-350G",
+    "image_url": "https://placehold.co/400x400/png?text=Glucose+350g"
+  },
+  {
+    "sku": "BV-TNG-ORJ-750G",
+    "image_url": "https://placehold.co/400x400/png?text=Tang+Orange+Jar"
+  },
+  {
+    "sku": "SKU-C6E9585A",
+    "image_url": "https://placehold.co/400x400/png?text=Storm+Item"
+  },
+  {
+    "sku": "BC-HLO-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Hello+Cookies+-"
+  },
+  {
+    "sku": "BC-HLO-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Hello+Cookies+-"
+  },
+  {
+    "sku": "BC-NTY-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Nutty+-+Standar"
+  },
+  {
+    "sku": "BC-NTY-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Nutty+-+Family+"
+  },
+  {
+    "sku": "CC-PLS-MGM",
+    "image_url": "https://placehold.co/400x400/png?text=Pulse+-+Mango+M"
+  },
+  {
+    "sku": "PF-FDI-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Foodie+Masala+N"
+  },
+  {
+    "sku": "BC-BRB-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Bourbon+Cookies"
+  },
+  {
+    "sku": "CC-PLS-MGM-1",
+    "image_url": "https://placehold.co/400x400/png?text=Pulse+-+Mango+M"
+  },
+  {
+    "sku": "BC-LEX-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Lexus+-+Family+"
+  },
+  {
+    "sku": "BC-TIP-GEN-1",
+    "image_url": "https://placehold.co/400x400/png?text=Tip+-+Family+Pa"
+  },
+  {
+    "sku": "BC-SLC-GEN",
+    "image_url": "https://placehold.co/400x400/png?text=Solecti+Cookies"
+  },
+  {
+    "sku": "CC-KPI-CAN",
+    "image_url": "https://placehold.co/400x400/png?text=Kopi+-+Candy"
+  },
+  {
+    "sku": "CC-KNK-CHC",
+    "image_url": "https://placehold.co/400x400/png?text=Knock+Chocolate"
+  },
+  {
+    "sku": "CC-TFT-CHL",
+    "image_url": "https://placehold.co/400x400/png?text=Toffeeto+Chocol"
+  },
+  {
+    "sku": "CC-KNK-STC",
+    "image_url": "https://placehold.co/400x400/png?text=Knock+Strawberr"
+  },
+  {
+    "sku": "CC-KNK-CRM",
+    "image_url": "https://placehold.co/400x400/png?text=Knock+Milk+Crea"
+  },
+  {
+    "sku": "AF-AER-RSP",
+    "image_url": "https://placehold.co/400x400/png?text=AER+Room+Spray"
+  },
+  {
+    "sku": "BC-KZF-MFL-8G-2",
+    "image_url": "https://placehold.co/400x400/png?text=Muffin+Lata+Fru"
+  },
+  {
+    "sku": "AF-AER-PPF",
+    "image_url": "https://placehold.co/400x400/png?text=AER+Pocket+Perf"
+  },
+  {
+    "sku": "BC-KZF-KZT-250G",
+    "image_url": "https://placehold.co/400x400/png?text=Kazi+Toast+250g"
+  },
+  {
+    "sku": "BC-KZF-MFL-8G",
+    "image_url": "https://placehold.co/400x400/png?text=Muffin+Lata+Van"
+  },
+  {
+    "sku": "BC-KZF-SPC",
+    "image_url": "https://placehold.co/400x400/png?text=Slice+Pound+Cak"
+  },
+  {
+    "sku": "BC-KZF-SPC-1",
+    "image_url": "https://placehold.co/400x400/png?text=Slice+Pound+Cak"
+  },
+  {
+    "sku": "BC-KZF-SPC-2",
+    "image_url": "https://placehold.co/400x400/png?text=Slice+Pound+Cak"
+  },
+  {
+    "sku": "BC-KZF-DRC",
+    "image_url": "https://placehold.co/400x400/png?text=Mini+Dry+Cake"
+  },
+  {
+    "sku": "BC-KZF-PDC",
+    "image_url": "https://placehold.co/400x400/png?text=Pound+Cake+Vani"
+  },
+  {
+    "sku": "BC-KZF-DRC-300G",
+    "image_url": "https://placehold.co/400x400/png?text=Dry+Cake+%28300g%29"
+  },
+  {
+    "sku": "BC-KZF-MFB-324G-1",
+    "image_url": "https://placehold.co/400x400/png?text=Muffin+Bread+Ch"
+  },
+  {
+    "sku": "BC-KZF-MFB-324G",
+    "image_url": "https://placehold.co/400x400/png?text=Muffin+Bread+Va"
+  },
+  {
+    "sku": "BC-KZF-PDC-2",
+    "image_url": "https://placehold.co/400x400/png?text=Pound+Cake+Frui"
+  },
+  {
+    "sku": "CD-KZF-TMK",
+    "image_url": "https://placehold.co/400x400/png?text=Tomato+Ketchup+"
+  },
+  {
+    "sku": "BC-KZF-PDC-1",
+    "image_url": "https://placehold.co/400x400/png?text=Pound+Cake+Choc"
+  },
+  {
+    "sku": "CR-KEL-FRL-285G",
+    "image_url": "https://placehold.co/400x400/png?text=Kellogs+Fruit+L"
+  },
+  {
+    "sku": "CR-KEL-GEN-26G",
+    "image_url": "https://placehold.co/400x400/png?text=Kellogs+K-Park+"
+  },
+  {
+    "sku": "CR-KEL-CFN-500G",
+    "image_url": "https://placehold.co/400x400/png?text=Kellogs+Muesli+"
+  }
+]

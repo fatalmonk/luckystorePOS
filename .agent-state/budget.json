@@ -1,0 +1,5 @@
+{
+  "monthly_limit_usd": 0.00,
+  "mode": "strict",
+  "enforce_atom": true
+}

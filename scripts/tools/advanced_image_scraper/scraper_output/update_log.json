@@ -1,0 +1,296 @@
+[
+  {
+    "sku": "AF-AER-PPF",
+    "item_id": "8802ba38-3a89-41c6-96b0-a0ebeb62d9ce",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/AF-AER-PPF.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "CC-CHP-GEN-72G",
+    "item_id": "a73e0ab5-00e9-4a1c-b8fa-e74a23d4814d",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/CC-CHP-GEN-72G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-2",
+    "item_id": "ce560b3f-07bc-4b18-9469-915f01cc72c7",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SN-DOD-GEN-62G-2.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-1",
+    "item_id": "4fa3ff74-fd5e-435a-a5b4-bd4968018c0c",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SN-DOD-GEN-62G-1.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G",
+    "item_id": "13b4aa6f-d23d-4b84-a400-1743350c08b4",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SN-DOD-GEN-62G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-4",
+    "item_id": "622f5405-bb9c-464b-8f7d-56b8838586a0",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SN-DOD-GEN-62G-4.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "BC-KZF-DRC-300G",
+    "item_id": "d9dd0baa-0476-4d88-b64f-1a0a9ac35cc3",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/BC-KZF-DRC-300G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "DE-EGG-LSE",
+    "item_id": "c2d28927-cda4-4be0-8079-997fb4a805fe",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/DE-EGG-LSE.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "DE-EGG-LSE-1",
+    "item_id": "d89dbd0e-b520-427d-ba3a-192ee020f712",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/DE-EGG-LSE-1.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "IC-IGL-LOL",
+    "item_id": "0e06fb82-5e0f-4002-8afc-e39b5aebd8b6",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/IC-IGL-LOL.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-JRS-GEN-2",
+    "item_id": "b54e03c0-3a1b-4818-a642-8520f907fca0",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-JRS-GEN-2.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-JRS-GEN",
+    "item_id": "5c5e0c78-4235-481b-b75b-8acc6607aa1f",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-JRS-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-JRS-GEN-1",
+    "item_id": "c8a02040-9bb6-4ff6-ae76-2dda63a99766",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-JRS-GEN-1.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-KTR-PRM",
+    "item_id": "5ace9899-ff61-4667-8755-912bb945dbdf",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-KTR-PRM.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-KTR-ATB",
+    "item_id": "309437ca-2058-48e9-bce3-0da0ffb42e67",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-KTR-ATB.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-KTR-GEN",
+    "item_id": "56f81d25-2e4a-4a29-8517-253fa72615b2",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-KTR-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "CR-KEL-GEN-26G",
+    "item_id": "4d0f635f-c8ec-4b1b-b60b-d29671735f70",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/CR-KEL-GEN-26G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "CC-KNK-CHC",
+    "item_id": "1a71caef-bfc7-4c1a-a0ea-33991fa7eaf0",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/CC-KNK-CHC.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "BY-KOD-GEN-40G",
+    "item_id": "916a3ff0-c0f4-41aa-9996-bc00f7a13d49",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/BY-KOD-GEN-40G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "EL-MXL-GEN",
+    "item_id": "99fb0e20-a275-4e78-9712-6613c8e4ebf6",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/EL-MXL-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "CC-MNT-GEN",
+    "item_id": "b727d997-307e-447b-bf01-a2475df94b90",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/CC-MNT-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "EL-MIX-QCR",
+    "item_id": "d7b295a4-7a23-4c57-bde2-25d71e2cbc10",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/EL-MIX-QCR.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-MNK-ATB",
+    "item_id": "91f8f8aa-5264-4fe3-94cd-4dddab70af7d",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-MNK-ATB.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "EL-MVC-FCC",
+    "item_id": "12d903fe-87d3-4d88-98fd-348e6d0ec00b",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/EL-MVC-FCC.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-NZR-GEN-2",
+    "item_id": "ada03d73-0741-457c-a62c-6f46e21e4e1a",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-NZR-GEN-2.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-NZR-GEN",
+    "item_id": "b6ced47f-d3cb-415a-bfdd-3c5ebed17aee",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-NZR-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SN-NMK-GEN-1",
+    "item_id": "bfff32f8-48be-4b6d-8a31-96e6cd12a7e7",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SN-NMK-GEN-1.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "BC-NTY-GEN",
+    "item_id": "e65bf2e3-6348-4534-a19d-45be4a4d3775",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/BC-NTY-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "RG-PJM-BLD",
+    "item_id": "439d9e4b-d7df-4705-87ab-ebb067f31065",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/RG-PJM-BLD.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "BY-PMP-BWV",
+    "item_id": "ce8ff324-a9e3-4d97-a287-913900d69085",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/BY-PMP-BWV.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SP-RNG-MXH-30G",
+    "item_id": "fe4388cd-64a3-4282-995e-3461474ca4d2",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SP-RNG-MXH-30G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SN-REL-PTC",
+    "item_id": "7a9ff551-4f87-4bb6-9b17-d8c8ae6ee538",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SN-REL-PTC.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "CK-RGD-KWR-200ML",
+    "item_id": "e080ad6f-1a5b-4645-a05f-4058719558d5",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/CK-RGD-KWR-200ML.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "TEST-SKU",
+    "item_id": "22222222-2222-2222-2222-222222222222",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/TEST-SKU.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "BK-SAF-GEN-100G",
+    "item_id": "68f44b8f-20dd-4b5b-a1ef-4fa798cbb603",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/BK-SAF-GEN-100G.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "EL-SFT-GEN",
+    "item_id": "0ef6630c-287f-4eb3-b7cb-aede9430e055",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/EL-SFT-GEN.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "EL-SFT-GEN-2",
+    "item_id": "b1721e41-0f59-4c76-a617-4a0c1b97dea9",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/EL-SFT-GEN-2.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "EL-SFT-GEN-1",
+    "item_id": "5f01b147-e5ff-4735-9469-83260cb892ce",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/EL-SFT-GEN-1.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "IC-SAV-CRB",
+    "item_id": "206833c4-a3c6-436c-b5e8-ecbba8b1d724",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/IC-SAV-CRB.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "IC-SAV-DSC",
+    "item_id": "498e3dcb-3962-4bbf-8e12-8e57a63867ce",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/IC-SAV-DSC.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "BC-KZF-SPC-1",
+    "item_id": "4c7a0b18-c2ba-42a7-87e3-8c233e37e2fa",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/BC-KZF-SPC-1.webp",
+    "confidence": "HIGH"
+  },
+  {
+    "sku": "SKU-03FC77D0",
+    "item_id": "f045f510-3e92-44c3-90fc-ec4d5c6925b7",
+    "status": "success",
+    "public_url": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/items/SKU-03FC77D0.webp",
+    "confidence": "HIGH"
+  }
+]

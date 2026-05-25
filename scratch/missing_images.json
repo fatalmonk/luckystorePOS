@@ -1,0 +1,1147 @@
+[
+  {
+    "id": "e01d8ad4-55db-4a5c-9c6d-1553eed4a5e1",
+    "name": "Concurrency Storm Item",
+    "sku": "STORM-ITEM"
+  },
+  {
+    "id": "6cc6a653-0e68-4792-9cad-0cd45ecfef00",
+    "name": "Diploma IFCMP 200g",
+    "sku": "DY-DIP-GEN-200G"
+  },
+  {
+    "id": "13b4aa6f-d23d-4b84-a400-1743350c08b4",
+    "name": "Doodles Instant Noodles Masala 62g (8 Pack)",
+    "sku": "SN-DOD-GEN-62G"
+  },
+  {
+    "id": "4fa3ff74-fd5e-435a-a5b4-bd4968018c0c",
+    "name": "Doodles Instant Noodles Masala 62g (24 Pack)",
+    "sku": "SN-DOD-GEN-62G-1"
+  },
+  {
+    "id": "ce560b3f-07bc-4b18-9469-915f01cc72c7",
+    "name": "Doodles Instant Noodles Masala 62g (12 Pack)",
+    "sku": "SN-DOD-GEN-62G-2"
+  },
+  {
+    "id": "996c03c9-e79f-4720-bde7-7ccb5364dfa5",
+    "name": "Doodles Instant Noodles Ramen 62g (4 Pack)",
+    "sku": "SN-DOD-GEN-62G-3"
+  },
+  {
+    "id": "622f5405-bb9c-464b-8f7d-56b8838586a0",
+    "name": "Doodles Instant Noodles Ramen 62g (8 Pack)",
+    "sku": "SN-DOD-GEN-62G-4"
+  },
+  {
+    "id": "171dec14-87ca-412d-b37e-183e0dd79add",
+    "name": "Doodles Stick Noodles 150g",
+    "sku": "SN-DOD-GEN-150G"
+  },
+  {
+    "id": "1a1789e5-3103-4bd0-a7b8-9cc72754152a",
+    "name": "Doodles Stick Noodles Chicken Delight 300g",
+    "sku": "SN-DOD-DLT-300G"
+  },
+  {
+    "id": "a59e6e5f-caa0-4b2b-b64f-90dc4f23937a",
+    "name": "Detos Nacho Cheese Chips 30g",
+    "sku": "SN-DTS-NCH-30G"
+  },
+  {
+    "id": "e8442f28-161e-4e45-a516-df826f901969",
+    "name": "Detos Sweet Chilli Chips 30g",
+    "sku": "SN-DTS-SWC-30G"
+  },
+  {
+    "id": "63e48e21-e3a9-4567-ba32-46edcf3d3160",
+    "name": "Poppers Corn Coconut Crackers 25g",
+    "sku": "SN-POP-CNC-25G"
+  },
+  {
+    "id": "de52edb0-861b-435d-9b7f-ea898b25a112",
+    "name": "Bellame Butter Toast 200g",
+    "sku": "BC-BLM-BTT-200G"
+  },
+  {
+    "id": "454c2304-e8b0-438f-9782-7fe677c2d490",
+    "name": "Bellame Choco Little Cookies 240g",
+    "sku": "BC-BLM-CHL-240G"
+  },
+  {
+    "id": "f045f510-3e92-44c3-90fc-ec4d5c6925b7",
+    "name": "Storm Item",
+    "sku": "SKU-03FC77D0"
+  },
+  {
+    "id": "4d20b020-9cd3-4e9d-bada-df2b1fd9e839",
+    "name": "Bellame Chocolate Digestive 135g",
+    "sku": "BC-BLM-CHD-135G"
+  },
+  {
+    "id": "d2edf551-65b6-4c3b-a034-7ae486761d04",
+    "name": "Bellame Chocolate Fondue Cookie 176g",
+    "sku": "BC-BLM-CHF-176G"
+  },
+  {
+    "id": "2326e34f-8852-4c53-9b56-2111af41aca9",
+    "name": "Bellame Digestive Biscuit 135g",
+    "sku": "BC-BLM-DGB-135G"
+  },
+  {
+    "id": "2fd8270d-63ea-4c6e-965c-3673f83b305e",
+    "name": "Bellame Peanut Bite Cookies 240g",
+    "sku": "BC-BLM-PNB-240G"
+  },
+  {
+    "id": "2ebc9b49-4938-45be-8ab1-4cc2955bf4ed",
+    "name": "Nazirshail (Rahman) Loose",
+    "sku": "RG-NZR-LSE"
+  },
+  {
+    "id": "b6ced47f-d3cb-415a-bfdd-3c5ebed17aee",
+    "name": "Nazirshail 25KG (Rahman)",
+    "sku": "RG-NZR-GEN"
+  },
+  {
+    "id": "be03c9b4-982d-4dfd-86f6-b78f61227511",
+    "name": "Nazirshail 25KG (Rupchanda)",
+    "sku": "RG-NZR-GEN-1"
+  },
+  {
+    "id": "7397f725-22d2-40dc-a78f-382740756793",
+    "name": "Katari Atob (Rahman) Loose",
+    "sku": "RG-KTR-LSE"
+  },
+  {
+    "id": "309437ca-2058-48e9-bce3-0da0ffb42e67",
+    "name": "Katari Atob 25KG (Rahman)",
+    "sku": "RG-KTR-ATB"
+  },
+  {
+    "id": "043ba056-fa08-428a-9d7b-cd36530f97e3",
+    "name": "Miniket Atob (Shonko) Loose",
+    "sku": "RG-MNK-LSE"
+  },
+  {
+    "id": "91f8f8aa-5264-4fe3-94cd-4dddab70af7d",
+    "name": "Miniket Atob 25KG (Shonko)",
+    "sku": "RG-MNK-ATB"
+  },
+  {
+    "id": "f95d62d0-5d1f-4cd0-9785-f9e89ba94db5",
+    "name": "Katari C (Nobanno) Loose",
+    "sku": "RG-KTR-LSE-1"
+  },
+  {
+    "id": "56f81d25-2e4a-4a29-8517-253fa72615b2",
+    "name": "Katari C 25KG (Nobanno)",
+    "sku": "RG-KTR-GEN"
+  },
+  {
+    "id": "90bed56b-c8c9-48e6-b56c-73ce67fc740a",
+    "name": "Jirashail (Nobanno) Loose",
+    "sku": "RG-JRS-LSE"
+  },
+  {
+    "id": "5c5e0c78-4235-481b-b75b-8acc6607aa1f",
+    "name": "Jirashail 25KG (Nobanno)",
+    "sku": "RG-JRS-GEN"
+  },
+  {
+    "id": "3cc48d2c-556f-420f-b22b-84054d2b1034",
+    "name": "Storm Item b1a6fe70",
+    "sku": "SKU-b1a6fe70"
+  },
+  {
+    "id": "5d15bf02-ed02-4187-8b62-bca3f235f54f",
+    "name": "Basmati (Golden) Banglamoti Loose",
+    "sku": "RG-BSM-LSE"
+  },
+  {
+    "id": "0e9bc628-f842-492a-a140-4535e3bac7bf",
+    "name": "Miniket C (Nouka) Loose",
+    "sku": "RG-MNK-LSE-1"
+  },
+  {
+    "id": "85ef41d5-7bc1-490e-91f5-6b598d31a006",
+    "name": "Potatoes - alu",
+    "sku": "CK-POT-GEN"
+  },
+  {
+    "id": "ef7fc087-6ae2-4d90-9a79-c7ee335183c0",
+    "name": "Onions - piyaj",
+    "sku": "CK-ONN-ONI"
+  },
+  {
+    "id": "c8a02040-9bb6-4ff6-ae76-2dda63a99766",
+    "name": "Jirashail 25KG (Nobanno)",
+    "sku": "RG-JRS-GEN-1"
+  },
+  {
+    "id": "ada03d73-0741-457c-a62c-6f46e21e4e1a",
+    "name": "Nazirshail 25KG (Rahman)",
+    "sku": "RG-NZR-GEN-2"
+  },
+  {
+    "id": "5ace9899-ff61-4667-8755-912bb945dbdf",
+    "name": "Katari Atob 25KG (Premium)",
+    "sku": "RG-KTR-PRM"
+  },
+  {
+    "id": "439d9e4b-d7df-4705-87ab-ebb067f31065",
+    "name": "Paijam Atob 25KG (Boiled)",
+    "sku": "RG-PJM-BLD"
+  },
+  {
+    "id": "a09e3b8d-6237-4830-afae-6be3cf1ea8a9",
+    "name": "Lentils - Masur Daal",
+    "sku": "RG-LNT-GEN"
+  },
+  {
+    "id": "12ac0f5a-d1a6-4bf4-aad2-0a040f56fdb2",
+    "name": "Motor Daal",
+    "sku": "RG-MTR-GEN"
+  },
+  {
+    "id": "b209f469-8869-4a36-8e73-cf2fdeb833d3",
+    "name": "Shukran Rice Atosh 50KG",
+    "sku": "RG-SHK-GEN"
+  },
+  {
+    "id": "c62079f8-78d7-408a-9605-e7e1b22a1ac1",
+    "name": "Storm Item 67b1a879",
+    "sku": "SKU-67b1a879"
+  },
+  {
+    "id": "b54e03c0-3a1b-4818-a642-8520f907fca0",
+    "name": "Jirashail 25KG (Bashir)",
+    "sku": "RG-JRS-GEN-2"
+  },
+  {
+    "id": "254544e5-9438-40d1-a902-a3dac83a48db",
+    "name": "Moida - loose",
+    "sku": "CK-MDA-LSE"
+  },
+  {
+    "id": "01edf1e7-818f-492d-a7c7-c08bd93dda2b",
+    "name": "Ata - loose",
+    "sku": "CK-ATA-LSE"
+  },
+  {
+    "id": "7f83c14e-0e3f-4ffa-bac2-14723131c257",
+    "name": "Chona Boot",
+    "sku": "CK-CHN-GEN"
+  },
+  {
+    "id": "b39aa5cc-db40-4364-a786-88a34370a37d",
+    "name": "Rupchanda Soyabean Oil 1L",
+    "sku": "OL-RPC-SYO-1L"
+  },
+  {
+    "id": "dcbaf446-242d-4717-902e-52e2021d4cf9",
+    "name": "Rupchanda Soyabean Oil 2L",
+    "sku": "OL-RPC-SYO-2L"
+  },
+  {
+    "id": "b3e78fa4-c3da-499d-9969-831776891539",
+    "name": "Rupchanda Soyabean Oil 5L",
+    "sku": "OL-RPC-SYO-5L"
+  },
+  {
+    "id": "e307dce9-69d5-416d-ac83-be567dea156b",
+    "name": "Storm Item 1ee1baa5",
+    "sku": "SKU-1ee1baa5"
+  },
+  {
+    "id": "36d0b0c2-7cb2-4b27-8317-24b9e4842814",
+    "name": "Baby Oats Health Paradise",
+    "sku": "BY-HTP-GEN"
+  },
+  {
+    "id": "cf478d4c-a522-4108-8fa2-4ce8a26a8cef",
+    "name": "Rupchanda Chinigura Rice 1KG",
+    "sku": "RG-RPC-CNR"
+  },
+  {
+    "id": "b1d51bfe-ffc6-4e5a-b3ed-d9a21fbe9f73",
+    "name": "Kitkat 1 Finger",
+    "sku": "CC-KIT-1F"
+  },
+  {
+    "id": "68705709-d363-48f7-bf2e-066bc3ce7e33",
+    "name": "Kitkat 3 Finger",
+    "sku": "CC-KIT-3F"
+  },
+  {
+    "id": "b8db2ef2-22f0-4b46-a06c-37a297eb7701",
+    "name": "Kitkat 4 Finger",
+    "sku": "CC-KIT-4F"
+  },
+  {
+    "id": "552fa8e0-7184-4b31-8f6e-7e29a3017d83",
+    "name": "Storm Item c73dfc8e",
+    "sku": "SKU-c73dfc8e"
+  },
+  {
+    "id": "c9296295-c7b3-4e3d-8d3b-bc940de8438f",
+    "name": "Center Fresh Chewing Gum",
+    "sku": "CC-CTR-GEN"
+  },
+  {
+    "id": "cf018e96-ab3d-443d-b707-5cb9ba48f646",
+    "name": "Isubgul",
+    "sku": "CK-ISB-GEN"
+  },
+  {
+    "id": "b48bf15b-d5c9-4cb5-8d4d-d356cc8a3e6c",
+    "name": "Tastemaker - Tasting Salt",
+    "sku": "CK-TSM-GEN"
+  },
+  {
+    "id": "b727d997-307e-447b-bf01-a2475df94b90",
+    "name": "Mentos",
+    "sku": "CC-MNT-GEN"
+  },
+  {
+    "id": "5fc3c547-20a8-4d6a-bf4a-f1356d94686b",
+    "name": "Meridian Chicken Chips",
+    "sku": "SN-MRD-CCK"
+  },
+  {
+    "id": "22a4cd31-0fda-415f-a0d4-519567f97da5",
+    "name": "Meridian Shrimp Chips",
+    "sku": "SN-MRD-SHC"
+  },
+  {
+    "id": "7a9ff551-4f87-4bb6-9b17-d8c8ae6ee538",
+    "name": "Real Potato Chips (American Tomato)",
+    "sku": "SN-REL-PTC"
+  },
+  {
+    "id": "e462f65d-ce83-498b-93f2-a0478af3d543",
+    "name": "Nimki Small",
+    "sku": "SN-NMK-GEN"
+  },
+  {
+    "id": "bfff32f8-48be-4b6d-8a31-96e6cd12a7e7",
+    "name": "Nimki Big",
+    "sku": "SN-NMK-GEN-1"
+  },
+  {
+    "id": "c2d28927-cda4-4be0-8079-997fb4a805fe",
+    "name": "Eggs - Red (Loose)",
+    "sku": "DE-EGG-LSE"
+  },
+  {
+    "id": "d89dbd0e-b520-427d-ba3a-192ee020f712",
+    "name": "Eggs - White (Loose)",
+    "sku": "DE-EGG-LSE-1"
+  },
+  {
+    "id": "a1de7a5e-8cb1-4898-ba92-93ed33c87db4",
+    "name": "Storm Item 411b425c",
+    "sku": "SKU-411b425c"
+  },
+  {
+    "id": "0242649e-566a-44d5-92e6-4843ceda9e51",
+    "name": "Storm Item a9c858f0",
+    "sku": "SKU-a9c858f0"
+  },
+  {
+    "id": "03a8624a-1bb4-4e83-84bf-8fb5576734e0",
+    "name": "Storm Item 76114fde",
+    "sku": "SKU-76114fde"
+  },
+  {
+    "id": "7537eb4f-093b-4137-ab4d-492e03cb9e9c",
+    "name": "Storm Item 479a6089",
+    "sku": "SKU-479a6089"
+  },
+  {
+    "id": "2d5aad9e-f17c-424e-b9a1-d23850fb9ea8",
+    "name": "Storm Item 0d953488",
+    "sku": "SKU-0d953488"
+  },
+  {
+    "id": "9422f945-016a-4fe6-87b5-5d348536c0f5",
+    "name": "Tang Orange Refill Pack 200gm",
+    "sku": "BV-TNG-ORR-200G"
+  },
+  {
+    "id": "d5167994-b606-4e7d-8445-93a3aab589bc",
+    "name": "Tang Orange Refill Pack 500gm",
+    "sku": "BV-TNG-ORR-500G"
+  },
+  {
+    "id": "e2221380-a402-49ac-99ba-d61f01b3086c",
+    "name": "Storm Item 2e5f78e5",
+    "sku": "SKU-2e5f78e5"
+  },
+  {
+    "id": "87e472ef-f7b5-4b62-9ee4-f46880133a48",
+    "name": "Storm Item 21c0caa8",
+    "sku": "SKU-21c0caa8"
+  },
+  {
+    "id": "91a2dc86-d65a-48ef-a0a0-37624e1ab447",
+    "name": "Storm Item 4ee2a80c",
+    "sku": "SKU-4ee2a80c"
+  },
+  {
+    "id": "9d609c8a-99f6-488b-808d-b4e29cedaf01",
+    "name": "Sneakers",
+    "sku": "CC-SNK-GEN"
+  },
+  {
+    "id": "d5a8586a-a966-4db7-8b97-47bda9d096ca",
+    "name": "Safari",
+    "sku": "CC-SAF-GEN"
+  },
+  {
+    "id": "75235283-bfb5-4b2d-af0f-038fa1b749f7",
+    "name": "鈦燬tarship Jhal Chanachur 300gm",
+    "sku": "SN-鈦燬T-JHC-300G"
+  },
+  {
+    "id": "ac68b2c3-ae76-48e5-8a9a-60d836a92b40",
+    "name": "鈦燗ril Assorted Lollipop",
+    "sku": "CC-鈦燗R-ASL"
+  },
+  {
+    "id": "5fcabfea-eaa1-4a13-a493-3d0051255216",
+    "name": "Aril Chewing Gum Box 75pcs",
+    "sku": "CC-ARL-CHG"
+  },
+  {
+    "id": "d5f378a3-ee76-444a-a7d9-f6225c955e4c",
+    "name": "Transtec LED Bright 15w Pin",
+    "sku": "EL-TTC-PN"
+  },
+  {
+    "id": "6983ad26-335f-4ad0-bba4-48c4a74b55e4",
+    "name": "Transtec LED Bright 18w Pin",
+    "sku": "EL-TTC-PN-1"
+  },
+  {
+    "id": "cff248f9-d1d3-4adc-aa72-2600262349fe",
+    "name": "Transtac LED Bright 18w Churi",
+    "sku": "EL-TTC-CHR"
+  },
+  {
+    "id": "fe9dadd4-2ccf-4169-a006-b12b4bc61c6c",
+    "name": "Transtec LED Bright 13w Churi",
+    "sku": "EL-TTC-CHR-1"
+  },
+  {
+    "id": "f4ca9550-082d-44c8-a5c4-334a78da83d7",
+    "name": "Transtec LED Bright 9w Pin",
+    "sku": "EL-TTC-PN-2"
+  },
+  {
+    "id": "f9e1ad4a-83bc-4244-9849-2e16afc8783a",
+    "name": "Storm Item fb4f2e39",
+    "sku": "SKU-fb4f2e39"
+  },
+  {
+    "id": "4987567e-7ed1-4a45-961c-c133afdcd49c",
+    "name": "Transtec Backup 10w Churi",
+    "sku": "EL-TTC-CHR-2"
+  },
+  {
+    "id": "4a2d3ad5-edc8-4c4c-abb8-78feee23f067",
+    "name": "Transtec Backup 10w Pin",
+    "sku": "EL-TTC-PN-3"
+  },
+  {
+    "id": "e32d5af3-154e-4a26-97bc-d5dca00f4a5c",
+    "name": "Transtec Backup 15w Pin",
+    "sku": "EL-TTC-PN-4"
+  },
+  {
+    "id": "234ead95-6e5e-496b-99e7-27fa37d80061",
+    "name": "Transtec Backup 15w Churi",
+    "sku": "EL-TTC-CHR-3"
+  },
+  {
+    "id": "6014d34c-d9a3-4aa4-ad2f-7e56b9112da9",
+    "name": "Transtec Mosquito Bat",
+    "sku": "EL-TTC-MSB"
+  },
+  {
+    "id": "68f08695-1297-4041-a0d1-b2bdab500d6a",
+    "name": "Savoy Chocbar",
+    "sku": "IC-SAV-CHB"
+  },
+  {
+    "id": "206833c4-a3c6-436c-b5e8-ecbba8b1d724",
+    "name": "Savoy Crunchybar",
+    "sku": "IC-SAV-CRB"
+  },
+  {
+    "id": "51f7401f-17fe-4580-bf14-2d920e36227e",
+    "name": "Savoy Lolly (lemon)",
+    "sku": "IC-SAV-LOL"
+  },
+  {
+    "id": "2a62ced0-af5d-4cdd-8183-314aea538901",
+    "name": "Savoy Shell & Core",
+    "sku": "IC-SAV-SHC"
+  },
+  {
+    "id": "577c947f-d3b2-4ddb-889f-a816833dc1d2",
+    "name": "Savoy Chocolate Cone",
+    "sku": "IC-SAV-CHN"
+  },
+  {
+    "id": "498e3dcb-3962-4bbf-8e12-8e57a63867ce",
+    "name": "Savoy Discone",
+    "sku": "IC-SAV-DSC"
+  },
+  {
+    "id": "ebfb8888-8952-49c4-b748-61b856eec245",
+    "name": "Savoy Dark Desire 1kg",
+    "sku": "IC-SAV-DKD-1KG"
+  },
+  {
+    "id": "0a325bcd-78ce-42aa-9f98-9e5dbac1bed3",
+    "name": "Savoy Golden 1kg",
+    "sku": "IC-SAV-GLD-1KG"
+  },
+  {
+    "id": "7f421ee0-742f-4cd3-a95c-d8f10bed88a2",
+    "name": "Savoy Vanilla 1kg",
+    "sku": "IC-SAV-VNL-1KG"
+  },
+  {
+    "id": "0e06fb82-5e0f-4002-8afc-e39b5aebd8b6",
+    "name": "Igloo Lolly (orange)",
+    "sku": "IC-IGL-LOL"
+  },
+  {
+    "id": "ccc618b4-fc38-4cb2-b54e-d8fd28d21e04",
+    "name": "Igloo Macho",
+    "sku": "IC-IGL-MCH"
+  },
+  {
+    "id": "bd96d667-2889-45c1-9302-fa4c5182ee68",
+    "name": "Storm Item eadd3881",
+    "sku": "SKU-eadd3881"
+  },
+  {
+    "id": "6fa8464c-b044-4ed4-bd2f-ca68c95a4837",
+    "name": "Igloo Vanilla (cup)",
+    "sku": "IC-IGL-VNL"
+  },
+  {
+    "id": "cc8dd0c2-a600-430c-934a-39378f6bc06a",
+    "name": "Igloo Firni (cup)",
+    "sku": "IC-IGL-FIR"
+  },
+  {
+    "id": "126402a5-ab3c-416a-850c-42da4902f5dc",
+    "name": "Igloo Vanilla (1/2 L)",
+    "sku": "IC-IGL-VNL-2L"
+  },
+  {
+    "id": "1cbf6c50-1acc-4452-843f-f1207d0ddbdc",
+    "name": "Igloo Strawberry (1/2 L)",
+    "sku": "IC-IGL-STW-2L"
+  },
+  {
+    "id": "08dc7fe1-7717-4a82-abaf-b903c16da996",
+    "name": "Igloo Chocolate (1/2 L)",
+    "sku": "IC-IGL-CHL-2L"
+  },
+  {
+    "id": "141eec92-9937-46a2-9d42-88e301db6ec2",
+    "name": "Igloo Vanilla 1L",
+    "sku": "IC-IGL-VNL-1L"
+  },
+  {
+    "id": "92d9d9ac-ae98-44cb-a9c2-be315c51098c",
+    "name": "Igloo Strawberry 1L",
+    "sku": "IC-IGL-STW-1L"
+  },
+  {
+    "id": "4c016973-cb67-4227-9db8-f5fe5b112822",
+    "name": "Igloo Chocolate 1L",
+    "sku": "IC-IGL-CHL-1L"
+  },
+  {
+    "id": "a41f5544-d465-4f30-862d-bc340eecc81e",
+    "name": "Igloo Firni 1L",
+    "sku": "IC-IGL-FIR-1L"
+  },
+  {
+    "id": "786e2a02-c352-442b-8ba2-572f07b7dfb2",
+    "name": "Igloo Doi 1L",
+    "sku": "IC-IGL-DOI-1L"
+  },
+  {
+    "id": "2254bebd-d1d3-46a9-98e6-56d8e94d887e",
+    "name": "Igloo French Vanilla 1L",
+    "sku": "IC-IGL-FVL-1L"
+  },
+  {
+    "id": "477da052-c1bb-4705-9821-9ff67dd13c09",
+    "name": "Igloo Mango Melody 1L",
+    "sku": "IC-IGL-MGM-1L"
+  },
+  {
+    "id": "fa698e2d-f0b3-46a2-a63c-eb70b5358442",
+    "name": "Igloo Cake 1L",
+    "sku": "IC-IGL-CKE-1L"
+  },
+  {
+    "id": "333ad443-0246-47c3-961c-992280889ad6",
+    "name": "Haiko Agar Agar - 20g",
+    "sku": "CK-HKO-AGR-20G"
+  },
+  {
+    "id": "e080ad6f-1a5b-4645-a05f-4058719558d5",
+    "name": "Regard Keora Water (Glass) - 200ml",
+    "sku": "CK-RGD-KWR-200ML"
+  },
+  {
+    "id": "ee5b24d7-3bdb-4939-8b1c-9c67bf196d84",
+    "name": "Storm Item 56e14e9f",
+    "sku": "SKU-56e14e9f"
+  },
+  {
+    "id": "8b33edfe-ddb7-42b1-8d40-b756eedba16f",
+    "name": "Mars Fruit & Nut Chocolate - 32g",
+    "sku": "CC-MRS-CHL-32G"
+  },
+  {
+    "id": "6bd63c40-f107-4993-9706-36123fe5f8df",
+    "name": "Snickers Fruit & Nut Chocolate - 32g",
+    "sku": "CC-SNI-CHL-32G"
+  },
+  {
+    "id": "ce8ff324-a9e3-4d97-a287-913900d69085",
+    "name": "Pampers Sensitive Fragrance Free Baby Wipes - 52 Pieces",
+    "sku": "BY-PMP-BWV"
+  },
+  {
+    "id": "bd838a91-33ae-4179-9156-60de53b8d143",
+    "name": "Mabroom Premium Dates - 500G",
+    "sku": "SN-MBR-PRD"
+  },
+  {
+    "id": "12d903fe-87d3-4d88-98fd-348e6d0ec00b",
+    "name": "Movilcell M15 Fast Charging Cable TypeC 5A Output",
+    "sku": "EL-MVC-FCC"
+  },
+  {
+    "id": "d7b295a4-7a23-4c57-bde2-25d71e2cbc10",
+    "name": "MI 9se 18W Quick Charger 3.0 With Power Adapter",
+    "sku": "EL-MIX-QCR"
+  },
+  {
+    "id": "0ef6630c-287f-4eb3-b7cb-aede9430e055",
+    "name": "Safe Touch 0032 5Port 2m Cable Multiplug Heavy Duty White",
+    "sku": "EL-SFT-GEN"
+  },
+  {
+    "id": "fec93d19-4033-4d16-bdf8-a71413f669d0",
+    "name": "Concurrency Storm Item",
+    "sku": "SKU-FDF43880"
+  },
+  {
+    "id": "5f01b147-e5ff-4735-9469-83260cb892ce",
+    "name": "Safe Touch 0034 4Port 5m Cable Multiplug Heavy Duty White",
+    "sku": "EL-SFT-GEN-1"
+  },
+  {
+    "id": "b1721e41-0f59-4c76-a617-4a0c1b97dea9",
+    "name": "Safe Touch 0032 5Port 5m Cable Multiplug Heavy Duty White",
+    "sku": "EL-SFT-GEN-2"
+  },
+  {
+    "id": "73056aa2-bed7-4f87-b992-31dae2f8bd24",
+    "name": "Kodomo Toothpaste Orange Cream - 40g",
+    "sku": "PC-KOD-CRM-40G"
+  },
+  {
+    "id": "880b347a-9dda-4aeb-bccc-dc103c5cf3f2",
+    "name": "Patabahar Coil - 1Pac",
+    "sku": "PE-PTB-GEN"
+  },
+  {
+    "id": "65f68b9c-6b26-4556-a42e-9be8007ccd11",
+    "name": "Rayners Corn Flour - 400g",
+    "sku": "BK-RYN-CNF-400G"
+  },
+  {
+    "id": "48fb734e-a00f-4bf7-a0eb-27f4d887e565",
+    "name": "Foster Clarks Baking Powder - 225gm",
+    "sku": "BK-FST-BKP-225G"
+  },
+  {
+    "id": "d582981c-0126-4fd5-abaf-5efb2bd5369f",
+    "name": "Storm Item",
+    "sku": "SKU-6784FDA9"
+  },
+  {
+    "id": "a73e0ab5-00e9-4a1c-b8fa-e74a23d4814d",
+    "name": "Chupa Chups Best of Lollipops (6Pcs Bundle) - 72g",
+    "sku": "CC-CHP-GEN-72G"
+  },
+  {
+    "id": "28984df9-d65b-496b-b4bb-e2457c9fa97f",
+    "name": "Kikkoman All Purpose Seasoning Soy Sauce - 1ltr",
+    "sku": "CD-KKM-SYS-1L"
+  },
+  {
+    "id": "a861c6a8-45c9-4e88-93dd-c275af939107",
+    "name": "Mohammad Yeast",
+    "sku": "BK-MHD-GEN"
+  },
+  {
+    "id": "68f44b8f-20dd-4b5b-a1ef-4fa798cbb603",
+    "name": "Saf Instant Yeast - 100g",
+    "sku": "BK-SAF-GEN-100G"
+  },
+  {
+    "id": "df79dda6-bb35-42e1-8986-5842689c2251",
+    "name": "Mohammad Baking Soda - 86g",
+    "sku": "BK-MHD-BSD-86G"
+  },
+  {
+    "id": "9735397f-084f-490b-8525-53e0b6879d6d",
+    "name": "Haiko Bit Salt Powder - 80g",
+    "sku": "SP-HKO-BTS-80G"
+  },
+  {
+    "id": "2a671e9b-aed6-47a0-bbed-7e23764b59b3",
+    "name": "Storm Item",
+    "sku": "SKU-DAC3907B"
+  },
+  {
+    "id": "916a3ff0-c0f4-41aa-9996-bc00f7a13d49",
+    "name": "Kodomo Bubble Fruit Toothpaste Gel Ultra Shield Formula (0.5 Years Up) - 40g",
+    "sku": "BY-KOD-GEN-40G"
+  },
+  {
+    "id": "99fb0e20-a275-4e78-9712-6613c8e4ebf6",
+    "name": "Maxline ML-073 Multi Color Multiplug 3 Port with 3M Cable",
+    "sku": "EL-MXL-GEN"
+  },
+  {
+    "id": "fe4388cd-64a3-4282-995e-3461474ca4d2",
+    "name": "Rangdhanu Mixed Herbs - 30g (Exp01.23)",
+    "sku": "SP-RNG-MXH-30G"
+  },
+  {
+    "id": "89680ab9-202b-499f-943f-25f48f78acf9",
+    "name": "Storm Item",
+    "sku": "SKU-D1B5178E"
+  },
+  {
+    "id": "48da2573-31ca-4463-916d-9eedebabb597",
+    "name": "Lactogen 1350g",
+    "sku": "BY-LCG-GEN-1350G"
+  },
+  {
+    "id": "dd95ce58-b79b-4cc5-84d4-5b24f08da89b",
+    "name": "Lactogen 2 350g",
+    "sku": "BY-LCG-GEN-350G"
+  },
+  {
+    "id": "5678ea38-d551-4883-8a6a-4af1ef9b601d",
+    "name": "Lactogen 3 350g",
+    "sku": "BY-LCG-GEN-350G-1"
+  },
+  {
+    "id": "2da7133d-4939-459f-a413-4c5070237b1f",
+    "name": "Nan Opti Pro 1 300g",
+    "sku": "BY-NAN-OPT-300G"
+  },
+  {
+    "id": "e10173fc-44a6-4d1c-871e-4387ac6f6a0c",
+    "name": "Nan Opti Pro 2 350g",
+    "sku": "BY-NAN-OPT-350G"
+  },
+  {
+    "id": "ac473ff5-5034-4948-bb37-089981b8f12b",
+    "name": "Storm Item",
+    "sku": "SKU-4D7FDF4C"
+  },
+  {
+    "id": "8d1131ff-4c2e-4132-baec-57598776163d",
+    "name": "Nan Opti Pro 3 350g",
+    "sku": "BY-NAN-OPT-350G-1"
+  },
+  {
+    "id": "970ac032-6ed3-40e2-adc7-188b45aed98f",
+    "name": "Cerelac Stage 1 Rice 350g",
+    "sku": "BY-CRL-S1-350G"
+  },
+  {
+    "id": "a7c99172-d494-486d-8897-58bcbbe71750",
+    "name": "Cerelace Stage 1 Three Fruits 350g",
+    "sku": "BY-CRL-S1-350G-1"
+  },
+  {
+    "id": "4a3bb651-a834-43de-9772-dd232478c0f3",
+    "name": "Storm Item",
+    "sku": "SKU-170FBB23"
+  },
+  {
+    "id": "e0f60e59-501d-4401-888f-8aeeb9bf8785",
+    "name": "Item Alpha",
+    "sku": "SKU-9085-A"
+  },
+  {
+    "id": "cf148b36-300f-467b-a7d8-890f173f6b5f",
+    "name": "Item Omega",
+    "sku": "SKU-9085-O"
+  },
+  {
+    "id": "2d75eece-4d9f-4600-82bd-5aaa130917d2",
+    "name": "Item Alpha",
+    "sku": "SKU-5617-A"
+  },
+  {
+    "id": "d6234e8a-6dab-47ec-a7f5-95b5bf5e4795",
+    "name": "Item Omega",
+    "sku": "SKU-5617-O"
+  },
+  {
+    "id": "22222222-2222-2222-2222-222222222222",
+    "name": "Replay Item",
+    "sku": "TEST-SKU"
+  },
+  {
+    "id": "fd3ffdb3-def0-4d36-9b13-c552951fe47c",
+    "name": "Item Alpha",
+    "sku": "SKU-0498-A"
+  },
+  {
+    "id": "f87819b5-b93a-4e0e-9d9b-136cc89ab943",
+    "name": "Item Omega",
+    "sku": "SKU-0498-O"
+  },
+  {
+    "id": "a264e644-4f12-4f2d-95fd-2eb9c6ff3eb0",
+    "name": "Cerelac Stage II Apply Cherry 350g",
+    "sku": "BY-CRL-S1-350G-2"
+  },
+  {
+    "id": "5548de27-27a6-43c0-b280-210918fb4326",
+    "name": "Cerelac Stage II Chicken Scoop 350g",
+    "sku": "BY-CRL-S1-350G-3"
+  },
+  {
+    "id": "4b9f85fa-71bd-416f-9b34-8d4cf9c84635",
+    "name": "Cerelac Stage III Four Fruit 350g",
+    "sku": "BY-CRL-S1-350G-4"
+  },
+  {
+    "id": "645a0b19-227e-495c-8f7a-0d1a6f869b1e",
+    "name": "Cerelac Stage IV Chicken 350g",
+    "sku": "BY-CRL-S1-350G-5"
+  },
+  {
+    "id": "97ddf2fe-adb4-470e-bd72-16d5eea025ae",
+    "name": "Cerelac Stage V Multifruit 350g",
+    "sku": "BY-CRL-S5-350G"
+  },
+  {
+    "id": "31646279-ba1c-4755-ac78-1e09ab6b8b63",
+    "name": "Cerelac Stage I Wheat 350g",
+    "sku": "BY-CRL-S1-350G-6"
+  },
+  {
+    "id": "eb412fbc-04eb-457d-a6eb-79ed2e0a0807",
+    "name": "Item Alpha",
+    "sku": "SKU-2674-A"
+  },
+  {
+    "id": "eacdbc7b-8502-443c-8963-c9ec293ba23b",
+    "name": "Item Omega",
+    "sku": "SKU-2674-O"
+  },
+  {
+    "id": "219bad21-0620-431a-a460-4801a3c7a78b",
+    "name": "Nestea Ice Tea 18g",
+    "sku": "TC-NST-ICT-18G"
+  },
+  {
+    "id": "3a0bc2df-e10d-41fd-8e57-ae1b63cccdec",
+    "name": "Item Alpha",
+    "sku": "SKU-4546-A"
+  },
+  {
+    "id": "b476cc3c-65f3-4473-b3ca-ed02cdc5dda8",
+    "name": "Item Omega",
+    "sku": "SKU-4546-O"
+  },
+  {
+    "id": "f95a69f7-7466-4394-a94a-d24ef8fbe551",
+    "name": "Item Alpha",
+    "sku": "SKU-7484-A"
+  },
+  {
+    "id": "3bc255de-a3b9-4fcb-88d4-d9aa76e436df",
+    "name": "Item Omega",
+    "sku": "SKU-7484-O"
+  },
+  {
+    "id": "ecc14b3d-6411-4828-81a6-89bc372e956a",
+    "name": "Item Alpha",
+    "sku": "SKU-0652-A"
+  },
+  {
+    "id": "56dcec34-1f98-4941-9eb0-5786b86e903f",
+    "name": "Item Omega",
+    "sku": "SKU-0652-O"
+  },
+  {
+    "id": "bf36ee54-1cc0-4572-b7cc-3a0dfb01368e",
+    "name": "Item Alpha",
+    "sku": "SKU-7124-A"
+  },
+  {
+    "id": "b952d877-4780-477d-a26b-5394424d00c9",
+    "name": "Item Omega",
+    "sku": "SKU-7124-O"
+  },
+  {
+    "id": "c72ccf05-852b-4095-a10a-76cca7d07294",
+    "name": "Storm Item",
+    "sku": "SKU-C6E9585A"
+  },
+  {
+    "id": "83997ad8-e769-46d8-a248-1d0598a4d41f",
+    "name": "Storm Item",
+    "sku": "SKU-EA43E13F"
+  },
+  {
+    "id": "f3e889b8-eb3b-47ae-9cc8-2fe724ff6d97",
+    "name": "Item Alpha",
+    "sku": "SKU-1197-A"
+  },
+  {
+    "id": "9b178779-0d1d-46e6-9c29-ddf562b68eae",
+    "name": "Item Omega",
+    "sku": "SKU-1197-O"
+  },
+  {
+    "id": "12b50514-96b1-4da2-8ddc-433be6fdd013",
+    "name": "Item Alpha",
+    "sku": "SKU-1100-A"
+  },
+  {
+    "id": "8ed6ddec-af35-441d-abbe-962dafe5099a",
+    "name": "Item Omega",
+    "sku": "SKU-1100-O"
+  },
+  {
+    "id": "bd8a5f9d-2e44-4190-a9e2-ce07184c9c7e",
+    "name": "Muffin Lata Chocolate 8g",
+    "sku": "BC-KZF-MFL-8G-1"
+  },
+  {
+    "id": "69a5a733-90f3-4721-8b45-3e08f3abf05e",
+    "name": "Tang Orange Jar 750gm",
+    "sku": "BV-TNG-ORJ-750G"
+  },
+  {
+    "id": "39fb96e9-8717-4b0b-b05a-cfd673cb7727",
+    "name": "Igloo Shell & Core",
+    "sku": "IC-IGL-SHC"
+  },
+  {
+    "id": "12621380-1811-4f22-a618-c57a3bed39eb",
+    "name": "Glucose 350g",
+    "sku": "BV-GLU-GEN-350G"
+  },
+  {
+    "id": "57744029-2a39-488d-a890-60bcf3a5d4fc",
+    "name": "Glucose mini",
+    "sku": "BV-GLU-MNI"
+  },
+  {
+    "id": "a8a44253-31cd-4a0e-8e55-42d17e3c3aef",
+    "name": "Tip -Standard Pack",
+    "sku": "BC-TIP-GEN"
+  },
+  {
+    "id": "e65bf2e3-6348-4534-a19d-45be4a4d3775",
+    "name": "Nutty - Standard Pack",
+    "sku": "BC-NTY-GEN"
+  },
+  {
+    "id": "02e14cf4-4cd9-44ef-b74f-10eb3a6c3cc2",
+    "name": "Solecti Cookies - Standard Pack",
+    "sku": "BC-SLC-GEN"
+  },
+  {
+    "id": "c9545957-7376-44e6-8999-c6ee8d09d33c",
+    "name": "Hello Cookies - Classic Pack",
+    "sku": "BC-HLO-GEN"
+  },
+  {
+    "id": "dff50278-b007-4e5e-a8fa-11dd93a23675",
+    "name": "Bourbon Cookies -Classic Pack",
+    "sku": "BC-BRB-GEN"
+  },
+  {
+    "id": "4ac85021-7c35-44cc-802a-2370cc0e40d5",
+    "name": "Tip - Family Pack",
+    "sku": "BC-TIP-GEN-1"
+  },
+  {
+    "id": "4c97c0da-1da9-48d0-a7eb-3193f905af70",
+    "name": "Nutty - Family Pack",
+    "sku": "BC-NTY-GEN-1"
+  },
+  {
+    "id": "7c2a9afb-ad80-480e-83b6-fc6db7f902a1",
+    "name": "Lexus - Family Pack",
+    "sku": "BC-LEX-GEN"
+  },
+  {
+    "id": "d98efa79-003e-490b-92de-664b42e4b2a7",
+    "name": "Hello Cookies - Family Pack",
+    "sku": "BC-HLO-GEN-1"
+  },
+  {
+    "id": "f023103d-3a5c-4983-a8b7-8e4a2ff391e1",
+    "name": "Foodie Masala Noodles 8 Pack",
+    "sku": "PF-FDI-GEN"
+  },
+  {
+    "id": "fae670cc-05dc-48b5-b232-52a7363d3190",
+    "name": "Pulse - Mango Masala",
+    "sku": "CC-PLS-MGM"
+  },
+  {
+    "id": "3b4fb3ae-d660-474d-ba38-9be193b711b2",
+    "name": "Kopi - Candy",
+    "sku": "CC-KPI-CAN"
+  },
+  {
+    "id": "03faac7e-ec68-4913-9924-02aed5cab064",
+    "name": "Pulse - Mango Masala",
+    "sku": "CC-PLS-MGM-1"
+  },
+  {
+    "id": "1a71caef-bfc7-4c1a-a0ea-33991fa7eaf0",
+    "name": "Knock Chocolate Cream",
+    "sku": "CC-KNK-CHC"
+  },
+  {
+    "id": "dc5b3b14-a902-4e3f-a0ef-4969f3994d02",
+    "name": "Knock Milk Cream",
+    "sku": "CC-KNK-CRM"
+  },
+  {
+    "id": "e0bcdda1-facc-43fe-be35-1aafe6195512",
+    "name": "Knock Strawberry Cream",
+    "sku": "CC-KNK-STC"
+  },
+  {
+    "id": "b4da7e6a-a2bf-4e15-a499-70ab5c1357e0",
+    "name": "Toffeeto Chocolate",
+    "sku": "CC-TFT-CHL"
+  },
+  {
+    "id": "255c2229-0c22-4661-af06-3b45ee21393e",
+    "name": "AER Room Spray",
+    "sku": "AF-AER-RSP"
+  },
+  {
+    "id": "8802ba38-3a89-41c6-96b0-a0ebeb62d9ce",
+    "name": "AER Pocket Perfume",
+    "sku": "AF-AER-PPF"
+  },
+  {
+    "id": "d1cbaa39-40eb-4025-a262-8bf75d9a197c",
+    "name": "Muffin Bread Vanilla 324g",
+    "sku": "BC-KZF-MFB-324G"
+  },
+  {
+    "id": "fa88550c-9647-458b-93ce-dba39daf0182",
+    "name": "Muffin Bread Chocolate 324g",
+    "sku": "BC-KZF-MFB-324G-1"
+  },
+  {
+    "id": "3b7cc77f-546b-4810-b2e0-bad8fcf3701d",
+    "name": "Muffin Lata Vanilla 8g",
+    "sku": "BC-KZF-MFL-8G"
+  },
+  {
+    "id": "c8c16672-7bd8-40ef-90a3-b49f8685430a",
+    "name": "Muffin Lata Fruit 8g",
+    "sku": "BC-KZF-MFL-8G-2"
+  },
+  {
+    "id": "6b0bab60-843c-4f9f-a0d9-21b3364617bf",
+    "name": "Kazi Toast 250g",
+    "sku": "BC-KZF-KZT-250G"
+  },
+  {
+    "id": "a346ed8d-6e6b-40e1-b759-52100602c0cb",
+    "name": "Slice Pound Cake Vanilla",
+    "sku": "BC-KZF-SPC"
+  },
+  {
+    "id": "4c7a0b18-c2ba-42a7-87e3-8c233e37e2fa",
+    "name": "Slice Pound Cake Milk",
+    "sku": "BC-KZF-SPC-1"
+  },
+  {
+    "id": "c40f85d0-6cb0-42f7-b80a-6253a91bfffc",
+    "name": "Slice Pound Cake Chocolate",
+    "sku": "BC-KZF-SPC-2"
+  },
+  {
+    "id": "fae4e458-7835-46da-b270-fa7c6f8cdd95",
+    "name": "Pound Cake Vanilla",
+    "sku": "BC-KZF-PDC"
+  },
+  {
+    "id": "12aae9bd-7ecb-4f67-9721-503e25091849",
+    "name": "Pound Cake Chocolate",
+    "sku": "BC-KZF-PDC-1"
+  },
+  {
+    "id": "1ee48800-837c-4a5a-8933-aacdce574a4e",
+    "name": "Pound Cake Fruit",
+    "sku": "BC-KZF-PDC-2"
+  },
+  {
+    "id": "d9dd0baa-0476-4d88-b64f-1a0a9ac35cc3",
+    "name": "Dry Cake (300g)",
+    "sku": "BC-KZF-DRC-300G"
+  },
+  {
+    "id": "18d651fa-953f-41ea-9ec3-2b6e91cd29ca",
+    "name": "Mini Dry Cake",
+    "sku": "BC-KZF-DRC"
+  },
+  {
+    "id": "a31902eb-cb5d-4d6b-9a30-664f2024dcdc",
+    "name": "Tomato Ketchup Small",
+    "sku": "CD-KZF-TMK"
+  },
+  {
+    "id": "aff1877f-85fc-4de3-b7b4-24cb2bfde164",
+    "name": "Kellogs Fruit Loops 285g",
+    "sku": "CR-KEL-FRL-285G"
+  },
+  {
+    "id": "cfe0ad8b-59f9-4285-ae53-b78afe6ecbd3",
+    "name": "Kellogs Muesli Crunchy Fruit & Nut 500g",
+    "sku": "CR-KEL-CFN-500G"
+  },
+  {
+    "id": "4d0f635f-c8ec-4b1b-b60b-d29671735f70",
+    "name": "Kellogs K-Park 26g",
+    "sku": "CR-KEL-GEN-26G"
+  }
+]

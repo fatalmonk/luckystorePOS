@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lucky Store — Image Review Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  /* Header */
+  .header { background: #1a1d27; border-bottom: 1px solid #2d3148; padding: 16px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 18px; font-weight: 700; color: #a78bfa; }
+  .stats { display: flex; gap: 12px; margin-left: auto; }
+  .stat { background: #252836; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+  .stat span { font-weight: 700; }
+  .stat.approved span { color: #34d399; }
+  .stat.skipped span { color: #f87171; }
+  .stat.pending span { color: #fbbf24; }
+
+  /* Filter bar */
+  .filters { background: #1a1d27; padding: 12px 24px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #2d3148; flex-wrap: wrap; }
+  .filters select, .filters input { background: #252836; border: 1px solid #3d4166; color: #e2e8f0; padding: 7px 12px; border-radius: 8px; font-size: 13px; }
+  .filters input { width: 240px; }
+  .btn { padding: 7px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-export { background: #7c3aed; color: #fff; }
+  .btn-export:hover { background: #6d28d9; }
+  .btn-all-approve { background: #065f46; color: #a7f3d0; }
+  .btn-all-approve:hover { background: #047857; }
+  .progress-bar { height: 4px; background: #252836; border-radius: 2px; overflow: hidden; flex: 1; min-width: 100px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #7c3aed, #34d399); transition: width .3s; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; padding: 20px 24px; }
+
+  /* Card */
+  .card { background: #1a1d27; border: 1px solid #2d3148; border-radius: 14px; overflow: hidden; transition: border-color .2s; }
+  .card:hover { border-color: #4c4f85; }
+  .card.approved-card { border-color: #065f46; background: #0d1f18; }
+  .card.skipped-card  { border-color: #7f1d1d; background: #1f0d0d; opacity: .6; }
+
+  .card-header { padding: 12px 14px; border-bottom: 1px solid #2d3148; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-sku { font-size: 11px; font-weight: 700; color: #818cf8; letter-spacing: .5px; }
+  .card-name { font-size: 13px; font-weight: 600; color: #f1f5f9; line-height: 1.4; }
+  .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
+  .badge.HIGH { background: #065f46; color: #6ee7b7; }
+  .badge.MED  { background: #78350f; color: #fcd34d; }
+  .badge.LOW  { background: #7f1d1d; color: #fca5a5; }
+
+  /* Images side by side */
+  .img-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #2d3148; }
+  .img-panel { display: flex; flex-direction: column; align-items: center; padding: 12px; background: #0f1117; gap: 8px; }
+  .img-panel label { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: .5px; text-transform: uppercase; }
+  .img-panel img { width: 100%; max-width: 160px; height: 150px; object-fit: contain; border-radius: 8px; background: #fff; padding: 4px; }
+  .img-panel .no-img { width: 100%; max-width: 160px; height: 150px; background: #252836; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #4b5563; font-size: 12px; }
+
+  /* Metadata */
+  .meta { padding: 10px 14px; font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+  .meta-row { display: flex; flex-direction: column; }
+  .meta-label { color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .meta-val { color: #cbd5e1; font-weight: 500; }
+  .meta-val.good { color: #34d399; }
+  .meta-val.warn { color: #fbbf24; }
+  .meta-val.bad  { color: #f87171; }
+
+  .source-tag { font-size: 10px; background: #252836; color: #94a3b8; padding: 2px 7px; border-radius: 8px; display: inline-block; }
+  .source-tag.shwapno { color: #818cf8; }
+  .source-tag.chaldal { color: #34d399; }
+  .source-tag.google  { color: #fbbf24; }
+
+  /* Actions */
+  .actions { padding: 10px 14px; display: flex; gap: 8px; border-top: 1px solid #2d3148; }
+  .btn-approve { flex: 1; background: #065f46; color: #a7f3d0; border: none; border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .btn-approve:hover { background: #047857; }
+  .btn-approve.active { background: #059669; box-shadow: 0 0 12px #10b98140; }
+  .btn-skip { background: #2d3148; color: #94a3b8; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; cursor: pointer; transition: all .15s; }
+  .btn-skip:hover { background: #3d4166; color: #e2e8f0; }
+  .btn-skip.active { background: #7f1d1d; color: #fca5a5; }
+
+  /* Candidates selector */
+  .cand-selector { padding: 6px 14px 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .cand-btn { font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1px solid #3d4166; background: transparent; color: #94a3b8; cursor: pointer; transition: all .15s; }
+  .cand-btn:hover { border-color: #818cf8; color: #818cf8; }
+  .cand-btn.selected { border-color: #7c3aed; background: #2e1065; color: #c4b5fd; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 80px 24px; color: #4b5563; }
+  .empty h2 { font-size: 20px; margin-bottom: 8px; }
+
+  /* Export modal */
+  .modal-overlay { position: fixed; inset: 0; background: #000a; z-index: 200; display: flex; align-items: center; justify-content: center; }
+  .modal { background: #1a1d27; border: 1px solid #3d4166; border-radius: 16px; padding: 28px; max-width: 600px; width: 90%; }
+  .modal h2 { color: #a78bfa; margin-bottom: 16px; }
+  .modal textarea { width: 100%; background: #0f1117; border: 1px solid #3d4166; color: #e2e8f0; border-radius: 8px; padding: 12px; font-size: 12px; font-family: monospace; height: 280px; resize: vertical; }
+  .modal-actions { margin-top: 12px; display: flex; gap: 10px; }
+  .btn-copy { background: #7c3aed; color: #fff; }
+  .btn-close { background: #252836; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛒 Image Review Dashboard</h1>
+  <div id="progressBar" class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="stats">
+    <div class="stat approved">Approved: <span id="cntApproved">0</span></div>
+    <div class="stat skipped">Skipped: <span id="cntSkipped">0</span></div>
+    <div class="stat pending">Pending: <span id="cntPending">0</span></div>
+  </div>
+</div>
+
+<div class="filters">
+  <input type="text" id="searchBox" placeholder="🔍 Search by name or SKU..." oninput="renderGrid()">
+  <select id="filterConf" onchange="renderGrid()">
+    <option value="">All Confidence</option>
+    <option value="HIGH">HIGH only</option>
+    <option value="MED">MED only</option>
+    <option value="LOW">LOW only</option>
+  </select>
+  <select id="filterSource" onchange="renderGrid()">
+    <option value="">All Sources</option>
+    <option value="shwapno">Shwapno</option>
+    <option value="chaldal">Chaldal</option>
+    <option value="google">Google</option>
+  </select>
+  <select id="filterStatus" onchange="renderGrid()">
+    <option value="">All Status</option>
+    <option value="pending">Pending</option>
+    <option value="approved">Approved</option>
+    <option value="skipped">Skipped</option>
+  </select>
+  <button class="btn btn-all-approve" onclick="approveAllHigh()">✓ Approve All HIGH</button>
+  <button class="btn btn-export" onclick="exportApproved()">⬇ Export Approved</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div id="modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h2>📋 Export approved_images.json</h2>
+    <p style="color:#94a3b8;font-size:13px;margin-bottom:12px">Copy this JSON and save as <code>scraper_output/approved_images.json</code>, then run <code>python uploader.py</code></p>
+    <textarea id="exportJson" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-copy" onclick="copyJson()">Copy to Clipboard</button>
+      <button class="btn btn-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────
+let allCandidates = [];      // raw from JSON
+let grouped = {};            // { sku: [candidates] }
+let decisions = {};          // { sku: { status:'approved'|'skipped', candIdx: N } }
+
+// ── Load data ──────────────────────────────
+async function loadData() {
+  try {
+    const r = await fetch('scraper_output/candidates.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    allCandidates = await r.json();
+  } catch(e) {
+    // Try demo data for testing
+    document.getElementById('grid').innerHTML = `
+      <div class="empty">
+        <h2>No candidates.json found</h2>
+        <p>Run <code>python scraper.py</code> first, then open this file from the <code>image-scraper/</code> folder.</p>
+        <br><button class="btn btn-export" onclick="loadDemo()">Load Demo Data</button>
+      </div>`;
+    return;
+  }
+
+  // Group by SKU
+  grouped = {};
+  for (const c of allCandidates) {
+    if (!grouped[c.sku]) grouped[c.sku] = [];
+    grouped[c.sku].push(c);
+  }
+
+  // Init decisions (auto-select best candidate per SKU)
+  for (const [sku, cands] of Object.entries(grouped)) {
+    const best = cands[0]; // already sorted by score desc
+    decisions[sku] = { status: 'pending', candIdx: 0 };
+  }
+
+  renderGrid();
+  updateStats();
+}
+
+// ── Render ─────────────────────────────────
+function renderGrid() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const confF  = document.getElementById('filterConf').value;
+  const srcF   = document.getElementById('filterSource').value;
+  const statF  = document.getElementById('filterStatus').value;
+
+  const skus = Object.keys(grouped).filter(sku => {
+    const cands = grouped[sku];
+    const d = decisions[sku];
+    const best = cands[d.candIdx];
+    if (search && !best.db_name.toLowerCase().includes(search) && !sku.toLowerCase().includes(search)) return false;
+    if (confF  && best.confidence !== confF) return false;
+    if (srcF   && best.source !== srcF) return false;
+    if (statF  && d.status !== statF) return false;
+    return true;
+  });
+
+  if (!skus.length) {
+    document.getElementById('grid').innerHTML = '<div class="empty"><h2>No items match filters</h2></div>';
+    return;
+  }
+
+  document.getElementById('grid').innerHTML = skus.map(sku => renderCard(sku)).join('');
+}
+
+function renderCard(sku) {
+  const cands = grouped[sku];
+  const d     = decisions[sku];
+  const c     = cands[d.candIdx];
+
+  const priceDeltaClass = c.price_delta_pct <= 15 ? 'good' : c.price_delta_pct <= 30 ? 'warn' : 'bad';
+  const nameSimClass    = c.name_sim >= 85 ? 'good' : c.name_sim >= 72 ? 'warn' : 'bad';
+  const cardClass = d.status === 'approved' ? 'approved-card' : d.status === 'skipped' ? 'skipped-card' : '';
+  const approveActive = d.status === 'approved' ? 'active' : '';
+  const skipActive    = d.status === 'skipped'  ? 'active' : '';
+
+  // Current image (in DB)
+  const dbImgUrl = allCandidates.find(x=>x.sku===sku)?.current_image_url || '';
+  const dbImgHtml = dbImgUrl
+    ? `<img src="${dbImgUrl}" alt="current" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : '';
+
+  // Candidate selector (if multiple)
+  const candSelector = cands.length > 1
+    ? `<div class="cand-selector">${cands.map((cc, i) =>
+        `<button class="cand-btn ${i===d.candIdx?'selected':''}" onclick="selectCand('${sku}',${i})">
+          ${cc.source} #${i+1} (${cc.confidence} ${cc.score}pt)
+        </button>`).join('')}</div>`
+    : '';
+
+  return `
+  <div class="card ${cardClass}" id="card-${sku.replace(/[^a-z0-9]/gi,'_')}">
+    <div class="card-header">
+      <div>
+        <div class="card-sku">${c.sku}</div>
+        <div class="card-name">${c.db_name}</div>
+      </div>
+      <span class="badge ${c.confidence}">${c.confidence} ${c.score}pt</span>
+    </div>
+
+    <div class="img-compare">
+      <div class="img-panel">
+        <label>📦 Current DB</label>
+        <div class="no-img" style="${dbImgUrl?'display:none':''}">No image</div>
+        ${dbImgHtml}
+      </div>
+      <div class="img-panel">
+        <label>🔍 Scraped Match</label>
+        <img src="${c.local_thumbnail}" alt="scraped"
+             onerror="this.src='${c.candidate_image_url}'"
+             onclick="window.open('${c.page_url}','_blank')">
+      </div>
+    </div>
+
+    ${candSelector}
+
+    <div class="meta">
+      <div class="meta-row">
+        <span class="meta-label">DB Name</span>
+        <span class="meta-val">${c.db_name}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Matched Name</span>
+        <span class="meta-val ${nameSimClass}">${c.matched_name}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Our Price</span>
+        <span class="meta-val">৳${c.db_price}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Their Price (Δ${c.price_delta_pct}%)</span>
+        <span class="meta-val ${priceDeltaClass}">৳${c.matched_price || '?'}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Name Similarity</span>
+        <span class="meta-val ${nameSimClass}">${c.name_sim}%</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Size Match</span>
+        <span class="meta-val ${c.size_match?'good':'warn'}">${c.size_match?'✓ Yes':'⚠ Check'}</span>
+      </div>
+      <div class="meta-row" style="grid-column:1/-1">
+        <span class="meta-label">Match Details</span>
+        <span class="meta-val" style="font-size:11px;color:#64748b">${c.match_details}</span>
+      </div>
+      <div class="meta-row" style="grid-column:1/-1">
+        <span class="meta-label">Source</span>
+        <span class="source-tag ${c.source}">${c.source}</span>
+        <a href="${c.page_url}" target="_blank" style="font-size:11px;color:#818cf8;margin-left:8px">View page ↗</a>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-approve ${approveActive}" onclick="decide('${sku}','approved')">
+        ${d.status==='approved' ? '✓ Approved' : '✓ Approve'}
+      </button>
+      <button class="btn-skip ${skipActive}" onclick="decide('${sku}','skipped')">
+        ${d.status==='skipped' ? '✗ Skipped' : '✗ Skip'}
+      </button>
+    </div>
+  </div>`;
+}
+
+// ── Actions ────────────────────────────────
+function decide(sku, status) {
+  const d = decisions[sku];
+  d.status = d.status === status ? 'pending' : status;
+  refreshCard(sku);
+  updateStats();
+}
+
+function selectCand(sku, idx) {
+  decisions[sku].candIdx = idx;
+  refreshCard(sku);
+}
+
+function refreshCard(sku) {
+  const el = document.getElementById('card-' + sku.replace(/[^a-z0-9]/gi,'_'));
+  if (el) el.outerHTML = renderCard(sku);
+}
+
+function approveAllHigh() {
+  let count = 0;
+  for (const sku of Object.keys(grouped)) {
+    const c = grouped[sku][decisions[sku].candIdx];
+    if (c.confidence === 'HIGH' && decisions[sku].status === 'pending') {
+      decisions[sku].status = 'approved';
+      count++;
+    }
+  }
+  renderGrid();
+  updateStats();
+  alert(`Approved ${count} HIGH-confidence items.`);
+}
+
+function updateStats() {
+  const vals = Object.values(decisions);
+  const total = vals.length;
+  document.getElementById('cntApproved').textContent = vals.filter(d=>d.status==='approved').length;
+  document.getElementById('cntSkipped').textContent  = vals.filter(d=>d.status==='skipped').length;
+  document.getElementById('cntPending').textContent  = vals.filter(d=>d.status==='pending').length;
+  const done = vals.filter(d=>d.status!=='pending').length;
+  document.getElementById('progressFill').style.width = total ? (done/total*100)+'%' : '0%';
+}
+
+function exportApproved() {
+  const approved = [];
+  for (const [sku, d] of Object.entries(decisions)) {
+    if (d.status !== 'approved') continue;
+    const cand = grouped[sku][d.candIdx];
+    approved.push({
+      item_id:         cand.item_id,
+      sku:             cand.sku,
+      db_name:         cand.db_name,
+      local_thumbnail: cand.local_thumbnail,
+      image_url:       cand.candidate_image_url,
+      confidence:      cand.confidence,
+      score:           cand.score,
+      source:          cand.source,
+      matched_name:    cand.matched_name,
+      price_delta_pct: cand.price_delta_pct,
+    });
+  }
+  document.getElementById('exportJson').value = JSON.stringify(approved, null, 2);
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function copyJson() {
+  const ta = document.getElementById('exportJson');
+  ta.select();
+  document.execCommand('copy');
+  alert('Copied! Save as scraper_output/approved_images.json');
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+// ESC to close modal
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ── Start ───────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

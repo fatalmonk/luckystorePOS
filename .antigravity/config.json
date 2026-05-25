@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "model_routing": "atom_strict",
+  "inline_commands": true,
+  "workspace": {
+    "project_type": "monorepo",
+    "primary_directories": [
+      "apps/mobile_app",
+      "apps/admin_web",
+      "supabase"
+    ],
+    "context_rules": {
+      "respect_gitignore": true,
+      "max_file_size_kb": 1024,
+      "auto_compact_threshold": 0.70
+    }
+  },
+  "agents": {
+    "allow_subagents": true,
+    "max_concurrent_tasks": 3,
+    "enforce_budget_limits": true
+  },
+  "custom_instructions": [
+    "Strictly enforce $0.00 ATOM budget limits via Ollama Cloud.",
+    "Maintain offline-first Flutter/Drift architecture constraints.",
+    "Never bypass Supabase RPC ledger mutations."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "atom_mode": true,
+  "blocked_endpoints": [
+    "api.anthropic.com",
+    "api.openai.com",
+    "generativelanguage.googleapis.com"
+  ],
+  "response_format_rules": "[GOAL] / [CODE] / [RISK]"
+}

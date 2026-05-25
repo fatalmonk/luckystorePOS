@@ -1,0 +1,558 @@
+[
+  {
+    "sku": "AF-AER-RSP",
+    "name": "AER Room Spray"
+  },
+  {
+    "sku": "CC-ARL-CHG",
+    "name": "Aril Chewing Gum Box 75pcs"
+  },
+  {
+    "sku": "CK-ATA-LSE",
+    "name": "Ata - loose"
+  },
+  {
+    "sku": "RG-BSM-LSE",
+    "name": "Basmati (Golden) Banglamoti Loose"
+  },
+  {
+    "sku": "BC-BLM-BTT-200G",
+    "name": "Bellame Butter Toast 200g"
+  },
+  {
+    "sku": "BC-BLM-CHL-240G",
+    "name": "Bellame Choco Little Cookies 240g"
+  },
+  {
+    "sku": "BC-BLM-CHD-135G",
+    "name": "Bellame Chocolate Digestive 135g"
+  },
+  {
+    "sku": "BC-BLM-CHF-176G",
+    "name": "Bellame Chocolate Fondue Cookie 176g"
+  },
+  {
+    "sku": "BC-BLM-DGB-135G",
+    "name": "Bellame Digestive Biscuit 135g"
+  },
+  {
+    "sku": "BC-BLM-PNB-240G",
+    "name": "Bellame Peanut Bite Cookies 240g"
+  },
+  {
+    "sku": "BC-BRB-GEN",
+    "name": "Bourbon Cookies -Classic Pack"
+  },
+  {
+    "sku": "CC-CTR-GEN",
+    "name": "Center Fresh Chewing Gum"
+  },
+  {
+    "sku": "BY-CRL-S1-350G",
+    "name": "Cerelac Stage 1 Rice 350g"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-6",
+    "name": "Cerelac Stage I Wheat 350g"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-2",
+    "name": "Cerelac Stage II Apply Cherry 350g"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-3",
+    "name": "Cerelac Stage II Chicken Scoop 350g"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-4",
+    "name": "Cerelac Stage III Four Fruit 350g"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-5",
+    "name": "Cerelac Stage IV Chicken 350g"
+  },
+  {
+    "sku": "BY-CRL-S5-350G",
+    "name": "Cerelac Stage V Multifruit 350g"
+  },
+  {
+    "sku": "BY-CRL-S1-350G-1",
+    "name": "Cerelace Stage 1 Three Fruits 350g"
+  },
+  {
+    "sku": "CK-CHN-GEN",
+    "name": "Chona Boot"
+  },
+  {
+    "sku": "SN-DTS-NCH-30G",
+    "name": "Detos Nacho Cheese Chips 30g"
+  },
+  {
+    "sku": "SN-DTS-SWC-30G",
+    "name": "Detos Sweet Chilli Chips 30g"
+  },
+  {
+    "sku": "DY-DIP-GEN-200G",
+    "name": "Diploma IFCMP 200g"
+  },
+  {
+    "sku": "SN-DOD-GEN-62G-3",
+    "name": "Doodles Instant Noodles Ramen 62g (4 Pack)"
+  },
+  {
+    "sku": "SN-DOD-GEN-150G",
+    "name": "Doodles Stick Noodles 150g"
+  },
+  {
+    "sku": "SN-DOD-DLT-300G",
+    "name": "Doodles Stick Noodles Chicken Delight 300g"
+  },
+  {
+    "sku": "PF-FDI-GEN",
+    "name": "Foodie Masala Noodles 8 Pack"
+  },
+  {
+    "sku": "BK-FST-BKP-225G",
+    "name": "Foster Clarks Baking Powder - 225gm"
+  },
+  {
+    "sku": "BV-GLU-GEN-350G",
+    "name": "Glucose 350g"
+  },
+  {
+    "sku": "BV-GLU-MNI",
+    "name": "Glucose mini"
+  },
+  {
+    "sku": "CK-HKO-AGR-20G",
+    "name": "Haiko Agar Agar - 20g"
+  },
+  {
+    "sku": "SP-HKO-BTS-80G",
+    "name": "Haiko Bit Salt Powder - 80g"
+  },
+  {
+    "sku": "BC-HLO-GEN",
+    "name": "Hello Cookies - Classic Pack"
+  },
+  {
+    "sku": "BC-HLO-GEN-1",
+    "name": "Hello Cookies - Family Pack"
+  },
+  {
+    "sku": "IC-IGL-CKE-1L",
+    "name": "Igloo Cake 1L"
+  },
+  {
+    "sku": "IC-IGL-CHL-2L",
+    "name": "Igloo Chocolate (1/2 L)"
+  },
+  {
+    "sku": "IC-IGL-CHL-1L",
+    "name": "Igloo Chocolate 1L"
+  },
+  {
+    "sku": "IC-IGL-DOI-1L",
+    "name": "Igloo Doi 1L"
+  },
+  {
+    "sku": "IC-IGL-FIR",
+    "name": "Igloo Firni (cup)"
+  },
+  {
+    "sku": "IC-IGL-FIR-1L",
+    "name": "Igloo Firni 1L"
+  },
+  {
+    "sku": "IC-IGL-FVL-1L",
+    "name": "Igloo French Vanilla 1L"
+  },
+  {
+    "sku": "IC-IGL-MCH",
+    "name": "Igloo Macho"
+  },
+  {
+    "sku": "IC-IGL-MGM-1L",
+    "name": "Igloo Mango Melody 1L"
+  },
+  {
+    "sku": "IC-IGL-SHC",
+    "name": "Igloo Shell & Core"
+  },
+  {
+    "sku": "IC-IGL-STW-2L",
+    "name": "Igloo Strawberry (1/2 L)"
+  },
+  {
+    "sku": "IC-IGL-STW-1L",
+    "name": "Igloo Strawberry 1L"
+  },
+  {
+    "sku": "IC-IGL-VNL-2L",
+    "name": "Igloo Vanilla (1/2 L)"
+  },
+  {
+    "sku": "IC-IGL-VNL",
+    "name": "Igloo Vanilla (cup)"
+  },
+  {
+    "sku": "IC-IGL-VNL-1L",
+    "name": "Igloo Vanilla 1L"
+  },
+  {
+    "sku": "CK-ISB-GEN",
+    "name": "Isubgul"
+  },
+  {
+    "sku": "RG-JRS-LSE",
+    "name": "Jirashail (Nobanno) Loose"
+  },
+  {
+    "sku": "RG-KTR-LSE",
+    "name": "Katari Atob (Rahman) Loose"
+  },
+  {
+    "sku": "RG-KTR-LSE-1",
+    "name": "Katari C (Nobanno) Loose"
+  },
+  {
+    "sku": "BC-KZF-KZT-250G",
+    "name": "Kazi Toast 250g"
+  },
+  {
+    "sku": "CR-KEL-FRL-285G",
+    "name": "Kellogs Fruit Loops 285g"
+  },
+  {
+    "sku": "CR-KEL-CFN-500G",
+    "name": "Kellogs Muesli Crunchy Fruit & Nut 500g"
+  },
+  {
+    "sku": "CD-KKM-SYS-1L",
+    "name": "Kikkoman All Purpose Seasoning Soy Sauce - 1ltr"
+  },
+  {
+    "sku": "CC-KIT-1F",
+    "name": "Kitkat 1 Finger"
+  },
+  {
+    "sku": "CC-KIT-3F",
+    "name": "Kitkat 3 Finger"
+  },
+  {
+    "sku": "CC-KIT-4F",
+    "name": "Kitkat 4 Finger"
+  },
+  {
+    "sku": "CC-KNK-CRM",
+    "name": "Knock Milk Cream"
+  },
+  {
+    "sku": "CC-KNK-STC",
+    "name": "Knock Strawberry Cream"
+  },
+  {
+    "sku": "PC-KOD-CRM-40G",
+    "name": "Kodomo Toothpaste Orange Cream - 40g"
+  },
+  {
+    "sku": "CC-KPI-CAN",
+    "name": "Kopi - Candy"
+  },
+  {
+    "sku": "BY-LCG-GEN-1350G",
+    "name": "Lactogen 1350g"
+  },
+  {
+    "sku": "BY-LCG-GEN-350G",
+    "name": "Lactogen 2 350g"
+  },
+  {
+    "sku": "BY-LCG-GEN-350G-1",
+    "name": "Lactogen 3 350g"
+  },
+  {
+    "sku": "RG-LNT-GEN",
+    "name": "Lentils - Masur Daal"
+  },
+  {
+    "sku": "BC-LEX-GEN",
+    "name": "Lexus - Family Pack"
+  },
+  {
+    "sku": "SN-MBR-PRD",
+    "name": "Mabroom Premium Dates - 500G"
+  },
+  {
+    "sku": "CC-MRS-CHL-32G",
+    "name": "Mars Fruit & Nut Chocolate - 32g"
+  },
+  {
+    "sku": "SN-MRD-CCK",
+    "name": "Meridian Chicken Chips"
+  },
+  {
+    "sku": "SN-MRD-SHC",
+    "name": "Meridian Shrimp Chips"
+  },
+  {
+    "sku": "BC-KZF-DRC",
+    "name": "Mini Dry Cake"
+  },
+  {
+    "sku": "RG-MNK-LSE",
+    "name": "Miniket Atob (Shonko) Loose"
+  },
+  {
+    "sku": "RG-MNK-LSE-1",
+    "name": "Miniket C (Nouka) Loose"
+  },
+  {
+    "sku": "BK-MHD-BSD-86G",
+    "name": "Mohammad Baking Soda - 86g"
+  },
+  {
+    "sku": "BK-MHD-GEN",
+    "name": "Mohammad Yeast"
+  },
+  {
+    "sku": "CK-MDA-LSE",
+    "name": "Moida - loose"
+  },
+  {
+    "sku": "RG-MTR-GEN",
+    "name": "Motor Daal"
+  },
+  {
+    "sku": "BC-KZF-MFB-324G-1",
+    "name": "Muffin Bread Chocolate 324g"
+  },
+  {
+    "sku": "BC-KZF-MFL-8G-1",
+    "name": "Muffin Lata Chocolate 8g"
+  },
+  {
+    "sku": "BC-KZF-MFL-8G-2",
+    "name": "Muffin Lata Fruit 8g"
+  },
+  {
+    "sku": "BC-KZF-MFL-8G",
+    "name": "Muffin Lata Vanilla 8g"
+  },
+  {
+    "sku": "BY-NAN-OPT-300G",
+    "name": "Nan Opti Pro 1 300g"
+  },
+  {
+    "sku": "BY-NAN-OPT-350G",
+    "name": "Nan Opti Pro 2 350g"
+  },
+  {
+    "sku": "BY-NAN-OPT-350G-1",
+    "name": "Nan Opti Pro 3 350g"
+  },
+  {
+    "sku": "RG-NZR-LSE",
+    "name": "Nazirshail (Rahman) Loose"
+  },
+  {
+    "sku": "RG-NZR-GEN-1",
+    "name": "Nazirshail 25KG (Rupchanda)"
+  },
+  {
+    "sku": "TC-NST-ICT-18G",
+    "name": "Nestea Ice Tea 18g"
+  },
+  {
+    "sku": "SN-NMK-GEN",
+    "name": "Nimki Small"
+  },
+  {
+    "sku": "BC-NTY-GEN-1",
+    "name": "Nutty - Family Pack"
+  },
+  {
+    "sku": "CK-ONN-ONI",
+    "name": "Onions - piyaj"
+  },
+  {
+    "sku": "PE-PTB-GEN",
+    "name": "Patabahar Coil - 1Pac"
+  },
+  {
+    "sku": "SN-POP-CNC-25G",
+    "name": "Poppers Corn Coconut Crackers 25g"
+  },
+  {
+    "sku": "CK-POT-GEN",
+    "name": "Potatoes - alu"
+  },
+  {
+    "sku": "BC-KZF-PDC-1",
+    "name": "Pound Cake Chocolate"
+  },
+  {
+    "sku": "BC-KZF-PDC-2",
+    "name": "Pound Cake Fruit"
+  },
+  {
+    "sku": "BC-KZF-PDC",
+    "name": "Pound Cake Vanilla"
+  },
+  {
+    "sku": "CC-PLS-MGM-1",
+    "name": "Pulse - Mango Masala"
+  },
+  {
+    "sku": "CC-PLS-MGM",
+    "name": "Pulse - Mango Masala"
+  },
+  {
+    "sku": "BK-RYN-CNF-400G",
+    "name": "Rayners Corn Flour - 400g"
+  },
+  {
+    "sku": "RG-RPC-CNR",
+    "name": "Rupchanda Chinigura Rice 1KG"
+  },
+  {
+    "sku": "OL-RPC-SYO-1L",
+    "name": "Rupchanda Soyabean Oil 1L"
+  },
+  {
+    "sku": "OL-RPC-SYO-2L",
+    "name": "Rupchanda Soyabean Oil 2L"
+  },
+  {
+    "sku": "OL-RPC-SYO-5L",
+    "name": "Rupchanda Soyabean Oil 5L"
+  },
+  {
+    "sku": "CC-SAF-GEN",
+    "name": "Safari"
+  },
+  {
+    "sku": "IC-SAV-CHB",
+    "name": "Savoy Chocbar"
+  },
+  {
+    "sku": "IC-SAV-CHN",
+    "name": "Savoy Chocolate Cone"
+  },
+  {
+    "sku": "IC-SAV-DKD-1KG",
+    "name": "Savoy Dark Desire 1kg"
+  },
+  {
+    "sku": "IC-SAV-GLD-1KG",
+    "name": "Savoy Golden 1kg"
+  },
+  {
+    "sku": "IC-SAV-LOL",
+    "name": "Savoy Lolly (lemon)"
+  },
+  {
+    "sku": "IC-SAV-SHC",
+    "name": "Savoy Shell & Core"
+  },
+  {
+    "sku": "IC-SAV-VNL-1KG",
+    "name": "Savoy Vanilla 1kg"
+  },
+  {
+    "sku": "RG-SHK-GEN",
+    "name": "Shukran Rice Atosh 50KG"
+  },
+  {
+    "sku": "BC-KZF-SPC-2",
+    "name": "Slice Pound Cake Chocolate"
+  },
+  {
+    "sku": "BC-KZF-SPC",
+    "name": "Slice Pound Cake Vanilla"
+  },
+  {
+    "sku": "CC-SNK-GEN",
+    "name": "Sneakers"
+  },
+  {
+    "sku": "CC-SNI-CHL-32G",
+    "name": "Snickers Fruit & Nut Chocolate - 32g"
+  },
+  {
+    "sku": "BC-SLC-GEN",
+    "name": "Solecti Cookies - Standard Pack"
+  },
+  {
+    "sku": "BV-TNG-ORJ-750G",
+    "name": "Tang Orange Jar 750gm"
+  },
+  {
+    "sku": "BV-TNG-ORR-200G",
+    "name": "Tang Orange Refill Pack 200gm"
+  },
+  {
+    "sku": "BV-TNG-ORR-500G",
+    "name": "Tang Orange Refill Pack 500gm"
+  },
+  {
+    "sku": "CK-TSM-GEN",
+    "name": "Tastemaker - Tasting Salt"
+  },
+  {
+    "sku": "BC-TIP-GEN-1",
+    "name": "Tip - Family Pack"
+  },
+  {
+    "sku": "BC-TIP-GEN",
+    "name": "Tip -Standard Pack"
+  },
+  {
+    "sku": "CC-TFT-CHL",
+    "name": "Toffeeto Chocolate"
+  },
+  {
+    "sku": "CD-KZF-TMK",
+    "name": "Tomato Ketchup Small"
+  },
+  {
+    "sku": "EL-TTC-CHR",
+    "name": "Transtac LED Bright 18w Churi"
+  },
+  {
+    "sku": "EL-TTC-CHR-2",
+    "name": "Transtec Backup 10w Churi"
+  },
+  {
+    "sku": "EL-TTC-PN-3",
+    "name": "Transtec Backup 10w Pin"
+  },
+  {
+    "sku": "EL-TTC-CHR-3",
+    "name": "Transtec Backup 15w Churi"
+  },
+  {
+    "sku": "EL-TTC-PN-4",
+    "name": "Transtec Backup 15w Pin"
+  },
+  {
+    "sku": "EL-TTC-CHR-1",
+    "name": "Transtec LED Bright 13w Churi"
+  },
+  {
+    "sku": "EL-TTC-PN",
+    "name": "Transtec LED Bright 15w Pin"
+  },
+  {
+    "sku": "EL-TTC-PN-1",
+    "name": "Transtec LED Bright 18w Pin"
+  },
+  {
+    "sku": "EL-TTC-PN-2",
+    "name": "Transtec LED Bright 9w Pin"
+  },
+  {
+    "sku": "EL-TTC-MSB",
+    "name": "Transtec Mosquito Bat"
+  }
+]
