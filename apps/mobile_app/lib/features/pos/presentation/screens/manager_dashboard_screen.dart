@@ -84,15 +84,20 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
 
   void _handleSyncUpdate() {
     if (!mounted) return;
-    setState(() {
-      _offlineStats = OfflineTransactionSyncService.instance.dashboardStats();
-      _syncTelemetry = OfflineTransactionSyncService.instance.telemetry;
-      _syncAlerts = OfflineTransactionSyncService.instance.operationalAlerts();
-      _closeCheck = const StoreClosingHealthCheckService().evaluate(
-        queue: OfflineTransactionSyncService.instance.queue,
-        telemetry: _syncTelemetry,
-        hasInventoryMismatchWarnings: false,
-      );
+    // Defer setState to avoid "called during build" errors
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _offlineStats = OfflineTransactionSyncService.instance.dashboardStats();
+          _syncTelemetry = OfflineTransactionSyncService.instance.telemetry;
+          _syncAlerts = OfflineTransactionSyncService.instance.operationalAlerts();
+          _closeCheck = const StoreClosingHealthCheckService().evaluate(
+            queue: OfflineTransactionSyncService.instance.queue,
+            telemetry: _syncTelemetry,
+            hasInventoryMismatchWarnings: false,
+          );
+        });
+      }
     });
   }
 

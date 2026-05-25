@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, BarChart3, Receipt, PackageOpen, Percent } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface StatCardProps {
@@ -58,56 +58,72 @@ function StatCard({ title, value, trend, trendValue, icon, accentColor }: StatCa
 interface HeaderStatsProps {
   todaySales?: string;
   totalRevenue: string;
-  totalCustomers?: string;
   netProfit: string;
+  atv: string;           // Average Transaction Value
+  upt: string;           // Units Per Transaction
+  grossMargin: string;   // Gross Margin %
   salesTrend?: 'up' | 'down';
   profitTrend?: 'up' | 'down';
+  atvTrend?: 'up' | 'down';
 }
 
 export function HeaderStats({
   todaySales = '৳0.00',
   totalRevenue,
-  totalCustomers = '0',
   netProfit,
+  atv = '৳0.00',
+  upt = '0.0',
+  grossMargin = '0%',
   salesTrend = 'up',
   profitTrend = 'up',
+  atvTrend = 'up'
 }: HeaderStatsProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      {/* Financials */}
       <StatCard
-        title={t('dashboard.todaySales', 'Today\'s Sales')}
+        title="Today's Sales"
         value={todaySales}
         trend={salesTrend}
-        trendValue="12.5%"
         icon={<DollarSign size={24} />}
         accentColor="terracotta"
       />
-      
       <StatCard
-        title={t('dashboard.totalRevenue', 'Total Revenue')}
+        title="Total Revenue (30d)"
         value={`৳${totalRevenue}`}
-        trend={profitTrend}
-        trendValue="8.2%"
+        trend={salesTrend}
         icon={<ShoppingCart size={24} />}
         accentColor="success"
       />
-      
       <StatCard
-        title={t('dashboard.customers', 'Customers')}
-        value={totalCustomers}
-        icon={<Users size={24} />}
-        accentColor="blue"
-      />
-      
-      <StatCard
-        title={t('dashboard.netProfit', 'Net Profit')}
+        title="Net Profit (30d)"
         value={`৳${netProfit}`}
         trend={profitTrend}
-        trendValue="15.3%"
         icon={<BarChart3 size={24} />}
         accentColor="warning"
+      />
+
+      {/* Retail Operations */}
+      <StatCard
+        title="Avg Transaction Value (ATV)"
+        value={`৳${atv}`}
+        trend={atvTrend}
+        icon={<Receipt size={24} />}
+        accentColor="blue"
+      />
+      <StatCard
+        title="Units Per Transaction (UPT)"
+        value={upt}
+        icon={<PackageOpen size={24} />}
+        accentColor="terracotta"
+      />
+      <StatCard
+        title="Gross Margin"
+        value={grossMargin}
+        icon={<Percent size={24} />}
+        accentColor="success"
       />
     </div>
   );
