@@ -60,7 +60,7 @@ class ProductCard extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.backgroundSubtle,
-                      image: item.imageUrl != null
+                      image: item.imageUrl != null && item.imageUrl!.isNotEmpty
                           ? DecorationImage(
                               image: NetworkImage(item.imageUrl!),
                               fit: BoxFit.cover,
