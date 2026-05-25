@@ -59,8 +59,65 @@ class PosProvider extends ChangeNotifier {
   String? _storeId;
   String? get storeId => _storeId;
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  Party? _selectedParty;
+  Party? get selectedParty => _selectedParty;
+
+  void setSelectedParty(Party? party) {
+    _selectedParty = party;
+    _safeNotify();
+  }
+
+  String? _selectedPaymentMethodId;
+  String? get selectedPaymentMethodId => _selectedPaymentMethodId;
+
+  void setSelectedPaymentMethodId(String? id) {
+    _selectedPaymentMethodId = id;
+    _safeNotify();
+  }
+
+  String? _selectedPaymentMethodId;
+  String? get selectedPaymentMethodId => _selectedPaymentMethodId;
+
+  void setSelectedPaymentMethodId(String? id) {
+    _selectedPaymentMethodId = id;
+    _safeNotify();
+  }
+
+  // ── Cart ───────────────────────────────────────────────────────────────────
+  final List<CartItem> _cart = [];
+  final Map<String, SaleSnapshotItem> _draftSnapshotItems = {};
+  SaleTransactionSnapshot? _frozenCheckoutSnapshot;
+  List<CartItem> get cart => List.unmodifiable(_cart);
+  bool get cartIsEmpty => _cart.isEmpty;
+
+  double _cartDiscount = 0; // sale-level discount in ৳
+  double get cartDiscount => _cartDiscount;
+
+  double get subtotal {
+    return _cart.fold(0.0, (sum, item) {
+      PaymentMethod? method;
+      for (final m in _paymentMethods) {
+        if (m.id == _selectedPaymentMethodId) {
+          method = m;
+          break;
+        }
+      }
+      final isCredit = method?.name.toLowerCase().contains('credit') ?? false;
+      final unitPrice = isCredit ? item.item.mrp : item.item.price;
+      return sum + (unitPrice * item.qty);
+    });
+  }
+
+  double get totalAmount => subtotal;
+  int get itemCount => _cart.fold(0, (sum, c) => sum + c.qty);
+
+  // ── Payment methods ────────────────────────────────────────────────────────
+  List<PaymentMethod> _paymentMethods = [];
+  List<PaymentMethod> get paymentMethods => _paymentMethods;
+
+  // ── Loading / error ────────────────────────────────────────────────────────
+  bool _loading = false;
+  bool get loading => _loading;
 
   String? _error;
   String? get error => _error;
