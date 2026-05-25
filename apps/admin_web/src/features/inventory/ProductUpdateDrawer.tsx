@@ -267,16 +267,16 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
           </button>
         </header>
 
-        {/* Tabs */}
-        <div className="flex border-b border-warm-border-warm bg-warm-surface">
+        {/* Tabs - Segmented Control */}
+        <div className="mx-6 mt-4 p-1 bg-warm-border-warm/50 rounded-lg flex">
           <button
             type="button"
             onClick={() => setActiveTab('info')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
+              'flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-md transition-all',
               activeTab === 'info'
-                ? 'text-warm-accent border-b-2 border-warm-accent bg-warm-surface'
-                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50'
+                ? 'bg-warm-surface text-warm-accent shadow-sm'
+                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/70'
             )}
           >
             <Info size={16} />
@@ -286,29 +286,29 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             type="button"
             onClick={() => setActiveTab('stock')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
+              'flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-md transition-all',
               activeTab === 'stock'
-                ? 'text-warm-accent border-b-2 border-warm-accent bg-warm-surface'
-                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50'
+                ? 'bg-warm-surface text-warm-accent shadow-sm'
+                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/70'
             )}
           >
             <Package size={16} />
             Stock
-            {stockDirty && <span className="w-2 h-2 rounded-full bg-warm-success" />}
+            {stockDirty && <span className="w-2 h-2 rounded-full bg-success-default ml-1" />}
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('pricing')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors',
+              'flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-md transition-all',
               activeTab === 'pricing'
-                ? 'text-warm-accent border-b-2 border-warm-accent bg-warm-surface'
-                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/50'
+                ? 'bg-warm-surface text-warm-accent shadow-sm'
+                : 'text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/70'
             )}
           >
             <DollarSign size={16} />
             Pricing
-            {pricingDirty && <span className="w-2 h-2 rounded-full bg-warm-success" />}
+            {pricingDirty && <span className="w-2 h-2 rounded-full bg-success-default ml-1" />}
           </button>
         </div>
 
