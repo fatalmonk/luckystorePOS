@@ -285,7 +285,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
           SizedBox(width: isSmallScreen ? 8 : 12),
 
           // Search bar
-          Expanded(
+          Flexible(
             child: Container(
               height: 44,
               decoration: BoxDecoration(
@@ -314,35 +314,37 @@ class _PosMainScreenState extends State<PosMainScreen> {
           SizedBox(width: isSmallScreen ? 8 : 12),
 
           // Action icons - scrollable to prevent overflow
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _iconButton(
-                  icon: Icons.qr_code_scanner_rounded,
-                  active: _scanning,
-                  tooltip: 'Scan Barcode',
-                  onTap: () => setState(() => _scanning = !_scanning),
-                ),
-                const SizedBox(width: 4),
-
-                Consumer<PosProvider>(
-                  builder: (ctx, pos, _) => _iconButton(
-                    icon: Icons.person_rounded,
-                    tooltip: pos.cashierName ?? 'Cashier',
-                    onTap: () => showCashierDialog(context, pos),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _iconButton(
+                    icon: Icons.qr_code_scanner_rounded,
+                    active: _scanning,
+                    tooltip: 'Scan Barcode',
+                    onTap: () => setState(() => _scanning = !_scanning),
                   ),
-                ),
-                const SizedBox(width: 4),
-                
-                _iconButton(
-                  icon: Icons.more_vert_rounded,
-                  tooltip: 'More Actions',
-                  onTap: () {},
-                  isMenu: true,
-                ),
-              ],
+                  const SizedBox(width: 4),
+
+                  Consumer<PosProvider>(
+                    builder: (ctx, pos, _) => _iconButton(
+                      icon: Icons.person_rounded,
+                      tooltip: pos.cashierName ?? 'Cashier',
+                      onTap: () => showCashierDialog(context, pos),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  
+                  _iconButton(
+                    icon: Icons.more_vert_rounded,
+                    tooltip: 'More Actions',
+                    onTap: () {},
+                    isMenu: true,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -394,7 +396,12 @@ class _PosMainScreenState extends State<PosMainScreen> {
           onClearCart: () => showClearCartDialog(context, pos),
           onContinue: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const PaymentScreen()),
+            MaterialPageRoute(
+              builder: (_) => ChangeNotifierProvider.value(
+                value: pos,
+                child: const PaymentScreen(),
+              ),
+            ),
           ),
           onRemoveItemAt: (int index) => () => pos.removeItem(pos.cart[index].item.id),
           onQtyChangedAt: (int index) => (int q) => pos.setQty(pos.cart[index].item.id, q),
