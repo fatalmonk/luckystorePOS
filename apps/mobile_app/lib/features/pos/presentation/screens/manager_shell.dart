@@ -11,6 +11,9 @@ import '../../../inventory/presentation/screens/inventory_import_screen.dart';
 import './label_print_screen.dart';
 import '../../../collections/presentation/screens/overdue_customers_screen.dart';
 import '../../../purchase/presentation/screens/purchase_receiving_screen.dart';
+import '../../../ledger/presentation/screens/customer_ledger_screen.dart';
+import '../../../ledger/presentation/screens/supplier_ledger_screen.dart';
+import '../../../finance/presentation/screens/daily_expenditures_screen.dart';
 
 /// Top-level shell for manager and admin users.
 ///
@@ -34,12 +37,15 @@ class _ManagerShellState extends State<ManagerShell> {
 
   // Tab definitions — order matters; index must match the nav items below.
   static const _tabs = [
-    _TabDef(label: 'POS',       icon: Icons.point_of_sale_outlined, activeIcon: Icons.point_of_sale),
-    _TabDef(label: 'Dashboard', icon: Icons.dashboard_outlined,      activeIcon: Icons.dashboard),
-    _TabDef(label: 'Inventory', icon: Icons.upload_file_outlined,    activeIcon: Icons.upload_file),
-    _TabDef(label: 'Labels',    icon: Icons.print_outlined,          activeIcon: Icons.print),
-    _TabDef(label: 'Dues',      icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet),
-    _TabDef(label: 'Purchase',  icon: Icons.shopping_basket_outlined, activeIcon: Icons.shopping_basket),
+    _TabDef(label: 'POS',           icon: Icons.point_of_sale_outlined, activeIcon: Icons.point_of_sale),
+    _TabDef(label: 'Dashboard',     icon: Icons.dashboard_outlined,      activeIcon: Icons.dashboard),
+    _TabDef(label: 'Inventory',     icon: Icons.upload_file_outlined,    activeIcon: Icons.upload_file),
+    _TabDef(label: 'Labels',        icon: Icons.print_outlined,          activeIcon: Icons.print),
+    _TabDef(label: 'Dues',          icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet),
+    _TabDef(label: 'Purchase',      icon: Icons.shopping_basket_outlined, activeIcon: Icons.shopping_basket),
+    _TabDef(label: 'Cust Ledger',   icon: Icons.people_outlined,          activeIcon: Icons.people),
+    _TabDef(label: 'Supp Ledger',   icon: Icons.business_outlined,       activeIcon: Icons.business),
+    _TabDef(label: 'Expenses',      icon: Icons.receipt_long_outlined,    activeIcon: Icons.receipt_long),
   ];
 
   // Lazily-built page widgets — keeps page state alive across tab switches.
@@ -50,6 +56,9 @@ class _ManagerShellState extends State<ManagerShell> {
     const LabelPrintScreen(),
     const OverdueCustomersScreen(),
     const PurchaseReceivingScreen(),
+    const CustomerLedgerScreen(),
+    const SupplierLedgerScreen(),
+    const DailyExpendituresScreen(),
   ];
 
   void _onTabSelected(int index) {

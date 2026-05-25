@@ -11,6 +11,8 @@ import '../../features/pos/presentation/screens/store_mode.dart';
 import '../../features/inventory/presentation/screens/inventory_import_screen.dart';
 import '../../features/pos/presentation/screens/manager_dashboard_screen.dart';
 import '../../features/pos/presentation/screens/label_print_screen.dart';
+import '../../features/ledger/presentation/screens/customer_ledger_screen.dart';
+import '../../features/finance/presentation/screens/daily_expenditures_screen.dart';
 import '../../features/auth/data/auth_service.dart';
 
 class SideDrawer extends StatefulWidget {
@@ -196,6 +198,28 @@ class _SideDrawerState extends State<SideDrawer> {
                   const SizedBox(height: 8),
                   
                   if (_isAdmin) ...[
+                    _DrawerMenuItem(
+                      icon: Icons.people_rounded, 
+                      label: 'Customer Ledger',
+                      iconColor: AppColors.infoDefault,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CustomerLedgerScreen()),
+                        );
+                      },
+                    ),
+                    _DrawerMenuItem(
+                      icon: Icons.receipt_long_rounded, 
+                      label: 'Daily Expenditures',
+                      iconColor: AppColors.warningDefault,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const DailyExpendituresScreen()),
+                        );
+                      },
+                    ),
                     _DrawerMenuItem(
                       icon: Icons.dashboard_customize_rounded, 
                       label: 'Manager Dashboard',

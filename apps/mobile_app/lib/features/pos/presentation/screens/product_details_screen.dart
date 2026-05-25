@@ -43,11 +43,22 @@ class ProductDetailsScreen extends StatelessWidget {
                 height: 300,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
-                  image: DecorationImage(
-                    image: NetworkImage(imageUrl),
-                    fit: BoxFit.cover,
-                  ),
+                  image: imageUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
                 ),
+                child: imageUrl.isEmpty
+                  ? const Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Colors.white54,
+                        size: 64,
+                      ),
+                    )
+                  : null,
               ),
             ),
 

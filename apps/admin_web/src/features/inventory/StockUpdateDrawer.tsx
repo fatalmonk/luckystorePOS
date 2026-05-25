@@ -90,7 +90,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
 
   const imageMutation = useMutation({
     mutationFn: async (file: File) => {
-      const webpBlob = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+      const webpBlob = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.75 });
       const filePath = `${product.id}/${crypto.randomUUID()}.webp`;
 
       const { error: uploadError } = await supabase.storage

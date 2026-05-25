@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { AlertTriangle, Package, TrendingUp, Bell, ArrowUpRight, ArrowDownRight, Scale, Zap } from 'lucide-react';
+import { AlertTriangle, Package, TrendingUp, Bell, ArrowUpRight, ArrowDownRight, Scale, Zap, PlusCircle, ShoppingBag } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SkeletonCard, SkeletonBlock, ErrorState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
 import { HeaderStats } from './HeaderStats';
+import { TrendCard } from './TrendCard';
+import { CashflowChart } from './CashflowChart';
 import { RecentActivity } from './RecentActivity';
 import { format, subDays, parseISO } from 'date-fns';
 import clsx from 'clsx';
@@ -16,6 +19,47 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { storeId, user } = useAuth();
   const { notify } = useNotify();
+
+  const [isSalesModalOpen, setIsSalesModalOpen] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+
+  const missingMetricsQuery = useQuery({
+    queryKey: ['dashboard-missing-metrics', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data, error } = await supabase.rpc('get_dashboard_missing_metrics', { p_store_id: storeId });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+  const missingMetrics = missingMetricsQuery.data || { toReceive: 0, toGive: 0, totalBalance: 0 };
+
+  const monthlyTrendQuery = useQuery({
+    queryKey: ['dashboard-monthly-trend', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data, error } = await supabase.rpc('get_monthly_trend_metrics', { p_store_id: storeId });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+  const trends = monthlyTrendQuery.data || {
+    sales: { amount: 0, trend: 0 },
+    purchase: { amount: 0, trend: 0 },
+    expense: { amount: 0, trend: 0 }
+  };
+
+  const currentMonthName = format(new Date(), 'MMMM');
+
+  const calculateProgress = () => {
+    let score = 0;
+    if (user?.name) score += 20;
+    if (storeId) score += 40;
+    if (missingMetricsQuery.isSuccess) score += 40;
+    return Math.min(score, 100);
+  };
 
   const remindersQuery = useQuery({
     queryKey: ['dashboard-reminders', storeId],
@@ -44,6 +88,17 @@ export function DashboardPage() {
   const lowStockQuery = useQuery({
     queryKey: ['low-stock', storeId],
     queryFn: () => api.dashboard.getLowStock(storeId!),
+    enabled: !!storeId,
+  });
+
+  const retailKpisQuery = useQuery({
+    queryKey: ['retail-kpis', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data, error } = await supabase.rpc('get_retail_kpis', { p_store_id: storeId, p_days: 30 });
+      if (error) throw error;
+      return data;
+    },
     enabled: !!storeId,
   });
 
@@ -81,6 +136,7 @@ export function DashboardPage() {
 
   const stats = statsQuery.data;
   const lowStock = lowStockQuery.data;
+  const kpis: any = retailKpisQuery.data || {};
   const dailySales = dailySalesQuery.data || [];
   const expenses = expensesQuery.data || [];
   const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
@@ -186,114 +242,84 @@ export function DashboardPage() {
   return (
     <div className="dashboard-container">
       {/* Welcome Header */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-warm-fg font-display">
-          {t('dashboard.welcome')}, {user?.name || stats?.user?.name || 'Mohammed'}
-        </h1>
-        <p className="text-warm-muted mt-1">Here&apos;s what&apos;s happening today.</p>
+      <header className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-warm-fg font-display">
+            {t('dashboard.welcome')}, {user?.name || stats?.user?.name || 'Mohammed'}
+          </h1>
+          <p className="text-warm-muted mt-1">Here&apos;s what&apos;s happening today.</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setIsSalesModalOpen(true)}
+            className="flex items-center gap-2 bg-warm-success text-white px-4 py-2 rounded-lg font-medium hover:bg-warm-success/90 transition-colors"
+          >
+            <PlusCircle size={18} /> Add Sales
+          </button>
+          <button 
+            onClick={() => setIsPurchaseModalOpen(true)}
+            className="flex items-center gap-2 bg-warm-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-warm-accent/90 transition-colors"
+          >
+            <ShoppingBag size={18} /> Add Purchase
+          </button>
+        </div>
       </header>
+
+      {/* Monthly Trends */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <TrendCard 
+          title={`Sales (${currentMonthName})`}
+          amount={trends.sales.amount} 
+          trend={trends.sales.trend} 
+        />
+        <TrendCard 
+          title={`Purchase (${currentMonthName})`}
+          amount={trends.purchase.amount} 
+          trend={trends.purchase.trend} 
+          inverseTrend={true}
+        />
+        <TrendCard 
+          title={`Expense (${currentMonthName})`}
+          amount={trends.expense.amount} 
+          trend={trends.expense.trend} 
+          inverseTrend={true}
+        />
+      </div>
+
+      {/* Missing Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="bg-warm-surface border-l-4 border-l-warm-success border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
+          <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Receive</span>
+          <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toReceive)}</h2>
+        </div>
+        <div className="bg-warm-surface border-l-4 border-l-warm-danger border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
+          <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Give</span>
+          <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toGive)}</h2>
+        </div>
+        <div className="bg-warm-surface border border-warm-border-warm rounded-xl p-6 shadow-sm">
+          <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">Total Balance (Cash & Bank)</span>
+          <h2 className="text-2xl font-bold text-primary-default mt-2 font-mono">৳{fmt(missingMetrics.totalBalance)}</h2>
+        </div>
+      </div>
 
       {/* Header Stats */}
       <HeaderStats
         todaySales={`৳${stats?.total_sales || '0.00'}`}
         totalRevenue={fmt(totalRevenue)}
-        totalCustomers="128"
         netProfit={fmt(Math.abs(netPosition))}
+        atv={fmt(Number(kpis.atv) || 0)}
+        upt={Number(kpis.upt || 0).toFixed(1)}
+        grossMargin={`${Number(kpis.gross_margin_pct || 0).toFixed(1)}%`}
         salesTrend={salesTrend || undefined}
         profitTrend={netPosition >= 0 ? 'up' : 'down'}
+        atvTrend="up"
       />
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Charts & Tables */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Sales vs Expenses Chart */}
-          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-warm-fg font-display">
-                Sales vs Expenses (Last 14 Days)
-              </h2>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-warm-success" />
-                  <span className="text-warm-muted">Sales</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-warm-danger" />
-                  <span className="text-warm-muted">Expenses</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-warm-accent" />
-                  <span className="text-warm-muted">Stock</span>
-                </div>
-              </div>
-            </div>
-
-            {salesVsExpenses.length > 0 ? (
-              <div className="flex items-end justify-between gap-1" style={{ height: '240px' }}>
-                {salesVsExpenses.map((day, idx: number) => {
-                  const maxVal = Math.max(
-                    ...salesVsExpenses.map((d: { sales: number; expenses: number; stockPurchases: number }) => 
-                      Math.max(d.sales, d.expenses, d.stockPurchases)
-                    ),
-                    1
-                  );
-                  const salesHeight = maxVal > 0 ? (day.sales / maxVal) * 100 : 0;
-                  const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
-                  const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full">
-                      <div className="flex items-end gap-0.5 w-full justify-center h-full">
-                        <div
-                          style={{
-                            width: '28%',
-                            height: `${salesHeight}%`,
-                            backgroundColor: 'var(--warm-success)',
-                            borderRadius: '2px 2px 0 0',
-                            minHeight: day.sales > 0 ? 4 : 0,
-                            transition: 'height 0.3s ease',
-                          }}
-                          title={`Sales: ৳${day.sales.toLocaleString()}`}
-                        />
-                        <div
-                          style={{
-                            width: '28%',
-                            height: `${expenseHeight}%`,
-                            backgroundColor: 'var(--warm-danger)',
-                            borderRadius: '2px 2px 0 0',
-                            minHeight: day.expenses > 0 ? 4 : 0,
-                            transition: 'height 0.3s ease',
-                          }}
-                          title={`Expenses: ৳${day.expenses.toLocaleString()}`}
-                        />
-                        <div
-                          style={{
-                            width: '28%',
-                            height: `${stockHeight}%`,
-                            backgroundColor: 'var(--warm-accent)',
-                            borderRadius: '2px 2px 0 0',
-                            minHeight: day.stockPurchases > 0 ? 4 : 0,
-                            transition: 'height 0.3s ease',
-                          }}
-                          title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
-                        />
-                      </div>
-                      <span className="text-[10px] text-warm-dim whitespace-nowrap">
-                        {day.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center text-warm-muted py-12">
-                No daily sales data available.{' '}
-                <a href="/admin/daily-sales" className="text-warm-accent hover:underline">
-                  Add daily sales
-                </a>
-              </div>
-            )}
-          </section>
+          <CashflowChart />
 
           {/* Financial Overview Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -429,6 +455,21 @@ export function DashboardPage() {
 
         {/* Right Column - Activity & Quick Actions */}
         <div className="space-y-8">
+          {/* Profile Progress Widget */}
+          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6 flex items-center gap-4">
+            <div className="flex-shrink-0 mr-2">
+              <svg width="60" height="60" viewBox="0 0 36 36">
+                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" strokeWidth="3" />
+                <path className="circle transition-all duration-1000" strokeDasharray={`${calculateProgress()}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10B981" strokeWidth="3" />
+                <text x="18" y="20.3" className="percentage font-bold fill-warm-fg" textAnchor="middle" fontSize="8">{calculateProgress()}%</text>
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-semibold text-warm-fg font-display">Complete your Profile</h4>
+              <p className="text-xs text-warm-muted mt-1">Unlock additional reporting metrics by finalizing setup.</p>
+            </div>
+          </section>
+
           {/* Quick POS Shortcut */}
           <section className="bg-gradient-to-br from-warm-accent to-warm-accent-light rounded-xl shadow-sm p-6 text-white">
             <div className="flex items-center justify-between">
@@ -518,6 +559,33 @@ export function DashboardPage() {
           </section>
         </div>
       </div>
+
+      {/* Quick Action Modals (Stubs) */}
+      {isSalesModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-warm-surface rounded-xl p-6 max-w-md w-full relative">
+            <h2 className="text-xl font-bold mb-4 font-display">Quick Add Sales</h2>
+            <p className="text-warm-muted mb-6">Localized modal form for sales goes here.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setIsSalesModalOpen(false)} className="px-4 py-2 text-warm-fg bg-warm-border rounded-lg hover:bg-warm-border/80">Cancel</button>
+              <button className="px-4 py-2 bg-warm-success text-white rounded-lg hover:bg-warm-success/90">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isPurchaseModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-warm-surface rounded-xl p-6 max-w-md w-full relative">
+            <h2 className="text-xl font-bold mb-4 font-display">Quick Add Purchase</h2>
+            <p className="text-warm-muted mb-6">Localized inventory intake form goes here.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setIsPurchaseModalOpen(false)} className="px-4 py-2 text-warm-fg bg-warm-border rounded-lg hover:bg-warm-border/80">Cancel</button>
+              <button className="px-4 py-2 bg-warm-accent text-white rounded-lg hover:bg-warm-accent/90">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
