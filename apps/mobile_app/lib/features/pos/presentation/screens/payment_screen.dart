@@ -50,9 +50,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         (m) => m.type == 'cash',
         orElse: () => pos.paymentMethods.first,
       );
+      // Auto-set payment method in provider to trigger correct pricing (MRP vs Discounted)
       pos.setSelectedPaymentMethodId(_selectedMethod?.id);
     }
-    // Seed numpad with the total
+    // Seed numpad with the total so cashier just has to press CHARGE/COMPLETE for exact
     _numpadValue = pos.totalAmount.toStringAsFixed(0);
 
     // Always refresh payment methods from Supabase when checkout opens,
@@ -71,6 +72,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       }
     });
 
+    // Register physical keyboard and scanner wedge key interceptors
     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 

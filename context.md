@@ -4,7 +4,7 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-**POS Tablet Refactor Complete** — Unified 2-column layout, circular avatar cards, sticky footer numpads, global shortcut bindings, and high-fidelity single-screen checkout modal.
+Fix mobile app payment methods visibility and layout tokens
 
 ## Done
 - **Core Redesign**: `theme/tokens.ts`, Tailwind warm palette, CSS vars.
@@ -17,6 +17,7 @@ React, Flutter, Supabase, Tailwind, TypeScript
   - Fast-checkout `PaymentModal.tsx` in a dual-pane responsive widescreen grid.
   - Integrated speed POS keyboard shortcuts (`F2`, `F12`, `Escape`, `Ctrl+K`).
 - **Backend**: Fixed `search_items_pos` 42703 error via `20260523000000_fix_pos_search_is_active.sql`.
+- **Mobile App**: Updated font tokens, fixed payment methods RLS issue (added service account to users), resolved `notifyListeners` build exceptions.
 
 ## Decisions
 - Bengali/English + Hind Siliguri font.
@@ -25,12 +26,11 @@ React, Flutter, Supabase, Tailwind, TypeScript
 - POS categories are horizontal pills for tablet space.
 - Retained `StockUpdateDrawer.tsx`.
 
-## Blockers
-- Manual Supabase DB SQL execution required for `search_items_pos` fix.
+## Blocker
+None
 
 ## Next
-- Execute SQL in Supabase Dashboard.
-- Merge `feature/warm-redesign` to main.
+Merge feature/warm-redesign to main
 
 ---
-ctx: POS tablet layout refactor complete | done: 54 | next: execute sql in supabase dashboard
+ctx: mobile app payment method fixes | done: 55 | next: merge branch

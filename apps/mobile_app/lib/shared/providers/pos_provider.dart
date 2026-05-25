@@ -98,6 +98,14 @@ class PosProvider extends ChangeNotifier {
     _safeNotify();
   }
 
+  String? _selectedPaymentMethodId;
+  String? get selectedPaymentMethodId => _selectedPaymentMethodId;
+
+  void setSelectedPaymentMethodId(String? id) {
+    _selectedPaymentMethodId = id;
+    notifyListeners();
+  }
+
   // ── Cart ───────────────────────────────────────────────────────────────────
   final List<CartItem> _cart = [];
   final Map<String, SaleSnapshotItem> _draftSnapshotItems = {};
