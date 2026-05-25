@@ -1,63 +1,75 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/printer/printer_service.dart';
 import '../../models/pos_models.dart';
+import '../../models/sale_transaction_snapshot.dart';
+import '../../models/app_user.dart';
 import '../../models/party.dart';
+import '../../features/sales/offline_transaction_sync_service.dart';
+import '../services/edge_function_sale_service.dart';
 
-/// Sale-level item snapshot captured at checkout freeze (for multi-currency/payment scenarios).
-class SaleSnapshotItem {
-  final String productId;
-  final int quantity;
-  final double unitPriceSnapshot;
-  final double discountSnapshot;
-  final int stockSnapshot;
+class PosCatalogLoadResult {
+  final List<PosCategory> categories;
+  final List<PosItem> items;
+  final String modeUsed;
+  final String? error;
 
-  SaleSnapshotItem({
-    required this.productId,
-    required this.quantity,
-    required this.unitPriceSnapshot,
-    required this.discountSnapshot,
-    required this.stockSnapshot,
+  const PosCatalogLoadResult({
+    required this.categories,
+    required this.items,
+    required this.modeUsed,
+    this.error,
   });
 
-  Map<String, dynamic> toJson() => {
-    'product_id': productId,
-    'quantity': quantity,
-    'unit_price_snapshot': unitPriceSnapshot,
-    'discount_snapshot': discountSnapshot,
-    'stock_snapshot': stockSnapshot,
-  };
+  bool get hasError => error != null;
 }
 
-/// Transaction-level snapshot (header + line items) for idempotent checkout.
-class SaleTransactionSnapshot {
-  final List<SaleSnapshotItem> items;
-  final DateTime capturedAt;
-  final int? expectedRevision; // optimistic locking
+/// PosProvider manages the active POS session, cart, and sale operations.
+/// Register in MultiProvider before any POS screen is accessed.
+class PosProvider extends ChangeNotifier {
+  final _supabase = Supabase.instance.client;
+  final _offlineSync = OfflineTransactionSyncService.instance;
+  final Map<String, List<PosItem>> _searchCache = {};
+  static const int _searchCacheMaxSize = 100;
+  bool _offlineSafeMode = false;
+  String _lastPosLoadPath = 'rpc';
+  String? _lastPosLoadError;
+  int _lastCategoryCount = 0;
+  int _lastItemCount = 0;
+  DateTime? _lastPosLoadAt;
+  DateTime? _lastSuccessfulCatalogLoadAt;
+  bool _catalogLoadFailed = false;
+  bool get offlineSafeMode => _offlineSafeMode;
+  String get posDataSourceLabel => 'RPC';
+  DateTime? get lastSuccessfulCatalogLoadAt => _lastSuccessfulCatalogLoadAt;
+  bool get catalogLoadFailed => _catalogLoadFailed;
+  int get queuedTransactionCount =>
+      _offlineSync.dashboardStats().queuedSalesCount;
+
+  PosProvider() {
+    _offlineSync.addListener(_handleOfflineSyncUpdate);
+    _offlineSync.initialize(_supabase);
+  }
+
+  @override
+  void dispose() {
+    _offlineSync.removeListener(_handleOfflineSyncUpdate);
+    super.dispose();
+  }
 
   void _handleOfflineSyncUpdate() {
-    _safeNotify();
+    notifyListeners();
   }
 
-  /// Safely calls [notifyListeners], deferring to post-frame if a build is active.
-  void _safeNotify() {
-    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance.addPostFrameCallback((_) => notifyListeners());
-    } else {
-      notifyListeners();
-    }
-  }
+  // ── Session ────────────────────────────────────────────────────────────────
+  PosSession? _session;
+  PosSession? get session => _session;
+  bool get hasActiveSession => _session != null;
 
-/// Provider for POS cart, party selection, and checkout operations.
-/// Maintains a frozen snapshot at checkout to ensure consistency across payment processing.
-class PosProvider extends ChangeNotifier {
-  final SupabaseClient _supabase;
-  PrinterService? _printerService;
-
+  String? _cashierId;
+  String? _cashierName;
   String? _storeId;
+  String? get cashierId => _cashierId;
+  String? get cashierName => _cashierName;
   String? get storeId => _storeId;
 
   Party? _selectedParty;
@@ -65,7 +77,7 @@ class PosProvider extends ChangeNotifier {
 
   void setSelectedParty(Party? party) {
     _selectedParty = party;
-    _safeNotify();
+    notifyListeners();
   }
 
   String? _selectedPaymentMethodId;
@@ -73,7 +85,7 @@ class PosProvider extends ChangeNotifier {
 
   void setSelectedPaymentMethodId(String? id) {
     _selectedPaymentMethodId = id;
-    _safeNotify();
+    notifyListeners();
   }
 
   // ── Cart ───────────────────────────────────────────────────────────────────
@@ -117,17 +129,17 @@ class PosProvider extends ChangeNotifier {
 
   void _setLoading(bool v) {
     _loading = v;
-    _safeNotify();
+    notifyListeners();
   }
 
   void _setError(String? e) {
     _error = e;
-    _safeNotify();
+    notifyListeners();
   }
 
   void clearError() {
     _error = null;
-    _safeNotify();
+    notifyListeners();
   }
 
   Map<String, dynamic> get posDebugSnapshot => {
@@ -153,17 +165,13 @@ class PosProvider extends ChangeNotifier {
     } else if (_error != null && _error!.contains('Offline-safe mode active')) {
       _setError(null);
     }
-    _safeNotify();
+    notifyListeners();
   }
 
-  // ── Session Management ─────────────────────────────────────────────────────
+  // ── Session management ─────────────────────────────────────────────────────
 
-  String? _currentSessionId;
-  String? get currentSessionId => _currentSessionId;
-
-  Future<bool> openSession({required String openedBy, required double openingBalance}) async {
-    _setLoading(true);
-    _setError(null);
+  /// Load cashier profile by auth user. Returns true if found.
+  Future<bool> loadCashierProfile() async {
     try {
       final authId = _supabase.auth.currentUser?.id;
       if (authId == null) return false;
@@ -177,11 +185,10 @@ class PosProvider extends ChangeNotifier {
       _cashierId = row['id'] as String;
       _cashierName = row['full_name'] as String? ?? 'Cashier';
       _storeId = row['store_id'] as String?;
-      _safeNotify();
+      notifyListeners();
       return true;
     } catch (e) {
-      _setLoading(false);
-      _setError('Failed to open session: $e');
+      _setError('Could not load user profile: $e');
       return false;
     }
   }
@@ -193,21 +200,9 @@ class PosProvider extends ChangeNotifier {
     debugPrint('[PosProvider] loadFromAppUser: user=${user.name}, role=${user.role}, storeId=${user.storeId}, userId=${user.id}');
     _cashierId = user.id;
     _cashierName = user.name;
-    if (user.storeId.isNotEmpty) {
-      _storeId = user.storeId;
-    } else {
-      // Fallback: fetch first store ID from Supabase
-      try {
-        final rows = await _supabase.from('stores').select('id').limit(1).single();
-        _storeId = rows['id'] as String?;
-        debugPrint('[PosProvider] Fallback store fetched: $_storeId');
-      } catch (e) {
-        debugPrint('[PosProvider] No store ID available: $e');
-        _storeId = null;
-      }
-    }
+    _storeId = user.storeId.isNotEmpty ? user.storeId : null; // Use user's store_id or null
     debugPrint('[PosProvider] Store context set: _storeId=$_storeId');
-    _safeNotify();
+    notifyListeners();
     await _loadPaymentMethods();
   }
 
@@ -215,62 +210,49 @@ class PosProvider extends ChangeNotifier {
   Future<bool> openSession({double openingCash = 0}) async {
     if (_cashierId == null || _storeId == null) return false;
     _setLoading(true);
-    _setError(null);
     try {
-      final result = await _supabase.rpc('close_pos_session', params: {
-        'p_session_id': _currentSessionId,
-        'p_closed_by': closedBy,
-        'p_closing_balance': closingBalance,
-        'p_note': note,
-      });
-      if (result != null && result['success'] == true) {
-        _currentSessionId = null;
-        clear();
-        _setLoading(false);
-        notifyListeners();
-        return true;
-      }
+      final row = await _supabase
+          .from('pos_sessions')
+          .insert({
+            'store_id': _storeId,
+            'cashier_id': _cashierId,
+            'status': 'open',
+            'opening_cash': openingCash,
+          })
+          .select()
+          .single();
+
+      _session = PosSession.fromJson(row);
+      await _loadPaymentMethods();
       _setLoading(false);
-      _setError('Failed to close session');
-      return false;
+      return true;
     } catch (e) {
       _setLoading(false);
-      _setError('Failed to close session: $e');
+      _setError('Failed to open session: $e');
       return false;
     }
   }
 
-  // ── Payment Methods ────────────────────────────────────────────────────────
-
-  List<PaymentMethod> _paymentMethods = [];
-  List<PaymentMethod> get paymentMethods => _paymentMethods;
-
   Future<void> _loadPaymentMethods() async {
+    if (_storeId == null) return;
     try {
-      debugPrint('[PosProvider] _loadPaymentMethods: querying for storeId=$_storeId');
-      var rows = await _supabase
+      final rows = await _supabase
           .from('payment_methods')
           .select()
           .eq('store_id', _storeId!)
+          .eq('is_active', true)
           .order('sort_order');
-      if ((rows as List).isEmpty) {
-        debugPrint('[PosProvider] No methods for storeId, fetching global methods');
-        rows = await _supabase.from('payment_methods').select().order('sort_order');
-      }
-      debugPrint('[PosProvider] _loadPaymentMethods: got ${(rows as List).length} rows');
       _paymentMethods = (rows as List)
           .map((r) => PaymentMethod.fromJson(r as Map<String, dynamic>))
           .toList();
-      debugPrint('[PosProvider] _loadPaymentMethods: parsed ${_paymentMethods.length} methods');
-      _safeNotify();
-    } catch (e, st) {
-      debugPrint('[PosProvider] _loadPaymentMethods ERROR: $e\n$st');
-    }
+      notifyListeners();
+    } catch (_) {}
   }
 
-  /// Public refresh — called from PaymentScreen.initState to ensure methods are always fresh.
+  /// Public refresh — called from PaymentScreen to ensure methods are always fresh.
   Future<void> refreshPaymentMethods() => _loadPaymentMethods();
 
+  // ── Cart operations ────────────────────────────────────────────────────────
 
   void addItem(PosItem item, {int qty = 1}) {
     final idx = _cart.indexWhere((c) => c.item.id == item.id);
@@ -288,14 +270,14 @@ class PosProvider extends ChangeNotifier {
       stockSnapshot: existing?.stockSnapshot ?? item.qtyOnHand,
     );
     _invalidateFrozenSnapshot();
-    _safeNotify();
+    notifyListeners();
   }
 
   void removeItem(String itemId) {
     _cart.removeWhere((c) => c.item.id == itemId);
     _draftSnapshotItems.remove(itemId);
     _invalidateFrozenSnapshot();
-    _safeNotify();
+    notifyListeners();
   }
 
   void setQty(String itemId, int qty) {
@@ -318,7 +300,7 @@ class PosProvider extends ChangeNotifier {
         );
       }
       _invalidateFrozenSnapshot();
-      _safeNotify();
+      notifyListeners();
     }
   }
 
@@ -338,44 +320,111 @@ class PosProvider extends ChangeNotifier {
         );
       }
       _invalidateFrozenSnapshot();
-      _safeNotify();
+      notifyListeners();
     }
   }
 
   void setCartDiscount(double amount) {
     _cartDiscount = amount.clamp(0, subtotal);
-    _safeNotify();
+    notifyListeners();
   }
 
   void clearCart() {
     _cart.clear();
     _draftSnapshotItems.clear();
     _frozenCheckoutSnapshot = null;
-    _selectedParty = null;
     _cartDiscount = 0;
-    _safeNotify();
+    notifyListeners();
   }
-
-  // ── Snapshot / Freeze ──────────────────────────────────────────────────────
 
   void _invalidateFrozenSnapshot() {
     _frozenCheckoutSnapshot = null;
   }
 
-  /// Captures a frozen snapshot for idempotent checkout. Returns null if cart is empty.
-  SaleTransactionSnapshot? freezeSnapshot() {
-    if (_cart.isEmpty) return null;
-    final items = _cart.map((c) {
-      final draft = _draftSnapshotItems[c.item.id];
-      return SaleSnapshotItem(
-        productId: c.item.id,
-        quantity: c.qty,
-        unitPriceSnapshot: draft?.unitPriceSnapshot ?? c.item.price,
-        discountSnapshot: draft?.discountSnapshot ?? 0,
-        stockSnapshot: draft?.stockSnapshot ?? c.item.qtyOnHand,
+  SaleTransactionSnapshot _buildSnapshot({
+    required String clientTransactionId,
+    required String transactionTraceId,
+  }) {
+    final items = _cart
+        .map((cartItem) => _draftSnapshotItems[cartItem.item.id] ?? snapshotItemFromCart(cartItem))
+        .toList(growable: false);
+    return SaleTransactionSnapshot(
+      clientTransactionId: clientTransactionId,
+      transactionTraceId: transactionTraceId,
+      storeId: _storeId!,
+      userId: _cashierId!,
+      items: items,
+      createdAt: DateTime.now(),
+      mode: _offlineSafeMode ? 'offline' : 'online',
+      pricingSource: 'rpc',
+      inventorySource: 'rpc',
+    );
+  }
+
+  // ── Complete sale ──────────────────────────────────────────────────────────
+
+  Future<SaleExecutionResult> completeSale(
+    List<PaymentTender> tenders, {
+    String fulfillmentPolicy = 'STRICT',
+    String? overrideToken,
+    String? overrideReason,
+    required String transactionTraceId,
+  }) async {
+    if (_cart.isEmpty) throw Exception('Cart is empty');
+    if (_cashierId == null || _storeId == null) {
+      throw Exception('No active session');
+    }
+
+    final paymentsPayload = tenders
+        .map((t) => {
+              'payment_method_id': t.method.id,
+              'amount': t.amount,
+              'reference': t.reference,
+            })
+        .toList();
+    final clientTransactionId = _offlineSync.generateClientTransactionId(
+      storeId: _storeId!,
+      cashierId: _cashierId!,
+    );
+    final snapshot = _frozenCheckoutSnapshot ??
+        _buildSnapshot(
+          clientTransactionId: clientTransactionId,
+          transactionTraceId: transactionTraceId,
+        );
+    _frozenCheckoutSnapshot = snapshot;
+
+    final itemsPayload = snapshot.items.map((s) {
+      final cartLine = _cart.firstWhere((c) => c.item.id == s.productId);
+      return {
+        'item_id': s.productId,
+        'qty': s.quantity,
+        'unit_price': s.unitPriceSnapshot,
+        'cost': cartLine.item.cost,
+        'discount': s.discountSnapshot,
+      };
+    }).toList();
+    final intent = SaleTransactionIntent(
+      clientTransactionId: clientTransactionId,
+      transactionTraceId: transactionTraceId,
+      storeId: _storeId!,
+      cashierId: _cashierId!,
+      sessionId: _session?.id,
+      items: itemsPayload
+          .map((row) => SaleTransactionIntentItem.fromJson(row))
+          .toList(growable: false),
+      payments: paymentsPayload,
+      cartDiscount: _cartDiscount,
+      createdAt: DateTime.now(),
+      fulfillmentPolicy: fulfillmentPolicy,
+    );
+
+    if (_offlineSafeMode) {
+      await _offlineSync.enqueueSale(
+        intent: intent,
+        snapshot: snapshot.toJson(),
       );
       clearCart();
-      _safeNotify();
+      notifyListeners();
       return const SaleExecutionResult(
         status: SaleExecutionStatus.success,
         conflictReason: null,
@@ -455,58 +504,224 @@ class PosProvider extends ChangeNotifier {
         'unit_price': s.unitPriceSnapshot,
       };
     }).toList();
-    _frozenCheckoutSnapshot = SaleTransactionSnapshot(items: items);
-    return _frozenCheckoutSnapshot;
-  }
 
-  SaleTransactionSnapshot? get frozenSnapshot => _frozenCheckoutSnapshot;
-
-  // ── Checkout ────────────────────────────────────────────────────────────────
-
-  Future<Map<String, dynamic>?> completeSale(
-    List<PaymentTender> tenders, {
-    String? notes,
-    String? transactionTraceId,
-  }) async {
-    _setLoading(true);
-    _setError(null);
+    // Try edge function first (rate limiting, validation, CORS);
+    // fall back to direct RPC if not configured or on failure.
+    Map<String, dynamic>? edgeResult;
     try {
-      final frozen = freezeSnapshot();
-      if (frozen == null) {
-        _setLoading(false);
-        _setError('Cart is empty');
-        return null;
-      }
-
-      final paymentMethodsJson = tenders.map((t) => {
-        'method_id': t.method.id,
-        'amount': t.amount,
-        'reference': t.reference,
+      if (tenders.length != 1) throw Exception('edge_function_single_tender_only');
+      final paymentMethodId = tenders.first.method.id;
+      final edgeItems = recordSaleItems.map((i) => {
+        'item_id': i['item_id'],
+        'quantity': i['quantity'],
+        'price': i['unit_price'],
       }).toList();
 
-      final result = await _supabase.rpc('complete_sale_transaction', params: {
-        'p_store_id': _storeId,
-        'p_session_id': _currentSessionId,
-        'p_party_id': _selectedParty?.id,
-        'p_payment_methods': paymentMethodsJson,
-        'p_notes': notes,
-        'p_snapshot': frozen.toJson(),
-        if (transactionTraceId != null) 'p_trace_id': transactionTraceId,
-      });
+      edgeResult = await EdgeFunctionSaleService.createSale(
+        storeId: _storeId!,
+        clientTransactionId: transactionTraceId,
+        items: edgeItems,
+        paymentMethodId: paymentMethodId,
+        discount: _cartDiscount,
+        reference: intent.sessionId != null ? 'session:${intent.sessionId}' : null,
+        timeout: const Duration(seconds: 30),
+      );
+    } catch (e) {
+      debugPrint('[PosProvider] Edge function call failed: $e');
+      edgeResult = null;
+    }
 
-      if (result != null && result['success'] == true) {
-        _cart.clear();
-        _draftSnapshotItems.clear();
-        _frozenCheckoutSnapshot = null;
-        _selectedParty = null;
-        _cartDiscount = 0;
-        _setLoading(false);
-        notifyListeners();
-        return result;
-      } else {
-        _setLoading(false);
-        _setError(result?['error']?.toString() ?? 'Transaction failed');
-        return null;
+    final Map<String, dynamic> resultMap;
+    if (edgeResult != null && edgeResult['success'] == true) {
+      resultMap = {
+        ...edgeResult,
+        'batch_id': edgeResult['batch_id'] ?? edgeResult['sale_id'],
+        'total_revenue': edgeResult['total_revenue'] ?? edgeResult['total'],
+      };
+    } else {
+      final result = await _supabase.rpc('record_sale', params: {
+        'p_idempotency_key': transactionTraceId,
+        'p_tenant_id': tenantId,
+        'p_store_id': _storeId,
+        'p_items': recordSaleItems,
+        'p_payments': recordSalePayments,
+        'p_notes': intent.sessionId != null ? 'session:${intent.sessionId}' : null,
+      });
+      resultMap = Map<String, dynamic>.from(result as Map);
+    }
+    final statusText = (resultMap['status'] as String? ?? 'error').toLowerCase();
+    final isSuccess = statusText == 'success';
+
+    SaleResult? sale;
+    if (isSuccess) {
+      final itemsForReceipt = List<CartItem>.from(_cart);
+      final batchId = resultMap['batch_id'] as String? ?? '';
+      final totalRevenue = (resultMap['total_revenue'] as num?)?.toDouble() ?? totalAmount;
+      sale = SaleResult(
+        saleId: batchId,
+        saleNumber: 'SALE-${DateTime.now().millisecondsSinceEpoch}',
+        subtotal: totalRevenue + _cartDiscount,
+        discount: _cartDiscount,
+        totalAmount: totalRevenue,
+        tendered: tenders.fold(0, (s, t) => s + t.amount),
+        changeDue: (tenders.fold(0.0, (s, t) => s + t.amount) - totalRevenue).clamp(0, double.infinity),
+        items: itemsForReceipt,
+      );
+      clearCart();
+      _selectedParty = null;
+    }
+
+    return SaleExecutionResult(
+      status: isSuccess ? SaleExecutionStatus.success : SaleExecutionStatus.rejected,
+      conflictReason: isSuccess ? null : (resultMap['error'] as String? ?? 'record_sale_failed'),
+      message: isSuccess ? 'Sale recorded successfully' : 'Sale failed. Please retry.',
+      adjustments: const [],
+      partialFulfillment: const [],
+      saleResult: sale,
+      transactionTraceId: transactionTraceId,
+    );
+  }
+
+  // ── Parties ────────────────────────────────────────────────────────────────
+
+  Future<List<Party>> searchParties(String query) async {
+    try {
+      final rows = await _supabase
+          .from('parties')
+          .select()
+          .ilike('name', '%$query%')
+          .limit(10);
+      return (rows as List).map((r) => Party.fromJson(r as Map<String, dynamic>)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ── Void sale ──────────────────────────────────────────────────────────────
+
+  Future<void> voidSale(String saleId, String reason) async {
+    await _supabase.rpc('void_sale', params: {
+      'p_sale_id': saleId,
+      'p_reason': reason,
+    });
+  }
+
+  // ── Refund sale ────────────────────────────────────────────────────────────
+
+  Future<void> processRefund(String saleId, double amount) async {
+    await _supabase.rpc('process_refund', params: {
+      'p_sale_id': saleId,
+      'p_amount': amount,
+    });
+  }
+
+  // ── Stock adjustment ───────────────────────────────────────────────────────
+
+  /// Adjust stock with fraud protection (5% threshold)
+  /// Returns: success, requiresManagerAuth, or error
+  Future<Map<String, dynamic>> adjustStock({
+    required String itemId,
+    required int delta,
+    String reason = 'correction',
+    String? notes,
+    String? managerPin,
+  }) async {
+    final storeId = _storeId;
+    if (storeId == null) {
+      return {'success': false, 'error': 'No store selected'};
+    }
+
+    try {
+      final response = await _supabase.functions.invoke(
+        'adjust-stock',
+        body: {
+          'store_id': storeId,
+          'item_id': itemId,
+          'delta': delta,
+          'reason': reason,
+          'notes': notes,
+          'manager_pin': managerPin,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>?;
+
+      if (response.status != 200) {
+        final errorCode = data?['error_code'] as String?;
+        final errorMsg = data?['error'] as String? ?? 'Stock adjustment failed';
+        
+        return {
+          'success': false,
+          'error': errorMsg,
+          'error_code': errorCode,
+          'requires_manager_auth': errorCode == 'MANAGER_AUTH_REQUIRED',
+        };
+      }
+
+      return {
+        'success': true,
+        'data': data,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  // ── Cash closing ─────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> recordCashClosing({
+    required double actualCash,
+    required String accountId,
+  }) async {
+    final idempotencyKey = 'cash_closing_${DateTime.now().millisecondsSinceEpoch}';
+    final tenantId = _supabase.auth.currentUser?.userMetadata?['tenant_id'];
+    final storeId = _storeId;
+
+    if (tenantId == null || storeId == null) {
+      return {'status': 'error', 'message': 'Missing tenant or store ID'};
+    }
+
+    try {
+      final result = await _supabase.rpc('record_cash_closing', params: {
+        'p_idempotency_key': idempotencyKey,
+        'p_tenant_id': tenantId,
+        'p_store_id': storeId,
+        'p_account_id': accountId,
+        'p_actual_cash': actualCash,
+      });
+      return result as Map<String, dynamic>;
+    } catch (e) {
+      return {'status': 'error', 'message': e.toString()};
+    }
+  }
+
+  // ── Scan / search ──────────────────────────────────────────────────────────
+
+  Future<PosItem?> scanItem(String value) async {
+    if (_storeId == null) return null;
+    final result = await _supabase.rpc('lookup_item_by_scan', params: {
+      'p_scan_value': value,
+      'p_store_id': _storeId,
+    });
+    if (result == null) return null;
+    return PosItem.fromJson(result as Map<String, dynamic>);
+  }
+
+  Future<List<PosItem>> searchItems(String query, {String? categoryId}) async {
+    if (_storeId == null) return [];
+    final cacheKey = '${query.trim().toLowerCase()}::${categoryId ?? 'all'}';
+    if (_offlineSafeMode) {
+      return _searchCache[cacheKey] ?? const <PosItem>[];
+    }
+    try {
+      final items = await _searchItemsRpc(query, categoryId: categoryId);
+      _searchCache[cacheKey] = items;
+      // Evict oldest entry when cache exceeds max size to prevent unbounded growth.
+      if (_searchCache.length > _searchCacheMaxSize) {
+        _searchCache.remove(_searchCache.keys.first);
       }
       _catalogLoadFailed = false;
       _lastSuccessfulCatalogLoadAt = DateTime.now();
@@ -516,7 +731,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadError = 'search_rpc_failed: $firstError';
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
-      _safeNotify();
+      notifyListeners();
       return const <PosItem>[];
     }
   }
@@ -529,7 +744,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadPath = 'rpc';
       _lastPosLoadError = 'categories_rpc_failed: $firstError';
       _lastPosLoadAt = DateTime.now();
-      _safeNotify();
+      notifyListeners();
       return [];
     }
   }
@@ -543,7 +758,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadError = missingStore;
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
-      _safeNotify();
+      notifyListeners();
       return const PosCatalogLoadResult(
         categories: [],
         items: [],
@@ -570,7 +785,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadError = 'catalog_load_failed: $e';
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
-      _safeNotify();
+      notifyListeners();
       return PosCatalogLoadResult(
         categories: const [],
         items: const [],
@@ -598,7 +813,7 @@ class PosProvider extends ChangeNotifier {
     _lastItemCount = items.length;
     _lastPosLoadAt = DateTime.now();
     _catalogLoadFailed = false;
-    _safeNotify();
+    notifyListeners();
     return items;
   }
 
@@ -615,18 +830,43 @@ class PosProvider extends ChangeNotifier {
     _lastCategoryCount = categories.length;
     _lastPosLoadAt = DateTime.now();
     _catalogLoadFailed = false;
-    _safeNotify();
+    notifyListeners();
     return categories;
   }
 
-  PrinterService? get printerService => _printerService;
+  String _scanBuffer = '';
+  DateTime _lastKeyTime = DateTime.now();
 
-  /// Safely notifies listeners only when not locked (prevents exceptions when notifyListeners is disallowed)
-  void _safeNotify() {
+  void handleScannerKeypress(String char) {
+    final now = DateTime.now();
+    
+    // Reset buffer if >100ms gap (new scan)
+    if (now.difference(_lastKeyTime).inMilliseconds > 100) {
+      _scanBuffer = '';
+    }
+    _lastKeyTime = now;
+    
+    if (char == '\n' || char == '\r') {
+      // Process complete barcode
+      if (_scanBuffer.isNotEmpty) {
+        lookupAndAddProduct(_scanBuffer.trim());
+        _scanBuffer = '';
+      }
+    } else {
+      _scanBuffer += char;
+    }
+  }
+
+  Future<void> lookupAndAddProduct(String code) async {
     try {
-      notifyListeners();
-    } catch (_) {
-      // Ignore when _debugLocked is true
+      final product = await scanItem(code);
+      if (product != null) {
+        addItem(product);
+      } else {
+        _setError('Item not found: $code');
+      }
+    } catch (e) {
+      _setError('Scan error: $e');
     }
   }
 }
