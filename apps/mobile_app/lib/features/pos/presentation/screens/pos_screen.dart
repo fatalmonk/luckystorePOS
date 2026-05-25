@@ -418,7 +418,12 @@ class _PosScreenState extends State<PosScreen> {
           onClearCart: () => showClearCartDialog(context, pos),
           onContinue: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const PaymentScreen()),
+            MaterialPageRoute(
+              builder: (_) => ChangeNotifierProvider.value(
+                value: pos,
+                child: const PaymentScreen(),
+              ),
+            ),
           ),
           onRemoveItemAt: (int index) => () => pos.removeItem(pos.cart[index].item.id),
           onQtyChangedAt: (int index) => (int q) => pos.setQty(pos.cart[index].item.id, q),

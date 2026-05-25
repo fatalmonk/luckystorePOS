@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/pos_models.dart';
 import '../../models/sale_transaction_snapshot.dart';
@@ -57,7 +58,16 @@ class PosProvider extends ChangeNotifier {
   }
 
   void _handleOfflineSyncUpdate() {
-    notifyListeners();
+    _safeNotify();
+  }
+
+  /// Safely calls [notifyListeners], deferring to post-frame if a build is active.
+  void _safeNotify() {
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => notifyListeners());
+    } else {
+      notifyListeners();
+    }
   }
 
   // ── Session ────────────────────────────────────────────────────────────────
@@ -77,7 +87,7 @@ class PosProvider extends ChangeNotifier {
 
   void setSelectedParty(Party? party) {
     _selectedParty = party;
-    notifyListeners();
+    _safeNotify();
   }
 
   String? _selectedPaymentMethodId;
@@ -85,7 +95,7 @@ class PosProvider extends ChangeNotifier {
 
   void setSelectedPaymentMethodId(String? id) {
     _selectedPaymentMethodId = id;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ── Cart ───────────────────────────────────────────────────────────────────
@@ -129,17 +139,17 @@ class PosProvider extends ChangeNotifier {
 
   void _setLoading(bool v) {
     _loading = v;
-    notifyListeners();
+    _safeNotify();
   }
 
   void _setError(String? e) {
     _error = e;
-    notifyListeners();
+    _safeNotify();
   }
 
   void clearError() {
     _error = null;
-    notifyListeners();
+    _safeNotify();
   }
 
   Map<String, dynamic> get posDebugSnapshot => {
@@ -165,7 +175,7 @@ class PosProvider extends ChangeNotifier {
     } else if (_error != null && _error!.contains('Offline-safe mode active')) {
       _setError(null);
     }
-    notifyListeners();
+    _safeNotify();
   }
 
   // ── Session management ─────────────────────────────────────────────────────
@@ -185,7 +195,7 @@ class PosProvider extends ChangeNotifier {
       _cashierId = row['id'] as String;
       _cashierName = row['full_name'] as String? ?? 'Cashier';
       _storeId = row['store_id'] as String?;
-      notifyListeners();
+      _safeNotify();
       return true;
     } catch (e) {
       _setError('Could not load user profile: $e');
@@ -200,9 +210,21 @@ class PosProvider extends ChangeNotifier {
     debugPrint('[PosProvider] loadFromAppUser: user=${user.name}, role=${user.role}, storeId=${user.storeId}, userId=${user.id}');
     _cashierId = user.id;
     _cashierName = user.name;
-    _storeId = user.storeId.isNotEmpty ? user.storeId : null; // Use user's store_id or null
+    if (user.storeId.isNotEmpty) {
+      _storeId = user.storeId;
+    } else {
+      // Fallback: fetch first store ID from Supabase
+      try {
+        final rows = await _supabase.from('stores').select('id').limit(1).single();
+        _storeId = rows['id'] as String?;
+        debugPrint('[PosProvider] Fallback store fetched: $_storeId');
+      } catch (e) {
+        debugPrint('[PosProvider] No store ID available: $e');
+        _storeId = null;
+      }
+    }
     debugPrint('[PosProvider] Store context set: _storeId=$_storeId');
-    notifyListeners();
+    _safeNotify();
     await _loadPaymentMethods();
   }
 
@@ -234,24 +256,23 @@ class PosProvider extends ChangeNotifier {
   }
 
   Future<void> _loadPaymentMethods() async {
-    if (_storeId == null) {
-      debugPrint('[PosProvider] _loadPaymentMethods: skipped — _storeId is null');
-      return;
-    }
     try {
       debugPrint('[PosProvider] _loadPaymentMethods: querying for storeId=$_storeId');
-      final rows = await _supabase
+      var rows = await _supabase
           .from('payment_methods')
           .select()
           .eq('store_id', _storeId!)
-          .eq('is_active', true)
           .order('sort_order');
-      debugPrint('[PosProvider] _loadPaymentMethods: got ${(rows as List).length} rows: $rows');
+      if ((rows as List).isEmpty) {
+        debugPrint('[PosProvider] No methods for storeId, fetching global methods');
+        rows = await _supabase.from('payment_methods').select().order('sort_order');
+      }
+      debugPrint('[PosProvider] _loadPaymentMethods: got ${(rows as List).length} rows');
       _paymentMethods = (rows as List)
           .map((r) => PaymentMethod.fromJson(r as Map<String, dynamic>))
           .toList();
-      debugPrint('[PosProvider] _loadPaymentMethods: parsed ${_paymentMethods.length} methods: ${_paymentMethods.map((m) => m.name).join(', ')}');
-      notifyListeners();
+      debugPrint('[PosProvider] _loadPaymentMethods: parsed ${_paymentMethods.length} methods');
+      _safeNotify();
     } catch (e, st) {
       debugPrint('[PosProvider] _loadPaymentMethods ERROR: $e\n$st');
     }
@@ -277,14 +298,14 @@ class PosProvider extends ChangeNotifier {
       stockSnapshot: existing?.stockSnapshot ?? item.qtyOnHand,
     );
     _invalidateFrozenSnapshot();
-    notifyListeners();
+    _safeNotify();
   }
 
   void removeItem(String itemId) {
     _cart.removeWhere((c) => c.item.id == itemId);
     _draftSnapshotItems.remove(itemId);
     _invalidateFrozenSnapshot();
-    notifyListeners();
+    _safeNotify();
   }
 
   void setQty(String itemId, int qty) {
@@ -307,7 +328,7 @@ class PosProvider extends ChangeNotifier {
         );
       }
       _invalidateFrozenSnapshot();
-      notifyListeners();
+      _safeNotify();
     }
   }
 
@@ -327,13 +348,13 @@ class PosProvider extends ChangeNotifier {
         );
       }
       _invalidateFrozenSnapshot();
-      notifyListeners();
+      _safeNotify();
     }
   }
 
   void setCartDiscount(double amount) {
     _cartDiscount = amount.clamp(0, subtotal);
-    notifyListeners();
+    _safeNotify();
   }
 
   void clearCart() {
@@ -341,7 +362,7 @@ class PosProvider extends ChangeNotifier {
     _draftSnapshotItems.clear();
     _frozenCheckoutSnapshot = null;
     _cartDiscount = 0;
-    notifyListeners();
+    _safeNotify();
   }
 
   void _invalidateFrozenSnapshot() {
@@ -431,7 +452,7 @@ class PosProvider extends ChangeNotifier {
         snapshot: snapshot.toJson(),
       );
       clearCart();
-      notifyListeners();
+      _safeNotify();
       return const SaleExecutionResult(
         status: SaleExecutionStatus.success,
         conflictReason: null,
@@ -738,7 +759,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadError = 'search_rpc_failed: $firstError';
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
-      notifyListeners();
+      _safeNotify();
       return const <PosItem>[];
     }
   }
@@ -751,7 +772,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadPath = 'rpc';
       _lastPosLoadError = 'categories_rpc_failed: $firstError';
       _lastPosLoadAt = DateTime.now();
-      notifyListeners();
+      _safeNotify();
       return [];
     }
   }
@@ -765,7 +786,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadError = missingStore;
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
-      notifyListeners();
+      _safeNotify();
       return const PosCatalogLoadResult(
         categories: [],
         items: [],
@@ -792,7 +813,7 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadError = 'catalog_load_failed: $e';
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
-      notifyListeners();
+      _safeNotify();
       return PosCatalogLoadResult(
         categories: const [],
         items: const [],
@@ -820,7 +841,7 @@ class PosProvider extends ChangeNotifier {
     _lastItemCount = items.length;
     _lastPosLoadAt = DateTime.now();
     _catalogLoadFailed = false;
-    notifyListeners();
+    _safeNotify();
     return items;
   }
 
@@ -837,7 +858,7 @@ class PosProvider extends ChangeNotifier {
     _lastCategoryCount = categories.length;
     _lastPosLoadAt = DateTime.now();
     _catalogLoadFailed = false;
-    notifyListeners();
+    _safeNotify();
     return categories;
   }
 
