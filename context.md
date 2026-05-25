@@ -4,7 +4,7 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-Fix mobile app payment methods visibility and layout tokens
+Merge feature/warm-redesign to main (conflicts resolved)
 
 ## Done
 - **Core Redesign**: `theme/tokens.ts`, Tailwind warm palette, CSS vars.
@@ -18,9 +18,10 @@ Fix mobile app payment methods visibility and layout tokens
   - Integrated speed POS keyboard shortcuts (`F2`, `F12`, `Escape`, `Ctrl+K`).
 - **Backend**: Fixed `search_items_pos` 42703 error via `20260523000000_fix_pos_search_is_active.sql`.
 - **Mobile App**: Updated font tokens, fixed payment methods RLS issue (added service account to users), resolved `notifyListeners` build exceptions.
+- **Merge Conflicts**: Resolved 5 conflicts in `payment_screen.dart`, `pos_main_screen.dart`, `pos_screen.dart`
 
-## Decisions
-- Bengali/English + Hind Siliguri font.
+## Next
+Push and merge PR #135
 - Tailwind extension with warm palette.
 - Keep nested sidebar structure (collapsible).
 - POS categories are horizontal pills for tablet space.
