@@ -103,7 +103,7 @@ class PosProvider extends ChangeNotifier {
 
   void setSelectedPaymentMethodId(String? id) {
     _selectedPaymentMethodId = id;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ── Cart ───────────────────────────────────────────────────────────────────

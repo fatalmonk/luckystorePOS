@@ -62,13 +62,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
       await pos.refreshPaymentMethods();
       if (!mounted) return;
       if (_selectedMethod == null && pos.paymentMethods.isNotEmpty) {
-        setState(() {
-          _selectedMethod = pos.paymentMethods.firstWhere(
-            (m) => m.type == 'cash',
-            orElse: () => pos.paymentMethods.first,
-          );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            _selectedMethod = pos.paymentMethods.firstWhere(
+              (m) => m.type == 'cash',
+              orElse: () => pos.paymentMethods.first,
+            );
+          });
+          pos.setSelectedPaymentMethodId(_selectedMethod?.id);
         });
-        pos.setSelectedPaymentMethodId(_selectedMethod?.id);
       }
     });
 
