@@ -42,7 +42,7 @@ export const CashflowChart = () => {
 
       {isLoading ? (
         <div className="h-[300px]">
-          <SkeletonBlock height="300px" />
+          <SkeletonBlock className="h-full w-full" />
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
