@@ -55,7 +55,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
     // Seed numpad with the total so cashier just has to press CHARGE/COMPLETE for exact
     _numpadValue = pos.totalAmount.toStringAsFixed(0);
-    
+
+    // Always refresh payment methods from Supabase when checkout opens,
+    // then auto-select cash if the list was empty before.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await pos.refreshPaymentMethods();
+      if (!mounted) return;
+      if (_selectedMethod == null && pos.paymentMethods.isNotEmpty) {
+        setState(() {
+          _selectedMethod = pos.paymentMethods.firstWhere(
+            (m) => m.type == 'cash',
+            orElse: () => pos.paymentMethods.first,
+          );
+        });
+        pos.setSelectedPaymentMethodId(_selectedMethod?.id);
+      }
+    });
+
     // Register physical keyboard and scanner wedge key interceptors
     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
@@ -153,21 +169,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   bool _canCompleteSale(PosProvider pos) {
+    // Reset any previous error
+    _error = null;
+
     if (_selectedMethod == null) return false;
-    
+
     // Credit check
     if (_isCredit(_selectedMethod) && pos.selectedParty == null) {
+      _error = 'Customer selection required for credit sales.';
       return false;
     }
-    
+
     // Cash short check
     if (_selectedMethod!.type == 'cash') {
       final entered = _parsedAmount > 0 ? _parsedAmount : pos.totalAmount;
       if (entered < pos.totalAmount) {
+        _error = 'Cash amount is less than total. Please enter sufficient cash.';
         return false;
       }
     }
-    
+
     return true;
   }
 
