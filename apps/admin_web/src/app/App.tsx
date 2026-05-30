@@ -27,6 +27,10 @@ const LazyRemindersPage = React.lazy(() => import('../features/reminders/Reminde
 const LazyExpensesPage = React.lazy(() => import('../features/expenses/ExpensesPage').then(m => ({ default: m.ExpensesPage })));
 const LazyDailySalesPage = React.lazy(() => import('../features/sales/DailySalesPage').then(m => ({ default: m.DailySalesPage })));
 const LazyCompetitorPricesPage = React.lazy(() => import('../features/competitorPrices/CompetitorPricesPage').then(m => ({ default: m.CompetitorPricesPage })));
+const LazyImportPartiesPage = React.lazy(() => import('../features/import/ImportPartiesPage').then(m => ({ default: m.ImportPartiesPage })));
+const LazyImportProductsPage = React.lazy(() => import('../features/import/ImportProductsPage').then(m => ({ default: m.ImportProductsPage })));
+const LazyOtherIncomePage = React.lazy(() => import('../features/otherIncome/OtherIncomePage').then(m => ({ default: m.OtherIncomePage })));
+const LazyStaffDashboardPage = React.lazy(() => import('../features/staff/StaffDashboardPage').then(m => ({ default: m.StaffDashboardPage })));
 
 function SuspenseFallback() {
   return (
@@ -81,6 +85,10 @@ export function App() {
                   <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
                   <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
                   <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
+                  <Route path="import/parties" element={<LazyRoute><LazyImportPartiesPage /></LazyRoute>} />
+                  <Route path="import/products" element={<LazyRoute><LazyImportProductsPage /></LazyRoute>} />
+                  <Route path="other-income" element={<LazyRoute><LazyOtherIncomePage /></LazyRoute>} />
+                  <Route path="staff" element={<LazyRoute><LazyStaffDashboardPage /></LazyRoute>} />
                 </Route>
               </Routes>
               <InstallPrompt />
