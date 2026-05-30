@@ -30,10 +30,12 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
-CREATE TYPE "public"."discount_type" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "public"."discount_type" AS ENUM (
     'percentage',
     'fixed'
-);
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 
 ALTER TYPE "public"."discount_type" OWNER TO "postgres";
