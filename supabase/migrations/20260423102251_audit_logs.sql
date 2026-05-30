@@ -22,6 +22,7 @@ GRANT SELECT ON public.audit_logs TO authenticated; -- Allow staff to see logs
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Only admins/managers can view audit logs for their tenant
+DROP POLICY IF EXISTS audit_logs_select_staff ON public.audit_logs;
 CREATE POLICY audit_logs_select_staff ON public.audit_logs
     FOR SELECT TO authenticated
     USING (
