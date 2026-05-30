@@ -142,6 +142,9 @@ export function DashboardPage() {
   const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
   const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
 
+  // Tab state - must be before any conditional returns (React Rules of Hooks)
+  const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'operations'>('overview');
+
   // Calculate totals from daily_sales (all-time)
   const totalRevenue = dailySales.reduce((sum: number, s: any) => sum + Number(s.cash_amount || 0) + Number(s.bkash_amount || 0), 0);
   const totalCredit = dailySales.reduce((sum: number, s: any) => sum + Number(s.credit_amount || 0), 0);
@@ -242,8 +245,6 @@ export function DashboardPage() {
       </div>
     );
   }
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'operations'>('overview');
 
   return (
     <div className="dashboard-container">
