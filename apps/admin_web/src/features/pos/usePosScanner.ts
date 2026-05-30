@@ -39,7 +39,7 @@ export function usePosScanner(
           onError(`Item not found: ${value}`);
           setScanValue('');
         }
-      } catch (err: any) {
+      } catch (err: { message?: string }) {
         onError(`Scan error: ${err.message}`);
         setScanValue('');
       }
@@ -76,7 +76,7 @@ export function usePosScanner(
           } else {
             onError(`Item not found: ${value}`);
           }
-        } catch (err: any) {
+        } catch (err: { message?: string }) {
           onError(`Scan error: ${err.message}`);
         }
         return;

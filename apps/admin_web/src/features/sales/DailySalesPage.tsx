@@ -1,14 +1,12 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { useNotify } from '../../components/NotificationContext';
-import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { MetricCard } from '../../components/data-display/MetricCard';
-import { TableFilters } from '../../components/data-display/TableFilters';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line, CartesianGrid,
@@ -19,16 +17,9 @@ import {
   CalendarDays,
   Wallet,
   Plus,
-  ArrowUp,
-  ArrowDown,
-  CreditCard,
-  Banknote, Download, Trash2,
 } from 'lucide-react';
-import { format, startOfDay, startOfWeek, startOfMonth, endOfWeek, endOfMonth, isToday, isThisWeek, isThisMonth, isSameDay, subMonths, subWeeks, parseISO, subDays } from 'date-fns';
+import { format, isToday, isThisWeek, isThisMonth, parseISO } from 'date-fns';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
-import { downloadCSV, formatCurrency } from '../../lib/format';
-
-type TempRow = DailySale & { tempId?: string; isNew?: boolean };
 
 const CHART_COLORS = [
   'var(--color-success-default)',
@@ -45,367 +36,8 @@ export function DailySalesPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingSale, setEditingSale] = useState<DailySale | null>(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [hideEmptyDays, setHideEmptyDays] = useState(true);
-  // Selected month filter (format: 'yyyy-MM')
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
-
-  // Inline editing state for All Sales Entries table
-  const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
-  const [editValues, setEditValues] = useState<Record<string, Partial<DailySale>>>({});
-  const [savingRows, setSavingRows] = useState<Set<string>>(new Set());
-  const [savedRows, setSavedRows] = useState<Set<string>>(new Set());
-  const [errorRows, setErrorRows] = useState<Set<string>>(new Set());
-  const [dirtyRows, setDirtyRows] = useState<Set<string>>(new Set());
-  const [tempRows, setTempRows] = useState<TempRow[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const editableFields = ['saleDate', 'cashAmount', 'bkashAmount', 'creditAmount', 'stockPurchase', 'dailyExpense'];
-  const fieldOrder = editableFields;
-
-  const getCellValue = (sale: DailySale, field: string) => {
-    const edited = editValues[sale.id];
-    if (edited && field in edited) {
-      return edited[field as keyof DailySale];
-    }
-    return sale[field as keyof DailySale];
-  };
-
-  const calculateTotals = (values: Partial<DailySale>) => {
-    const cash = Number(values.cashAmount ?? 0);
-    const bkash = Number(values.bkashAmount ?? 0);
-    const credit = Number(values.creditAmount ?? 0);
-    const purchase = Number(values.stockPurchase ?? 0);
-    const expense = Number(values.dailyExpense ?? 0);
-    const salesTotal = cash + bkash + credit;
-    const netTotal = salesTotal - purchase - expense;
-    return { salesTotal, netTotal };
-  };
-
-  const TEMP_ROW_PREFIX = 'temp-';
-
-  const createNewRow = () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const tempId = `${TEMP_ROW_PREFIX}${Date.now()}`;
-    const now = new Date().toISOString();
-    const newRow: TempRow = {
-      id: tempId,
-      tempId,
-      isNew: true,
-      saleDate: today,
-      cashAmount: 0,
-      bkashAmount: 0,
-      creditAmount: 0,
-      totalSales: 0,
-      stockPurchase: 0,
-      dailyExpense: 0,
-      storeId: storeId || '',
-      createdAt: now,
-      updatedAt: now,
-    };
-    setTempRows(prev => [newRow, ...prev]);
-    setEditingCell({ rowId: tempId, field: 'saleDate' });
-  };
-
-  const isTempRow = (id: string) => id.startsWith(TEMP_ROW_PREFIX);
-
-  const handleCreateFromTemp = async (tempRow: DailySale) => {
-    const edited = editValues[tempRow.id];
-    const values = {
-      saleDate: edited?.saleDate ?? tempRow.saleDate,
-      cashAmount: Number(edited?.cashAmount ?? tempRow.cashAmount ?? 0),
-      bkashAmount: Number(edited?.bkashAmount ?? tempRow.bkashAmount ?? 0),
-      creditAmount: Number(edited?.creditAmount ?? tempRow.creditAmount ?? 0),
-      stockPurchase: Number(edited?.stockPurchase ?? tempRow.stockPurchase ?? 0),
-      dailyExpense: Number(edited?.dailyExpense ?? tempRow.dailyExpense ?? 0),
-    };
-    const { salesTotal } = calculateTotals({ ...values, totalSales: 0 });
-    
-    setSavingRows(prev => new Set(prev).add(tempRow.id));
-    
-    try {
-      await createMutation.mutateAsync({
-        ...values,
-        totalSales: salesTotal,
-      });
-      setTempRows(prev => prev.filter(r => r.id !== tempRow.id));
-      setEditValues(prev => {
-        const next = { ...prev };
-        delete next[tempRow.id];
-        return next;
-      });
-    } catch (err: any) {
-      notify(err.message || 'Failed to create entry', 'error');
-      setErrorRows(prev => new Set(prev).add(tempRow.id));
-    } finally {
-      setSavingRows(prev => {
-        const next = new Set(prev);
-        next.delete(tempRow.id);
-        return next;
-      });
-      setEditingCell(null);
-    }
-  };
-
-  const handleDeleteRow = (id: string) => {
-    if (!window.confirm('Delete this entry? This cannot be undone.')) return;
-    if (isTempRow(id)) {
-      setTempRows((prev: TempRow[]) => prev.filter((r: TempRow) => r.id !== id));
-    } else {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  const validateValue = (field: string, value: string): { valid: boolean; parsed: any } => {
-    if (field === 'saleDate') {
-      return { valid: true, parsed: value };
-    }
-    const num = parseFloat(value);
-    if (isNaN(num)) return { valid: true, parsed: 0 };
-    if (num < 0) return { valid: false, parsed: 0 };
-    if (num > 999999999.99) return { valid: false, parsed: 999999999.99 };
-    return { valid: true, parsed: num };
-  };
-
-  const handleCellClick = (sale: DailySale, field: string) => {
-    if (!editableFields.includes(field)) return;
-    setEditingCell({ rowId: sale.id, field });
-    setEditValues(prev => ({
-      ...prev,
-      [sale.id]: { ...prev[sale.id], ...sale }
-    }));
-  };
-
-  const handleCellChange = (saleId: string, field: string, value: string) => {
-    const { valid, parsed } = validateValue(field, value);
-    if (!valid) return;
-    
-    setEditValues(prev => ({
-      ...prev,
-      [saleId]: { ...prev[saleId], [field]: parsed }
-    }));
-    setDirtyRows(prev => new Set(prev).add(saleId));
-  };
-
-  const saveCellValue = async (sale: DailySale, field: string) => {
-    const edited = editValues[sale.id];
-    if (!edited) {
-      setEditingCell(null);
-      return;
-    }
-
-    const originalValue = sale[field as keyof DailySale];
-    const newValue = edited[field as keyof DailySale];
-
-    // Only save if value actually changed
-    if (JSON.stringify(originalValue) === JSON.stringify(newValue)) {
-      setEditingCell(null);
-      return;
-    }
-
-    // Validation for negative
-    if (field !== 'saleDate' && Number(newValue) < 0) {
-      notify('Amount cannot be negative', 'error');
-      setEditValues(prev => ({
-        ...prev,
-        [sale.id]: { ...prev[sale.id], [field]: 0 }
-      }));
-      return;
-    }
-
-    setSavingRows(prev => new Set(prev).add(sale.id));
-    setEditingCell(null);
-    setDirtyRows(prev => {
-      const next = new Set(prev);
-      next.delete(sale.id);
-      return next;
-    });
-
-    const updates: Partial<DailySaleFormData> = { [field]: newValue };
-    
-    // Also update totalSales if payment amounts changed
-    if (['cashAmount', 'bkashAmount', 'creditAmount'].includes(field)) {
-      const { salesTotal } = calculateTotals(edited);
-      updates.totalSales = salesTotal;
-    }
-
-    try {
-      await api.dailySales.update(sale.id, updates);
-      notify('Daily sale updated successfully.', 'success');
-      queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
-      setSavedRows(prev => new Set(prev).add(sale.id));
-      setErrorRows(prev => {
-        const next = new Set(prev);
-        next.delete(sale.id);
-        return next;
-      });
-      setTimeout(() => {
-        setSavedRows(prev => {
-          const next = new Set(prev);
-          next.delete(sale.id);
-          return next;
-        });
-      }, 2000);
-    } catch (err: any) {
-      notify(err.message || 'Failed to save row', 'error');
-      setErrorRows(prev => new Set(prev).add(sale.id));
-      // Revert to original
-      setEditValues(prev => ({
-        ...prev,
-        [sale.id]: { ...sale }
-      }));
-    } finally {
-      setSavingRows(prev => {
-        const next = new Set(prev);
-        next.delete(sale.id);
-        return next;
-      });
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent, sale: DailySale, field: string, rowIndex: number, salesList: DailySale[]) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const isLastRow = rowIndex === salesList.length - 1;
-      const isLastField = field === 'dailyExpense';
-      
-      if (isTempRow(sale.id)) {
-        // For temp rows, Enter saves the entire row as new entry
-        handleCreateFromTemp(sale);
-        if (isLastRow) {
-          setTimeout(() => createNewRow(), 100);
-        }
-      } else {
-        saveCellValue(sale, field);
-        // Move to next row, same column
-        if (isLastRow && isLastField) {
-          // On last row's last field, create new row
-          setTimeout(() => createNewRow(), 0);
-        } else if (!isLastRow) {
-          setTimeout(() => {
-            setEditingCell({ rowId: salesList[rowIndex + 1].id, field });
-          }, 0);
-        }
-      }
-    } else if (e.key === 'Escape') {
-      setEditingCell(null);
-      setEditValues(prev => ({
-        ...prev,
-        [sale.id]: { ...sale }
-      }));
-      setDirtyRows(prev => {
-        const next = new Set(prev);
-        next.delete(sale.id);
-        return next;
-      });
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      const currentFieldIndex = fieldOrder.indexOf(field);
-      let nextFieldIndex: number;
-      let nextRowIndex = rowIndex;
-      
-      if (e.shiftKey) {
-        // Shift+Tab: previous field
-        nextFieldIndex = currentFieldIndex - 1;
-        if (nextFieldIndex < 0) {
-          nextFieldIndex = fieldOrder.length - 1;
-          nextRowIndex = rowIndex - 1;
-        }
-      } else {
-        // Tab: next field
-        nextFieldIndex = currentFieldIndex + 1;
-        if (nextFieldIndex >= fieldOrder.length) {
-          nextFieldIndex = 0;
-          nextRowIndex = rowIndex + 1;
-        }
-      }
-      
-      if (nextRowIndex >= 0 && nextRowIndex < salesList.length) {
-        saveCellValue(sale, field);
-        setTimeout(() => {
-          setEditingCell({ rowId: salesList[nextRowIndex].id, field: fieldOrder[nextFieldIndex] });
-        }, 0);
-      }
-    }
-  };
-
-  const focusInput = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-      if (inputRef.current.type === 'text' || inputRef.current.type === 'number') {
-        inputRef.current.select();
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (editingCell) {
-      focusInput();
-    }
-  }, [editingCell, focusInput]);
-
-  const renderEditableCell = (sale: DailySale, field: string, rowIndex: number, salesList: DailySale[]) => {
-    const isEditing = editingCell?.rowId === sale.id && editingCell?.field === field;
-    const value = getCellValue(sale, field);
-    const isSaving = savingRows.has(sale.id);
-    const isSaved = savedRows.has(sale.id);
-    const isDirty = dirtyRows.has(sale.id);
-    const hasError = errorRows.has(sale.id);
-
-    if (isEditing) {
-      const inputType = field === 'saleDate' ? 'date' : 'number';
-      const step = field === 'saleDate' ? undefined : '0.01';
-      const min = field === 'saleDate' ? undefined : '0';
-      const displayValue = field === 'saleDate' ? value : (value === '' || value === null || value === undefined ? '' : Number(value));
-
-      return (
-        <td className="py-2 px-2 relative" key={`${sale.id}-${field}-edit`}
-          style={{ 
-            border: '2px solid var(--color-primary)',
-            backgroundColor: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))'
-          }}
-        >
-          <input
-            ref={inputRef}
-            type={inputType}
-            step={step}
-            min={min}
-            value={displayValue}
-            onChange={(e) => handleCellChange(sale.id, field, e.target.value)}
-            onBlur={() => saveCellValue(sale, field)}
-            onKeyDown={(e) => handleKeyDown(e, sale, field, rowIndex, salesList)}
-            className="w-full px-2 py-1 text-sm text-right rounded outline-none bg-transparent"
-          />
-      </td>
-      );
-    }
-
-    const formatValue = (val: any, f: string) => {
-      if (f === 'saleDate') return format(new Date(val), 'dd MMM yyyy');
-      return `৳${Number(val || 0).toLocaleString()}`;
-    };
-
-    return (
-      <td
-        key={`${sale.id}-${field}`}
-        className="py-3 px-4 text-sm text-text-primary text-right cursor-pointer hover:bg-surface-secondary transition-colors relative"
-        onClick={() => handleCellClick(sale, field)}
-        style={{ opacity: isSaving ? 0.7 : 1 }}
-      >
-        <span>{formatValue(value, field)}</span>
-        {isDirty && !isSaved && !hasError && (
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-warning" title="Unsaved changes" />
-        )}
-        {isSaved && (
-          <span className="absolute top-1 right-1 text-success text-xs" title="Saved">✓</span>
-        )}
-        {hasError && (
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger" title="Save failed - click to retry" />
-        )}
-      </td>
-    );
-  };
+  const [startDate] = useState('');
+  const [endDate] = useState('');
 
   const { data: sales, isLoading, error, refetch } = useQuery({
     queryKey: ['dailySales', storeId],
@@ -414,26 +46,13 @@ export function DailySalesPage() {
 
   const createMutation = useMutation({
     mutationFn: (form: DailySaleFormData) => api.dailySales.create(storeId, form),
-    onSuccess: (created) => {
+    onSuccess: () => {
       notify('Daily sale recorded successfully.', 'success');
       queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
-      // Remove temp row that matches this new entry
-      setTempRows(prev => prev.filter(r => r.tempId !== created.id));
       setShowForm(false);
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to record daily sale.', 'error');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.dailySales.remove(id),
-    onSuccess: () => {
-      notify('Entry deleted', 'success');
-      queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
-    },
-    onError: (err: any) => {
-      notify(err.message || 'Failed to delete entry.', 'error');
     },
   });
 
@@ -445,99 +64,48 @@ export function DailySalesPage() {
       queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
       setEditingSale(null);
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to update daily sale.', 'error');
     },
   });
 
-  
-
-  const allSales = sales || [];
+  const filtered = useMemo(() => {
+    if (!sales) return [];
+    return sales.filter((s) => {
+      if (startDate && s.saleDate < startDate) return false;
+      if (endDate && s.saleDate > endDate) return false;
+      return true;
+    });
+  }, [sales, startDate, endDate]);
 
   // Time-based totals
   const todayTotal = useMemo(
-    () => allSales.filter((s) => isToday(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
-  );
-
-  // Yesterday's total
-  const yesterdayDate = subDays(new Date(), 1);
-  const yesterdayTotal = useMemo(
-    () => allSales.filter((s) => isSameDay(new Date(s.saleDate), yesterdayDate)).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
+    () => filtered.filter((s) => isToday(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
+    [filtered],
   );
   const weekTotal = useMemo(
-    () => allSales.filter((s) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
-  );
-  // Last week's total (previous week)
-  const startPrevWeek = startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
-  const endPrevWeek = endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
-  const lastWeekTotal = useMemo(
-    () => allSales.filter((s) => {
-      const d = new Date(s.saleDate);
-      return d >= startPrevWeek && d <= endPrevWeek;
-    }).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
+    () => filtered.filter((s) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum, s) => sum + s.totalSales, 0),
+    [filtered],
   );
   const monthTotal = useMemo(
-    () => allSales.filter((s) => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
-  );
-  // Last month's total (previous month)
-  const startPrevMonth = startOfMonth(subMonths(new Date(), 1));
-  const endPrevMonth = endOfMonth(subMonths(new Date(), 1));
-  const lastMonthTotal = useMemo(
-    () => allSales.filter((s) => {
-      const d = new Date(s.saleDate);
-      return d >= startPrevMonth && d <= endPrevMonth;
-    }).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
+    () => filtered.filter((s) => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
+    [filtered],
   );
 
-  // Days with sales since April 4th
-  const salesStartDate = new Date('2026-04-04');
-  const daysSinceStartCount = useMemo(() => {
-    const dateSet = new Set<string>();
-    allSales.forEach(s => {
-      const d = new Date(s.saleDate);
-      if (d >= salesStartDate) {
-        dateSet.add(s.saleDate);
-      }
-    });
-    return dateSet.size;
-  }, [allSales]);
-  // Duplicate startDate block removed
+  const allSales = useMemo(() => sales || [], [sales]);
 
+  // Overall statistics
   const totalStats = useMemo(() => {
-    // Only count days with actual sales since store opening (April 4th)
-    const salesOnly = allSales.filter(s => new Date(s.saleDate) >= salesStartDate && s.totalSales > 0);
-    if (salesOnly.length === 0) return { total: 0, avg: 0, min: 0, max: 0, count: 0 };
-    const amounts = salesOnly.map(s => s.totalSales);
+    if (allSales.length === 0) return { total: 0, avg: 0, min: 0, max: 0, count: 0 };
+    const amounts = allSales.map(s => s.totalSales);
     const total = amounts.reduce((a, b) => a + b, 0);
     return {
       total,
       avg: total / amounts.length,
       min: Math.min(...amounts),
       max: Math.max(...amounts),
-      count: salesOnly.length,
+      count: amounts.length,
     };
-  }, [allSales]);
-
-  // Monthly comparison
-  const monthlyComparison = useMemo(() => {
-    const now = new Date();
-    const thisMonth = allSales.filter(s => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0);
-    const lastMonthStart = subMonths(startOfMonth(now), 1);
-    const lastMonthEnd = startOfMonth(now);
-    const lastMonth = allSales
-      .filter(s => {
-        const d = new Date(s.saleDate);
-        return d >= lastMonthStart && d < lastMonthEnd;
-      })
-      .reduce((sum, s) => sum + s.totalSales, 0);
-    const change = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 0;
-    return { thisMonth, lastMonth, change };
   }, [allSales]);
 
   // Payment breakdown for pie chart
@@ -593,7 +161,7 @@ export function DailySalesPage() {
         total: data.total,
         count: data.count,
       }))
-      .sort((a, b) => new Date(`1 ${a.month}`).getTime() - new Date(`1 ${b.month}`).getTime());
+      .sort((a, b) => a.month.localeCompare(b.month));
   }, [allSales]);
 
   // Top 10 highest sales days
@@ -606,17 +174,11 @@ export function DailySalesPage() {
         date: format(new Date(s.saleDate), 'dd MMM yyyy'),
       }));
   }, [allSales]);
-  const tableData = useMemo(() => {
-    let data = sales || [];
-    if (hideEmptyDays) {
-      data = data.filter(s => s.cashAmount !== 0 || s.bkashAmount !== 0 || s.creditAmount !== 0 || s.stockPurchase !== 0 || s.dailyExpense !== 0);
-    }
-    return data;
-  }, [sales, hideEmptyDays]);
+
   if (isLoading) {
     return (
       <div className="sales-container">
-        <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />
+        <PageHeader title="Daily Sales" subtitle="Track and analyze daily sales data." />
         <div className="dashboard-grid mt-6">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-24" />)}
         </div>
@@ -627,7 +189,7 @@ export function DailySalesPage() {
   if (error) {
     return (
       <div className="sales-container">
-        <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />
+        <PageHeader title="Daily Sales" subtitle="Track and analyze daily sales data." />
         <div className="card">
           <ErrorState message="Failed to load daily sales." onRetry={() => refetch()} />
         </div>
@@ -635,44 +197,28 @@ export function DailySalesPage() {
     );
   }
 
-  // tableData moved above loading/error checks
-
   return (
     <div className="sales-container">
       <PageHeader
-        title="Daily Sales & Expenditure Summary"
-        subtitle="Track daily sales, purchases, and expenses with auto-calculated totals."
+        title="Daily Sales"
+        subtitle="Track and analyze daily sales data."
         actions={
-          <div className="flex items-center gap-2">
-            <button
-              className="button-outline gap-2"
-              onClick={() => downloadCSV(
-                (sales || []).map((s: DailySale) => ({
-                  date: s.saleDate, totalSales: s.totalSales, cash: s.cashAmount,
-                  bkash: s.bkashAmount, credit: s.creditAmount,
-                  stockPurchase: s.stockPurchase, dailyExpense: s.dailyExpense,
-                })),
-                `daily-sales-${new Date().toISOString().split('T')[0]}.csv`
-              )}
-            >
-              <Download size={16} /> Export CSV
-            </button>
-            {/* Add Daily Sale button moved to All Sales Entries section */}
-          </div>
+          <button className="button-primary" onClick={() => setShowForm(true)}>
+            <Plus size={18} /> Add Daily Sale
+          </button>
         }
       />
 
       <div className="dashboard-grid mt-6 mb-6">
         <MetricCard title="Today's Sales" value={`৳${todayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Yesterday's Sales" value={`৳${yesterdayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="This Week" value={`৳${weekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Last Week" value={`৳${lastWeekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="This Month" value={`৳${monthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Last Month" value={`৳${lastMonthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<Banknote size={20} className="text-info" />} color="info" variant="light" />
+        <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<DollarSign size={20} className="text-info" />} color="info" variant="light" />
       </div>
 
+      {/* Sales Dashboard */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Overview Stats */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Sales Overview</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -699,6 +245,7 @@ export function DailySalesPage() {
           </div>
         </div>
 
+        {/* Payment Type Breakdown */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Payment Breakdown</h2>
           <div className="h-[200px]">
@@ -718,7 +265,7 @@ export function DailySalesPage() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: any) => value !== undefined && value !== null ? [`৳${Number(value).toLocaleString()}`, 'Amount'] : ['N/A', 'Amount']}
+                  formatter={(value: number | string) => value !== undefined && value !== null ? [`৳${Number(value).toLocaleString()}`, 'Amount'] : ['N/A', 'Amount']}
                 />
                 <Legend />
               </PieChart>
@@ -741,6 +288,7 @@ export function DailySalesPage() {
         </div>
       </div>
 
+      {/* Monthly Trend */}
       <div className="card p-6 mb-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Monthly Sales Trend</h2>
         {monthlyTrend.length > 0 ? (
@@ -751,7 +299,7 @@ export function DailySalesPage() {
                 <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
                 <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
                 <Tooltip 
-                  formatter={(value: any) => value !== undefined && value !== null ? [`৳${Number(value).toLocaleString()}`, 'Total Sales'] : ['N/A', 'Total Sales']}
+                  formatter={(value: number | string) => value !== undefined && value !== null ? [`৳${Number(value).toLocaleString()}`, 'Total Sales'] : ['N/A', 'Total Sales']}
                   contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-default)' }}
                 />
                 <Bar dataKey="total" fill="var(--color-success-default)" radius={[4, 4, 0, 0]} />
@@ -767,6 +315,7 @@ export function DailySalesPage() {
         )}
       </div>
 
+      {/* Daily Trend Line Chart */}
       <div className="card p-6 mb-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Daily Trend (Last 30 Days)</h2>
         {dailyTrend.length > 0 ? (
@@ -774,7 +323,7 @@ export function DailySalesPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dailyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
-                <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={10} interval="preserveStartEnd" angle={-45} textAnchor="end" height={60} />
+                <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={10} interval="preserveStartEnd" />
                 <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-default)' }}
@@ -795,7 +344,8 @@ export function DailySalesPage() {
         )}
       </div>
 
-      <div className="card p-6 mb-6">
+      {/* Top Sales Days */}
+      <div className="card p-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Top 5 Highest Sales Days</h2>
         {topSalesDays.length > 0 ? (
           <div className="overflow-x-auto">
@@ -830,89 +380,8 @@ export function DailySalesPage() {
           />
         )}
       </div>
-      <div className="card p-6 mt-0">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
-          <button className="button-primary gap-2" onClick={() => setShowForm(true)}>
-            <Plus size={18} /> Add Daily Sale
-          </button>
-        </div>
-        <label className="flex items-center gap-2 cursor-pointer text-sm text-text-muted mb-4">
-          <input type="checkbox" checked={hideEmptyDays} onChange={(e) => setHideEmptyDays(e.target.checked)} className="form-checkbox rounded text-primary" />
-          Hide Empty Activity Days
-        </label>
-        {(tempRows.length > 0 || tableData.length > 0) ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border-default">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">Date</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Cash</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Bkash</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Credit</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Sales Total</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Purchase</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Expense</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Daily Cash Flow</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Gross Margin</th>
-                  <th className="text-center py-3 px-4 text-sm font-medium text-text-muted w-10">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...tempRows, ...tableData].map((s, idx, list) => {
-                  const edited = editValues[s.id] || s;
-                  const salesTotal = Number(edited.cashAmount ?? s.cashAmount) + 
-                                     Number(edited.bkashAmount ?? s.bkashAmount) + 
-                                     Number(edited.creditAmount ?? s.creditAmount);
-                  const netTotal = salesTotal - 
-                                   Number(edited.stockPurchase ?? s.stockPurchase) - 
-                                   Number(edited.dailyExpense ?? s.dailyExpense);
-                  const netColorClass = netTotal >= 0 ? 'text-success' : 'text-danger';
-                  const isSaving = savingRows.has(s.id);
-                  const isTemp = isTempRow(s.id);
-                  
-                  return (
-                    <tr 
-                      key={s.id} 
-                      className="border-b border-border-default hover:bg-surface-secondary group relative" 
-                      style={{ 
-                        opacity: isSaving ? 0.7 : 1,
-                        backgroundColor: isTemp ? 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))' : undefined
-                      }}
-                    >
-                      {renderEditableCell(s, 'saleDate', idx, list)}
-                      {renderEditableCell(s, 'cashAmount', idx, list)}
-                      {renderEditableCell(s, 'bkashAmount', idx, list)}
-                      {renderEditableCell(s, 'creditAmount', idx, list)}
-                      <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(salesTotal)}</td>
-                      {renderEditableCell(s, 'stockPurchase', idx, list)}
-                      {renderEditableCell(s, 'dailyExpense', idx, list)}
-                      <td className={`py-3 px-4 text-sm font-semibold text-right ${netColorClass}`}>{formatCurrency(netTotal)}</td>
-                      <td className="py-3 px-4 text-sm font-semibold text-right text-text-primary">{formatCurrency(salesTotal)}</td>
-                      <td className="py-3 px-2 w-10 text-center">
-                        <button
-                          onClick={() => handleDeleteRow(s.id)}
-                          className="transition-colors p-1 rounded hover:bg-danger-subtle text-danger"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState
-            icon={<DollarSign size={48} />}
-            title="No entries yet"
-            description="Click '+ Add New Entry' to start."
-          />
-        )}
-      </div>
 
+      {/* Add/Edit Form Drawer */}
       <Drawer
         isOpen={showForm || editingSale !== null}
         onClose={() => {
@@ -941,6 +410,7 @@ export function DailySalesPage() {
   );
 }
 
+// Form component for adding/editing daily sales
 function DailySaleForm({
   initialData,
   onSubmit,
@@ -971,6 +441,7 @@ function DailySaleForm({
     const numValue = parseFloat(value) || 0;
     setForm(prev => {
       const updated = { ...prev, [field]: numValue };
+      // Auto-calculate total if cash, bkash, or credit changes
       if (field === 'cashAmount' || field === 'bkashAmount' || field === 'creditAmount') {
         updated.totalSales = updated.cashAmount + updated.bkashAmount + updated.creditAmount;
       }

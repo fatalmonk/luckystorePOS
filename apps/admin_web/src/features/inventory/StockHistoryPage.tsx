@@ -60,7 +60,7 @@ export function StockHistoryPage() {
           />
         ) : (
           <div className="divide-y divide-border-default">
-            {history?.map((log: any) => (
+            {history?.map((log: unknown) => (
               <div
                 key={log.id}
                 className="flex items-center gap-6 p-4 sm:p-6 transition-colors hover:bg-background-subtle"

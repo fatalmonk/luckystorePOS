@@ -56,7 +56,7 @@ export function usePosSale(
   cartDiscount: number,
   storeId: string | undefined,
   tenantId: string | undefined,
-  paymentMethods: any[],
+  paymentMethods: unknown[],
   clearCart: () => void,
   onError: (msg: string) => void,
 ): UsePosSaleReturn {
@@ -158,7 +158,7 @@ export function usePosSale(
         }));
         paidTotalInner = splitPayments.reduce((sum, p) => sum + p.amount, 0);
         paymentMethodLabel = splitPayments.map(p => {
-          const m = paymentMethods.find((m: any) => m.id === p.accountId);
+          const m = paymentMethods.find((m: unknown) => m.id === p.accountId);
           return m ? m.name : 'Unknown';
         }).join(' + ');
       } else {
@@ -168,7 +168,7 @@ export function usePosSale(
           party_id: null,
         }];
         paidTotalInner = parseFloat(paymentAmount);
-        paymentMethodLabel = paymentMethods.find((m: any) => m.id === selectedPaymentMethod)?.name || 'Cash';
+        paymentMethodLabel = paymentMethods.find((m: unknown) => m.id === selectedPaymentMethod)?.name || 'Cash';
       }
 
       const saleData = {
@@ -209,7 +209,7 @@ export function usePosSale(
       } else {
         onError(result.error || 'Sale failed. Please try again.');
       }
-    } catch (err: any) {
+    } catch (err: { message?: string }) {
       console.error('[QuickPosPage] Checkout error:', err);
       onError(err.message || 'Sale failed. Please try again.');
     } finally {

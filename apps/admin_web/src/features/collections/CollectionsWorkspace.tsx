@@ -27,9 +27,11 @@ export const CollectionsWorkspace: React.FC = () => {
 
   // Resolve the store's cash ledger account ID for the payment modal.
   const [cashAccountId, setCashAccountId] = useState<string | null>(null);
+  const cashAccountIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!storeId) {
+      cashAccountIdRef.current = null;
       setCashAccountId(null);
       return;
     }
@@ -63,7 +65,7 @@ export const CollectionsWorkspace: React.FC = () => {
     const { data, error } = await supabase.rpc('get_receivables_aging', {
       p_tenant_id: tenantId,
       p_store_id: storeId,
-      p_search: debouncedSearch || null
+      p_search: debouncedSearch || undefined
     });
 
     if (!error && data) {
@@ -89,7 +91,7 @@ export const CollectionsWorkspace: React.FC = () => {
       p_store_id: storeId,
       p_party_id: selectedParty.party_id,
       p_note_text: noteText,
-      p_promise_date: promiseDate || null
+      p_promise_date: promiseDate || undefined
     });
 
     setActionLoading(false);
