@@ -7,7 +7,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../models/party.dart';
 
 /// Payment Collection Screen - Collect outstanding payments from customers
 /// Entry: FAB on CustomerLedgerScreen or menu option in POS
@@ -32,7 +31,6 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   final _searchController = TextEditingController();
 
   // Loading states
-  bool _isLoading = false;
   bool _isSubmitting = false;
   bool _isSearching = false;
 
@@ -91,7 +89,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         // Default to cash
         _selectedPaymentMethod = methods.firstWhere(
           (m) => m.type == 'cash',
-          orElse: () => methods.isNotEmpty ? methods.first : null!,
+          orElse: () => methods.first,
         );
       });
     } catch (e) {
@@ -671,10 +669,6 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   }
 
   Widget _buildSubmitButton() {
-    final balance = _selectedCustomer != null
-        ? (_selectedCustomer!['balance_due'] as num? ?? 0).toDouble()
-        : 0.0;
-
     return SafeArea(
       child: Padding(
         padding: AppSpacing.insetMd,
