@@ -5885,12 +5885,33 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 
 ALTER TABLE "public"."users" OWNER TO "postgres";
 
+-- Add pos_pin columns if they don't exist (for compatibility with bootstrap migration)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'pos_pin') THEN
+        ALTER TABLE public.users ADD COLUMN pos_pin text;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'pos_pin_hash') THEN
+        ALTER TABLE public.users ADD COLUMN pos_pin_hash text;
+    END IF;
+END $$;
 
-COMMENT ON COLUMN "public"."users"."pos_pin" IS '4-digit PIN for POS cashier login (e.g., 1234)';
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'pos_pin') THEN
+        COMMENT ON COLUMN "public"."users"."pos_pin" IS '4-digit PIN for POS cashier login (e.g., 1234)';
+    END IF;
+END $$;
 
 
 
-COMMENT ON COLUMN "public"."users"."pos_pin_hash" IS 'bcrypt hash of 4-digit POS PIN used by authenticate_staff_pin';
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'pos_pin_hash') THEN
+        COMMENT ON COLUMN "public"."users"."pos_pin_hash" IS 'bcrypt hash of 4-digit POS PIN used by authenticate_staff_pin';
+    END IF;
+END $$;
 
 
 
