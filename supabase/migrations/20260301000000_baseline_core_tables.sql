@@ -55,13 +55,16 @@ END $$;
 ALTER TYPE "public"."payment_type" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."po_status" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "public"."po_status" AS ENUM (
     'draft',
     'ordered',
     'partially_received',
     'received',
     'cancelled'
-);
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 
 ALTER TYPE "public"."po_status" OWNER TO "postgres";
@@ -80,21 +83,27 @@ END $$;
 ALTER TYPE "public"."sale_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."session_status" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "public"."session_status" AS ENUM (
     'open',
     'closed'
-);
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 
 ALTER TYPE "public"."session_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."stock_transfer_status" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "public"."stock_transfer_status" AS ENUM (
     'pending',
     'in_transit',
     'completed',
     'cancelled'
-);
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 
 ALTER TYPE "public"."stock_transfer_status" OWNER TO "postgres";
