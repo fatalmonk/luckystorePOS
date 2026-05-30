@@ -2959,16 +2959,22 @@ export type Database = {
       get_inventory_list: {
         Args: { p_store_id: string }
         Returns: {
+          active: boolean
+          barcode: string
           category_id: string
+          category_name: string
+          cost: number
           current_qty: number
           id: string
           image_url: string
           last_updated: string
           min_qty: number
+          mrp: number
           name: string
           price: number
           reorder_status: string
           sku: string
+          stock: number
         }[]
       }
       get_inventory_summary: { Args: { p_store_id: string }; Returns: Json }

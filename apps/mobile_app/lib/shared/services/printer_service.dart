@@ -16,7 +16,6 @@ export '../../core/services/printer/printer_service.dart';
 export '../../core/services/printer/printer_models.dart';
 export '../../core/services/printer/printer_config.dart';
 
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:pdf/pdf.dart';
