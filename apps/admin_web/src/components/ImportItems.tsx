@@ -9,16 +9,22 @@ export default function ImportItems() {
   const [importedData, setImportedData] = useState<any[]>([]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const f = acceptedFiles[0];
-    if (f.size > 1024 * 1024) { toast.error('File exceeds 1 MB size limit'); return; }
+    if (!f) return; // Guard empty drop
+    if (f.size > 1024 * 1024) { toast.error('File exceeds 1 MB size limit'); return; }
     if (!/\.xlsx?$/i.test(f.name)) { toast.error('Invalid file type. Only .xlsx or .xls allowed'); return; }
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json: any[] = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
-      if (json.length > 500) { toast.error('Too many rows (max 500)'); setImportedData([]); setFile(null); }
-      else { setImportedData(json); setFile(f); }
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json: any[] = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+        if (json.length > 500) { toast.error('Too many rows (max 500)'); setImportedData([]); setFile(null); }
+        else { setImportedData(json); setFile(f); }
+      } catch (err: any) {
+        toast.error(`Error parsing file: ${err.message || 'Unknown error'}`);
+        setImportedData([]); setFile(null);
+      }
     };
     reader.readAsArrayBuffer(f);
   }, []);
