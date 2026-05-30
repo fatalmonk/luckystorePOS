@@ -5940,8 +5940,13 @@ ALTER TABLE ONLY "public"."batches"
 
 
 
-ALTER TABLE ONLY "public"."categories"
-    ADD CONSTRAINT "categories_name_key" UNIQUE ("category");
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'categories' AND column_name = 'category') THEN
+        ALTER TABLE ONLY "public"."categories"
+            ADD CONSTRAINT "categories_name_key" UNIQUE ("category");
+    END IF;
+END $$;
 
 
 
@@ -6250,7 +6255,12 @@ ALTER TABLE ONLY "public"."users"
 
 
 
-CREATE INDEX "idx_categories_name" ON "public"."categories" USING "btree" ("category");
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'categories' AND column_name = 'category') THEN
+        CREATE INDEX "idx_categories_name" ON "public"."categories" USING "btree" ("category");
+    END IF;
+END $$;
 
 
 
