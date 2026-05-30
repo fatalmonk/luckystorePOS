@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -8,7 +7,7 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_spacing.dart';
+import '../../../payments/presentation/screens/supplier_payment_screen.dart';
 
 /// Supplier Ledger Screen - View suppliers and their purchase history
 /// Shows outstanding payables, purchase history, and allows contact
@@ -159,6 +158,21 @@ class _SupplierLedgerScreenState extends State<SupplierLedgerScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const SupplierPaymentScreen(),
+            ),
+          );
+        },
+        backgroundColor: AppColors.successDefault,
+        icon: const Icon(Icons.payments_rounded, color: Colors.white),
+        label: Text(
+          'Make Payment',
+          style: AppTextStyles.labelMd.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: _selectedSupplier == null
           ? _buildSupplierList()
           : _buildSupplierDetail(),
@@ -208,7 +222,7 @@ class _SupplierLedgerScreenState extends State<SupplierLedgerScreen> {
             const SizedBox(height: 16),
             Text(
               'No suppliers found',
-              style: AppTextStyles.headingSm.copyWith(color: AppColors.primitiveNeutral0),
+              style: AppTextStyles.headingMd.copyWith(color: AppColors.primitiveNeutral0),
             ),
             const SizedBox(height: 8),
             Text(
