@@ -3,6 +3,9 @@ import * as XLSX from 'xlsx';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { loadOurProducts, saveToSupabase } from './lib/supabase-storage.js';
+
+const isSupabaseEnabled = process.argv.includes('--supabase');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -238,7 +241,7 @@ async function scrapeAllCategories() {
     const hasChrome = fs.existsSync(defaultChromePath);
     
     browser = await puppeteer.launch({
-      headless: false,
+      headless: process.env.CI ? "new" : false,
       executablePath: hasChrome ? defaultChromePath : undefined,
       args: [
         '--no-sandbox', 
@@ -353,6 +356,25 @@ async function scrapeAllCategories() {
   
   console.log(`\nExcel file created: ${outputPath}`);
   console.log(`Total rows: ${excelData.length - 1} products + 1 header row`);
+  
+  if (isSupabaseEnabled) {
+    const storeId = process.env.STORE_ID;
+    if (!storeId) {
+      console.error('Error: STORE_ID required when using --supabase');
+      process.exit(1);
+    }
+    console.log('\nLoading our products for catalog matching...');
+    const ourProductsMap = await loadOurProducts(storeId);
+    console.log(`Loaded ${ourProductsMap.size} products.`);
+    
+    console.log('\nSaving products to Supabase...');
+    const formattedProducts = allProducts.map(p => ({
+      name: p.name,
+      price: p.price,
+      url: p.imageUrl || `https://chaldal.com/product/${encodeURIComponent(p.name.toLowerCase().replace(/\s+/g, '-'))}`
+    }));
+    await saveToSupabase(storeId, 'Chaldal', formattedProducts, ourProductsMap);
+  }
   
   return outputPath;
 }

@@ -3,9 +3,17 @@ import fs from 'fs';
 import path from 'path';
 
 (async () => {
+  const defaultChromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  const hasChrome = fs.existsSync(defaultChromePath);
+
   const browser = await puppeteer.launch({ 
-    headless: "new",
-    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    headless: process.env.CI ? "new" : "new",
+    executablePath: hasChrome ? defaultChromePath : undefined,
+    args: [
+      '--no-sandbox', 
+      '--disable-setuid-sandbox',
+      '--disable-web-security'
+    ]
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });

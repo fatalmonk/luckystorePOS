@@ -4,14 +4,20 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+let supabaseInstance = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY required');
+function getSupabase() {
+  if (supabaseInstance) return supabaseInstance;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY required for database storage.');
+  }
+
+  supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  return supabaseInstance;
 }
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * Save scraped products to Supabase
@@ -54,12 +60,9 @@ export async function saveToSupabase(storeId, competitor, products, ourProductsM
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
     
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('competitor_prices')
-      .upsert(batch, {
-        onConflict: 'store_id,competitor_name,product_name,scraped_at',
-        ignoreDuplicates: false
-      });
+      .insert(batch);
     
     if (error) {
       console.error(`Error saving batch ${i / batchSize + 1}:`, error);
@@ -104,7 +107,7 @@ function findMatchingProduct(name, ourProductsMap) {
  * Load our product catalog for matching
  */
 export async function loadOurProducts(storeId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('items')
     .select('id, name, sku, price')
     .eq('store_id', storeId);
@@ -128,4 +131,4 @@ export async function loadOurProducts(storeId) {
   return map;
 }
 
-export { supabase };
+export { getSupabase };
