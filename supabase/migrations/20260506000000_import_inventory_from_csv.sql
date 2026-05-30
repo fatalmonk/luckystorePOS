@@ -1,11 +1,8 @@
--- =============================================================================
--- Inventory Import from CSV: Lucky Store Inventory with images
--- =============================================================================
--- This is a manual import template — no-op during migration.
--- To use it:
---   1. Create temp table: CREATE TEMP TABLE temp_inventory_import (...)
---   2. Load CSV data via Supabase dashboard or psql
---   3. Uncomment and run the sections below
---   4. Clean up: DROP TABLE IF EXISTS temp_inventory_import;
--- =============================================================================
-DO $$ BEGIN /* no-op: manual CSV import template */ END; $$;
+-- Import Inventory From CSV
+-- This file was originally a manual data-import script that depended on temp_inventory_import
+-- and hardcoded local data. It must not run during deterministic migration replay.
+-- Runtime/import behavior belongs in supabase/functions/import-inventory or scripts/data.
+DO $$
+BEGIN
+  RAISE NOTICE 'Skipping manual CSV import during deterministic migration replay.';
+END $$;

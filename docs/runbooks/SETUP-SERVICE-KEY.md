@@ -22,7 +22,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-full-service-role-key-here
 
 ## 🔑 How to Get the Key
 
-1. Go to: https://app.supabase.com/project/cckschiexzvysvdracvc/settings/api
+1. Go to: https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/settings/api
 2. Scroll to **Project API keys**
 3. Find the **`service_role`** key (it's marked as "secret")
 4. Click **Reveal** or **Copy** to get the full key

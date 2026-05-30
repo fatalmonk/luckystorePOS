@@ -82,7 +82,7 @@ BEGIN
     END IF;
     RETURN v_account_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- =============================================================================
 -- Phase 2: RPC / Backend Business Logic
@@ -145,7 +145,7 @@ BEGIN
     WHERE (p_search IS NULL OR p_search = '' OR p.name ILIKE '%' || p_search || '%' OR p.phone ILIKE '%' || p_search || '%')
     ORDER BY pb.balance_due DESC, pb.last_credit_sale_date ASC;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.get_receivables_aging(UUID, UUID, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_receivables_aging(UUID, UUID, TEXT) TO authenticated;
 
@@ -211,7 +211,7 @@ EXCEPTION WHEN OTHERS THEN
     DELETE FROM idempotency_keys WHERE idempotency_key = p_idempotency_key AND tenant_id = p_tenant_id AND completed_at IS NULL;
     RAISE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.record_customer_payment(TEXT, UUID, UUID, UUID, NUMERIC, UUID, TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_customer_payment(TEXT, UUID, UUID, UUID, NUMERIC, UUID, TEXT, TEXT) TO authenticated;
 
@@ -232,7 +232,7 @@ BEGIN
     RETURNING id INTO v_id;
     RETURN v_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.log_customer_reminder(UUID, UUID, UUID, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.log_customer_reminder(UUID, UUID, UUID, TEXT) TO authenticated;
 
@@ -254,7 +254,7 @@ BEGIN
     RETURNING id INTO v_id;
     RETURN v_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.add_followup_note(UUID, UUID, UUID, TEXT, DATE) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.add_followup_note(UUID, UUID, UUID, TEXT, DATE) TO authenticated;
 
@@ -269,6 +269,6 @@ BEGIN
     WHERE id = p_note_id;
     RETURN FOUND;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.mark_followup_resolved(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.mark_followup_resolved(UUID) TO authenticated;
