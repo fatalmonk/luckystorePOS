@@ -109,6 +109,12 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
           return;
         }
 
+        // Hard limit: 500 rows max
+        if (json.length > 500) {
+          setErrorMessage('File exceeds maximum limit of 500 rows');
+          return;
+        }
+
         // Clean & normalize parsed data keys to match field meta keys
         const normalized = json.map((row) => {
           const newRow: Record<string, any> = {};
@@ -183,8 +189,14 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
   // Go to confirmation step
   const handleProceedToConfirm = () => {
+    // Block empty dataset
+    if (data.length === 0) {
+      setErrorMessage('Cannot proceed with empty dataset. Please add at least one row.');
+      return;
+    }
     const isValid = validateData(data);
     if (isValid) {
+      setErrorMessage(null); // Clear stale error banner
       setStep(3);
     } else {
       setErrorMessage('Please fix all validation errors before proceeding.');
