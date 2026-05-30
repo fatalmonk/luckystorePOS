@@ -20,7 +20,17 @@
     "reports": "Reports",
     "settings": "Settings",
     "history": "History",
-    "logout": "Logout Session"
+    "logout": "Logout Session",
+    "manageStaff": "Manage Staff",
+    "dataManagement": "Data Management",
+    "importProducts": "Import Products",
+    "importParties": "Import Parties",
+    "otherIncome": "Other Income",
+    "groupBusiness": "Business",
+    "groupInventorySales": "Inventory & Sales",
+    "groupManagement": "Management",
+    "groupSystem": "System",
+    "helpTutorials": "Help & Tutorials"
   },
   "dashboard": {
     "welcome": "Welcome",

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import clsx from 'clsx';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
@@ -13,7 +14,6 @@ import { TrendCard } from './TrendCard';
 import { CashflowChart } from './CashflowChart';
 import { RecentActivity } from './RecentActivity';
 import { format, subDays, parseISO } from 'date-fns';
-import clsx from 'clsx';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -147,6 +147,7 @@ export function DashboardPage() {
   const totalCredit = dailySales.reduce((sum: number, s: any) => sum + Number(s.credit_amount || 0), 0);
   const totalCash = dailySales.reduce((sum: number, s: any) => sum + Number(s.cash_amount || 0), 0);
   const totalBkash = dailySales.reduce((sum: number, s: any) => sum + Number(s.bkash_amount || 0), 0);
+
   const totalExpensesAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
   const totalStockAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.stock_purchase || 0), 0);
   const netPosition = totalRevenue - totalExpensesAllTime;
@@ -239,6 +240,8 @@ export function DashboardPage() {
     );
   }
 
+  const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'operations'>('overview');
+
   return (
     <div className="dashboard-container">
       {/* Welcome Header */}
@@ -287,7 +290,7 @@ export function DashboardPage() {
       </div>
 
       {/* Missing Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-warm-surface border-l-4 border-l-warm-success border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
           <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Receive</span>
           <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toReceive)}</h2>
@@ -303,26 +306,221 @@ export function DashboardPage() {
       </div>
 
       {/* Header Stats */}
-      <HeaderStats
-        todaySales={`৳${stats?.total_sales || '0.00'}`}
-        totalRevenue={fmt(totalRevenue)}
-        netProfit={fmt(Math.abs(netPosition))}
-        atv={fmt(Number(kpis.atv) || 0)}
-        upt={Number(kpis.upt || 0).toFixed(1)}
-        grossMargin={`${Number(kpis.gross_margin_pct || 0).toFixed(1)}%`}
-        salesTrend={salesTrend || undefined}
-        profitTrend={netPosition >= 0 ? 'up' : 'down'}
-        atvTrend="up"
-      />
+      <div className="mb-8">
+        <HeaderStats
+          todaySales={`৳${stats?.total_sales || '0.00'}`}
+          totalRevenue={fmt(totalRevenue)}
+          netProfit={fmt(Math.abs(netPosition))}
+          atv={fmt(Number(kpis.atv) || 0)}
+          upt={Number(kpis.upt || 0).toFixed(1)}
+          grossMargin={`${Number(kpis.gross_margin_pct || 0).toFixed(1)}%`}
+          salesTrend={salesTrend || undefined}
+          profitTrend={netPosition >= 0 ? 'up' : 'down'}
+          atvTrend="up"
+        />
+      </div>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Charts & Tables */}
-        <div className="lg:col-span-2 space-y-8">
-          <CashflowChart />
+      {/* Tab Navigation buttons */}
+      <div className="flex border-b border-warm-border-warm gap-2 mb-6">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={clsx(
+            'px-5 py-2.5 font-bold text-sm border-b-[3px] transition-all duration-200',
+            activeTab === 'overview'
+              ? 'border-warm-accent text-warm-accent bg-warm-accent/5'
+              : 'border-transparent text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/30'
+          )}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('financials')}
+          className={clsx(
+            'px-5 py-2.5 font-bold text-sm border-b-[3px] transition-all duration-200',
+            activeTab === 'financials'
+              ? 'border-warm-accent text-warm-accent bg-warm-accent/5'
+              : 'border-transparent text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/30'
+          )}
+        >
+          Financials
+        </button>
+        <button
+          onClick={() => setActiveTab('operations')}
+          className={clsx(
+            'px-5 py-2.5 font-bold text-sm border-b-[3px] transition-all duration-200',
+            activeTab === 'operations'
+              ? 'border-warm-accent text-warm-accent bg-warm-accent/5'
+              : 'border-transparent text-warm-muted hover:text-warm-fg hover:bg-warm-border-warm/30'
+          )}
+        >
+          Operations
+        </button>
+      </div>
 
-          {/* Financial Overview Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Tab Contents */}
+      <div className="tab-content transition-all duration-300">
+        {/* Tab 1: Overview */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+            {/* Left Column - CashflowChart & Sales vs Expenses Chart */}
+            <div className="lg:col-span-2 space-y-8">
+              <CashflowChart />
+
+              {/* Sales vs Expenses Comparison Section */}
+              <div className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+                <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
+                  {t('dashboard.salesVsExpenses')}
+                </h3>
+                {salesVsExpenses.length > 0 ? (
+                  <>
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-sm bg-warm-success" />
+                        <span className="text-sm text-warm-muted">Sales</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-sm bg-warm-danger" />
+                        <span className="text-sm text-warm-muted">Expenses</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-sm bg-warm-accent" />
+                        <span className="text-sm text-warm-muted">Stock Purchases</span>
+                      </div>
+                    </div>
+                    <div className="flex items-end justify-between gap-1 h-[200px]">
+                      {salesVsExpenses.map((day: any, idx: number) => {
+                        const maxVal = Math.max(
+                          ...salesVsExpenses.map((d: any) => Math.max(d.sales, d.expenses, d.stockPurchases)),
+                          1
+                        );
+                        const salesHeight = maxVal > 0 ? (day.sales / maxVal) * 100 : 0;
+                        const expenseHeight = maxVal > 0 ? (day.expenses / maxVal) * 100 : 0;
+                        const stockHeight = maxVal > 0 ? (day.stockPurchases / maxVal) * 100 : 0;
+                        return (
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                            <div className="flex items-end gap-0.5 w-full justify-center h-full">
+                              <div
+                                style={{
+                                  width: '28%',
+                                  height: `${salesHeight}%`,
+                                  backgroundColor: 'var(--color-success-default)',
+                                  borderRadius: '2px 2px 0 0',
+                                  minHeight: day.sales > 0 ? 4 : 0,
+                                  transition: 'height 0.3s ease',
+                                }}
+                                title={`Sales: ৳${day.sales.toLocaleString()}`}
+                              />
+                              <div
+                                style={{
+                                  width: '28%',
+                                  height: `${expenseHeight}%`,
+                                  backgroundColor: 'var(--color-danger-default)',
+                                  borderRadius: '2px 2px 0 0',
+                                  minHeight: day.expenses > 0 ? 4 : 0,
+                                  transition: 'height 0.3s ease',
+                                }}
+                                title={`Expenses: ৳${day.expenses.toLocaleString()}`}
+                              />
+                              <div
+                                style={{
+                                  width: '28%',
+                                  height: `${stockHeight}%`,
+                                  backgroundColor: 'var(--color-info-default)',
+                                  borderRadius: '2px 2px 0 0',
+                                  minHeight: day.stockPurchases > 0 ? 4 : 0,
+                                  transition: 'height 0.3s ease',
+                                }}
+                                title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
+                              />
+                            </div>
+                            <span className="text-[10px] text-warm-muted whitespace-nowrap mt-1">
+                              {day.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center text-warm-muted py-8">
+                    {t('dashboard.noDailySales')}{' '}
+                    <a href="/admin/daily-sales" className="text-primary-default hover:underline">
+                      {t('dashboard.addDailySales')}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column - Recent Activity & Info widgets */}
+            <div className="space-y-8">
+              {/* Profile setup onboarding progress */}
+              <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6 flex gap-4">
+                <div className="flex-shrink-0">
+                  <svg className="w-12 h-12 text-warm-accent" viewBox="0 0 36 36">
+                    <path
+                      className="text-warm-border"
+                      strokeWidth="3"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-warm-accent"
+                      strokeDasharray={`${calculateProgress()}, 100`}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <text x="18" y="21" className="font-bold text-[9px] text-warm-fg" fill="currentColor" textAnchor="middle">
+                      {calculateProgress()}%
+                    </text>
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-warm-fg font-display">Complete your Profile</h4>
+                  <p className="text-xs text-warm-muted mt-1">Unlock additional reporting metrics by finalizing setup.</p>
+                </div>
+              </section>
+
+              {/* Quick POS Shortcut */}
+              <section className="bg-gradient-to-br from-warm-accent to-warm-accent-light rounded-xl shadow-sm p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Zap size={20} />
+                      Quick POS
+                    </h3>
+                    <p className="text-white/80 text-sm mt-1">Start a quick sale</p>
+                  </div>
+                  <a 
+                    href="/admin/pos" 
+                    className="bg-surface-default text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-surface-default/90 transition-colors"
+                  >
+                    Launch
+                  </a>
+                </div>
+              </section>
+
+              {/* Available balance card */}
+              <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6 text-center">
+                <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2">
+                  {t('dashboard.currentAvailableBalance')}
+                </div>
+                <div className="text-4xl font-bold text-warm-success font-mono">৳{fmt(availableBalance)}</div>
+                <div className="text-sm text-warm-muted mt-1">Capital + Revenue − Expenses</div>
+              </section>
+
+              <RecentActivity />
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Financials */}
+        {activeTab === 'financials' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
             {/* Revenue Breakdown */}
             <div className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
               <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
@@ -333,17 +531,19 @@ export function DashboardPage() {
                 {[
                   { label: 'Cash', value: totalCash, total: totalRevenue, color: 'bg-warm-success' },
                   { label: 'bKash', value: totalBkash, total: totalRevenue, color: 'bg-primary-subtle0' },
-                  { label: 'Credit', value: totalCredit, total: totalRevenue, color: 'bg-warm-warning' },
-                ].map(item => (
-                  <div key={item.label}>
-                    <div className="flex justify-between text-sm mb-1">
+                  { label: 'Credit (Due)', value: totalCredit, total: totalRevenue, color: 'bg-warm-warning' },
+                ].map((item, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between text-sm">
                       <span className="text-warm-muted">{item.label}</span>
-                      <span className="font-mono font-medium text-warm-fg">৳{fmt(item.value)}</span>
+                      <span className="font-semibold text-warm-fg">
+                        ৳{fmt(item.value)} ({item.total > 0 ? ((item.value / item.total) * 100).toFixed(0) : 0}%)
+                      </span>
                     </div>
-                    <div className="h-1.5 bg-warm-border rounded-full overflow-hidden">
-                      <div 
-                        className={item.color} 
-                        style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%`, height: '100%' }} 
+                    <div className="h-2 bg-warm-border rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${item.color}`}
+                        style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
@@ -356,28 +556,29 @@ export function DashboardPage() {
               <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
                 {t('dashboard.expenseBreakdown')}
               </h3>
-              <div className="text-2xl font-bold text-warm-danger font-mono mb-4">৳{fmt(expenseTotalFromItems)}</div>
-              <div className="space-y-3">
-                {(Object.entries(expenseCategories as Record<string, number>) as [string, number][])
-                  .sort(([, a], [, b]) => b - a)
-                  .slice(0, 5)
-                  .map(([cat, amount]) => {
-                    const config = categoryConfig[cat] || { label: cat, color: 'text-warm-dim', barColor: 'bg-warm-silver' };
-                    const pct = expenseTotalFromItems > 0 ? (amount / expenseTotalFromItems) * 100 : 0;
-                    return (
-                      <div key={cat}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className={config.color}>{config.label}</span>
-                          <span className="font-mono text-warm-fg">
-                            ৳{fmt(amount)} <span className="text-warm-dim">({pct.toFixed(0)}%)</span>
-                          </span>
-                        </div>
-                        <div className="h-1.5 bg-warm-border rounded-full overflow-hidden">
-                          <div className={config.barColor} style={{ width: `${pct}%`, height: '100%' }} />
-                        </div>
+              <div className="text-2xl font-bold text-warm-danger font-mono mb-4">
+                ৳{fmt(expenseTotalFromItems)}
+              </div>
+              <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                {Object.entries(expenseCategories).map(([cat, amount], idx) => {
+                  const cfg = categoryConfig[cat] || { label: cat, color: 'text-warm-muted', barColor: 'bg-warm-muted' };
+                  return (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-warm-muted truncate max-w-[120px]">{cfg.label}</span>
+                        <span className={`font-semibold ${cfg.color}`}>
+                          ৳{fmt(amount)} ({expenseTotalFromItems > 0 ? ((amount / expenseTotalFromItems) * 100).toFixed(0) : 0}%)
+                        </span>
                       </div>
-                    );
-                  })}
+                      <div className="h-2 bg-warm-border rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${cfg.barColor}`}
+                          style={{ width: `${expenseTotalFromItems > 0 ? (amount / expenseTotalFromItems) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -386,178 +587,88 @@ export function DashboardPage() {
               <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-4">
                 {t('dashboard.investmentSummary')}
               </h3>
-              <div className="space-y-3">
+              <div className="text-2xl font-bold text-primary-default font-mono mb-4">৳{fmt(partnerCapital)}</div>
+              <div className="space-y-4">
                 <div className="flex justify-between items-center py-2 border-b border-warm-border">
-                  <span className="text-warm-muted">Mohammed</span>
-                  <span className="font-mono font-medium text-warm-accent">৳{fmt(mohammedCapital)}</span>
+                  <span className="text-sm text-warm-muted">Mohammed (553k)</span>
+                  <span className="text-sm font-semibold text-warm-fg">36.4%</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-warm-border">
-                  <span className="text-warm-muted">Sayeed Imam</span>
-                  <span className="font-mono font-medium text-warm-accent">৳{fmt(sayeedCapital)}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-warm-border">
-                  <span className="font-semibold text-warm-fg">Total Capital</span>
-                  <span className="font-mono font-bold text-lg text-warm-accent">৳{fmt(partnerCapital)}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-warm-border">
-                  <span className="text-warm-muted">{t('dashboard.stockInvestment')}</span>
-                  <span className="font-mono font-medium text-primary-default">৳{fmt(totalStockAllTime)}</span>
+                  <span className="text-sm text-warm-muted">Sayeed (965.5k)</span>
+                  <span className="text-sm font-semibold text-warm-fg">63.6%</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className={clsx('font-semibold', netPosition >= 0 ? 'text-warm-success' : 'text-warm-danger')}>
-                    {netPosition >= 0 ? t('dashboard.netProfit') : t('dashboard.netLoss')}
-                  </span>
-                  <span className={clsx('font-mono font-bold text-lg', netPosition >= 0 ? 'text-warm-success' : 'text-warm-danger')}>
-                    ৳{fmt(Math.abs(netPosition))}
+                  <span className="text-sm text-warm-muted">Store Net Position</span>
+                  <span className={`text-sm font-bold ${netPosition >= 0 ? 'text-warm-success' : 'text-warm-danger'}`}>
+                    {netPosition >= 0 ? `৳${fmt(netPosition)} Surplus` : `৳${fmt(Math.abs(netPosition))} Deficit`}
                   </span>
                 </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Payment Breakdown */}
-          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-warm-fg font-display mb-6">
-              {t('dashboard.revenueBreakdown')}
-            </h2>
-            {totalRevenue > 0 ? (
-              <>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 bg-warm-bg rounded-lg">
-                    <div className="text-sm text-warm-muted mb-1">Cash</div>
-                    <div className="text-xl font-bold text-warm-success font-mono">৳{fmt(totalCash)}</div>
-                    <div className="text-xs text-warm-dim mt-1">{((totalCash / totalRevenue) * 100).toFixed(1)}%</div>
-                  </div>
-                  <div className="text-center p-4 bg-warm-bg rounded-lg">
-                    <div className="text-sm text-warm-muted mb-1">Bkash</div>
-                    <div className="text-xl font-bold text-primary-default font-mono">৳{fmt(totalBkash)}</div>
-                    <div className="text-xs text-warm-dim mt-1">{((totalBkash / totalRevenue) * 100).toFixed(1)}%</div>
-                  </div>
-                  <div className="text-center p-4 bg-warm-bg rounded-lg">
-                    <div className="text-sm text-warm-muted mb-1">Credit Due</div>
-                    <div className="text-xl font-bold text-warm-warning font-mono">৳{fmt(totalCredit)}</div>
-                    <div className="text-xs text-warm-dim mt-1">{((totalCredit / (totalRevenue + totalCredit)) * 100).toFixed(1)}%</div>
-                  </div>
-                </div>
-                <div className="h-3 bg-warm-border rounded-full overflow-hidden flex">
-                  <div className="bg-warm-success transition-all duration-500" style={{ width: `${(totalCash / totalRevenue) * 100}%` }} />
-                  <div className="bg-primary-subtle0 transition-all duration-500" style={{ width: `${(totalBkash / totalRevenue) * 100}%` }} />
-                </div>
-                <div className="text-center text-sm text-warm-muted mt-4">
-                  Realized Revenue: ৳{fmt(totalRevenue)} | Total Sales: ৳{fmt(totalRevenue + totalCredit)}
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-warm-muted py-8">No sales data available</div>
-            )}
-          </section>
-        </div>
-
-        {/* Right Column - Activity & Quick Actions */}
-        <div className="space-y-8">
-          {/* Profile Progress Widget */}
-          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6 flex items-center gap-4">
-            <div className="flex-shrink-0 mr-2">
-              <svg width="60" height="60" viewBox="0 0 36 36">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" strokeWidth="3" />
-                <path className="circle transition-all duration-1000" strokeDasharray={`${calculateProgress()}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10B981" strokeWidth="3" />
-                <text x="18" y="20.3" className="percentage font-bold fill-warm-fg" textAnchor="middle" fontSize="8">{calculateProgress()}%</text>
-              </svg>
-            </div>
-            <div>
-              <h4 className="font-semibold text-warm-fg font-display">Complete your Profile</h4>
-              <p className="text-xs text-warm-muted mt-1">Unlock additional reporting metrics by finalizing setup.</p>
-            </div>
-          </section>
-
-          {/* Quick POS Shortcut */}
-          <section className="bg-gradient-to-br from-warm-accent to-warm-accent-light rounded-xl shadow-sm p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Zap size={20} />
-                  Quick POS
+        {/* Tab 3: Operations */}
+        {activeTab === 'operations' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+            {/* Low Stock Alerts */}
+            <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
+              <div className="px-6 py-4 border-b border-warm-border">
+                <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
+                  <AlertTriangle size={18} className="text-warm-warning" />
+                  Low Stock Alerts
                 </h3>
-                <p className="text-white/80 text-sm mt-1">Start a quick sale</p>
               </div>
-              <a 
-                href="/admin/pos" 
-                className="bg-surface-default text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-surface-default/90 transition-colors"
-              >
-                Launch
-              </a>
-            </div>
-          </section>
+              {lowStock && lowStock.length > 0 ? (
+                <ul className="divide-y divide-warm-border">
+                  {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
+                    <li key={item.id} className="flex justify-between items-center px-6 py-3">
+                      <span className="text-sm text-warm-fg">{item.name}</span>
+                      <span className="text-sm font-semibold text-warm-danger">{item.quantity} left</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-6 py-8 text-center text-warm-muted">
+                  <Package size={32} className="mx-auto mb-2 text-warm-success" />
+                  <p>Stock is healthy</p>
+                  <p className="text-sm text-warm-dim">No items are currently running low.</p>
+                </div>
+              )}
+            </section>
 
-          {/* Total Balance Card */}
-          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6 text-center">
-            <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2">
-              {t('dashboard.currentAvailableBalance')}
-            </div>
-            <div className="text-4xl font-bold text-warm-success font-mono">৳{fmt(availableBalance)}</div>
-            <div className="text-sm text-warm-muted mt-1">Capital + Revenue − Expenses</div>
-          </section>
-
-          {/* Recent Activity */}
-          <RecentActivity />
-
-          {/* Low Stock Alerts */}
-          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
-            <div className="px-6 py-4 border-b border-warm-border">
-              <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
-                <AlertTriangle size={18} className="text-warm-warning" />
-                Low Stock Alerts
-              </h3>
-            </div>
-            {lowStock && lowStock.length > 0 ? (
-              <ul className="divide-y divide-warm-border">
-                {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
-                  <li key={item.id} className="flex justify-between items-center px-6 py-3">
-                    <span className="text-sm text-warm-fg">{item.name}</span>
-                    <span className="text-sm font-semibold text-warm-danger">{item.quantity} left</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="px-6 py-8 text-center text-warm-muted">
-                <Package size={32} className="mx-auto mb-2 text-warm-success" />
-                <p>Stock is healthy</p>
-                <p className="text-sm text-warm-dim">No items are currently running low.</p>
+            {/* Reminders */}
+            <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
+              <div className="px-6 py-4 border-b border-warm-border">
+                <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
+                  <Bell size={18} className="text-warm-accent" />
+                  Upcoming Reminders
+                </h3>
               </div>
-            )}
-          </section>
-
-          {/* Reminders */}
-          <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
-            <div className="px-6 py-4 border-b border-warm-border">
-              <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
-                <Bell size={18} className="text-warm-accent" />
-                Upcoming Reminders
-              </h3>
-            </div>
-            {reminders && reminders.length > 0 ? (
-              <ul className="divide-y divide-warm-border">
-                {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
-                  <li key={reminder.id} className="flex flex-col gap-1 px-6 py-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-warm-fg">{reminder.title}</span>
-                      <span className="text-xs text-warm-muted">
-                        {format(parseISO(reminder.reminderDate), 'dd MMM')}
-                      </span>
-                    </div>
-                    {reminder.description && (
-                      <span className="text-xs text-warm-muted line-clamp-1">{reminder.description}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="px-6 py-8 text-center text-warm-muted">
-                <p>No upcoming reminders</p>
-              </div>
-            )}
-          </section>
-        </div>
+              {reminders && reminders.length > 0 ? (
+                <ul className="divide-y divide-warm-border">
+                  {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
+                    <li key={reminder.id} className="flex flex-col gap-1 px-6 py-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-warm-fg">{reminder.title}</span>
+                        <span className="text-xs text-warm-muted">
+                          {format(parseISO(reminder.reminderDate), 'dd MMM')}
+                        </span>
+                      </div>
+                      {reminder.description && (
+                        <span className="text-xs text-warm-muted line-clamp-1">{reminder.description}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-6 py-8 text-center text-warm-muted">
+                  <p>No upcoming reminders</p>
+                </div>
+              )}
+            </section>
+          </div>
+        )}
       </div>
 
       {/* Quick Action Modals (Stubs) */}

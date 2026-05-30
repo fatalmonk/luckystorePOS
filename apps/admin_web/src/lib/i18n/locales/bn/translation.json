@@ -19,7 +19,17 @@
     "reports": "রিপোর্ট",
     "settings": "সেটিংস",
     "history": "ইতিহাস",
-    "logout": "লগআউট"
+    "logout": "লগআউট",
+    "manageStaff": "স্টাফ ম্যানেজমেন্ট",
+    "dataManagement": "ডেটা ম্যানেজমেন্ট",
+    "importProducts": "পণ্য ইম্পোর্ট",
+    "importParties": "পার্টি ইম্পোর্ট",
+    "otherIncome": "অন্যান্য আয়",
+    "groupBusiness": "ব্যবসা",
+    "groupInventorySales": "ইনভেন্টরি ও বিক্রয়",
+    "groupManagement": "ম্যানেজমেন্ট",
+    "groupSystem": "সিস্টেম",
+    "helpTutorials": "হেল্প ও টিউটোরিয়াল"
   },
   "dashboard": {
     "welcome": "স্বাগতম",
