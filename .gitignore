@@ -202,3 +202,5 @@ data/*.json
 
 # Aion session artifacts
 .aionrs/
+.env
+.env.local
