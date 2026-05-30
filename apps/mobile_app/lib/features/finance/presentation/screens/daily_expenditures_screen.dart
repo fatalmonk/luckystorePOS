@@ -109,12 +109,12 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
   }
 
   void _showAddExpenseDialog() {
-    final _formKey = GlobalKey<FormState>();
-    final _amountController = TextEditingController();
-    final _descriptionController = TextEditingController();
-    final _vendorController = TextEditingController();
-    String _selectedCategory = _categories.first;
-    String _selectedPaymentType = _paymentTypes.first;
+    final formKey = GlobalKey<FormState>();
+    final amountController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final vendorController = TextEditingController();
+    String selectedCategory = _categories.first;
+    String selectedPaymentType = _paymentTypes.first;
 
     showDialog(
       context: context,
@@ -125,14 +125,14 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
           title: Text('Add Expense', style: AppTextStyles.headingLg),
           content: SingleChildScrollView(
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Amount
                   TextFormField(
-                    controller: _amountController,
+                    controller: amountController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -157,7 +157,7 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
 
                   // Vendor
                   TextFormField(
-                    controller: _vendorController,
+                    controller: vendorController,
                     decoration: InputDecoration(
                       labelText: 'Vendor/Recipient',
                       labelStyle: AppTextStyles.bodySm,
@@ -175,7 +175,7 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
 
                   // Description
                   TextFormField(
-                    controller: _descriptionController,
+                    controller: descriptionController,
                     maxLines: 2,
                     decoration: InputDecoration(
                       labelText: 'Description',
@@ -194,7 +194,7 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
 
                   // Category
                   DropdownButtonFormField<String>(
-                    value: _selectedCategory,
+                    value: selectedCategory,
                     decoration: InputDecoration(
                       labelText: 'Category',
                       labelStyle: AppTextStyles.bodySm,
@@ -202,14 +202,14 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
                     ),
                     items: _categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
                     onChanged: (value) {
-                      setDialogState(() => _selectedCategory = value!);
+                      setDialogState(() => selectedCategory = value!);
                     },
                   ),
                   const SizedBox(height: 16),
 
                   // Payment Type
                   DropdownButtonFormField<String>(
-                    value: _selectedPaymentType,
+                    value: selectedPaymentType,
                     decoration: InputDecoration(
                       labelText: 'Payment Type',
                       labelStyle: AppTextStyles.bodySm,
@@ -217,7 +217,7 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
                     ),
                     items: _paymentTypes.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
                     onChanged: (value) {
-                      setDialogState(() => _selectedPaymentType = value!);
+                      setDialogState(() => selectedPaymentType = value!);
                     },
                   ),
                 ],
@@ -231,13 +231,13 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   await _saveExpense(
-                    amount: double.parse(_amountController.text),
-                    vendor: _vendorController.text,
-                    description: _descriptionController.text,
-                    category: _selectedCategory,
-                    paymentType: _selectedPaymentType,
+                    amount: double.parse(amountController.text),
+                    vendor: vendorController.text,
+                    description: descriptionController.text,
+                    category: selectedCategory,
+                    paymentType: selectedPaymentType,
                   );
                   if (context.mounted) Navigator.pop(context);
                 }
