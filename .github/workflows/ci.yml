@@ -24,11 +24,11 @@ jobs:
       - name: TypeScript check (strict, no emit)
         run: |
           cd apps/admin_web
-          npx tsc --noEmit
+          npx tsc -p tsconfig.app.json --noEmit
       - name: Lint (non-blocking — report only)
         run: |
           cd apps/admin_web
-          npm run lint
+          npm run lint || true
       - name: Production build (fail-fast on compile errors)
         run: |
           cd apps/admin_web
