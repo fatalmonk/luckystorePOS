@@ -564,7 +564,7 @@ export function DashboardPage() {
               </div>
               <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
                 {Object.entries(expenseCategories).map(([cat, amount], idx) => {
-                  const cfg = getCategoryConfig(cat);
+                  const cfg = categoryConfig[cat] || { label: cat, color: 'text-warm-muted', barColor: 'bg-warm-muted' };
                   return (
                     <div key={idx} className="space-y-1">
                       <div className="flex justify-between text-sm">
