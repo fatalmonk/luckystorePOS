@@ -21,7 +21,7 @@ export function OAuthConsentPage() {
       }
 
       try {
-        // @ts-ignore - Supabase types might not be updated in the environment yet
+        // @ts-expect-error -- OAuth window globals not typed - Supabase types might not be updated in the environment yet
         const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
 
         if (error) {
@@ -29,7 +29,7 @@ export function OAuthConsentPage() {
         } else {
           setAuthDetails(data);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message || 'Failed to retrieve authorization details.');
       } finally {
         setLoading(false);
@@ -44,17 +44,17 @@ export function OAuthConsentPage() {
     setActionLoading(true);
 
     try {
-      // @ts-ignore
+      // @ts-expect-error -- OAuth window globals not typed
       const { data, error } = await supabase.auth.oauth.approveAuthorization(authorizationId);
 
       if (error) {
         setError(error.message);
         setActionLoading(false);
       } else {
-        // @ts-ignore - redirect_to property based on Supabase auth OAuth flow
+        // @ts-expect-error -- OAuth window globals not typed - redirect_to property based on Supabase auth OAuth flow
         window.location.href = data.redirect_to;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'An error occurred during approval.');
       setActionLoading(false);
     }
@@ -65,17 +65,17 @@ export function OAuthConsentPage() {
     setActionLoading(true);
 
     try {
-      // @ts-ignore
+      // @ts-expect-error -- OAuth window globals not typed
       const { data, error } = await supabase.auth.oauth.denyAuthorization(authorizationId);
 
       if (error) {
         setError(error.message);
         setActionLoading(false);
       } else {
-        // @ts-ignore - redirect_to property based on Supabase auth OAuth flow
+        // @ts-expect-error -- OAuth window globals not typed - redirect_to property based on Supabase auth OAuth flow
         window.location.href = data.redirect_to;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'An error occurred during denial.');
       setActionLoading(false);
     }

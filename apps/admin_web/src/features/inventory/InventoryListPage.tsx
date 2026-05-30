@@ -55,7 +55,7 @@ export function InventoryListPage() {
   });
 
   const filteredItems = useMemo(() => {
-    let filtered = inventory?.filter((p: InventoryItem) => {
+    const filtered = inventory?.filter((p: InventoryItem) => {
       const matchesSearch =
         p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase());
@@ -288,10 +288,10 @@ export function InventoryListPage() {
           Filter by Category
         </h3>
         <CategoryThumbnailGrid
-          categories={categories?.map((c: any) => ({
+          categories={categories?.map((c: unknown) => ({
             id: c.id,
             name: c.name || c.category,
-            itemCount: inventory?.filter((p: any) => p.category_id === c.id).length ?? 0,
+            itemCount: inventory?.filter((p: unknown) => p.category_id === c.id).length ?? 0,
             imageUrl: c.image_url,
             color: c.color,
             icon: c.icon,

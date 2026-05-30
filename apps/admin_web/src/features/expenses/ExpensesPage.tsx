@@ -11,7 +11,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import {
   Receipt,
@@ -27,7 +27,7 @@ import {
   CreditCard,
   Download,
 } from 'lucide-react';
-import { format, startOfDay, startOfWeek, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO } from 'date-fns';
+import { format, startOfMonth, isToday, isThisWeek, isThisMonth, subMonths, parseISO } from 'date-fns';
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_PAYMENT_TYPES,
@@ -70,19 +70,19 @@ export function ExpensesPage() {
       queryClient.invalidateQueries({ queryKey: ['expenses', storeId] });
       setShowForm(false);
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to record expense.', 'error');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => api.expenses.update(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: Record<string, unknown> }) => api.expenses.update(id, updates),
     onSuccess: () => {
       notify('Expense updated successfully.', 'success');
       queryClient.invalidateQueries({ queryKey: ['expenses', storeId] });
       setEditingExpense(null);
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to update expense.', 'error');
     },
   });
@@ -94,7 +94,7 @@ export function ExpensesPage() {
       queryClient.invalidateQueries({ queryKey: ['expenses', storeId] });
       setDeletingExpenseId(null);
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to delete expense.', 'error');
     },
   });
@@ -132,7 +132,7 @@ export function ExpensesPage() {
   );
 
   // Dashboard statistics
-  const allExpenses = expenses || [];
+  const allExpenses = useMemo(() => expenses || [], [expenses]);
 
   // Total statistics
   const totalStats = useMemo(() => {
@@ -226,12 +226,6 @@ export function ExpensesPage() {
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
   }, [allExpenses]);
-
-  // Highest expense category
-  const highestCategory = useMemo(() => {
-    if (categoryBreakdown.length === 0) return null;
-    return categoryBreakdown[0];
-  }, [categoryBreakdown]);
 
   // Top 10 highest single expenses
   const topExpenses = useMemo(() => {
@@ -587,6 +581,7 @@ export function ExpensesPage() {
       />
 
       <EditExpenseDrawer
+        key={editingExpense?.id ?? 'none'}
         expense={editingExpense}
         isOpen={!!editingExpense}
         onSubmit={(id, updates) => updateMutation.mutate({ id, updates })}
@@ -753,11 +748,18 @@ function EditExpenseDrawer({
 }: {
   expense: Expense | null;
   isOpen: boolean;
-  onSubmit: (id: string, updates: any) => void;
+  onSubmit: (id: string, updates: Record<string, unknown>) => void;
   onClose: () => void;
   isPending: boolean;
 }) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(expense ? {
+    expenseDate: expense.expenseDate,
+    vendorName: expense.vendorName,
+    description: expense.description,
+    amount: expense.amount,
+    paymentType: expense.paymentType,
+    category: expense.category,
+  } : {
     expenseDate: '',
     vendorName: '',
     description: '',
@@ -765,19 +767,6 @@ function EditExpenseDrawer({
     paymentType: 'Cash' as ExpensePaymentType,
     category: 'All Other Expenses' as ExpenseCategory,
   });
-
-  React.useEffect(() => {
-    if (expense) {
-      setForm({
-        expenseDate: expense.expenseDate,
-        vendorName: expense.vendorName,
-        description: expense.description,
-        amount: expense.amount,
-        paymentType: expense.paymentType,
-        category: expense.category,
-      });
-    }
-  }, [expense]);
 
   const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) =>
     setForm(prev => ({ ...prev, [key]: value }));

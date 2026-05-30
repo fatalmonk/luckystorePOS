@@ -1,5 +1,6 @@
 import { supabase } from '../../supabase';
 import type { ReceiptConfigUpdateInput } from '../types';
+import type { Database } from '../../database.types';
 
 export const settings = {
   getPaymentMethods: async (storeId: string) => {
@@ -50,7 +51,14 @@ export const settings = {
     if (error) throw error;
     return data;
   },
-  addPaymentMethod: async (storeId: string, method: { name: string; type: string; isActive: boolean }) => {
+  addPaymentMethod: async (
+    storeId: string,
+    method: {
+      name: string;
+      type: Database['public']['Enums']['payment_type'];
+      isActive: boolean;
+    }
+  ) => {
     const { data, error } = await supabase
       .from('payment_methods')
       .insert([{

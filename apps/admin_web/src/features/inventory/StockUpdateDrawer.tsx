@@ -8,7 +8,7 @@ import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 
 interface StockUpdateDrawerProps {
-  product: any | null;
+  product: unknown | null;
   storeId: string;
   onClose: () => void;
   /** Called with product name after successful update, for highlighting parent card */
@@ -121,7 +121,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
       setImageFile(null);
       setImagePreview(null);
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       notify(err.message || 'Failed to upload image.', 'error');
     },
   });
@@ -141,7 +141,7 @@ export function StockUpdateDrawer({ product, storeId, onClose, onSuccess }: Stoc
       queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       notify(err.message || 'Failed to update stock. Please try again.', 'error');
     }
   });

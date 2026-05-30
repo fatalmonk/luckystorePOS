@@ -15,18 +15,18 @@ export const dailySales = {
     const { data, error } = await query;
     if (error) throw error;
 
-    return (data ?? []).map((row: any) => ({
+    return (data ?? []).map((row) => ({
       id: row.id,
-      storeId: row.store_id,
-      saleDate: row.sale_date,
-      cashAmount: Number(row.cash_amount),
-      bkashAmount: Number(row.bkash_amount),
-      creditAmount: Number(row.credit_amount),
-      totalSales: Number(row.total_sales),
-      stockPurchase: Number(row.stock_purchase),
-      dailyExpense: Number(row.daily_expense),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      storeId: row.store_id ?? '',
+      saleDate: row.sale_date ?? '',
+      cashAmount: Number(row.cash_amount ?? 0),
+      bkashAmount: Number(row.bkash_amount ?? 0),
+      creditAmount: Number(row.credit_amount ?? 0),
+      totalSales: Number(row.total_sales ?? 0),
+      stockPurchase: Number(row.stock_purchase ?? 0),
+      dailyExpense: Number(row.daily_expense ?? 0),
+      createdAt: row.created_at ?? '',
+      updatedAt: row.updated_at ?? '',
     }));
   },
 
@@ -48,16 +48,16 @@ export const dailySales = {
     if (error) throw error;
     return {
       id: data.id,
-      storeId: data.store_id,
-      saleDate: data.sale_date,
-      cashAmount: Number(data.cash_amount),
-      bkashAmount: Number(data.bkash_amount),
-      creditAmount: Number(data.credit_amount),
-      totalSales: Number(data.total_sales),
-      stockPurchase: Number(data.stock_purchase),
-      dailyExpense: Number(data.daily_expense),
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      storeId: data.store_id ?? '',
+      saleDate: data.sale_date ?? '',
+      cashAmount: Number(data.cash_amount ?? 0),
+      bkashAmount: Number(data.bkash_amount ?? 0),
+      creditAmount: Number(data.credit_amount ?? 0),
+      totalSales: Number(data.total_sales ?? 0),
+      stockPurchase: Number(data.stock_purchase ?? 0),
+      dailyExpense: Number(data.daily_expense ?? 0),
+      createdAt: data.created_at ?? '',
+      updatedAt: data.updated_at ?? '',
     };
   },
 
@@ -79,16 +79,16 @@ export const dailySales = {
     if (error) throw error;
     return {
       id: data.id,
-      storeId: data.store_id,
-      saleDate: data.sale_date,
-      cashAmount: Number(data.cash_amount),
-      bkashAmount: Number(data.bkash_amount),
-      creditAmount: Number(data.credit_amount),
-      totalSales: Number(data.total_sales),
-      stockPurchase: Number(data.stock_purchase),
-      dailyExpense: Number(data.daily_expense),
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      storeId: data.store_id ?? '',
+      saleDate: data.sale_date ?? '',
+      cashAmount: Number(data.cash_amount ?? 0),
+      bkashAmount: Number(data.bkash_amount ?? 0),
+      creditAmount: Number(data.credit_amount ?? 0),
+      totalSales: Number(data.total_sales ?? 0),
+      stockPurchase: Number(data.stock_purchase ?? 0),
+      dailyExpense: Number(data.daily_expense ?? 0),
+      createdAt: data.created_at ?? '',
+      updatedAt: data.updated_at ?? '',
     };
   },
 
