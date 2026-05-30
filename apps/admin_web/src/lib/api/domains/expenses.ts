@@ -17,7 +17,7 @@ export const expenses = {
     const { data, error } = await query;
     if (error) throw error;
 
-    return (data ?? []).map((row: unknown) => ({
+    return (data ?? []).map((row: any) => ({
       id: row.id,
       storeId: row.store_id,
       expenseDate: row.expense_date,

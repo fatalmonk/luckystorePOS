@@ -6,7 +6,7 @@ export const products = {
     const { data, error } = await supabase
       .from('items')
       .select('*, categories(name)')
-      .eq('is_active', true)
+      .eq('active', true)
       .order('name');
     if (error) throw error;
     return data;
@@ -53,7 +53,7 @@ export const products = {
     return data;
   },
   remove: async (id: string) => {
-    const { data, error } = await supabase.from('items').update({ is_active: false }).eq('id', id).select().single();
+    const { data, error } = await supabase.from('items').update({ active: false }).eq('id', id).select().single();
     if (error) throw error;
     return data;
   },
