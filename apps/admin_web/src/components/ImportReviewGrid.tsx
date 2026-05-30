@@ -25,7 +25,7 @@ export default function ImportReviewGrid({ importedData, onConfirm }: ImportRevi
     data.forEach((row, idx) => {
       const result = rowSchema.safeParse(row);
       if (!result.success) {
-        newErrors[idx] = result.error.errors.map(e => `${e.path.join('.')} - ${e.message}`);
+        newErrors[idx] = result.error.issues.map(e => `${e.path.join('.')} - ${e.message}`);
       }
     });
     setErrors(newErrors);
@@ -42,7 +42,16 @@ export default function ImportReviewGrid({ importedData, onConfirm }: ImportRevi
   const hasErrors = Object.keys(errors).length > 0;
 
   const handleConfirm = () => {
-    if (hasErrors) return;
+    // Re-validate all rows before confirming to catch stale validation state
+    const newErrors: Record<number, string[]> = {};
+    data.forEach((row, idx) => {
+      const result = rowSchema.safeParse(row);
+      if (!result.success) {
+        newErrors[idx] = result.error.issues.map(e => `${e.path.join('.')} - ${e.message}`);
+      }
+    });
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
     toast.success('Data ready for import');
     onConfirm(data);
   };
