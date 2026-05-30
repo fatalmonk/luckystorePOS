@@ -616,7 +616,7 @@ class _EnhancedSyncQueueScreenState extends State<EnhancedSyncQueueScreen> {
                   ),
                 ),
               ),
-              Text('Transaction Details', style: AppTextStyles.headingSm),
+              Text('Transaction Details', style: AppTextStyles.headingMd),
               const SizedBox(height: 16),
               _detailRow('ID', tx.clientTransactionId),
               _detailRow('Status', tx.state.name.toUpperCase()),
