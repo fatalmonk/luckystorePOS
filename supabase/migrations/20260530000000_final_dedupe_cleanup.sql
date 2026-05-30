@@ -134,7 +134,7 @@ AS $$
         i.price,
         i.mrp,
         i.cost,
-        i.active,
+        i.is_active AS active,
         COALESCE(sl.qty, 0)::integer AS stock,
         i.image_url
     FROM items i
@@ -166,7 +166,7 @@ AS $$
     FROM items i
     LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
     WHERE i.barcode = p_barcode
-    AND i.active = true
+    AND i.is_active = true
     LIMIT 1;
 $$;
 
@@ -187,7 +187,7 @@ AS $$
         COALESCE(sl.qty, 0)::integer AS stock
     FROM items i
     LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
-    WHERE i.active = true
+    WHERE i.is_active = true
     AND (i.name ILIKE '%' || p_query || '%' OR i.barcode = p_query OR i.sku = p_query)
     LIMIT 20;
 $$;
