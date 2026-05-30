@@ -9,6 +9,8 @@ import { reminders } from './reminders';
 import { purchases } from './purchases';
 import { reports } from './reports';
 import { dailySales } from './dailySales';
+import { otherIncome } from './otherIncome';
+import { staff } from './staff';
 
 export const api = {
   dashboard,
@@ -23,4 +25,6 @@ export const api = {
   purchases,
   reports,
   dailySales,
+  otherIncome,
+  staff,
 };
