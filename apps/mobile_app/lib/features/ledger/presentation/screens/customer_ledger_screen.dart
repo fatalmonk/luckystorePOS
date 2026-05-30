@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../collections/presentation/screens/payment_collection_screen.dart';
 
 /// Customer Ledger Screen - View credit customers and their transaction history
 /// Shows outstanding balances, payment history, and allows WhatsApp reminders
@@ -153,6 +154,37 @@ Thank you.''';
     _loadCustomerTransactions(customer['party_id'].toString());
   }
 
+  /// Navigate to payment collection screen
+  Future<void> _navigateToPaymentCollection() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const PaymentCollectionScreen(),
+      ),
+    );
+    
+    // If payment was successful, refresh the customer list
+    if (result == true) {
+      _fetchCreditCustomers();
+    }
+  }
+
+  /// Navigate to payment collection with specific customer pre-selected
+  Future<void> _collectPaymentFromCustomer(Map<String, dynamic> customer) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => PaymentCollectionScreen(
+          preSelectedCustomer: customer,
+        ),
+      ),
+    );
+    
+    // If payment was successful, go back to customer list and refresh
+    if (result == true) {
+      setState(() => _selectedCustomer = null);
+      _fetchCreditCustomers();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -187,6 +219,15 @@ Thank you.''';
               ),
           ],
         ),
+        floatingActionButton: _selectedCustomer == null && !_isLoading && _error == null
+            ? FloatingActionButton.extended(
+                onPressed: _navigateToPaymentCollection,
+                icon: const Icon(Icons.add_circle_rounded),
+                label: const Text('Collect Payment'),
+                backgroundColor: AppColors.primaryDefault,
+                foregroundColor: AppColors.primaryOn,
+              )
+            : null,
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
@@ -278,9 +319,6 @@ Thank you.''';
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final customer = _customers[index];
-          final balance = customer['balance_due'] as num? ?? 0;
-          final daysOverdue = customer['days_overdue'] as int? ?? 0;
-          
           return _CustomerCard(
             customer: customer,
             onTap: () => _showCustomerDetails(customer),
@@ -368,23 +406,40 @@ Thank you.''';
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _launchWhatsApp(_selectedCustomer!),
-                  icon: const Icon(Icons.message_rounded, size: 18),
-                  label: const Text('Send Reminder via WhatsApp'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.successDefault,
-                    side: const BorderSide(color: AppColors.successDefault),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.borderMd,
-                    ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _collectPaymentFromCustomer(_selectedCustomer!),
+                icon: const Icon(Icons.payments_rounded, size: 18),
+                label: const Text('Collect Payment'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryDefault,
+                  foregroundColor: AppColors.primaryOn,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppRadius.borderMd,
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _launchWhatsApp(_selectedCustomer!),
+                icon: const Icon(Icons.message_rounded, size: 18),
+                label: const Text('Send Reminder via WhatsApp'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.successDefault,
+                  side: const BorderSide(color: AppColors.successDefault),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                ),
+              ),
+            ),
             ],
           ),
         ),
@@ -570,7 +625,6 @@ class _TransactionTile extends StatelessWidget {
     final date = transaction['transaction_date'] != null
         ? DateTime.parse(transaction['transaction_date'])
         : DateTime.now();
-    final paymentType = transaction['payment_type'] as String? ?? 'Unknown';
 
     return Container(
       padding: AppSpacing.insetMd,

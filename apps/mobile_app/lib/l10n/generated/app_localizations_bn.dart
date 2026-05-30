@@ -316,4 +316,73 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get currencyCode => 'BDT';
+
+  @override
+  String get collectPayment => 'পেমেন্ট সংগ্রহ করুন';
+
+  @override
+  String get customerBalance => 'গ্রাহক ব্যালেন্স';
+
+  @override
+  String get makePayment => 'পেমেন্ট দিন';
+
+  @override
+  String get supplierBalance => 'সরবরাহকারী ব্যালেন্স';
+
+  @override
+  String get stockAdjustment => 'স্টক সমন্বয়';
+
+  @override
+  String get damaged => 'ক্ষতিগ্রস্ত';
+
+  @override
+  String get theft => 'চুরি';
+
+  @override
+  String get found => 'পাওয়া গেছে';
+
+  @override
+  String get returnToSupplier => 'সরবরাহকারীকে ফেরত';
+
+  @override
+  String get syncQueue => 'সিঙ্ক কিউ';
+
+  @override
+  String get dailyReports => 'দৈনিক রিপোর্ট';
+
+  @override
+  String get todaysSalesSummary => 'আজকের বিক্রয় সারাংশ';
+
+  @override
+  String get paymentBreakdown => 'পেমেন্ট বিশ্লেষণ';
+
+  @override
+  String get topProducts => 'শীর্ষ পণ্য';
+
+  @override
+  String get hourlySales => 'ঘণ্টাভিত্তিক বিক্রয়';
+
+  @override
+  String get expectedDrawer => 'প্রত্যাশিত ড্রয়ার';
+
+  @override
+  String get actualCash => 'প্রকৃত নগদ';
+
+  @override
+  String get variance => 'পার্থক্য';
+
+  @override
+  String get managerOverride => 'ম্যানেজার ওভাররাইড';
+
+  @override
+  String get conflictDetected => 'সংঘাত শনাক্ত হয়েছে';
+
+  @override
+  String get keepLocal => 'স্থানীয় রাখুন';
+
+  @override
+  String get useServer => 'সার্ভার ব্যবহার করুন';
+
+  @override
+  String get cancelTransaction => 'লেনদেন বাতিল করুন';
 }
