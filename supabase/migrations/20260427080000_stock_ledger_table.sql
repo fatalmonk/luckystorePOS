@@ -85,10 +85,12 @@ ALTER TABLE public.stock_ledger ENABLE ROW LEVEL SECURITY;
 -- Proper RLS policies are added in 20260427200000_fix_stock_ledger_rls.sql.
 
 -- Service role can do anything
+DROP POLICY IF EXISTS stock_ledger_service_role_all ON public.stock_ledger;
 CREATE POLICY stock_ledger_service_role_all
   ON public.stock_ledger TO service_role
   USING (true);
 
+DROP POLICY IF EXISTS stock_ledger_service_role_insert ON public.stock_ledger;
 CREATE POLICY stock_ledger_service_role_insert 
   ON public.stock_ledger FOR INSERT 
   TO service_role
