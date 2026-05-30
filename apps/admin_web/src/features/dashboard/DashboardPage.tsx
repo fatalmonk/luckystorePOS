@@ -168,14 +168,17 @@ export function DashboardPage() {
     .reduce((sum: number, v) => sum + (v as number), 0);
 
   // Map category names to display labels and colors - Warm palette
-  const categoryConfig: Record<string, { label: string; color: string; barColor: string }> = {
-    'Stock Purchase': { label: 'Stock Purchase', color: 'text-warm-accent', barColor: 'bg-warm-accent' },
-    'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warm-warning', barColor: 'bg-warm-warning' },
-    'Staff salary': { label: 'Staff Salary', color: 'text-primary-default', barColor: 'bg-primary-subtle0' },
-    'Utility Expenses': { label: 'Utilities', color: 'text-warm-success', barColor: 'bg-warm-success' },
-    'All Other Expenses': { label: 'Other', color: 'text-warm-dim', barColor: 'bg-warm-silver' },
-    'Partners Take': { label: 'Partners Take', color: 'text-warm-danger', barColor: 'bg-warm-danger' },
-    'Transport & Conveyance': { label: 'Transport', color: 'text-warm-charcoal', barColor: 'bg-warm-charcoal' },
+  const getCategoryConfig = (cat: string) => {
+    const config: Record<string, { label: string; color: string; barColor: string }> = {
+      'Stock Purchase': { label: 'Stock Purchase', color: 'text-warm-accent', barColor: 'bg-warm-accent' },
+      'Capital Expenditure': { label: t('dashboard.capital'), color: 'text-warm-warning', barColor: 'bg-warm-warning' },
+      'Staff salary': { label: 'Staff Salary', color: 'text-primary-default', barColor: 'bg-primary-subtle0' },
+      'Utility Expenses': { label: 'Utilities', color: 'text-warm-success', barColor: 'bg-warm-success' },
+      'All Other Expenses': { label: 'Other', color: 'text-warm-dim', barColor: 'bg-warm-silver' },
+      'Partners Take': { label: 'Partners Take', color: 'text-warm-danger', barColor: 'bg-warm-danger' },
+      'Transport & Conveyance': { label: 'Transport', color: 'text-warm-charcoal', barColor: 'bg-warm-charcoal' },
+    };
+    return config[cat] || { label: cat, color: 'text-warm-muted', barColor: 'bg-warm-muted' };
   };
 
   // Last 7 days vs previous 7 days for trend
@@ -561,7 +564,7 @@ export function DashboardPage() {
               </div>
               <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
                 {Object.entries(expenseCategories).map(([cat, amount], idx) => {
-                  const cfg = categoryConfig[cat] || { label: cat, color: 'text-warm-muted', barColor: 'bg-warm-muted' };
+                  const cfg = getCategoryConfig(cat);
                   return (
                     <div key={idx} className="space-y-1">
                       <div className="flex justify-between text-sm">
