@@ -35,7 +35,7 @@ DO $$ BEGIN
     'percentage',
     'fixed'
   );
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 ALTER TYPE "public"."discount_type" OWNER TO "postgres";
@@ -5915,8 +5915,10 @@ END $$;
 
 
 
-ALTER TABLE ONLY "public"."accounting_periods"
-    ADD CONSTRAINT "accounting_periods_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."accounting_periods"
+        ADD CONSTRAINT "accounting_periods_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -5925,18 +5927,24 @@ ALTER TABLE ONLY "public"."accounting_periods"
 
 
 
-ALTER TABLE ONLY "public"."accounts"
-    ADD CONSTRAINT "accounts_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."accounts"
+        ADD CONSTRAINT "accounts_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."audit_logs"
-    ADD CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."audit_logs"
+        ADD CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."batches"
-    ADD CONSTRAINT "batches_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."batches"
+        ADD CONSTRAINT "batches_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -5953,12 +5961,14 @@ END $$;
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."categories"
         ADD CONSTRAINT "categories_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."close_review_log"
-    ADD CONSTRAINT "close_review_log_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."close_review_log"
+        ADD CONSTRAINT "close_review_log_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -5972,55 +5982,73 @@ ALTER TABLE ONLY "public"."competitor_prices"
 
 
 
-ALTER TABLE ONLY "public"."competitor_prices"
-    ADD CONSTRAINT "competitor_prices_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."competitor_prices"
+        ADD CONSTRAINT "competitor_prices_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."customer_reminders"
-    ADD CONSTRAINT "customer_reminders_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."customer_reminders"
+        ADD CONSTRAINT "customer_reminders_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."discounts"
-    ADD CONSTRAINT "discounts_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."discounts"
+        ADD CONSTRAINT "discounts_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."expenses"
-    ADD CONSTRAINT "expenses_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."expenses"
+        ADD CONSTRAINT "expenses_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."followup_notes"
-    ADD CONSTRAINT "followup_notes_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."followup_notes"
+        ADD CONSTRAINT "followup_notes_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."idempotency_keys"
-    ADD CONSTRAINT "idempotency_keys_pkey" PRIMARY KEY ("idempotency_key");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."idempotency_keys"
+        ADD CONSTRAINT "idempotency_keys_pkey" PRIMARY KEY ("idempotency_key");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."import_runs"
-    ADD CONSTRAINT "import_runs_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."import_runs"
+        ADD CONSTRAINT "import_runs_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."inventory_items"
-    ADD CONSTRAINT "inventory_items_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."inventory_items"
+        ADD CONSTRAINT "inventory_items_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."item_batches"
-    ADD CONSTRAINT "item_batches_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."item_batches"
+        ADD CONSTRAINT "item_batches_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."items"
         ADD CONSTRAINT "items_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6029,13 +6057,17 @@ ALTER TABLE ONLY "public"."items"
 
 
 
-ALTER TABLE ONLY "public"."journal_batches"
-    ADD CONSTRAINT "journal_batches_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."journal_batches"
+        ADD CONSTRAINT "journal_batches_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."ledger_accounts"
-    ADD CONSTRAINT "ledger_accounts_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."ledger_accounts"
+        ADD CONSTRAINT "ledger_accounts_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6044,23 +6076,31 @@ ALTER TABLE ONLY "public"."ledger_accounts"
 
 
 
-ALTER TABLE ONLY "public"."ledger_batches"
-    ADD CONSTRAINT "ledger_batches_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."ledger_batches"
+        ADD CONSTRAINT "ledger_batches_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."ledger_entries"
-    ADD CONSTRAINT "ledger_entries_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."ledger_entries"
+        ADD CONSTRAINT "ledger_entries_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."ledger_posting_idempotency"
-    ADD CONSTRAINT "ledger_posting_idempotency_pkey" PRIMARY KEY ("sale_id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."ledger_posting_idempotency"
+        ADD CONSTRAINT "ledger_posting_idempotency_pkey" PRIMARY KEY ("sale_id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."ledger_posting_queue"
-    ADD CONSTRAINT "ledger_posting_queue_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."ledger_posting_queue"
+        ADD CONSTRAINT "ledger_posting_queue_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6069,23 +6109,31 @@ ALTER TABLE ONLY "public"."ledger_posting_queue"
 
 
 
-ALTER TABLE ONLY "public"."ledger_workers"
-    ADD CONSTRAINT "ledger_workers_pkey" PRIMARY KEY ("worker_id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."ledger_workers"
+        ADD CONSTRAINT "ledger_workers_pkey" PRIMARY KEY ("worker_id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."parties"
-    ADD CONSTRAINT "parties_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."parties"
+        ADD CONSTRAINT "parties_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."payment_methods"
-    ADD CONSTRAINT "payment_methods_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."payment_methods"
+        ADD CONSTRAINT "payment_methods_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."pos_override_tokens"
-    ADD CONSTRAINT "pos_override_tokens_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."pos_override_tokens"
+        ADD CONSTRAINT "pos_override_tokens_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6094,8 +6142,10 @@ ALTER TABLE ONLY "public"."pos_override_tokens"
 
 
 
-ALTER TABLE ONLY "public"."pos_sessions"
-    ADD CONSTRAINT "pos_sessions_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."pos_sessions"
+        ADD CONSTRAINT "pos_sessions_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6104,8 +6154,10 @@ ALTER TABLE ONLY "public"."pos_sessions"
 
 
 
-ALTER TABLE ONLY "public"."purchase_order_items"
-    ADD CONSTRAINT "purchase_order_items_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."purchase_order_items"
+        ADD CONSTRAINT "purchase_order_items_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6114,8 +6166,10 @@ ALTER TABLE ONLY "public"."purchase_order_items"
 
 
 
-ALTER TABLE ONLY "public"."purchase_orders"
-    ADD CONSTRAINT "purchase_orders_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."purchase_orders"
+        ADD CONSTRAINT "purchase_orders_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6124,55 +6178,73 @@ ALTER TABLE ONLY "public"."purchase_orders"
 
 
 
-ALTER TABLE ONLY "public"."purchase_receipt_items"
-    ADD CONSTRAINT "purchase_receipt_items_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."purchase_receipt_items"
+        ADD CONSTRAINT "purchase_receipt_items_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."purchase_receipts"
-    ADD CONSTRAINT "purchase_receipts_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."purchase_receipts"
+        ADD CONSTRAINT "purchase_receipts_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."receipt_config"
-    ADD CONSTRAINT "receipt_config_pkey" PRIMARY KEY ("store_id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."receipt_config"
+        ADD CONSTRAINT "receipt_config_pkey" PRIMARY KEY ("store_id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."receipt_counters"
-    ADD CONSTRAINT "receipt_counters_pkey" PRIMARY KEY ("store_id", "date");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."receipt_counters"
+        ADD CONSTRAINT "receipt_counters_pkey" PRIMARY KEY ("store_id", "date");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."reminders"
-    ADD CONSTRAINT "reminders_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."reminders"
+        ADD CONSTRAINT "reminders_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."returns"
-    ADD CONSTRAINT "returns_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."returns"
+        ADD CONSTRAINT "returns_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."sale_audit_log"
-    ADD CONSTRAINT "sale_audit_log_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."sale_audit_log"
+        ADD CONSTRAINT "sale_audit_log_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sale_items"
         ADD CONSTRAINT "sale_items_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."sale_payments"
-    ADD CONSTRAINT "sale_payments_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."sale_payments"
+        ADD CONSTRAINT "sale_payments_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."sale_sync_conflicts"
-    ADD CONSTRAINT "sale_sync_conflicts_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."sale_sync_conflicts"
+        ADD CONSTRAINT "sale_sync_conflicts_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6184,19 +6256,21 @@ ALTER TABLE ONLY "public"."sale_sync_conflicts"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sales"
         ADD CONSTRAINT "sales_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sales"
         ADD CONSTRAINT "sales_receipt_number_key" UNIQUE ("sale_number");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."stock_alert_thresholds"
-    ADD CONSTRAINT "stock_alert_thresholds_pkey" PRIMARY KEY ("store_id", "item_id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."stock_alert_thresholds"
+        ADD CONSTRAINT "stock_alert_thresholds_pkey" PRIMARY KEY ("store_id", "item_id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6205,27 +6279,31 @@ ALTER TABLE ONLY "public"."stock_ledger"
 
 
 
-ALTER TABLE ONLY "public"."stock_ledger"
-    ADD CONSTRAINT "stock_ledger_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."stock_ledger"
+        ADD CONSTRAINT "stock_ledger_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_levels"
         ADD CONSTRAINT "stock_levels_pkey" PRIMARY KEY ("store_id", "item_id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_movements"
         ADD CONSTRAINT "stock_movements_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."stock_transfer_items"
-    ADD CONSTRAINT "stock_transfer_items_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."stock_transfer_items"
+        ADD CONSTRAINT "stock_transfer_items_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6234,8 +6312,10 @@ ALTER TABLE ONLY "public"."stock_transfer_items"
 
 
 
-ALTER TABLE ONLY "public"."stock_transfers"
-    ADD CONSTRAINT "stock_transfers_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."stock_transfers"
+        ADD CONSTRAINT "stock_transfers_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6247,33 +6327,35 @@ ALTER TABLE ONLY "public"."stores"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stores"
         ADD CONSTRAINT "stores_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
-ALTER TABLE ONLY "public"."suppliers"
-    ADD CONSTRAINT "suppliers_pkey" PRIMARY KEY ("id");
+DO $$ BEGIN
+    ALTER TABLE ONLY "public"."suppliers"
+        ADD CONSTRAINT "suppliers_pkey" PRIMARY KEY ("id");
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."tenants"
         ADD CONSTRAINT "tenants_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."users"
         ADD CONSTRAINT "users_auth_id_key" UNIQUE ("auth_id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."users"
         ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -6827,7 +6909,7 @@ ALTER TABLE ONLY "public"."item_batches"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."items"
         ADD CONSTRAINT "items_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE SET NULL;
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -7069,14 +7151,14 @@ ALTER TABLE ONLY "public"."sale_items"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sale_items"
         ADD CONSTRAINT "sale_items_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sale_items"
         ADD CONSTRAINT "sale_items_sale_id_fkey" FOREIGN KEY ("sale_id") REFERENCES "public"."sales"("id") ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -7103,7 +7185,7 @@ ALTER TABLE ONLY "public"."sale_sync_conflicts"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sales"
         ADD CONSTRAINT "sales_cashier_id_fkey" FOREIGN KEY ("cashier_id") REFERENCES "public"."users"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -7120,7 +7202,7 @@ ALTER TABLE ONLY "public"."sales"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."sales"
         ADD CONSTRAINT "sales_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -7157,14 +7239,14 @@ ALTER TABLE ONLY "public"."stock_ledger"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_levels"
         ADD CONSTRAINT "stock_levels_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id") ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_levels"
         ADD CONSTRAINT "stock_levels_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id") ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -7176,21 +7258,21 @@ ALTER TABLE ONLY "public"."stock_movements"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_movements"
         ADD CONSTRAINT "stock_movements_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_movements"
         ADD CONSTRAINT "stock_movements_performed_by_fkey" FOREIGN KEY ("performed_by") REFERENCES "public"."users"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."stock_movements"
         ADD CONSTRAINT "stock_movements_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
@@ -7227,7 +7309,7 @@ ALTER TABLE ONLY "public"."stock_transfers"
 DO $$ BEGIN
     ALTER TABLE ONLY "public"."users"
         ADD CONSTRAINT "users_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 
 
