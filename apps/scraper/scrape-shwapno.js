@@ -3,9 +3,14 @@ import * as XLSX from 'xlsx';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { saveToSupabase, loadOurProducts } from './lib/supabase-storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Check if Supabase is configured
+const supabaseConfigured = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY;
+const STORE_ID = process.env.STORE_ID;
 
 // All Food subcategories
 const categories = [
@@ -183,6 +188,24 @@ async function scrapeAllCategories() {
   }
   
   console.log(`\nTotal products scraped: ${allProducts.length}`);
+  
+  // Save to Supabase if configured
+  let supabaseResult = null;
+  if (supabaseConfigured && STORE_ID) {
+    try {
+      console.log('Loading our product catalog for matching...');
+      const ourProductsMap = await loadOurProducts(STORE_ID);
+      console.log(`Loaded ${ourProductsMap.size} products from our catalog`);
+      
+      console.log('Saving to Supabase...');
+      supabaseResult = await saveToSupabase(STORE_ID, 'shwapno', allProducts, ourProductsMap);
+      console.log(`✓ Saved to Supabase: ${supabaseResult.saved} products`);
+    } catch (error) {
+      console.error('✗ Failed to save to Supabase:', error.message);
+    }
+  } else {
+    console.log('Supabase not configured (SUPABASE_URL, SUPABASE_SERVICE_KEY, STORE_ID) — skipping DB save');
+  }
   
   // Format data for Excel (matching Lucky Store import format)
   const excelData = [
