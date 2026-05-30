@@ -1,8 +1,14 @@
 -- Create other income category enum
-CREATE TYPE public.other_income_category AS ENUM ('Display Fee', 'Delivery', 'Miscellaneous');
+DO $$ BEGIN
+  CREATE TYPE public.other_income_category AS ENUM ('Display Fee', 'Delivery', 'Miscellaneous');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Create other income payment method enum
-CREATE TYPE public.other_income_payment_method AS ENUM ('Cash', 'bKash', 'Bank');
+DO $$ BEGIN
+  CREATE TYPE public.other_income_payment_method AS ENUM ('Cash', 'bKash', 'Bank');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Create other_income table
 CREATE TABLE public.other_income (
