@@ -100,25 +100,6 @@ class _PrinterTestScreenState extends State<PrinterTestScreen> {
     }
   }
 
-  Future<void> _testPrintBulk() async {
-    _log('Printing 3 labels in sequence...');
-    for (int i = 1; i <= 3; i++) {
-      _log('Printing label $i/3...');
-      final result = await _printer.printLabel(
-        barcode: 'BULK-$i',
-        productName: 'Bulk Item $i',
-        price: 100.0 * i,
-        copies: 1,
-      );
-      if (result.isFailure) {
-        _log('❌ Failed at label $i: ${(result as Failure).error}');
-        return;
-      }
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-    _log('✅ All 3 labels printed');
-  }
-
   void _clearLogs() {
     setState(() => _logs.clear());
   }

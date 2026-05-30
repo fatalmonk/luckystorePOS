@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../sales/offline_transaction_sync_service.dart';
 import '../../../sales/conflict_resolver.dart';
@@ -74,63 +73,6 @@ class _EnhancedSyncQueueScreenState extends State<EnhancedSyncQueueScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
-  }
-
-  /// Request manager PIN for sensitive operations
-  Future<bool> _requestManagerAuth() async {
-    final auth = context.read<AuthProvider>();
-    final role = auth.appUser?.role ?? '';
-    
-    // Admin/Manager skip PIN
-    if (role == 'admin' || role == 'manager') return true;
-    
-    // Cashier needs manager PIN
-    _pinController.clear();
-    final pin = await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceDefault,
-        title: const Text('Manager Authorization', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Enter manager PIN to proceed:', style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _pinController,
-              keyboardType: TextInputType.number,
-              obscureText: true,
-              maxLength: 6,
-              style: const TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 8),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.backgroundDefault,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                counterText: '',
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, null),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, _pinController.text),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryDefault),
-            child: const Text('Authorize', style: TextStyle(color: Colors.black)),
-          ),
-        ],
-      ),
-    );
-    
-    if (pin == null || pin.isEmpty) return false;
-    
-    // Validate via AuthProvider
-    return await auth.signInWithPin(pin);
   }
 
   /// Show conflict resolution dialog

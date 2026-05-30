@@ -172,6 +172,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
       );
 
       // 2. Close session using the reconciliation RPC
+      if (!mounted) return;
       final posProvider = context.read<PosProvider>();
       final cashAccountRow = await _supabase.from('accounts')
           .select('id')

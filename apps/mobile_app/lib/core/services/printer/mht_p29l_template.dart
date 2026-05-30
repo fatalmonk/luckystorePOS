@@ -1,11 +1,11 @@
-/// MHT-P29L 58mm Label Template for ESC/POS
-/// Supports 40x30mm and customizable label sizes
-/// Thermal printer: 58mm width (384 dots @ 203 DPI, 8 dots/mm)
+// MHT-P29L 58mm Label Template for ESC/POS
+// Supports 40x30mm and customizable label sizes
+// Thermal printer: 58mm width (384 dots @ 203 DPI, 8 dots/mm)
 
 import 'dart:typed_data';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 
-/// Label configuration for MHT-P29L
+/// Label configuration for MhtP29L
 class MhtP29lLabelConfig {
   /// Label width in mm (default 58mm for MHT-P29L)
   final int widthMm;
@@ -96,8 +96,6 @@ class MhtP29lLabelTemplate {
   static const int _esc = 0x1B;  // ESC character
   static const int _gs = 0x1D;    // GS character
   static const int _lf = 0x0A;    // Line feed
-  static const int _cr = 0x0D;    // Carriage return
-  static const int _ht = 0x09;    // Horizontal tab
   
   /// Label configuration
   final MhtP29lLabelConfig config;
