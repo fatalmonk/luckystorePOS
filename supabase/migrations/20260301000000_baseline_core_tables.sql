@@ -6668,13 +6668,22 @@ ALTER TABLE ONLY "public"."batches"
 
 
 
-ALTER TABLE ONLY "public"."categories"
-    ADD CONSTRAINT "categories_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'categories' AND column_name = 'store_id') THEN
+        ALTER TABLE ONLY "public"."categories"
+            ADD CONSTRAINT "categories_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
+    END IF;
+END $$;
 
 
-
-ALTER TABLE ONLY "public"."categories"
-    ADD CONSTRAINT "categories_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id");
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'categories' AND column_name = 'tenant_id') THEN
+        ALTER TABLE ONLY "public"."categories"
+            ADD CONSTRAINT "categories_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id");
+    END IF;
+END $$;
 
 
 
