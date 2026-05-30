@@ -316,4 +316,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currencyCode => 'BDT';
+
+  @override
+  String get collectPayment => 'Collect Payment';
+
+  @override
+  String get customerBalance => 'Customer Balance';
+
+  @override
+  String get makePayment => 'Make Payment';
+
+  @override
+  String get supplierBalance => 'Supplier Balance';
+
+  @override
+  String get stockAdjustment => 'Stock Adjustment';
+
+  @override
+  String get damaged => 'Damaged';
+
+  @override
+  String get theft => 'Theft';
+
+  @override
+  String get found => 'Found';
+
+  @override
+  String get returnToSupplier => 'Return to Supplier';
+
+  @override
+  String get syncQueue => 'Sync Queue';
+
+  @override
+  String get dailyReports => 'Daily Reports';
+
+  @override
+  String get todaysSalesSummary => 'Today\'s Sales Summary';
+
+  @override
+  String get paymentBreakdown => 'Payment Breakdown';
+
+  @override
+  String get topProducts => 'Top Products';
+
+  @override
+  String get hourlySales => 'Hourly Sales';
+
+  @override
+  String get expectedDrawer => 'Expected Drawer';
+
+  @override
+  String get actualCash => 'Actual Cash';
+
+  @override
+  String get variance => 'Variance';
+
+  @override
+  String get managerOverride => 'Manager Override';
+
+  @override
+  String get conflictDetected => 'Conflict Detected';
+
+  @override
+  String get keepLocal => 'Keep Local';
+
+  @override
+  String get useServer => 'Use Server';
+
+  @override
+  String get cancelTransaction => 'Cancel Transaction';
 }

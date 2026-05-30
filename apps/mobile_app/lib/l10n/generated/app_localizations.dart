@@ -712,6 +712,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'BDT'**
   String get currencyCode;
+
+  /// No description provided for @collectPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect Payment'**
+  String get collectPayment;
+
+  /// No description provided for @customerBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Balance'**
+  String get customerBalance;
+
+  /// No description provided for @makePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Payment'**
+  String get makePayment;
+
+  /// No description provided for @supplierBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Balance'**
+  String get supplierBalance;
+
+  /// No description provided for @stockAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Adjustment'**
+  String get stockAdjustment;
+
+  /// No description provided for @damaged.
+  ///
+  /// In en, this message translates to:
+  /// **'Damaged'**
+  String get damaged;
+
+  /// No description provided for @theft.
+  ///
+  /// In en, this message translates to:
+  /// **'Theft'**
+  String get theft;
+
+  /// No description provided for @found.
+  ///
+  /// In en, this message translates to:
+  /// **'Found'**
+  String get found;
+
+  /// No description provided for @returnToSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to Supplier'**
+  String get returnToSupplier;
+
+  /// No description provided for @syncQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Queue'**
+  String get syncQueue;
+
+  /// No description provided for @dailyReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Reports'**
+  String get dailyReports;
+
+  /// No description provided for @todaysSalesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Sales Summary'**
+  String get todaysSalesSummary;
+
+  /// No description provided for @paymentBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Breakdown'**
+  String get paymentBreakdown;
+
+  /// No description provided for @topProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Products'**
+  String get topProducts;
+
+  /// No description provided for @hourlySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly Sales'**
+  String get hourlySales;
+
+  /// No description provided for @expectedDrawer.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Drawer'**
+  String get expectedDrawer;
+
+  /// No description provided for @actualCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual Cash'**
+  String get actualCash;
+
+  /// No description provided for @variance.
+  ///
+  /// In en, this message translates to:
+  /// **'Variance'**
+  String get variance;
+
+  /// No description provided for @managerOverride.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager Override'**
+  String get managerOverride;
+
+  /// No description provided for @conflictDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflict Detected'**
+  String get conflictDetected;
+
+  /// No description provided for @keepLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Local'**
+  String get keepLocal;
+
+  /// No description provided for @useServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Server'**
+  String get useServer;
+
+  /// No description provided for @cancelTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Transaction'**
+  String get cancelTransaction;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

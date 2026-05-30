@@ -51,12 +51,17 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
     'system incident',
     'other',
   ];
+  // Variance threshold in Taka
+  static const double _varianceThreshold = 50.0;
+  
   bool _loading = true;
   String? _error;
   
   Map<String, dynamic>? _sessionData;
   List<dynamic> _salesData = [];
   double _expectedDrawer = 0.0;
+  double _cashSales = 0.0;
+  double _openingCash = 0.0;
 
   @override
   void initState() {
@@ -87,6 +92,8 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
             };
             _salesData = salesResp;
             _expectedDrawer = (summaryResp['expected_drawer'] as num).toDouble();
+            _cashSales = (summaryResp['total_cash_sales'] as num?)?.toDouble() ?? 0.0;
+            _openingCash = (session['opening_cash'] as num?)?.toDouble() ?? 0.0;
             _loading = false;
           });
         }
@@ -113,6 +120,8 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
             _sessionData = sessionResp;
             _salesData = salesResp;
             _expectedDrawer = openingCash + totalSales;
+            _cashSales = totalSales;
+            _openingCash = openingCash;
             _loading = false;
           });
         }
@@ -131,109 +140,87 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
     final approval = await _confirmClosingHealthReview();
     if (!approval.confirmed || !mounted) return;
 
-    // Show dialog to enter closing cash
-    double closingCash = _expectedDrawer; // default
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF161B22),
-          title: const Text('Close Session', style: TextStyle(color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Enter the actual cash amount in the drawer:', style: TextStyle(color: Colors.white70)),
-              const SizedBox(height: 16),
-              TextField(
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-                decoration: InputDecoration(
-                  prefixText: '৳ ',
-                  prefixStyle: const TextStyle(color: Colors.white70),
-                  filled: true,
-                  fillColor: const Color(0xFF0D1117),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  hintText: '0.00'
-                ),
-                onChanged: (val) {
-                  closingCash = double.tryParse(val) ?? 0.0;
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8B84B)),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Close Session', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      }
-    );
+    // Show drawer reconciliation dialog
+    final reconciliationResult = await _showDrawerReconciliationDialog();
+    if (reconciliationResult == null || !mounted) return;
 
-    if (confirmed == true && mounted) {
-      setState(() => _loading = true);
-      try {
-        try {
-          await _writeCloseReviewLog(
-            check: approval.check,
-            notes: approval.notes,
-            adminOverrideUsed: approval.adminOverrideUsed,
-            adminOverrideReason: approval.adminOverrideReason,
-            adminOverrideReasonCategory: approval.adminOverrideReasonCategory,
-            adminOverrideNotes: approval.adminOverrideNotes,
-            secondaryApproverUserId: approval.secondaryApproverUserId,
-            secondaryApproverRole: approval.secondaryApproverRole,
+    final double actualCash = reconciliationResult['actual_cash'] as double;
+    final double variance = reconciliationResult['variance'] as double;
+    final bool thresholdExceeded = reconciliationResult['threshold_exceeded'] as bool;
+    final String? varianceNotes = reconciliationResult['variance_notes'] as String?;
+
+    // If variance exceeds threshold, require manager override
+    if (thresholdExceeded) {
+      final overrideResult = await _requestManagerOverride(variance);
+      if (!overrideResult['approved'] || !mounted) return;
+      reconciliationResult['manager_pin_verified'] = true;
+    }
+
+    setState(() => _loading = true);
+    try {
+      // 1. Write close review log with variance details
+      await _writeCloseReviewLog(
+        check: approval.check,
+        notes: varianceNotes ?? approval.notes,
+        adminOverrideUsed: approval.adminOverrideUsed || thresholdExceeded,
+        adminOverrideReason: approval.adminOverrideReason,
+        adminOverrideReasonCategory: approval.adminOverrideReasonCategory,
+        adminOverrideNotes: approval.adminOverrideNotes,
+        secondaryApproverUserId: approval.secondaryApproverUserId,
+        secondaryApproverRole: approval.secondaryApproverRole,
+        varianceDetails: reconciliationResult,
+      );
+
+      // 2. Close session using the reconciliation RPC
+      final posProvider = context.read<PosProvider>();
+      final cashAccountRow = await _supabase.from('accounts')
+          .select('id')
+          .eq('tenant_id', _supabase.auth.currentUser?.userMetadata?['tenant_id'])
+          .eq('name', 'Cash in Hand')
+          .limit(1)
+          .single();
+          
+      final result = await posProvider.recordCashClosing(
+        actualCash: actualCash,
+        accountId: cashAccountRow['id'] as String,
+      );
+
+      if (result['status'] == 'success') {
+        // Call the close_session_with_reconciliation RPC
+        final closeResult = await _supabase.rpc(
+          'close_session_with_reconciliation',
+          params: {
+            'p_session_id': widget.sessionId,
+            'p_actual_cash': actualCash,
+            'p_variance': variance,
+            'p_notes': varianceNotes,
+          },
+        );
+
+        final closeData = closeResult as Map<String, dynamic>;
+        
+        // Show variance report
+        if (mounted) {
+          await _showVarianceReport(closeData);
+        }
+      }
+      
+      await _loadSessionSummary();
+    } catch (e) {
+       if (mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF161B22),
+              title: const Row(children: [Icon(Icons.error_outline, color: Colors.redAccent), SizedBox(width: 8), Text('Session Error', style: TextStyle(color: Colors.white))]),
+              content: const Text('The server rejected the closing request. This normally happens if another device already closed the session or connection failed. Please refresh your screen and contact IT if the issue persists.', style: TextStyle(color: Colors.white70)),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Dismiss', style: TextStyle(color: Colors.white54)))
+              ]
+            )
           );
-        } catch (_) {
-          // Do not block physical close if review row already exists.
-        }
-        // Backend validated checkout
-        if (!mounted) return;
-        final posProvider = context.read<PosProvider>();
-        // Assuming we look up the cash account for the store
-        final cashAccountRow = await _supabase.from('accounts')
-            .select('id')
-            .eq('tenant_id', _supabase.auth.currentUser?.userMetadata?['tenant_id'])
-            .eq('name', 'Cash in Hand')
-            .limit(1)
-            .single();
-            
-        final result = await posProvider.recordCashClosing(
-          actualCash: closingCash,
-          accountId: cashAccountRow['id'] as String,
-        );
-
-        if (result['status'] == 'success') {
-          // If variance is too high, we might show a warning, but for now we just close.
-          await _supabase.from('pos_sessions').update({
-            'status': 'closed',
-            'closed_at': DateTime.now().toIso8601String(),
-            'closing_cash': closingCash,
-          }).eq('id', widget.sessionId);
-        }
-        await _loadSessionSummary();
-      } catch (e) {
-         if (mounted) {
-            showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                backgroundColor: const Color(0xFF161B22),
-                title: const Row(children: [Icon(Icons.error_outline, color: Colors.redAccent), SizedBox(width: 8), Text('Session Error', style: TextStyle(color: Colors.white))]),
-                content: const Text('The server rejected the closing request. This normally happens if another device already closed the session or connection failed. Please refresh your screen and contact IT if the issue persists.', style: TextStyle(color: Colors.white70)),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Dismiss', style: TextStyle(color: Colors.white54)))
-                ]
-              )
-            );
-            setState(() { _loading = false; });
-         }
-      }
+          setState(() { _loading = false; });
+       }
     }
   }
 
@@ -246,6 +233,7 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
     required String? adminOverrideNotes,
     required String? secondaryApproverUserId,
     required String? secondaryApproverRole,
+    Map<String, dynamic>? varianceDetails,
   }) async {
     final auth = context.read<AuthProvider>();
     final appUser = auth.appUser;
@@ -282,7 +270,714 @@ class _PosSessionSummaryScreenState extends State<PosSessionSummaryScreen> {
       'dual_approval_required': check.dualApprovalRequired,
       'secondary_approver_user_id': secondaryApproverUserId,
       'secondary_approver_role': secondaryApproverRole,
+      // Variance tracking fields
+      'opening_cash': varianceDetails?['opening_cash'] as double? ?? _openingCash,
+      'cash_sales': varianceDetails?['cash_sales'] as double? ?? _cashSales,
+      'expected_drawer': varianceDetails?['expected_drawer'] as double? ?? _expectedDrawer,
+      'actual_cash': varianceDetails?['actual_cash'] as double? ?? 0.0,
+      'variance_amount': varianceDetails?['variance'] as double? ?? 0.0,
+      'variance_status': varianceDetails?['variance_status'] ?? 'balanced',
+      'variance_threshold_exceeded': varianceDetails?['threshold_exceeded'] as bool? ?? false,
+      'manager_override_required': varianceDetails?['threshold_exceeded'] as bool? ?? false,
+      'manager_override_pin_verified': varianceDetails?['manager_pin_verified'] as bool? ?? false,
+      'variance_notes': varianceDetails?['variance_notes'] as String?,
     });
+  }
+
+  /// Shows the drawer reconciliation dialog where cashier counts actual cash
+  /// and sees variance from expected amount
+  Future<Map<String, dynamic>?> _showDrawerReconciliationDialog() async {
+    final actualCashController = TextEditingController();
+    final notesController = TextEditingController();
+    double actualCash = 0.0;
+    double variance = 0.0;
+    bool thresholdExceeded = false;
+    String varianceStatus = 'balanced';
+    
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setInnerState) {
+            // Calculate variance based on input
+            final inputText = actualCashController.text.trim();
+            actualCash = double.tryParse(inputText) ?? 0.0;
+            variance = actualCash - _expectedDrawer;
+            
+            if (variance > 0) {
+              varianceStatus = 'over';
+            } else if (variance < 0) {
+              varianceStatus = 'short';
+            } else {
+              varianceStatus = 'balanced';
+            }
+            
+            thresholdExceeded = variance.abs() > _varianceThreshold;
+            
+            final bool isBalanced = variance == 0;
+            final bool isOver = variance > 0;
+            final Color varianceColor = isBalanced 
+                ? const Color(0xFF2ECC71) 
+                : isOver 
+                    ? const Color(0xFF3498DB) 
+                    : const Color(0xFFE74C3C);
+            
+            return AlertDialog(
+              backgroundColor: const Color(0xFF161B22),
+              title: const Row(
+                children: [
+                  Icon(Icons.account_balance_wallet, color: Color(0xFFE8B84B)),
+                  SizedBox(width: 8),
+                  Text('Drawer Reconciliation', style: TextStyle(color: Colors.white)),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Summary Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D1117),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildReconciliationRow('Opening Cash:', _openingCash),
+                          const SizedBox(height: 8),
+                          _buildReconciliationRow('Cash Sales:', _cashSales),
+                          const Divider(color: Colors.white24, height: 16),
+                          _buildReconciliationRow('Expected Drawer:', _expectedDrawer, isBold: true),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Actual Cash Input
+                    TextField(
+                      controller: actualCashController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        labelText: 'Actual Cash Count',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        hintText: 'Enter amount from drawer count',
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        prefixText: '৳ ',
+                        prefixStyle: const TextStyle(color: Color(0xFFE8B84B), fontSize: 18, fontWeight: FontWeight.bold),
+                        filled: true,
+                        fillColor: const Color(0xFF0D1117),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white24),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white24),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE8B84B), width: 2),
+                        ),
+                      ),
+                      onChanged: (_) => setInnerState(() {}),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Variance Display
+                    if (inputText.isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: varianceColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: varianceColor),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  isBalanced 
+                                      ? '✓ Drawer Balanced' 
+                                      : isOver 
+                                          ? '↑ Cash Over' 
+                                          : '↓ Cash Short',
+                                  style: TextStyle(
+                                    color: varianceColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                if (thresholdExceeded)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE74C3C).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'THRESHOLD EXCEEDED',
+                                      style: TextStyle(
+                                        color: Color(0xFFE74C3C),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            _buildReconciliationRow(
+                              'Variance:', 
+                              variance.abs(),
+                              valueColor: varianceColor,
+                              prefix: isBalanced ? '' : (isOver ? '+' : '-'),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '৳ ${actualCash.toStringAsFixed(2)} (actual) vs ৳ ${_expectedDrawer.toStringAsFixed(2)} (expected)',
+                              style: const TextStyle(color: Colors.white54, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      if (thresholdExceeded) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE74C3C)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.warning_amber, color: Color(0xFFE74C3C), size: 20),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Variance exceeds ৳50 threshold. Manager PIN will be required to proceed.',
+                                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Notes Field
+                    TextField(
+                      controller: notesController,
+                      maxLines: 2,
+                      style: const TextStyle(color: Colors.white70),
+                      decoration: InputDecoration(
+                        labelText: 'Notes (optional)',
+                        labelStyle: const TextStyle(color: Colors.white54),
+                        hintText: 'Any explanation for the variance...',
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: const Color(0xFF0D1117),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white24),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white24),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE8B84B), width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, null),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                ),
+                ElevatedButton(
+                  onPressed: actualCash > 0 
+                      ? () => Navigator.pop(ctx, {
+                          'actual_cash': actualCash,
+                          'variance': variance,
+                          'variance_status': varianceStatus,
+                          'threshold_exceeded': thresholdExceeded,
+                          'variance_notes': notesController.text.trim().isEmpty 
+                              ? null 
+                              : notesController.text.trim(),
+                          'manager_pin_verified': false,
+                        })
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: thresholdExceeded ? const Color(0xFFE74C3C) : const Color(0xFFE8B84B),
+                    disabledBackgroundColor: const Color(0xFF333A44),
+                    foregroundColor: thresholdExceeded ? Colors.white : Colors.black,
+                  ),
+                  child: Text(
+                    thresholdExceeded ? 'Proceed with Manager Approval →' : 'Confirm & Close',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    
+    return result;
+  }
+
+  Widget _buildReconciliationRow(String label, double value, 
+      {bool isBold = false, Color? valueColor, String prefix = ''}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: isBold ? 15 : 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        Text(
+          '$prefix৳ ${value.toStringAsFixed(2)}',
+          style: TextStyle(
+            color: valueColor ?? (isBold ? const Color(0xFFE8B84B) : Colors.white),
+            fontSize: isBold ? 18 : 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Requests manager override when variance exceeds threshold
+  Future<Map<String, dynamic>> _requestManagerOverride(double variance) async {
+    final pinController = TextEditingController();
+    String? errorMessage;
+    bool approved = false;
+    String? managerName;
+    String? managerRole;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setInnerState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF161B22),
+              title: const Row(
+                children: [
+                  Icon(Icons.security, color: Color(0xFFE74C3C)),
+                  SizedBox(width: 8),
+                  Text('Manager Override Required', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE74C3C)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'High Variance Detected',
+                          style: TextStyle(
+                            color: Color(0xFFE74C3C),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Variance: ৳ ${variance.abs().toStringAsFixed(2)}',
+                          style: const TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          variance > 0 
+                              ? 'Cash drawer has more money than expected'
+                              : 'Cash drawer is short',
+                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Manager PIN Required',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Only admin or owner can approve this variance.',
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: pinController,
+                    keyboardType: TextInputType.number,
+                    obscureText: true,
+                    maxLength: 4,
+                    style: const TextStyle(color: Colors.white, fontSize: 20, letterSpacing: 8),
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      hintText: '••••',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 20, letterSpacing: 8),
+                      filled: true,
+                      fillColor: const Color(0xFF0D1117),
+                      counterText: '',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.white24),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.white24),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE8B84B), width: 2),
+                      ),
+                    ),
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Color(0xFFE74C3C), size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: const TextStyle(color: Color(0xFFE74C3C), fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    approved = false;
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                ),
+                ElevatedButton(
+                  onPressed: pinController.text.length >= 4 
+                      ? () async {
+                          // Verify manager PIN
+                          final storeId = _sessionData?['store_id'];
+                          if (storeId == null) {
+                            setInnerState(() => errorMessage = 'Session store not found');
+                            return;
+                          }
+                          
+                          try {
+                            final manager = await _supabase
+                                .from('users')
+                                .select('id, full_name, role, pos_pin')
+                                .eq('store_id', storeId)
+                                .inFilter('role', ['admin', 'owner'])
+                                .eq('pos_pin', pinController.text.trim())
+                                .maybeSingle();
+                            
+                            if (manager != null) {
+                              approved = true;
+                              managerName = manager['full_name'] as String?;
+                              managerRole = manager['role'] as String?;
+                              if (context.mounted) Navigator.pop(ctx);
+                            } else {
+                              setInnerState(() => errorMessage = 'Invalid manager PIN. Please try again.');
+                            }
+                          } catch (e) {
+                            setInnerState(() => errorMessage = 'Verification failed. Please try again.');
+                          }
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE8B84B),
+                    disabledBackgroundColor: const Color(0xFF333A44),
+                  ),
+                  child: const Text(
+                    'Verify & Approve',
+                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    return {
+      'approved': approved,
+      'manager_name': managerName,
+      'manager_role': managerRole,
+    };
+  }
+
+  /// Shows the final variance report after session is closed
+  Future<void> _showVarianceReport(Map<String, dynamic> closeData) async {
+    final variance = (closeData['variance'] as num?)?.toDouble() ?? 0.0;
+    final varianceStatus = closeData['variance_status'] as String? ?? 'balanced';
+    final thresholdExceeded = closeData['variance_threshold_exceeded'] as bool? ?? false;
+    final actualCash = (closeData['actual_cash'] as num?)?.toDouble() ?? 0.0;
+    final expectedDrawer = (closeData['expected_drawer'] as num?)?.toDouble() ?? 0.0;
+    final openingCash = (closeData['opening_cash'] as num?)?.toDouble() ?? 0.0;
+    final cashSales = (closeData['cash_sales'] as num?)?.toDouble() ?? 0.0;
+
+    final isBalanced = varianceStatus == 'balanced';
+    final isOver = varianceStatus == 'over';
+    final Color statusColor = isBalanced 
+        ? const Color(0xFF2ECC71) 
+        : isOver 
+            ? const Color(0xFF3498DB) 
+            : const Color(0xFFE74C3C);
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF161B22),
+          title: Row(
+            children: [
+              Icon(
+                isBalanced ? Icons.check_circle : Icons.receipt_long,
+                color: statusColor,
+              ),
+              const SizedBox(width: 8),
+              const Text('Z-Report - Session Closed', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Status Banner
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        isBalanced 
+                            ? '✓ Drawer Balanced' 
+                            : isOver 
+                                ? '↑ Cash Over' 
+                                : '↓ Cash Short',
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Variance: ৳ ${variance.abs().toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      if (thresholdExceeded) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE74C3C).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFE74C3C)),
+                          ),
+                          child: const Text(
+                            'THRESHOLD EXCEEDED',
+                            style: TextStyle(
+                              color: Color(0xFFE74C3C),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Breakdown
+                const Text(
+                  'Drawer Summary',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D1117),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildReportRow('Opening Cash:', openingCash),
+                      const SizedBox(height: 4),
+                      _buildReportRow('Cash Sales:', cashSales, isPositive: true),
+                      const Divider(color: Colors.white24, height: 16),
+                      _buildReportRow('Expected Drawer:', expectedDrawer, isBold: true),
+                      const Divider(color: Colors.white24, height: 16),
+                      _buildReportRow('Actual Cash:', actualCash),
+                      const Divider(color: Colors.white24, height: 16),
+                      _buildReportRow(
+                        'Variance:', 
+                        variance.abs(),
+                        valueColor: statusColor,
+                        prefix: isBalanced ? '' : (isOver ? '+' : '-'),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Legend
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D1117),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Status Legend:',
+                        style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildLegendItem(const Color(0xFF2ECC71), 'Balanced: Variance is 0'),
+                      const SizedBox(height: 4),
+                      _buildLegendItem(const Color(0xFF3498DB), 'Over: More cash than expected'),
+                      const SizedBox(height: 4),
+                      _buildLegendItem(const Color(0xFFE74C3C), 'Short: Less cash than expected'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE8B84B),
+              ),
+              child: const Text(
+                'Done',
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildReportRow(String label, double value, 
+      {bool isBold = false, Color? valueColor, bool isPositive = false, String prefix = ''}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        Text(
+          '${isPositive ? '+' : ''}$prefix৳ ${value.toStringAsFixed(2)}',
+          style: TextStyle(
+            color: valueColor ?? (isBold ? const Color(0xFFE8B84B) : Colors.white),
+            fontSize: isBold ? 16 : 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String text) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(color: Colors.white54, fontSize: 12),
+        ),
+      ],
+    );
   }
 
   Future<_CloseReviewApproval> _confirmClosingHealthReview() async {
