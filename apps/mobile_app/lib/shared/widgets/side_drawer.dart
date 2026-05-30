@@ -9,9 +9,11 @@ import '../../main.dart'; // AppLocaleNotifier
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/pos/presentation/screens/store_mode.dart';
 import '../../features/inventory/presentation/screens/inventory_import_screen.dart';
+import '../../features/stock/presentation/screens/stock_adjustment_screen.dart';
 import '../../features/pos/presentation/screens/manager_dashboard_screen.dart';
 import '../../features/pos/presentation/screens/label_print_screen.dart';
 import '../../features/ledger/presentation/screens/customer_ledger_screen.dart';
+import '../../features/collections/presentation/screens/payment_collection_screen.dart';
 import '../../features/finance/presentation/screens/daily_expenditures_screen.dart';
 import '../../features/auth/data/auth_service.dart';
 
@@ -210,6 +212,17 @@ class _SideDrawerState extends State<SideDrawer> {
                       },
                     ),
                     _DrawerMenuItem(
+                      icon: Icons.payments_rounded, 
+                      label: 'Collect Payment',
+                      iconColor: AppColors.primaryDefault,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const PaymentCollectionScreen()),
+                        );
+                      },
+                    ),
+                    _DrawerMenuItem(
                       icon: Icons.receipt_long_rounded, 
                       label: 'Daily Expenditures',
                       iconColor: AppColors.warningDefault,
@@ -270,6 +283,17 @@ class _SideDrawerState extends State<SideDrawer> {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const StoreModeScreen()),
+                        );
+                      },
+                    ),
+                    _DrawerMenuItem(
+                      icon: Icons.inventory_2_rounded, 
+                      label: 'Stock Adjustment',
+                      iconColor: AppColors.secondaryDefault,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const StockAdjustmentScreen()),
                         );
                       },
                     ),
