@@ -6,7 +6,7 @@
 -- 1. Verify items table has data
 SELECT 'Items count' as check_name, COUNT(*) as result,
        CASE WHEN COUNT(*) > 0 THEN 'PASS' ELSE 'FAIL' END as status
-FROM items WHERE active = true;
+FROM items WHERE is_active = true;
 
 -- 2. Verify stock_levels table has data (replace <store_id> with actual store UUID)
 SELECT 'Stock levels count' as check_name, COUNT(*) as result,
@@ -40,7 +40,7 @@ SELECT 'Items without stock_levels' as check_name, COUNT(*) as result,
        CASE WHEN COUNT(*) = 0 THEN 'PASS' ELSE 'FAIL' END as status
 FROM items i
 LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = '<store_id>'
-WHERE i.active = true AND sl.id IS NULL;
+WHERE i.is_active = true AND sl.id IS NULL;
 
 -- 8. Verify record_sale RPC exists
 SELECT 'record_sale RPC exists' as check_name,
