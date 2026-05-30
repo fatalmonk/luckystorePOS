@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import clsx from 'clsx';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
@@ -13,7 +14,6 @@ import { TrendCard } from './TrendCard';
 import { CashflowChart } from './CashflowChart';
 import { RecentActivity } from './RecentActivity';
 import { format, subDays, parseISO } from 'date-fns';
-import clsx from 'clsx';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -147,6 +147,7 @@ export function DashboardPage() {
   const totalCredit = dailySales.reduce((sum: number, s: any) => sum + Number(s.credit_amount || 0), 0);
   const totalCash = dailySales.reduce((sum: number, s: any) => sum + Number(s.cash_amount || 0), 0);
   const totalBkash = dailySales.reduce((sum: number, s: any) => sum + Number(s.bkash_amount || 0), 0);
+
   const totalExpensesAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.daily_expense || 0), 0);
   const totalStockAllTime = dailySales.reduce((sum: number, s: any) => sum + Number(s.stock_purchase || 0), 0);
   const netPosition = totalRevenue - totalExpensesAllTime;
