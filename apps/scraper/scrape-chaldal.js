@@ -3,7 +3,6 @@ import * as XLSX from 'xlsx';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { saveToSupabase, loadOurProducts } from './lib/supabase-storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,6 +10,12 @@ const __dirname = path.dirname(__filename);
 // Check if Supabase is configured
 const supabaseConfigured = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY;
 const STORE_ID = process.env.STORE_ID;
+
+// Lazy-load Supabase helper only after config check
+let saveToSupabase, loadOurProducts;
+if (supabaseConfigured) {
+  ({ saveToSupabase, loadOurProducts } = await import('./lib/supabase-storage.js'));
+}
 
 // Discover all subcategory URLs from Chaldal's navigation menu
 async function discoverSubcategories(page) {
