@@ -19,7 +19,8 @@ BEGIN
     RAISE EXCEPTION 'Insufficient stock for item %', p_item_id;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, pg_temp;
 
 -- Function to initialize stock level if it doesn't exist
 CREATE OR REPLACE FUNCTION upsert_stock_level(
@@ -34,7 +35,8 @@ BEGIN
   ON CONFLICT (store_id, item_id)
   DO UPDATE SET qty = stock_levels.qty + p_quantity;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, pg_temp;
 
 -- Add store_id to users table (for cashier's default store)
 -- Only run if users table exists (it may be created in a later migration)
@@ -45,20 +47,28 @@ BEGIN
     END IF;
 END $$;
 
--- Create index on stock_levels for better performance
-CREATE INDEX IF NOT EXISTS idx_stock_levels_store_item ON stock_levels(store_id, item_id);
+-- Create indexes only when target tables exist in the replay order.
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'stock_levels' AND schemaname = 'public') THEN
+        CREATE INDEX IF NOT EXISTS idx_stock_levels_store_item ON stock_levels(store_id, item_id);
+    END IF;
 
--- Create index on sale_items for reporting
-CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items(sale_id);
-CREATE INDEX IF NOT EXISTS idx_sale_items_item_id ON sale_items(item_id);
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'sale_items' AND schemaname = 'public') THEN
+        CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items(sale_id);
+        CREATE INDEX IF NOT EXISTS idx_sale_items_item_id ON sale_items(item_id);
+    END IF;
 
--- Create index on sales for reporting
-CREATE INDEX IF NOT EXISTS idx_sales_store_id ON sales(store_id);
-CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
-CREATE INDEX IF NOT EXISTS idx_sales_receipt_number ON sales(sale_number);
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'sales' AND schemaname = 'public') THEN
+        CREATE INDEX IF NOT EXISTS idx_sales_store_id ON sales(store_id);
+        CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
+        CREATE INDEX IF NOT EXISTS idx_sales_receipt_number ON sales(receipt_number);
+    END IF;
 
--- Create index on stock_movements for audit trail
-CREATE INDEX IF NOT EXISTS idx_stock_movements_store_id ON stock_movements(store_id);
-CREATE INDEX IF NOT EXISTS idx_stock_movements_item_id ON stock_movements(item_id);
-CREATE INDEX IF NOT EXISTS idx_stock_movements_created_at ON stock_movements(created_at);
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'stock_movements' AND schemaname = 'public') THEN
+        CREATE INDEX IF NOT EXISTS idx_stock_movements_store_id ON stock_movements(store_id);
+        CREATE INDEX IF NOT EXISTS idx_stock_movements_item_id ON stock_movements(item_id);
+        CREATE INDEX IF NOT EXISTS idx_stock_movements_created_at ON stock_movements(created_at);
+    END IF;
+END $$;
 

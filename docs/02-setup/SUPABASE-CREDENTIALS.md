@@ -10,10 +10,10 @@ This file contains sensitive credentials. Keep it secure.
 
 ## Project Information
 
-- **Project Name:** Lucky Store
-- **Project ID:** cckschiexzvysvdracvc
-- **Project URL:** https://cckschiexzvysvdracvc.supabase.co
-- **Region:** ap-southeast-2 (Asia Pacific - Sydney)
+- **Project Name:** Lucky Store (Production)
+- **Project ID:** hvmyxyccfnkrbxqbhlnm
+- **Project URL:** https://hvmyxyccfnkrbxqbhlnm.supabase.co
+- **Region:** ap-northeast-1 (Asia Pacific - Tokyo)
 
 ---
 
@@ -41,15 +41,15 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
 ### Connection String
 ```
-postgresql://postgres.cckschiexzvysvdracvc:wQsvALS1M4ELtE8s@aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres
+postgresql://postgres.hvmyxyccfnkrbxqbhlnm:FsmHPpbIU4SYVPk2@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres
 ```
 
 ### Individual Values
-- **Host:** aws-1-ap-southeast-2.pooler.supabase.com
+- **Host:** aws-1-ap-northeast-1.pooler.supabase.com
 - **Port:** 5432
 - **Database:** postgres
-- **User:** postgres.cckschiexzvysvdracvc
-- **Password:** wQsvALS1M4ELtE8s
+- **User:** postgres.hvmyxyccfnkrbxqbhlnm
+- **Password:** FsmHPpbIU4SYVPk2
 - **Pool Mode:** session
 
 **⚠️ NEVER use these in frontend code!**

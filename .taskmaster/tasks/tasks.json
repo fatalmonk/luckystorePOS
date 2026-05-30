@@ -1,0 +1,143 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Fix Currency & i18n Issues",
+        "description": "Replace all $ signs with ৳ (BD Taka) across admin web and add centralized currency formatter utility. Also standardize date formatting to dd/MM/yyyy for BD locale.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. Create a new file `apps/admin_web/src/lib/formatters.ts`:\n   ```ts\nexport const formatCurrency = (amount: number): string => {\n  return new Intl.NumberFormat('bn-BD', {\n    style: 'currency',\n    currency: 'BDT',\n    minimumFractionDigits: 2,\n    maximumFractionDigits: 2,\n  }).format(amount);\n};\n\nexport const formatDate = (date: string | Date): string => {\n  return new Intl.DateTimeFormat('bn-BD', {\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric',\n  }).format(new Date(date));\n};\n```\n2. Search all .tsx/.ts files in `apps/admin_web/src` for `'$'` or template literals containing `$` and replace with `formatCurrency()` call.\n3. Specifically fix Dashboard (`apps/admin_web/src/pages/dashboard.tsx`) and BillingPanel (if kept temporarily) — replace hardcoded `$` with formatCurrency.\n4. Update DatePicker components to use the new formatDate for display.",
+        "testStrategy": "1. Manual visual check: visit Dashboard, POS, Sales pages — verify all amounts show ৳ with correct formatting.\n2. Unit test for formatCurrency: check that 500 becomes '৳500.00', 1000.50 becomes '৳1,000.50'.\n3. Unit test for formatDate: check that new Date('2026-05-01') returns '01/05/2026'.\n4. Regression: ensure components using currency formatting still render properly.",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Fix Auth & Security Issues",
+        "description": "Move /pos route inside AuthGuard, wire logout button functionality, add error boundary component wrapping Routes, and implement session expiry redirect.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. **Move /pos inside AuthGuard**: In `apps/admin_web/src/App.tsx`, change:\n   ```tsx\n   // Before:\n   <Route path=\"/pos\" element={<QuickPosPage />} />\n   // After:\n   <Route path=\"/pos\" element={<PrivateRoute><QuickPosPage /></PrivateRoute>} />\n   ```\n   Ensure PrivateRoute checks auth context and redirects to /login if unauthenticated.\n\n2. **Wire logout button**: In sidebar component (`apps/admin_web/src/components/layout/Sidebar.tsx` or similar), find the logout button and add:\n   ```tsx\n   import { useAuth } from '../../contexts/AuthContext';\n   // ...\n   const { signOut } = useAuth();\n   // ...\n   <button onClick={signOut}>Logout</button>\n   ```\n\n3. **Add Error Boundary**: Create `apps/admin_web/src/components/ErrorBoundary.tsx`:\n   ```tsx\n   import React from 'react';\n   \n   class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {\n     constructor(props: {children: React.ReactNode}) {\n       super(props);\n       this.state = { hasError: false, error: null };\n     }\n     static getDerivedStateFromError(error: Error) {\n       return { hasError: true, error };\n     }\n     render() {\n       if (this.state.hasError) {\n         return <div className=\"error-boundary p-8 text-center\">\n           <h2>Something went wrong</h2>\n           <p>{this.state.error?.message}</p>\n           <button onClick={() => window.location.reload()}>Reload</button>\n         </div>;\n       }\n       return this.props.children;\n     }\n   }\n   export default ErrorBoundary;\n   ```\n   Wrap `<Routes>` in `App.tsx` with `<ErrorBoundary>`.\n\n4. **Session expiry redirect**: In AuthContext, listen to Supabase `onAuthStateChange` event — when `SIGNED_OUT` or `TOKEN_REFRESH_FAILED`, redirect to /login.",
+        "testStrategy": "1. **Manual test**: Open /pos in incognito without login → should redirect to /login.\n2. **Manual test**: Click logout button → should sign out and redirect to login.\n3. **Manual test**: Trigger a crash in a component (e.g., render undefined) → error boundary should show fallback UI, not white screen.\n4. **Edge case**: Open /pos while authenticated → should render normally.",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Unify Styling & Clean Dead Code",
+        "description": "Unify styling across the admin web by converting dark-themed pages (Collections, Ledger) to use design tokens, remove all inline styles in favor of Tailwind classes, and delete dead POS components and stray files.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. **Style unification**:\n   - In `apps/admin_web/src/pages/collections/index.tsx`, replace all `bg-white/5`, `text-white/50` and similar dark-theme classes with light-theme Tailwind equivalents (e.g., `bg-white`, `text-gray-700`).\n   - Same for `apps/admin_web/src/pages/customer-ledger.tsx` and `supplier-ledger.tsx`.\n   - Use CSS variables from design tokens (likely defined in `tailwind.config.js` or a `tokens.css`). Example: `bg-primary`, `text-secondary`.\n   - Search all .tsx files for `style={{` and replace with Tailwind classes. If complex dynamic styles exist, extract to CSS module or use Tailwind's `classnames` utility.\n\n2. **Delete dead POS components**:\n   - Delete `apps/admin_web/src/components/pos/BillingPanel.tsx`\n   - Delete `apps/admin_web/src/components/pos/ProductCard.tsx`\n   - Delete `apps/admin_web/src/components/pos/CategoryPill.tsx`\n   - Delete `apps/admin_web/src/components/pos/QuantityStepper.tsx`\n   - Update any imports that reference these (QuickPosPage shouldn't use them).\n\n3. **Delete stray files**:\n   - Remove `apps/admin_web/data/my.karbarapp.com-Karbar-cvscreenshot (3).jpeg`\n   - Delete all `*.stories.tsx` files (unused Storybook stories).\n\n4. **POS inline styles**: Extract QuickPosPage's inline styles into a CSS module `apps/admin_web/src/pages/pos/QuickPosPage.module.css`.",
+        "testStrategy": "1. **Visual regression**: Manually visit Collections, Customer Ledger, Supplier Ledger pages — verify they now use light theme consistently with rest of app.\n2. **Visual regression**: Check QuickPosPage render — no missing styles, layout unchanged.\n3. **Build check**: Ensure app compiles without errors after file deletions.\n4. **Manual check**: Navigate to all pages and ensure nothing is broken due to style changes.",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Implement Loading & Empty States",
+        "description": "Add consistent skeleton loaders, empty state illustrations, and error states with retry buttons across all pages (products, sales, inventory, customers, etc.).",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "details": "1. **Create reusable components** in `apps/admin_web/src/components/ui/`:\n   - `Skeleton.tsx`: A simple skeleton loader with configurable width/height.\n   - `EmptyState.tsx`: Takes an illustration name (e.g., 'products', 'sales', 'customers') and a message, renders an SVG illustration + text.\n   - `ErrorState.tsx`: Shows error message + 'Retry' button that accepts an `onRetry` callback.\n\n2. **Integrate into pages**:\n   - For each list page (Products, Sales, Inventory), add:\n     ```tsx\n     const { data, isLoading, error, refetch } = useQuery(...);\n     if (isLoading) return <Skeleton count={10} />;\n     if (error) return <ErrorState message={error.message} onRetry={refetch} />;\n     if (!data?.length) return <EmptyState type=\"products\" message=\"No products found\" />;\n     ```\n   - Pages to update: Products, Sales, Inventory, Customers, Suppliers, Collections, Expenses, Reminders.\n\n3. **Skeleton pattern**: Create a page-level skeleton that matches the list layout (e.g., table rows or card grid with shimmer effect).",
+        "testStrategy": "1. **Unit test**: Render EmptyState with different types — verify correct illustration and message appear.\n2. **Manual test**: Visit an empty page (e.g., no sales yet) — should show empty state illustration, not a blank table.\n3. **Manual test**: Simulate API failure by stopping Supabase locally — error state with retry button should appear.\n4. **Edge case**: Very long list still shows skeleton while loading.",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Responsive POS Layout & Sale Completion UX",
+        "description": "Make POS page responsive for mobile/tablet with touch-friendly UI, add receipt preview modal after sale, auto-clear cart, hold/recall cart functionality, and improved payment flow with split payment support.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3
+        ],
+        "priority": "high",
+        "details": "1. **Responsive POS layout**:\n   - In `QuickPosPage`, add media queries or Tailwind responsive classes:\n     ```tsx\n     <div className=\"flex flex-col md:flex-row h-full\">\n       <div className=\"w-full md:w-1/2 lg:w-3/5 p-4 overflow-y-auto\" id=\"product-list\">...</div>\n       <div className=\"w-full md:w-1/2 lg:w-2/5 p-4 bg-gray-50 border-l\" id=\"cart-panel\">...</div>\n     </div>\n     ```\n   - On mobile (< md breakpoint): show product list full-width by default, cart in a slide-up sheet triggered by a floating cart icon button.\n   - Ensure buttons have `min-h-[48px]` and `min-w-[48px]` for touch targets.\n   - Sticky cart summary at bottom on mobile: `fixed bottom-0 left-0 right-0`.\n\n2. **Receipt preview modal**:\n   - Create `apps/admin_web/src/components/pos/ReceiptPreview.tsx`:\n     ```tsx\n     const ReceiptPreview = ({ sale }: { sale: Sale }) => {\n       return (\n         <div className={`paper-58mm p-4 bg-white`} id=\"receipt-content\">\n           <h3 className=\"text-center font-bold\">{storeName}</h3>\n           <p className=\"text-center\">{sale.date}</p>\n           <hr />\n           {sale.items.map(item => (\n             <div className=\"flex justify-between\" key={item.id}>\n               <span>{item.name} x{item.qty}</span>\n               <span>{formatCurrency(item.total)}</span>\n             </div>\n           ))}\n           <hr />\n           <div className=\"flex justify-between font-bold\">\n             <span>Total</span>\n             <span>{formatCurrency(sale.total)}</span>\n           </div>\n         </div>\n       );\n     };\n     export default ReceiptPreview;\n     ```\n   - After successful checkout, show a modal containing the receipt with a print button.\n   - Print button calls `window.print()` with print CSS that hides everything but `.paper-58mm`.\n\n3. **Sale completion UX**:\n   - After checkout success: show toast notification with sale number, auto-clear cart state, show \"New Sale\" button.\n   - Implement hold/recall: add a `button` to park current cart (save to local storage or API). \"Recall\" button shows list of parked sales to resume.\n\n4. **Payment improvements**:\n   - Add quick amount buttons (100, 500, 1000, Exact) next to the custom amount input.\n   - Allow adding multiple payment methods: `{ method: 'cash', amount: 300 }, { method: 'bKash', amount: 200 }` in one transaction.\n   - Display change calculation: `change = totalPaid - totalAmount`.\n   - Add bKang/SSLCommerz integration status indicator (e.g., green dot if connected).",
+        "testStrategy": "1. **Manual responsive test**: Open POS page at different viewport widths (mobile 375px, tablet 768px, desktop 1440px) — verify layout adapts correctly.\n2. **Manual test**: Complete a sale → receipt modal appears → click print → print dialog opens with receipt formatting.\n3. **Manual test**: Park a sale (hold) → navigate away → recall → cart restores with same items.\n4. **Manual test**: Split payment: enter 300 cash + 200 bKash → total = 500 → sale completes.\n5. **Edge case**: Try to checkout with empty cart → button disabled with tooltip.\n6. **Edge case**: Hold multiple sales → recall list shows all.",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Wire Settings Buttons & Add Missing Pages (Expenses, Reminders)",
+        "description": "Make Settings Add User and Add Payment Method buttons functional by connecting to existing Supabase RPCs. Create Expense Tracking and Reminders pages with full CRUD UI.",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "medium",
+        "details": "1. **Settings: Add User**:\n   - In `apps/admin_web/src/pages/settings/index.tsx`, find the Add User button.\n   - Add a modal component with fields: name, email, role (dropdown: admin, staff, manager), PIN (4-digit).\n   - On submit, call: `await supabase.rpc('create_staff_user', { name, email, role, pin })`.\n   - Show success toast, refresh user list.\n\n2. **Settings: Add Payment Method**:\n   - Similar modal with fields: name (text input), type (dropdown: cash, bKash, Nagad, card), active toggle.\n   - On submit, call: `await supabase.rpc('add_payment_method', { name, type, active })`.\n   - Refresh list.\n\n3. **Expense Tracking page**:\n   - Create `apps/admin_web/src/pages/expenses/index.tsx`:\n     - Fetch expenses: `api.expenses.list(filters)`.\n     - Display in table with columns: Date, Category, Amount, Notes, Actions.\n     - Add filter bar: date range picker, category dropdown.\n     - Add expense button → modal with: amount, category, notes, date.\n     - Summary cards: total expenses today, this week, this month.\n   - Add route: `<Route path=\"/expenses\" element={<ExpensesPage />} />`.\n   - Add sidebar link.\n\n4. **Reminders page**:\n   - Create `apps/admin_web/src/pages/reminders/index.tsx`:\n     - Fetch reminders: `api.reminders.list()`.\n     - Display in list/cards: title, due date, status (pending/completed).\n     - CRUD operations: create, edit (modal), delete (with confirmation).\n     - Mark as completed toggle.\n   - Add route and sidebar link.",
+        "testStrategy": "1. **Manual test**: Settings → Add User → fill form → submit → verify user appears in list → try login with new credentials.\n2. **Manual test**: Settings → Add Payment Method → submit → verify it appears on POS payment selection.\n3. **Manual test**: Visit /expenses → add expense with today's date → should appear in 'today' summary card → filter by category → verify filtering works.\n4. **Manual test**: Visit /reminders → create reminder → set due date to tomorrow → view list → mark as completed → delete.\n5. **Edge case**: Try to add expense with negative amount → validation error.\n6. **Edge case**: Try to create duplicate payment method name → error toast.",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Add Pagination & Date Range Filters to List Pages",
+        "description": "Implement pagination on all list pages (products, sales, inventory) and add date range filters to sales and inventory history pages.",
+        "status": "pending",
+        "dependencies": [
+          6
+        ],
+        "priority": "medium",
+        "details": "1. **Pagination**:\n   - Update all list page queries to support pagination: `page`, `pageSize` (default 20).\n   - Modify Supabase queries: `.range((page-1)*pageSize, page*pageSize - 1)` plus `.select('*', { count: 'exact' })`.\n   - Create reusable `Pagination.tsx` component in `apps/admin_web/src/components/ui/`:\n     ```tsx\n     const Pagination = ({ page, totalPages, onPageChange }) => (\n       <div className=\"flex justify-center gap-2 mt-4\">\n         <button disabled={page===1} onClick={() => onPageChange(page-1)}>Previous</button>\n         <span>Page {page} of {totalPages}</span>\n         <button disabled={page===totalPages} onClick={() => onPageChange(page+1)}>Next</button>\n       </div>\n     );\n     ```\n   - Pages to update: Products, Sales, Inventory, Customers, Suppliers.\n\n2. **Date range filters**:\n   - For Sales page (`apps/admin_web/src/pages/sales/index.tsx`):\n     - Add date range picker with presets: Today, This Week, This Month, Custom.\n     - Modify query to filter by `created_at >= startDate AND created_at <= endDate`.\n   - For Inventory history page: same approach.\n   - For Expense page (new): already has date filters per Phase 3 task.\n\n3. **URL query params**: Sync pagination and filters with URL query params so filters persist on refresh (e.g., `/sales?page=2&start=2026-04-01&end=2026-05-01`).",
+        "testStrategy": "1. **Manual test**: Go to Products page with 50+ products → pagination should show 3 pages → click page 2 → see next set → click Previous → back to page 1.\n2. **Manual test**: Sales page → select 'This Week' filter → sales list updates to only this week's sales → verify date column.\n3. **Manual test**: Change page to 2 → refresh browser → should stay on page 2 (URL param preserved).\n4. **Edge case**: Empty list on certain filter → should show empty state, not broken pagination.",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Realtime Subscriptions & Performance Optimizations",
+        "description": "Add Supabase realtime subscriptions for stock level changes, lazy load routes, virtualize long lists, debounce search inputs, and set up query caching.",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "medium",
+        "details": "1. **Realtime subscriptions**:\n   - In a custom hook `useRealtimeStock()`:\n     ```ts\n     import { supabase } from '../lib/supabaseClient';\n     \n     export const useRealtimeStock = (productId: string) => {\n       useEffect(() => {\n         const channel = supabase\n           .channel('stock-changes')\n           .on('postgres_changes', \n             { event: 'UPDATE', schema: 'public', table: 'stock_levels', filter: `product_id=eq.${productId}` },\n             (payload) => {\n               // Update local cache/state with new stock level\n               queryClient.setQueryData(['product', productId], (old) => ({...old, stock: payload.new.quantity}));\n             }\n           )\n           .subscribe();\n         return () => supabase.removeChannel(channel);\n       }, [productId]);\n     };\n     ```\n   - Subscribe to `stock_levels` changes for all visible product IDs on POS page.\n   - If stock drops to 0 while item is in cart, show a warning toast and disable checkout for that item.\n\n2. **Lazy loading routes**:\n   - In `App.tsx`, change imports:\n     ```tsx\n     const Dashboard = React.lazy(() => import('./pages/dashboard'));\n     const QuickPosPage = React.lazy(() => import('./pages/pos/QuickPosPage'));\n     // etc.\n     ```\n   - Wrap `<Routes>` in `<Suspense fallback={<PageSkeleton />}>`.\n\n3. **Virtualize long lists**:\n   - Use `@tanstack/react-virtual` for product list and sales table if they have >100 items.\n   - Example for product list:\n     ```tsx\n     import { useVirtualizer } from '@tanstack/react-virtual';\n     const parentRef = useRef(null);\n     const virtualizer = useVirtualizer({\n       count: products.length,\n       getScrollElement: () => parentRef.current,\n       estimateSize: () => 60,\n     });\n     // Render only visible items\n     ```\n\n4. **Debounce search inputs**:\n   - Create custom hook `useDebounce(value, delay = 300)` or use `lodash.debounce`.\n   - Apply to all search/filter inputs across the app.\n\n5. **Query caching defaults**:\n   - In `QueryClientProvider`, set `defaultOptions: { queries: { staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 } }`.",
+        "testStrategy": "1. **Manual test**: Open POS → add an item to cart → in another browser tab, adjust stock level to 0 → wait a few seconds → should see warning toast on POS tab.\n2. **Performance test**: Open DevTools Performance tab → navigate between pages → verify chunks load lazily (code splitting works).\n3. **Manual test**: Product list with 500 items → scrolling should be smooth, no frame drops.\n4. **Manual test**: Type in search box rapidly → API should fire only once after 300ms debounce.\n5. **Edge case**: Slow network → stale cache should be used for 5 minutes unless explicitly refetched.",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement PWA Support & Enhance POS Printing",
+        "description": "Add PWA manifest, service worker, offline indicator, and install prompt. Enhance receipt printing with thermal receipt format and store receipt config integration.",
+        "status": "pending",
+        "dependencies": [
+          1,
+          5
+        ],
+        "priority": "medium",
+        "details": "1. **PWA Setup**:\n   - Create `apps/admin_web/public/manifest.json`:\n     ```json\n     {\n       \"name\": \"Lucky Store POS\",\n       \"short_name\": \"Lucky POS\",\n       \"start_url\": \"/pos\",\n       \"display\": \"standalone\",\n       \"background_color\": \"#ffffff\",\n       \"theme_color\": \"#1a56db\",\n       \"icons\": [\n         { \"src\": \"/icons/icon-192.png\", \"sizes\": \"192x192\", \"type\": \"image/png\" },\n         { \"src\": \"/icons/icon-512.png\", \"sizes\": \"512x512\", \"type\": \"image/png\" }\n       ]\n     }\n     ```\n   - Register service worker in `index.html` or `main.tsx`:\n     ```ts\n     if ('serviceWorker' in navigator) {\n       navigator.serviceWorker.register('/sw.js');\n     }\n     ```\n   - Create minimal `sw.js` that caches static assets and uses Network First strategy.\n\n2. **Offline indicator**:\n   - Use `navigator.onLine` + event listeners to show a banner:\n     ```tsx\n     const [online, setOnline] = useState(navigator.onLine);\n     useEffect(() => {\n       window.addEventListener('online', () => setOnline(true));\n       window.addEventListener('offline', () => setOnline(false));\n       return () => { window.removeEventListener('online', ...); window.removeEventListener('offline', ...); };\n     }, []);\n     if (!online) return <div className=\"bg-yellow-100 p-2 text-center\">You are offline</div>;\n     ```\n\n3. **Install prompt**:\n   - Listen for `beforeinstallprompt` event, save it, and show an install button when triggered.\n\n4. **Enhanced receipt printing**:\n   - Update `ReceiptPreview` to support thermal receipt format (58mm width):\n     - Add CSS for print: `@media print { body { width: 58mm; font-size: 12px; } .no-print { display: none; } }`.\n   - Integrate with Settings → Receipt Config: read store_name, header, footer from settings and display on receipt.\n   - Add option to print directly via a local thermal printer (web serial API or IPP protocol if supported) — for MVP, use browser print.",
+        "testStrategy": "1. **Manual test**: Open app in Chrome → check DevTools → Application → Manifest → verify manifest loads, icons display.\n2. **Manual test**: Turn off network in DevTools → app should show offline banner but cached pages still work.\n3. **Manual test**: Click 'Install' button → prompt should appear → install → app opens in standalone window.\n4. **Manual test**: Complete a sale → receipt preview modal → click Print → print dialog opens with 58mm width formatting.\n5. **Edge case**: No network → submit a sale → should fail gracefully with error message (offline sales not supported yet).",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Set Up Testing Infrastructure & CI/CD Pipeline",
+        "description": "Configure Vitest + React Testing Library for unit/integration tests, add Playwright for E2E smoke tests, and set up GitHub Actions CI/CD pipeline with lint, test, build, and deploy to Vercel.",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "priority": "low",
+        "details": "1. **Testing setup**:\n   - Install packages: `npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom`.\n   - Configure `vitest.config.ts`:\n     ```ts\n     import { defineConfig } from 'vitest/config';\n     import react from '@vitejs/plugin-react';\n     \n     export default defineConfig({\n       plugins: [react()],\n       test: {\n         environment: 'jsdom',\n         globals: true,\n         setupFiles: './src/test/setup.ts',\n       },\n     });\n     ```\n   - Create `src/test/setup.ts` with `import '@testing-library/jest-dom'`.\n\n2. **Write tests**:\n   - **Unit tests**:\n     - `src/lib/__tests__/formatters.test.ts`: test formatCurrency and formatDate.\n     - `src/contexts/__tests__/AuthContext.test.tsx`: test login/logout flow.\n     - `src/hooks/__tests__/useDebounce.test.ts`: test debounce logic.\n   - **Integration tests**:\n     - `src/__tests__/POSCheckoutFlow.test.tsx`: render POS page, add items, proceed to checkout, mock successful sale.\n     - `src/__tests__/SaleVoid.test.tsx`: render sales history, click void, confirm, verify void status.\n     - `src/__tests__/StockAdjustment.test.tsx`: render inventory, adjust stock, verify new value.\n\n3. **E2E tests with Playwright**:\n   - Install: `npm install --save-dev @playwright/test` and `npx playwright install`.\n   - Create `e2e/smoke.spec.ts`:\n     ```ts\n     import { test, expect } from '@playwright/test';\n     \n     test('Login → POS → Sale → Receipt', async ({ page }) => {\n       await page.goto('/login');\n       await page.fill('[name=\"email\"]', 'test@example.com');\n       await page.fill('[name=\"password\"]', 'password123');\n       await page.click('button[type=\"submit\"]');\n       await expect(page).toHaveURL('/pos');\n       await page.click('.product-item:first-child'); // add product\n       await page.click('#checkout');\n       await expect(page.locator('.receipt-modal')).toBeVisible();\n     });\n     ```\n\n4. **CI/CD Pipeline** (`.github/workflows/ci.yml`):\n   ```yaml\n   name: CI/CD\n   on: [push, pull_request]\n   jobs:\n     quality:\n       runs-on: ubuntu-latest\n       steps:\n         - uses: actions/checkout@v4\n         - uses: actions/setup-node@v4\n           with: { node-version: 20 }\n         - run: npm ci\n         - run: npm run lint\n         - run: npm run type-check\n         - run: npm run test -- --run\n         - run: npm run build\n     deploy:\n       needs: quality\n       if: github.ref == 'refs/heads/main'\n       runs-on: ubuntu-latest\n       steps:\n         - uses: actions/checkout@v4\n         - uses: amondnet/vercel-action@v20\n           with:\n             vercel-token: ${{ secrets.VERCEL_TOKEN }}\n             vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}\n             vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}\n             vercel-args: '--prod'\n   ```\n\n5. **Branch protection**: Configure on GitHub: require status checks (lint, test, build) to pass before merging to main.",
+        "testStrategy": "1. **Run `vitest`** → all unit and integration tests pass.\n2. **Run `npx playwright test`** → E2E smoke test passes.\n3. **Manual check CI**: Push to GitHub → Actions runs lint, type-check, test, build → all green.\n4. **Manual check deploy**: Merge to main → Vercel deploy triggers → admin web is live at new version.\n5. **Edge case**: Failing test → CI should fail and block merge.",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2026-05-06T15:19:16.218Z",
+      "updated": "2026-05-06T15:19:16.219Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

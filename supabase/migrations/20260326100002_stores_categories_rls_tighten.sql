@@ -1,20 +1,11 @@
--- Replace permissive USING(true) mutations with role checks matching Dashboard visibility
--- Safe for fresh databases: check if tables exist before applying policies
-
+-- Replace permissive USING(true) mutations with role checks matching Dashboard visibility.
 DO $$
 BEGIN
-  -- Only apply if stores table exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.tables 
-    WHERE table_schema = 'public' AND table_name = 'stores'
-  ) THEN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'stores' AND schemaname = 'public')
+     AND EXISTS (SELECT FROM pg_tables WHERE tablename = 'users' AND schemaname = 'public') THEN
     drop policy if exists "stores_insert_authenticated" on public.stores;
     drop policy if exists "stores_update_authenticated" on public.stores;
     drop policy if exists "stores_delete_authenticated" on public.stores;
-
-    drop policy if exists "stores_insert_admin_manager" on public.stores;
-    drop policy if exists "stores_update_admin_manager" on public.stores;
-    drop policy if exists "stores_delete_admin_manager" on public.stores;
 
     create policy "stores_insert_admin_manager"
       on public.stores for insert to authenticated
@@ -25,7 +16,7 @@ BEGIN
             and u.role in ('admin', 'manager')
         )
       );
-    
+
     create policy "stores_update_admin_manager"
       on public.stores for update to authenticated
       using (
@@ -42,7 +33,7 @@ BEGIN
             and u.role in ('admin', 'manager')
         )
       );
-    
+
     create policy "stores_delete_admin_manager"
       on public.stores for delete to authenticated
       using (
@@ -52,22 +43,14 @@ BEGIN
             and u.role in ('admin', 'manager')
         )
       );
-  ELSE
-    RAISE NOTICE 'Table stores does not exist, skipping policy creation';
   END IF;
-END $$;
 
-DO $$
-BEGIN
-  -- Only apply if categories table exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.tables 
-    WHERE table_schema = 'public' AND table_name = 'categories'
-  ) THEN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'categories' AND schemaname = 'public')
+     AND EXISTS (SELECT FROM pg_tables WHERE tablename = 'users' AND schemaname = 'public') THEN
     drop policy if exists "categories_insert_authenticated" on public.categories;
     drop policy if exists "categories_update_authenticated" on public.categories;
     drop policy if exists "categories_delete_authenticated" on public.categories;
-    
+
     create policy "categories_insert_admin"
       on public.categories for insert to authenticated
       with check (
@@ -77,7 +60,7 @@ BEGIN
             and u.role = 'admin'
         )
       );
-    
+
     create policy "categories_update_admin"
       on public.categories for update to authenticated
       using (
@@ -94,7 +77,7 @@ BEGIN
             and u.role = 'admin'
         )
       );
-    
+
     create policy "categories_delete_admin"
       on public.categories for delete to authenticated
       using (
@@ -104,7 +87,5 @@ BEGIN
             and u.role = 'admin'
         )
       );
-  ELSE
-    RAISE NOTICE 'Table categories does not exist, skipping policy creation';
   END IF;
 END $$;

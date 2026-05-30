@@ -6,7 +6,7 @@ The service role key in the script appears to be incomplete. The key you provide
 
 ## Solution 1: Get the Full Service Role Key
 
-1. Go to Supabase Dashboard: https://app.supabase.com/project/cckschiexzvysvdracvc/settings/api
+1. Go to Supabase Dashboard: https://app.supabase.com/project/hvmyxyccfnkrbxqbhlnm/settings/api
 2. Find the **service_role** key (it's a secret key, much longer than what's in the script)
 3. Copy the **entire** key
 4. Update the script or set it as an environment variable

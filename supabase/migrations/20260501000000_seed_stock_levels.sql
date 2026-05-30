@@ -1,14 +1,21 @@
 -- =============================================================================
 -- Seed Stock Levels for All Active Items
+-- Self-contained migration: seeds every store/item pair without placeholders.
 -- =============================================================================
--- This is a template — no-op during migration. Run manually per store:
---
---   Replace <store_id> with your actual store UUID below.
---   This seeds all active items with qty = 0 for a single store.
---
---   INSERT INTO stock_levels (store_id, item_id, qty)
---   SELECT '<store_id>'::uuid, i.id, 0
---   FROM items i WHERE i.active = true
---   ON CONFLICT (store_id, item_id) DO NOTHING;
--- =============================================================================
-DO $$ BEGIN /* no-op: manual seed template */ END; $$;
+
+DO $$
+BEGIN
+  IF to_regclass('public.stores') IS NOT NULL
+     AND to_regclass('public.items') IS NOT NULL
+     AND to_regclass('public.stock_levels') IS NOT NULL THEN
+    INSERT INTO public.stock_levels (store_id, item_id, qty)
+    SELECT
+      s.id AS store_id,
+      i.id AS item_id,
+      0 AS qty
+    FROM public.stores s
+    CROSS JOIN public.items i
+    WHERE COALESCE(i.active, true) = true
+    ON CONFLICT (store_id, item_id) DO NOTHING;
+  END IF;
+END $$;

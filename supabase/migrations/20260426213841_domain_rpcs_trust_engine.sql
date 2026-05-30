@@ -20,7 +20,7 @@ BEGIN
 
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- RPC: record_sale
 -- Handles Sales Revenue, COGS, Inventory, and multiple payment methods (Cash/Credit/Split)
@@ -128,7 +128,7 @@ EXCEPTION WHEN OTHERS THEN
     DELETE FROM idempotency_keys WHERE idempotency_key = p_idempotency_key AND tenant_id = p_tenant_id AND completed_at IS NULL;
     RAISE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- RPC: record_purchase
 -- Handles Inventory increase, Weighted Average Cost update, and Cash/Payable
@@ -222,7 +222,7 @@ EXCEPTION WHEN OTHERS THEN
     DELETE FROM idempotency_keys WHERE idempotency_key = p_idempotency_key AND tenant_id = p_tenant_id AND completed_at IS NULL;
     RAISE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Helper: Get Expected Cash Balance for a store and date
 CREATE OR REPLACE FUNCTION public.get_expected_cash(
@@ -243,7 +243,7 @@ BEGIN
     
     RETURN v_balance;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- RPC: record_cash_closing
 -- Logs the variance between expected and actual cash
@@ -294,4 +294,4 @@ BEGIN
 
     RETURN v_response;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;

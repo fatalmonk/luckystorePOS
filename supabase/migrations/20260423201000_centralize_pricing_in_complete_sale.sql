@@ -285,6 +285,10 @@ DROP FUNCTION IF EXISTS public.complete_sale();
 -- END;
 -- $$;
 
--- Permissions handled in baseline migration (20260301000000_baseline_core_tables.sql)
--- REVOKE ALL ON FUNCTION public.complete_sale(...) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION public.complete_sale(...) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,text,jsonb,text,text,text)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,text,jsonb,text,text,text) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.complete_sale(uuid,uuid,uuid,jsonb,jsonb,numeric,text,text,text,jsonb,text,text,text) TO authenticated;
+  END IF;
+END $$;
