@@ -116,6 +116,10 @@ RETURNS TABLE (
     mrp numeric,
     cost numeric,
     active boolean,
+    current_qty integer,
+    min_qty integer,
+    reorder_status text,
+    last_updated timestamp with time zone,
     stock integer,
     image_url text
 )
@@ -135,11 +139,20 @@ AS $$
         i.mrp,
         i.cost,
         i.is_active AS active,
+        COALESCE(sl.qty, 0)::integer AS current_qty,
+        COALESCE(sat.min_qty, 5)::integer AS min_qty,
+        CASE
+            WHEN COALESCE(sl.qty, 0) = 0 THEN 'OUT'::text
+            WHEN COALESCE(sl.qty, 0) <= COALESCE(sat.min_qty, 5) THEN 'LOW'::text
+            ELSE 'OK'::text
+        END AS reorder_status,
+        i.updated_at AS last_updated,
         COALESCE(sl.qty, 0)::integer AS stock,
         i.image_url
     FROM items i
     LEFT JOIN categories c ON c.id = i.category_id
     LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
+    LEFT JOIN stock_alert_thresholds sat ON sat.item_id = i.id AND sat.store_id = p_store_id
     WHERE EXISTS (
         SELECT 1 FROM users u 
         WHERE u.auth_id = auth.uid() 
