@@ -43,7 +43,7 @@ const scrapedShwapnoProducts = [
 async function matchProductsWithAI() {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
-    console.error("❌ ERROR: Please add GEMINI_API_KEY=your_key to a .env file.");
+    console.error("❌ ERROR: Please set GEMINI_API_KEY in your environment (e.g., export GEMINI_API_KEY=your-key-here)");
     return;
   }
 

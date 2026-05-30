@@ -17,14 +17,15 @@ export const products = {
     return data;
   },
   create: async (product: ProductCreateInput) => {
-    const { data, error } = await supabase.from('items').insert([product]).select().single();
+    const { stock: _stock, ...itemData } = product;
+    const { data, error } = await supabase.from('items').insert(itemData as any).select().single();
     if (error) throw error;
     return data;
   },
   update: async (id: string, updates: ProductUpdateInput, tenantId?: string) => {
     // If updating price/mrp/cost, use the RPC for proper JSON return
     if (tenantId && (updates.price !== undefined || updates.mrp !== undefined || updates.cost !== undefined)) {
-      const { data, error } = await supabase.rpc('update_item_prices', {
+      const { data, error } = await supabase.rpc('update_item_prices' as any, {
         p_item_id: id,
         p_tenant_id: tenantId,
         p_price: updates.price ?? null,
@@ -33,7 +34,7 @@ export const products = {
       });
       if (error) throw error;
       // Map RPC response (item_price) to expected interface (price)
-      if (data && data.length > 0) {
+      if (data && Array.isArray(data) && data.length > 0) {
         const row = data[0];
         return {
           id: row.item_id,
@@ -48,7 +49,8 @@ export const products = {
       return data;
     }
     // Otherwise fall back to direct update
-    const { data, error } = await supabase.from('items').update(updates).eq('id', id).select().single();
+    const { stock: _stock, ...itemUpdates } = updates;
+    const { data, error } = await supabase.from('items').update(itemUpdates as any).eq('id', id).select().single();
     if (error) throw error;
     return data;
   },

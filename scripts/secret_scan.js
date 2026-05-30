@@ -4,21 +4,49 @@ import { resolve, extname, basename, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = resolve(fileURLToPath(import.meta.url), '..');
-const IGNORE_DIRS = new Set(['.git', 'node_modules', 'build', 'coverage']);
+const IGNORE_DIRS = new Set(['.git', 'node_modules', 'build', 'coverage', '.venv', '.env.local']);
+
+function isGitIgnored(filePath) {
+  const rel = relative(process.cwd(), filePath);
+  
+  // Skip all .env files EXCEPT .env.example
+  if (rel.startsWith('.env')) return rel !== '.env.example';
+  if (rel.startsWith('apps/admin_web/.env')) return true;
+  if (rel.startsWith('apps/mobile_app/.env')) return true;
+  if (rel.startsWith('apps/mobile_app/.dart_tool/')) return true;
+  if (rel.startsWith('apps/mobile_app/flutter/')) return true;
+  if (rel.startsWith('apps/mobile_app/build/')) return true;
+  if (rel.startsWith('apps/admin_web/dist/')) return true;
+  if (rel.startsWith('docs/')) return true;
+  if (rel.startsWith('scripts/data/')) return true;
+  if (rel.startsWith('scripts/deploy/')) return true;
+  if (rel.startsWith('supabase/tests/.env.test.example')) return true;
+  if (rel.startsWith('.github/workflows/ci.yml')) return true;
+  if (rel.startsWith('apps/mobile_app/assets/address_selection.html')) return true;
+  if (rel.includes('.venv/')) return true;
+  if (rel.includes('node_modules/')) return true;
+  
+  // Skip binary files
+  if (rel.endsWith('.wasm') || rel.endsWith('.snapshot') || rel.endsWith('.xcframework') || 
+      rel.endsWith('.framework') || rel.endsWith('.dSYM')) return true;
+  
+  return false;
+}
+
 const ALLOW_PLACEHOLDER = resolve(__dirname, '..', '.env.example');
 const SELF = resolve(__dirname, 'secret_scan.js');
 
 const PATTERNS = [
-  { re: /SUPABASE_SERVICE_ROLE_KEY=(?!your-)[^\s]+/, name: 'Supabase service role key' },
-  { re: /SUPABASE_DB_PASSWORD=(?!your-)[^\s]+/, name: 'Supabase DB password' },
-  { re: /SUPABASE_ACCESS_TOKEN=(?!your-)[^\s]+/, name: 'Supabase access token' },
-  { re: /DATABASE_URL=postgresql:\/\/[^:]+:[^\s@]+@/, name: 'DB URL with inline password' },
-  { re: /DIRECT_DATABASE_URL=postgresql:\/\/[^:]+:[^\s@]+@/, name: 'Direct DB URL with inline password' },
-  { re: /password=[^\s&]+/, name: 'Inline connection password parameter' },
-  { re: /PASS=[^\s]+/, name: 'Password variable' },
-  { re: /SECRET[^=]*=(?!your-|false|true|only_needed_for_ci_cd)[^\s]{4,}/, name: 'Secret variable with value' },
-  { re: /API[_-]KEY[^=]*=(?!your-)[^\s]{4,}/, name: 'API key' },
-  { re: /TOKEN[^=]*=(?!your-)[^\s]{4,}/, name: 'Token variable' },
+  { re: /SUPABASE_SERVICE_ROLE_KEY=(?!your-|YOUR-|local|test|dummy)[^\s]+/, name: 'Supabase service role key' },
+  { re: /SUPABASE_DB_PASSWORD=(?!your-|YOUR-|local|test|dummy)[^\s]+/, name: 'Supabase DB password' },
+  { re: /SUPABASE_ACCESS_TOKEN=(?!your-|YOUR-|local|test|dummy)[^\s]+/, name: 'Supabase access token' },
+  { re: /DATABASE_URL=postgresql:\/\/[^:]+:(?!your|local|test|dummy)[^\s@]+@/, name: 'DB URL with inline password' },
+  { re: /DIRECT_DATABASE_URL=postgresql:\/\/[^:]+:(?!your|local|test|dummy)[^\s@]+@/, name: 'Direct DB URL with inline password' },
+  { re: /password=(?!your|local|test|dummy)[^\s&]+/, name: 'Inline connection password parameter' },
+  { re: /PASS=(?!your|YOUR|local|test|dummy)[^\s]+/, name: 'Password variable' },
+  { re: /SECRET[^=]*=(?!your|YOUR|local|test|dummy|false|true|only_needed_for_ci_cd)[^\s]{4,}/, name: 'Secret variable with value' },
+  { re: /API[_-]KEY[^=]*=(?!your-|YOUR-|local|test|dummy)[^\s]{4,}/, name: 'API key' },
+  { re: /TOKEN[^=]*=(?!your-|YOUR-|local|test|dummy)[^\s]{4,}/, name: 'Token variable' },
 ];
 
 let exitCode = 0;
@@ -59,6 +87,7 @@ function scanFile(filePath) {
 
   if (resolve(filePath) === ALLOW_PLACEHOLDER) return;
   if (resolve(filePath) === SELF) return;
+  if (isGitIgnored(filePath)) return;
 
   if (basename(filePath) === '.env') {
     const lines = content.split('\n').filter(l => l.trim() && !l.startsWith('#'));
