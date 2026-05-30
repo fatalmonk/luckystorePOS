@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { useNotify } from './NotificationContext';
 
 type RowData = Record<string, any>;
 
@@ -16,6 +16,7 @@ const rowSchema = z.object({
 });
 
 export default function ImportReviewGrid({ importedData, onConfirm }: ImportReviewGridProps) {
+  const { notify } = useNotify();
   const [data, setData] = useState<RowData[]>(importedData);
   const [errors, setErrors] = useState<Record<number, string[]>>({});
 
@@ -52,7 +53,7 @@ export default function ImportReviewGrid({ importedData, onConfirm }: ImportRevi
     });
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-    toast.success('Data ready for import');
+    notify('Data ready for import', 'success');
     onConfirm(data);
   };
 
@@ -75,12 +76,13 @@ export default function ImportReviewGrid({ importedData, onConfirm }: ImportRevi
           <tbody>
             {data.map((row, i) => (
               <tr key={i} className={errors[i] ? 'bg-red-50' : ''}>
-                {headers.map((field) => (
-                  <td key={field} className="border px-4 py-2">
+                {headers.map((h) => (
+                  <td key={h} className="px-4 py-2 border-b">
                     <input
-                      value={row[field] ?? ''}
-                      onChange={(e) => handleChange(i, field, e.target.value)}
-                      className={`w-full p-1 border rounded ${errors[i] && errors[i].some(err => err.startsWith(field)) ? 'border-red-500' : 'border-gray-300'}`}
+                      type="text"
+                      value={row[h] ?? ''}
+                      onChange={(e) => handleChange(i, h, e.target.value)}
+                      className={`w-full border ${errors[i]?.some((e) => e.includes(h)) ? 'border-red-500' : 'border-gray-300'} rounded px-2 py-1`}
                     />
                   </td>
                 ))}
@@ -89,13 +91,23 @@ export default function ImportReviewGrid({ importedData, onConfirm }: ImportRevi
           </tbody>
         </table>
       </div>
-      <div className="flex justify-end mt-4">
+      {hasErrors && (
+        <div className="mt-4 text-red-600">
+          <p>Please fix validation errors before confirming.</p>
+          <ul className="list-disc list-inside">
+            {Object.entries(errors).flatMap(([idx, errs]) =>
+              errs.map((e, i) => <li key={`${idx}-${i}`}>Row {Number(idx) + 1}: {e}</li>)
+            )}
+          </ul>
+        </div>
+      )}
+      <div className="mt-6">
         <button
           onClick={handleConfirm}
           disabled={hasErrors}
-          className={`px-4 py-2 bg-indigo-600 text-white rounded ${hasErrors ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'}`}
+          className={`px-6 py-2 rounded font-medium text-white ${hasErrors ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
         >
-          Confirm & Import
+          Confirm Import
         </button>
       </div>
     </div>

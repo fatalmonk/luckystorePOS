@@ -1,5 +1,25 @@
 import 'package:csv/csv.dart';
-import '../../features/inventory/presentation/screens/bulk_label_print_screen.dart';
+
+/// Model for bulk print product
+class BulkPrintProduct {
+  final String id;
+  final String barcode;
+  final String name;
+  final double price;
+  final double? mrp;
+  int copies;
+  bool selected;
+
+  BulkPrintProduct({
+    required this.id,
+    required this.barcode,
+    required this.name,
+    required this.price,
+    this.mrp,
+    this.copies = 1,
+    this.selected = true,
+  });
+}
 
 /// Service for importing products from CSV files for bulk label printing
 class CsvImportService {

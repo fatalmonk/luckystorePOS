@@ -107,6 +107,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   hidden, 
   onClose 
 }) => {
+  const { t } = useTranslation();
   const { signOut } = useAuth();
   const navGroups = useNavGroups();
   const location = useLocation();

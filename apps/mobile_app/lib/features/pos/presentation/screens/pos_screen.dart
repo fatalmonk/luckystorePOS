@@ -7,7 +7,7 @@ import '../../../../models/pos_models.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../core/services/printer/printer_test_screen.dart';
-import '../../../inventory/presentation/screens/bulk_label_print_screen.dart';
+// import '../../../inventory/presentation/screens/bulk_label_print_screen.dart'; // TODO: Re-enable when implemented
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_shadows.dart';
@@ -520,7 +520,8 @@ class _PosScreenState extends State<PosScreen> {
         child: button,
         onSelected: (value) {
           if (value == 'bulk_print') {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const BulkLabelPrintScreen()));
+            // TODO: Implement BulkLabelPrintScreen
+            // Navigator.push(context, MaterialPageRoute(builder: (_) => const BulkLabelPrintScreen()));
           } else if (value == 'test_printer') {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const PrinterTestScreen()));
           }

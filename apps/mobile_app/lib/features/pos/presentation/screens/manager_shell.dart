@@ -7,7 +7,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import './pos_main_screen.dart';
 import './manager_dashboard_screen.dart';
-import '../../../inventory/presentation/screens/inventory_import_screen.dart';
+// import '../../../inventory/presentation/screens/inventory_import_screen.dart'; // TODO: Re-enable when implemented
 import './label_print_screen.dart';
 import '../../../collections/presentation/screens/overdue_customers_screen.dart';
 import '../../../purchase/presentation/screens/purchase_receiving_screen.dart';
@@ -52,7 +52,7 @@ class _ManagerShellState extends State<ManagerShell> {
   late final List<Widget> _pages = [
     const PosMainScreen(),
     const ManagerDashboardScreen(),
-    const InventoryImportScreen(),
+    // const InventoryImportScreen(), // TODO: Implement InventoryImportScreen
     const LabelPrintScreen(),
     const OverdueCustomersScreen(),
     const PurchaseReceivingScreen(),

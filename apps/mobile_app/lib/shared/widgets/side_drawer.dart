@@ -8,7 +8,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../main.dart'; // AppLocaleNotifier
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/pos/presentation/screens/store_mode.dart';
-import '../../features/inventory/presentation/screens/inventory_import_screen.dart';
+// import '../../features/inventory/presentation/screens/inventory_import_screen.dart'; // TODO: Re-enable when implemented
 import '../../features/stock/presentation/screens/stock_adjustment_screen.dart';
 import '../../features/pos/presentation/screens/manager_dashboard_screen.dart';
 import '../../features/pos/presentation/screens/label_print_screen.dart';
@@ -258,10 +258,11 @@ class _SideDrawerState extends State<SideDrawer> {
                       label: 'Import Inventory',
                       iconColor: AppColors.secondaryDefault,
                       onTap: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const InventoryImportScreen()),
-                        );
+                        // TODO: Implement InventoryImportScreen
+                        // Navigator.of(context).pop();
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(builder: (_) => const InventoryImportScreen()),
+                        // );
                       },
                     ),
                     _DrawerMenuItem(
