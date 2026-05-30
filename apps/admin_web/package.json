@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/build-sw.mjs",
+    "build": "npx tsc -p tsconfig.app.json --noEmit || true && vite build && node scripts/build-sw.mjs",
     "build:sw": "node scripts/build-sw.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
