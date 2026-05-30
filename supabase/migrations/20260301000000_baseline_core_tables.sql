@@ -67,11 +67,14 @@ CREATE TYPE "public"."po_status" AS ENUM (
 ALTER TYPE "public"."po_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."sale_status" AS ENUM (
-    'completed',
-    'voided',
-    'refunded'
-);
+DO $$ BEGIN
+    CREATE TYPE "public"."sale_status" AS ENUM (
+        'completed',
+        'voided',
+        'refunded'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 
 ALTER TYPE "public"."sale_status" OWNER TO "postgres";
