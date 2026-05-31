@@ -121,11 +121,7 @@ class StockLedgerRepository {
         'end_date=${endDate.toIso8601String()}'
       );
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'apikey': NetworkConfig.supabaseServiceKey,
-        'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
-      };
+      final headers = NetworkConfig.authHeaders();
 
       final response = await _client
           .post(url, headers: headers)

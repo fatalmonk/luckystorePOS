@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/app_user.dart';
 
@@ -56,27 +55,23 @@ class AuthProvider extends ChangeNotifier {
   }
 
   AuthProvider() {
-    _bootstrapSession();
-  }
-
-  Future<void> _bootstrapSession() async {
-    if (_supabase.auth.currentSession == null) {
-      final email = dotenv.maybeGet('MANAGER_EMAIL');
-      final password = dotenv.maybeGet('MANAGER_PASSWORD');
-      
-      if (email != null && email.isNotEmpty && password != null && password.isNotEmpty) {
-        try {
-          debugPrint('[AuthProvider] Attempting service account bootstrap...');
-          await _supabase.auth.signInWithPassword(email: email, password: password);
-          debugPrint('[AuthProvider] Bootstrapped session with service account: $email');
-        } catch (e) {
-          debugPrint('[AuthProvider] Service account bootstrap failed: $e');
-        }
-      }
-    }
-    
     _status = AuthStatus.unauthenticated;
     notifyListeners();
+
+    // Listen to auth state changes
+    _supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null) {
+        // Keep existing status (could be cashier or manager if already verified)
+        if (_status == AuthStatus.unauthenticated) {
+          _status = AuthStatus.cashier; // Default to cashier on fresh session
+        }
+      } else {
+        _status = AuthStatus.unauthenticated;
+        _lastVerifiedPin = null;
+      }
+      notifyListeners();
+    });
   }
 
   void _setStatus(AuthStatus s) {

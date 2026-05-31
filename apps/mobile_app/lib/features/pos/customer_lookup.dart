@@ -165,4 +165,11 @@ class _CustomerPhoneLookupState extends State<CustomerPhoneLookup> {
       ],
     );
   }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
 }

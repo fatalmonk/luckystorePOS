@@ -40,6 +40,14 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
+  static const TextStyle headingSm = TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: 14,
+    height: 1.4,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+  );
+
   static const TextStyle bodyLg = TextStyle(
     fontFamily: fontFamilyPrimary,
     fontSize: 15,

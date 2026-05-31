@@ -84,7 +84,7 @@ class PrinterService {
             port ?? PortConfig.defaultPort,
           );
           connected = testResult.isSuccess;
-          endpoint = 'http://$ipAddress:$port/${PortConfig.defaultPort}';
+          endpoint = 'http://$ipAddress:$port/';
           break;
 
         case PrinterType.local:
@@ -362,7 +362,7 @@ class PrinterService {
         '${NetworkConfig.supabaseUrl}/functions/v1/print-receipt',
       );
 
-      final headers = NetworkConfig.defaultHeaders;
+      final headers = NetworkConfig.defaultHeaders();
 
       final response = await _client
           .post(
@@ -394,12 +394,12 @@ class PrinterService {
 
   /// Update average print time
   void _updateAveragePrintTime(Duration printTime) {
-    _totalPrintAttempts++;
+    _successfulPrints++; // Track successful prints
     _averagePrintTime = Duration(
       milliseconds: (
-        (_averagePrintTime.inMilliseconds * (_totalPrintAttempts - 1) +
+        (_averagePrintTime.inMilliseconds * (_successfulPrints - 1) +
                 printTime.inMilliseconds) /
-            _totalPrintAttempts
+            _successfulPrints
       ).round(),
     );
   }

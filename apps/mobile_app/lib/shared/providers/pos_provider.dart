@@ -113,7 +113,7 @@ class PosProvider extends ChangeNotifier {
     });
   }
 
-  double get totalAmount => subtotal;
+  double get totalAmount => subtotal - _cartDiscount;
   int get itemCount => _cart.fold(0, (sum, c) => sum + c.qty);
 
   // ── Payment methods ────────────────────────────────────────────────────────
@@ -307,6 +307,10 @@ class PosProvider extends ChangeNotifier {
   void setLineDiscount(String itemId, double discount) {
     final idx = _cart.indexWhere((c) => c.item.id == itemId);
     if (idx >= 0) {
+      // Validate discount cannot exceed item price
+      if (discount < 0 || discount > _cart[idx].item.price) {
+        throw ArgumentError('Discount must be between 0 and item price (${_cart[idx].item.price})');
+      }
       _cart[idx].discount = discount;
       final itemIdRef = _cart[idx].item.id;
       final snap = _draftSnapshotItems[itemIdRef];
@@ -394,7 +398,10 @@ class PosProvider extends ChangeNotifier {
     _frozenCheckoutSnapshot = snapshot;
 
     final itemsPayload = snapshot.items.map((s) {
-      final cartLine = _cart.firstWhere((c) => c.item.id == s.productId);
+      final cartLine = _cart.firstWhere(
+        (c) => c.item.id == s.productId,
+        orElse: () => throw Exception('Item ${s.productId} missing from cart'),
+      );
       return {
         'item_id': s.productId,
         'qty': s.quantity,

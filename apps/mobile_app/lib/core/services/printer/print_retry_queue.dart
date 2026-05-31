@@ -337,8 +337,8 @@ class PrintRetryQueue {
     _eventController.close();
   }
 }
-
 // Helper to avoid circular import - creates PrinterService dynamically
+// TODO: Fix circular dependency - pass PrinterService factory into queue constructor
 Future<dynamic> _createPrinterService() async {
   // Dynamic import to break circular dependency
   // ignore: avoid_dynamic_calls
@@ -352,5 +352,7 @@ Future<dynamic> _createPrinterService() async {
 Future<dynamic> _importPrinterService() async {
   // The actual import is handled by the Dart module system
   // This function exists to satisfy the analyzer
-  throw UnsupportedError('This should be overridden by the actual import');
+  // DISABLED: Use factory injection instead
+  // throw UnsupportedError('This should be overridden by the actual import');
+  return Future.error('PrintRetryQueue requires factory injection');
 }
