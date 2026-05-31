@@ -26,7 +26,9 @@ class PrinterService {
     http.Client? client,
     PrintRetryQueue? retryQueue,
   })  : _client = client ?? http.Client(),
-        _retryQueue = retryQueue ?? PrintRetryQueue(),
+        _retryQueue = retryQueue ?? PrintRetryQueue(
+          printerServiceFactory: () async => throw UnimplementedError('PrinterService factory not provided'),
+        ),
         _eventController = StreamController<PrinterEvent>.broadcast();
 
   Stream<PrinterEvent> get eventStream => _eventController.stream;
@@ -406,9 +408,10 @@ class PrinterService {
 
   // ===== Retry Queue Management =====
 
-  /// Process retry queue
+  /// Process retry queue (no-op - queue processes automatically via timer)
   Future<void> processRetryQueue() async {
-    await _retryQueue.processQueue(this);
+    // Retry queue now handles retries automatically via internal timer
+    // This method is kept for API compatibility
   }
 
   /// Retry failed print
