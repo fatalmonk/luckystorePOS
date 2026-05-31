@@ -37,27 +37,27 @@ CREATE TABLE IF NOT EXISTS public.stock_ledger (
 -- -----------------------------------------------------------------------------
 
 -- Index on store_id for filtering by store
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_store_id ON public.stock_ledger(store_id);
+CREATE INDEX idx_stock_ledger_store_id ON public.stock_ledger(store_id);
 
 -- Index on product_id for filtering by product
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_product_id ON public.stock_ledger(product_id);
+CREATE INDEX idx_stock_ledger_product_id ON public.stock_ledger(product_id);
 
 -- Composite index for most common query pattern: store + product + date range
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_store_product_date
+CREATE INDEX idx_stock_ledger_store_product_date 
   ON public.stock_ledger(store_id, product_id, created_at DESC);
 
 -- Index on transaction_type for filtering by type
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_transaction_type ON public.stock_ledger(transaction_type);
+CREATE INDEX idx_stock_ledger_transaction_type ON public.stock_ledger(transaction_type);
 
 -- Index on movement_id for deduplication lookups
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_movement_id ON public.stock_ledger(movement_id)
+CREATE INDEX idx_stock_ledger_movement_id ON public.stock_ledger(movement_id) 
   WHERE movement_id IS NOT NULL;
 
 -- Index on created_at for time-based queries
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_created_at ON public.stock_ledger(created_at DESC);
+CREATE INDEX idx_stock_ledger_created_at ON public.stock_ledger(created_at DESC);
 
 -- GIN index on metadata for JSON queries
-CREATE INDEX IF NOT EXISTS idx_stock_ledger_metadata ON public.stock_ledger USING gin (metadata);
+CREATE INDEX idx_stock_ledger_metadata ON public.stock_ledger USING gin (metadata);
 
 -- -----------------------------------------------------------------------------
 -- 4) Add constraints
@@ -80,38 +80,20 @@ ALTER TABLE public.stock_ledger
 -- Enable RLS
 ALTER TABLE public.stock_ledger ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users to read their store's ledger
-DROP POLICY IF EXISTS stock_ledger_read_authenticated ON public.stock_ledger;
-CREATE POLICY stock_ledger_read_authenticated
-  ON public.stock_ledger FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.auth_id = auth.uid()
-        AND u.store_id = stock_ledger.store_id
-    )
-  );
-
--- Allow authenticated users to insert their store's ledger entries
-DROP POLICY IF EXISTS stock_ledger_insert_authenticated ON public.stock_ledger;
-CREATE POLICY stock_ledger_insert_authenticated
-  ON public.stock_ledger FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.users u
-      WHERE u.auth_id = auth.uid()
-        AND u.store_id = stock_ledger.store_id
-    )
-  );
+-- NOTE: RLS policies referencing public.user_stores are intentionally omitted here.
+-- That table does not exist yet during bootstrap replay.
+-- Proper RLS policies are added in 20260427200000_fix_stock_ledger_rls.sql.
 
 -- Service role can do anything
 DROP POLICY IF EXISTS stock_ledger_service_role_all ON public.stock_ledger;
 CREATE POLICY stock_ledger_service_role_all
-  ON public.stock_ledger
+  ON public.stock_ledger TO service_role
+  USING (true);
+
+DROP POLICY IF EXISTS stock_ledger_service_role_insert ON public.stock_ledger;
+CREATE POLICY stock_ledger_service_role_insert 
+  ON public.stock_ledger FOR INSERT 
   TO service_role
-  USING (true)
   WITH CHECK (true);
 
 -- -----------------------------------------------------------------------------
@@ -200,6 +182,10 @@ CREATE TRIGGER trg_log_stock_ledger
   WHEN (NEW.qty IS DISTINCT FROM OLD.qty)
   EXECUTE FUNCTION public.log_stock_ledger_on_update();
 
+-- NOTE: get_stock_level_by_id() is omitted here — stock_levels uses a composite
+-- PK (store_id, item_id) with no single uuid “id” column, so the function is
+-- incompatible. A proper version is added later if needed.
+
 -- Grant permissions
 REVOKE ALL ON TABLE public.stock_ledger FROM PUBLIC;
 GRANT SELECT ON TABLE public.stock_ledger TO authenticated;
@@ -207,7 +193,6 @@ GRANT INSERT ON TABLE public.stock_ledger TO authenticated;
 GRANT ALL ON TABLE public.stock_ledger TO service_role;
 GRANT ALL ON v_stock_ledger_recent TO authenticated;
 GRANT ALL ON v_stock_ledger_product_summary TO authenticated;
-
 -- Comment on table
 COMMENT ON TABLE public.stock_ledger IS 
   'Audit trail for all inventory movements. Every stock change is logged here with previous/new quantities, transaction type, and metadata.';

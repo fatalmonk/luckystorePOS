@@ -113,16 +113,10 @@ pnpm-debug.log*
 *~
 
 # -----------------------------------------------------------------------------
-# OS Junk / Screenshots
+# OS Junk
 # -----------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
-screenshot-*.png
-screenshot-*.jpg
-screenshot-*.jpeg
-Screenshot*.png
-Screenshot*.jpg
-Screenshot*.jpeg
 
 # -----------------------------------------------------------------------------
 # Hosting Platforms
@@ -203,4 +197,10 @@ apps/mobile_app/assets/app.env
 apps/mobile_app/flutter/
 # Ignore local JSON secrets
 data/*.json
+.vercel/
 
+
+# Aion session artifacts
+.aionrs/
+.env
+.env.local

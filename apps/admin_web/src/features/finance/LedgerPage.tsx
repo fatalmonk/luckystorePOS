@@ -1,31 +1,14 @@
-import React, { useEffect, useState, useCallback, useMemo, useId } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../components/PageState';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
-import { Modal } from '../../components/ui/Modal';
 import { useAuth } from '../../lib/AuthContext';
-import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
-
-interface TransactionItem {
-  id: string;
-  description: string;
-  amount: string;
-  item_id?: string;
-}
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  sku?: string;
-  price: number;
-  mrp?: number;
-}
 
 interface LedgerPageConfig {
   partyType: 'customer' | 'supplier';
@@ -68,129 +51,10 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [showAddParty, setShowAddParty] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyPhone, setNewPartyPhone] = useState('');
-  const [dateFrom, setDateFrom] = useState<string | null>(null);
-  const [dateTo, setDateTo] = useState<string | null>(null);
-  // Transaction recording state
-  const [showRecordTransaction, setShowRecordTransaction] = useState(false);
-  const [transactionType, setTransactionType] = useState<'debit' | 'credit'>(partyType === 'customer' ? 'credit' : 'debit');
-  const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [transactionNote, setTransactionNote] = useState('');
-  const [transactionReference, setTransactionReference] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [transactionItems, setTransactionItems] = useState<TransactionItem[]>([{ id: '1', description: '', amount: '' }]);
-  // Delete transaction state
-  const [deletingEntry, setDeletingEntry] = useState<LedgerEntry | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [loadingInventory, setLoadingInventory] = useState(false);
-  const { tenantId, user, storeId } = useAuth();
+  const { tenantId } = useAuth();
   const { notify } = useNotify();
-
-  // Ledger account state (AR/AP + cash)
-  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
-  const [arAccountId, setArAccountId] = useState<string | null>(null);
-  const [apAccountId, setApAccountId] = useState<string | null>(null);
-  const [revenueAccountId, setRevenueAccountId] = useState<string | null>(null);
-  const [expenseAccountId, setExpenseAccountId] = useState<string | null>(null);
-  const [dbUserId, setDbUserId] = useState<string | null>(null);
-
-  // Load AR/AP/Cash/Revenue/Expense accounts for this store + get DB user ID for FK
-  const [accountsLoaded, setAccountsLoaded] = useState(false);
-  useEffect(() => {
-    if (!storeId) return;
-    setAccountsLoaded(false);
-    
-    // Get DB user ID that matches auth user
-    if (user?.id) {
-      supabase
-        .from('users')
-        .select('id')
-        .eq('auth_id', user.id)
-        .single()
-        .then(({ data }) => {
-          setDbUserId(data?.id ?? null);
-        });
-    }
-    
-    supabase
-      .from('ledger_accounts')
-      .select('id,name,code')
-      .eq('store_id', storeId)
-      .in('code', ['1000_CASH', '1300_ACCOUNTS_RECEIVABLE', '2000_ACCOUNTS_PAYABLE', '4000_SALES_REVENUE', '5000_COST_OF_GOODS_SOLD'])
-      .then(({ data }) => {
-        if (data) {
-          setCashAccountId(data.find((a: any) => a.code === '1000_CASH')?.id ?? null);
-          setArAccountId(data.find((a: any) => a.code === '1300_ACCOUNTS_RECEIVABLE')?.id ?? null);
-          setApAccountId(data.find((a: any) => a.code === '2000_ACCOUNTS_PAYABLE')?.id ?? null);
-          setRevenueAccountId(data.find((a: any) => a.code === '4000_SALES_REVENUE')?.id ?? null);
-          setExpenseAccountId(data.find((a: any) => a.code === '5000_COST_OF_GOODS_SOLD')?.id ?? null);
-        }
-        setAccountsLoaded(true);
-      });
-  }, [storeId, user]);
-
-  // Calculate total from items
-  const totalAmount = useMemo(() => {
-    return transactionItems.reduce((sum, item) => {
-      const amt = parseFloat(item.amount);
-      return sum + (isNaN(amt) ? 0 : amt);
-    }, 0);
-  }, [transactionItems]);
-
-  // Reset transaction form
-  const resetTransactionForm = useCallback(() => {
-    setTransactionType(partyType === 'customer' ? 'credit' : 'debit');
-    setTransactionDate(format(new Date(), 'yyyy-MM-dd'));
-    setTransactionNote('');
-    setTransactionReference('');
-    setTransactionItems([{ id: String(Date.now() + Math.random()), description: '', amount: '' }]);
-  }, [partyType]);
-
-  // Handle close modal
-  const handleCloseModal = useCallback(() => {
-    setShowRecordTransaction(false);
-    resetTransactionForm();
-  }, [resetTransactionForm]);
-
-  // Fetch inventory items when modal opens
-  const fetchInventoryItems = useCallback(async () => {
-    if (!storeId) return;
-    setLoadingInventory(true);
-    const { data, error } = await supabase
-      .from('items')
-      .select('id, name, sku, price, mrp')
-      .eq('store_id', storeId)
-      .eq('active', true)
-      .order('name');
-    if (!error && data) {
-      setInventoryItems(data as InventoryItem[]);
-    }
-    setLoadingInventory(false);
-  }, [storeId]);
-
-  // Load inventory when modal opens
-  useEffect(() => {
-    if (showRecordTransaction) {
-      fetchInventoryItems();
-    }
-  }, [showRecordTransaction, fetchInventoryItems]);
-
-  // Add item from inventory
-  const addInventoryItem = useCallback((item: InventoryItem) => {
-    setTransactionItems(prev => [
-      ...prev,
-      {
-        id: String(Date.now() + Math.random()),
-        item_id: item.id,
-        description: item.name,
-        amount: String(item.price || 0)
-      }
-    ]);
-  }, []);
 
 
   const fetchParties = useCallback(async () => {
@@ -214,85 +78,20 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     fetchParties();
   }, [fetchParties]);
 
-  const fetchLedger = useCallback(async () => {
-    if (!selectedParty) return;
-    // Validate date range
-    if (dateFrom && dateTo && dateFrom > dateTo) {
-      notify('From date must be before To date', 'error');
-      return;
-    }
-    
-    // Use RPC to get entries excluding deleted batches
-    const { data, error } = await supabase.rpc('get_party_ledger', {
-      p_party_id: selectedParty.id,
-      p_date_from: dateFrom,
-      p_date_to: dateTo
-    });
-    
+  // parties loaded via useQuery below
+
+  const fetchLedger = async (party: Party) => {
+    setSelectedParty(party);
+    const { data, error } = await supabase
+      .from('ledger_entries')
+      .select('*')
+      .eq('party_id', party.id)
+      .order('effective_date', { ascending: false });
+
     if (!error && data) {
       setLedgerEntries(data as LedgerEntry[]);
-    } else if (error) {
-      console.error('Fetch ledger error:', error);
     }
-  }, [selectedParty, dateFrom, dateTo, notify]);
-
-  // Refetch ledger when date range changes
-  useEffect(() => {
-    if (selectedParty) {
-      fetchLedger();
-    }
-  }, [dateFrom, dateTo, fetchLedger]);
-
-  // compute running balances in chronological order
-  const entriesWithBalance = useMemo(() => {
-    if (!ledgerEntries) return [];
-    const sorted = [...ledgerEntries].sort((a, b) => {
-      const dateA = new Date(a.effective_date).getTime();
-      const dateB = new Date(b.effective_date).getTime();
-      if (dateA !== dateB) return dateA - dateB;
-      const createdA = (a as any).created_at ? new Date((a as any).created_at).getTime() : 0;
-      const createdB = (b as any).created_at ? new Date((b as any).created_at).getTime() : 0;
-      return createdA - createdB;
-    });
-    let balance = 0;
-    const withBal = sorted.map(entry => {
-      balance += balanceSign * (entry.debit_amount - entry.credit_amount);
-      return { ...entry, runningBalance: balance };
-    });
-    return withBal.reverse();
-  }, [ledgerEntries, balanceSign, refreshKey]);
-
-  // CSV export function
-  const exportCSV = useCallback(() => {
-    if (!selectedParty || entriesWithBalance.length === 0) return;
-    const escapeCsv = (val: string | number | null) => {
-      const str = val?.toString() ?? '';
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    };
-    const headers = ['Date', 'Reference Type', 'Reference ID', 'Debit Amount', 'Credit Amount', 'Balance'];
-    const rows = entriesWithBalance.map(entry => [
-      format(new Date(entry.effective_date), 'yyyy-MM-dd'),
-      entry.reference_type ?? '',
-      entry.reference_id ?? '',
-      entry.debit_amount ?? 0,
-      entry.credit_amount ?? 0,
-      (entry as any).runningBalance ?? 0
-    ]);
-    const csvContent = '\uFEFF' + headers.map(escapeCsv).join(',') + '\n' +
-      rows.map(row => row.map(escapeCsv).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${selectedParty.name}_ledger_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [selectedParty, entriesWithBalance]);
+  };
 
   if (loading) {
     return (
@@ -319,9 +118,13 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     );
   }
 
+  const balanceAtPoint = (idx: number) =>
+    ledgerEntries
+      .slice(idx)
+      .reduce((acc, curr) => acc + balanceSign * (curr.debit_amount - curr.credit_amount), 0);
 
   return (
-    <div className={clsx('app-warm dashboard-container')}>
+    <div className="dashboard-container">
       <PageHeader title={title} subtitle={subtitle} actions={
         <button className="button-primary" onClick={() => setShowAddParty(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
           <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
@@ -330,14 +133,6 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
         {/* Party List */}
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <input
-            className="input w-full"
-            placeholder={`Search ${partyType}s...`}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
           {parties.length === 0 ? (
             <div className="card col-[1/-1]">
@@ -347,131 +142,57 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                 description={emptyDescription}
               />
             </div>
-          ) : (
-            parties.filter(p => {
-              const q = searchQuery.toLowerCase();
-              return p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q));
-            }).length === 0 ? (
-              <EmptyState
-                icon={<Icon size={48} />}
-                title="No matches found"
-                description="Try a different search term."
-              />
-            ) : (
-              parties.filter(p => {
-                const q = searchQuery.toLowerCase();
-                return p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q));
-              }).map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    setSelectedParty(p);
-                    setDateFrom(null);
-                    setDateTo(null);
-                    setLedgerEntries([]);
-                  }}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: 'var(--space-4)',
-                    borderRadius: 'var(--radius-lg)',
-                    border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
-                    backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
-                    cursor: 'pointer',
-                    transition: 'all var(--transition-fast)',
-                    boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
-                  }}
-                  className="card"
-                >
-                  <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
-                  <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
-                  <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: (p.current_balance ?? 0) > 0 ? balanceColorPositive : 'var(--color-success)' }}>
-                    ৳ {(p.current_balance ?? 0).toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
-                    {balanceLabel}
-                  </div>
-                </button>
-              ))
-            )
-          )}
+          ) : parties.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => fetchLedger(p)}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: 'var(--space-4)',
+                borderRadius: 'var(--radius-lg)',
+                border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
+                backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+                boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
+              }}
+              className="card"
+            >
+              <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
+              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: p.current_balance > 0 ? balanceColorPositive : 'var(--color-success)' }}>
+                ৳ {p.current_balance.toLocaleString()}
+              </div>
+              <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
+                {balanceLabel}
+              </div>
+            </button>
+          ))}
         </div>
 
         {/* Ledger Detail */}
         {selectedParty ? (
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {/* Ledger Detail Header with Date Filters */}
             <div style={{
               padding: 'var(--space-4)',
               borderBottom: '1px solid var(--border-color)',
               backgroundColor: 'var(--color-background-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 'var(--space-4)'
+              alignItems: 'center'
             }}>
               <div>
                 <h2 style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedParty.name}</h2>
                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{statementSubtitle}</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--text-muted)' }}>From</label>
-                  <input
-                    type="date"
-                    className="input"
-                    style={{ width: '140px' }}
-                    value={dateFrom || ''}
-                    onChange={e => setDateFrom(e.target.value || null)}
-                  />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--text-muted)' }}>To</label>
-                  <input
-                    type="date"
-                    className="input"
-                    style={{ width: '140px' }}
-                    value={dateTo || ''}
-                    onChange={e => setDateTo(e.target.value || null)}
-                  />
-                </div>
-                {(dateFrom || dateTo) && (
-                  <button
-                    type="button"
-                    className="button-outline"
-                    onClick={() => {
-                      setDateFrom(null);
-                      setDateTo(null);
-                    }}
-                    style={{ fontSize: 'var(--font-size-xs)', padding: 'var(--space-1) var(--space-2)' }}
-                  >
-                    Clear
-                  </button>
-                )}
-                <button
-                  className="button-primary"
-                  onClick={() => setShowRecordTransaction(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <Plus size={16} /> Record Transaction
-                </button>
-                <button
-                  className="button-outline"
-                  onClick={() => window.print()}
-                >
-                  Print Statement
-                </button>
-                <button
-                  className="button-outline"
-                  onClick={exportCSV}
-                  disabled={entriesWithBalance.length === 0}
-                  title={entriesWithBalance.length === 0 ? 'No entries to export' : 'Export ledger to CSV'}
-                >
-                  Export CSV
-                </button>
-              </div>
+              <button
+                className="button-outline"
+                onClick={() => window.print()}
+              >
+                Print Statement
+              </button>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -491,7 +212,6 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                     <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{debitLabel}</th>
                     <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{creditLabel}</th>
                     <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Balance</th>
-                    <th style={{ padding: 'var(--space-4)', textAlign: 'center', width: '60px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -502,7 +222,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                         <p style={{ fontSize: 'var(--font-size-sm)' }}>Transactions will appear once sales or payments are recorded.</p>
                       </td>
                     </tr>
-                  ) : entriesWithBalance.map((entry) => (
+                  ) : ledgerEntries.map((entry, idx) => (
                     <tr key={entry.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
                         {format(new Date(entry.effective_date), 'MMM dd, yyyy')}
@@ -520,18 +240,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                         {entry.credit_amount > 0 ? `৳ ${entry.credit_amount.toLocaleString()}` : '-'}
                       </td>
                       <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>
-                        ৳ {(entry as any).runningBalance.toLocaleString()}
-                      </td>
-                      <td style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
-                        <button
-                          type="button"
-                          className="button-outline"
-                          style={{ padding: '6px', minWidth: 'auto', color: 'var(--color-error)' }}
-                          onClick={() => setDeletingEntry(entry)}
-                          title="Delete transaction"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        ৳ {balanceAtPoint(idx).toLocaleString()}
                       </td>
                     </tr>
                   ))}
@@ -586,420 +295,6 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
           </div>
         </form>
       </Drawer>
-
-      {/* Record Transaction Modal */}
-      <Modal isOpen={showRecordTransaction} onClose={handleCloseModal} title={selectedParty ? `Record Transaction for ${selectedParty.name}` : 'Record Transaction'} size="lg">
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          if (!selectedParty) return;
-
-          // Validate items
-          const validItems = transactionItems.filter(
-            item => item.description.trim() && parseFloat(item.amount) > 0
-          );
-          if (validItems.length === 0) {
-            notify('Please add at least one valid item with description and amount', 'error');
-            return;
-          }
-
-          const amount = totalAmount;
-          if (!amount || amount <= 0) {
-            notify('Total amount must be greater than 0', 'error');
-            return;
-          }
-
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const selected = new Date(transactionDate);
-          selected.setHours(0, 0, 0, 0);
-          if (selected > today) {
-            notify('Date cannot be in the future', 'error');
-            return;
-          }
-
-          // Build notes with items breakdown
-          const itemsBreakdown = validItems
-            .map(item => `- ${item.description}: ৳${parseFloat(item.amount).toLocaleString()}`)
-            .join('\n');
-          const enhancedNotes = `Items:\n${itemsBreakdown}\nTotal: ৳${amount.toLocaleString()}${transactionNote.trim() ? '\n\n' + transactionNote.trim() : ''}`;
-
-          setIsSubmitting(true);
-
-          // Determine if this is a payment (cash changes hands) or a credit entry (balance only)
-          const isPayment = partyType === 'customer' ? transactionType === 'credit' : transactionType === 'debit';
-          let result: { data?: any; error?: any };
-
-          if (isPayment) {
-            // Payment received from customer or payment made to supplier — use RPC for double-entry
-            if (!cashAccountId) {
-              setIsSubmitting(false);
-              notify('Cash account not configured. Contact admin.', 'error');
-              return;
-            }
-            const rpcResult = await supabase.rpc('record_customer_payment', {
-              p_idempotency_key: `pay_${Date.now()}_${selectedParty.id}`,
-              p_tenant_id: tenantId,
-              p_store_id: storeId,
-              p_party_id: selectedParty.id,
-              p_amount: amount,
-              p_payment_account_id: cashAccountId,
-              p_client_transaction_id: transactionReference.trim() || null,
-              p_notes: enhancedNotes
-            });
-            result = rpcResult;
-            } else {
-            // Credit sale (customer debit) or credit purchase (supplier credit) — direct ledger entry using production schema
-            // We need to debit AR (customer) or expense, and credit revenue or AP (no cash moves)
-            const debitAccountId = partyType === 'customer' ? arAccountId : expenseAccountId;
-            const creditAccountId = partyType === 'customer' ? revenueAccountId : apAccountId;
-            if (!debitAccountId || !creditAccountId) {
-              setIsSubmitting(false);
-              notify(`${partyType === 'customer' ? 'AR or Revenue' : 'Expense or AP'} account not configured. Contact admin.`, 'error');
-              return;
-            }
-            // Create a ledger batch for this entry
-            const { data: batch, error: batchErr } = await supabase
-              .from('ledger_batches')
-              .insert({ store_id: storeId, source_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE', source_id: selectedParty.id, source_ref: transactionReference.trim() || null, status: 'POSTED', created_by: dbUserId })
-              .select('id')
-              .single();
-            if (batchErr || !batch) {
-              setIsSubmitting(false);
-              notify(batchErr?.message || 'Failed to create journal batch', 'error');
-              return;
-            }
-
-            // Double-entry: insert BOTH sides (debit + credit)
-            const { data: entries, error: insertErr } = await supabase
-              .from('ledger_entries')
-              .insert([
-                {
-                  // Debit side: AR (customer) or Expense (supplier)
-                  tenant_id: tenantId,
-                  store_id: storeId,
-                  batch_id: batch.id,
-                  account_id: debitAccountId,
-                  party_id: selectedParty.id,
-                  debit: amount,
-                  credit: 0,
-                  debit_amount: amount,
-                  credit_amount: 0,
-                  reference_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE',
-                  reference_id: transactionReference.trim() || null,
-                  notes: enhancedNotes,
-                  effective_date: transactionDate,
-                  created_by: dbUserId,
-                },
-                {
-                  // Credit side: Revenue (customer) or AP (supplier)
-                  tenant_id: tenantId,
-                  store_id: storeId,
-                  batch_id: batch.id,
-                  account_id: creditAccountId,
-                  party_id: partyType === 'supplier' ? selectedParty.id : null,
-                  debit: 0,
-                  credit: amount,
-                  debit_amount: 0,
-                  credit_amount: amount,
-                  reference_type: partyType === 'customer' ? 'CREDIT_SALE' : 'CREDIT_PURCHASE',
-                  reference_id: transactionReference.trim() || null,
-                  notes: enhancedNotes,
-                  effective_date: transactionDate,
-                  created_by: dbUserId,
-                }
-              ])
-              .select();
-            result = { data: entries, error: insertErr };
-          }
-
-          setIsSubmitting(false);
-          if (result.error) {
-            notify(result.error.message, 'error');
-            return;
-          }
-
-          // Refresh ledger + party balance from DB
-          fetchLedger();
-          const { data: updatedParty } = await supabase
-            .from('parties')
-            .select('current_balance')
-            .eq('id', selectedParty.id)
-            .single();
-          if (updatedParty) {
-            setParties(prev => prev.map(p =>
-              p.id === selectedParty.id
-                ? { ...p, current_balance: updatedParty.current_balance ?? 0 }
-                : p
-            ));
-          }
-
-          handleCloseModal();
-          notify('Transaction recorded successfully', 'success');
-        }} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Type *</label>
-            <select 
-              value={transactionType} 
-              onChange={e => setTransactionType(e.target.value as 'debit' | 'credit')} 
-              className="input w-full"
-            >
-              {partyType === 'customer' ? (
-                <>
-                  <option value="credit">Payment Received</option>
-                  <option value="debit">Sale / Invoice</option>
-                </>
-              ) : (
-                <>
-                  <option value="debit">Payment Made</option>
-                  <option value="credit">Purchase / Bill</option>
-                </>
-              )}
-            </select>
-          </div>
-
-          {/* Items Section */}
-          <div>
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: '4px' }}>Items</label>
-            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>Add one or more line items</p>
-            <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: 'var(--color-background-subtle)' }}>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--text-muted)' }}>Description</th>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'right', fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--text-muted)' }}>Amount (৳)</th>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--text-muted)', width: '50px' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactionItems.map((item, index) => (
-                    <tr key={item.id} style={{ borderTop: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: 'var(--space-3)' }}>
-                        <input
-                          type="text"
-                          className="input w-full"
-                          placeholder="Item description"
-                          value={item.description}
-                          onChange={e => {
-                            const newItems = [...transactionItems];
-                            newItems[index].description = e.target.value;
-                            setTransactionItems(newItems);
-                          }}
-                        />
-                      </td>
-                      <td style={{ padding: 'var(--space-3)' }}>
-                        <input
-                          type="number"
-                          className="input"
-                          style={{ width: '120px', textAlign: 'right' }}
-                          placeholder="0.00"
-                          step="0.01"
-                          min="0"
-                          value={item.amount}
-                          onChange={e => {
-                            const newItems = [...transactionItems];
-                            newItems[index].amount = e.target.value;
-                            setTransactionItems(newItems);
-                          }}
-                        />
-                      </td>
-                      <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
-                        <button
-                          type="button"
-                          className="button-outline"
-                          style={{ padding: '6px', minWidth: 'auto' }}
-                          disabled={transactionItems.length <= 1}
-                          onClick={() => {
-                            if (transactionItems.length > 1) {
-                              setTransactionItems(prev => prev.filter((_, i) => i !== index));
-                            }
-                          }}
-                          title={transactionItems.length <= 1 ? 'Must have at least one item' : 'Remove item'}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-3)' }}>
-              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                <button
-                  type="button"
-                  className="button-outline"
-                  onClick={() => setTransactionItems(prev => [...prev, { id: String(Date.now() + Math.random()), description: '', amount: '' }])}
-                >
-                  + Add Item
-                </button>
-                {inventoryItems.length > 0 && (
-                  <select
-                    className="input"
-                    value=""
-                    onChange={e => {
-                      const itemId = e.target.value;
-                      if (itemId) {
-                        const item = inventoryItems.find(i => i.id === itemId);
-                        if (item) {
-                          addInventoryItem(item);
-                        }
-                        e.target.value = '';
-                      }
-                    }}
-                    style={{ minWidth: '180px' }}
-                  >
-                    <option value="">+ From Inventory...{loadingInventory && ' Loading...'}</option>
-                    {inventoryItems.map(item => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} (৳{item.price})
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-              <div style={{ fontWeight: '700', fontSize: 'var(--font-size-lg)' }}>
-                Total: ৳ {totalAmount.toLocaleString()}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Date *</label>
-            <input 
-              type="date" 
-              value={transactionDate} 
-              onChange={e => setTransactionDate(e.target.value)} 
-              className="input w-full" 
-              required 
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Reference</label>
-            <input 
-              type="text" 
-              value={transactionReference} 
-              onChange={e => setTransactionReference(e.target.value)} 
-              className="input w-full" 
-              placeholder="Invoice #123 or Receipt #456"
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Notes</label>
-            <textarea 
-              value={transactionNote} 
-              onChange={e => setTransactionNote(e.target.value)} 
-              className="input w-full" 
-              placeholder="Additional notes..."
-              style={{ minHeight: '80px' }}
-              rows={3}
-            />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-            <button type="button" className="button-outline" onClick={handleCloseModal}>Cancel</button>
-            <button type="submit" className="button-primary" disabled={isSubmitting}>Save Transaction</button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Delete Transaction Confirmation Modal */}
-      <Modal isOpen={!!deletingEntry} onClose={() => setDeletingEntry(null)} title="Delete Transaction" size="sm">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <p style={{ color: 'var(--text-muted)' }}>
-            Are you sure you want to delete this transaction?
-          </p>
-          {deletingEntry && (
-            <div style={{ backgroundColor: 'var(--color-background-subtle)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)' }}>
-              <div><strong>Date:</strong> {format(new Date(deletingEntry.effective_date), 'MMM dd, yyyy')}</div>
-              <div><strong>Type:</strong> {deletingEntry.reference_type}</div>
-              <div><strong>Amount:</strong> ৳ {(deletingEntry.debit_amount > 0 ? deletingEntry.debit_amount : deletingEntry.credit_amount).toLocaleString()}</div>
-            </div>
-          )}
-          <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>
-            This will permanently delete the transaction and update the balance. This action cannot be undone.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-            <button type="button" className="button-outline" onClick={() => setDeletingEntry(null)} disabled={isDeleting}>Cancel</button>
-            <button
-              type="button"
-              className="button-primary"
-              style={{ backgroundColor: 'var(--color-error)', borderColor: 'var(--color-error)' }}
-              disabled={isDeleting}
-              onClick={async () => {
-                if (!deletingEntry || !selectedParty) return;
-                setIsDeleting(true);
-                
-                console.log('Deleting entry:', deletingEntry);
-                console.log('Batch ID:', deletingEntry.batch_id);
-                
-                if (!deletingEntry.batch_id) {
-                  notify('Cannot delete: missing batch ID', 'error');
-                  setIsDeleting(false);
-                  return;
-                }
-                
-                // Delete via RPC (bypasses RLS)
-                const { data: deleteResult, error } = await supabase.rpc('delete_ledger_transaction', {
-                  p_batch_id: deletingEntry.batch_id,
-                  p_party_id: selectedParty.id
-                });
-                
-                console.log('Delete RPC result:', { deleteResult, error });
-                
-                if (error) {
-                  notify(error.message, 'error');
-                  setIsDeleting(false);
-                  return;
-                }
-                
-                if (deleteResult?.status === 'error') {
-                  notify(deleteResult.message, 'error');
-                  setIsDeleting(false);
-                  return;
-                }
-                
-                // Wait for cascade
-                await new Promise(r => setTimeout(r, 500));
-                
-                // Fetch updated ledger using RPC (excludes deleted)
-                const { data: updatedEntries, error: fetchError } = await supabase.rpc('get_party_ledger', {
-                  p_party_id: selectedParty.id,
-                  p_date_from: dateFrom,
-                  p_date_to: dateTo
-                });
-                
-                console.log('Fetched entries after delete:', updatedEntries?.length);
-                
-                if (!fetchError && updatedEntries) {
-                  setLedgerEntries([...updatedEntries] as LedgerEntry[]);
-                  setRefreshKey(k => k + 1);
-                } else if (fetchError) {
-                  console.error('Fetch error after delete:', fetchError);
-                }
-                
-                // Refresh party balance
-                const { data: updatedParty } = await supabase
-                  .from('parties')
-                  .select('current_balance')
-                  .eq('id', selectedParty.id)
-                  .single();
-                if (updatedParty) {
-                  setParties(prev => prev.map(p =>
-                    p.id === selectedParty.id
-                      ? { ...p, current_balance: updatedParty.current_balance ?? 0 }
-                      : p
-                  ));
-                }
-                
-                setIsDeleting(false);
-                setDeletingEntry(null);
-                notify('Transaction deleted successfully', 'success');
-              }}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

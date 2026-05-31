@@ -22,14 +22,14 @@ export function AddUserModal({ isOpen, storeId, tenantId, onClose }: AddUserModa
   const [error, setError] = useState<string | null>(null);
 
   const createMutation = useMutation({
-    mutationFn: (user: any) => api.settings.addUser(storeId, user),
+    mutationFn: (user: unknown) => api.settings.addUser(storeId, user),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-users'] });
       setFormData({ fullName: '', email: '', password: '', role: 'cashier', pin: '' });
       setError(null);
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: { message?: string }) => {
       setError(err.message || 'Failed to add user');
     },
   });

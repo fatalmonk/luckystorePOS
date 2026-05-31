@@ -88,7 +88,7 @@ function UsersSettings({ storeId }: { storeId: string }) {
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [showAddUser, setShowAddUser] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingUser, setEditingUser] = useState<{ id: string; name?: string; full_name?: string; email?: string; role?: string; last_login?: string; last_login_at?: string } | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const { data: users, isLoading, isError, refetch } = useQuery({
     queryKey: ['settings-users', storeId],
@@ -102,17 +102,17 @@ function UsersSettings({ storeId }: { storeId: string }) {
       setDeletingUserId(null);
       notify('User deleted', 'success');
     },
-    onError: (err: any) => notify(err.message || 'Failed to delete user', 'error'),
+    onError: (err: { message?: string }) => notify(err.message || 'Failed to delete user', 'error'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => api.settings.updateUser(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: Record<string, unknown> }) => api.settings.updateUser(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-users'] });
       setEditingUser(null);
       notify('User updated', 'success');
     },
-    onError: (err: any) => notify(err.message || 'Failed to update user', 'error'),
+    onError: (err: { message?: string }) => notify(err.message || 'Failed to update user', 'error'),
   });
 
   return (
@@ -159,7 +159,7 @@ function UsersSettings({ storeId }: { storeId: string }) {
               </td>
             </tr>
           ) : (
-            users?.map((u: any) => (
+            users?.map((u: { id: string; full_name?: string; name?: string; email?: string; role: string; last_login?: string; last_login_at?: string }) => (
               <tr key={u.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                 <td style={{ padding: 'var(--space-4) 0', fontWeight: '600' }}>{u.full_name || u.name || '—'}</td>
                 <td style={{ padding: 'var(--space-4) 0' }}>{u.email || '—'}</td>
@@ -247,7 +247,7 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
       setDeletingMethodId(null);
       notify('Payment method deleted', 'success');
     },
-    onError: (err: any) => notify(err.message || 'Failed to delete payment method', 'error'),
+    onError: (err: { message?: string }) => notify(err.message || 'Failed to delete payment method', 'error'),
   });
 
   return (
@@ -276,7 +276,7 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
             action={<button className="button-primary" onClick={() => setShowAddMethod(true)}><CreditCard size={18} /> Add Method</button>}
           />
         ) : (
-          payments?.map((pm: any) => (
+          payments?.map((pm: { id: string; name: string; type?: string; is_active: boolean }) => (
             <div key={pm.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                 <div style={{ backgroundColor: 'rgba(0,0,0,0.05)', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)' }}>
@@ -342,25 +342,17 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
     queryFn: () => api.settings.getReceiptConfig(storeId),
   });
 
-  const [formData, setFormData] = useState<any>({
-    store_name: '',
-    header_text: '',
-    footer_text: ''
-  });
+  const [formData, setFormData] = useState<{ store_name: string; header_text: string; footer_text: string } | null>(null);
 
-  // Hydrate form once data is loaded
-  useEffect(() => {
-    if (config) {
-      setFormData({
-        store_name: config.store_name || '',
-        header_text: config.header_text || '',
-        footer_text: config.footer_text || ''
-      });
-    }
-  }, [config]);
+  // Derive form data from server config (only override if not yet initialized)
+  const effectiveFormData = formData ?? {
+    store_name: config?.store_name || '',
+    header_text: config?.header_text || '',
+    footer_text: config?.footer_text || ''
+  };
 
   const updateMutation = useMutation({
-    mutationFn: (newConfig: any) => api.settings.updateReceiptConfig(storeId, newConfig),
+    mutationFn: (newConfig: { store_name: string; header_text: string; footer_text: string }) => api.settings.updateReceiptConfig(storeId, newConfig),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-receipt'] });
     },
@@ -368,7 +360,7 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate(formData);
+    updateMutation.mutate(effectiveFormData);
   };
 
   if (isLoading) return <SkeletonBlock className="h-[300px] w-full" />;
@@ -386,8 +378,8 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
           <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Store Name (on receipt)</label>
           <input
             type="text"
-            value={formData.store_name}
-            onChange={e => setFormData({...formData, store_name: e.target.value})}
+            value={effectiveFormData.store_name}
+            onChange={e => setFormData({...effectiveFormData, store_name: e.target.value})}
             placeholder="Lucky Store"
             className="input w-full"
           />
@@ -396,8 +388,8 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
         <div className="form-group">
           <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Header Message</label>
           <textarea
-            value={formData.header_text}
-            onChange={e => setFormData({...formData, header_text: e.target.value})}
+            value={effectiveFormData.header_text}
+            onChange={e => setFormData({...effectiveFormData, header_text: e.target.value})}
             placeholder="Welcome to Lucky Store!"
             className="input w-full min-h-[80px]"
           />
@@ -406,8 +398,8 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
         <div className="form-group">
           <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Footer Message</label>
           <textarea
-            value={formData.footer_text}
-            onChange={e => setFormData({...formData, footer_text: e.target.value})}
+            value={effectiveFormData.footer_text}
+            onChange={e => setFormData({...effectiveFormData, footer_text: e.target.value})}
             placeholder="No returns without receipt. Thank you!"
             className="input w-full min-h-[80px]"
           />
@@ -432,21 +424,21 @@ function ReceiptSettings({ storeId }: { storeId: string }) {
   );
 }
 
-function EditUserModal({ user, isOpen, onClose, onSave, isSaving }: { user: any; isOpen: boolean; onClose: () => void; onSave: (updates: any) => void; isSaving: boolean }) {
+function EditUserModal({ user, isOpen, onClose, onSave, isSaving }: { user: { id: string; name?: string; full_name?: string; email?: string; role?: string }; isOpen: boolean; onClose: () => void; onSave: (updates: Record<string, unknown>) => void; isSaving: boolean }) {
   const [name, setName] = useState(user?.name || user?.full_name || '');
   const [role, setRole] = useState(user?.role || 'cashier');
   const [pin, setPin] = useState('');
 
   useEffect(() => {
     if (user) {
-      setName(user.name || user.full_name || '');
+      setName(user.full_name || user.name || '');
       setRole(user.role || 'cashier');
       setPin('');
     }
   }, [user]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit User">
+    <Modal isOpen={isOpen} onClose={onClose} title={`Edit User ${user?.id ?? ''}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>Email</label>

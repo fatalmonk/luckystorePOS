@@ -17,26 +17,26 @@ export const reports = {
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
       .select('qty, price, item_id')
-      .in('sale_id', sales?.map((s: any) => s.id) || []);
+      .in('sale_id', (sales as any[]).map((s) => s.id) || []);
 
     if (itemsError) throw itemsError;
 
     // Resolve item names
-    const itemIds = [...new Set(saleItems?.map((i: any) => i.item_id) || [])];
+    const itemIds = [...new Set((saleItems as any[]).map((i) => i.item_id) || [])];
     const { data: itemNames } = await supabase
       .from('items')
       .select('id, name')
-      .in('id', itemIds);
+      .in('id', itemIds as string[]);
 
-    const nameMap = new Map<any, any>(itemNames?.map((i: any) => [i.id, i.name]) || []);
+    const nameMap = new Map((itemNames as any[]).map((i) => [i.id, i.name]) || []);
 
     // Aggregate top products by quantity
-    const productMap = new Map<any, any>();
-    saleItems?.forEach((item: any) => {
+    const productMap = new Map();
+    (saleItems as any[]).forEach((item) => {
       const name = nameMap.get(item.item_id) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
-      existing.quantity += item.qty || 0;
-      existing.revenue += (item.qty || 0) * (item.price || 0);
+      existing.quantity += (item.qty || 0) as number;
+      existing.revenue += ((item.qty || 0) as number) * ((item.price || 0) as number);
       productMap.set(name, existing);
     });
 
@@ -46,17 +46,17 @@ export const reports = {
 
     // Group sales by day
     const dailyMap = new Map();
-    sales?.forEach((sale: any) => {
-      const day = sale.created_at.split('T')[0];
+    (sales as any[]).forEach((sale) => {
+      const day = (sale.created_at as string).split('T')[0];
       const existing = dailyMap.get(day) || { date: day, revenue: 0, count: 0 };
-      existing.revenue += sale.total_amount || 0;
+      existing.revenue += (sale.total_amount || 0) as number;
       existing.count += 1;
       dailyMap.set(day, existing);
     });
 
     const dailySales = Array.from(dailyMap.values()).sort((a: any, b: any) => a.date.localeCompare(b.date));
 
-    const totalRevenue = sales?.reduce((sum: number, s: any) => sum + (s.total_amount || 0), 0) || 0;
+    const totalRevenue = (sales as any[]).reduce((sum: number, s) => sum + ((s.total_amount || 0) as number), 0) || 0;
     const transactionCount = sales?.length || 0;
     const avgTicket = transactionCount > 0 ? totalRevenue / transactionCount : 0;
 
@@ -68,8 +68,8 @@ export const reports = {
     // Get items with their stock levels
     const { data: items, error: itemsError } = await supabase
       .from('items')
-      .select('id, name, sku, cost, price, is_active')
-      .eq('is_active', true);
+      .select('id, name, sku, cost, price, active')
+      .eq('active', true);
 
     if (itemsError) throw itemsError;
 
@@ -81,15 +81,15 @@ export const reports = {
 
     if (stockError) throw stockError;
 
-    const stockMap = new Map<any, any>(stockLevels?.map((s: any) => [s.item_id, s.qty]) || []);
+    const stockMap = new Map((stockLevels as any[]).map((s) => [s.item_id, s.qty]) || []);
 
     let totalValue = 0;
     let lowStockCount = 0;
     let outOfStockCount = 0;
 
-    const inventory = items?.map((item: any) => {
-      const qty = stockMap.get(item.id) || 0;
-      const value = (item.cost || 0) * qty;
+    const inventory = (items as any[])?.map((item) => {
+      const qty = stockMap.get(item.id as string) || 0;
+      const value = ((item.cost || 0) as number) * (qty as number);
       totalValue += value;
       if (qty === 0) outOfStockCount++;
       else if (qty <= 5) lowStockCount++;
@@ -104,9 +104,9 @@ export const reports = {
     }) || [];
 
     // Sort by total value descending
-    inventory.sort((a, b) => b.totalValue - a.totalValue);
+    inventory.sort((a, b) => (b.totalValue as number) - (a.totalValue as number));
 
-    return { totalValue, totalItems: items?.length || 0, lowStockCount, outOfStockCount, inventory };
+    return { totalValue, totalItems: (items as any[])?.length || 0, lowStockCount, outOfStockCount, inventory };
   },
 
   // Profit & Loss Report
@@ -121,17 +121,17 @@ export const reports = {
 
     if (salesError) throw salesError;
 
-    const grossRevenue = sales?.reduce((sum: number, s: any) => sum + (s.total_amount || 0), 0) || 0;
+    const grossRevenue = (sales as any[])?.reduce((sum: number, s) => sum + ((s.total_amount || 0) as number), 0) || 0;
 
     // Get COGS from sale_items
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
       .select('qty, cost')
-      .in('sale_id', sales?.map((s: any) => s.id) || []);
+      .in('sale_id', (sales as any[])?.map((s) => s.id) || []);
 
     if (itemsError) throw itemsError;
 
-    const cogs = saleItems?.reduce((sum: number, item: any) => sum + ((item.qty || 0) * (item.cost || 0)), 0) || 0;
+    const cogs = (saleItems as any[])?.reduce((sum: number, item) => sum + (((item.qty || 0) as number) * ((item.cost || 0) as number)), 0) || 0;
 
     // Get expenses
     const { data: expenses, error: expError } = await supabase
@@ -143,30 +143,10 @@ export const reports = {
 
     if (expError) throw expError;
 
-    const totalExpenses = expenses?.reduce((sum: number, e: any) => sum + (e.amount || 0), 0) || 0;
+    const totalExpenses = (expenses as any[])?.reduce((sum: number, e) => sum + ((e.amount || 0) as number), 0) || 0;
     const grossProfit = grossRevenue - cogs;
     const netProfit = grossProfit - totalExpenses;
 
     return { grossRevenue, cogs, grossProfit, totalExpenses, netProfit };
-  },
-
-  // Customer Analytics
-  getCustomerAnalytics: async (storeId: string, limit = 50) => {
-    const { data, error } = await supabase.rpc('get_customer_analytics', {
-      p_store_id: storeId,
-      p_limit: limit,
-    });
-    if (error) throw error;
-    return data;
-  },
-
-  // Staff Performance
-  getStaffPerformance: async (storeId: string, days = 30) => {
-    const { data, error } = await supabase.rpc('get_staff_performance', {
-      p_store_id: storeId,
-      p_days: days,
-    });
-    if (error) throw error;
-    return data;
   },
 };

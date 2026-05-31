@@ -15,7 +15,7 @@ import { useNotify } from '../../components/NotificationContext';
 interface ProductDetailDrawerProps {
   productId: string | null;
   onClose: () => void;
-  onEdit: (product: any) => void;
+  onEdit: (product: { id: string; name: string; description?: string; sku?: string; barcode?: string; price: number; cost?: number; quantity: number; category?: string; image_url?: string }) => void;
 }
 
 export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetailDrawerProps) {
@@ -44,7 +44,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
       notify('Product deactivated', 'success');
       onClose();
     },
-    onError: (err: any) => notify(err.message || 'Failed to deactivate product', 'error'),
+    onError: (err: unknown) => notify(err.message || 'Failed to deactivate product', 'error'),
   });
 
   if (!productId) return null;
@@ -124,7 +124,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
                       <td colSpan={3} className="p-3 text-center text-text-muted">Loading history...</td>
                     </tr>
                   ) : stockHistory && stockHistory.length > 0 ? (
-                    stockHistory.map((log: any) => (
+                    stockHistory.map((log: unknown) => (
                       <tr key={log.id} className="border-b border-border-light text-sm">
                         <td className="p-3">{new Date(log.created_at).toLocaleDateString()}</td>
                         <td className="p-3 font-medium">
