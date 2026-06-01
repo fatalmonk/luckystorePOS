@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
+import { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
@@ -117,6 +117,10 @@ export function InventoryListPage() {
     toggleSelectAll,
     toggleSelect,
   } = useInventoryBulkActions(storeId, tenantId, inventory);
+
+  // Stable callbacks — prevent memoized card re-renders on every parent render
+  const handleViewProduct = useCallback((item: InventoryItem) => setViewingProductId(item.id), []);
+  const handleEditProduct = useCallback((item: InventoryItem) => setEditingProduct(item), []);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -413,7 +417,7 @@ export function InventoryListPage() {
                         isHighlighted={highlightedProductId === item.id}
                         isSelected={selectedIds.has(item.id)}
                         onToggleSelect={toggleSelect}
-                        onUpdateStock={(item) => setViewingProductId(item.id)}
+                        onUpdateStock={handleViewProduct}
                         tenantId={tenantId}
                         priority={virtualRow.index === 0}
                       />
@@ -429,9 +433,9 @@ export function InventoryListPage() {
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             onSelectAll={toggleSelectAll}
-            onUpdateStock={(item) => setViewingProductId(item.id)}
-            onViewHistory={(item) => setViewingProductId(item.id)}
-            onEditProduct={(item) => setEditingProduct(item)}
+            onUpdateStock={handleViewProduct}
+            onViewHistory={handleViewProduct}
+            onEditProduct={handleEditProduct}
             onDelete={(item) => console.log('Delete', item)}
           />
         )}
