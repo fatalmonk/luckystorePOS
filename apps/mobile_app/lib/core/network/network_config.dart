@@ -16,15 +16,20 @@ class NetworkConfig {
   static const int connectionTimeout = 10;
 
   /// Default HTTP headers (use session JWT for Authorization, not anon key)
-  static Map<String, String> defaultHeaders() => {
-    'Content-Type': 'application/json',
-  };
+  static Map<String, String> defaultHeaders() {
+    final session = Supabase.instance.client.auth.currentSession;
+    return {
+      'Content-Type': 'application/json',
+      if (session?.accessToken != null) 'Authorization': 'Bearer ${session!.accessToken}',
+    };
+  }
 
   /// Get headers with current session JWT
   static Map<String, String> authHeaders() {
     final session = Supabase.instance.client.auth.currentSession;
     return {
       'Content-Type': 'application/json',
+      'apikey': supabaseAnonKey,
       if (session?.accessToken != null) 'Authorization': 'Bearer ${session!.accessToken}',
     };
   }

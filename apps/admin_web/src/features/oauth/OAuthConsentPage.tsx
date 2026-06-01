@@ -3,11 +3,19 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Shield, AppWindow, Check, X, Loader2, Info } from 'lucide-react';
 
+interface AuthDetails {
+  client: {
+    name: string;
+  };
+  redirect_uri: string;
+  scopes?: string[];
+}
+
 export function OAuthConsentPage() {
   const [searchParams] = useSearchParams();
   const authorizationId = searchParams.get('authorization_id');
 
-  const [authDetails, setAuthDetails] = useState<any>(null);
+  const [authDetails, setAuthDetails] = useState<AuthDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

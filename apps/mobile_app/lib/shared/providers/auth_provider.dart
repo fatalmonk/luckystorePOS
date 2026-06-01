@@ -60,19 +60,26 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     // Listen to auth state changes
-    _supabase.auth.onAuthStateChange.listen((data) {
-      final session = data.session;
-      if (session != null) {
-        // Keep existing status (could be cashier or manager if already verified)
-        if (_status == AuthStatus.unauthenticated) {
-          _status = AuthStatus.cashier; // Default to cashier on fresh session
+    _supabase.auth.onAuthStateChange.listen(
+      (data) {
+        final session = data.session;
+        if (session != null) {
+          // Session restored - do NOT set cashier status until PIN is verified
+          // Keep existing status only if already authenticated (manager/cashier)
+          // If unauthenticated, stay unauthenticated until PIN verification
+        } else {
+          _status = AuthStatus.unauthenticated;
+          _lastVerifiedPin = null;
         }
-      } else {
+        notifyListeners();
+      },
+      onError: (error) {
+        debugPrint('[AuthProvider] Auth state stream error: $error');
         _status = AuthStatus.unauthenticated;
         _lastVerifiedPin = null;
-      }
-      notifyListeners();
-    });
+        notifyListeners();
+      },
+    );
   }
 
   void _setStatus(AuthStatus s) {

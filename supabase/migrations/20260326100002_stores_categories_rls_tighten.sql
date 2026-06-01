@@ -6,6 +6,9 @@ BEGIN
     drop policy if exists "stores_insert_authenticated" on public.stores;
     drop policy if exists "stores_update_authenticated" on public.stores;
     drop policy if exists "stores_delete_authenticated" on public.stores;
+    drop policy if exists "stores_insert_admin_manager" on public.stores;
+    drop policy if exists "stores_update_admin_manager" on public.stores;
+    drop policy if exists "stores_delete_admin_manager" on public.stores;
 
     create policy "stores_insert_admin_manager"
       on public.stores for insert to authenticated
@@ -50,6 +53,9 @@ BEGIN
     drop policy if exists "categories_insert_authenticated" on public.categories;
     drop policy if exists "categories_update_authenticated" on public.categories;
     drop policy if exists "categories_delete_authenticated" on public.categories;
+    drop policy if exists "categories_insert_admin" on public.categories;
+    drop policy if exists "categories_update_admin" on public.categories;
+    drop policy if exists "categories_delete_admin" on public.categories;
 
     create policy "categories_insert_admin"
       on public.categories for insert to authenticated

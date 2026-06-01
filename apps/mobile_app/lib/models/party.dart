@@ -20,12 +20,20 @@ class Party {
   });
 
   factory Party.fromJson(Map<String, dynamic> json) {
-    // I23: Add null fallbacks for required fields
+    final id = json['id'] as String?;
+    if (id == null || id.isEmpty) {
+      throw AssertionError('Party id is required');
+    }
+    final name = json['name'] as String?;
+    if (name == null || name.isEmpty) {
+      throw AssertionError('Party name is required');
+    }
+
     return Party(
-      id: json['id'] as String? ?? '',
+      id: id,
       tenantId: json['tenant_id'] as String? ?? '',
       type: json['type'] as String? ?? 'customer',
-      name: json['name'] as String? ?? '',
+      name: name,
       phone: json['phone'] as String?,
       email: json['email'] as String?,
       address: json['address'] as String?,

@@ -86,18 +86,17 @@ class ProductGridItem extends StatelessWidget {
               ),
             ),
             child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                ? Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.vertical(
-                        top: AppRadius.borderLg.topLeft,
-                      ),
-                      image: DecorationImage(
-                        image: NetworkImage(item.imageUrl!),
-                        fit: BoxFit.cover,
-                        onError: (error, stackTrace) {
-                          debugPrint('Image load failed in grid: ${item.imageUrl}');
-                        },
-                      ),
+                ? ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: AppRadius.borderLg.topLeft,
+                    ),
+                    child: Image.network(
+                      item.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint('Image load failed in grid: ${item.imageUrl}');
+                        return _buildPlaceholder();
+                      },
                     ),
                   )
                 : _buildPlaceholder(),

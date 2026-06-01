@@ -86,7 +86,7 @@ class PrinterService {
             port ?? PortConfig.defaultPort,
           );
           connected = testResult.isSuccess;
-          endpoint = 'http://$ipAddress:$port/';
+          endpoint = 'http://$ipAddress:${port ?? PortConfig.defaultPort}/';
           break;
 
         case PrinterType.local:
@@ -396,7 +396,7 @@ class PrinterService {
 
   /// Update average print time
   void _updateAveragePrintTime(Duration printTime) {
-    _successfulPrints++; // Track successful prints
+    // Note: _successfulPrints is already incremented before calling this method
     _averagePrintTime = Duration(
       milliseconds: (
         (_averagePrintTime.inMilliseconds * (_successfulPrints - 1) +

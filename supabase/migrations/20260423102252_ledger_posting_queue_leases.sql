@@ -48,6 +48,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.heartbeat_ledger_worker(text);
 CREATE OR REPLACE FUNCTION public.heartbeat_ledger_worker(p_worker_id text)
 RETURNS boolean
 LANGUAGE plpgsql

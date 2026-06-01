@@ -37,27 +37,27 @@ CREATE TABLE IF NOT EXISTS public.stock_ledger (
 -- -----------------------------------------------------------------------------
 
 -- Index on store_id for filtering by store
-CREATE INDEX idx_stock_ledger_store_id ON public.stock_ledger(store_id);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_store_id ON public.stock_ledger(store_id);
 
 -- Index on product_id for filtering by product
-CREATE INDEX idx_stock_ledger_product_id ON public.stock_ledger(product_id);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_product_id ON public.stock_ledger(product_id);
 
 -- Composite index for most common query pattern: store + product + date range
-CREATE INDEX idx_stock_ledger_store_product_date 
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_store_product_date 
   ON public.stock_ledger(store_id, product_id, created_at DESC);
 
 -- Index on transaction_type for filtering by type
-CREATE INDEX idx_stock_ledger_transaction_type ON public.stock_ledger(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_transaction_type ON public.stock_ledger(transaction_type);
 
 -- Index on movement_id for deduplication lookups
-CREATE INDEX idx_stock_ledger_movement_id ON public.stock_ledger(movement_id) 
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_movement_id ON public.stock_ledger(movement_id) 
   WHERE movement_id IS NOT NULL;
 
 -- Index on created_at for time-based queries
-CREATE INDEX idx_stock_ledger_created_at ON public.stock_ledger(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_created_at ON public.stock_ledger(created_at DESC);
 
 -- GIN index on metadata for JSON queries
-CREATE INDEX idx_stock_ledger_metadata ON public.stock_ledger USING gin (metadata);
+CREATE INDEX IF NOT EXISTS idx_stock_ledger_metadata ON public.stock_ledger USING gin (metadata);
 
 -- -----------------------------------------------------------------------------
 -- 4) Add constraints
