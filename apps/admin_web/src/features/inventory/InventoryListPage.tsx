@@ -68,6 +68,28 @@ export function InventoryListPage() {
     queryFn: () => api.inventory.list(storeId),
   });
 
+  const [columnsCount, setColumnsCount] = useState(() => {
+    const w = window.innerWidth;
+    if (w >= 1536) return 5;
+    if (w >= 1280) return 4;
+    if (w >= 1024) return 3;
+    if (w >= 640) return 2;
+    return 1;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w >= 1536) setColumnsCount(5);
+      else if (w >= 1280) setColumnsCount(4);
+      else if (w >= 1024) setColumnsCount(3);
+      else if (w >= 640) setColumnsCount(2);
+      else setColumnsCount(1);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Preload first visible images after inventory loads
   useEffect(() => {
     if (!inventory?.length) return;
@@ -95,28 +117,6 @@ export function InventoryListPage() {
     toggleSelectAll,
     toggleSelect,
   } = useInventoryBulkActions(storeId, tenantId, inventory);
-
-  const [columnsCount, setColumnsCount] = useState(() => {
-    const w = window.innerWidth;
-    if (w >= 1536) return 5;
-    if (w >= 1280) return 4;
-    if (w >= 1024) return 3;
-    if (w >= 640) return 2;
-    return 1;
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w >= 1536) setColumnsCount(5);
-      else if (w >= 1280) setColumnsCount(4);
-      else if (w >= 1024) setColumnsCount(3);
-      else if (w >= 640) setColumnsCount(2);
-      else setColumnsCount(1);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -197,8 +197,6 @@ export function InventoryListPage() {
     estimateSize: () => 360,
     overscan: 1,
   });
-
-
 
   if (error) {
     return (
@@ -454,17 +452,6 @@ export function InventoryListPage() {
         }}
       />
 
-      {selectedIds.size > 0 && (
-        <BulkEditBar
-          selectedCount={selectedIds.size}
-          totalCount={inventory?.length || 0}
-          onClear={() => setSelectedIds(new Set())}
-          onUpdatePrices={() => setIsBulkPriceModalOpen(true)}
-          onUpdateStock={() => setIsBulkStockModalOpen(true)}
-          onExport={handleExportSelected}
-        />
-      )}
-
       <BulkPriceModal
         isOpen={isBulkPriceModalOpen}
         onClose={() => setIsBulkPriceModalOpen(false)}
@@ -497,6 +484,17 @@ export function InventoryListPage() {
           }
         }}
       />
+
+      {selectedIds.size > 0 && (
+        <BulkEditBar
+          selectedCount={selectedIds.size}
+          totalCount={inventory?.length || 0}
+          onClear={() => setSelectedIds(new Set())}
+          onUpdatePrices={() => setIsBulkPriceModalOpen(true)}
+          onUpdateStock={() => setIsBulkStockModalOpen(true)}
+          onExport={handleExportSelected}
+        />
+      )}
     </div>
   );
 }
