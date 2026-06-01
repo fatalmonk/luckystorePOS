@@ -160,7 +160,6 @@ export function ProductListPage() {
             categories={categories?.map((c: Category) => ({
               id: c.id,
               name: c.name || c.category,
-              {filteredProducts.map((p: Product) => {
               imageUrl: c.image_url,
               color: c.color,
               icon: c.icon,
