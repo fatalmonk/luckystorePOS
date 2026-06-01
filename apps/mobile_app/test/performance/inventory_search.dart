@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:integration_test/integration_test.dart';
 
 void main() {
@@ -21,7 +22,7 @@ void main() {
       stopwatch.stop();
       final elapsedMs = stopwatch.elapsedMilliseconds;
 
-      print('Search completed in $elapsedMs ms');
+      debugPrint('Search completed in $elapsedMs ms');
 
       expect(
         elapsedMs,
@@ -95,7 +96,7 @@ Future<void> _simulateCategoryFilter(String category, int itemCount) async {
 
 /// Simulate SKU barcode lookup
 Future<void> _simulateSkuLookup(List<String> skus, int itemCount) async {
-  for (var sku in skus) {
+  for (var _ in skus) {
     await Future.delayed(const Duration(milliseconds: 5));
   }
 }

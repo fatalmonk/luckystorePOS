@@ -27,7 +27,7 @@ class CsvImportService {
     final List<BulkPrintProduct> products = [];
     final List<CsvImportError> errors = [];
     final List<CsvImportWarning> warnings = [];
-    List<String> _headers = [];
+    List<String> headers = [];
 
     try {
       // Detect delimiter (comma or semicolon)
@@ -57,9 +57,9 @@ class CsvImportService {
       }
 
       // Detect and validate headers
-      _headers = _detectHeaders(rows);
+      headers = _detectHeaders(rows);
 
-      if (_headers.isEmpty) {
+      if (headers.isEmpty) {
         errors.add(CsvImportError(
           row: 0,
           message: 'Could not detect column headers. First row must contain column names.',
@@ -75,7 +75,7 @@ class CsvImportService {
       }
 
       // Check for required columns
-      if (!_hasRequiredColumns(_headers)) {
+      if (!_hasRequiredColumns(headers)) {
         errors.add(CsvImportError(
           row: 0,
           message: 'Required column not found: "barcode" or "sku". '
@@ -84,7 +84,7 @@ class CsvImportService {
         ));
       }
 
-      if (!_hasRequiredColumns(_headers, forName: true)) {
+      if (!_hasRequiredColumns(headers, forName: true)) {
         errors.add(CsvImportError(
           row: 0,
           message: 'Required column not found: "name" or "product_name". '
@@ -126,7 +126,7 @@ class CsvImportService {
         final row = dataRows[i];
         final rowNumber = i + 2; // +1 for header, +1 for 1-based indexing
 
-        final product = _parseRow(row, rowNumber, _headers, errors, warnings);
+        final product = _parseRow(row, rowNumber, headers, errors, warnings);
 
         if (product != null) {
           // Check for duplicate barcodes
