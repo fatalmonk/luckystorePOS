@@ -5,14 +5,14 @@ export const products = {
   list: async () => {
     const { data, error } = await supabase
       .from('items')
-      .select('*, categories(name)')
-      .eq('active', true)
+      .select('*')
+      .eq('is_active', true)
       .order('name');
     if (error) throw error;
     return data;
   },
   get: async (id: string) => {
-    const { data, error } = await supabase.from('items').select('*, categories(*)').eq('id', id).single();
+    const { data, error } = await supabase.from('items').select('*').eq('id', id).single();
     if (error) throw error;
     return data;
   },

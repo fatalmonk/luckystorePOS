@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
-import { useAnimatedNumber } from '../../hooks/useAnimatedNumber';
 
 interface AnimatedMetricProps {
   value: number;
@@ -16,17 +15,29 @@ export const AnimatedMetric: React.FC<AnimatedMetricProps> = ({
   prefix = '',
   suffix = '',
   className,
-  duration = 800,
   format = false,
 }) => {
-  const animatedValue = useAnimatedNumber(value, { duration });
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    // Only animate on data changes, skip initial mount flash
+    setIsAnimating(true);
+    const timer = setTimeout(() => setIsAnimating(false), 300);
+    return () => clearTimeout(timer);
+  }, [value]);
 
   const displayValue = format 
-    ? animatedValue.toLocaleString('en-BD', { maximumFractionDigits: 0 })
-    : animatedValue.toString();
+    ? value.toLocaleString('en-BD', { maximumFractionDigits: 0 })
+    : value.toString();
 
   return (
-    <span className={clsx('tabular-nums', className)}>
+    <span 
+      className={clsx(
+        'tabular-nums transition-all duration-300', 
+        isAnimating ? 'text-primary scale-105 inline-block' : '',
+        className
+      )}
+    >
       {prefix}{displayValue}{suffix}
     </span>
   );

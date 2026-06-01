@@ -49,15 +49,30 @@ export function ProductListPage() {
     queryFn: () => api.categories.list(),
   });
 
+  // Build a category lookup map for client-side name mapping
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categories?.forEach((c: { id: string; name?: string | null; category?: string }) => {
+      map.set(c.id, c.name || c.category || 'Unknown');
+    });
+    return map;
+  }, [categories]);
+
   const filteredProducts = useMemo(() => {
-    let filtered = products?.filter((p: Product) => {
+    // Enrich products with category names from the map
+    const enriched = (products ?? []).map((p: Product) => ({
+      ...p,
+      categories: p.category_id ? { name: categoryMap.get(p.category_id) || null } : undefined,
+    }));
+
+    let filtered = enriched.filter((p: Product) => {
       const matchesSearch =
         p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         p.barcode?.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
       return matchesSearch && matchesCategory;
-    }) ?? [];
+    });
 
     filtered = [...filtered].sort((a: Product, b: Product) => {
       switch (sortBy) {
@@ -71,7 +86,7 @@ export function ProductListPage() {
     });
 
     return filtered;
-  }, [products, debouncedSearch, sortBy, selectedCategoryId]);
+  }, [products, debouncedSearch, sortBy, selectedCategoryId, categoryMap]);
 
   const stats = useMemo(() => {
     const all = products ?? [];

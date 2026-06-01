@@ -78,3 +78,7 @@ export const ProductCardSkeletonGrid: React.FC<{ count?: number }> = ({ count = 
     </div>
   );
 };
+
+export const SkeletonBlock: React.FC<{ className?: string }> = ({ className }) => {
+  return <div className={clsx('bg-background-subtle animate-pulse rounded', className)} />;
+};

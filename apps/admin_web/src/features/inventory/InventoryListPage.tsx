@@ -1,25 +1,28 @@
-import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, DollarSign, LayoutGrid, List as ListIcon, Download } from 'lucide-react';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown } from 'lucide-react';
+import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
 import { ProductUpdateDrawer } from './ProductUpdateDrawer';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
-import { DataTable, Column } from '../../components/data-display/DataTable';
 import { Card } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
-import { ProductCardSkeletonGrid } from '../../components/Skeleton';
+import { ProductCardSkeletonGrid, SkeletonBlock } from '../../components/Skeleton';
 import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
 import { InventoryListTable } from '../../components/inventory/InventoryListTable';
 import { InventoryProductCard } from './InventoryProductCard';
+import { BulkEditBar } from '../../components/inventory/BulkEditBar';
+import { BulkPriceModal } from '../../components/inventory/BulkPriceModal';
+import { BulkStockModal } from '../../components/inventory/BulkStockModal';
+import { BarcodeScannerModal } from '../../components/inventory/BarcodeScannerModal';
+import { useInventoryBulkActions } from '../../hooks/useInventoryBulkActions';
 
 interface InventoryItem {
   id: string;
@@ -33,26 +36,80 @@ interface InventoryItem {
   mrp?: number;
   category_id?: string;
   image_url?: string;
+  barcode?: string;
+  last_purchased_date?: string;
 }
 
 export function InventoryListPage() {
   const { storeId, tenantId } = useAuth();
+  const { notify } = useNotify();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => window.innerWidth >= 1024 ? 'list' : 'grid');
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
+  
+  // Advanced Sorting
+  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc'>('name-asc');
+  
+  // Modal Open States
+  const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
+  const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
+  const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', storeId],
     queryFn: () => api.inventory.list(storeId),
   });
 
+  const {
+    selectedIds,
+    setSelectedIds,
+    bulkStockMutation,
+    bulkPriceMutation,
+    handleExportSelected,
+    toggleSelectAll,
+    toggleSelect,
+  } = useInventoryBulkActions(storeId, tenantId, inventory);
+
+  const [columnsCount, setColumnsCount] = useState(() => {
+    const w = window.innerWidth;
+    if (w >= 1536) return 5;
+    if (w >= 1280) return 4;
+    if (w >= 1024) return 3;
+    if (w >= 640) return 2;
+    return 1;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w >= 1536) setColumnsCount(5);
+      else if (w >= 1280) setColumnsCount(4);
+      else if (w >= 1024) setColumnsCount(3);
+      else if (w >= 640) setColumnsCount(2);
+      else setColumnsCount(1);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => api.categories.list(),
   });
+
+  const enrichedCategories = useMemo(() => {
+    return categories?.map((c: any) => ({
+      id: c.id,
+      name: c.name || c.category || '',
+      itemCount: inventory?.filter((p: InventoryItem) => p.category_id === c.id).length ?? 0,
+      imageUrl: c.image_url || undefined,
+      color: c.color || undefined,
+      icon: c.icon || undefined,
+    })) ?? [];
+  }, [categories, inventory]);
 
   const filteredItems = useMemo(() => {
     const filtered = inventory?.filter((p: InventoryItem) => {
@@ -62,8 +119,35 @@ export function InventoryListPage() {
       const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
       return matchesSearch && matchesCategory;
     }) ?? [];
-    return filtered;
-  }, [inventory, debouncedSearch, selectedCategoryId]);
+
+    return [...filtered].sort((a, b) => {
+      const marginA = a.cost && a.price ? ((a.price - a.cost) / a.price) : 0;
+      const marginB = b.cost && b.price ? ((b.price - b.cost) / b.price) : 0;
+      const valueA = (a.price || 0) * a.current_qty;
+      const valueB = (b.price || 0) * b.current_qty;
+
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'stock-asc':
+          return a.current_qty - b.current_qty;
+        case 'stock-desc':
+          return b.current_qty - a.current_qty;
+        case 'margin-asc':
+          return marginA - marginB;
+        case 'margin-desc':
+          return marginB - marginA;
+        case 'value-asc':
+          return valueA - valueB;
+        case 'value-desc':
+          return valueB - valueA;
+        default:
+          return 0;
+      }
+    });
+  }, [inventory, debouncedSearch, selectedCategoryId, sortBy]);
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
@@ -74,126 +158,24 @@ export function InventoryListPage() {
     return { total, lowStock, outOfStock, totalValue };
   }, [inventory]);
 
-  const columns: Column<InventoryItem>[] = [
-    {
-      header: 'Product',
-      accessor: 'name',
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-background-subtle flex items-center justify-center overflow-hidden border border-border-default flex-shrink-0">
-            {row.image_url ? (
-              <img src={row.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <Package size={18} className="text-text-muted opacity-50" />
-            )}
-          </div>
-          <div>
-            <div className="font-semibold text-text-primary">{row.name}</div>
-            <div className="text-xs text-text-muted">SKU: {row.sku || 'N/A'}</div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'Current Stock',
-      accessor: 'current_qty',
-      render: (val) => (
-        <span className={`text-lg font-bold font-mono ${(val as number) <= 5 ? 'text-danger' : 'text-text-primary'}`}>
-          {val as number}
-        </span>
-      ),
-    },
-    {
-      header: 'Status',
-      accessor: 'reorder_status',
-      render: (val) => {
-        const status = val as string;
-        let variant: 'success' | 'warning' | 'danger' = 'success';
-        if (status === 'LOW') variant = 'warning';
-        if (status === 'OUT') variant = 'danger';
-        return (
-          <Badge variant={variant} className="font-bold px-2 py-0.5">
-            {status}
-          </Badge>
-        );
-      },
-    },
-    {
-      header: 'Retail',
-      accessor: 'price',
-      render: (_, row) => (
-        <div className="font-mono text-text-primary">
-          <span>৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-          {row.mrp && row.mrp > 0 && (
-            <span className="block text-xs text-text-muted">MRP: ৳{row.mrp}</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: 'Cost',
-      accessor: 'cost',
-      render: (val) => (
-        <span className="font-mono text-text-muted text-sm">
-          ৳{(val as number || 0).toFixed(2)}
-        </span>
-      ),
-    },
-    {
-      header: 'Margin',
-      accessor: 'cost',
-      render: (_, row) => {
-        const cost = row.cost || 0;
-        const price = row.price || 0;
-        const margin = cost > 0 ? ((price - cost) / price * 100) : 0;
-        return (
-          <span className="font-mono text-xs ${margin > 0 ? 'text-success' : 'text-text-muted'}">
-            {margin > 0 ? `+${margin.toFixed(0)}%` : '-'}
-          </span>
-        );
-      },
-    },
-    {
-      header: 'Stock Value',
-      accessor: 'price',
-      render: (_, row) => (
-        <div className="text-right">
-          <div className="font-mono text-text-primary text-sm">
-            ৳{((row.price || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-          </div>
-          <div className="text-[10px] text-text-muted">
-            cost: ৳{((row.cost || 0) * row.current_qty).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'Last Updated',
-      accessor: 'last_updated',
-      render: (val) => (
-        <span className="text-text-muted">
-          {val ? formatDistanceToNow(new Date(val as string)) + ' ago' : 'Never'}
-        </span>
-      ),
-    },
-    {
-      header: 'Actions',
-      accessor: 'id',
-      align: 'right',
-      render: (_, row) => (
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={(e) => {
-            e.stopPropagation();
-            setAdjustingProduct(row);
-          }}
-        >
-          Update
-        </Button>
-      ),
-    },
-  ];
+  const gridScrollRef = useRef<HTMLDivElement>(null);
+
+  const chunkedItems = useMemo(() => {
+    const chunks: InventoryItem[][] = [];
+    for (let i = 0; i < filteredItems.length; i += columnsCount) {
+      chunks.push(filteredItems.slice(i, i + columnsCount));
+    }
+    return chunks;
+  }, [filteredItems, columnsCount]);
+
+  const gridVirtualizer = useVirtualizer({
+    count: chunkedItems.length,
+    getScrollElement: () => gridScrollRef.current,
+    estimateSize: () => 360,
+    overscan: 3,
+  });
+
+
 
   if (error) {
     return (
@@ -210,12 +192,31 @@ export function InventoryListPage() {
   }
 
   return (
-    <div className="inventory-container">
+    <div className="inventory-container flex flex-col h-full">
       <PageHeader
         title="Stock Inventory"
-        subtitle="Monitor and adjust stock levels."
+        subtitle={
+          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm font-medium">
+            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <Package size={14} className="text-primary" />
+              <AnimatedMetric value={stats.total} /> SKUs
+            </span>
+            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <AlertTriangle size={14} className="text-warning-dark" />
+              <AnimatedMetric value={stats.lowStock} /> Low
+            </span>
+            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <TrendingDown size={14} className="text-danger" />
+              <AnimatedMetric value={stats.outOfStock} /> Out
+            </span>
+            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <Wallet size={14} className="text-success-dark" />
+              <AnimatedMetric value={stats.totalValue} format prefix="৳" /> Value
+            </span>
+          </div>
+        }
         actions={
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button
               variant="secondary"
               icon={<Download size={18} />}
@@ -232,12 +233,13 @@ export function InventoryListPage() {
                 }));
                 downloadCSV(rows, `inventory-${new Date().toISOString().split('T')[0]}.csv`);
               }}
+              className="hidden sm:flex"
             >
-              Export CSV
+              Export
             </Button>
             <Link to="/inventory/history">
               <Button variant="secondary" icon={<History size={18} />}>
-                View History
+                <span className="hidden sm:inline">History</span>
               </Button>
             </Link>
             <Button variant="secondary" onClick={() => refetch()} loading={isLoading}>
@@ -245,132 +247,169 @@ export function InventoryListPage() {
             </Button>
           </div>
         }
-        className="mb-6"
+        className="mb-4"
       />
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard
-          title="Total SKUs"
-          value={<AnimatedMetric value={stats.total} duration={800} />}
-          icon={<Package size={20} />}
-          color="primary"
-        />
-        <MetricCard
-          title="Low Stock"
-          value={<AnimatedMetric value={stats.lowStock} duration={800} />}
-          icon={<AlertTriangle size={20} />}
-          color="warning"
-          badge={stats.lowStock > 0 ? 'Reorder' : undefined}
-        />
-        <MetricCard
-          title="Out of Stock"
-          value={<AnimatedMetric value={stats.outOfStock} duration={800} />}
-          icon={<TrendingDown size={20} />}
-          color="danger"
-        />
-        <MetricCard
-          title="Inventory Value"
-          value={<AnimatedMetric 
-            value={stats.totalValue} 
-            prefix="৳" 
-            duration={800} 
-            format
-          />}
-          icon={<DollarSign size={20} />}
-          color="success"
-        />
+      {/* Sticky Single Toolbar */}
+      <div 
+        className="sticky -mt-4 -mx-6 px-6 pt-4 pb-4 top-0 z-20 border-b border-border-default mb-6"
+        style={{ backgroundColor: 'var(--color-background-default)' }}
+      >
+        <div className="flex flex-col gap-3 max-w-full">
+          <CategoryThumbnailGrid
+            categories={enrichedCategories}
+            selectedId={selectedCategoryId}
+            onSelect={setSelectedCategoryId}
+          />
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+              <input
+                type="text"
+                placeholder="Search inventory by name or SKU..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <div className="relative">
+                <ArrowUpDown size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="pl-9 pr-8 py-2 rounded-md border border-border-default bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer shadow-sm"
+                >
+                  <option value="name-asc">Name A→Z</option>
+                  <option value="name-desc">Name Z→A</option>
+                  <option value="stock-asc">Stock ↑ Low→High</option>
+                  <option value="stock-desc">Stock ↓ High→Low</option>
+                  <option value="margin-asc">Margin ↑ Low→High</option>
+                  <option value="margin-desc">Margin ↓ High→Low</option>
+                  <option value="value-asc">Value ↑ Low→High</option>
+                  <option value="value-desc">Value ↓ High→Low</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+              
+              <Button
+                variant="secondary"
+                icon={<ScanLine size={18} />}
+                onClick={() => setIsBarcodeModalOpen(true)}
+                title="Scan Barcode"
+                className="shadow-sm"
+              >
+                <span className="hidden sm:inline">Scan</span>
+              </Button>
+              
+              <div className="flex rounded-md border border-border-default overflow-hidden flex-shrink-0 shadow-sm">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-2 flex items-center justify-center transition-colors ${
+                    viewMode === 'grid' ? 'bg-primary text-primary-on' : 'bg-surface text-text-secondary hover:bg-background-subtle'
+                  }`}
+                  title="Grid View"
+                >
+                  <LayoutGrid size={16} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-2 flex items-center justify-center transition-colors ${
+                    viewMode === 'list' ? 'bg-primary text-primary-on' : 'bg-surface text-text-secondary hover:bg-background-subtle'
+                  }`}
+                  title="List View"
+                >
+                  <ListIcon size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Category Thumbnails */}
-      <Card className="mb-6" padding="md">
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">
-          Filter by Category
-        </h3>
-        <CategoryThumbnailGrid
-          categories={categories?.map((c: unknown) => ({
-            id: c.id,
-            name: c.name || c.category,
-            itemCount: inventory?.filter((p: unknown) => p.category_id === c.id).length ?? 0,
-            imageUrl: c.image_url,
-            color: c.color,
-            icon: c.icon,
-          })) ?? []}
-          selectedId={selectedCategoryId}
-          onSelect={setSelectedCategoryId}
-        />
-      </Card>
-
-      {/* Search + View Toggle */}
-      <Card className="mb-6" padding="none">
-        <div className="p-4 flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-            <input
-              type="text"
-              placeholder="Filter by product name or SKU..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          <div className="flex rounded-md border border-border-default overflow-hidden">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-3 py-2 flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                viewMode === 'grid'
-                  ? 'bg-primary text-primary-on'
-                  : 'bg-surface text-text-secondary hover:bg-background-subtle'
-              }`}
+      {/* Content Area */}
+      <div className="flex-1 min-h-0">
+        {isLoading ? (
+          viewMode === 'grid' ? (
+            <ProductCardSkeletonGrid count={10} />
+          ) : (
+            <div className="p-4 space-y-4 bg-surface border border-border-default rounded-xl">
+              {Array(5).fill(0).map((_, i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  <SkeletonBlock className="w-[28%] h-6" />
+                  <SkeletonBlock className="w-[18%] h-6" />
+                  <SkeletonBlock className="w-[12%] h-6" />
+                  <SkeletonBlock className="w-[12%] h-6" />
+                  <SkeletonBlock className="w-[12%] h-6" />
+                  <SkeletonBlock className="w-[18%] h-6 ml-auto" />
+                </div>
+              ))}
+            </div>
+          )
+        ) : filteredItems.length === 0 ? (
+          <Card className="p-8 text-center text-text-muted">
+            No inventory items found. Add products to start tracking stock levels.
+          </Card>
+        ) : viewMode === 'grid' ? (
+          <div
+            ref={gridScrollRef}
+            className="overflow-y-auto pr-2 scrollbar-thin"
+            style={{ height: 'calc(100vh - 350px)' }}
+          >
+            <div
+              style={{
+                height: `${gridVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
             >
-              <LayoutGrid size={16} />
-              Grid
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-2 flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-primary text-primary-on'
-                  : 'bg-surface text-text-secondary hover:bg-background-subtle'
-              }`}
-            >
-              <ListIcon size={16} />
-              List
-            </button>
+              {gridVirtualizer.getVirtualItems().map((virtualRow) => {
+                const rowItems = chunkedItems[virtualRow.index];
+                if (!rowItems) return null;
+                return (
+                  <div
+                    key={virtualRow.index}
+                    className="absolute top-0 left-0 w-full grid gap-4"
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      gridTemplateColumns: `repeat(${columnsCount}, minmax(0, 1fr))`,
+                      paddingBottom: '16px',
+                    }}
+                  >
+                    {rowItems.map((item) => (
+                      <InventoryProductCard
+                        key={item.id}
+                        item={item}
+                        isHighlighted={highlightedProductId === item.id}
+                        isSelected={selectedIds.has(item.id)}
+                        onToggleSelect={toggleSelect}
+                        onUpdateStock={setAdjustingProduct}
+                        tenantId={tenantId}
+                      />
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </Card>
-
-      {/* Content - Product Shelf Grid or List Table */}
-      {isLoading && viewMode === 'grid' ? (
-        <ProductCardSkeletonGrid count={10} />
-      ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mb-6">
-          {filteredItems.map((item: InventoryItem) => (
-            <InventoryProductCard
-              key={item.id}
-              item={item}
-              isHighlighted={highlightedProductId === item.id}
-              onUpdateStock={setAdjustingProduct}
-              tenantId={tenantId}
-            />
-          ))}
-        </div>
-      ) : viewMode === 'list' && !isLoading ? (
-        <InventoryListTable
-          items={filteredItems}
-          onUpdateStock={setAdjustingProduct}
-          onViewHistory={(item) => console.log('View history', item)}
-          onEditProduct={(item) => console.log('Edit', item)}
-          onDelete={(item) => console.log('Delete', item)}
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={filteredItems}
-          emptyMessage="No inventory items found. Add products to start tracking stock levels."
-        />
-      )}
+        ) : (
+          <InventoryListTable
+            items={filteredItems}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onSelectAll={toggleSelectAll}
+            onUpdateStock={setAdjustingProduct}
+            onViewHistory={(item) => console.log('View history', item)}
+            onEditProduct={(item) => console.log('Edit', item)}
+            onDelete={(item) => console.log('Delete', item)}
+          />
+        )}
+      </div>
 
       <ProductUpdateDrawer
         product={adjustingProduct}
@@ -384,6 +423,50 @@ export function InventoryListPage() {
           const updated = inventory?.find((p: InventoryItem) => p.name === productName);
           if (updated) {
             setHighlightedProductId(updated.id);
+          }
+        }}
+      />
+
+      {selectedIds.size > 0 && (
+        <BulkEditBar
+          selectedCount={selectedIds.size}
+          totalCount={inventory?.length || 0}
+          onClear={() => setSelectedIds(new Set())}
+          onUpdatePrices={() => setIsBulkPriceModalOpen(true)}
+          onUpdateStock={() => setIsBulkStockModalOpen(true)}
+          onExport={handleExportSelected}
+        />
+      )}
+
+      <BulkPriceModal
+        isOpen={isBulkPriceModalOpen}
+        onClose={() => setIsBulkPriceModalOpen(false)}
+        onSubmit={(data) => {
+          bulkPriceMutation.mutate(data, { onSuccess: () => setIsBulkPriceModalOpen(false) });
+        }}
+        selectedCount={selectedIds.size}
+      />
+
+      <BulkStockModal
+        isOpen={isBulkStockModalOpen}
+        onClose={() => setIsBulkStockModalOpen(false)}
+        onSubmit={(data) => {
+          bulkStockMutation.mutate(data, { onSuccess: () => setIsBulkStockModalOpen(false) });
+        }}
+        selectedCount={selectedIds.size}
+      />
+
+      <BarcodeScannerModal
+        isOpen={isBarcodeModalOpen}
+        onClose={() => setIsBarcodeModalOpen(false)}
+        onScan={(barcode) => {
+          const found = inventory?.find((p: InventoryItem) => p.sku === barcode || (p as any).barcode === barcode);
+          if (found) {
+            setSearchTerm(barcode);
+            setAdjustingProduct(found);
+            setHighlightedProductId(found.id);
+          } else {
+            notify(`Product with barcode ${barcode} not found`, 'error');
           }
         }}
       />

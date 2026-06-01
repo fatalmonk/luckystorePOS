@@ -13,23 +13,34 @@ export function Layout() {
   const isPosPage = location.pathname.includes('/pos');
   
   const [sidebarHidden, setSidebarHidden] = useState(() => window.innerWidth < 768);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(isPosPage);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (isPosPage) return true;
+    const width = window.innerWidth;
+    return width >= 768 && width < 1024;
+  });
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const width = window.innerWidth;
+      const mobile = width < 768;
       setIsMobile(mobile);
-      if (mobile && !sidebarHidden) {
-        setSidebarHidden(true);
-      }
       if (mobile) {
+        if (!sidebarHidden) {
+          setSidebarHidden(true);
+        }
         setSidebarCollapsed(false);
+      } else {
+        if (width >= 768 && width < 1024) {
+          setSidebarCollapsed(true);
+        } else if (width >= 1024 && !isPosPage) {
+          setSidebarCollapsed(false);
+        }
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarHidden]);
+  }, [sidebarHidden, isPosPage]);
 
   // Force sidebar collapse when entering POS mode (desktop)
   useEffect(() => {
