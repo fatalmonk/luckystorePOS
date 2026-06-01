@@ -50,9 +50,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
         (m) => m.type == 'cash',
         orElse: () => pos.paymentMethods.first,
       );
-      // Auto-set payment method in provider to trigger correct pricing (MRP vs Discounted)
-      pos.setSelectedPaymentMethodId(_selectedMethod?.id);
     }
+    // Auto-set payment method deferred to post-frame to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      pos.setSelectedPaymentMethodId(_selectedMethod?.id);
+    });
     // Seed numpad with the total so cashier just has to press CHARGE/COMPLETE for exact
     _numpadValue = pos.totalAmount.toStringAsFixed(0);
 

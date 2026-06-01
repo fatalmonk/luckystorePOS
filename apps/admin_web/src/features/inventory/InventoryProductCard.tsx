@@ -1,10 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { clsx } from 'clsx';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
-import { useNotify } from '../../components/NotificationContext';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
 
 interface InventoryItem {
   id: string;
@@ -25,6 +21,8 @@ interface InventoryProductCardProps {
   isHighlighted?: boolean;
   onUpdateStock: (item: InventoryItem) => void;
   tenantId?: string;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
 // Currency formatting
@@ -78,59 +76,16 @@ const PackageIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenantId }: InventoryProductCardProps) {
-  const queryClient = useQueryClient();
-  const { notify } = useNotify();
-  const [isEditingPrice, setIsEditingPrice] = useState(false);
-  const [priceValue, setPriceValue] = useState(String(item.price ?? 0));
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Focus input when editing starts
-  useEffect(() => {
-    if (isEditingPrice) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [isEditingPrice]);
-
-  const priceMutation = useMutation({
-    mutationFn: async (newPrice: number) => {
-      return api.products.update(item.id, { price: newPrice }, tenantId);
-    },
-    onSuccess: () => {
-      notify(`Price updated for ${item.name}`, 'success');
-      if (tenantId) {
-        queryClient.invalidateQueries({ queryKey: ['inventory', tenantId] });
-      }
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      setIsEditingPrice(false);
-    },
-    onError: (err: any) => {
-      notify(err.message || 'Failed to update price', 'error');
-    },
-  });
-
-  const handleSavePrice = () => {
-    const val = parseFloat(priceValue);
-    if (isNaN(val) || val < 0) {
-      notify('Invalid price', 'error');
-      return;
-    }
-    priceMutation.mutate(val);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSavePrice();
-    } else if (e.key === 'Escape') {
-      setIsEditingPrice(false);
-      setPriceValue(String(item.price ?? 0));
-    }
-  };
-
+export const InventoryProductCard = React.memo(function InventoryProductCard({ 
+  item, 
+  isHighlighted, 
+  onUpdateStock, 
+  tenantId, 
+  isSelected, 
+  onToggleSelect 
+}: InventoryProductCardProps) {
   const margin = calcMargin(item.cost, item.price);
   const hasMrp = typeof item.mrp === 'number' && item.mrp > 0;
-  const hasCost = typeof item.cost === 'number' && item.cost > 0;
   const priceError = hasMrp && (item.price || 0) > (item.mrp || 0);
   const lowMargin = margin !== null && margin < 10;
 
@@ -143,12 +98,24 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
         "overflow-hidden group cursor-pointer transition-all duration-300 border",
         isHighlighted && "ring-2 ring-emerald-500 ring-offset-2"
       )}
+      onClick={() => onUpdateStock(item)}
     >
       {/* Image / Status */}
-      <div 
-        className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden"
-        onClick={() => onUpdateStock(item)}
-      >
+      <div className="relative w-full aspect-square bg-background-subtle flex items-center justify-center overflow-hidden">
+        {/* Selection Checkbox */}
+        {onToggleSelect && (
+          <div 
+            className="absolute top-2 left-2 z-10 bg-white/80 rounded-sm backdrop-blur-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelect(item.id)}
+              className="w-5 h-5 rounded border-border-default text-primary focus:ring-primary cursor-pointer drop-shadow-md bg-white m-0.5 block"
+            />
+          </div>
+        )}
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -183,16 +150,6 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
           >
             {item.reorder_status}
           </div>
-          {/* Minimized Update Stock action icon */}
-          <button
-            onClick={(e) => { e.stopPropagation(); onUpdateStock(item); }}
-            className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
-            style={{ color: 'var(--color-primary-default)' }}
-            title="Update Stock"
-            aria-label="Update Stock"
-          >
-            <EditIcon className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
@@ -225,54 +182,12 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
                   {formatMRP(item.mrp)}
                 </div>
               )}
-              {!isEditingPrice ? (
-                <button
-                  onClick={() => {
-                    setPriceValue(String(item.price ?? 0));
-                    setIsEditingPrice(true);
-                  }}
-                  className="group/edit flex items-center gap-1"
-                  title="Click to edit selling price"
-                >
-                  <span 
-                    className="text-lg font-bold tabular-nums transition-colors px-2 py-0.5 rounded-md"
-                    style={{ backgroundColor: 'var(--color-primary-subtle)', color: 'var(--color-primary-default)' }}
-                  >
-                    {formatSelling(item.price)}
-                  </span>
-                  <EditIcon className="w-3 h-3 text-text-muted opacity-0 group-hover/edit:opacity-100 transition-opacity" />
-                </button>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <input
-                    ref={inputRef}
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={priceValue}
-                    onChange={(e) => setPriceValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={handleSavePrice}
-                    className="w-20 px-1.5 py-0.5 text-base font-bold border border-primary rounded tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                  <button
-                    onClick={handleSavePrice}
-                    disabled={priceMutation.isPending}
-                    className="text-xs text-success hover:text-success-hover"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditingPrice(false);
-                      setPriceValue(String(item.price ?? 0));
-                    }}
-                    className="text-xs text-danger hover:text-danger-hover"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
+              <span 
+                className="text-lg font-bold tabular-nums transition-colors px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: 'var(--color-primary-subtle)', color: 'var(--color-primary-default)' }}
+              >
+                {formatSelling(item.price)}
+              </span>
             </div>
             
             {/* Margin badge */}
@@ -317,4 +232,4 @@ export function InventoryProductCard({ item, isHighlighted, onUpdateStock, tenan
       </div>
     </Card>
   );
-}
+});

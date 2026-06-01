@@ -53,12 +53,12 @@ function getCategoryDisplay(name: string): { icon: string; color: string } {
   return { icon, color };
 }
 
-export const CategoryThumbnailGrid: React.FC<CategoryThumbnailGridProps> = ({
+export const CategoryThumbnailGrid = React.memo(function CategoryThumbnailGrid({
   categories,
   selectedId,
   onSelect,
   className,
-}) => {
+}: CategoryThumbnailGridProps) {
   const enriched = useMemo(() => {
     return categories.map((c) => {
       const display = getCategoryDisplay(c.name);
@@ -72,36 +72,19 @@ export const CategoryThumbnailGrid: React.FC<CategoryThumbnailGridProps> = ({
 
   return (
     <div className={clsx('w-full', className)}>
-      <div className="flex items-center gap-3 overflow-x-auto pb-3 scrollbar-hide">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {/* All button */}
         <button
           onClick={() => onSelect(null)}
           className={clsx(
-            'flex-shrink-0 flex flex-col items-center justify-center gap-2',
-            'w-24 h-28 rounded-xl border-2 transition-all duration-200',
+            'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors whitespace-nowrap',
             selectedId === null || selectedId === undefined
-              ? 'border-primary bg-primary/10 shadow-level-2 scale-105'
-              : 'border-border-default bg-surface hover:border-primary/40 hover:shadow-level-1'
+              ? 'border-primary bg-primary text-primary-on'
+              : 'border-border-default bg-surface hover:bg-background-subtle text-text-secondary'
           )}
         >
-          <div
-            className={clsx(
-              'w-12 h-12 rounded-full flex items-center justify-center text-2xl',
-              selectedId === null || selectedId === undefined
-                ? 'bg-primary text-primary-on'
-                : 'bg-background-subtle text-text-secondary'
-            )}
-          >
-            📦
-          </div>
-          <span
-            className={clsx(
-              'text-xs font-semibold text-center leading-tight px-1',
-              selectedId === null || selectedId === undefined ? 'text-primary' : 'text-text-secondary'
-            )}
-          >
-            All
-          </span>
+          <span>📦</span>
+          <span>All Items</span>
         </button>
 
         {enriched.map((cat) => (
@@ -109,39 +92,20 @@ export const CategoryThumbnailGrid: React.FC<CategoryThumbnailGridProps> = ({
             key={cat.id}
             onClick={() => onSelect(cat.id)}
             className={clsx(
-              'flex-shrink-0 flex flex-col items-center justify-center gap-2',
-              'w-24 h-28 rounded-xl border-2 transition-all duration-200',
+              'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors whitespace-nowrap',
               selectedId === cat.id
-                ? 'border-primary bg-primary/10 shadow-level-2 scale-105'
-                : 'border-border-default bg-surface hover:border-primary/40 hover:shadow-level-1'
+                ? 'border-primary bg-primary text-primary-on'
+                : 'border-border-default bg-surface hover:bg-background-subtle text-text-secondary'
             )}
           >
-            {cat.imageUrl ? (
-              <img
-                src={cat.imageUrl}
-                alt={cat.name}
-                className="w-12 h-12 rounded-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
-                style={{ backgroundColor: cat.color + '20', color: cat.color }}
-              >
-                {cat.icon}
-              </div>
-            )}
-            <span
-              className={clsx(
-                'text-xs font-semibold text-center leading-tight px-1 truncate w-full',
-                selectedId === cat.id ? 'text-primary' : 'text-text-secondary'
-              )}
-            >
-              {cat.name}
-            </span>
+            <span>{cat.icon}</span>
+            <span>{cat.name}</span>
             {typeof cat.itemCount === 'number' && (
-              <span className="text-[10px] text-text-muted font-medium">
-                {cat.itemCount} items
+              <span className={clsx(
+                'ml-1 text-[10px] px-1.5 py-0.5 rounded-full',
+                selectedId === cat.id ? 'bg-black/20 text-white' : 'bg-background text-text-muted'
+              )}>
+                {cat.itemCount}
               </span>
             )}
           </button>
@@ -149,4 +113,4 @@ export const CategoryThumbnailGrid: React.FC<CategoryThumbnailGridProps> = ({
       </div>
     </div>
   );
-};
+});
