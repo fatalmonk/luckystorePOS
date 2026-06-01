@@ -41,12 +41,13 @@ class _SupplierLedgerScreenState extends State<SupplierLedgerScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final tenantId = auth.appUser?.tenantId;
+      final storeId = auth.appUser?.storeId;
 
-      if (tenantId == null) {
-        throw Exception('Tenant context not found. Please log in again.');
+      if (tenantId == null || storeId == null) {
+        throw Exception('Store context not found. Please log in again.');
       }
 
-      // Fetch suppliers with outstanding balances
+      // Fetch suppliers from purchases for this store to align with purchase history scope
       final response = await _supabase
           .from('parties')
           .select('''

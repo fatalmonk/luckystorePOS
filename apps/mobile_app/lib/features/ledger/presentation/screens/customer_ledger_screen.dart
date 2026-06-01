@@ -61,22 +61,30 @@ class _CustomerLedgerScreenState extends State<CustomerLedgerScreen> {
       }) as List<dynamic>;
 
       // 3. Merge them: use parties as the base, add balance_due from aging
+      // Filter to credit-only customers (those with outstanding balance)
       final agingMap = {
         for (var item in agingResponse)
           item['party_id'] ?? item['customer_id']: item
       };
 
-      final mergedCustomers = (partiesResponse as List<dynamic>).map((party) {
-        final agingData = agingMap[party['id']];
-        return {
-          'id': party['id'],
-          'party_id': party['id'],
-          'customer_name': party['name'],
-          'phone': party['phone'],
-          'balance_due': agingData != null ? (agingData['balance_due'] as num).toDouble() : 0.0,
-          'days_overdue': agingData != null ? agingData['days_overdue'] : 0,
-        };
-      }).toList();
+      final mergedCustomers = (partiesResponse as List<dynamic>)
+          .where((party) {
+            // Only include customers with outstanding balance from aging
+            final agingData = agingMap[party['id']];
+            return agingData != null && (agingData['balance_due'] as num).toDouble() > 0;
+          })
+          .map((party) {
+            final agingData = agingMap[party['id']];
+            return {
+              'id': party['id'],
+              'party_id': party['id'],
+              'customer_name': party['name'],
+              'phone': party['phone'],
+              'balance_due': (agingData['balance_due'] as num).toDouble(),
+              'days_overdue': agingData['days_overdue'] ?? 0,
+            };
+          })
+          .toList();
 
       setState(() {
         _customers = mergedCustomers;

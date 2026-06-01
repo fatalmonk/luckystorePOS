@@ -1,4 +1,5 @@
 import '../../core/utils/result.dart';
+import '../../core/errors/exceptions.dart';
 import 'inventory_service.dart';
 import 'stock_ledger_entry.dart';
 import 'stock_ledger_repository.dart';
@@ -45,9 +46,9 @@ class InventoryRepository {
         return Failure<StockDeductionResult>((deductionResult as Failure).error);
       }
 
-      // Step 2: Log audit trail
+      // Step 2: Log audit trail (non-blocking, but handle Failure type)
       try {
-        await _auditService.forStockDeduction(
+        final auditResult = await _auditService.forStockDeduction(
           storeId: storeId,
           productId: productId,
           productName: productName,
@@ -55,6 +56,9 @@ class InventoryRepository {
           saleId: saleId,
           performedBy: performedBy,
         );
+        if (auditResult is Failure) {
+          Logger.warning('InventoryRepository: Audit log failure handled: \${(auditResult as Failure).error}');
+        }
       } catch (auditError, auditStack) {
         Logger.error('InventoryRepository: Non-fatal audit log failure during deductStock', auditError, auditStack);
       }
@@ -97,7 +101,8 @@ class InventoryRepository {
     } catch (e) {
       // I13: Distinguish network errors from actual stock shortage
       // Allow sale with warning on network error, but block on actual shortage
-      if (e.toString().contains('network') ||
+      if (e is NetworkException ||
+          e.toString().contains('network') ||
           e.toString().contains('SocketException') ||
           e.toString().contains('TimeoutException')) {
         Logger.warning(

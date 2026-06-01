@@ -59,7 +59,7 @@ class PosItem {
       shortCode:  json['short_code']  as String?,
       name:       name,
       brand:      json['brand']       as String?,
-      price:      (json['price']      as num?)?.toDouble() ?? 0.0,
+      price:      (json['price'] as num?)?.toDouble() ?? (throw AssertionError('PosItem price is required and must be a valid number')),
       mrp:        (json['mrp']        as num?)?.toDouble() ?? 0.0,
       cost:       (json['cost']       as num?)?.toDouble() ?? 0.0,
       imageUrl:   json['image_url']   as String?,
@@ -272,20 +272,37 @@ class PosSession {
   });
 
   factory PosSession.fromJson(Map<String, dynamic> json) {
-    // I21: Use DateTime.tryParse with fallback to prevent FormatException
     final openedAtStr = json['opened_at'] as String?;
-    DateTime openedAt;
-    if (openedAtStr != null) {
-      openedAt = DateTime.tryParse(openedAtStr) ?? DateTime.now();
-    } else {
-      openedAt = DateTime.now();
+    if (openedAtStr == null) {
+      throw AssertionError('PosSession opened_at is required');
+    }
+    final openedAt = DateTime.tryParse(openedAtStr);
+    if (openedAt == null) {
+      throw AssertionError('PosSession opened_at must be a valid ISO 8601 datetime');
+    }
+
+    final id = json['id'] as String?;
+    if (id == null || id.isEmpty) {
+      throw AssertionError('PosSession id is required');
+    }
+    final sessionNumber = json['session_number'] as String?;
+    if (sessionNumber == null || sessionNumber.isEmpty) {
+      throw AssertionError('PosSession session_number is required');
+    }
+    final cashierId = json['cashier_id'] as String?;
+    if (cashierId == null || cashierId.isEmpty) {
+      throw AssertionError('PosSession cashier_id is required');
+    }
+    final storeId = json['store_id'] as String?;
+    if (storeId == null || storeId.isEmpty) {
+      throw AssertionError('PosSession store_id is required');
     }
 
     return PosSession(
-      id:            json['id']             as String? ?? '',
-      sessionNumber: json['session_number'] as String? ?? '',
-      cashierId:     json['cashier_id']     as String? ?? '',
-      storeId:       json['store_id']       as String? ?? '',
+      id:            id,
+      sessionNumber: sessionNumber,
+      cashierId:     cashierId,
+      storeId:       storeId,
       openedAt:      openedAt,
     );
   }
