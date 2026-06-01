@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, Save, Plus, Minus, RotateCcw, Upload, ImageIcon } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { convertToWebP } from '../../lib/images';
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';

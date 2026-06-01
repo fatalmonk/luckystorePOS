@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 import { mapSearchItems, mapCategories } from '../mappers';
 import type { PosProduct, PosCategory, SaleResult } from '../types';
 import { createDebugLogger } from '../../debug';

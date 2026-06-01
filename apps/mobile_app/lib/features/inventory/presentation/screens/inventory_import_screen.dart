@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:csv/csv.dart';
-import 'package:excel/excel.dart' as ex;
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -51,7 +50,7 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx', 'xls'],
+        allowedExtensions: ['csv'],
         withData: true,
       );
 
@@ -69,31 +68,6 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
           final rows = const CsvToListConverter().convert(content);
           if (rows.isNotEmpty) {
             headers = rows.first.map((e) => e.toString()).toList();
-          }
-        } else {
-          final excel = ex.Excel.decodeBytes(file.bytes!);
-          for (var table in excel.tables.keys) {
-            final sheet = excel.tables[table];
-            if (sheet != null && sheet.maxColumns > 0 && sheet.rows.isNotEmpty) {
-              // Extract header row values safely
-              headers = sheet.rows.first.map((e) {
-                if (e == null || e.value == null) return '';
-                final val = e.value;
-                if (val is ex.TextCellValue) {
-                  return val.value.text ?? '';
-                } else if (val is ex.IntCellValue) {
-                  return val.value.toString();
-                } else if (val is ex.DoubleCellValue) {
-                  return val.value.toString();
-                } else if (val is ex.BoolCellValue) {
-                  return val.value.toString();
-                } else if (val is ex.FormulaCellValue) {
-                  return val.formula.toString();
-                }
-                return val.toString();
-              }).toList();
-              break;
-            }
           }
         }
 

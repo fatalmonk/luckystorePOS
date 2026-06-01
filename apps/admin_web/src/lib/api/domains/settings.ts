@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 import type { ReceiptConfigUpdateInput } from '../types';
 import type { Database } from '../../database.types';
 

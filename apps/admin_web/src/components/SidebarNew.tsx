@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import clsx from 'clsx';
+import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/AuthContext';
@@ -94,7 +94,7 @@ function useNavGroups(): NavGroup[] {
       icon: Settings,
       items: [
         { icon: Settings, label: t('nav.settings'), path: '/settings' },
-        { icon: HelpCircle, label: t('nav.helpTutorials', 'Help & Tutorials'), path: '/tutorials' },
+        { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
       ]
     }
   ];

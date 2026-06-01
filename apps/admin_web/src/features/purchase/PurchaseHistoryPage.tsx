@@ -7,6 +7,7 @@ import { MetricCard } from '../../components/data-display/MetricCard';
 import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
 import { ShoppingCart, ChevronDown, ChevronUp, Package, DollarSign, FileText } from 'lucide-react';
 import { clsx } from 'clsx';
+import { formatCurrency } from '../../lib/format';
 
 type DateFilter = 'today' | 'week' | 'month' | 'all';
 
@@ -81,7 +82,7 @@ export function PurchaseHistoryPage() {
         />
         <MetricCard
           title="Total Value"
-          value={`৳${(stats?.totalValue || 0).toLocaleString()}`}
+          value={formatCurrency(stats?.totalValue || 0)}
           icon={<DollarSign size={20} />}
           color="success"
           variant="solid"
@@ -165,8 +166,8 @@ export function PurchaseHistoryPage() {
                     <td className="px-4 py-3 font-medium">{receipt.invoice_number || 'PO-' + receipt.id.slice(0, 8)}</td>
                     <td className="px-4 py-3">{receipt.parties?.name || 'Unknown Supplier'}</td>
                     <td className="px-4 py-3 text-text-muted">{receipt.invoice_number || '-'}</td>
-                    <td className="px-4 py-3 text-right font-medium">৳{(receipt.invoice_total || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right">৳{(receipt.amount_paid || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-medium">{formatCurrency(receipt.invoice_total || 0)}</td>
+                    <td className="px-4 py-3 text-right">{formatCurrency(receipt.amount_paid || 0)}</td>
                     <td className="px-4 py-3">
                       <span className={clsx(
                         'px-2 py-1 rounded-full text-xs font-medium',
@@ -216,8 +217,7 @@ export function PurchaseHistoryPage() {
                                   <td className="py-2 text-text-muted">{item.items?.sku || '-'}</td>
                                   <td className="py-2 text-right">{item.quantity}</td>
                                   <td className="py-2 text-right">৳{item.unit_cost}</td>
-                                  <td className="py-2 text-right font-medium">
-                                    ৳{(item.quantity * item.unit_cost).toLocaleString()}
+                                  <td className="py-2 text-right font-medium">{formatCurrency(item.quantity * item.unit_cost)}
                                   </td>
                                 </tr>
                               ))}

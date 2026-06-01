@@ -9,6 +9,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { Drawer } from '../../components/ui/Drawer';
 import { format, startOfMonth, isWithinInterval, endOfMonth } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../../lib/format';
 
 const incomeFormSchema = z.object({
   date: z.string().min(1, 'Date is required'),
@@ -135,7 +136,7 @@ export const OtherIncomePage: React.FC = () => {
           </div>
           <div>
             <p className="text-xs text-warm-dim font-bold uppercase tracking-wider">This Month's Other Income</p>
-            <h3 className="text-2xl font-black text-warm-fg mt-1">৳ {totalThisMonth.toLocaleString()}</h3>
+            <h3 className="text-2xl font-black text-warm-fg mt-1">{formatCurrency(totalThisMonth)}</h3>
           </div>
         </div>
 
@@ -145,7 +146,7 @@ export const OtherIncomePage: React.FC = () => {
           </div>
           <div>
             <p className="text-xs text-warm-dim font-bold uppercase tracking-wider">Total Ledger Earnings</p>
-            <h3 className="text-2xl font-black text-warm-fg mt-1">৳ {totalAllTime.toLocaleString()}</h3>
+            <h3 className="text-2xl font-black text-warm-fg mt-1">{formatCurrency(totalAllTime)}</h3>
           </div>
         </div>
       </div>
@@ -199,8 +200,7 @@ export const OtherIncomePage: React.FC = () => {
                     <td className="py-3 px-4 text-warm-dim italic max-w-[200px] truncate" title={r.notes}>
                       {r.notes || '—'}
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-warm-fg text-sm">
-                      ৳ {r.amount.toLocaleString()}
+                    <td className="py-3 px-4 text-right font-bold text-warm-fg text-sm">{formatCurrency(r.amount)}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button

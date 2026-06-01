@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 import type { Reminder, ReminderType } from '../types';
 
 function mapReminderRow(row: {

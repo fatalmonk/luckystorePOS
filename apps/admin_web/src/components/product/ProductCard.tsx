@@ -2,6 +2,7 @@ import { ShoppingCart } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState, useEffect } from 'react';
 import type { PosProduct } from '../../lib/api/types';
+import { formatCurrency } from '../../lib/format';
 
 interface ProductCardProps {
   product: PosProduct;
@@ -32,7 +33,7 @@ const formatPrice = (num: number): string => {
   } else if (rounded >= 100000) {
     return `৳${(rounded / 100000).toFixed(0)}L`;
   }
-  return `৳${rounded.toLocaleString('en-IN')}`;
+  return formatCurrency(rounded);
 };
 
 export function ProductCard({ product, onAddToCart, isFocused, onFocus }: ProductCardProps) {

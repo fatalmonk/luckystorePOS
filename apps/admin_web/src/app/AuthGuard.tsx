@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { LoginPage } from './LoginPage';
 import type { Session } from '@supabase/supabase-js';
 

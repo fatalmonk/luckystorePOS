@@ -10,6 +10,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { Modal } from '../../components/ui/Modal';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../../lib/format';
 
 export const StaffDashboardPage: React.FC = () => {
   const { storeId } = useAuth();
@@ -127,8 +128,7 @@ export const StaffDashboardPage: React.FC = () => {
           </div>
           <div>
             <p className="text-xs text-warm-dim font-bold uppercase tracking-wider">Sales processed today</p>
-            <h3 className="text-2xl font-black text-warm-fg mt-1">
-              ৳ {loadingPerformance ? '...' : totalRevenueToday.toLocaleString()}
+            <h3 className="text-2xl font-black text-warm-fg mt-1">{formatCurrency(loadingPerformance ? '...' : totalRevenueToday)}
             </h3>
           </div>
         </div>
@@ -180,8 +180,7 @@ export const StaffDashboardPage: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-warm-muted font-medium">Revenue Today:</span>
-                      <span className="text-warm-success font-black">
-                        ৳ {performance?.totalRevenue.toLocaleString() || 0}
+                      <span className="text-warm-success font-black">{formatCurrency(performance?.totalRevenue || 0)}
                       </span>
                     </div>
                   </div>

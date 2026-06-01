@@ -12,6 +12,7 @@ import { clsx } from 'clsx';
 import { format, startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth } from 'date-fns';
 import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
+import { formatCurrency } from '../../lib/format';
 
 const ROW_HEIGHT = 56;
 const VISIBLE_ROWS = 15;
@@ -36,7 +37,7 @@ function getDateRange(range: DateRange, customStart?: string, customEnd?: string
 }
 
 function formatCurrency(amount: number): string {
-  return `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatCurrency(amount);
 }
 
 function exportSalesToCSV(sales: { sale_number: string, created_at: string, cashier_name: string, subtotal: number, discount_amount: number, total_amount: number, status: string }[]) {

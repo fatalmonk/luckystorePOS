@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import clsx from 'clsx';
+import { clsx } from "clsx";
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { AlertTriangle, Package, TrendingUp, Bell, ArrowUpRight, ArrowDownRight, Scale, Zap, PlusCircle, ShoppingBag } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { SkeletonCard, SkeletonBlock, ErrorState } from '../../components/PageState';
 import { useRealtimeSubscription } from '../../hooks/useRealtime';
 import { useNotify } from '../../components/NotificationContext';
@@ -14,6 +14,7 @@ import { TrendCard } from './TrendCard';
 import { CashflowChart } from './CashflowChart';
 import { RecentActivity } from './RecentActivity';
 import { format, subDays, parseISO } from 'date-fns';
+import { formatCurrency } from '../../lib/format';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -412,7 +413,7 @@ export function DashboardPage() {
                                   minHeight: day.sales > 0 ? 4 : 0,
                                   transition: 'height 0.3s ease',
                                 }}
-                                title={`Sales: ৳${day.sales.toLocaleString()}`}
+                                title={`Sales: ${formatCurrency(day.sales)}`}
                               />
                               <div
                                 style={{
@@ -423,7 +424,7 @@ export function DashboardPage() {
                                   minHeight: day.expenses > 0 ? 4 : 0,
                                   transition: 'height 0.3s ease',
                                 }}
-                                title={`Expenses: ৳${day.expenses.toLocaleString()}`}
+                                title={`Expenses: ${formatCurrency(day.expenses)}`}
                               />
                               <div
                                 style={{
@@ -434,7 +435,7 @@ export function DashboardPage() {
                                   minHeight: day.stockPurchases > 0 ? 4 : 0,
                                   transition: 'height 0.3s ease',
                                 }}
-                                title={`Stock: ৳${day.stockPurchases.toLocaleString()}`}
+                                title={`Stock: ${formatCurrency(day.stockPurchases)}`}
                               />
                             </div>
                             <span className="text-[10px] text-warm-muted whitespace-nowrap mt-1">

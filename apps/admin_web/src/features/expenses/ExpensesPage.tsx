@@ -33,7 +33,7 @@ import {
   EXPENSE_PAYMENT_TYPES,
 } from '../../lib/api/types';
 import type { Expense, ExpenseFormData, ExpenseCategory, ExpensePaymentType } from '../../lib/api/types';
-import { downloadCSV } from '../../lib/format';
+import { downloadCSV, formatCurrency } from '../../lib/format';
 
 // Chart colors matching the app's design system
 const CHART_COLORS = [
@@ -132,7 +132,7 @@ export function ExpensesPage() {
   );
 
   // Dashboard statistics
-  const allExpenses = useMemo(() => expenses || [], [expenses]);
+  const allExpenses = expenses ?? [];
 
   // Total statistics
   const totalStats = useMemo(() => {
@@ -279,9 +279,9 @@ export function ExpensesPage() {
       />
 
       <div className="dashboard-grid mt-6 mb-6">
-        <MetricCard title="Today" value={`৳${todayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Week" value={`৳${weekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Month" value={`৳${monthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Today" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="This Week" value={formatCurrency(weekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="This Month" value={formatCurrency(monthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
       </div>
 
       {/* Expense Dashboard */}
@@ -292,22 +292,22 @@ export function ExpensesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Total Expenses</div>
-              <div className="text-2xl font-bold text-text-primary">৳{totalStats.total.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-text-primary">{formatCurrency(totalStats.total)}</div>
               <div className="text-xs text-text-muted">{totalStats.count} transactions</div>
             </div>
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Average Expense</div>
-              <div className="text-2xl font-bold text-text-primary">৳{totalStats.avg.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-text-primary">{formatCurrency(totalStats.avg)}</div>
               <div className="text-xs text-text-muted">per transaction</div>
             </div>
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Highest Single</div>
-              <div className="text-2xl font-bold text-danger">৳{totalStats.max.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-danger">{formatCurrency(totalStats.max)}</div>
               <div className="text-xs text-text-muted">single expense</div>
             </div>
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Lowest Single</div>
-              <div className="text-2xl font-bold text-success">৳{totalStats.min.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.min)}</div>
               <div className="text-xs text-text-muted">single expense</div>
             </div>
           </div>
@@ -315,7 +315,7 @@ export function ExpensesPage() {
             <div className="mt-4 p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted mb-2">Month Over Month</div>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-text-primary">৳{monthlyComparison.thisMonth.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</span>
+                <span className="text-lg font-semibold text-text-primary">{formatCurrency(monthlyComparison.thisMonth)}</span>
                 {monthlyComparison.change !== 0 && (
                   <span className={`flex items-center text-sm ${monthlyComparison.change > 0 ? 'text-danger' : 'text-success'}`}>
                     {monthlyComparison.change > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
@@ -323,7 +323,7 @@ export function ExpensesPage() {
                   </span>
                 )}
               </div>
-              <div className="text-xs text-text-muted">vs ৳{monthlyComparison.lastMonth.toLocaleString('en-BD', { maximumFractionDigits: 0 })} last month</div>
+              <div className="text-xs text-text-muted">vs {formatCurrency(monthlyComparison.lastMonth)} last month</div>
             </div>
           )}
         </div>
@@ -351,7 +351,7 @@ export function ExpensesPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value) => [`৳${Number(value).toLocaleString('en-BD', { maximumFractionDigits: 0 })}`, 'Amount']}
+                      formatter={(value) => [formatCurrency(Number(value)), 'Amount']}
                       contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)' }}
                     />
                   </PieChart>
@@ -364,7 +364,7 @@ export function ExpensesPage() {
                       <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }} />
                       <span className="text-text-muted">{cat.name}</span>
                     </div>
-                    <span className="font-medium text-text-primary">৳{cat.value.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</span>
+                    <span className="font-medium text-text-primary">{formatCurrency(cat.value)}</span>
                   </div>
                 ))}
               </div>
@@ -384,7 +384,7 @@ export function ExpensesPage() {
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-text-muted)" />
                   <YAxis tick={{ fontSize: 12 }} stroke="var(--color-text-muted)" tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
-                    formatter={(value) => [`৳${Number(value).toLocaleString('en-BD', { maximumFractionDigits: 0 })}`, 'Total']}
+                    formatter={(value) => [formatCurrency(Number(value)), 'Total']}
                     labelStyle={{ color: 'var(--color-text-primary)' }}
                     contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)' }}
                   />
@@ -413,7 +413,7 @@ export function ExpensesPage() {
                       <span className="text-sm text-text-muted">{pt.type}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-text-primary">৳{pt.total.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-sm font-medium text-text-primary">{formatCurrency(pt.total)}</div>
                       <div className="text-xs text-text-muted">{pt.count} txns ({pt.percentage.toFixed(1)}%)</div>
                     </div>
                   </div>
@@ -429,7 +429,7 @@ export function ExpensesPage() {
                         <span className="text-text-muted w-5">{idx + 1}.</span>
                         <span className="text-text-primary truncate" style={{ maxWidth: '150px' }}>{v.vendor}</span>
                       </div>
-                      <span className="font-medium text-text-primary">৳{v.total.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</span>
+                      <span className="font-medium text-text-primary">{formatCurrency(v.total)}</span>
                     </div>
                   ))}
                 </div>
@@ -465,7 +465,7 @@ export function ExpensesPage() {
                     <td className="py-3">
                       <span className="text-xs px-2 py-1 rounded-full bg-surface-secondary text-text-muted">{e.category}</span>
                     </td>
-                    <td className="py-3 text-right text-sm font-semibold text-danger">৳{e.amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</td>
+                    <td className="py-3 text-right text-sm font-semibold text-danger">{formatCurrency(e.amount)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -555,7 +555,7 @@ export function ExpensesPage() {
                   <td>
                     <span className="expenses-payment-badge">{e.paymentType}</span>
                   </td>
-                  <td className="expenses-amount text-right">৳{e.amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</td>
+                  <td className="expenses-amount text-right">{formatCurrency(e.amount)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => setEditingExpense(e)} style={{ color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Edit expense">

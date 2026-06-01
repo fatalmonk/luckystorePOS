@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { useAuth } from '../../lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Trash2, Save, Send, Search, Package } from 'lucide-react';

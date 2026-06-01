@@ -6,6 +6,7 @@ import { clsx } from 'clsx';
 import { ErrorState, SkeletonBlock } from '../../components/PageState';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { useAuth } from '../../lib/AuthContext';
+import { formatCurrency } from '../../lib/format';
 import { api } from '../../lib/api';
 
 
@@ -236,7 +237,7 @@ function SalesReportContent({ data }: { data: SalesReportData }) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
           title="Total Revenue"
-          value={`৳${data.totalRevenue.toLocaleString()}`}
+          value={formatCurrency(data.totalRevenue)}
           icon={<TrendingUp size={20} />}
           color="success"
           variant="solid"
@@ -275,7 +276,7 @@ function SalesReportContent({ data }: { data: SalesReportData }) {
                 <div
                   className="w-full bg-emerald-500 rounded-t transition-all duration-300 hover:bg-emerald-600"
                   style={{ height: `${height}%`, minHeight: day.revenue > 0 ? 4 : 0 }}
-                  title={`${day.date}: ৳${day.revenue.toLocaleString()}`}
+                  title={`${day.date}: ${formatCurrency(day.revenue)}`}
                 />
                 <span className="text-xs text-text-muted">{day.date.slice(5)}</span>
               </div>
@@ -300,7 +301,7 @@ function SalesReportContent({ data }: { data: SalesReportData }) {
               <tr key={idx} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{product.name}</td>
                 <td className="px-4 py-3 text-right">{product.quantity}</td>
-                <td className="px-4 py-3 text-right">৳{product.revenue.toLocaleString()}</td>
+                <td className="px-4 py-3 text-right">{formatCurrency(product.revenue)}</td>
               </tr>
             ))}
             {data.topProducts.length === 0 && (
@@ -325,7 +326,7 @@ function InventoryReportContent({ data }: { data: SalesReportData }) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
           title="Total Inventory Value"
-          value={`৳${data.totalValue.toLocaleString()}`}
+          value={formatCurrency(data.totalValue)}
           icon={<Package size={20} />}
           color="success"
           variant="solid"
@@ -381,7 +382,7 @@ function InventoryReportContent({ data }: { data: SalesReportData }) {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">৳{item.cost}</td>
-                  <td className="px-4 py-3 text-right font-medium">৳{item.totalValue.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right font-medium">{formatCurrency(item.totalValue)}</td>
                 </tr>
               ))}
             </tbody>
@@ -402,35 +403,35 @@ function ProfitReportContent({ data }: { data: SalesReportData }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
           title="Gross Revenue"
-          value={`৳${data.grossRevenue.toLocaleString()}`}
+          value={formatCurrency(data.grossRevenue)}
           icon={<TrendingUp size={20} />}
           color="success"
           variant="solid"
         />
         <MetricCard
           title="COGS"
-          value={`৳${data.cogs.toLocaleString()}`}
+          value={formatCurrency(data.cogs)}
           icon={<Package size={20} />}
           color="danger"
           variant="solid"
         />
         <MetricCard
           title="Gross Profit"
-          value={`৳${data.grossProfit.toLocaleString()}`}
+          value={formatCurrency(data.grossProfit)}
           icon={<TrendingUp size={20} />}
           color={data.grossProfit >= 0 ? 'success' : 'danger'}
           variant="solid"
         />
         <MetricCard
           title="Expenses"
-          value={`৳${data.totalExpenses.toLocaleString()}`}
+          value={formatCurrency(data.totalExpenses)}
           icon={<TrendingUp size={20} />}
           color="danger"
           variant="solid"
         />
         <MetricCard
           title="Net Profit"
-          value={`৳${Math.abs(data.netProfit).toLocaleString()}`}
+          value={formatCurrency(Math.abs(data.netProfit))}
           icon={<TrendingUp size={20} />}
           color={isProfit ? 'success' : 'danger'}
           variant="solid"
@@ -443,26 +444,25 @@ function ProfitReportContent({ data }: { data: SalesReportData }) {
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b border-border-color">
             <span className="text-text-muted">Gross Revenue</span>
-            <span className="font-medium">৳{data.grossRevenue.toLocaleString()}</span>
+            <span className="font-medium">{formatCurrency(data.grossRevenue)}</span>
           </div>
           <div className="flex justify-between py-2 border-b border-border-color">
             <span className="text-text-muted">Less: Cost of Goods Sold</span>
-            <span className="font-medium text-red-600">-৳{data.cogs.toLocaleString()}</span>
+            <span className="font-medium text-red-600">-{formatCurrency(data.cogs)}</span>
           </div>
           <div className="flex justify-between py-2 border-b-2 border-border-color">
             <span className="font-medium">Gross Profit</span>
-            <span className={clsx('font-bold', data.grossProfit >= 0 ? 'text-emerald-600' : 'text-red-600')}>
-              ৳{data.grossProfit.toLocaleString()}
+            <span className={clsx('font-bold', data.grossProfit >= 0 ? 'text-emerald-600' : 'text-red-600')}>{formatCurrency(data.grossProfit)}
             </span>
           </div>
           <div className="flex justify-between py-2 border-b border-border-color">
             <span className="text-text-muted">Less: Operating Expenses</span>
-            <span className="font-medium text-red-600">-৳{data.totalExpenses.toLocaleString()}</span>
+            <span className="font-medium text-red-600">-{formatCurrency(data.totalExpenses)}</span>
           </div>
           <div className="flex justify-between py-3 bg-emerald-50 rounded px-4">
             <span className="font-bold text-lg">Net Profit</span>
             <span className={clsx('font-bold text-lg', isProfit ? 'text-emerald-600' : 'text-red-600')}>
-              {isProfit ? '+' : '-'}৳{Math.abs(data.netProfit).toLocaleString()}
+              {isProfit ? '+' : '-'}{formatCurrency(Math.abs(data.netProfit))}
             </span>
           </div>
         </div>

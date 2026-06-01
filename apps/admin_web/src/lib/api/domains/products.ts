@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 import type { ProductCreateInput, ProductUpdateInput } from '../types';
 
 export const products = {

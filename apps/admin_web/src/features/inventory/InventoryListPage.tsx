@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
@@ -7,7 +7,8 @@ import { ErrorState } from '../../components/PageState';
 import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
-import { ProductUpdateDrawer } from './ProductUpdateDrawer';
+import { ProductEditDrawer } from '../products/ProductEditDrawer';
+import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -45,13 +46,17 @@ export function InventoryListPage() {
   const { notify } = useNotify();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
-  const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
+  const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
+  const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => window.innerWidth >= 1024 ? 'list' : 'grid');
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
   
   // Advanced Sorting
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc'>('name-asc');
+  
+  // Deferred search to avoid blocking render thread
+  const deferredSearch = useDeferredValue(debouncedSearch);
   
   // Modal Open States
   const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
@@ -62,16 +67,6 @@ export function InventoryListPage() {
     queryKey: ['inventory', storeId],
     queryFn: () => api.inventory.list(storeId),
   });
-
-  const {
-    selectedIds,
-    setSelectedIds,
-    bulkStockMutation,
-    bulkPriceMutation,
-    handleExportSelected,
-    toggleSelectAll,
-    toggleSelect,
-  } = useInventoryBulkActions(storeId, tenantId, inventory);
 
   const [columnsCount, setColumnsCount] = useState(() => {
     const w = window.innerWidth;
@@ -95,6 +90,34 @@ export function InventoryListPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Preload first visible images after inventory loads
+  useEffect(() => {
+    if (!inventory?.length) return;
+    const preloadCount = viewMode === 'grid' ? Math.min(columnsCount * 2, 8) : 10;
+    inventory.slice(0, preloadCount).forEach((item, i) => {
+      if (!item.image_url) return;
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = item.image_url;
+      (link as any).fetchPriority = i < 4 ? 'high' : 'low';
+      document.head.appendChild(link);
+    });
+    return () => {
+      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(el => el.remove());
+    };
+  }, [inventory, viewMode, columnsCount]);
+
+  const {
+    selectedIds,
+    setSelectedIds,
+    bulkStockMutation,
+    bulkPriceMutation,
+    handleExportSelected,
+    toggleSelectAll,
+    toggleSelect,
+  } = useInventoryBulkActions(storeId, tenantId, inventory);
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => api.categories.list(),
@@ -114,8 +137,8 @@ export function InventoryListPage() {
   const filteredItems = useMemo(() => {
     const filtered = inventory?.filter((p: InventoryItem) => {
       const matchesSearch =
-        p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase());
+        p.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(deferredSearch.toLowerCase());
       const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
       return matchesSearch && matchesCategory;
     }) ?? [];
@@ -147,7 +170,7 @@ export function InventoryListPage() {
           return 0;
       }
     });
-  }, [inventory, debouncedSearch, selectedCategoryId, sortBy]);
+  }, [inventory, deferredSearch, selectedCategoryId, sortBy]);
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
@@ -172,10 +195,8 @@ export function InventoryListPage() {
     count: chunkedItems.length,
     getScrollElement: () => gridScrollRef.current,
     estimateSize: () => 360,
-    overscan: 3,
+    overscan: 1,
   });
-
-
 
   if (error) {
     return (
@@ -256,11 +277,15 @@ export function InventoryListPage() {
         style={{ backgroundColor: 'var(--color-background-default)' }}
       >
         <div className="flex flex-col gap-3 max-w-full">
-          <CategoryThumbnailGrid
-            categories={enrichedCategories}
-            selectedId={selectedCategoryId}
-            onSelect={setSelectedCategoryId}
-          />
+          {!categories ? (
+            <div className="h-24 animate-pulse bg-background-subtle rounded-lg" />
+          ) : (
+            <CategoryThumbnailGrid
+              categories={enrichedCategories}
+              selectedId={selectedCategoryId}
+              onSelect={setSelectedCategoryId}
+            />
+          )}
           
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -388,8 +413,9 @@ export function InventoryListPage() {
                         isHighlighted={highlightedProductId === item.id}
                         isSelected={selectedIds.has(item.id)}
                         onToggleSelect={toggleSelect}
-                        onUpdateStock={setAdjustingProduct}
+                        onUpdateStock={(item) => setViewingProductId(item.id)}
                         tenantId={tenantId}
+                        priority={virtualRow.index === 0}
                       />
                     ))}
                   </div>
@@ -403,40 +429,28 @@ export function InventoryListPage() {
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             onSelectAll={toggleSelectAll}
-            onUpdateStock={setAdjustingProduct}
-            onViewHistory={(item) => console.log('View history', item)}
-            onEditProduct={(item) => console.log('Edit', item)}
+            onUpdateStock={(item) => setViewingProductId(item.id)}
+            onViewHistory={(item) => setViewingProductId(item.id)}
+            onEditProduct={(item) => setEditingProduct(item)}
             onDelete={(item) => console.log('Delete', item)}
           />
         )}
       </div>
 
-      <ProductUpdateDrawer
-        product={adjustingProduct}
-        storeId={storeId}
-        onClose={() => {
-          setAdjustingProduct(null);
-          setHighlightedProductId(null);
-        }}
-        onSuccess={(productName) => {
-          // Find product id by name and trigger highlight
-          const updated = inventory?.find((p: InventoryItem) => p.name === productName);
-          if (updated) {
-            setHighlightedProductId(updated.id);
-          }
-        }}
+      <ProductEditDrawer
+        product={editingProduct}
+        categories={categories}
+        onClose={() => setEditingProduct(null)}
       />
 
-      {selectedIds.size > 0 && (
-        <BulkEditBar
-          selectedCount={selectedIds.size}
-          totalCount={inventory?.length || 0}
-          onClear={() => setSelectedIds(new Set())}
-          onUpdatePrices={() => setIsBulkPriceModalOpen(true)}
-          onUpdateStock={() => setIsBulkStockModalOpen(true)}
-          onExport={handleExportSelected}
-        />
-      )}
+      <ProductDetailDrawer
+        productId={viewingProductId}
+        onClose={() => setViewingProductId(null)}
+        onEdit={(p) => {
+          setViewingProductId(null);
+          setEditingProduct(p as unknown as InventoryItem);
+        }}
+      />
 
       <BulkPriceModal
         isOpen={isBulkPriceModalOpen}
@@ -463,13 +477,24 @@ export function InventoryListPage() {
           const found = inventory?.find((p: InventoryItem) => p.sku === barcode || (p as any).barcode === barcode);
           if (found) {
             setSearchTerm(barcode);
-            setAdjustingProduct(found);
+            setViewingProductId(found.id);
             setHighlightedProductId(found.id);
           } else {
             notify(`Product with barcode ${barcode} not found`, 'error');
           }
         }}
       />
+
+      {selectedIds.size > 0 && (
+        <BulkEditBar
+          selectedCount={selectedIds.size}
+          totalCount={inventory?.length || 0}
+          onClear={() => setSelectedIds(new Set())}
+          onUpdatePrices={() => setIsBulkPriceModalOpen(true)}
+          onUpdateStock={() => setIsBulkStockModalOpen(true)}
+          onExport={handleExportSelected}
+        />
+      )}
     </div>
   );
 }

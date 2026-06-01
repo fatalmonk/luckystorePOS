@@ -1,9 +1,9 @@
 import React from 'react';
-import clsx from 'clsx';
+import { clsx } from "clsx";
 
 export interface PageHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
 }
@@ -13,7 +13,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions
     <div className={clsx('flex items-center justify-between py-4 border-b border-border-default', className)}>
       <div>
         <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
-        {subtitle && <p className="text-sm text-text-muted">{subtitle}</p>}
+        {subtitle && <div className="text-sm text-text-muted mt-1">{subtitle}</div>}
       </div>
       {actions && <div className="flex items-center space-x-2">{actions}</div>}
     </div>

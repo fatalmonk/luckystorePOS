@@ -4,6 +4,7 @@ import { api } from '../../lib/api';
 import { X, TrendingUp, TrendingDown, Minus, History } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
+import { formatCurrency } from '../../lib/format';
 
 interface PriceHistoryModalProps {
   productId: string;
@@ -38,7 +39,7 @@ export function PriceHistoryModal({ productId, storeId, productName, isOpen, onC
   };
 
   const formatPriceDisplay = (price: number) => {
-    return `৳${Math.round(price).toLocaleString('en-IN')}`;
+    return formatCurrency(Math.round(price));
   };
 
   return (

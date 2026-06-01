@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { useAuth } from '../../lib/AuthContext';
 import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { EmptyState, SkeletonCard, SkeletonBlock } from '../../components/PageState';
 import { useDebounce } from '../../hooks/useDebounce';
+import { formatCurrency } from '../../lib/format';
 
 type Receivable = {
   party_id: string;
@@ -190,7 +191,7 @@ export const CollectionsWorkspace: React.FC = () => {
           <>
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Total Receivables</span>
-              <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-warning)' }}>৳ {totalReceivables.toLocaleString()}</span>
+              <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-warning)' }}>{formatCurrency(totalReceivables)}</span>
             </div>
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--text-muted)' }}>Customers Overdue</span>
@@ -283,8 +284,7 @@ export const CollectionsWorkspace: React.FC = () => {
                     <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{r.customer_name}</div>
                     <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{r.phone || 'No phone'}</div>
                   </td>
-                  <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--color-warning)' }}>
-                    ৳ {r.balance_due.toLocaleString()}
+                  <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--color-warning)' }}>{formatCurrency(r.balance_due)}
                   </td>
                   <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
                     <span style={{
@@ -514,7 +514,7 @@ export const CollectionsWorkspace: React.FC = () => {
               marginBottom: 'var(--space-6)'
             }}>
               <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>Outstanding Balance</div>
-              <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-warning)' }}>৳ {selectedParty.balance_due.toLocaleString()}</div>
+              <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', color: 'var(--color-warning)' }}>{formatCurrency(selectedParty.balance_due)}</div>
             </div>
 
             {actionError && (

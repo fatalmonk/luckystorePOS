@@ -1,5 +1,5 @@
 import React, { ReactNode, useState, useEffect } from 'react';
-import clsx from 'clsx';
+import { clsx } from "clsx";
 
 export interface CardProps {
   children: ReactNode;

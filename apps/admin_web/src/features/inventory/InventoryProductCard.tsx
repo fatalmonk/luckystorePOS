@@ -1,6 +1,7 @@
 import React from 'react';
 import { clsx } from 'clsx';
 import { Card } from '../../components/ui/Card';
+import { formatCurrency } from '../../lib/format';
 
 interface InventoryItem {
   id: string;
@@ -23,6 +24,8 @@ interface InventoryProductCardProps {
   tenantId?: string;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
+  /** Skip lazy-loading & use fetchpriority=high for LCP candidate images */
+  priority?: boolean;
 }
 
 // Currency formatting
@@ -33,7 +36,7 @@ const formatPrice = (num?: number): string => {
   } else if (num >= 100000) {
     return `৳${(num / 100000).toFixed(2)}L`;
   }
-  return `৳${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatCurrency(num);
 };
 
 const formatMRP = (num?: number): string => {
@@ -43,7 +46,7 @@ const formatMRP = (num?: number): string => {
   } else if (num >= 100000) {
     return `৳${(num / 100000).toFixed(0)}L`;
   }
-  return `৳${Math.round(num).toLocaleString('en-IN')}`;
+  return formatCurrency(Math.round(num));
 };
 
 const formatSelling = (num?: number): string => {
@@ -53,7 +56,7 @@ const formatSelling = (num?: number): string => {
   } else if (num >= 100000) {
     return `৳${(num / 100000).toFixed(0)}L`;
   }
-  return `৳${Math.round(num).toLocaleString('en-IN')}`;
+  return formatCurrency(Math.round(num));
 };
 
 // Calculate margin percentage
@@ -82,7 +85,8 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
   onUpdateStock, 
   tenantId, 
   isSelected, 
-  onToggleSelect 
+  onToggleSelect,
+  priority,
 }: InventoryProductCardProps) {
   const margin = calcMargin(item.cost, item.price);
   const hasMrp = typeof item.mrp === 'number' && item.mrp > 0;
@@ -120,8 +124,13 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           <img
             src={item.image_url}
             alt={item.name}
+            width={300}
+            height={300}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : undefined}
+            style={{ aspectRatio: '1 / 1' }}
+            decoding="async"
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-text-muted">

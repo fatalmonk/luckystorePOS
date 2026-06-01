@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 
 export const purchases = {
   list: async (storeId: string, filters?: { startDate?: string; endDate?: string; status?: string }) => {

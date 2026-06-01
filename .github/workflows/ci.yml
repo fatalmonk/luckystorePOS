@@ -63,11 +63,7 @@ jobs:
           # Threshold: 1.5 seconds for inventory search
           # This would be measured against actual latency metrics
           echo "Performance threshold check passed"
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: apps/mobile_app/coverage/lcov.info
+
 
   lint:
     runs-on: ubuntu-latest
