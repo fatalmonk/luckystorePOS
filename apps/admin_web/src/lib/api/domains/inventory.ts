@@ -6,6 +6,23 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+  create: async (product: {
+    name: string;
+    sku?: string;
+    barcode?: string;
+    price: number;
+    cost?: number;
+    mrp?: number;
+    category_id?: string;
+    image_url?: string;
+    short_code?: string;
+    brand?: string;
+    group_tag?: string;
+  }) => {
+    const { data, error } = await supabase.from('items').insert(product as any).select().single();
+    if (error) throw error;
+    return data;
+  },
   update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string, _idempotencyKey?: string) => {
     const { data, error } = await supabase.rpc('adjust_stock', {
       p_store_id: storeId,

@@ -4,11 +4,12 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown } from 'lucide-react';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
-import { ProductEditDrawer } from '../products/ProductEditDrawer';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
+import { ProductUpdateDrawer } from './ProductUpdateDrawer';
+import { AddProductModal } from './AddProductModal';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -59,6 +60,7 @@ export function InventoryListPage() {
   const deferredSearch = useDeferredValue(debouncedSearch);
   
   // Modal Open States
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
   const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
@@ -242,6 +244,13 @@ export function InventoryListPage() {
         }
         actions={
           <div className="flex gap-2">
+            <Button
+              variant="primary"
+              icon={<Plus size={18} />}
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              Add Product
+            </Button>
             <Button
               variant="secondary"
               icon={<Download size={18} />}
@@ -441,9 +450,15 @@ export function InventoryListPage() {
         )}
       </div>
 
-      <ProductEditDrawer
-        product={editingProduct}
+      <AddProductModal
+        isOpen={isAddModalOpen}
         categories={categories}
+        onClose={() => setIsAddModalOpen(false)}
+      />
+
+      <ProductUpdateDrawer
+        product={editingProduct}
+        storeId={storeId}
         onClose={() => setEditingProduct(null)}
       />
 
