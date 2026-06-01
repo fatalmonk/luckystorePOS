@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 import { 
   CloudUpload, Download, AlertCircle, CheckCircle, 
   Trash2, Plus, ArrowRight, ArrowLeft, Loader2 
@@ -38,12 +38,14 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   const [importSuccess, setImportSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Download Sample Excel
+  // Download Sample CSV
   const handleDownloadSample = () => {
-    const worksheet = XLSX.utils.json_to_sheet(sampleData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
-    XLSX.writeFile(workbook, sampleFileName);
+    const csv = Papa.unparse(sampleData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = sampleFileName.replace(/\.xlsx?$/i, '.csv');
+    link.click();
   };
 
   // Run Zod validation on data
@@ -93,64 +95,62 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const buffer = e.target?.result as ArrayBuffer;
-        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        if (!sheetName) throw new Error('Excel file has no sheets');
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        try {
+          const json = results.data as Record<string, any>[];
 
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+          if (json.length === 0) {
+            setErrorMessage('The uploaded file is empty');
+            return;
+          }
 
-        if (json.length === 0) {
-          setErrorMessage('The uploaded file is empty');
-          return;
-        }
+          // Hard limit: 500 rows max
+          if (json.length > 500) {
+            setErrorMessage('File exceeds maximum limit of 500 rows');
+            return;
+          }
 
-        // Hard limit: 500 rows max
-        if (json.length > 500) {
-          setErrorMessage('File exceeds maximum limit of 500 rows');
-          return;
-        }
-
-        // Clean & normalize parsed data keys to match field meta keys
-        const normalized = json.map((row) => {
-          const newRow: Record<string, any> = {};
-          fieldMeta.forEach((field) => {
-            // Match keys case-insensitively or via exact label
-            const matchedKey = Object.keys(row).find(
-              (k) => k.toLowerCase() === field.key.toLowerCase() || k.toLowerCase() === field.label.toLowerCase()
-            );
-            const rawVal = matchedKey ? row[matchedKey] : '';
-            
-            if (field.type === 'number') {
-              const numVal = Number(rawVal);
-              newRow[field.key] = isNaN(numVal) || rawVal === '' ? '' : numVal;
-            } else {
-              newRow[field.key] = rawVal;
-            }
+          // Clean & normalize parsed data keys to match field meta keys
+          const normalized = json.map((row) => {
+            const newRow: Record<string, any> = {};
+            fieldMeta.forEach((field) => {
+              // Match keys case-insensitively or via exact label
+              const matchedKey = Object.keys(row).find(
+                (k) => k.toLowerCase() === field.key.toLowerCase() || k.toLowerCase() === field.label.toLowerCase()
+              );
+              const rawVal = matchedKey ? row[matchedKey] : '';
+              
+              if (field.type === 'number') {
+                const numVal = Number(rawVal);
+                newRow[field.key] = isNaN(numVal) || rawVal === '' ? '' : numVal;
+              } else {
+                newRow[field.key] = rawVal;
+              }
+            });
+            return newRow;
           });
-          return newRow;
-        });
 
-        setData(normalized);
-        validateData(normalized);
-        setErrorMessage(null);
-        setStep(2);
-      } catch (err: any) {
+          setData(normalized);
+          validateData(normalized);
+          setErrorMessage(null);
+          setStep(2);
+        } catch (err: any) {
+          setErrorMessage(`Error parsing file: ${err.message || 'Unknown error'}`);
+        }
+      },
+      error: (err) => {
         setErrorMessage(`Error parsing file: ${err.message || 'Unknown error'}`);
       }
-    };
-    reader.readAsArrayBuffer(file);
+    });
   }, [fieldMeta, validationSchema]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'application/vnd.ms-excel': ['.xls'],
+      'text/csv': ['.csv'],
     },
     multiple: false,
   });
@@ -285,10 +285,10 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                 <CloudUpload size={28} />
               </div>
               <p className="text-sm font-semibold text-warm-fg">
-                {isDragActive ? 'Drop file here...' : 'Drag & drop Excel template file here'}
+                {isDragActive ? 'Drop file here...' : 'Drag & drop CSV template file here'}
               </p>
               <p className="text-xs text-warm-muted mt-2">
-                Supports .xlsx and .xls formats (Maximum 500 rows or 2MB)
+                Supports .csv format only (Maximum 500 rows or 2MB)
               </p>
             </div>
           </div>

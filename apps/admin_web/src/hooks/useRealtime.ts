@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { useQueryClient } from '@tanstack/react-query';
 
 type RealtimeEventType = 'INSERT' | 'UPDATE' | 'DELETE' | '*';

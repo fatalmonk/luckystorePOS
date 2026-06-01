@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { CloudUpload } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
-import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 import { toast, Toaster } from 'sonner';
 
 export default function ImportItems() {
@@ -11,22 +11,26 @@ export default function ImportItems() {
     const f = acceptedFiles[0];
     if (!f) return; // Guard empty drop
     if (f.size > 1024 * 1024) { toast.error('File exceeds 1 MB size limit'); return; }
-    if (!/\.xlsx?$/i.test(f.name)) { toast.error('Invalid file type. Only .xlsx or .xls allowed'); return; }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json: any[] = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
-        if (json.length > 500) { toast.error('Too many rows (max 500)'); setImportedData([]); setFile(null); }
-        else { setImportedData(json); setFile(f); }
-      } catch (err: any) {
+    if (!/\.csv$/i.test(f.name)) { toast.error('Invalid file type. Only .csv allowed'); return; }
+    
+    Papa.parse(f, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        try {
+          const json: any[] = results.data as any[];
+          if (json.length > 500) { toast.error('Too many rows (max 500)'); setImportedData([]); setFile(null); }
+          else { setImportedData(json); setFile(f); }
+        } catch (err: any) {
+          toast.error(`Error parsing file: ${err.message || 'Unknown error'}`);
+          setImportedData([]); setFile(null);
+        }
+      },
+      error: (err: any) => {
         toast.error(`Error parsing file: ${err.message || 'Unknown error'}`);
         setImportedData([]); setFile(null);
       }
-    };
-    reader.readAsArrayBuffer(f);
+    });
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
   return (

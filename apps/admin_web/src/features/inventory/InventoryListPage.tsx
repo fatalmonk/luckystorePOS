@@ -7,7 +7,8 @@ import { ErrorState } from '../../components/PageState';
 import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
-import { ProductUpdateDrawer } from './ProductUpdateDrawer';
+import { ProductEditDrawer } from '../products/ProductEditDrawer';
+import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -45,7 +46,8 @@ export function InventoryListPage() {
   const { notify } = useNotify();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
-  const [adjustingProduct, setAdjustingProduct] = useState<InventoryItem | null>(null);
+  const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
+  const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => window.innerWidth >= 1024 ? 'list' : 'grid');
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
@@ -172,7 +174,7 @@ export function InventoryListPage() {
     count: chunkedItems.length,
     getScrollElement: () => gridScrollRef.current,
     estimateSize: () => 360,
-    overscan: 3,
+    overscan: 1,
   });
 
 
@@ -388,8 +390,9 @@ export function InventoryListPage() {
                         isHighlighted={highlightedProductId === item.id}
                         isSelected={selectedIds.has(item.id)}
                         onToggleSelect={toggleSelect}
-                        onUpdateStock={setAdjustingProduct}
+                        onUpdateStock={(item) => setViewingProductId(item.id)}
                         tenantId={tenantId}
+                        priority={virtualRow.index === 0}
                       />
                     ))}
                   </div>
@@ -403,27 +406,26 @@ export function InventoryListPage() {
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             onSelectAll={toggleSelectAll}
-            onUpdateStock={setAdjustingProduct}
-            onViewHistory={(item) => console.log('View history', item)}
-            onEditProduct={(item) => console.log('Edit', item)}
+            onUpdateStock={(item) => setViewingProductId(item.id)}
+            onViewHistory={(item) => setViewingProductId(item.id)}
+            onEditProduct={(item) => setEditingProduct(item)}
             onDelete={(item) => console.log('Delete', item)}
           />
         )}
       </div>
 
-      <ProductUpdateDrawer
-        product={adjustingProduct}
-        storeId={storeId}
-        onClose={() => {
-          setAdjustingProduct(null);
-          setHighlightedProductId(null);
-        }}
-        onSuccess={(productName) => {
-          // Find product id by name and trigger highlight
-          const updated = inventory?.find((p: InventoryItem) => p.name === productName);
-          if (updated) {
-            setHighlightedProductId(updated.id);
-          }
+      <ProductEditDrawer
+        product={editingProduct}
+        categories={categories}
+        onClose={() => setEditingProduct(null)}
+      />
+
+      <ProductDetailDrawer
+        productId={viewingProductId}
+        onClose={() => setViewingProductId(null)}
+        onEdit={(p) => {
+          setViewingProductId(null);
+          setEditingProduct(p as unknown as InventoryItem);
         }}
       />
 
@@ -463,7 +465,7 @@ export function InventoryListPage() {
           const found = inventory?.find((p: InventoryItem) => p.sku === barcode || (p as any).barcode === barcode);
           if (found) {
             setSearchTerm(barcode);
-            setAdjustingProduct(found);
+            setViewingProductId(found.id);
             setHighlightedProductId(found.id);
           } else {
             notify(`Product with barcode ${barcode} not found`, 'error');

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import { Shield, AppWindow, Check, X, Loader2, Info } from 'lucide-react';
 
 interface AuthDetails {

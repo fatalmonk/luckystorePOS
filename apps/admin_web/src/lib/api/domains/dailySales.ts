@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 import type { DailySale, DailySaleFormData } from '../types';
 
 export const dailySales = {

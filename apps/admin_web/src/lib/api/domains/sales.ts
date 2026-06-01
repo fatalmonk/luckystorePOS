@@ -1,4 +1,4 @@
-import { supabase } from '../../supabase';
+import { supabase } from "@/lib/supabase";
 
 export const sales = {
   history: async (storeId: string, search?: string, startDate?: string, endDate?: string) => {

@@ -15,6 +15,7 @@ import { ProductDetailDrawer } from './ProductDetailDrawer';
 import { Card } from '../../components/ui/Card';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from './CategoryThumbnailGrid';
+import { formatCurrency } from '../../lib/format';
 
 import type { Database } from '../../lib/database.types';
 
@@ -153,7 +154,7 @@ export function ProductListPage() {
         />
         <MetricCard
           title="Inventory Value"
-          value={`৳${stats.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+          value={formatCurrency(stats.totalValue)}
           icon={<ImageIcon size={20} />}
           color="success"
         />

@@ -59,7 +59,7 @@ export function InventoryListTable({
     count: items.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 72,
-    overscan: 10,
+    overscan: 5,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();

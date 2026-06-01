@@ -383,7 +383,7 @@ export function DailySalesPage() {
 
     const formatValue = (val: any, f: string) => {
       if (f === 'saleDate') return format(new Date(val), 'dd MMM yyyy');
-      return `৳${Number(val || 0).toLocaleString()}`;
+      return formatCurrency(Number(val || 0));
     };
 
     return (
@@ -613,10 +613,12 @@ export function DailySalesPage() {
     }
     return data;
   }, [sales, hideEmptyDays]);
+  const pageHeader = <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />;
+
   if (isLoading) {
     return (
       <div className="sales-container">
-        <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />
+        {pageHeader}
         <div className="dashboard-grid mt-6">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-24" />)}
         </div>
@@ -627,7 +629,7 @@ export function DailySalesPage() {
   if (error) {
     return (
       <div className="sales-container">
-        <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />
+        {pageHeader}
         <div className="card">
           <ErrorState message="Failed to load daily sales." onRetry={() => refetch()} />
         </div>
@@ -646,14 +648,14 @@ export function DailySalesPage() {
           <div className="flex items-center gap-2">
             <button
               className="button-outline gap-2"
-              onClick={() => downloadCSV(
-                (sales || []).map((s: DailySale) => ({
+              onClick={() => {
+                const rows = (sales || []).map((s: DailySale) => ({
                   date: s.saleDate, totalSales: s.totalSales, cash: s.cashAmount,
                   bkash: s.bkashAmount, credit: s.creditAmount,
                   stockPurchase: s.stockPurchase, dailyExpense: s.dailyExpense,
-                })),
-                `daily-sales-${new Date().toISOString().split('T')[0]}.csv`
-              )}
+                }));
+                downloadCSV(rows, `daily-sales-${new Date().toISOString().split('T')[0]}.csv`);
+              }}
             >
               <Download size={16} /> Export CSV
             </button>
@@ -663,12 +665,12 @@ export function DailySalesPage() {
       />
 
       <div className="dashboard-grid mt-6 mb-6">
-        <MetricCard title="Today's Sales" value={`৳${todayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Yesterday's Sales" value={`৳${yesterdayTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Week" value={`৳${weekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Last Week" value={`৳${lastWeekTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Month" value={`৳${monthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Last Month" value={`৳${lastMonthTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Today's Sales" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Yesterday's Sales" value={formatCurrency(yesterdayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="This Week" value={formatCurrency(weekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Last Week" value={formatCurrency(lastWeekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="This Month" value={formatCurrency(monthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <MetricCard title="Last Month" value={formatCurrency(lastMonthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
         <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<Banknote size={20} className="text-info" />} color="info" variant="light" />
       </div>
 
@@ -678,22 +680,22 @@ export function DailySalesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Total Sales</div>
-              <div className="text-2xl font-bold text-success">৳{totalStats.total.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.total)}</div>
               <div className="text-xs text-text-muted">{totalStats.count} days recorded</div>
             </div>
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Average Daily</div>
-              <div className="text-2xl font-bold text-text-primary">৳{totalStats.avg.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-text-primary">{formatCurrency(totalStats.avg)}</div>
               <div className="text-xs text-text-muted">per day</div>
             </div>
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Highest Day</div>
-              <div className="text-2xl font-bold text-success">৳{totalStats.max.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.max)}</div>
               <div className="text-xs text-text-muted">best day</div>
             </div>
             <div className="p-4 bg-surface-secondary rounded-lg">
               <div className="text-sm text-text-muted">Lowest Day</div>
-              <div className="text-2xl font-bold text-danger">৳{totalStats.min.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</div>
+              <div className="text-2xl font-bold text-danger">{formatCurrency(totalStats.min)}</div>
               <div className="text-xs text-text-muted">slowest day</div>
             </div>
           </div>
@@ -718,7 +720,7 @@ export function DailySalesPage() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: any) => value !== undefined && value !== null ? [`৳${Number(value).toLocaleString()}`, 'Amount'] : ['N/A', 'Amount']}
+                  formatter={(value: any) => value !== undefined && value !== null ? [formatCurrency(Number(value)), 'Amount'] : ['N/A', 'Amount']}
                 />
                 <Legend />
               </PieChart>
@@ -732,7 +734,7 @@ export function DailySalesPage() {
                   <span className="text-sm text-text-primary">{item.name}</span>
                 </div>
                 <div className="text-sm">
-                  <span className="font-semibold">৳{item.value.toLocaleString()}</span>
+                  <span className="font-semibold">{formatCurrency(item.value)}</span>
                   <span className="text-text-muted ml-2">({item.percentage.toFixed(1)}%)</span>
                 </div>
               </div>
@@ -751,7 +753,7 @@ export function DailySalesPage() {
                 <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
                 <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
                 <Tooltip 
-                  formatter={(value: any) => value !== undefined && value !== null ? [`৳${Number(value).toLocaleString()}`, 'Total Sales'] : ['N/A', 'Total Sales']}
+                  formatter={(value: any) => value !== undefined && value !== null ? [formatCurrency(Number(value)), 'Total Sales'] : ['N/A', 'Total Sales']}
                   contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-default)' }}
                 />
                 <Bar dataKey="total" fill="var(--color-success-default)" radius={[4, 4, 0, 0]} />
@@ -813,10 +815,10 @@ export function DailySalesPage() {
                 {topSalesDays.map((s) => (
                   <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary">
                     <td className="py-3 px-4 text-sm text-text-primary">{s.date}</td>
-                    <td className="py-3 px-4 text-sm font-semibold text-success text-right">৳{s.totalSales.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.cashAmount.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.bkashAmount.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">৳{s.creditAmount.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm font-semibold text-success text-right">{formatCurrency(s.totalSales)}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.cashAmount)}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.bkashAmount)}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.creditAmount)}</td>
                   </tr>
                 ))}
               </tbody>
