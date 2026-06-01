@@ -24,11 +24,7 @@ class InventoryService {
   }) async {
     try {
       final url = Uri.parse('${NetworkConfig.supabaseUrl}/rpc/deduct_stock');
-      final headers = {
-        'Content-Type': 'application/json',
-        'apikey': NetworkConfig.supabaseServiceKey,
-        'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
-      };
+      final headers = NetworkConfig.authHeaders();
 
       final body = jsonEncode({
         'store_id': storeId,

@@ -32,11 +32,7 @@ class AuditService {
         'return=representation'
       );
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'apikey': NetworkConfig.supabaseServiceKey,
-        'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
-      };
+      final headers = NetworkConfig.authHeaders();
 
       final payload = {
         'store_id': storeId,

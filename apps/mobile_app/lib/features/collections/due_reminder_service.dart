@@ -398,11 +398,7 @@ Thank you for your prompt attention!
         '${NetworkConfig.supabaseUrl}/functions/v1/send-whatsapp-message',
       );
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
-        'apikey': NetworkConfig.supabaseServiceKey,
-      };
+      final headers = NetworkConfig.authHeaders();
 
       final payload = {
         'phone_number': phoneNumber,
@@ -466,11 +462,7 @@ Thank you for your prompt attention!
   // ===== Helpers =====
 
   Map<String, String> _getAuthHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'apikey': NetworkConfig.supabaseServiceKey,
-      'Authorization': 'Bearer ${NetworkConfig.supabaseServiceKey}',
-    };
+    return NetworkConfig.authHeaders();
   }
 
   // ===== Reset Counters =====

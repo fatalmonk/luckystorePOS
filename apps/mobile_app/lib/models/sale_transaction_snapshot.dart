@@ -74,11 +74,18 @@ class SaleTransactionIntent {
 
   factory SaleTransactionIntent.fromJson(Map<String, dynamic> json) {
     final rawItems = (json['items'] as List<dynamic>? ?? const []);
+
+    // I22: Use DateTime.tryParse with fallback
+    final createdAtStr = json['created_at'] as String?;
+    final createdAt = createdAtStr != null
+        ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
+        : DateTime.now();
+
     return SaleTransactionIntent(
-      clientTransactionId: json['client_transaction_id'] as String,
-      transactionTraceId: json['transaction_trace_id'] as String,
-      storeId: json['store_id'] as String,
-      cashierId: json['cashier_id'] as String,
+      clientTransactionId: json['client_transaction_id'] as String? ?? '',
+      transactionTraceId: json['transaction_trace_id'] as String? ?? '',
+      storeId: json['store_id'] as String? ?? '',
+      cashierId: json['cashier_id'] as String? ?? '',
       sessionId: json['session_id'] as String?,
       items: rawItems
           .map((e) =>
@@ -88,7 +95,7 @@ class SaleTransactionIntent {
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList(growable: false),
       cartDiscount: (json['cart_discount'] as num? ?? 0).toDouble(),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: createdAt,
       fulfillmentPolicy: json['fulfillment_policy'] as String? ?? 'STRICT',
     );
   }
@@ -165,15 +172,22 @@ class SaleTransactionSnapshot {
 
   factory SaleTransactionSnapshot.fromJson(Map<String, dynamic> json) {
     final rawItems = (json['items'] as List<dynamic>? ?? const []);
+
+    // I22: Use DateTime.tryParse with fallback
+    final createdAtStr = json['created_at'] as String?;
+    final createdAt = createdAtStr != null
+        ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
+        : DateTime.now();
+
     return SaleTransactionSnapshot(
-      clientTransactionId: json['client_transaction_id'] as String,
-      transactionTraceId: json['transaction_trace_id'] as String,
-      storeId: json['store_id'] as String,
-      userId: json['user_id'] as String,
+      clientTransactionId: json['client_transaction_id'] as String? ?? '',
+      transactionTraceId: json['transaction_trace_id'] as String? ?? '',
+      storeId: json['store_id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
       items: rawItems
           .map((e) => SaleSnapshotItem.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: createdAt,
       mode: json['mode'] as String? ?? 'online',
       pricingSource: json['pricing_source'] as String? ?? 'rpc',
       inventorySource: json['inventory_source'] as String? ?? 'rpc',

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import '../../utils/result.dart';
 import '../../utils/app_utils.dart';
 import 'printer_config.dart';
@@ -15,6 +16,9 @@ class PrintRetryQueue {
   final Duration _baseRetryDelay;
   final Duration _maxRetryDelay;
 
+  // C10 FIX: Factory function to create PrinterService, breaking circular dependency
+  final Future<dynamic> Function() _printerServiceFactory;
+
   int get retryCount => _queue.length;
   bool get isEmpty => _queue.isEmpty;
   bool get isProcessing => _retryTimer != null;
@@ -24,9 +28,11 @@ class PrintRetryQueue {
     int maxRetries = PrinterConfig.maxRetryAttempts,
     Duration baseRetryDelay = PrinterConfig.baseRetryDelay,
     Duration maxRetryDelay = PrinterConfig.maxRetryDelay,
+    Future<dynamic> Function()? printerServiceFactory,
   })  : _maxRetries = maxRetries,
         _baseRetryDelay = baseRetryDelay,
         _maxRetryDelay = maxRetryDelay,
+        _printerServiceFactory = printerServiceFactory ?? (() async => throw UnimplementedError('PrintRetryQueue requires printerServiceFactory for retries')),
         _eventController = StreamController<RetryQueueEvent>.broadcast();
 
   Stream<RetryQueueEvent> get eventStream => _eventController.stream;
@@ -138,12 +144,12 @@ class PrintRetryQueue {
         ? _maxRetryDelay.inMilliseconds
         : delayMs;
 
-    // Add jitter (±10%) to prevent thundering herd
+    // C46 FIX: Correct jitter calculation (±10% uniform distribution)
     final jitterMs = (clampedMs * 0.1).toInt();
-    final randomOffsetMs = DateTime.now().millisecond ~/ 10;
+    final randomOffsetMs = Random().nextInt(jitterMs * 2 + 1) - jitterMs;
 
-    final finalMs = clampedMs + randomOffsetMs - jitterMs;
-    return Duration(milliseconds: finalMs > 0 ? finalMs : clampedMs);
+    final finalMs = clampedMs + randomOffsetMs;
+    return Duration(milliseconds: finalMs > 0 ? finalMs.toInt() : clampedMs);
   }
 
   /// Process next retry
@@ -165,10 +171,9 @@ class PrintRetryQueue {
       message: 'Attempting retry ${retryCount + 1} for $receiptId',
     ));
 
-    // Create printer service for retry
+    // Create printer service for retry using factory
     try {
-      // Import here to avoid circular dependency at top level
-      final printerService = await _createPrinterService();
+      final printerService = await _printerServiceFactory();
 
       // Attempt to print
       final result = await printerService.printReceipt(
@@ -197,137 +202,45 @@ class PrintRetryQueue {
         final updatedJob = job.copyWith(retryCount: retryCount + 1);
         _queue[receiptId] = updatedJob;
 
-        _broadcastEvent(RetryQueueEvent(
-          type: RetryQueueEventType.retryFailed,
-          receiptId: receiptId,
-          retryCount: retryCount + 1,
-          error: result.error,
-          message: 'Retry ${retryCount + 1} failed for $receiptId',
-        ));
-
-        // Schedule next retry or mark as failed
-        if (retryCount + 1 < _maxRetries) {
-          _scheduleRetry();
-        } else {
+        // Check if max retries exceeded
+        if (retryCount + 1 >= _maxRetries) {
+          await remove(receiptId);
           _broadcastEvent(RetryQueueEvent(
             type: RetryQueueEventType.maxRetriesReached,
             receiptId: receiptId,
-            message: 'Max retries ($_maxRetries) reached for $receiptId',
+            message: 'Print job $receiptId failed after $_maxRetries attempts',
           ));
-
-          // Mark as permanently failed but keep in queue for manual review
-          await remove(receiptId);
+        } else {
+          _scheduleRetry();
         }
       }
-
-      printerService.dispose();
     } catch (e, stackTrace) {
-      Logger.error('PrintRetryQueue._processNextRetry failed', e, stackTrace);
+      Logger.error('PrintRetryQueue retry failed', e, stackTrace);
 
-      // Increment retry count
+      // Increment retry count and reschedule
       final updatedJob = job.copyWith(retryCount: retryCount + 1);
       _queue[receiptId] = updatedJob;
 
-      if (retryCount + 1 < _maxRetries) {
-        _scheduleRetry();
-      } else {
+      // Check if max retries exceeded
+      if (retryCount + 1 >= _maxRetries) {
         await remove(receiptId);
-      }
-    }
-  }
-
-  /// Process the entire queue (for manual trigger)
-  Future<Result<void>> processQueue(dynamic printerService) async {
-    if (_queue.isEmpty) {
-      return const Success<void>(null);
-    }
-
-    try {
-      _broadcastEvent(RetryQueueEvent(
-        type: RetryQueueEventType.processing,
-        message: 'Processing retry queue (${_queue.length} jobs)',
-      ));
-
-      int processed = 0;
-      final failed = <String>[];
-
-      for (final entry in _queue.entries) {
-        final receiptId = entry.key;
-        final job = entry.value;
-
-        try {
-          final result = await printerService.printReceipt(
-            receiptId: receiptId,
-            items: job.items ?? [],
-            subtotal: job.subtotal ?? 0,
-            taxAmount: job.taxAmount ?? 0,
-            discountAmount: job.discountAmount ?? 0,
-            total: job.total ?? 0,
-            paymentMethod: job.paymentMethod ?? 'Unknown',
-            customerId: job.customerId,
-            cashierId: job.cashierId,
-            timestamp: job.timestamp,
-          );
-
-          if (result.isSuccess) {
-            processed++;
-          } else {
-            failed.add(receiptId);
-          }
-        } catch (e) {
-          failed.add(receiptId);
-          Logger.error('PrintRetryQueue.processQueue failed', e);
-        }
-      }
-
-      // Remove successfully printed jobs
-      if (processed > 0) {
-        final jobsToRemove = _queue.keys
-            .where((id) => !failed.contains(id))
-            .toList();
-        for (final id in jobsToRemove) {
-          await remove(id);
-        }
-      }
-
-      _broadcastEvent(RetryQueueEvent(
-        type: RetryQueueEventType.completed,
-        processed: processed,
-        failed: failed.length,
-        message:
-            'Queue processing complete: $processed successful, ${failed.length} failed',
-      ));
-
-      // Schedule next retry if there are failures
-      if (failed.isNotEmpty) {
+        _broadcastEvent(RetryQueueEvent(
+          type: RetryQueueEventType.maxRetriesReached,
+          receiptId: receiptId,
+          message: 'Print job $receiptId failed after $_maxRetries attempts',
+        ));
+      } else {
         _scheduleRetry();
       }
-
-      return const Success<void>(null);
-    } catch (e, stackTrace) {
-      Logger.error('PrintRetryQueue.processQueue failed', e, stackTrace);
-      return Failure<void>('Processing failed: $e');
     }
   }
 
-  // ===== Broadcast and Listen =====
+  // ===== Event Broadcasting =====
 
   void _broadcastEvent(RetryQueueEvent event) {
     if (!_eventController.isClosed) {
       _eventController.add(event);
     }
-  }
-
-  StreamSubscription<RetryQueueEvent>? listenToEvents(
-    void Function(RetryQueueEvent event) onData, {
-    Function? onError,
-    void Function()? onDone,
-  }) {
-    return _eventController.stream.listen(
-      onData,
-      onError: onError,
-      onDone: onDone,
-    );
   }
 
   // ===== Dispose =====
@@ -336,21 +249,4 @@ class PrintRetryQueue {
     _retryTimer?.cancel();
     _eventController.close();
   }
-}
-
-// Helper to avoid circular import - creates PrinterService dynamically
-Future<dynamic> _createPrinterService() async {
-  // Dynamic import to break circular dependency
-  // ignore: avoid_dynamic_calls
-  final printerService =
-      // ignore: avoid_dynamic_calls
-      (await _importPrinterService()).PrinterService();
-  return printerService;
-}
-
-// This will be resolved at runtime
-Future<dynamic> _importPrinterService() async {
-  // The actual import is handled by the Dart module system
-  // This function exists to satisfy the analyzer
-  throw UnsupportedError('This should be overridden by the actual import');
 }

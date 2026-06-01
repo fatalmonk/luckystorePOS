@@ -117,6 +117,9 @@ class QueuedOfflineTransaction {
     DateTime? conflictAcknowledgedAt,
     Map<String, dynamic>? conflictMeta,
     String? syncValidationState,
+    List<Map<String, dynamic>>? items,
+    List<Map<String, dynamic>>? payments,
+    double? discount,
   }) {
     return QueuedOfflineTransaction(
       clientTransactionId: clientTransactionId,
@@ -124,9 +127,9 @@ class QueuedOfflineTransaction {
       storeId: storeId,
       cashierId: cashierId,
       sessionId: sessionId,
-      items: items,
-      payments: payments,
-      discount: discount,
+      items: items ?? this.items,
+      payments: payments ?? this.payments,
+      discount: discount ?? this.discount,
       createdAt: createdAt,
       syncedAt: syncedAt ?? this.syncedAt,
       state: state ?? this.state,
@@ -269,8 +272,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }) {
     final millis = DateTime.now().millisecondsSinceEpoch;
     final rand = _random.nextInt(1 << 32).toRadixString(16).padLeft(8, '0');
-    final shortStore = storeId.replaceAll('-', '').substring(0, 8);
-    final shortCashier = cashierId.replaceAll('-', '').substring(0, 8);
+    // I27: Pad to 8 chars before substring to prevent RangeError on short IDs
+    final shortStore = storeId.replaceAll('-', '').padRight(8, '0').substring(0, 8);
+    final shortCashier = cashierId.replaceAll('-', '').padRight(8, '0').substring(0, 8);
     return 'tx-$shortStore-$shortCashier-$millis-$rand';
   }
 
@@ -322,10 +326,12 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     for (final id in ids) {
       final i = _queue.indexWhere((q) => q.clientTransactionId == id);
       if (i < 0) continue;
+      // I29: Reset retryCount to 0 for manual retry
       _queue[i] = _queue[i].copyWith(
         state: OfflineSyncState.pending,
         nextRetryAt: null,
         lastError: null,
+        retryCount: 0,
       );
     }
     await _persistQueue();
@@ -348,6 +354,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     final i = _queue.indexWhere((q) => q.clientTransactionId == clientTransactionId);
     if (i < 0) return;
     _queue[i] = _queue[i].copyWith(
+      state: OfflineSyncState.pending,
       requiresManagerReview: false,
       reviewedAt: DateTime.now(),
       conflictAcknowledgedAt: DateTime.now(),
@@ -429,6 +436,10 @@ class OfflineTransactionSyncService extends ChangeNotifier {
             tx.state == OfflineSyncState.syncing) {
           return false;
         }
+        // Exclude permanently failed transactions to prevent battery drain
+        if (tx.state == OfflineSyncState.failed && tx.retryCount > 10) {
+          return false;
+        }
         final nextRetry = tx.nextRetryAt;
         return nextRetry == null || !nextRetry.isAfter(now);
       }).toList();
@@ -437,9 +448,10 @@ class OfflineTransactionSyncService extends ChangeNotifier {
         final outcome = await _syncSingle(tx);
         if (outcome == _SyncAttemptOutcome.failed) {
           runHadFailure = true;
-        } else {
+        } else if (outcome == _SyncAttemptOutcome.synced) {
           runHadSuccess = true;
         }
+        // retryScheduled does not reset failures, but is not counted as direct failure
       }
 
       if (runHadSuccess) {
@@ -518,7 +530,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
             ),
           );
           // Don't return - let it retry in next cycle
-          return _SyncAttemptOutcome.synced; // Mark as handled
+          return _SyncAttemptOutcome.retryScheduled; // Mark as retry scheduled
         }
         return _SyncAttemptOutcome.conflict;
       }
@@ -543,7 +555,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
         tx.copyWith(
           state: OfflineSyncState.failed,
           retryCount: retries,
-          nextRetryAt: DateTime.now().add(backoff),
+          nextRetryAt: retries > 10 ? null : DateTime.now().add(backoff),
           lastError: e.toString(),
         ),
       );
@@ -569,7 +581,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 
   Future<File> _queueFile() async {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getApplicationSupportDirectory();
     return File('${dir.path}/offline_transaction_queue.json');
   }
 
@@ -588,7 +600,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 
   Future<File> _logFile() async {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getApplicationSupportDirectory();
     return File('${dir.path}/offline_sync_action_logs.json');
   }
 
@@ -612,8 +624,10 @@ class OfflineTransactionSyncService extends ChangeNotifier {
 
   Future<void> _persistQueue() async {
     final file = await _queueFile();
+    final tmpFile = File('${file.path}.tmp');
     final encoded = jsonEncode(_queue.map((e) => e.toJson()).toList());
-    await file.writeAsString(encoded, flush: true);
+    await tmpFile.writeAsString(encoded, flush: true);
+    await tmpFile.rename(file.path);
   }
 
   Future<void> _loadLogs() async {
@@ -633,4 +647,4 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 }
 
-enum _SyncAttemptOutcome { synced, conflict, failed }
+enum _SyncAttemptOutcome { synced, conflict, failed, retryScheduled }

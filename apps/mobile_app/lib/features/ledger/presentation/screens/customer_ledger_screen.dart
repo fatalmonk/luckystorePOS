@@ -43,21 +43,43 @@ class _CustomerLedgerScreenState extends State<CustomerLedgerScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final storeId = auth.appUser?.storeId;
-      final userId = auth.appUser?.id;
+      final tenantId = auth.appUser?.tenantId;
 
-      if (storeId == null || userId == null) {
-        throw Exception('Store context not found. Please log in again.');
+      if (storeId == null || storeId.isEmpty || tenantId == null) {
+        setState(() => _isLoading = false);
+        return;
       }
 
-      // Fetch customers with outstanding balances using receivables aging RPC
-      final response = await _supabase.rpc('get_receivables_aging', params: {
-        'p_tenant_id': userId,
+      // 1. Fetch all customers from parties table
+      final partiesResponse = await _supabase.from('parties').select('id, name, phone, type, created_at').eq('type', 'customer').eq('tenant_id', tenantId).order('name');
+      
+      // 2. Fetch customers with outstanding balances
+      final agingResponse = await _supabase.rpc('get_receivables_aging', params: {
+        'p_tenant_id': tenantId,
         'p_store_id': storeId,
         'p_search': null,
       }) as List<dynamic>;
 
+      // 3. Merge them: use parties as the base, add balance_due from aging
+      final agingMap = {
+        for (var item in agingResponse)
+          item['party_id'] ?? item['customer_id']: item
+      };
+
+      final mergedCustomers = (partiesResponse as List<dynamic>).map((party) {
+        final agingData = agingMap[party['id']];
+        return {
+          'id': party['id'],
+          'party_id': party['id'],
+          'customer_name': party['name'],
+          'phone': party['phone'],
+          'balance_due': agingData != null ? (agingData['balance_due'] as num).toDouble() : 0.0,
+          'days_overdue': agingData != null ? agingData['days_overdue'] : 0,
+        };
+      }).toList();
+
       setState(() {
-        _customers = List<Map<String, dynamic>>.from(response);
+        _customers = mergedCustomers;
         _isLoading = false;
       });
     } catch (e) {
@@ -129,7 +151,7 @@ Thank you.''';
     final auth = context.read<AuthProvider>();
     try {
       await _supabase.rpc('log_customer_reminder', params: {
-        'p_tenant_id': auth.appUser?.id,
+        'p_tenant_id': auth.appUser?.tenantId,
         'p_store_id': auth.appUser?.storeId,
         'p_party_id': customer['party_id'],
         'p_type': 'whatsapp',

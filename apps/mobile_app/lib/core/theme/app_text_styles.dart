@@ -4,7 +4,7 @@ import 'app_colors.dart';
 /// Lucky Store Design Token Dictionary - Canonical Text Styles
 /// Version: 1.0.0
 class AppTextStyles {
-  static const String fontFamilyPrimary = '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+  static const String fontFamilyPrimary = 'HindSiliguri';
   
   static const String fontFamilyMono = 'JetBrainsMono';
 
@@ -35,6 +35,14 @@ class AppTextStyles {
   static const TextStyle headingMd = TextStyle(
     fontFamily: fontFamilyPrimary,
     fontSize: 16,
+    height: 1.4,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle headingSm = TextStyle(
+    fontFamily: fontFamilyPrimary,
+    fontSize: 14,
     height: 1.4,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,

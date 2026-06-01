@@ -14,6 +14,7 @@ import 'features/checkout/presentation/screens/bkash_checkout.dart';
 import 'features/checkout/presentation/screens/gamified_reward_screen.dart';
 import 'features/pos/presentation/providers/pos_search_provider.dart';
 import 'shared/services/startup_guard_service.dart';
+import 'shared/locale/locale_notifier.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,23 +74,7 @@ class _BootstrapAppState extends State<BootstrapApp> {
   }
 }
 
-class AppLocaleNotifier extends ChangeNotifier {
-  Locale? _locale;
-  Locale? get locale => _locale;
 
-  void setLocale(Locale locale) {
-    if (!L10n.all.contains(locale)) return;
-    _locale = locale;
-    notifyListeners();
-  }
-}
-
-class L10n {
-  static final all = [
-    const Locale('en'),
-    const Locale('bn'),
-  ];
-}
 
 class LuckyStoreApp extends StatelessWidget {
   final StartupResult startupResult;
@@ -162,11 +147,12 @@ class LuckyStoreApp extends StatelessWidget {
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => PosProvider()),
             ChangeNotifierProxyProvider<PosProvider, PosSearchProvider>(
-              create: (_) => PosSearchProvider(PosProvider()),
+              create: (ctx) => PosSearchProvider(Provider.of<PosProvider>(ctx, listen: false)),
               update: (_, pos, search) {
-                final provider = search ?? PosSearchProvider(pos);
-                // Re-initialize if PosProvider changes store
-                return provider;
+                if (search == null || search.posProvider != pos) {
+                  return PosSearchProvider(pos);
+                }
+                return search;
               },
             ),
             ChangeNotifierProxyProvider<AuthProvider, AppAccessController>(

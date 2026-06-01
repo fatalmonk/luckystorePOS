@@ -200,7 +200,7 @@ class _SearchTabState extends State<SearchTab> {
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.65,
+                    childAspectRatio: 0.60,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),

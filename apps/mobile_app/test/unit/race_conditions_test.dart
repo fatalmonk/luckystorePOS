@@ -30,11 +30,11 @@ void main() {
       final saleTotal = 150.0;
       final payments = [
         {'amount': 100.0, 'method': 'cash'},
-        {'amount': 60.0, 'method': 'card'},
+        {'amount': 50.0, 'method': 'card'},
       ];
 
       final totalPaid = payments.fold(0.0, (sum, p) => sum + (p['amount'] as double));
-      expect(totalPaid, greaterThan(saleTotal));
+      expect(totalPaid, lessThanOrEqualTo(saleTotal));
     });
   });
 

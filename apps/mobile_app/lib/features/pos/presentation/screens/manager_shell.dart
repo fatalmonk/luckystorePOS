@@ -123,66 +123,77 @@ class _ManagerShellState extends State<ManagerShell> {
       body: Row(
         children: [
           // Rail
-          NavigationRail(
-            backgroundColor: AppColors.primitiveNeutral800,
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: _onTabSelected,
-            labelType: NavigationRailLabelType.all,
-            selectedIconTheme: IconThemeData(color: AppColors.primaryDefault),
-            selectedLabelTextStyle: AppTextStyles.labelSm.copyWith(
-                color: AppColors.primaryDefault, fontWeight: FontWeight.w700),
-            unselectedIconTheme:
-                IconThemeData(color: AppColors.primitiveNeutral400),
-            unselectedLabelTextStyle: AppTextStyles.labelSm.copyWith(
-                color: AppColors.primitiveNeutral400),
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Column(
-                children: [
-                  // Store pill
-                  Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [AppColors.primaryDefault, AppColors.primaryHover]),
-                      borderRadius: AppRadius.borderSm,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: NavigationRail(
+                      backgroundColor: AppColors.primitiveNeutral800,
+                      selectedIndex: _selectedIndex,
+                      onDestinationSelected: _onTabSelected,
+                      labelType: NavigationRailLabelType.all,
+                      selectedIconTheme: IconThemeData(color: AppColors.primaryDefault),
+                      selectedLabelTextStyle: AppTextStyles.labelSm.copyWith(
+                          color: AppColors.primaryDefault, fontWeight: FontWeight.w700),
+                      unselectedIconTheme:
+                          IconThemeData(color: AppColors.primitiveNeutral400),
+                      unselectedLabelTextStyle: AppTextStyles.labelSm.copyWith(
+                          color: AppColors.primitiveNeutral400),
+                      leading: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Column(
+                          children: [
+                            // Store pill
+                            Container(
+                              width: 44, height: 44,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                    colors: [AppColors.primaryDefault, AppColors.primaryHover]),
+                                borderRadius: AppRadius.borderSm,
+                              ),
+                              child: Icon(Icons.store_rounded,
+                                  color: AppColors.primaryOn, size: 22),
+                            ),
+                            const SizedBox(height: 8),
+                            // Manager name chip
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primitiveNeutral0.withValues(alpha: 0.07),
+                                borderRadius: AppRadius.borderXs,
+                              ),
+                              child: Text(
+                                auth.appUser?.name.split(' ').first ?? 'Manager',
+                                style: AppTextStyles.labelXs.copyWith(
+                                    color: AppColors.primitiveNeutral400, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      trailing: Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: IconButton(
+                          tooltip: 'Sign Out',
+                          icon: Icon(Icons.logout_rounded,
+                              color: AppColors.primitiveNeutral400),
+                          onPressed: () => _handleSignOut(context),
+                        ),
+                      ),
+                      destinations: _tabs
+                          .map((t) => NavigationRailDestination(
+                                icon: Icon(t.icon),
+                                selectedIcon: Icon(t.activeIcon),
+                                label: Text(t.label),
+                              ))
+                          .toList(),
                     ),
-                    child: Icon(Icons.store_rounded,
-                        color: AppColors.primaryOn, size: 22),
                   ),
-                  const SizedBox(height: 8),
-                  // Manager name chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.primitiveNeutral0.withValues(alpha: 0.07),
-                      borderRadius: AppRadius.borderXs,
-                    ),
-                    child: Text(
-                      auth.appUser?.name.split(' ').first ?? 'Manager',
-                      style: AppTextStyles.labelXs.copyWith(
-                          color: AppColors.primitiveNeutral400, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            trailing: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: IconButton(
-                tooltip: 'Sign Out',
-                icon: Icon(Icons.logout_rounded,
-                    color: AppColors.primitiveNeutral400),
-                onPressed: () => _handleSignOut(context),
-              ),
-            ),
-            destinations: _tabs
-                .map((t) => NavigationRailDestination(
-                      icon: Icon(t.icon),
-                      selectedIcon: Icon(t.activeIcon),
-                      label: Text(t.label),
-                    ))
-                .toList(),
+                ),
+              );
+            },
           ),
           // Vertical divider
           Container(width: 1, color: AppColors.primitiveNeutral600.withValues(alpha: 0.2)),

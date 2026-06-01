@@ -46,14 +46,18 @@ class InventoryRepository {
       }
 
       // Step 2: Log audit trail
-      await _auditService.forStockDeduction(
-        storeId: storeId,
-        productId: productId,
-        productName: productName,
-        quantity: quantity,
-        saleId: saleId,
-        performedBy: performedBy,
-      );
+      try {
+        await _auditService.forStockDeduction(
+          storeId: storeId,
+          productId: productId,
+          productName: productName,
+          quantity: quantity,
+          saleId: saleId,
+          performedBy: performedBy,
+        );
+      } catch (auditError, auditStack) {
+        Logger.error('InventoryRepository: Non-fatal audit log failure during deductStock', auditError, auditStack);
+      }
 
       // Step 3: Parse and return result
       final data = (deductionResult as Success<Map<String, dynamic>>).data;
@@ -91,6 +95,16 @@ class InventoryRepository {
       );
       return available >= quantity;
     } catch (e) {
+      // I13: Distinguish network errors from actual stock shortage
+      // Allow sale with warning on network error, but block on actual shortage
+      if (e.toString().contains('network') ||
+          e.toString().contains('SocketException') ||
+          e.toString().contains('TimeoutException')) {
+        Logger.warning(
+          'InventoryRepository: Network error checking stock, allowing sale with warning: $e',
+        );
+        return true; // Allow sale, will sync later
+      }
       Logger.warning(
         'InventoryRepository: Could not check stock availability: $e',
       );
@@ -157,18 +171,22 @@ class InventoryRepository {
     required Map<String, int> productQuantities, // Map of productId -> quantity
   }) async {
     try {
-      for (final entry in productQuantities.entries) {
-        final productId = entry.key;
-        final quantity = entry.value;
-
-        final available = await getStockQuantity(
+      final entries = productQuantities.entries.toList();
+      final results = await Future.wait(
+        entries.map((entry) => getStockQuantity(
           storeId: storeId,
-          productId: productId,
-        );
+          productId: entry.key,
+        )),
+      );
 
-        if (available < quantity) {
+      for (int i = 0; i < entries.length; i++) {
+        final productId = entries[i].key;
+        final requiredQty = entries[i].value;
+        final available = results[i];
+
+        if (available < requiredQty) {
           return Failure<bool>(
-            'Insufficient stock for $productId: available=$available, required=$quantity',
+            'Insufficient stock for $productId: available=$available, required=$requiredQty',
           );
         }
       }

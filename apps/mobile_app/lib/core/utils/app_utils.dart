@@ -80,8 +80,8 @@ class AppUtils {
   }
   
   /// Format currency in Bangladeshi Taka
-  static String formatCurrency(int amount) {
-    return '${amount.toString().replaceAllMapped(
+  static String formatCurrency(double amount) {
+    return '${amount.toStringAsFixed(2).replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (Match m) => '${m[1]},',
     )}৳';
@@ -103,6 +103,12 @@ class AppUtils {
   /// Check if date is end of day
   static bool isEndOfDay(DateTime date, {Duration buffer = const Duration(hours: 1)}) {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dateDay = DateTime(date.year, date.month, date.day);
+
+    // I7: Only check time if date is today
+    if (dateDay != today) return false;
+
     final endOfDay = DateTime(date.year, date.month, date.day).add(
       const Duration(hours: 23, minutes: 59),
     );

@@ -16,22 +16,22 @@ class CsvImportService {
   /// Maximum allowed rows per import
   static const int maxRows = 1000;
 
-  /// Import result containing products and any errors
-  final List<BulkPrintProduct> products = [];
-  final List<CsvImportError> errors = [];
-  final List<CsvImportWarning> warnings = [];
-
-  List<String> _headers = [];
-
   /// Parse CSV string and return import result
   Future<CsvImportResult> parseCsv(String csvContent, {String? filename}) async {
-    products.clear();
-    errors.clear();
-    warnings.clear();
+    // Normalize line endings (I4)
+    final normalizedContent = csvContent
+        .replaceAll('\r\n', '\n')
+        .replaceAll('\r', '\n');
+
+    // Local state for re-entrancy (I3)
+    final List<BulkPrintProduct> products = [];
+    final List<CsvImportError> errors = [];
+    final List<CsvImportWarning> warnings = [];
+    List<String> headers = [];
 
     try {
       // Detect delimiter (comma or semicolon)
-      final delimiter = _detectDelimiter(csvContent);
+      final delimiter = _detectDelimiter(normalizedContent);
 
       // Parse CSV
       final csvConverter = CsvToListConverter(
@@ -57,9 +57,9 @@ class CsvImportService {
       }
 
       // Detect and validate headers
-      _headers = _detectHeaders(rows);
+      headers = _detectHeaders(rows);
 
-      if (_headers.isEmpty) {
+      if (headers.isEmpty) {
         errors.add(CsvImportError(
           row: 0,
           message: 'Could not detect column headers. First row must contain column names.',
@@ -75,7 +75,7 @@ class CsvImportService {
       }
 
       // Check for required columns
-      if (!_hasRequiredColumns()) {
+      if (!_hasRequiredColumns(headers)) {
         errors.add(CsvImportError(
           row: 0,
           message: 'Required column not found: "barcode" or "sku". '
@@ -84,7 +84,7 @@ class CsvImportService {
         ));
       }
 
-      if (!_hasRequiredColumns(forName: true)) {
+      if (!_hasRequiredColumns(headers, forName: true)) {
         errors.add(CsvImportError(
           row: 0,
           message: 'Required column not found: "name" or "product_name". '
@@ -126,7 +126,7 @@ class CsvImportService {
         final row = dataRows[i];
         final rowNumber = i + 2; // +1 for header, +1 for 1-based indexing
 
-        final product = _parseRow(row, rowNumber);
+        final product = _parseRow(row, rowNumber, headers, errors, warnings);
 
         if (product != null) {
           // Check for duplicate barcodes
@@ -217,11 +217,11 @@ class CsvImportService {
   }
 
   /// Check if required columns are present
-  bool _hasRequiredColumns({bool forName = false}) {
+  bool _hasRequiredColumns(List<String> headers, {bool forName = false}) {
     final requiredKey = forName ? 'name' : 'barcode';
     final possibleNames = _columnAliases[requiredKey]!;
 
-    for (final header in _headers) {
+    for (final header in headers) {
       if (possibleNames.contains(header)) {
         return true;
       }
@@ -230,10 +230,10 @@ class CsvImportService {
   }
 
   /// Get column index by field name (handles aliases)
-  int? _getColumnIndex(String fieldName) {
+  int? _getColumnIndex(List<String> headers, String fieldName) {
     final possibleNames = _columnAliases[fieldName]!;
-    for (int i = 0; i < _headers.length; i++) {
-      if (possibleNames.contains(_headers[i])) {
+    for (int i = 0; i < headers.length; i++) {
+      if (possibleNames.contains(headers[i])) {
         return i;
       }
     }
@@ -241,14 +241,20 @@ class CsvImportService {
   }
 
   /// Parse a single row into a BulkPrintProduct
-  BulkPrintProduct? _parseRow(List<dynamic> row, int rowNumber) {
+  BulkPrintProduct? _parseRow(
+    List<dynamic> row,
+    int rowNumber,
+    List<String> headers,
+    List<CsvImportError> errors,
+    List<CsvImportWarning> warnings,
+  ) {
     // Get column indices
-    final barcodeIndex = _getColumnIndex('barcode');
-    final nameIndex = _getColumnIndex('name');
-    final priceIndex = _getColumnIndex('price');
-    final mrpIndex = _getColumnIndex('mrp');
-    final copiesIndex = _getColumnIndex('copies');
-    final idIndex = _getColumnIndex('id');
+    final barcodeIndex = _getColumnIndex(headers, 'barcode');
+    final nameIndex = _getColumnIndex(headers, 'name');
+    final priceIndex = _getColumnIndex(headers, 'price');
+    final mrpIndex = _getColumnIndex(headers, 'mrp');
+    final copiesIndex = _getColumnIndex(headers, 'copies');
+    final idIndex = _getColumnIndex(headers, 'id');
 
     // Validate required fields
     if (barcodeIndex == null || barcodeIndex >= row.length) {
@@ -294,7 +300,9 @@ class CsvImportService {
     if (priceIndex != null && priceIndex < row.length) {
       final priceStr = row[priceIndex].toString().trim();
       if (priceStr.isNotEmpty) {
-        price = double.tryParse(priceStr.replaceAll(RegExp(r'[^\d.]'), ''));
+        // I5: Preserve minus sign for negative prices
+        final cleaned = priceStr.replaceAll(RegExp(r'[^\d.-]'), '');
+        price = double.tryParse(cleaned);
         if (price == null) {
           warnings.add(CsvImportWarning(
             row: rowNumber,
@@ -311,7 +319,9 @@ class CsvImportService {
     if (mrpIndex != null && mrpIndex < row.length) {
       final mrpStr = row[mrpIndex].toString().trim();
       if (mrpStr.isNotEmpty) {
-        mrp = double.tryParse(mrpStr.replaceAll(RegExp(r'[^\d.]'), ''));
+        // I5: Preserve minus sign for negative MRP
+        final cleaned = mrpStr.replaceAll(RegExp(r'[^\d.-]'), '');
+        mrp = double.tryParse(cleaned);
         if (mrp == null) {
           warnings.add(CsvImportWarning(
             row: rowNumber,

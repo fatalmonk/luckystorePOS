@@ -7,6 +7,7 @@ class AppUser {
   final String role;
   final String storeId;
   final String? posPin;
+  final String? tenantId;
 
   const AppUser({
     required this.id,
@@ -15,6 +16,7 @@ class AppUser {
     required this.role,
     required this.storeId,
     this.posPin,
+    this.tenantId,
   });
 
   /// Construct from a Supabase `public.users` row map.
@@ -26,6 +28,7 @@ class AppUser {
       role:    json['role']     as String? ?? 'cashier',
       storeId: json['store_id'] as String? ?? '',
       posPin:  json['pos_pin']  as String?,
+      tenantId: json['tenant_id'] as String?,
     );
   }
 

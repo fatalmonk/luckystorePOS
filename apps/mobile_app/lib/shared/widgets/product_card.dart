@@ -60,14 +60,17 @@ class ProductCard extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.backgroundSubtle,
-                      image: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                      image: (item.imageUrl != null && item.imageUrl!.isNotEmpty)
                           ? DecorationImage(
                               image: NetworkImage(item.imageUrl!),
                               fit: BoxFit.cover,
+                              onError: (error, stackTrace) {
+                                debugPrint('Image failed to load: ${item.imageUrl}');
+                              },
                             )
                           : null,
                     ),
-                    child: item.imageUrl == null
+                    child: (item.imageUrl == null || item.imageUrl!.isEmpty)
                         ? Center(
                             child: Icon(
                               Icons.image_not_supported_outlined,

@@ -257,6 +257,14 @@ class ConflictResolver {
 
     final shortagePercent = (totalRequested - totalAvailable) / totalRequested;
 
+    if (shortagePercent <= 0) {
+      return ConflictResolution.autoResolved(
+        type: ConflictType.stockInsufficient,
+        transaction: transaction,
+        reason: 'Stock is actually sufficient (requested: $totalRequested, available: $totalAvailable)',
+      );
+    }
+
     // Small shortage within threshold - auto-adjust
     if (shortagePercent <= config.maxStockShortagePercent) {
       return ConflictResolution.autoResolved(
@@ -339,22 +347,35 @@ class ConflictResolver {
   /// Apply price adjustment to transaction
   QueuedOfflineTransaction _applyPriceAdjustment(
     QueuedOfflineTransaction transaction,
-    double newTotal,
+    double newPrice,
   ) {
-    // Recalculate payments if needed
-    final payments = List<Map<String, dynamic>>.from(transaction.payments);
-    final paymentTotal = payments.fold<double>(
-      0,
-      (sum, p) => sum + ((p['amount'] as num?)?.toDouble() ?? 0),
+    final adjustedItems = List<Map<String, dynamic>>.from(
+      transaction.items.map((item) => Map<String, dynamic>.from(item)),
     );
+    for (int i = 0; i < adjustedItems.length; i++) {
+      adjustedItems[i]['unit_price'] = newPrice;
+      if (adjustedItems[i].containsKey('requested_unit_price')) {
+        adjustedItems[i]['requested_unit_price'] = newPrice;
+      }
+    }
 
-    // If payment total doesn't match new amount, flag for review
-    if ((paymentTotal - newTotal).abs() > 0.01) {
-      // TODO: Adjust payment split or require additional payment
+    final subtotal = adjustedItems.fold<double>(0, (sum, item) {
+      final qty = (item['qty'] ?? item['quantity']) as num?;
+      final price = (item['unit_price'] ?? item['requested_unit_price'] ?? 0.0) as num;
+      return sum + (price.toDouble() * (qty?.toDouble() ?? 0.0));
+    });
+    final newTotal = (subtotal - transaction.discount).clamp(0.0, double.infinity);
+    final payments = List<Map<String, dynamic>>.from(
+      transaction.payments.map((p) => Map<String, dynamic>.from(p)),
+    );
+    if (payments.isNotEmpty) {
+      payments[0]['amount'] = newTotal;
     }
 
     return transaction.copyWith(
       syncValidationState: 'PRICE_ADJUSTED',
+      items: adjustedItems,
+      payments: payments,
     );
   }
 
@@ -372,8 +393,41 @@ class ConflictResolver {
       }
     }
 
+    final items = List<Map<String, dynamic>>.from(
+      transaction.items.map((item) => Map<String, dynamic>.from(item)),
+    );
+    for (int i = 0; i < items.length; i++) {
+      final id = (items[i]['product_id'] ?? items[i]['item_id']) as String?;
+      if (id != null && adjustedItemsMap.containsKey(id)) {
+        if (items[i].containsKey('qty')) {
+          items[i]['qty'] = adjustedItemsMap[id]!;
+        }
+        if (items[i].containsKey('quantity')) {
+          items[i]['quantity'] = adjustedItemsMap[id]!;
+        }
+        if (!items[i].containsKey('qty') && !items[i].containsKey('quantity')) {
+          items[i]['qty'] = adjustedItemsMap[id]!;
+        }
+      }
+    }
+
+    final subtotal = items.fold<double>(0, (sum, item) {
+      final price = (item['unit_price'] ?? item['requested_unit_price'] ?? 0.0) as num;
+      final qty = (item['qty'] ?? item['quantity'] ?? 0) as num;
+      return sum + (price.toDouble() * qty.toDouble());
+    });
+    final newTotal = (subtotal - transaction.discount).clamp(0.0, double.infinity);
+    final payments = List<Map<String, dynamic>>.from(
+      transaction.payments.map((p) => Map<String, dynamic>.from(p)),
+    );
+    if (payments.isNotEmpty) {
+      payments[0]['amount'] = newTotal;
+    }
+
     return transaction.copyWith(
       syncValidationState: 'QUANTITY_ADJUSTED',
+      items: items,
+      payments: payments,
     );
   }
 
@@ -382,8 +436,23 @@ class ConflictResolver {
     QueuedOfflineTransaction transaction,
     List<Map<String, dynamic>> remainingItems,
   ) {
+    final subtotal = remainingItems.fold<double>(0, (sum, item) {
+      final price = (item['unit_price'] ?? item['requested_unit_price'] ?? 0.0) as num;
+      final qty = (item['qty'] ?? item['quantity'] ?? 0) as num;
+      return sum + (price.toDouble() * qty.toDouble());
+    });
+    final newTotal = (subtotal - transaction.discount).clamp(0.0, double.infinity);
+    final payments = List<Map<String, dynamic>>.from(
+      transaction.payments.map((p) => Map<String, dynamic>.from(p)),
+    );
+    if (payments.isNotEmpty) {
+      payments[0]['amount'] = newTotal;
+    }
+
     return transaction.copyWith(
       syncValidationState: 'ITEMS_REMOVED',
+      items: remainingItems,
+      payments: payments,
     );
   }
 }
@@ -395,10 +464,10 @@ extension ConflictResolutionExtension on QueuedOfflineTransaction {
     return state == OfflineSyncState.conflict &&
         conflictType != null &&
         [
-          'price_mismatch_small',
-          'stock_shortage_small',
-          'partial_unavailable',
-          'duplicate',
+          'priceMismatch',
+          'stockInsufficient',
+          'itemUnavailable',
+          'duplicateTransaction',
         ].contains(conflictType);
   }
 
