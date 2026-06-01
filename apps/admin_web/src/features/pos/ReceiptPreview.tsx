@@ -45,7 +45,7 @@ export function ReceiptPreview({
   paidAmount,
   changeAmount,
   saleNumber,
-  batchId: 
+  batchId,
   receiptConfig,
   onClose,
 }: ReceiptPreviewProps) {
