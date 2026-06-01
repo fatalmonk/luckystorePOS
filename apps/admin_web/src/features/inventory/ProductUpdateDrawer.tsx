@@ -5,9 +5,10 @@ import { api } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
+import type { Database } from '../../lib/database.types';
 
 interface ProductUpdateDrawerProps {
-  product: any | null;
+  product: Database['public']['Tables']['items']['Row'] | null;
   storeId: string;
   onClose: () => void;
   /** Called with product name after successful update, for highlighting parent card */
@@ -81,8 +82,9 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle Escape key
+  // Handle Escape key — only client-side
   useEffect(() => {
+    if (typeof document === 'undefined') return;
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
@@ -100,7 +102,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     const firstElement = focusableElements[0] as HTMLElement;
     const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
     const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== 'Tab' || typeof document === 'undefined') return;
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
@@ -153,7 +155,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       setImageFile(null);
       setImagePreview(null);
     },
-    onError: (err: any) => notify(err.message || 'Failed to upload image.', 'error'),
+    onError: (err: Error) => notify(err.message || 'Failed to upload image.', 'error'),
   });
 
   const stockMutation = useMutation({
@@ -171,12 +173,12 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
       if (!pricingDirty) onClose();
     },
-    onError: (err: any) => notify(err.message || 'Failed to update stock.', 'error'),
+    onError: (err: Error) => notify(err.message || 'Failed to update stock.', 'error'),
   });
 
   const priceMutation = useMutation({
     mutationFn: async () => {
-      const updates: any = {
+      const updates: Partial<Database['public']['Tables']['items']['Update']> = {
         price: sellingPrice,
       };
       if (typeof mrp === 'number') updates.mrp = mrp;
@@ -189,7 +191,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       queryClient.invalidateQueries({ queryKey: ['products'] });
       if (!stockDirty) onClose();
     },
-    onError: (err: any) => notify(err.message || 'Failed to update prices.', 'error'),
+    onError: (err: Error) => notify(err.message || 'Failed to update prices.', 'error'),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

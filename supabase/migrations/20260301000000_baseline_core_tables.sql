@@ -30,23 +30,11 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
-DO $$ BEGIN
-  CREATE TYPE "public"."discount_type" AS ENUM (
-    'percentage',
-    'fixed'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 
 ALTER TYPE "public"."discount_type" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."payment_type" AS ENUM (
-    'cash',
-    'mobile_banking',
-    'card',
-    'other'
-);
 
 
 ALTER TYPE "public"."payment_type" OWNER TO "postgres";
@@ -64,23 +52,10 @@ CREATE TYPE "public"."po_status" AS ENUM (
 ALTER TYPE "public"."po_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."sale_status" AS ENUM (
-    'completed',
-    'voided',
-    'refunded'
-);
 
 
-ALTER TYPE "public"."sale_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."session_status" AS ENUM (
-    'open',
-    'closed'
-);
-
-
-ALTER TYPE "public"."session_status" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."stock_transfer_status" AS ENUM (
@@ -5909,8 +5884,7 @@ ALTER TABLE ONLY "public"."categories"
 
 
 
-ALTER TABLE ONLY "public"."categories"
-    ADD CONSTRAINT "categories_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -5974,8 +5948,7 @@ ALTER TABLE ONLY "public"."item_batches"
 
 
 
-ALTER TABLE ONLY "public"."items"
-    ADD CONSTRAINT "items_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6114,8 +6087,7 @@ ALTER TABLE ONLY "public"."sale_audit_log"
 
 
 
-ALTER TABLE ONLY "public"."sale_items"
-    ADD CONSTRAINT "sale_items_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6134,8 +6106,7 @@ ALTER TABLE ONLY "public"."sale_sync_conflicts"
 
 
 
-ALTER TABLE ONLY "public"."sales"
-    ADD CONSTRAINT "sales_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6159,13 +6130,11 @@ ALTER TABLE ONLY "public"."stock_ledger"
 
 
 
-ALTER TABLE ONLY "public"."stock_levels"
-    ADD CONSTRAINT "stock_levels_pkey" PRIMARY KEY ("store_id", "item_id");
 
 
 
-ALTER TABLE ONLY "public"."stock_movements"
-    ADD CONSTRAINT "stock_movements_pkey" PRIMARY KEY ("id");
+
+
 
 
 
@@ -6189,8 +6158,7 @@ ALTER TABLE ONLY "public"."stores"
 
 
 
-ALTER TABLE ONLY "public"."stores"
-    ADD CONSTRAINT "stores_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6199,8 +6167,7 @@ ALTER TABLE ONLY "public"."suppliers"
 
 
 
-ALTER TABLE ONLY "public"."tenants"
-    ADD CONSTRAINT "tenants_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6209,8 +6176,7 @@ ALTER TABLE ONLY "public"."users"
 
 
 
-ALTER TABLE ONLY "public"."users"
-    ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6622,8 +6588,7 @@ ALTER TABLE ONLY "public"."batches"
 
 
 
-ALTER TABLE ONLY "public"."categories"
-    ADD CONSTRAINT "categories_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
+
 
 
 
@@ -6747,8 +6712,7 @@ ALTER TABLE ONLY "public"."item_batches"
 
 
 
-ALTER TABLE ONLY "public"."items"
-    ADD CONSTRAINT "items_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE SET NULL;
+
 
 
 
@@ -6987,13 +6951,11 @@ ALTER TABLE ONLY "public"."sale_items"
 
 
 
-ALTER TABLE ONLY "public"."sale_items"
-    ADD CONSTRAINT "sale_items_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id");
 
 
 
-ALTER TABLE ONLY "public"."sale_items"
-    ADD CONSTRAINT "sale_items_sale_id_fkey" FOREIGN KEY ("sale_id") REFERENCES "public"."sales"("id") ON DELETE CASCADE;
+
+
 
 
 
@@ -7017,8 +6979,7 @@ ALTER TABLE ONLY "public"."sale_sync_conflicts"
 
 
 
-ALTER TABLE ONLY "public"."sales"
-    ADD CONSTRAINT "sales_cashier_id_fkey" FOREIGN KEY ("cashier_id") REFERENCES "public"."users"("id");
+
 
 
 
@@ -7032,8 +6993,7 @@ ALTER TABLE ONLY "public"."sales"
 
 
 
-ALTER TABLE ONLY "public"."sales"
-    ADD CONSTRAINT "sales_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
+
 
 
 
@@ -7067,13 +7027,11 @@ ALTER TABLE ONLY "public"."stock_ledger"
 
 
 
-ALTER TABLE ONLY "public"."stock_levels"
-    ADD CONSTRAINT "stock_levels_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id") ON DELETE CASCADE;
 
 
 
-ALTER TABLE ONLY "public"."stock_levels"
-    ADD CONSTRAINT "stock_levels_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id") ON DELETE CASCADE;
+
+
 
 
 
@@ -7082,18 +7040,15 @@ ALTER TABLE ONLY "public"."stock_movements"
 
 
 
-ALTER TABLE ONLY "public"."stock_movements"
-    ADD CONSTRAINT "stock_movements_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id");
 
 
 
-ALTER TABLE ONLY "public"."stock_movements"
-    ADD CONSTRAINT "stock_movements_performed_by_fkey" FOREIGN KEY ("performed_by") REFERENCES "public"."users"("id");
 
 
 
-ALTER TABLE ONLY "public"."stock_movements"
-    ADD CONSTRAINT "stock_movements_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
+
+
+
 
 
 
@@ -7127,8 +7082,7 @@ ALTER TABLE ONLY "public"."stock_transfers"
 
 
 
-ALTER TABLE ONLY "public"."users"
-    ADD CONSTRAINT "users_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "public"."stores"("id");
+
 
 
 

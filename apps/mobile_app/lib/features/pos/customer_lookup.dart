@@ -27,6 +27,7 @@ class _CustomerPhoneLookupState extends State<CustomerPhoneLookup> {
   Party? _selectedCustomer;
 
   Timer? _debounceTimer;
+  int _searchRequestId = 0;
 
   Future<void> _search(String query) async {
     if (query.length < 3) {
@@ -86,8 +87,9 @@ class _CustomerPhoneLookupState extends State<CustomerPhoneLookup> {
           ),
           onChanged: (val) {
             _debounceTimer?.cancel();
+            final requestId = ++_searchRequestId;
             _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-              if (mounted) _search(val);
+              if (mounted && requestId == _searchRequestId) _search(val);
             });
           },
         ),

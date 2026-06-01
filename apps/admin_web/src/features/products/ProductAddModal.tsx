@@ -6,15 +6,30 @@ import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface ProductAddModalProps {
   isOpen: boolean;
-  categories: unknown[] | undefined;
+  categories?: Category[];
   onClose: () => void;
+}
+
+interface ProductFormData {
+  name: string;
+  price: number;
+  cost: number;
+  sku: string;
+  barcode: string;
+  category_id: string;
+  active: boolean;
 }
 
 export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModalProps) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     price: 0,
     cost: 0,
@@ -25,7 +40,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
   });
 
   const createMutation = useMutation({
-    mutationFn: (newProduct: unknown) => api.products.create(newProduct),
+    mutationFn: (newProduct: ProductFormData) => api.products.create(newProduct),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setFormData({
