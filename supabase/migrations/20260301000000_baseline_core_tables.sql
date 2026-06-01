@@ -41,12 +41,14 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 ALTER TYPE "public"."discount_type" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."payment_type" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "public"."payment_type" AS ENUM (
     'cash',
     'mobile_banking',
     'card',
     'other'
-);
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 
 ALTER TYPE "public"."payment_type" OWNER TO "postgres";
