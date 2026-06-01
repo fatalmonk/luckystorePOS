@@ -83,7 +83,9 @@ describe('Supabase RPC Integration Tests', () => {
     });
   });
 
-  describe('record_sale', () => {
+  // TODO: record_sale was DROP'd in migration 20260506100000
+  // Unify with create_sale before re-enabling these tests
+  describe.skip('record_sale', () => {
     const generateKey = () => `test-sale-${Date.now()}-${uuidv4()}`;
 
     it('should successfully record a sale and update stock/ledger', async () => {
@@ -203,7 +205,8 @@ describe('Supabase RPC Integration Tests', () => {
     });
   });
 
-  describe('Tenant Isolation', () => {
+  // TODO: depends on record_sale which was DROP'd
+  describe.skip('Tenant Isolation', () => {
     it('should not allow Tenant B to record sale for Tenant A', async () => {
       const saleData = {
         p_idempotency_key: `iso-test-${Date.now()}`,
