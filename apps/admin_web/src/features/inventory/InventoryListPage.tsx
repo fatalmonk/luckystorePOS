@@ -4,7 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus, Filter, X } from 'lucide-react';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
