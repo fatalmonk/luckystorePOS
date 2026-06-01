@@ -5884,8 +5884,7 @@ ALTER TABLE ONLY "public"."categories"
 
 
 
-ALTER TABLE ONLY "public"."categories"
-    ADD CONSTRAINT "categories_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -5949,8 +5948,7 @@ ALTER TABLE ONLY "public"."item_batches"
 
 
 
-ALTER TABLE ONLY "public"."items"
-    ADD CONSTRAINT "items_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6089,8 +6087,7 @@ ALTER TABLE ONLY "public"."sale_audit_log"
 
 
 
-ALTER TABLE ONLY "public"."sale_items"
-    ADD CONSTRAINT "sale_items_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6109,8 +6106,7 @@ ALTER TABLE ONLY "public"."sale_sync_conflicts"
 
 
 
-ALTER TABLE ONLY "public"."sales"
-    ADD CONSTRAINT "sales_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6134,13 +6130,11 @@ ALTER TABLE ONLY "public"."stock_ledger"
 
 
 
-ALTER TABLE ONLY "public"."stock_levels"
-    ADD CONSTRAINT "stock_levels_pkey" PRIMARY KEY ("store_id", "item_id");
 
 
 
-ALTER TABLE ONLY "public"."stock_movements"
-    ADD CONSTRAINT "stock_movements_pkey" PRIMARY KEY ("id");
+
+
 
 
 
@@ -6164,8 +6158,7 @@ ALTER TABLE ONLY "public"."stores"
 
 
 
-ALTER TABLE ONLY "public"."stores"
-    ADD CONSTRAINT "stores_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6174,8 +6167,7 @@ ALTER TABLE ONLY "public"."suppliers"
 
 
 
-ALTER TABLE ONLY "public"."tenants"
-    ADD CONSTRAINT "tenants_pkey" PRIMARY KEY ("id");
+
 
 
 
@@ -6184,8 +6176,7 @@ ALTER TABLE ONLY "public"."users"
 
 
 
-ALTER TABLE ONLY "public"."users"
-    ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
+
 
 
 
