@@ -110,6 +110,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   const { signOut } = useAuth();
   const navGroups = useNavGroups();
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Helper to check if a route is active or if any child sub-route is active
   const isRouteActive = (path: string, hasChildren = false) => {
