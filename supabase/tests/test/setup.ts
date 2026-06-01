@@ -21,8 +21,8 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     autoRefreshToken: false,
     persistSession: false,
   },
-  global: {
-    WebSocket: ws as any,
+  realtime: {
+    transport: ws,
   },
 });
 

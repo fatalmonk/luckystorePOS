@@ -17,7 +17,7 @@ import { ProductCard } from '../../components/product/ProductCard';
 import './receipt.css';
 
 export function QuickPosPage() {
-  const { storeId, tenantId } = useAuth();
+  const { storeId, tenantId, user } = useAuth();
 
   // Error state (shared across hooks)
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +104,7 @@ export function QuickPosPage() {
     cart.cartDiscount,
     storeId,
     tenantId,
+    user?.id,
     paymentMethods,
     cart.clearCart,
     handleError,
@@ -386,7 +387,7 @@ export function QuickPosPage() {
             header_text: receiptConfig.header_text || '',
             footer_text: receiptConfig.footer_text || '',
           } : null}
-          onClose={() => sale.resetPaymentModal}
+          onClose={sale.clearCompletedSale}
         />
       )}
     </div>

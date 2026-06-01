@@ -32,6 +32,7 @@ interface InventoryItem {
   sku?: string;
   current_qty: number;
   reorder_status: 'OK' | 'LOW' | 'OUT';
+  min_qty?: number;
   last_updated?: string;
   price?: number;
   cost?: number;  // cost price
@@ -55,7 +56,16 @@ export function InventoryListPage() {
   
   // Advanced Sorting
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc'>('name-asc');
-  
+
+  // Advanced Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low' | 'out'>('all');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+
+  // Whether any filter (beyond 'all') is active — used to show Clear Filters button
+  const hasActiveFilters = stockFilter !== 'all' || minPrice !== '' || maxPrice !== '';
+
   // Deferred search to avoid blocking render thread
   const deferredSearch = useDeferredValue(debouncedSearch);
   
@@ -146,7 +156,30 @@ export function InventoryListPage() {
         p.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
         p.sku?.toLowerCase().includes(deferredSearch.toLowerCase());
       const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
-      return matchesSearch && matchesCategory;
+
+      // Stock status filter
+      let matchesStock = true;
+      if (stockFilter === 'out') {
+        matchesStock = p.current_qty === 0;
+      } else if (stockFilter === 'low') {
+        matchesStock = p.current_qty > 0 && p.current_qty <= 5;
+      } else if (stockFilter === 'in_stock') {
+        matchesStock = p.current_qty > 0;
+      }
+
+      // Price range filter
+      const min = minPrice !== '' ? parseFloat(minPrice) : NaN;
+      const max = maxPrice !== '' ? parseFloat(maxPrice) : NaN;
+      const price = p.price || 0;
+      let matchesPrice = true;
+      if (!isNaN(min)) {
+        matchesPrice = matchesPrice && price >= min;
+      }
+      if (!isNaN(max)) {
+        matchesPrice = matchesPrice && price <= max;
+      }
+
+      return matchesSearch && matchesCategory && matchesStock && matchesPrice;
     }) ?? [];
 
     return [...filtered].sort((a, b) => {
@@ -176,7 +209,7 @@ export function InventoryListPage() {
           return 0;
       }
     });
-  }, [inventory, deferredSearch, selectedCategoryId, sortBy]);
+  }, [inventory, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
@@ -409,6 +442,100 @@ export function InventoryListPage() {
               selectedId={selectedCategoryId}
               onSelect={setSelectedCategoryId}
             />
+          )}
+          
+          {/* Toggle Filters Button */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                showFilters || hasActiveFilters
+                  ? 'bg-warm-surface border-warm-border-warm text-warm-fg'
+                  : 'bg-surface border-border-default text-text-muted hover:bg-background-subtle'
+              }`}
+            >
+              <Filter size={14} />
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+              {(hasActiveFilters && !showFilters) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-warm-accent" />
+              )}
+            </button>
+            {showFilters && (
+              <span className="text-[11px] text-text-muted">Filter by stock status &amp; price range</span>
+            )}
+          </div>
+
+          {/* Collapsible Filter Bar */}
+          {showFilters && (
+            <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3 transition-all">
+              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                {/* Stock Status Filter */}
+                <div className="flex-1 min-w-0 w-full sm:w-auto">
+                  <label className="block text-[11px] font-medium text-warm-muted uppercase tracking-wider mb-1">
+                    Stock Status
+                  </label>
+                  <select
+                    value={stockFilter}
+                    onChange={(e) => setStockFilter(e.target.value as typeof stockFilter)}
+                    className="w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-warm-accent appearance-none cursor-pointer"
+                  >
+                    <option value="all">All Stock</option>
+                    <option value="in_stock">In Stock (&gt;0)</option>
+                    <option value="low">Low Stock</option>
+                    <option value="out">Out of Stock</option>
+                  </select>
+                </div>
+
+                {/* Min Price */}
+                <div className="w-full sm:w-28">
+                  <label className="block text-[11px] font-medium text-warm-muted uppercase tracking-wider mb-1">
+                    Min Price
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-warm-accent placeholder-warm-muted/50"
+                  />
+                </div>
+
+                {/* Max Price */}
+                <div className="w-full sm:w-28">
+                  <label className="block text-[11px] font-medium text-warm-muted uppercase tracking-wider mb-1">
+                    Max Price
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="9999"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-warm-accent placeholder-warm-muted/50"
+                  />
+                </div>
+
+                {/* Clear Filters */}
+                {hasActiveFilters && (
+                  <div className="flex items-end h-full pt-0 sm:pt-5 w-full sm:w-auto">
+                    <button
+                      onClick={() => {
+                        setStockFilter('all');
+                        setMinPrice('');
+                        setMaxPrice('');
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-warm-border-warm text-warm-muted hover:text-warm-fg hover:bg-warm-dim transition-colors w-full sm:w-auto justify-center"
+                    >
+                      <X size={14} />
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           
           <div className="flex flex-col sm:flex-row gap-3">

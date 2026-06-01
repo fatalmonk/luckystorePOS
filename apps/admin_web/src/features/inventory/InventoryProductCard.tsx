@@ -9,6 +9,7 @@ interface InventoryItem {
   sku?: string;
   current_qty: number;
   reorder_status: 'OK' | 'LOW' | 'OUT';
+  min_qty?: number;
   last_updated?: string;
   price?: number;
   cost?: number;
@@ -181,6 +182,11 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             {item.current_qty.toLocaleString('en-IN')}
           </span>
         </div>
+        {item.min_qty != null && item.min_qty > 0 && (
+          <div className="text-xs text-warm-muted text-right -mt-1">
+            Threshold: {item.min_qty}
+          </div>
+        )}
 
         {/* Price Row with Edit */}
         <div className="pt-2 border-t border-border-subtle">
