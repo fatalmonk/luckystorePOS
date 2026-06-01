@@ -52,14 +52,7 @@ CREATE TYPE "public"."po_status" AS ENUM (
 ALTER TYPE "public"."po_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."sale_status" AS ENUM (
-    'completed',
-    'voided',
-    'refunded'
-);
 
-
-ALTER TYPE "public"."sale_status" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."session_status" AS ENUM (
