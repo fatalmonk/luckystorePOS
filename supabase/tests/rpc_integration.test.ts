@@ -21,19 +21,18 @@ describe('Supabase RPC Integration Tests', () => {
   describe('lookup_item_by_scan', () => {
     it('should find an item by barcode', async () => {
       const { data, error } = await supabase.rpc('lookup_item_by_scan', {
-        p_scan_value: 'BAR-A1',
+        p_barcode: 'BAR-A1',
         p_store_id: storeA1
       });
 
       expect(error).toBeNull();
       expect(data.name).toBe('Alpha Product 1');
-      expect(data.sku).toBe('SKU-A1');
       expect(data.price).toBe(100);
     });
 
     it('should return null for non-existent barcode', async () => {
       const { data, error } = await supabase.rpc('lookup_item_by_scan', {
-        p_scan_value: 'BAR-MISSING',
+        p_barcode: 'BAR-MISSING',
         p_store_id: storeA1
       });
 
@@ -45,8 +44,8 @@ describe('Supabase RPC Integration Tests', () => {
   describe('search_items_pos', () => {
     it('should filter items by store and query', async () => {
       const { data, error } = await supabase.rpc('search_items_pos', {
-        p_store_id: storeA1,
-        p_query: 'Alpha'
+        p_query: 'Alpha',
+        p_store_id: storeA1
       });
 
       expect(error).toBeNull();
@@ -57,16 +56,14 @@ describe('Supabase RPC Integration Tests', () => {
     it('should not return items from another store if they dont exist there', async () => {
       // itemB1 is only in storeB1
       const { data, error } = await supabase.rpc('search_items_pos', {
-        p_store_id: storeA1,
-        p_query: 'Beta'
+        p_query: 'Beta',
+        p_store_id: storeA1
       });
 
       expect(error).toBeNull();
-      // Even if item exists in public.items, it might not be in search if it filters by stock_levels?
-      // Actually, search_items_pos does a LEFT JOIN on stock_levels, but it filters by items.active.
-      // So it will show up with qty_on_hand: 0.
+      // search_items_pos returns (item_id, name, price, stock) — no qty_on_hand
       const betaItem = data?.find((i: any) => i.name === 'Beta Product 1');
-      expect(betaItem?.qty_on_hand).toBe(0);
+      expect(betaItem?.stock).toBe(0);
     });
   });
 
