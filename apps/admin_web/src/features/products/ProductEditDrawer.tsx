@@ -28,9 +28,19 @@ interface ProductEditDrawerProps {
   onClose: () => void;
 }
 
+interface ProductFormData {
+  name: string;
+  price: number;
+  cost: number;
+  sku?: string;
+  barcode?: string;
+  category_id?: string;
+  active: boolean;
+}
+
 export function ProductEditDrawer({ product, categories, onClose }: ProductEditDrawerProps) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<ProductFormData>({ name: '', price: 0, cost: 0, active: true });
 
   useEffect(() => {
     if (product) {
@@ -47,7 +57,7 @@ export function ProductEditDrawer({ product, categories, onClose }: ProductEditD
   }, [product]);
 
   const updateMutation = useMutation({
-    mutationFn: (updates: any) => api.products.update(product!.id, updates),
+    mutationFn: (updates: Partial<Product>) => api.products.update(product!.id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();

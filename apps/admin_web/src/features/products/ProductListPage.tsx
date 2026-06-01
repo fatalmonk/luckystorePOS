@@ -16,8 +16,12 @@ import { Card } from '../../components/ui/Card';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { CategoryThumbnailGrid } from './CategoryThumbnailGrid';
 
+import type { Database } from '../../lib/database.types';
+
 const ROW_HEIGHT = 64;
 const VISIBLE_ROWS = 15;
+
+type Product = Database['public']['Tables']['items']['Row'] & { stock?: number; categories?: { name: string } };
 
 export function ProductListPage() {
   useRealtimeSubscription({
@@ -28,7 +32,7 @@ export function ProductListPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
-  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'stock-asc'>('name-asc');
@@ -46,7 +50,7 @@ export function ProductListPage() {
   });
 
   const filteredProducts = useMemo(() => {
-    let filtered = products?.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => {
+    let filtered = products?.filter((p: Product) => {
       const matchesSearch =
         p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -55,7 +59,7 @@ export function ProductListPage() {
       return matchesSearch && matchesCategory;
     }) ?? [];
 
-    filtered = [...filtered].sort((a: unknown, b: unknown) => {
+    filtered = [...filtered].sort((a: Product, b: Product) => {
       switch (sortBy) {
         case 'name-asc': return a.name.localeCompare(b.name);
         case 'name-desc': return b.name.localeCompare(a.name);
@@ -72,9 +76,9 @@ export function ProductListPage() {
   const stats = useMemo(() => {
     const all = products ?? [];
     const total = all.length;
-    const lowStock = all.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => (p.stock || 0) > 0 && (p.stock || 0) <= 5).length;
-    const outOfStock = all.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => (p.stock || 0) === 0).length;
-    const totalValue = all.reduce((sum: number, p: unknown) => sum + ((p.price || 0) * (p.stock || 0)), 0);
+    const lowStock = all.filter((p: Product) => (p.stock || 0) > 0 && (p.stock || 0) <= 5).length;
+    const outOfStock = all.filter((p: Product) => (p.stock || 0) === 0).length;
+    const totalValue = all.reduce((sum: number, p: Product) => sum + ((p.price || 0) * (p.stock || 0)), 0);
     return { total, lowStock, outOfStock, totalValue };
   }, [products]);
 
@@ -153,10 +157,10 @@ export function ProductListPage() {
           </div>
         ) : (
           <CategoryThumbnailGrid
-            categories={categories?.map((c: unknown) => ({
+            categories={categories?.map((c: Category) => ({
               id: c.id,
               name: c.name || c.category,
-              itemCount: products?.filter((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => p.category_id === c.id).length ?? 0,
+              {filteredProducts.map((p: Product) => {
               imageUrl: c.image_url,
               color: c.color,
               icon: c.icon,
@@ -254,7 +258,7 @@ export function ProductListPage() {
           />
         ) : viewMode === 'grid' ? (
           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredProducts.map((p: { id: string; name: string; sku?: string; barcode?: string; price: number; quantity: number; category?: string; image_url?: string }) => (
+            {filteredProducts.map((p: Product) => (
               <div
                 key={p.id}
                 onClick={() => setViewingProductId(p.id)}
@@ -335,7 +339,7 @@ export function ProductListPage() {
           >
             <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const p = filteredProducts[virtualRow.index];
+              const p = filteredProducts[virtualRow.index] as Product;
                 return (
                   <div
                     key={p.id}
