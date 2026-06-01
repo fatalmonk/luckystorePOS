@@ -46,6 +46,7 @@ interface UsePosSaleReturn {
   removeSplitPayment: (id: string) => void;
   handleQuickAmount: (amount: number) => void;
   resetPaymentModal: () => void;
+  clearCompletedSale: () => void;
   handleCheckout: () => Promise<void>;
 }
 
@@ -56,7 +57,8 @@ export function usePosSale(
   cartDiscount: number,
   storeId: string | undefined,
   tenantId: string | undefined,
-  paymentMethods: unknown[],
+  cashierId: string | undefined,
+  paymentMethods: any[],
   clearCart: () => void,
   onError: (msg: string) => void,
 ): UsePosSaleReturn {
@@ -100,6 +102,10 @@ export function usePosSale(
     setSplitPayments([]);
     setSplitMethod(null);
     setSplitAmount('');
+  }, []);
+
+  const clearCompletedSale = useCallback(() => {
+    setCompletedSale(null);
   }, []);
 
   const handleQuickAmount = useCallback((amount: number) => {
@@ -158,7 +164,7 @@ export function usePosSale(
         }));
         paidTotalInner = splitPayments.reduce((sum, p) => sum + p.amount, 0);
         paymentMethodLabel = splitPayments.map(p => {
-          const m = paymentMethods.find((m: unknown) => m.id === p.accountId);
+          const m = paymentMethods.find((m: any) => m.id === p.accountId);
           return m ? m.name : 'Unknown';
         }).join(' + ');
       } else {
@@ -168,20 +174,21 @@ export function usePosSale(
           party_id: null,
         }];
         paidTotalInner = parseFloat(paymentAmount);
-        paymentMethodLabel = paymentMethods.find((m: unknown) => m.id === selectedPaymentMethod)?.name || 'Cash';
+        paymentMethodLabel = paymentMethods.find((m: any) => m.id === selectedPaymentMethod)?.name || 'Cash';
       }
 
       const saleData = {
         idempotencyKey: crypto.randomUUID(),
         tenantId: tenantId || '',
         storeId: storeId || '',
+        cashierId: cashierId || '',
         items: cart.map(item => ({
           item_id: item.product.id,
           quantity: item.qty,
           unit_price: item.unitPrice,
         })),
         payments,
-        notes: null,
+        notes: undefined,
       };
 
       debugLog('Sale payload', saleData);
@@ -209,13 +216,13 @@ export function usePosSale(
       } else {
         onError(result.error || 'Sale failed. Please try again.');
       }
-    } catch (err: { message?: string }) {
+    } catch (err: any) {
       console.error('[QuickPosPage] Checkout error:', err);
       onError(err.message || 'Sale failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
-  }, [cart, storeId, tenantId, isSplitMode, selectedPaymentMethod, paymentAmount, splitPayments, totalAmount, subtotal, cartDiscount, paymentMethods, clearCart, resetPaymentModal, onError]);
+  }, [cart, storeId, tenantId, cashierId, isSplitMode, selectedPaymentMethod, paymentAmount, splitPayments, totalAmount, subtotal, cartDiscount, paymentMethods, clearCart, resetPaymentModal, onError]);
 
   return {
     isProcessing,
@@ -240,6 +247,7 @@ export function usePosSale(
     removeSplitPayment,
     handleQuickAmount,
     resetPaymentModal,
+    clearCompletedSale,
     handleCheckout,
   };
 }

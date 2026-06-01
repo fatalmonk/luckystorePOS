@@ -49,6 +49,22 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   const [mrp, setMrp] = useState<number | undefined>(undefined);
   const [costPrice, setCostPrice] = useState<number | undefined>(undefined);
 
+  // Min qty editing state
+  const [editingMinQty, setEditingMinQty] = useState<number | null>(null);
+  const [isEditingMinQty, setIsEditingMinQty] = useState(false);
+  const minQtyMutation = useMutation({
+    mutationFn: async (newMinQty: number) => {
+      return api.inventory.setMinQty(storeId, product.id, newMinQty);
+    },
+    onSuccess: () => {
+      notify('Low stock threshold updated.', 'success');
+      queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
+      setIsEditingMinQty(false);
+      setEditingMinQty(null);
+    },
+    onError: (err: Error) => notify(err.message || 'Failed to update threshold.', 'error'),
+  });
+
   // Dirty tracking
   const [stockDirty, setStockDirty] = useState(false);
   const [pricingDirty, setPricingDirty] = useState(false);
@@ -358,6 +374,48 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                 <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
                   <p className="text-xs text-warm-muted mb-1">Status</p>
                   <p className="text-sm font-medium text-warm-fg">{product.reorder_status || (product.is_active ? 'Active' : 'Inactive')}</p>
+                </div>
+                {/* Low Stock Alert (editable) */}
+                <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm col-span-2">
+                  <p className="text-xs text-warm-muted mb-1">Low Stock Alert (min_qty)</p>
+                  {isEditingMinQty ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        value={editingMinQty ?? ''}
+                        onChange={(e) => setEditingMinQty(parseInt(e.target.value) || 0)}
+                        className="w-20 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-warm-accent"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => minQtyMutation.mutate(editingMinQty ?? 0)}
+                        disabled={minQtyMutation.isPending}
+                        className="px-2 py-1 rounded-md bg-warm-accent text-white text-xs font-semibold disabled:opacity-50"
+                      >
+                        {minQtyMutation.isPending ? 'Saving...' : 'Save'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsEditingMinQty(false); setEditingMinQty(null); }}
+                        className="px-2 py-1 rounded-md border border-warm-border-warm text-warm-muted text-xs hover:text-warm-fg"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-warm-fg">{(product as any).min_qty ?? 5}</p>
+                      <button
+                        type="button"
+                        onClick={() => { setEditingMinQty((product as any).min_qty ?? 5); setIsEditingMinQty(true); }}
+                        className="text-xs text-warm-accent hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="p-4 bg-slate-50 rounded-lg border border-warm-border-warm mt-2">

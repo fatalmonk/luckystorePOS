@@ -80,6 +80,15 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+  setMinQty: async (storeId: string, itemId: string, minQty: number) => {
+    const { data, error } = await supabase
+      .from('stock_alert_thresholds')
+      .upsert({ store_id: storeId, item_id: itemId, min_qty: minQty }, { onConflict: 'store_id,item_id' })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
   getPriceHistory: async (storeId: string, itemId: string, limit = 5) => {
     const { data, error } = await supabase.rpc('get_price_history' as any, {
       p_store_id: storeId,
