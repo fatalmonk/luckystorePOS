@@ -7,756 +7,353 @@
     <meta name="author" content="Lucky Store">
     <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE">
     <title>Lucky Store POS - Modern Point of Sale System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ===== Design Tokens (from tokens.css warm palette) ===== */
-        :root {
-            --color-background-default: #f5f4ed;
-            --color-background-subtle: #faf9f5;
-            --color-surface-default: #faf9f5;
-            --color-surface-raised: #faf9f5;
-            --color-primary-default: #c96442;
-            --color-primary-hover: #d97757;
-            --color-primary-pressed: #b53333;
-            --color-primary-subtle: #f5f4ed;
-            --color-primary-on: #ffffff;
-            --color-secondary-default: #4a7c59;
-            --color-secondary-hover: #3d664a;
-            --color-secondary-subtle: #faf9f5;
-            --color-secondary-on: #ffffff;
-            --color-success-default: #4a7c59;
-            --color-success-dark: #3d664a;
-            --color-success-subtle: #f5f4ed;
-            --color-success-on: #ffffff;
-            --color-danger-default: #b53333;
-            --color-danger-dark: #9e2a2a;
-            --color-danger-subtle: #faf9f5;
-            --color-danger-on: #ffffff;
-            --color-warning-default: #c9a227;
-            --color-warning-dark: #ac861d;
-            --color-warning-subtle: #faf9f5;
-            --color-warning-on: #ffffff;
-            --color-border-default: #e8e6dc;
-            --color-border-strong: #b0aea5;
-            --color-text-primary: #141413;
-            --color-text-secondary: #5e5d59;
-            --color-text-muted: #87867f;
-            --color-text-inverse: #ffffff;
-            --radius-xs: 4px;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            --radius-full: 9999px;
-            --elevation-1: 0px 1px 3px 0px rgba(15, 23, 42, 0.08), 0px 1px 2px -1px rgba(15, 23, 42, 0.06);
-            --elevation-2: 0px 4px 8px -2px rgba(15, 23, 42, 0.10), 0px 2px 4px -2px rgba(15, 23, 42, 0.06);
-            --elevation-3: 0px 20px 40px -8px rgba(15, 23, 42, 0.14), 0px 8px 16px -4px rgba(15, 23, 42, 0.08);
-            --font-family-primary: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --motion-duration-fast: 120ms;
-            --motion-duration-normal: 220ms;
-            --motion-duration-slow: 350ms;
-            --motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* ===== Reset & Base ===== */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
         body {
-            font-family: var(--font-family-primary);
-            color: var(--color-text-primary);
-            background: var(--color-background-default);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
-        img { max-width: 100%; height: auto; display: block; }
-        a { color: inherit; text-decoration: none; }
 
-        /* ===== Navigation ===== */
-        .nav {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(250, 249, 245, 0.85);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--color-border-default);
-            padding: 0 var(--radius-xl);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .nav-inner {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-            height: 72px;
-        }
-        .nav-brand {
-            display: flex; align-items: center; gap: 12px;
-            font-size: 20px; font-weight: 700; color: var(--color-text-primary);
-        }
-        .nav-brand-icon {
-            width: 36px; height: 36px; background: var(--color-primary-default);
-            border-radius: var(--radius-sm); display: flex; align-items: center;
-            justify-content: center; color: var(--color-primary-on); font-size: 18px;
-        }
-        .nav-links { display: flex; gap: 32px; }
-        .nav-links a {
-            font-size: 15px; font-weight: 500; color: var(--color-text-secondary);
-            transition: color var(--motion-duration-fast) var(--motion-easing-standard);
-        }
-        .nav-links a:hover { color: var(--color-primary-default); }
-        .nav-cta {
-            background: var(--color-primary-default); color: var(--color-primary-on);
-            padding: 10px 24px; border-radius: var(--radius-full); font-weight: 600;
-            font-size: 14px; border: none; cursor: pointer;
-            transition: background var(--motion-duration-fast) var(--motion-easing-standard);
-        }
-        .nav-cta:hover { background: var(--color-primary-hover); }
-        .nav-mobile-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
-        .nav-mobile-toggle span { display: block; width: 24px; height: 2px; background: var(--color-text-primary); margin: 5px 0; border-radius: 2px; }
 
-        /* ===== Hero Section ===== */
-        .hero {
-            max-width: 1200px; margin: 0 auto;
-            padding: 80px var(--radius-xl) 60px;
+        header {
             text-align: center;
-        }
-        .hero-trust {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--color-surface-default); border: 1px solid var(--color-border-default);
-            border-radius: var(--radius-full); padding: 6px 16px 6px 12px;
-            font-size: 13px; color: var(--color-text-secondary); margin-bottom: 24px;
-        }
-        .hero-trust-badge {
-            background: var(--color-success-subtle); color: var(--color-success-dark);
-            font-weight: 600; font-size: 11px; padding: 2px 8px;
-            border-radius: var(--radius-full);
-        }
-        .hero h1 {
-            font-size: clamp(32px, 5vw, 56px); font-weight: 700;
-            line-height: 1.2; margin-bottom: 20px; color: var(--color-text-primary);
-        }
-        .hero h1 .highlight {
-            background: linear-gradient(135deg, var(--color-primary-default), var(--color-primary-hover));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .hero-desc {
-            font-size: 18px; color: var(--color-text-secondary); max-width: 640px;
-            margin: 0 auto 32px; line-height: 1.7;
-        }
-        .hero-actions { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
-        .btn-primary {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--color-primary-default); color: var(--color-primary-on);
-            padding: 14px 32px; border-radius: var(--radius-full); font-weight: 600;
-            font-size: 16px; border: none; cursor: pointer;
-            transition: all var(--motion-duration-normal) var(--motion-easing-standard);
-            box-shadow: 0 4px 14px rgba(201, 100, 66, 0.3);
-        }
-        .btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201, 100, 66, 0.4); }
-        .btn-secondary {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--color-surface-default); color: var(--color-text-primary);
-            padding: 14px 32px; border-radius: var(--radius-full); font-weight: 600;
-            font-size: 16px; border: 1px solid var(--color-border-default); cursor: pointer;
-            transition: all var(--motion-duration-normal) var(--motion-easing-standard);
-        }
-        .btn-secondary:hover { background: var(--color-background-subtle); border-color: var(--color-border-strong); }
-        .hero-visual {
-            margin-top: 48px; border-radius: var(--radius-lg);
-            overflow: hidden; box-shadow: var(--elevation-3);
-            border: 1px solid var(--color-border-default);
-        }
-        .hero-visual img { width: 100%; }
-
-        /* ===== Logo Strip ===== */
-        .logo-strip {
-            max-width: 1200px; margin: 0 auto;
-            padding: 40px var(--radius-xl);
-            text-align: center;
-        }
-        .logo-strip-label {
-            font-size: 13px; font-weight: 500; text-transform: uppercase;
-            letter-spacing: 2px; color: var(--color-text-muted); margin-bottom: 24px;
-        }
-        .logo-strip-icons {
-            display: flex; align-items: center; justify-content: center;
-            gap: 48px; flex-wrap: wrap; opacity: 0.5;
-        }
-        .logo-strip-icons span {
-            font-size: 28px;
-            filter: grayscale(0.3);
+            padding: 60px 20px;
+            color: white;
+            position: relative;
         }
 
-        /* ===== "What Is" Section ===== */
-        .what-is {
-            max-width: 1200px; margin: 0 auto;
-            padding: 80px var(--radius-xl);
-            display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
-        }
-        .what-is-content { }
-        .what-is-label {
-            font-size: 13px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 2px; color: var(--color-primary-default); margin-bottom: 12px;
-        }
-        .what-is h2 {
-            font-size: clamp(28px, 3.5vw, 42px); font-weight: 700;
-            line-height: 1.2; margin-bottom: 16px;
-        }
-        .what-is h2 .highlight {
-            background: linear-gradient(135deg, var(--color-primary-default), var(--color-primary-hover));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .what-is p { font-size: 16px; color: var(--color-text-secondary); line-height: 1.7; }
-        .what-is-visual {
-            background: var(--color-surface-default); border-radius: var(--radius-lg);
-            border: 1px solid var(--color-border-default); aspect-ratio: 4/3;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 120px; box-shadow: var(--elevation-2);
+        .admin-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid white;
+            border-radius: 25px;
+            font-size: 0.9em;
+            transition: all 0.3s;
         }
 
-        /* ===== Features Section ===== */
-        .features {
-            max-width: 1200px; margin: 0 auto;
-            padding: 80px var(--radius-xl);
-        }
-        .features-header { text-align: center; margin-bottom: 56px; }
-        .features-label {
-            font-size: 13px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 2px; color: var(--color-primary-default); margin-bottom: 12px;
-        }
-        .features h2 {
-            font-size: clamp(28px, 3.5vw, 42px); font-weight: 700;
-            line-height: 1.2; margin-bottom: 16px;
-        }
-        .features-subtitle {
-            font-size: 17px; color: var(--color-text-secondary); max-width: 560px; margin: 0 auto;
-        }
-        .features-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-        }
-        .feature-card {
-            background: var(--color-surface-default); border-radius: var(--radius-lg);
-            border: 1px solid var(--color-border-default);
-            padding: 32px 24px; text-align: center;
-            transition: all var(--motion-duration-normal) var(--motion-easing-standard);
-        }
-        .feature-card:hover {
-            box-shadow: var(--elevation-2); border-color: var(--color-primary-default);
-            transform: translateY(-2px);
-        }
-        .feature-card-icon {
-            width: 56px; height: 56px; margin: 0 auto 20px;
-            background: var(--color-primary-subtle); border-radius: var(--radius-md);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px;
-        }
-        .feature-card h3 {
-            font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--color-text-primary);
-        }
-        .feature-card p {
-            font-size: 14px; color: var(--color-text-secondary); line-height: 1.6;
+        .admin-link:hover {
+            background: white;
+            color: #667eea;
         }
 
-        /* ===== About Section ===== */
-        .about {
-            max-width: 1200px; margin: 0 auto;
-            padding: 80px var(--radius-xl);
-            display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
-        }
-        .about-content { }
-        .about h2 {
-            font-size: clamp(28px, 3.5vw, 42px); font-weight: 700;
-            line-height: 1.2; margin-bottom: 16px;
-        }
-        .about p {
-            font-size: 16px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 16px;
-        }
-        .about-visual {
-            background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-background-subtle));
-            border-radius: var(--radius-lg); border: 1px solid var(--color-border-default);
-            aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
-            font-size: 80px;
-        }
-        .about-stats {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px;
-        }
-        .about-stat {
-            text-align: center; padding: 16px;
-            background: var(--color-surface-default); border-radius: var(--radius-md);
-            border: 1px solid var(--color-border-default);
-        }
-        .about-stat-value {
-            font-size: 28px; font-weight: 700; color: var(--color-primary-default);
-        }
-        .about-stat-label {
-            font-size: 13px; color: var(--color-text-muted); margin-top: 4px;
-        }
-
-        /* ===== FAQ Section ===== */
-        .faq {
-            max-width: 800px; margin: 0 auto;
-            padding: 80px var(--radius-xl);
-        }
-        .faq-header { text-align: center; margin-bottom: 48px; }
-        .faq h2 {
-            font-size: clamp(28px, 3.5vw, 42px); font-weight: 700;
-        }
-        .faq-item {
-            border-bottom: 1px solid var(--color-border-default);
-        }
-        .faq-question {
-            width: 100%; background: none; border: none;
-            padding: 20px 0; text-align: left; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 16px; font-weight: 600; color: var(--color-text-primary);
-            font-family: var(--font-family-primary);
-        }
-        .faq-question:hover { color: var(--color-primary-default); }
-        .faq-question .faq-icon {
-            width: 24px; height: 24px; border-radius: var(--radius-full);
-            background: var(--color-surface-default); border: 1px solid var(--color-border-default);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0; transition: transform var(--motion-duration-normal);
-        }
-        .faq-item.open .faq-question .faq-icon { transform: rotate(45deg); }
-        .faq-answer {
-            max-height: 0; overflow: hidden;
-            transition: max-height var(--motion-duration-slow) var(--motion-easing-standard);
-        }
-        .faq-item.open .faq-answer { max-height: 200px; }
-        .faq-answer p {
-            padding-bottom: 20px; font-size: 15px; color: var(--color-text-secondary); line-height: 1.7;
-        }
-
-        /* ===== CTA / Download Section ===== */
-        .cta {
-            max-width: 1200px; margin: 0 auto;
-            padding: 80px var(--radius-xl);
-        }
-        .cta-card {
-            background: linear-gradient(135deg, var(--color-primary-default), var(--color-primary-hover));
-            border-radius: var(--radius-xl); padding: 64px;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
-            color: var(--color-primary-on); overflow: hidden; position: relative;
-        }
-        .cta-card::after {
-            content: ''; position: absolute; top: -50%; right: -20%;
-            width: 600px; height: 600px; border-radius: 50%;
-            background: rgba(255,255,255,0.06);
-        }
-        .cta-content { position: relative; z-index: 1; }
-        .cta h2 { font-size: clamp(28px, 3.5vw, 40px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
-        .cta p { font-size: 17px; opacity: 0.9; line-height: 1.7; margin-bottom: 28px; }
-        .cta-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
-        .btn-download {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: var(--color-primary-on); color: var(--color-primary-default);
-            padding: 14px 28px; border-radius: var(--radius-md); font-weight: 600;
-            font-size: 15px; border: none; cursor: pointer;
-            transition: all var(--motion-duration-normal) var(--motion-easing-standard);
-        }
-        .btn-download:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(-1px); }
-        .btn-download-outline {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: transparent; color: var(--color-primary-on);
-            padding: 14px 28px; border-radius: var(--radius-md); font-weight: 600;
-            font-size: 15px; border: 2px solid rgba(255,255,255,0.4); cursor: pointer;
-            transition: all var(--motion-duration-normal) var(--motion-easing-standard);
-        }
-        .btn-download-outline:hover { border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); }
-        .cta-visual {
-            position: relative; z-index: 1;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 160px;
-        }
-
-        /* ===== Install Section ===== */
-        .install {
-            max-width: 800px; margin: 0 auto;
-            padding: 40px var(--radius-xl) 80px;
-        }
-        .install-card {
-            background: var(--color-surface-default); border-radius: var(--radius-lg);
-            border: 1px solid var(--color-border-default); padding: 40px;
-        }
-        .install-card h2 {
-            font-size: 24px; font-weight: 700; margin-bottom: 24px; text-align: center;
-        }
-        .install-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 12px; }
-        .install-card ol { line-height: 2; margin-left: 20px; color: var(--color-text-secondary); }
-        .install-card ol li { margin-bottom: 4px; }
-        .install-note {
-            margin-top: 20px; padding: 16px;
-            background: var(--color-warning-subtle); border-radius: var(--radius-sm);
-            color: var(--color-warning-dark); font-size: 14px;
-        }
-
-        /* ===== Footer ===== */
-        .footer {
-            background: var(--color-text-primary); color: var(--color-text-inverse);
-            padding: 64px var(--radius-xl) 32px;
-        }
-        .footer-inner {
-            max-width: 1200px; margin: 0 auto;
-            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
-        }
-        .footer-brand p { font-size: 14px; opacity: 0.7; line-height: 1.7; margin-top: 16px; }
-        .footer h4 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-        .footer ul { list-style: none; }
-        .footer ul li { margin-bottom: 10px; }
-        .footer ul li a {
-            font-size: 14px; opacity: 0.7;
-            transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
-        }
-        .footer ul li a:hover { opacity: 1; }
-        .footer-bottom {
-            max-width: 1200px; margin: 40px auto 0;
-            padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.15);
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 13px; opacity: 0.6;
-        }
-        .footer-social { display: flex; gap: 16px; }
-        .footer-social a { opacity: 0.7; transition: opacity var(--motion-duration-fast); }
-        .footer-social a:hover { opacity: 1; }
-
-        /* ===== Responsive ===== */
-        @media (max-width: 900px) {
-            .what-is, .about { grid-template-columns: 1fr; }
-            .what-is-visual { display: none; }
-            .about-visual { display: none; }
-            .cta-card { grid-template-columns: 1fr; text-align: center; }
-            .cta-visual { display: none; }
-            .footer-inner { grid-template-columns: 1fr 1fr; }
-        }
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .nav-cta { display: none; }
-            .nav-mobile-toggle { display: block; }
-            .hero { padding: 48px var(--radius-md) 40px; }
-            .hero h1 { font-size: 28px; }
-            .hero-desc { font-size: 16px; }
-            .features, .faq { padding: 48px var(--radius-md); }
-            .about { padding: 48px var(--radius-md); }
-            .cta { padding: 32px var(--radius-md); }
-            .cta-card { padding: 40px 24px; }
-            .about-stats { grid-template-columns: 1fr; }
-            .footer-inner { grid-template-columns: 1fr; gap: 32px; }
-            .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+            .admin-link {
+                position: static;
+                display: inline-block;
+                margin-top: 20px;
+            }
         }
-        /* Lang toggle */
-        .lang-toggle { display: flex; align-items: center; gap: 8px; }
-        .lang-toggle-btn {
-            background: none; border: 1px solid var(--color-border-default); border-radius: var(--radius-full);
-            padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer;
-            font-family: var(--font-family-primary); color: var(--color-text-secondary);
-            transition: all var(--motion-duration-fast) var(--motion-easing-standard);
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 24px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        .lang-toggle-btn.active {
-            background: var(--color-primary-default); color: var(--color-primary-on);
-            border-color: var(--color-primary-default);
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-        .lang-toggle-btn:hover:not(.active) { border-color: var(--color-primary-default); color: var(--color-primary-default); }
+
+        .tagline {
+            font-size: 1.3em;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 40px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #667eea;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .feature h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .about {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .about h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #764ba2;
+        }
+
+        .about p {
+            max-width: 800px;
+            margin: 0 auto 20px;
+            font-size: 1.1em;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .contact {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .contact h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .contact-info {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .contact-info p {
+            margin: 10px 0;
+        }
+
+        footer {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: underline;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        footer a:hover {
+            opacity: 1;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        .download-section {
+            text-align: center;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .tagline {
+                font-size: 1.1em;
+            }
+
+            .features, .about {
+                padding: 40px 20px;
+            }
+
+            .features h2, .about h2, .contact h2 {
+                font-size: 1.8em;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <!-- Navigation -->
-    <nav class="nav">
-        <div class="nav-inner">
-            <a href="/" class="nav-brand">
-                <div class="nav-brand-icon">🏪</div>
-                Lucky Store POS
-            </a>
-            <div class="nav-links">
-                <a href="#features" data-en="Features" data-bn="ফিচার">Features</a>
-                <a href="#about" data-en="About" data-bn="সম্পর্কে">About</a>
-                <a href="#faq" data-en="FAQ" data-bn="সাধারণ প্রশ্ন">FAQ</a>
-                <a href="#download" data-en="Download" data-bn="ডাউনলোড">Download</a>
-            </div>
-            <div class="lang-toggle">
-                <button class="lang-toggle-btn active" onclick="setLang('en')" id="langEn">EN</button>
-                <button class="lang-toggle-btn" onclick="setLang('bn')" id="langBn">বাং</button>
-            </div>
-            <a href="/admin" class="nav-cta" data-en="Admin Login" data-bn="অ্যাডমিন লগইন">Admin Login</a>
-            <button class="nav-mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('mobile-open')" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Hero -->
-    <section class="hero">
-        <div class="hero-trust">
-            <span class="hero-trust-badge" data-en="Trusted" data-bn="বিশ্বস্ত">Trusted</span>
-            <span data-en="Used by retail businesses across Bangladesh" data-bn="বাংলাদেশের সকল খুচরা ব্যবসায় ব্যবহৃত">Used by retail businesses across Bangladesh</span>
-        </div>
-        <h1><span data-en="Manage your store " data-bn="আপনার দোকান পরিচালনা করুন ">Manage your store </span><span class="highlight" data-en="anytime, anywhere" data-bn="যেকোনো সময়, যেকোনো জায়গা থেকে">anytime, anywhere</span></h1>
-        <p class="hero-desc" data-en="Lucky Store POS makes your business simple, smart, and stress-free. Track sales, manage expenses, maintain ledgers, control inventory, and more — so you can focus on growing your business." data-bn="লাকি স্টোর পিওএস আপনার ব্যবসাকে সহজ, স্মার্ট এবং চাপমুক্ত করে তোলে। বিক্রয় ট্র্যাক করুন, খরচ পরিচালনা করুন, লেজার রাখুন, ইনভেন্টরি নিয়ন্ত্রণ করুন এবং আরও অনেক কিছু — যাতে আপনি আপনার ব্যবসা বৃদ্ধিতে ফোকাস করতে পারেন।">
-            Lucky Store POS makes your business simple, smart, and stress-free. Track sales, manage expenses, maintain ledgers, control inventory, and more — so you can focus on growing your business.
-        </p>
-        <div class="hero-actions">
-            <a href="/admin" class="btn-primary" data-en="Web Dashboard →" data-bn="ওয়েব ড্যাশবোর্ড →">Web Dashboard →</a>
-            <a href="#download" class="btn-secondary" data-en="Download App" data-bn="অ্যাপ ডাউনলোড">Download App</a>
-        </div>
-        <div class="hero-visual">
-            <div style="background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-surface-default)); padding: 48px; text-align: center; min-height: 320px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px;">
-                <div style="font-size: 80px;">🏪</div>
-                <div style="font-size: 24px; font-weight: 700; color: var(--color-text-primary);">Lucky Store POS</div>
-                <div data-en="Point of Sale · Inventory · Analytics" data-bn="পয়েন্ট অফ সেল · ইনভেন্টরি · এনালিটিক্স" style="font-size: 15px; color: var(--color-text-secondary);">Point of Sale · Inventory · Analytics</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Logo Strip -->
-    <section class="logo-strip">
-        <div class="logo-strip-label" data-en="Built for every type of retail business" data-bn="সব ধরনের খুচরা ব্যবসার জন্য তৈরি">Built for every type of retail business</div>
-        <div class="logo-strip-icons">
-            <span title="Grocery Stores" data-en="🛒 Grocery" data-bn="🛒 মুদি দোকান">🛒</span>
-            <span title="Pharmacies" data-en="💊 Pharmacy" data-bn="💊 ফার্মেসি">💊</span>
-            <span title="Clothing Boutiques" data-en="👗 Fashion" data-bn="👗 ফ্যাশন">👗</span>
-            <span title="Electronics Shops" data-en="📱 Electronics" data-bn="📱 ইলেকট্রনিক্স">📱</span>
-            <span title="General Stores" data-en="🏪 General Store" data-bn="🏪 সাধারণ দোকান">🏪</span>
-            <span title="Confectionery" data-en="🍬 Confectionery" data-bn="🍬 মিষ্টির দোকান">🍬</span>
-        </div>
-    </section>
-
-    <!-- What Is Lucky Store -->
-    <section class="what-is" id="about">
-        <div class="what-is-content">
-            <div class="what-is-label" data-en="What is Lucky Store POS?" data-bn="লাকি স্টোর পিওএস কি?">What is Lucky Store POS?</div>
-            <h2><span data-en="The " data-bn="আপনার দোকান পরিচালনার ">The </span><span class="highlight" data-en="easiest way" data-bn="সবচেয়ে সহজ উপায়">easiest way</span><span data-en=" to manage your store" data-bn=""> to manage your store</span></h2>
-            <p data-en="Lucky Store POS is your business's digital assistant. Manage accounting, inventory, and customers with ease — available on both mobile and desktop. Built specifically for retail businesses in Chittagong, Bangladesh." data-bn="লাকি স্টোর পিওএস আপনার ব্যবসার ডিজিটাল সহকারী। হিসাব, ইনভেন্টরি এবং গ্রাহক সহজেই পরিচালনা করুন — মোবাইল এবং ডেস্কটপ উভয় মাধ্যমেই উপলব্ধ। চট্টগ্রাম, বাংলাদেশের খুচরা ব্যবসার জন্য বিশেষভাবে তৈরি।">
-                Lucky Store POS is your business's digital assistant. Manage accounting, inventory, and customers with ease — available on both mobile and desktop. Built specifically for retail businesses in Chittagong, Bangladesh.
+    <div class="container">
+        <header>
+            <a href="/admin" class="admin-link">🔐 Admin Login</a>
+            <div class="logo">🏪</div>
+            <h1>Lucky Store POS</h1>
+            <p class="tagline">
+                A modern Point of Sale system designed for retail businesses in Bangladesh.
+                Manage sales, inventory, and customers with ease.
             </p>
-        </div>
-        <div class="what-is-visual">📊</div>
-    </section>
+        </header>
 
-    <!-- Features -->
-    <section class="features" id="features">
-        <div class="features-header">
-            <div class="features-label" data-en="Key Features" data-bn="মূল ফিচারসমূহ">Key Features</div>
-            <h2><span data-en="Everything in " data-bn="সবকিছু এক ">Everything in </span><span class="highlight" data-en="one business app" data-bn="ব্যবসায়িক অ্যাপে">one business app</span></h2>
-            <p class="features-subtitle" data-en="Manage your store's sales, inventory, and customers easily — everything you need, now in one place." data-bn="আপনার দোকানের বিক্রয়, ইনভেন্টরি এবং গ্রাহক সহজেই পরিচালনা করুন — আপনার প্রয়োজনীয় সবকিছু এখন এক জায়গায়।">
-                Manage your store's sales, inventory, and customers easily — everything you need, now in one place.
+        <section class="features">
+            <h2>Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Management</h3>
+                    <p>Process transactions quickly with our intuitive POS interface. Support for cash, card, and mobile payments.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📦</div>
+                    <h3>Inventory Tracking</h3>
+                    <p>Real-time inventory management with low stock alerts, product variants, and barcode scanning support.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">👥</div>
+                    <h3>Customer Management</h3>
+                    <p>Build customer profiles, track purchase history, and manage loyalty programs.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Ready</h3>
+                    <p>Works seamlessly on tablets and phones. Perfect for on-the-go sales and inventory checks.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🏷️</div>
+                    <h3>Label Printing</h3>
+                    <p>Print price labels with MRP and discount information using Bluetooth thermal printers.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📈</div>
+                    <h3>Analytics & Reports</h3>
+                    <p>Get insights into your business with sales reports, inventory reports, and performance analytics.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="about">
+            <h2>About Lucky Store POS</h2>
+            <p>
+                Lucky Store POS is a comprehensive retail management solution built specifically for businesses in Chittagong, Bangladesh.
+                Our application helps small to medium-sized retail stores streamline their operations, from sales processing
+                to inventory management.
             </p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-card-icon">💳</div>
-                <h3 data-en="Sales Management" data-bn="বিক্রয় পরিচালনা">Sales Management</h3>
-                <p data-en="Process transactions quickly with our intuitive POS interface. Support for cash, card, and mobile payments." data-bn="আমাদের স্বজ্ঞাত পিওএস ইন্টারফেস দিয়ে দ্রুত লেনদেন প্রক্রিয়া করুন। নগদ, কার্ড এবং মোবাইল পেমেন্ট সাপোর্ট।">Process transactions quickly with our intuitive POS interface. Support for cash, card, and mobile payments.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-card-icon">📦</div>
-                <h3 data-en="Inventory Tracking" data-bn="ইনভেন্টরি ট্র্যাকিং">Inventory Tracking</h3>
-                <p data-en="Real-time inventory management with low stock alerts, product variants, and barcode scanning support." data-bn="কম স্টক সতর্কতা, পণ্য ভেরিয়েন্ট এবং বারকোড স্ক্যানিং সাপোর্ট সহ রিয়েল-টাইম ইনভেন্টরি পরিচালনা।">Real-time inventory management with low stock alerts, product variants, and barcode scanning support.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-card-icon">👥</div>
-                <h3 data-en="Customer Management" data-bn="গ্রাহক পরিচালনা">Customer Management</h3>
-                <p data-en="Build customer profiles, track purchase history, and manage loyalty programs." data-bn="গ্রাহক প্রোফাইল তৈরি করুন, ক্রয়ের ইতিহাস ট্র্যাক করুন এবং লয়্যালটি প্রোগ্রাম পরিচালনা করুন।">Build customer profiles, track purchase history, and manage loyalty programs.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-card-icon">📱</div>
-                <h3 data-en="Mobile Ready" data-bn="মোবাইল রেডি">Mobile Ready</h3>
-                <p data-en="Works seamlessly on tablets and phones. Perfect for on-the-go sales and inventory checks." data-bn="ট্যাবলেট এবং ফোনে নিরবচ্ছিন্নভাবে কাজ করে। চলাফেরায় বিক্রয় এবং ইনভেন্টরি চেকের জন্য নিখুঁত।">Works seamlessly on tablets and phones. Perfect for on-the-go sales and inventory checks.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-card-icon">🏷️</div>
-                <h3 data-en="Label Printing" data-bn="লেবেল প্রিন্টিং">Label Printing</h3>
-                <p data-en="Print price labels with MRP and discount information using Bluetooth thermal printers." data-bn="ব্লুটুথ থার্মাল প্রিন্টার ব্যবহার করে MRP এবং ডিসকাউন্ট তথ্য সহ মূল্য লেবেল প্রিন্ট করুন।">Print price labels with MRP and discount information using Bluetooth thermal printers.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-card-icon">📈</div>
-                <h3 data-en="Analytics & Reports" data-bn="এনালিটিক্স ও রিপোর্ট">Analytics & Reports</h3>
-                <p data-en="Get insights into your business with sales reports, inventory reports, and performance analytics." data-bn="বিক্রয় রিপোর্ট, ইনভেন্টরি রিপোর্ট এবং পারফরম্যান্স এনালিটিক্স দিয়ে আপনার ব্যবসার অন্তর্দৃষ্টি পান।">Get insights into your business with sales reports, inventory reports, and performance analytics.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- About / Stats -->
-    <section class="about">
-        <div class="about-content">
-            <h2><span data-en="Built for " data-bn="বাংলাদেশি খুচরা ব্যবসার জন্য ">Built for </span><span class="highlight" data-en="Bangladeshi retailers" data-bn="তৈরি">Bangladeshi retailers</span></h2>
-            <p data-en="Located at 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong — we serve local businesses including grocery stores, pharmacies, clothing boutiques, and electronics shops." data-bn="৬৬৫ পার্সিভাল হিল রোড, এমদাদ পার্ক, চকবাজার, চট্টগ্রামে অবস্থিত — আমরা মুদি দোকান, ফার্মেসি, কাপড়ের বুটিক এবং ইলেকট্রনিক্স শপ সহ স্থানীয় ব্যবসার সেবা করি।">
-                Located at 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong — we serve local businesses including grocery stores, pharmacies, clothing boutiques, and electronics shops.
+            <p>
+                Located at 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, we serve local businesses including
+                grocery stores, pharmacies, clothing boutiques, and electronics shops. Lucky Store POS provides the tools you need
+                to manage your business efficiently with support for local payment methods and Bengali language.
             </p>
-            <p data-en="Lucky Store POS provides the tools you need to manage your business efficiently with support for local payment methods and Bengali language." data-bn="লাকি স্টোর পিওএস স্থানীয় পেমেন্ট পদ্ধতি এবং বাংলা ভাষা সাপোর্ট সহ আপনার ব্যবসা দক্ষভাবে পরিচালনা করার জন্য প্রয়োজনীয় সরঞ্জাম প্রদান করে।">
-                Lucky Store POS provides the tools you need to manage your business efficiently with support for local payment methods and Bengali language.
+            <p>
+                Developed with care by the Lucky Store Team. Contact us at luckystore.1947@gmail.com or 01731944544
+                for support and inquiries.
             </p>
-            <div class="about-stats">
-                <div class="about-stat">
-                    <div class="about-stat-value">6+</div>
-                    <div class="about-stat-label" data-en="Feature Modules" data-bn="ফিচার মডিউল">Feature Modules</div>
-                </div>
-                <div class="about-stat">
-                    <div class="about-stat-value">24/7</div>
-                    <div class="about-stat-label" data-en="Availability" data-bn="উপলব্ধতা">Availability</div>
-                </div>
-                <div class="about-stat">
-                    <div class="about-stat-value">বাং</div>
-                    <div class="about-stat-label" data-en="Bengali Support" data-bn="বাংলা সাপোর্ট">Bengali Support</div>
-                </div>
-            </div>
-        </div>
-        <div class="about-visual">🏪</div>
-    </section>
+        </section>
 
-    <!-- FAQ -->
-    <section class="faq" id="faq">
-        <div class="faq-header">
-            <div class="features-label" data-en="FAQ" data-bn="সাধারণ প্রশ্ন">FAQ</div>
-            <h2 data-en="Frequently Asked Questions" data-bn="প্রায়শই জিজ্ঞাসিত প্রশ্নাবলী">Frequently Asked Questions</h2>
-        </div>
-        <div class="faq-item">
-            <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                <span data-en="What is Lucky Store POS?" data-bn="লাকি স্টোর পিওএস কি?">What is Lucky Store POS?</span>
-                <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-                <p data-en="Lucky Store POS is a comprehensive point of sale and retail management system designed specifically for businesses in Bangladesh. It helps you manage sales, inventory, customers, and analytics — all from one app." data-bn="লাকি স্টোর পিওএস বাংলাদেশের ব্যবসার জন্য বিশেষভাবে ডিজাইন করা একটি বিস্তৃত পয়েন্ট অফ সেল এবং খুচরা পরিচালনা সিস্টেম। এটি বিক্রয়, ইনভেন্টরি, গ্রাহক এবং এনালিটিক্স পরিচালনায় সহায়তা করে — সব একটি অ্যাপে।">Lucky Store POS is a comprehensive point of sale and retail management system designed specifically for businesses in Bangladesh. It helps you manage sales, inventory, customers, and analytics — all from one app.</p>
-            </div>
-        </div>
-        <div class="faq-item">
-            <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                <span data-en="Is Lucky Store POS free to use?" data-bn="লাকি স্টোর পিওএস কি বিনামূল্যে ব্যবহার করা যায়?">Is Lucky Store POS free to use?</span>
-                <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-                <p data-en="Yes, Lucky Store POS offers a free tier that covers essential POS and inventory management features. Additional features and multi-store support may be available in paid plans." data-bn="হ্যাঁ, লাকি স্টোর পিওএস একটি ফ্রি টায়ার অফার করে যা প্রয়োজনীয় পিওএস এবং ইনভেন্টরি পরিচালনা ফিচার কভার করে। অতিরিক্ত ফিচার এবং মাল্টি-স্টোর সাপোর্ট পেইড প্ল্যানে উপলব্ধ হতে পারে।">Yes, Lucky Store POS offers a free tier that covers essential POS and inventory management features. Additional features and multi-store support may be available in paid plans.</p>
-            </div>
-        </div>
-        <div class="faq-item">
-            <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                <span data-en="Can I use it on both phone and computer?" data-bn="আমি কি ফোন এবং কম্পিউটার উভয়েই ব্যবহার করতে পারি?">Can I use it on both phone and computer?</span>
-                <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-                <p data-en="Absolutely! Lucky Store POS is available as a mobile app for Android devices and as a web-based admin dashboard that you can access from any computer." data-bn="অবশ্যই! লাকি স্টোর পিওএস অ্যান্ড্রয়েড ডিভাইসের জন্য মোবাইল অ্যাপ এবং যেকোনো কম্পিউটার থেকে অ্যাক্সেস করা যায় এমন ওয়েব-ভিত্তিক অ্যাডমিন ড্যাশবোর্ড হিসেবে উপলব্ধ।">Absolutely! Lucky Store POS is available as a mobile app for Android devices and as a web-based admin dashboard that you can access from any computer.</p>
-            </div>
-        </div>
-        <div class="faq-item">
-            <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                <span data-en="Is my data safe?" data-bn="আমার ডেটা কি নিরাপদ?">Is my data safe?</span>
-                <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-                <p data-en="Yes, all your data is securely stored and encrypted. We use industry-standard security practices to keep your business information protected." data-bn="হ্যাঁ, আপনার সমস্ত ডেটা নিরাপদে সংরক্ষিত এবং এনক্রিপ্ট করা হয়। আমরা আপনার ব্যবসার তথ্য সুরক্ষিত রাখতে শিল্প-মান নিরাপত্তা অনুশীলন ব্যবহার করি।">Yes, all your data is securely stored and encrypted. We use industry-standard security practices to keep your business information protected.</p>
-            </div>
-        </div>
-        <div class="faq-item">
-            <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                <span data-en="Do I need accounting knowledge to use it?" data-bn="ব্যবহার করতে কি হিসাবের জ্ঞান দরকার?">Do I need accounting knowledge to use it?</span>
-                <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-                <p data-en="Not at all! Lucky Store POS is designed for simplicity. No accounting background needed — just start entering your sales and expenses, and the app handles the rest." data-bn="একেবারেই না! লাকি স্টোর পিওএস সরলতার জন্য ডিজাইন করা। হিসাবের ব্যাকগ্রাউন্ড প্রয়োজন নেই — শুধু আপনার বিক্রয় এবং খরচ লিখতে শুরু করুন, অ্যাপটি বাকি সব সামলাবে।">Not at all! Lucky Store POS is designed for simplicity. No accounting background needed — just start entering your sales and expenses, and the app handles the rest.</p>
-            </div>
-        </div>
-    </section>
+                <section class="download-section">
+            <h2 style="margin-bottom: 30px; color: white;">Download for Android</h2>
+            <p style="color: white; margin-bottom: 20px;">
+                Get the APK from our GitHub Releases page
+            </p>
+            <a href="https://github.com/fatalmonk/luckystorePOS/releases" class="download-btn" target="_blank">Download APK from GitHub</a>
+        </section>
 
-    <!-- CTA / Download -->
-    <section class="cta" id="download">
-        <div class="cta-card">
-            <div class="cta-content">
-                <h2 data-en="Start using Lucky Store POS today" data-bn="আজই লাকি স্টোর পিওএস ব্যবহার শুরু করুন">Start using Lucky Store POS today</h2>
-                <p data-en="Download the app and manage your business digitally. Available on Android and Web." data-bn="অ্যাপটি ডাউনলোড করুন এবং আপনার ব্যবসা ডিজিটালভাবে পরিচালনা করুন। অ্যান্ড্রয়েড এবং ওয়েবে উপলব্ধ।">Download the app and manage your business digitally. Available on Android and Web.</p>
-                <div class="cta-buttons">
-                    <a href="https://github.com/fatalmonk/luckystorePOS/releases" class="btn-download" target="_blank" data-en="📥 Download APK" data-bn="📥 APK ডাউনলোড">
-                        📥 Download APK
-                    </a>
-                    <a href="/admin" class="btn-download-outline" data-en="🖥 Web Dashboard" data-bn="🖥 ওয়েব ড্যাশবোর্ড">
-                        🖥 Web Dashboard
-                    </a>
-                </div>
+        <section class="install-instructions" style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 40px; margin: 20px 0;">
+            <h2>Installation Instructions</h2>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto; color: #555;">
+                <h3>For Android:</h3>
+                <ol style="line-height: 2; margin-left: 20px;">
+                    <li>Click the download button above</li>
+                    <li>On GitHub Releases page, click <strong>"app-release.apk"</strong> under Assets</li>
+                    <li>Once downloaded, open your phone's <strong>Settings</strong></li>
+                    <li>Go to <strong>Security</strong> or <strong>Privacy</strong></li>
+                    <li>Enable <strong>"Unknown sources"</strong> or <strong>"Install unknown apps"</strong></li>
+                    <li>Find the downloaded APK and tap to install</li>
+                    <li>Open the app and start managing your store!</li>
+                </ol>
+                <p style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+                    <strong>Note:</strong> This app is not available on Google Play Store. You are downloading directly from our official GitHub releases.
+                </p>
             </div>
-            <div class="cta-visual">📱</div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Install Instructions -->
-    <section class="install">
-        <div class="install-card">
-            <h2 data-en="Installation Instructions" data-bn="ইনস্টলেশন নির্দেশনা">Installation Instructions</h2>
-            <h3 data-en="For Android:" data-bn="অ্যান্ড্রয়েডের জন্য:">For Android:</h3>
-            <ol>
-                <li data-en="Click the download button above" data-bn="উপরের ডাউনলোড বাটনে ক্লিক করুন">Click the download button above</li>
-                <li data-en='On GitHub Releases page, click "app-release.apk" under Assets' data-bn='GitHub Releases পৃষ্ঠায় Assets এর অধীনে "app-release.apk" এ ক্লিক করুন'>On GitHub Releases page, click <strong>"app-release.apk"</strong> under Assets</li>
-                <li data-en="Once downloaded, open your phone's Settings" data-bn="ডাউনলোড হলে আপনার ফোনের সেটিংস খুলুন">Once downloaded, open your phone's <strong>Settings</strong></li>
-                <li data-en='Go to Security or Privacy' data-bn='সিকিউরিটি বা প্রাইভেসিতে যান'>Go to <strong>Security</strong> or <strong>Privacy</strong></li>
-                <li data-en='Enable "Unknown sources" or "Install unknown apps"' data-bn='"অজানা উৎস" বা "অজানা অ্যাপ ইনস্টল" সক্রিয় করুন'>Enable <strong>"Unknown sources"</strong> or <strong>"Install unknown apps"</strong></li>
-                <li data-en="Find the downloaded APK and tap to install" data-bn="ডাউনলোড করা APK খুঁজে বের করে ইনস্টল করতে ট্যাপ করুন">Find the downloaded APK and tap to install</li>
-                <li data-en="Open the app and start managing your store!" data-bn="অ্যাপ খুলুন এবং আপনার দোকান পরিচালনা শুরু করুন!">Open the app and start managing your store!</li>
-            </ol>
-            <div class="install-note" data-en="Note: This app is not yet available on Google Play Store. You are downloading directly from our official GitHub releases." data-bn="নোট: এই অ্যাপটি এখনও Google Play Store-এ উপলব্ধ নয়। আপনি আমাদের অফিসিয়াল GitHub রিলিজ থেকে সরাসরি ডাউনলোড করছেন।">
-                <strong>Note:</strong> This app is not yet available on Google Play Store. You are downloading directly from our official GitHub releases.
+        <section class="contact">
+            <h2>Contact Us</h2>
+            <div class="contact-info">
+                <p>Email: luckystore.1947@gmail.com</p>
+                <p>Phone: 01731944544</p>
+                <p>Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh</p>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-inner">
-            <div class="footer-brand">
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700;">
-                    <div class="nav-brand-icon" style="width: 36px; height: 36px; background: var(--color-primary-default); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--color-primary-on); font-size: 18px;">🏪</div>
-                    Lucky Store POS
-                </div>
-                <p data-en="Modern Point of Sale system for retail businesses in Bangladesh. Manage sales, inventory, and customers with ease." data-bn="বাংলাদেশের খুচরা ব্যবসার জন্য আধুনিক পয়েন্ট অফ সেল সিস্টেম। বিক্রয়, ইনভেন্টরি এবং গ্রাহক সহজেই পরিচালনা করুন।">Modern Point of Sale system for retail businesses in Bangladesh. Manage sales, inventory, and customers with ease.</p>
-            </div>
-            <div>
-                <h4 data-en="Product" data-bn="পণ্য">Product</h4>
-                <ul>
-                    <li><a href="#features" data-en="Features" data-bn="ফিচার">Features</a></li>
-                    <li><a href="#download" data-en="Download" data-bn="ডাউনলোড">Download</a></li>
-                    <li><a href="/admin" data-en="Web Dashboard" data-bn="ওয়েব ড্যাশবোর্ড">Web Dashboard</a></li>
-                    <li><a href="#faq" data-en="FAQ" data-bn="সাধারণ প্রশ্ন">FAQ</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 data-en="Legal" data-bn="আইনি">Legal</h4>
-                <ul>
-                    <li><a href="privacy-policy.html" data-en="Privacy Policy" data-bn="গোপনীয়তা নীতি">Privacy Policy</a></li>
-                    <li><a href="terms-of-service.html" data-en="Terms of Service" data-bn="সেবার শর্তাবলী">Terms of Service</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 data-en="Contact" data-bn="যোগাযোগ">Contact</h4>
-                <ul>
-                    <li><a href="mailto:luckystore.1947@gmail.com">luckystore.1947@gmail.com</a></li>
-                    <li><a href="tel:+8801731944544">01731944544</a></li>
-                    <li data-en="Chawkbazar, Chittagong" data-bn="চকবাজার, চট্টগ্রাম">Chawkbazar, Chittagong</li>
-                </ul>
-            </div>
+    <footer>
+        <div class="footer-links">
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="support.html">Support</a>
+            <a href="/admin">Admin Dashboard</a>
         </div>
-        <div class="footer-bottom">
-            <span>&copy; 2025 Lucky Store. All rights reserved.</span>
-            <div class="footer-social">
-                <a href="https://github.com/fatalmonk/luckystorePOS" aria-label="GitHub">💻</a>
-                <a href="mailto:luckystore.1947@gmail.com" aria-label="Email">📧</a>
-            </div>
-        </div>
+        <p>&copy; 2024 Lucky Store. All rights reserved.</p>
+        <p>Lucky Store POS - Point of Sale System for Bangladesh Retailers</p>
     </footer>
-
-    <script>
-        function setLang(lang) {
-            document.documentElement.lang = lang === 'bn' ? 'bn' : 'en';
-            document.getElementById('langEn').classList.toggle('active', lang === 'en');
-            document.getElementById('langBn').classList.toggle('active', lang === 'bn');
-            document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
-                var text = el.getAttribute('data-' + lang);
-                if (text) el.textContent = text;
-            });
-            try { localStorage.setItem('lang', lang); } catch(e) {}
-        }
-        // Restore saved language
-        (function() {
-            var saved;
-            try { saved = localStorage.getItem('lang'); } catch(e) {}
-            if (saved) setLang(saved);
-        })();
-    </script>
-
 </body>
 </html>
