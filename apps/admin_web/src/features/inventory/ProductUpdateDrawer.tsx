@@ -591,7 +591,6 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                 </div>
                 <PriceHistoryMini productId={product?.id} storeId={storeId} />
               </div>
-
               {/* Competitor Prices */}
               <div className="p-4 rounded-lg bg-warm-surface border border-warm-border-warm">
                 <div className="flex items-center justify-between mb-2">
