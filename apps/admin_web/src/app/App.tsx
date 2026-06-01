@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './QueryProvider';
 import { Layout } from '../components/Layout';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
@@ -11,7 +11,6 @@ import { OfflineIndicator } from '../components/OfflineIndicator';
 import { InstallPrompt } from '../components/InstallPrompt';
 import { AuthProvider } from '../lib/AuthContext';
 
-const LazyProductListPage = React.lazy(() => import('../features/products/ProductListPage').then(m => ({ default: m.ProductListPage })));
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
 const LazySalesHistoryPage = React.lazy(() => import('../features/sales/SalesHistoryPage').then(m => ({ default: m.SalesHistoryPage })));
@@ -70,8 +69,8 @@ export function App() {
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<DashboardPage />} />
+                  <Route path="products" element={<Navigate to="/admin/inventory" replace />} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
-                  <Route path="products" element={<LazyRoute><LazyProductListPage /></LazyRoute>} />
                   <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
                   <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
                   <Route path="inventory/history" element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />

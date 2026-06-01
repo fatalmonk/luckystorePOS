@@ -9,7 +9,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
 import { ProductUpdateDrawer } from './ProductUpdateDrawer';
-import { AddProductModal } from './AddProductModal';
+import { ProductAddModal } from './AddProductModal';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -47,7 +47,7 @@ export function InventoryListPage() {
   const { notify } = useNotify();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
-  const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => window.innerWidth >= 1024 ? 'list' : 'grid');
@@ -450,7 +450,7 @@ export function InventoryListPage() {
         )}
       </div>
 
-      <AddProductModal
+      <ProductAddModal
         isOpen={isAddModalOpen}
         categories={categories}
         onClose={() => setIsAddModalOpen(false)}
