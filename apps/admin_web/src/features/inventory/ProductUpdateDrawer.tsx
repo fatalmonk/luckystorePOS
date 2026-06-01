@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { X, Save, Plus, Minus, RotateCcw, Upload, ImageIcon, Package, DollarSign, Info, Activity } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { supabase } from '../../lib/supabase';
+import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
+import { supabase } from "@/lib/supabase";
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 import type { Database } from '../../lib/database.types';
@@ -128,6 +129,13 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     const pct = Math.round((profit / cp) * 100);
     return { profit, pct };
   }, [sellingPrice, costPrice]);
+
+  // Competitor Prices
+  const { data: competitorPrices, isLoading: isLoadingCompetitors } = useQuery({
+    queryKey: ['competitorPrices', storeId, product?.id],
+    queryFn: () => product ? fetchCompetitorPrices(storeId, { itemId: product.id }) : [],
+    enabled: !!product && activeTab === 'pricing',
+  });
 
   // Mutations
   const imageMutation = useMutation({
@@ -572,6 +580,39 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                   </p>
                 ) : (
                   <p className="text-sm text-warm-dim">Enter cost and selling price to see margin</p>
+                )}
+              </div>
+
+              {/* Competitor Prices */}
+              <div className="p-4 rounded-lg bg-warm-surface border border-warm-border-warm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-warm-fg">Competitor Prices</h3>
+                </div>
+                {isLoadingCompetitors ? (
+                  <p className="text-sm text-warm-muted animate-pulse">Loading...</p>
+                ) : competitorPrices && competitorPrices.length > 0 ? (
+                  <ul className="space-y-2">
+                    {competitorPrices.map(comp => (
+                      <li key={comp.id} className="flex items-center justify-between text-sm">
+                        <span className="text-warm-fg font-medium">{comp.competitor_name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-warm-fg font-semibold tabular-nums">৳{comp.competitor_price}</span>
+                          {comp.competitor_url && (
+                            <a 
+                              href={comp.competitor_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-warm-accent hover:underline text-xs"
+                            >
+                              Link
+                            </a>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-warm-dim">No competitor prices found.</p>
                 )}
               </div>
             </>

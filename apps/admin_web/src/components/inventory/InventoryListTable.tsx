@@ -59,7 +59,7 @@ export function InventoryListTable({
     count: items.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 72,
-    overscan: 10,
+    overscan: 5,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -148,12 +148,12 @@ export function InventoryListTable({
                       virtualRowSize={virtualRow.size}
                       isSelected={isSelected}
                       isOpen={openMenuId === item.id}
-                      onToggleSelect={onToggleSelect}
-                      onUpdateStock={onUpdateStock}
-                      onViewHistory={onViewHistory}
-                      onEditProduct={onEditProduct}
-                      onDelete={onDelete}
-                      setOpenMenuId={setOpenMenuId}
+                      onToggleOpen={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                      onClick={() => onUpdateStock(item)}
+                      onViewHistory={() => onViewHistory?.(item)}
+                      onEditProduct={() => onEditProduct?.(item)}
+                      onDelete={() => onDelete?.(item)}
+                      onToggleSelect={() => onToggleSelect(item.id)}
                     />
                   );
                 })}
@@ -171,65 +171,54 @@ export function InventoryListTable({
   );
 }
 
-
-
-interface InventoryListTableRowProps {
-  item: InventoryItem;
-  virtualRowSize: number;
-  isSelected: boolean;
-  isOpen: boolean;
-  onToggleSelect: (id: string) => void;
-  onUpdateStock: (item: InventoryItem) => void;
-  onViewHistory?: (item: InventoryItem) => void;
-  onEditProduct?: (item: InventoryItem) => void;
-  onDelete?: (item: InventoryItem) => void;
-  setOpenMenuId: (id: string | null) => void;
-}
-
-const InventoryListTableRow = React.memo(function InventoryListTableRow({
+function InventoryListTableRow({
   item,
   virtualRowSize,
   isSelected,
   isOpen,
-  onToggleSelect,
-  onUpdateStock,
+  onToggleOpen,
+  onClick,
   onViewHistory,
   onEditProduct,
   onDelete,
-  setOpenMenuId,
-}: InventoryListTableRowProps) {
-  const statusStyle = STATUS_STYLES[item.reorder_status] || STATUS_STYLES.OK;
-  const isLow = item.reorder_status === 'LOW' || item.reorder_status === 'OUT';
+  onToggleSelect,
+}: {
+  item: InventoryItem;
+  virtualRowSize: number;
+  isSelected: boolean;
+  isOpen: boolean;
+  onToggleOpen: () => void;
+  onClick: () => void;
+  onViewHistory: () => void;
+  onEditProduct: () => void;
+  onDelete: () => void;
+  onToggleSelect: () => void;
+}) {
   const margin = calcMargin(item.cost, item.price);
-  const marginColor = margin === null ? 'text-warm-muted' : margin >= 20 ? 'text-warm-success' : margin >= 10 ? 'text-warm-warning' : 'text-warm-danger';
-  const fmt = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
   return (
     <tr
       className={clsx(
-        "border-b border-warm-border-warm/50 transition-colors duration-200 hover:bg-warm-border-warm/30",
-        isSelected ? "bg-warm-accent/5 hover:bg-warm-accent/10" : "bg-warm-surface"
+        'border-b border-warm-border-warm/50 hover:bg-warm-surface-hover transition-colors',
+        isSelected && 'bg-warm-accent/10'
       )}
-      style={{ height: `${virtualRowSize}px`, contentVisibility: 'auto', containIntrinsicSize: `auto none auto 72px` }}
-      onClick={() => onToggleSelect(item.id)}
+      style={{ height: `${virtualRowSize}px` }}
     >
-      {/* Checkbox */}
-      <td className="w-10 px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+      <td className="px-4 py-3 text-center">
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={() => onToggleSelect(item.id)}
+          onChange={onToggleSelect}
           className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
         />
       </td>
-      {/* Product */}
-      <td className="px-4 py-4">
+      <td className="px-4 py-3 cursor-pointer" onClick={onClick}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-warm-border-warm flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-warm-accent/20 to-warm-accent/10 flex items-center justify-center overflow-hidden flex-shrink-0">
             {item.image_url ? (
               <img
                 src={item.image_url}
-                alt=""
+                alt={item.name}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
@@ -237,152 +226,102 @@ const InventoryListTableRow = React.memo(function InventoryListTableRow({
               <Package size={18} className="text-warm-dim" />
             )}
           </div>
-          <div className="min-w-0">
-            <div className="text-sm font-medium text-warm-fg truncate max-w-[200px] font-display">
-              {item.name}
-            </div>
+          <div>
+            <div className="text-sm font-medium text-warm-fg">{item.name}</div>
+            {item.barcode && (
+              <div className="text-xs text-warm-dim font-mono">{item.barcode}</div>
+            )}
           </div>
         </div>
       </td>
-
-      {/* Category */}
-      <td className="px-4 py-4">
-        <span className="text-sm text-warm-muted">
-          {item.category_name || item.category_id || '—'}
-        </span>
+      <td className="px-4 py-3 text-sm text-warm-muted cursor-pointer" onClick={onClick}>
+        {item.category_name || '—'}
       </td>
-
-      {/* SKU */}
-      <td className="px-4 py-4">
-        <span className="text-sm text-warm-muted font-mono">
-          {item.sku || '—'}
-        </span>
+      <td className="px-4 py-3 text-sm text-warm-dim font-mono cursor-pointer" onClick={onClick}>
+        {item.sku || '—'}
       </td>
-
-      {/* Stock */}
-      <td className="px-4 py-4 text-center">
+      <td className="px-4 py-3 text-center cursor-pointer" onClick={onClick}>
         <span
           className={clsx(
-            'text-base font-mono',
-            isLow ? 'font-semibold text-warm-danger' : 'text-warm-fg'
+            'text-sm font-bold font-mono tabular-nums',
+            item.current_qty <= 5 ? 'text-warm-danger' : item.current_qty <= 25 ? 'text-warm-warning' : 'text-warm-fg'
           )}
         >
-          {item.current_qty}
+          {fmt(item.current_qty)}
         </span>
       </td>
-
-      {/* Status */}
-      <td className="px-4 py-4">
+      <td className="px-4 py-3 cursor-pointer" onClick={onClick}>
         <span
           className={clsx(
-            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border',
-            statusStyle.bg,
-            statusStyle.text,
-            statusStyle.border
+            'text-[10px] font-bold px-2 py-0.5 rounded-full border',
+            STATUS_STYLES[item.reorder_status]?.bg,
+            STATUS_STYLES[item.reorder_status]?.text,
+            STATUS_STYLES[item.reorder_status]?.border,
           )}
         >
           {item.reorder_status}
         </span>
       </td>
-
-      {/* Cost */}
-      <td className="px-4 py-4 text-right">
-        <span className="font-mono text-sm text-warm-fg">
-          ৳{fmt(item.cost || 0)}
-        </span>
+      <td className="px-4 py-3 text-sm text-right text-warm-dim font-mono cursor-pointer" onClick={onClick}>
+        {item.cost ? `৳${fmt(item.cost)}` : '—'}
       </td>
-
-      {/* Price */}
-      <td className="px-4 py-4 text-right">
-        <span className="font-mono text-sm text-warm-fg">
-          ৳{fmt(item.price || 0)}
-        </span>
+      <td className="px-4 py-3 text-sm text-right font-semibold text-warm-fg font-mono cursor-pointer" onClick={onClick}>
+        {item.price ? `৳${fmt(item.price)}` : '—'}
       </td>
-
-      {/* MRP */}
-      <td className="px-4 py-4 text-right">
-        <span className="font-mono text-sm text-warm-fg">
-          ৳{fmt(item.mrp || 0)}
-        </span>
+      <td className="px-4 py-3 text-sm text-right text-warm-dim font-mono cursor-pointer" onClick={onClick}>
+        {item.mrp ? `৳${fmt(item.mrp)}` : '—'}
       </td>
-
-      {/* Margin */}
-      <td className="px-4 py-4 text-right">
-        <span className={clsx("font-mono text-sm font-semibold", marginColor)}>
+      <td className="px-4 py-3 text-right cursor-pointer" onClick={onClick}>
+        <span
+          className={clsx(
+            'text-sm font-bold font-mono',
+            margin === null ? 'text-warm-dim' : margin >= 20 ? 'text-warm-success' : margin >= 10 ? 'text-warm-warning' : 'text-warm-danger'
+          )}
+        >
           {margin !== null ? `${margin}%` : '—'}
         </span>
       </td>
-
-      {/* Last Purchased */}
-      <td className="px-4 py-4 text-right">
-        <span className="text-sm text-warm-muted">
-          {item.last_purchased_date ? new Date(item.last_purchased_date).toLocaleDateString() : '—'}
-        </span>
+      <td className="px-4 py-3 text-xs text-warm-muted font-mono cursor-pointer" onClick={onClick}>
+        {item.last_purchased_date ? new Date(item.last_purchased_date).toLocaleDateString() : '—'}
       </td>
-
-      {/* Actions */}
-      <td className="px-4 py-4">
-        <div className="flex items-center justify-end gap-2">
+      <td className="px-4 py-3 text-right">
+        <div className="relative">
           <button
-            onClick={() => onUpdateStock(item)}
-            className="p-2 rounded-lg text-warm-muted hover:bg-warm-border-warm/50 hover:text-warm-fg transition-colors"
-            title="Update Stock"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleOpen();
+            }}
+            className="p-1.5 rounded-lg hover:bg-warm-surface-hover transition-colors text-warm-dim hover:text-warm-fg"
           >
-            <ArrowUpDown size={16} />
+            <MoreVertical size={16} />
           </button>
-
-          <div className="relative">
-            <button
-              onClick={() => setOpenMenuId(isOpen ? null : item.id)}
-              className="p-2 rounded-lg text-warm-muted hover:bg-warm-border-warm/50 hover:text-warm-fg transition-colors"
-            >
-              <MoreVertical size={16} />
-            </button>
-
-            {isOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setOpenMenuId(null)}
-                />
-                <div className="absolute right-0 bottom-full mb-1 w-40 bg-warm-surface rounded-lg border border-warm-border-warm shadow-lg z-50 py-1">
-                  <button
-                    onClick={() => {
-                      onViewHistory?.(item);
-                      setOpenMenuId(null);
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-warm-fg hover:bg-warm-border-warm/50 flex items-center gap-2 transition-colors"
-                  >
-                    <History size={14} />
-                    View History
-                  </button>
-                  <button
-                    onClick={() => {
-                      onEditProduct?.(item);
-                      setOpenMenuId(null);
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-warm-fg hover:bg-warm-border-warm/50 flex items-center gap-2 transition-colors"
-                  >
-                    <Pencil size={14} />
-                    Edit Product
-                  </button>
-                  <hr className="my-1 border-warm-border-warm" />
-                  <button
-                    onClick={() => {
-                      onDelete?.(item);
-                      setOpenMenuId(null);
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-warm-danger hover:bg-warm-danger/10 flex items-center gap-2 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          {isOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={onToggleOpen} />
+              <div className="absolute right-0 top-full mt-1 z-20 bg-warm-surface border border-warm-border-warm rounded-lg shadow-lg overflow-hidden min-w-[140px]">
+                <button
+                  onClick={() => { onToggleOpen(); onViewHistory(); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-fg hover:bg-warm-surface-hover transition-colors"
+                >
+                  <History size={14} /> History
+                </button>
+                <button
+                  onClick={() => { onToggleOpen(); onEditProduct(); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-fg hover:bg-warm-surface-hover transition-colors"
+                >
+                  <Pencil size={14} /> Edit
+                </button>
+                <button
+                  onClick={() => { onToggleOpen(); onDelete(); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-danger hover:bg-warm-danger/10 transition-colors"
+                >
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </td>
     </tr>
   );
-});
+}

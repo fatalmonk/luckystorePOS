@@ -1,6 +1,75 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import * as XLSX from "https://esm.sh/xlsx@0.18.5";
+
+// Simple CSV parser - handles basic CSV with quoted fields
+function parseCSV(text: string): Record<string, string>[] {
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) return [];
+  
+  const headers: string[] = [];
+  const rows: Record<string, string>[] = [];
+  
+  // Parse header line
+  const headerLine = lines[0];
+  let currentField = '';
+  let inQuotes = false;
+  const headerFields: string[] = [];
+  
+  for (let i = 0; i < headerLine.length; i++) {
+    const char = headerLine[i];
+    if (char === '"') {
+      if (inQuotes && headerLine[i + 1] === '"') {
+        currentField += '"';
+        i++; // Skip next quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      headerFields.push(currentField.trim());
+      currentField = '';
+    } else {
+      currentField += char;
+    }
+  }
+  headerFields.push(currentField.trim());
+  
+  // Parse data rows
+  for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
+    const line = lines[lineIdx];
+    if (!line.trim()) continue;
+    
+    const fields: string[] = [];
+    currentField = '';
+    inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          currentField += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        fields.push(currentField.trim());
+        currentField = '';
+      } else {
+        currentField += char;
+      }
+    }
+    fields.push(currentField.trim());
+    
+    // Create row object
+    const row: Record<string, string> = {};
+    headerFields.forEach((header, idx) => {
+      row[header] = fields[idx] || '';
+    });
+    rows.push(row);
+  }
+  
+  return rows;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,12 +174,9 @@ function parseExpiryDate(value: unknown): string | null {
   if (value === null || value === undefined || String(value).trim() === "") {
     return null;
   }
-  if (typeof value === "number") {
-    const excelDate = XLSX.SSF.parse_date_code(value);
-    if (!excelDate) return null;
-    return new Date(excelDate.y, excelDate.m - 1, excelDate.d).toISOString().split("T")[0];
-  }
-  const parsed = new Date(String(value));
+  // CSV dates are parsed as strings - handle various formats
+  const dateStr = String(value).trim();
+  const parsed = new Date(dateStr);
   if (Number.isNaN(parsed.getTime())) return null;
   return parsed.toISOString().split("T")[0];
 }
@@ -346,12 +412,9 @@ serve(async (req) => {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
-    const sheetName = workbook.SheetNames[0];
-    const rawRows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
-      defval: "",
-    });
-
+    const fileText = new TextDecoder().decode(arrayBuffer);
+    const rawRows: Record<string, string>[] = parseCSV(fileText);
+    
     if (rawRows.length === 0) {
       return new Response(JSON.stringify({ error: "No data rows found" }), {
         status: 400,

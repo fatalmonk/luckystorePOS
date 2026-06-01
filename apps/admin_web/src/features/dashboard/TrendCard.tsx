@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '../../lib/format';
 
 interface TrendCardProps {
   title: string;
@@ -22,7 +23,7 @@ export const TrendCard = ({ title, amount, trend, inverseTrend = false }: TrendC
   return (
     <div className="p-6 bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm flex flex-col justify-between">
       <span className="text-sm font-semibold text-warm-muted uppercase tracking-wider">{title}</span>
-      <h2 className="text-2xl font-bold mt-2 mb-1 text-warm-fg font-mono">৳{amount.toLocaleString('en-BD', { maximumFractionDigits: 0 })}</h2>
+      <h2 className="text-2xl font-bold mt-2 mb-1 text-warm-fg font-mono">{formatCurrency(amount)}</h2>
       
       {trend !== undefined && (
         <div className="flex items-center text-xs mt-2">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
@@ -9,6 +9,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
+import { formatCurrency } from '../../lib/format';
 
 interface LedgerPageConfig {
   partyType: 'customer' | 'supplier';
@@ -162,8 +163,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
             >
               <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
               <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
-              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: p.current_balance > 0 ? balanceColorPositive : 'var(--color-success)' }}>
-                ৳ {p.current_balance.toLocaleString()}
+              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: p.current_balance > 0 ? balanceColorPositive : 'var(--color-success)' }}>{formatCurrency(p.current_balance)}
               </div>
               <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
                 {balanceLabel}
@@ -234,13 +234,12 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                         </div>
                       </td>
                       <td style={{ padding: 'var(--space-4)', textAlign: 'right', color: debitColor, fontWeight: '600' }}>
-                        {entry.debit_amount > 0 ? `৳ ${entry.debit_amount.toLocaleString()}` : '-'}
+                        {entry.debit_amount > 0 ? formatCurrency(entry.debit_amount) : '-'}
                       </td>
                       <td style={{ padding: 'var(--space-4)', textAlign: 'right', color: creditColor, fontWeight: '600' }}>
-                        {entry.credit_amount > 0 ? `৳ ${entry.credit_amount.toLocaleString()}` : '-'}
+                        {entry.credit_amount > 0 ? formatCurrency(entry.credit_amount) : '-'}
                       </td>
-                      <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>
-                        ৳ {balanceAtPoint(idx).toLocaleString()}
+                      <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>{formatCurrency(balanceAtPoint(idx))}
                       </td>
                     </tr>
                   ))}

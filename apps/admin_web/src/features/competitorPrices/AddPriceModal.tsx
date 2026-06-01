@@ -4,7 +4,7 @@ import { X, Search } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
 import { addCompetitorPrice, fetchCompetitorNames } from '../../lib/api/domains/competitorPrices';
-import { supabase } from '../../lib/supabase';
+import { supabase } from "@/lib/supabase";
 import type { CompetitorPriceFormData } from '../../lib/api/types';
 import './AddPriceModal.css';
 

@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import clsx from 'clsx';
+import { clsx } from "clsx";
 
 export interface ModalProps {
   isOpen: boolean;
