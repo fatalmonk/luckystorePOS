@@ -21,6 +21,9 @@ class MockPathProviderPlatform extends Fake
   Future<String?> getApplicationDocumentsPath() async => tempPath;
 
   @override
+  Future<String?> getApplicationSupportPath() async => tempPath;
+
+  @override
   Future<String?> getTemporaryPath() async => tempPath;
 }
 

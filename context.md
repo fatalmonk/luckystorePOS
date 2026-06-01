@@ -1,14 +1,34 @@
 # Lucky Store POS
 
 ## Stack
-React (admin web), Flutter (mobile POS), Supabase, Tailwind, TypeScript
+React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-**All 82 bugs fixed** in Flutter mobile app. Build passes with only minor linting warnings.
+**ALL 14 Critical bugs fixed** in Flutter mobile app. Build passes with only minor linting warnings.
+
+**Critical Fixes (C1-C14):**
+- C1: `totalAmount` now subtracts cart-level discount
+- C2: Removed service role key, added `authHeaders()` for session JWT
+- C3: Removed manager credential bootstrap, added auth state listener
+- C4: Added `Supabase.initialize` in background sync isolate
+- C5: Switch on `SyncActionType` to call correct RPC (insert/update/delete)
+- C6: Added `orElse` to `firstWhere` in `completeSale`
+- C7: Added `dispose()` to `CustomerPhoneLookup`
+- C8: Fixed malformed printer URL endpoint
+- C9: Removed duplicate `_totalPrintAttempts++` in `_updateAveragePrintTime`
+- C10: Fixed print retry queue circular dependency with factory injection
+- C11: File picker API already correct (v11)
+- C12: Guarded backspace on empty buffer in `BarcodeListener`
+- C13: Clamped `leftPanelWidth` to non-negative
+- C14: Added discount validation in `setLineDiscount` (≤ item price)
+
+**Additional fixes:**
+- C37: Implemented `insertSyncAction` in `OfflineDatabase`
+- C46: Fixed jitter calculation in print retry queue (±10% uniform)
 
 ## Done
-- **ALL bugs fixed (82/82)**: 14 Critical, 46 Important, 22 Nit/Minor bugs resolved
-- **P0 Critical Fixes**: 14 security/crash bugs fixed, auth hardened
+- **ALL Critical bugs fixed (14/14)** — Security, crash, and data integrity issues resolved
+- **P0 Critical Fixes**: 10 security/crash bugs fixed, auth hardened
 - **PR #139 Merged**: Warm redesign complete — squashed to d792f27.
 - **POS Provider Fix**: Resolved nested `SaleTransactionSnapshot` class bug in `pos_provider.dart`. Restored missing fields, methods, imports. Committed `8fc664c`.
 - **Flutter Doctor**: All green — accepted Android licenses, Android SDK/Studio detected.

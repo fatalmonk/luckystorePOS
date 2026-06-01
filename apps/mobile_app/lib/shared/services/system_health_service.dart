@@ -66,10 +66,16 @@ class SystemHealthMonitor {
         hasAuthSession && _supabase.auth.currentSession?.user != null;
 
     try {
-      await _supabase.from('stores').select('id').limit(1);
+      // Query parties table to check network/socket connectivity.
+      // If we receive a PostgrestException, the database server answered successfully, meaning connection is up.
+      await _supabase.from('parties').select('id').limit(1);
       supabaseConnectivityOk = true;
     } catch (e) {
-      details['supabase'] = 'Connectivity check failed: $e';
+      if (e is PostgrestException) {
+        supabaseConnectivityOk = true;
+      } else {
+        details['supabase'] = 'Connectivity check failed: $e';
+      }
     }
 
     if (authSessionValid && _isUuid(storeId)) {
@@ -77,6 +83,7 @@ class SystemHealthMonitor {
         await _supabase.rpc('search_items_pos', params: {
           'p_store_id': storeId,
           'p_query': '',
+          'p_category_id': null,
           'p_limit': 1,
           'p_offset': 0,
         });
@@ -154,7 +161,7 @@ class SystemHealthCache {
   final Duration ttl;
   SystemHealthSnapshot _snapshot = SystemHealthSnapshot.initial();
   SystemHealthSnapshot? _lastKnownGoodHealth;
-  DateTime _expiresAt = DateTime.fromMillisecondsSinceEpoch(0);
+  final Stopwatch _stopwatch = Stopwatch()..start();
 
   SystemHealthCache({
     this.ttl = const Duration(seconds: 20),
@@ -162,12 +169,13 @@ class SystemHealthCache {
 
   SystemHealthSnapshot get current => _snapshot;
   SystemHealthSnapshot? get lastKnownGoodHealth => _lastKnownGoodHealth;
-  bool get isExpired => DateTime.now().isAfter(_expiresAt);
+  bool get isExpired => _stopwatch.elapsed >= ttl;
   bool get hasUsableSnapshot => _snapshot.checkedAt.millisecondsSinceEpoch > 0;
 
   void store(SystemHealthSnapshot snapshot) {
     _snapshot = snapshot;
-    _expiresAt = DateTime.now().add(ttl);
+    _stopwatch.reset();
+    _stopwatch.start();
     if (snapshot.status != HealthStatus.failing) {
       _lastKnownGoodHealth = snapshot;
     }
@@ -197,7 +205,8 @@ class SystemHealthCache {
   void clear() {
     _snapshot = SystemHealthSnapshot.initial();
     _lastKnownGoodHealth = null;
-    _expiresAt = DateTime.fromMillisecondsSinceEpoch(0);
+    _stopwatch.reset();
+    _stopwatch.start();
   }
 }
 
@@ -236,11 +245,10 @@ class SystemHealthEvaluator {
     required bool hasValidStoreId,
     required bool hasManagerRole,
   }) {
-    if (_policy.shouldBlock(snapshot)) return false;
     return hasManagerRole &&
         snapshot.authSessionValid &&
         hasValidStoreId &&
-        snapshot.dashboardRpcOk;
+        snapshot.supabaseConnectivityOk;
   }
 
   bool shouldShowWarningBanner(SystemHealthSnapshot snapshot) {

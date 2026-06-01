@@ -5,7 +5,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../main.dart'; // AppLocaleNotifier
+import '../locale/locale_notifier.dart'; // AppLocaleNotifier
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/pos/presentation/screens/store_mode.dart';
 import '../../features/inventory/presentation/screens/inventory_import_screen.dart';

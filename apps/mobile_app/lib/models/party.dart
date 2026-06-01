@@ -20,11 +20,12 @@ class Party {
   });
 
   factory Party.fromJson(Map<String, dynamic> json) {
+    // I23: Add null fallbacks for required fields
     return Party(
-      id: json['id'] as String,
-      tenantId: json['tenant_id'] as String,
-      type: json['type'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? '',
+      tenantId: json['tenant_id'] as String? ?? '',
+      type: json['type'] as String? ?? 'customer',
+      name: json['name'] as String? ?? '',
       phone: json['phone'] as String?,
       email: json['email'] as String?,
       address: json['address'] as String?,

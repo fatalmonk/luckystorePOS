@@ -43,21 +43,30 @@ class PosItem {
   });
 
   factory PosItem.fromJson(Map<String, dynamic> json) {
+    // I20: Add null fallbacks for required fields to prevent crashes
+    final id = json['id'] as String?;
+    final sku = json['sku'] as String?;
+    final name = json['name'] as String?;
+
+    if (id == null || sku == null || name == null) {
+      throw FormatException('PosItem missing required fields: id=$id, sku=$sku, name=$name');
+    }
+
     return PosItem(
-      id:         json['id']          as String,
-      sku:        json['sku']         as String,
+      id:         id,
+      sku:        sku,
       barcode:    json['barcode']     as String?,
       shortCode:  json['short_code']  as String?,
-      name:       json['name']        as String,
+      name:       name,
       brand:      json['brand']       as String?,
-      price:      (json['price']      as num).toDouble(),
-      mrp:        (json['mrp']        as num? ?? 0).toDouble(),
-      cost:       (json['cost']       as num? ?? 0).toDouble(),
+      price:      (json['price']      as num?)?.toDouble() ?? 0.0,
+      mrp:        (json['mrp']        as num?)?.toDouble() ?? 0.0,
+      cost:       (json['cost']       as num?)?.toDouble() ?? 0.0,
       imageUrl:   json['image_url']   as String?,
       category:   json['category']    as String?,
       categoryId: json['category_id'] as String?,
       groupTag:   json['group_tag']   as String?,
-      qtyOnHand:  (json['qty_on_hand'] as num? ?? 0).toInt(),
+      qtyOnHand:  (json['qty_on_hand'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -263,12 +272,21 @@ class PosSession {
   });
 
   factory PosSession.fromJson(Map<String, dynamic> json) {
+    // I21: Use DateTime.tryParse with fallback to prevent FormatException
+    final openedAtStr = json['opened_at'] as String?;
+    DateTime openedAt;
+    if (openedAtStr != null) {
+      openedAt = DateTime.tryParse(openedAtStr) ?? DateTime.now();
+    } else {
+      openedAt = DateTime.now();
+    }
+
     return PosSession(
-      id:            json['id']             as String,
-      sessionNumber: json['session_number'] as String,
-      cashierId:     json['cashier_id']     as String,
-      storeId:       json['store_id']       as String,
-      openedAt:      DateTime.parse(json['opened_at'] as String),
+      id:            json['id']             as String? ?? '',
+      sessionNumber: json['session_number'] as String? ?? '',
+      cashierId:     json['cashier_id']     as String? ?? '',
+      storeId:       json['store_id']       as String? ?? '',
+      openedAt:      openedAt,
     );
   }
 }

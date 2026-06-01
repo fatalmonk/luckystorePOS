@@ -108,9 +108,21 @@ class StartupGuardService {
 
   static Future<void> _initializeSupabaseIfNeeded() async {
     if (_supabaseInitialized) return;
+
+    // I26: Add explicit null/empty checks for SUPABASE_URL and SUPABASE_ANON_KEY
+    final supabaseUrl = dotenv.env['SUPABASE_URL']?.trim();
+    final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']?.trim();
+
+    if (supabaseUrl == null || supabaseUrl.isEmpty) {
+      throw StateError('SUPABASE_URL is missing or empty');
+    }
+    if (supabaseAnonKey == null || supabaseAnonKey.isEmpty) {
+      throw StateError('SUPABASE_ANON_KEY is missing or empty');
+    }
+
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
     );
     _supabaseInitialized = true;
   }

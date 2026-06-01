@@ -6,6 +6,7 @@ import '../../models/app_user.dart';
 import '../../models/party.dart';
 import '../../features/sales/offline_transaction_sync_service.dart';
 import '../services/edge_function_sale_service.dart';
+import '../../core/utils/result.dart';
 
 class PosCatalogLoadResult {
   final List<PosCategory> categories;
@@ -68,9 +69,11 @@ class PosProvider extends ChangeNotifier {
   String? _cashierId;
   String? _cashierName;
   String? _storeId;
+  String? _tenantId;
   String? get cashierId => _cashierId;
   String? get cashierName => _cashierName;
   String? get storeId => _storeId;
+  String? get tenantId => _tenantId;
 
   Party? _selectedParty;
   Party? get selectedParty => _selectedParty;
@@ -178,13 +181,14 @@ class PosProvider extends ChangeNotifier {
 
       final row = await _supabase
           .from('users')
-          .select('id, full_name, role, store_id')
+          .select('id, full_name, role, store_id, tenant_id')
           .eq('auth_id', authId)
           .single();
 
       _cashierId = row['id'] as String;
       _cashierName = row['full_name'] as String? ?? 'Cashier';
       _storeId = row['store_id'] as String?;
+      _tenantId = row['tenant_id'] as String?;
       notifyListeners();
       return true;
     } catch (e) {
@@ -201,7 +205,8 @@ class PosProvider extends ChangeNotifier {
     _cashierId = user.id;
     _cashierName = user.name;
     _storeId = user.storeId.isNotEmpty ? user.storeId : null; // Use user's store_id or null
-    debugPrint('[PosProvider] Store context set: _storeId=$_storeId');
+    _tenantId = user.tenantId;
+    debugPrint('[PosProvider] Store context set: _storeId=$_storeId, tenantId=$_tenantId');
     notifyListeners();
     await _loadPaymentMethods();
   }
@@ -444,19 +449,22 @@ class PosProvider extends ChangeNotifier {
     }
 
     // Resolve tenant_id from the users table (not JWT — claim is not set in Supabase config).
-    String? tenantId;
-    try {
-      final authId = _supabase.auth.currentUser?.id;
-      if (authId != null) {
-        final userRow = await _supabase
-            .from('users')
-            .select('tenant_id')
-            .eq('auth_id', authId)
-            .maybeSingle();
-        tenantId = userRow?['tenant_id'] as String?;
+    String? tenantId = _tenantId;
+    if (tenantId == null) {
+      try {
+        final authId = _supabase.auth.currentUser?.id;
+        if (authId != null) {
+          final userRow = await _supabase
+              .from('users')
+              .select('tenant_id')
+              .eq('auth_id', authId)
+              .maybeSingle();
+          _tenantId = userRow?['tenant_id'] as String?;
+          tenantId = _tenantId;
+        }
+      } catch (e) {
+        debugPrint('[PosProvider] Could not resolve tenant_id: $e');
       }
-    } catch (e) {
-      debugPrint('[PosProvider] Could not resolve tenant_id: $e');
     }
 
     if (tenantId == null) {
@@ -514,28 +522,30 @@ class PosProvider extends ChangeNotifier {
 
     // Try edge function first (rate limiting, validation, CORS);
     // fall back to direct RPC if not configured or on failure.
+    // I14: Skip edge function for multi-tender (split payments)
     Map<String, dynamic>? edgeResult;
-    try {
-      if (tenders.length != 1) throw Exception('edge_function_single_tender_only');
-      final paymentMethodId = tenders.first.method.id;
-      final edgeItems = recordSaleItems.map((i) => {
-        'item_id': i['item_id'],
-        'quantity': i['quantity'],
-        'price': i['unit_price'],
-      }).toList();
+    if (tenders.length == 1) {
+      try {
+        final paymentMethodId = tenders.first.method.id;
+        final edgeItems = recordSaleItems.map((i) => {
+          'item_id': i['item_id'],
+          'quantity': i['quantity'],
+          'price': i['unit_price'],
+        }).toList();
 
-      edgeResult = await EdgeFunctionSaleService.createSale(
-        storeId: _storeId!,
-        clientTransactionId: transactionTraceId,
-        items: edgeItems,
-        paymentMethodId: paymentMethodId,
-        discount: _cartDiscount,
-        reference: intent.sessionId != null ? 'session:${intent.sessionId}' : null,
-        timeout: const Duration(seconds: 30),
-      );
-    } catch (e) {
-      debugPrint('[PosProvider] Edge function call failed: $e');
-      edgeResult = null;
+        edgeResult = await EdgeFunctionSaleService.createSale(
+          storeId: _storeId!,
+          clientTransactionId: transactionTraceId,
+          items: edgeItems,
+          paymentMethodId: paymentMethodId,
+          discount: _cartDiscount,
+          reference: intent.sessionId != null ? 'session:${intent.sessionId}' : null,
+          timeout: const Duration(seconds: 30),
+        );
+      } catch (e) {
+        debugPrint('[PosProvider] Edge function call failed: $e');
+        edgeResult = null;
+      }
     }
 
     final Map<String, dynamic> resultMap;
@@ -593,10 +603,14 @@ class PosProvider extends ChangeNotifier {
 
   Future<List<Party>> searchParties(String query) async {
     try {
+      // I18: Escape SQL wildcards to prevent unintended search semantics
+      final escapedQuery = query
+          .replaceAll('%', r'\%')
+          .replaceAll('_', r'\_');
       final rows = await _supabase
           .from('parties')
           .select()
-          .ilike('name', '%$query%')
+          .ilike('name', '%$escapedQuery%')
           .limit(10);
       return (rows as List).map((r) => Party.fromJson(r as Map<String, dynamic>)).toList();
     } catch (e) {
@@ -606,20 +620,30 @@ class PosProvider extends ChangeNotifier {
 
   // ── Void sale ──────────────────────────────────────────────────────────────
 
-  Future<void> voidSale(String saleId, String reason) async {
-    await _supabase.rpc('void_sale', params: {
-      'p_sale_id': saleId,
-      'p_reason': reason,
-    });
+  Future<Result<void>> voidSale(String saleId, String reason) async {
+    try {
+      await _supabase.rpc('void_sale', params: {
+        'p_sale_id': saleId,
+        'p_reason': reason,
+      });
+      return Success<void>(null);
+    } catch (e) {
+      return Failure<void>('Failed to void sale: ${e.toString()}');
+    }
   }
 
   // ── Refund sale ────────────────────────────────────────────────────────────
 
-  Future<void> processRefund(String saleId, double amount) async {
-    await _supabase.rpc('process_refund', params: {
-      'p_sale_id': saleId,
-      'p_amount': amount,
-    });
+  Future<Result<void>> processRefund(String saleId, double amount) async {
+    try {
+      await _supabase.rpc('process_refund', params: {
+        'p_sale_id': saleId,
+        'p_amount': amount,
+      });
+      return Success<void>(null);
+    } catch (e) {
+      return Failure<void>('Failed to process refund: ${e.toString()}');
+    }
   }
 
   // ── Stock adjustment ───────────────────────────────────────────────────────
@@ -684,7 +708,25 @@ class PosProvider extends ChangeNotifier {
     required String accountId,
   }) async {
     final idempotencyKey = 'cash_closing_${DateTime.now().millisecondsSinceEpoch}';
-    final tenantId = _supabase.auth.currentUser?.userMetadata?['tenant_id'];
+    
+    String? tenantId = _tenantId;
+    if (tenantId == null) {
+      try {
+        final authId = _supabase.auth.currentUser?.id;
+        if (authId != null) {
+          final userRow = await _supabase
+              .from('users')
+              .select('tenant_id')
+              .eq('auth_id', authId)
+              .maybeSingle();
+          _tenantId = userRow?['tenant_id'] as String?;
+          tenantId = _tenantId;
+        }
+      } catch (e) {
+        debugPrint('[PosProvider] Could not resolve tenant_id: $e');
+      }
+    }
+    
     final storeId = _storeId;
 
     if (tenantId == null || storeId == null) {
@@ -718,10 +760,14 @@ class PosProvider extends ChangeNotifier {
   }
 
   Future<List<PosItem>> searchItems(String query, {String? categoryId}) async {
-    if (_storeId == null) return [];
+    if (_storeId == null) throw Exception('No store selected');
     final cacheKey = '${query.trim().toLowerCase()}::${categoryId ?? 'all'}';
     if (_offlineSafeMode) {
-      return _searchCache[cacheKey] ?? const <PosItem>[];
+      final cached = _searchCache[cacheKey];
+      if (cached != null) {
+        return cached;
+      }
+      return const <PosItem>[];
     }
     try {
       final items = await _searchItemsRpc(query, categoryId: categoryId);
@@ -739,20 +785,21 @@ class PosProvider extends ChangeNotifier {
       _lastPosLoadAt = DateTime.now();
       _catalogLoadFailed = true;
       notifyListeners();
-      return const <PosItem>[];
+      throw Exception('Failed to search items: ${firstError.toString()}');
     }
   }
 
   Future<List<PosCategory>> loadCategories() async {
-    if (_storeId == null) return [];
+    if (_storeId == null) throw Exception('No store selected');
     try {
-      return await _loadCategoriesRpc();
+      final categories = await _loadCategoriesRpc();
+      return categories;
     } catch (firstError) {
       _lastPosLoadPath = 'rpc';
       _lastPosLoadError = 'categories_rpc_failed: $firstError';
       _lastPosLoadAt = DateTime.now();
       notifyListeners();
-      return [];
+      throw Exception('Failed to load categories: ${firstError.toString()}');
     }
   }
 
@@ -846,13 +893,13 @@ class PosProvider extends ChangeNotifier {
 
   void handleScannerKeypress(String char) {
     final now = DateTime.now();
-    
-    // Reset buffer if >100ms gap (new scan)
-    if (now.difference(_lastKeyTime).inMilliseconds > 100) {
+
+    // I17: Increase timeout to 300ms for BT scanners, cap buffer at 128 chars
+    if (now.difference(_lastKeyTime).inMilliseconds > 300) {
       _scanBuffer = '';
     }
     _lastKeyTime = now;
-    
+
     if (char == '\n' || char == '\r') {
       // Process complete barcode
       if (_scanBuffer.isNotEmpty) {
@@ -860,7 +907,10 @@ class PosProvider extends ChangeNotifier {
         _scanBuffer = '';
       }
     } else {
-      _scanBuffer += char;
+      // Cap buffer at 128 chars to prevent unbounded growth
+      if (_scanBuffer.length < 128) {
+        _scanBuffer += char;
+      }
     }
   }
 

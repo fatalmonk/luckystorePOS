@@ -378,7 +378,7 @@ class PrinterService {
           )
           .timeout(Duration(seconds: PrinterConfig.printTimeout));
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return Success<PrintResult>(PrintResult(
           receiptId: job.receiptId,
           printTime: DateTime.now(),

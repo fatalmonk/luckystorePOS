@@ -26,16 +26,16 @@ class _OverdueCustomersScreenState extends State<OverdueCustomersScreen> {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
     final storeId = auth.appUser?.storeId;
-    final userId = auth.appUser?.id;
+    final tenantId = auth.appUser?.tenantId;
 
-    if (storeId == null || userId == null) {
+    if (storeId == null || tenantId == null) {
       setState(() => _isLoading = false);
       return;
     }
 
     try {
       final response = await _supabase.rpc('get_receivables_aging', params: {
-        'p_tenant_id': userId,
+        'p_tenant_id': tenantId,
         'p_store_id': storeId,
         'p_search': null,
       }) as List<dynamic>;

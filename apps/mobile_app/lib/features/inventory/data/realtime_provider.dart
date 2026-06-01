@@ -11,6 +11,8 @@ class RealtimeProvider {
   final String _storeId;
   final StreamController<Map<String, dynamic>> _controller =
       StreamController.broadcast();
+  final StreamController<Object> _errorController =
+      StreamController.broadcast();
   RealtimeChannel? _channel;
 
   RealtimeProvider(this._client, this._storeId);
@@ -18,41 +20,50 @@ class RealtimeProvider {
   /// Exposes a stream of incoming payloads from the `stock_levels` table.
   Stream<Map<String, dynamic>> get updates => _controller.stream;
 
+  /// Exposes a stream of error events from initialization.
+  Stream<Object> get errors => _errorController.stream;
+
   /// Initializes the realtime subscription. The channel filters rows by `store_id`
   /// using a Postgres `WHERE` clause – this ensures we only receive events relevant
   /// to the current POS terminal and avoids memory leaks from unrelated stores.
   Future<void> init() async {
-    // Clean up any existing subscription.
-    await _channel?.unsubscribe();
-    
-    // Create a channel
-    _channel = _client.channel('public:stock_levels');
+    try {
+      // Clean up any existing subscription.
+      await _channel?.unsubscribe();
+      
+      // Create a channel
+      _channel = _client.channel('public:stock_levels');
 
-    // Listen for all INSERT/UPDATE/DELETE events with filter.
-    _channel!.onPostgresChanges(
-      event: PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'stock_levels',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'store_id',
-        value: _storeId,
-      ),
-      callback: (payload) {
-        final data = payload.newRecord.isNotEmpty ? payload.newRecord : payload.oldRecord;
-        if (data.isNotEmpty) {
-          _controller.add(data);
-        }
-      },
-    );
+      // Listen for all INSERT/UPDATE/DELETE events with filter.
+      _channel!.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'stock_levels',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'store_id',
+          value: _storeId,
+        ),
+        callback: (payload) {
+          final data = payload.newRecord.isNotEmpty ? payload.newRecord : payload.oldRecord;
+          if (data.isNotEmpty) {
+            _controller.add(data);
+          }
+        },
+      );
 
-    _channel!.subscribe();
+      _channel!.subscribe();
+    } catch (e) {
+      _errorController.add(e);
+      rethrow;
+    }
   }
 
   /// Dispose the channel and controller.
   Future<void> dispose() async {
     await _channel?.unsubscribe();
     await _controller.close();
+    await _errorController.close();
     _channel = null;
   }
 }

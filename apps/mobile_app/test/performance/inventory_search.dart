@@ -69,7 +69,7 @@ void main() {
 
   group('Cache Performance', () {
     /// Test cached search results (should be < 100ms)
-    testWidgets('Cached search returns in < $100ms', (tester) async {
+    testWidgets('Cached search returns in < \$100ms', (tester) async {
       const thresholdMs = 100;
 
       final stopwatch = Stopwatch()..start();

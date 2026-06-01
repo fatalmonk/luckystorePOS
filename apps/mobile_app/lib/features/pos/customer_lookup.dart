@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -24,6 +25,8 @@ class _CustomerPhoneLookupState extends State<CustomerPhoneLookup> {
   List<Party> _matches = [];
   bool _loading = false;
   Party? _selectedCustomer;
+
+  Timer? _debounceTimer;
 
   Future<void> _search(String query) async {
     if (query.length < 3) {
@@ -81,7 +84,12 @@ class _CustomerPhoneLookupState extends State<CustomerPhoneLookup> {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onChanged: _search,
+          onChanged: (val) {
+            _debounceTimer?.cancel();
+            _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+              if (mounted) _search(val);
+            });
+          },
         ),
         if (_loading)
           const Padding(
@@ -168,6 +176,7 @@ class _CustomerPhoneLookupState extends State<CustomerPhoneLookup> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();

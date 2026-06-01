@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../../models/pos_models.dart';
 import '../../../../shared/providers/pos_provider.dart';
@@ -58,8 +59,11 @@ class PosSearchState {
 class PosSearchProvider extends ChangeNotifier {
   final PosProvider _posProvider;
   PosSearchState _state = const PosSearchState();
+  Timer? _debounceTimer;
 
   PosSearchProvider(this._posProvider);
+
+  PosProvider get posProvider => _posProvider;
 
   PosSearchState get state => _state;
   List<PosItem> get items => _state.items;
@@ -69,6 +73,12 @@ class PosSearchProvider extends ChangeNotifier {
   PosLoadState get loadState => _state.loadState;
   String? get loadError => _state.loadError;
   bool get allowProductAdd => _state.allowProductAdd;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 
   /// Initialize search with catalog data
   Future<void> initialize() async {
@@ -82,8 +92,8 @@ class PosSearchProvider extends ChangeNotifier {
       );
       
       _state = _state.copyWith(
-        items: catalog.items,
-        categories: catalog.categories,
+        items: catalog.hasError ? const [] : catalog.items,
+        categories: catalog.hasError ? const [] : catalog.categories,
         loadState: catalog.hasError 
             ? PosLoadState.error 
             : (catalog.items.isEmpty ? PosLoadState.empty : PosLoadState.ready),
@@ -92,6 +102,8 @@ class PosSearchProvider extends ChangeNotifier {
       );
     } catch (e) {
       _state = _state.copyWith(
+        items: const [],
+        categories: const [],
         loadState: PosLoadState.error,
         loadError: _cleanError(e),
         allowProductAdd: false,
@@ -100,29 +112,41 @@ class PosSearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Search items with query and optional category filter
-  Future<void> search(String query, {String? categoryId}) async {
+  /// Search items with query and optional category filter (debounced)
+  Future<void> search(String query, {String? categoryId, bool immediate = false}) async {
     if (query == _state.searchQuery && categoryId == _state.selectedCategoryId) return;
     
+    _debounceTimer?.cancel();
+
     _state = _state.copyWith(
-      loadState: PosLoadState.loading,
       searchQuery: query,
       selectedCategoryId: categoryId,
+    );
+
+    if (immediate) {
+      await _executeSearch(query, categoryId);
+    } else {
+      _debounceTimer = Timer(const Duration(milliseconds: 250), () {
+        _executeSearch(query, categoryId);
+      });
+    }
+  }
+
+  Future<void> _executeSearch(String query, String? categoryId) async {
+    _state = _state.copyWith(
+      loadState: PosLoadState.loading,
       clearLoadError: true,
     );
     notifyListeners();
 
     try {
       final items = await _posProvider.searchItems(query, categoryId: categoryId);
-      final error = _posProvider.posDebugSnapshot['last_load_error'] as String?;
       
       _state = _state.copyWith(
         items: items,
-        loadState: error != null 
-            ? PosLoadState.error 
-            : (items.isEmpty ? PosLoadState.empty : PosLoadState.ready),
-        loadError: error,
-        allowProductAdd: error == null,
+        loadState: items.isEmpty ? PosLoadState.empty : PosLoadState.ready,
+        loadError: null,
+        allowProductAdd: true,
       );
     } catch (e) {
       _state = _state.copyWith(
@@ -138,13 +162,13 @@ class PosSearchProvider extends ChangeNotifier {
   /// Set selected category and refresh search
   Future<void> setCategory(String? categoryId) async {
     if (categoryId == _state.selectedCategoryId) return;
-    await search(_state.searchQuery, categoryId: categoryId);
+    await search(_state.searchQuery, categoryId: categoryId, immediate: true);
   }
 
   /// Clear search query
   Future<void> clearSearch() async {
     if (_state.searchQuery.isEmpty) return;
-    await search('', categoryId: _state.selectedCategoryId);
+    await search('', categoryId: _state.selectedCategoryId, immediate: true);
   }
 
   /// Retry loading after error

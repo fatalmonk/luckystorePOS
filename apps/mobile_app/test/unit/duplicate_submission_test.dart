@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:lucky_store/features/sales/offline_transaction_sync_service.dart';
 
 /// ===========================================================================
 /// UNIT TESTS: Duplicate Submissions & Idempotency
@@ -17,16 +18,9 @@ class MockSupabaseClient extends Mock implements SupabaseClient {}
 void main() {
   group('Idempotency Key Generation', () {
     test('generateClientTransactionId produces unique IDs for same inputs', () {
-      String generateId(String storeId, String cashierId) {
-        final millis = DateTime.now().millisecondsSinceEpoch;
-        final rand = (millis % 10000).toString();
-        final shortStore = storeId.replaceAll('-', '').substring(0, 8);
-        final shortCashier = cashierId.replaceAll('-', '').substring(0, 8);
-        return 'tx-$shortStore-$shortCashier-$millis-$rand';
-      }
-
-      final id1 = generateId('store-123', 'cashier-456');
-      final id2 = generateId('store-123', 'cashier-456');
+      final syncService = OfflineTransactionSyncService.instance;
+      final id1 = syncService.generateClientTransactionId(storeId: 'store-123', cashierId: 'cashier-456');
+      final id2 = syncService.generateClientTransactionId(storeId: 'store-123', cashierId: 'cashier-456');
 
       expect(id1, isNot(equals(id2)));
       expect(id1, startsWith('tx-'));
@@ -34,15 +28,10 @@ void main() {
     });
 
     test('clientTransactionId format is valid', () {
-      String generateId(String storeId, String cashierId) {
-        final shortStore = storeId.replaceAll('-', '').substring(0, 8);
-        final shortCashier = cashierId.replaceAll('-', '').substring(0, 8);
-        return 'tx-$shortStore-$shortCashier-12345-abc';
-      }
-
-      final id = generateId(
-        '12345678-1234-1234-1234-123456789012',
-        '87654321-4321-4321-4321-210987654321',
+      final syncService = OfflineTransactionSyncService.instance;
+      final id = syncService.generateClientTransactionId(
+        storeId: '12345678-1234-1234-1234-123456789012',
+        cashierId: '87654321-4321-4321-4321-210987654321',
       );
 
       final parts = id.split('-');

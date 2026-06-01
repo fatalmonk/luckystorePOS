@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/app_user.dart';
 
@@ -96,8 +97,17 @@ class AuthProvider extends ChangeNotifier {
           await _supabase.auth.signInAnonymously();
         } catch (e) {
           debugPrint('[AuthProvider] Anonymous sign-in failed (might be disabled): $e');
-          // If both manager bootstrap and anonymous fail, we still try the RPC
-          // as anon, but subsequent RLS-protected calls will likely fail.
+          final managerEmail = dotenv.env['MANAGER_EMAIL']?.trim();
+          final managerPassword = dotenv.env['MANAGER_PASSWORD']?.trim();
+          if (managerEmail != null && managerEmail.isNotEmpty &&
+              managerPassword != null && managerPassword.isNotEmpty) {
+            debugPrint('[AuthProvider] Attempting manager bootstrap login...');
+            await _supabase.auth.signInWithPassword(
+              email: managerEmail,
+              password: managerPassword,
+            );
+            debugPrint('[AuthProvider] Bootstrapped manager session successfully.');
+          }
         }
       }
 
@@ -121,6 +131,9 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
+      final userRecord = await _supabase.from('users').select('tenant_id').eq('id', profile['id']).maybeSingle();
+      final tenantId = userRecord?['tenant_id'] as String?;
+
       _appUser = AppUser(
         id: profile['id'] as String,
         authId: profile['auth_id'] as String,
@@ -128,6 +141,7 @@ class AuthProvider extends ChangeNotifier {
         role: role,
         storeId: profile['store_id'] as String? ?? '',
         posPin: profile['pos_pin'] as String?,
+        tenantId: tenantId ?? profile['tenant_id'] as String?,
       );
 
       debugPrint('[AuthProvider] User profile: id=${_appUser?.id}, name=${_appUser?.name}, role=${_appUser?.role}, storeId=${_appUser?.storeId}, authId=${_appUser?.authId}');
@@ -148,6 +162,13 @@ class AuthProvider extends ChangeNotifier {
   /// Verifies a manager's PIN without changing global auth state.
   /// Used for manager overrides (voids, refunds, etc).
   Future<bool> verifyManagerPin(String pin) async {
+    // I25: Check for active session before calling RPC
+    if (_supabase.auth.currentSession == null) {
+      debugPrint('[AuthProvider] No active session for PIN verification');
+      _lastVerifiedPin = null;
+      return false;
+    }
+
     try {
       final response = await _supabase.rpc('authenticate_staff_pin', params: {
         'p_pin': pin,
@@ -161,13 +182,13 @@ class AuthProvider extends ChangeNotifier {
       final profile = (response is List) ? response.first as Map<String, dynamic> : response as Map<String, dynamic>;
       final role = (profile['role'] as String? ?? '').toLowerCase();
       final isManager = role == 'manager' || role == 'admin';
-      
+
       if (isManager) {
         _lastVerifiedPin = pin;
       } else {
         _lastVerifiedPin = null;
       }
-      
+
       return isManager;
     } catch (e) {
       debugPrint('[AuthProvider] PIN verification failed: $e');
