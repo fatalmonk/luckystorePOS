@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
@@ -55,6 +55,9 @@ export function InventoryListPage() {
   // Advanced Sorting
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc'>('name-asc');
   
+  // Deferred search to avoid blocking render thread
+  const deferredSearch = useDeferredValue(debouncedSearch);
+  
   // Modal Open States
   const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
   const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
@@ -64,6 +67,24 @@ export function InventoryListPage() {
     queryKey: ['inventory', storeId],
     queryFn: () => api.inventory.list(storeId),
   });
+
+  // Preload first visible images after inventory loads
+  useEffect(() => {
+    if (!inventory?.length) return;
+    const preloadCount = viewMode === 'grid' ? Math.min(columnsCount * 2, 8) : 10;
+    inventory.slice(0, preloadCount).forEach((item, i) => {
+      if (!item.image_url) return;
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = item.image_url;
+      (link as any).fetchPriority = i < 4 ? 'high' : 'low';
+      document.head.appendChild(link);
+    });
+    return () => {
+      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(el => el.remove());
+    };
+  }, [inventory, viewMode, columnsCount]);
 
   const {
     selectedIds,
@@ -116,8 +137,8 @@ export function InventoryListPage() {
   const filteredItems = useMemo(() => {
     const filtered = inventory?.filter((p: InventoryItem) => {
       const matchesSearch =
-        p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        p.sku?.toLowerCase().includes(debouncedSearch.toLowerCase());
+        p.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(deferredSearch.toLowerCase());
       const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
       return matchesSearch && matchesCategory;
     }) ?? [];
@@ -149,7 +170,7 @@ export function InventoryListPage() {
           return 0;
       }
     });
-  }, [inventory, debouncedSearch, selectedCategoryId, sortBy]);
+  }, [inventory, deferredSearch, selectedCategoryId, sortBy]);
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
@@ -258,11 +279,15 @@ export function InventoryListPage() {
         style={{ backgroundColor: 'var(--color-background-default)' }}
       >
         <div className="flex flex-col gap-3 max-w-full">
-          <CategoryThumbnailGrid
-            categories={enrichedCategories}
-            selectedId={selectedCategoryId}
-            onSelect={setSelectedCategoryId}
-          />
+          {!categories ? (
+            <div className="h-24 animate-pulse bg-background-subtle rounded-lg" />
+          ) : (
+            <CategoryThumbnailGrid
+              categories={enrichedCategories}
+              selectedId={selectedCategoryId}
+              onSelect={setSelectedCategoryId}
+            />
+          )}
           
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">

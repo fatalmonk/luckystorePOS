@@ -124,9 +124,13 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           <img
             src={item.image_url}
             alt={item.name}
+            width={300}
+            height={300}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading={priority ? 'eager' : 'lazy'}
-            fetchpriority={priority ? 'high' : undefined}
+            fetchPriority={priority ? 'high' : undefined}
+            style={{ aspectRatio: '1 / 1' }}
+            decoding="async"
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-text-muted">
