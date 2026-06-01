@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 import type { Database } from '../../lib/database.types';
+import { PriceHistoryMini } from './PriceHistoryMini';
 
 interface ProductUpdateDrawerProps {
   product: Database['public']['Tables']['items']['Row'] | null;
@@ -583,6 +584,13 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                 )}
               </div>
 
+              {/* Price History */}
+              <div className="p-4 rounded-lg bg-warm-surface border border-warm-border-warm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-warm-fg">Price History</h3>
+                </div>
+                <PriceHistoryMini productId={product?.id} storeId={storeId} />
+              </div>
               {/* Competitor Prices */}
               <div className="p-4 rounded-lg bg-warm-surface border border-warm-border-warm">
                 <div className="flex items-center justify-between mb-2">

@@ -50,7 +50,6 @@ function useNavGroups(): NavGroup[] {
       titleKey: 'nav.groupInventorySales', // "Inventory & Sales"
       icon: Package,
       items: [
-        { icon: Package, label: t('nav.products'), path: '/products' },
         { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
           { label: t('nav.inventory'), path: '/inventory' },
           { label: t('nav.history'), path: '/inventory/history' },

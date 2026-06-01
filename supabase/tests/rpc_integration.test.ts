@@ -7,11 +7,11 @@ describe('Supabase RPC Integration Tests', () => {
   const tenantB = '00000000-0000-0000-0000-000000000002';
   const storeA1 = '11111111-1111-1111-1111-111111111111';
   const storeB1 = '22222222-2222-2222-2222-222222222222';
-  const itemA1 = 'item0000-0000-0000-0000-000000000001'; // Price: 100, Cost: 70
-  const itemA2 = 'item0000-0000-0000-0000-000000000002'; // Price: 200, Cost: 150
-  const itemB1 = 'item0000-0000-0000-0000-000000000003';
+  const itemA1 = 'e0000000-0000-0000-0000-000000000001'; // Price: 100, Cost: 70
+  const itemA2 = 'e0000000-0000-0000-0000-000000000002'; // Price: 200, Cost: 150
+  const itemB1 = 'e0000000-0000-0000-0000-000000000003';
   const accountCashA = 'a0000000-0000-0000-0000-000000000004';
-  const pmCashA = 'pm000000-0000-0000-0000-000000000001';
+  const pmCashA = 'd0000000-0000-0000-0000-000000000001';
 
   beforeAll(async () => {
     // Usually we would run 'supabase db reset' here if we had CLI access from vitest,
@@ -75,8 +75,8 @@ describe('Supabase RPC Integration Tests', () => {
       });
 
       expect(error).toBeNull();
-      // la000000-0000-0000-0000-000000000001 is 1000_CASH in seed.sql
-      expect(data).toBe('la000000-0000-0000-0000-000000000001');
+      // c0000000-0000-0000-0000-000000000001 is 1000_CASH in seed.sql
+      expect(data).toBe('c0000000-0000-0000-0000-000000000001');
     });
   });
 
@@ -173,7 +173,7 @@ describe('Supabase RPC Integration Tests', () => {
       await runSql(`
         INSERT INTO public.sales (id, sale_number, store_id, cashier_id, status, total_amount)
         VALUES ($1, $2, $3, $4, 'completed', 100)
-      `, [saleId, saleNumber, storeA1, 'u1111111-1111-1111-1111-111111111111']);
+      `, [saleId, saleNumber, storeA1, 'f0000000-0000-0000-0000-000000000001']);
       
       await runSql(`
         INSERT INTO public.sale_items (sale_id, item_id, qty, unit_price, line_total)
