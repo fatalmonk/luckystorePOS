@@ -31,7 +31,6 @@ analyzer:
     - "**/.pub-cache/**"
     - "**/sdk/**"
     - "flutter/**"
-    - "test/**"
 
 
 

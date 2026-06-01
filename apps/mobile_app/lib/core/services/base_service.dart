@@ -10,10 +10,15 @@ abstract class BaseService {
   String toString() => name;
   
   /// Check if service is initialized
-  @protected
   bool get isInitialized => _initialized;
-  
-  final bool _initialized = false;
+
+  bool _initialized = false;
+
+  /// Set initialization state (protected)
+  @protected
+  set isInitialized(bool value) {
+    _initialized = value;
+  }
   
   /// Initialize the service
   Future<void> initialize();

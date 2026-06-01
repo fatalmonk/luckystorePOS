@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.7.2 <4.0.0'
+  sdk: '>=3.7.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -40,7 +40,7 @@ dependencies:
   path: ^1.9.0
   shared_preferences: ^2.2.2
 
-  meta: any
+  meta: ^1.12.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -51,6 +51,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
+  path_provider_platform_interface: any
+  plugin_platform_interface: any
 dependency_overrides:
   vector_math: ^2.2.0
 

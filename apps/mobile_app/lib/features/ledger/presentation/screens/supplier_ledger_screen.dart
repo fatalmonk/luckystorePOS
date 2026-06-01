@@ -40,10 +40,10 @@ class _SupplierLedgerScreenState extends State<SupplierLedgerScreen> {
 
     try {
       final auth = context.read<AuthProvider>();
-      final storeId = auth.appUser?.storeId;
+      final tenantId = auth.appUser?.tenantId;
 
-      if (storeId == null) {
-        throw Exception('Store context not found. Please log in again.');
+      if (tenantId == null) {
+        throw Exception('Tenant context not found. Please log in again.');
       }
 
       // Fetch suppliers with outstanding balances
@@ -53,13 +53,10 @@ class _SupplierLedgerScreenState extends State<SupplierLedgerScreen> {
             id,
             name,
             phone,
-            email,
-            address,
             type,
-            outstanding_balance,
             created_at
           ''')
-          .eq('store_id', storeId)
+          .eq('tenant_id', tenantId)
           .eq('type', 'supplier')
           .order('name');
 

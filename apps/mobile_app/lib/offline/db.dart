@@ -59,6 +59,10 @@ class OfflineDatabase extends _$OfflineDatabase {
       ),
     );
   }
+
+  Future<void> insertSyncAction(SyncAction action) {
+    return into(syncActions).insert(action);
+  }
 }
 
 LazyDatabase _openConnection() {

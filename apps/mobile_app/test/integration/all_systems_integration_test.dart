@@ -57,7 +57,7 @@ void main() {
 
   group('Integration: Purchase Receiving Flow', () {
     test('Purchase receiving → stock levels updated', () {
-      final itemId = 'item-123';
+      // final itemId = 'item-123';
       final quantity = 10.0;
       var stockBefore = 5;
       final stockAfter = stockBefore + quantity;

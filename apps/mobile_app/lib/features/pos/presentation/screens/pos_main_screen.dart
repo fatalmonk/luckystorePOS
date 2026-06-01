@@ -169,7 +169,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
 
               // Fixed widths for cart panel, flex for product grid
               final rightPanelWidth = isLargeTablet ? 340.0 : (isTablet ? 320.0 : 280.0);
-              final leftPanelWidth = availableWidth - rightPanelWidth - 1; // -1 for divider
+              final leftPanelWidth = (availableWidth - rightPanelWidth - 1).clamp(0, availableWidth); // Clamp to 0 min
 
               return Stack(
                 children: [
@@ -177,7 +177,7 @@ class _PosMainScreenState extends State<PosMainScreen> {
                     children: [
                       // ── LEFT PANEL ─────────────────────────────────────────
                       SizedBox(
-                        width: leftPanelWidth,
+                        width: leftPanelWidth.toDouble(),
                         child: _buildLeftPanel(),
                       ),
                       // Divider

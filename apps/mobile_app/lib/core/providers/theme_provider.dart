@@ -20,7 +20,8 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final themeIndex = prefs.getInt(_themeKey) ?? 0;
-    _themeMode = ThemeMode.values[themeIndex];
+    final safeIndex = themeIndex.clamp(0, ThemeMode.values.length - 1);
+    _themeMode = ThemeMode.values[safeIndex];
     notifyListeners();
   }
   

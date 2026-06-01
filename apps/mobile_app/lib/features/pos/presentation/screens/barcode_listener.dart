@@ -49,7 +49,9 @@ class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
       _processBarcode(_buffer);
       _buffer = '';
     } else if (key == LogicalKeyboardKey.backspace) {
-      _buffer = _buffer.substring(0, _buffer.length - 1);
+      if (_buffer.isNotEmpty) {
+        _buffer = _buffer.substring(0, _buffer.length - 1);
+      }
     } else if (key == LogicalKeyboardKey.escape) {
       _buffer = '';
     } else if (key.keyLabel.length == 1) {

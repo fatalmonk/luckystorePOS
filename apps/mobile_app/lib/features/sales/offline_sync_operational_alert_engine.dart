@@ -68,6 +68,18 @@ class OfflineSyncOperationalAlertEngine {
       );
     }
 
+    final hasPermanentFailures = queue.any((tx) => tx.state == OfflineSyncState.failed && tx.retryCount > 10);
+    if (hasPermanentFailures) {
+      alerts.add(
+        const OfflineSyncOperationalAlert(
+          code: 'permanent_failure_alert',
+          message: 'Critical: Transaction failed permanently after 10 retries.',
+          notifyManager: true,
+          notifyAdmin: true,
+        ),
+      );
+    }
+
     if (stats.conflictsNeedingReview > 0) {
       alerts.add(
         const OfflineSyncOperationalAlert(
