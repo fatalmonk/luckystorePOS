@@ -59,9 +59,9 @@ ALTER TABLE public.price_audit_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY price_audit_log_select_policy ON public.price_audit_log
   FOR SELECT USING (store_id = (public.get_current_user_store_id()));
 
-CREATE INDEX idx_price_audit_item ON public.price_audit_log(item_id);
-CREATE INDEX idx_price_audit_store ON public.price_audit_log(store_id);
-CREATE INDEX idx_price_audit_changed_at ON public.price_audit_log(changed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_price_audit_item ON public.price_audit_log(item_id);
+CREATE INDEX IF NOT EXISTS idx_price_audit_store ON public.price_audit_log(store_id);
+CREATE INDEX IF NOT EXISTS idx_price_audit_changed_at ON public.price_audit_log(changed_at DESC);
 
 GRANT SELECT ON public.price_audit_log TO authenticated;
 GRANT INSERT ON public.price_audit_log TO authenticated;

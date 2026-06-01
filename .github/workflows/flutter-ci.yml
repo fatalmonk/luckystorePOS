@@ -73,6 +73,7 @@ jobs:
   build-android:
     name: Build Android APK
     needs: analyze-and-test
+    if: github.event_name != 'pull_request'
     runs-on: macos-latest
     defaults:
       run:
@@ -103,6 +104,16 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
+          name: debug-apk-${{ github.run_number }}
           path: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 7
+
+      - name: Upload APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-debug-${{ github.run_number }}
+          name: Android Debug Build ${{ github.run_number }}
+          body: Automated debug APK build from ${{ github.ref }}
+          files: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
