@@ -68,8 +68,6 @@ export function InventoryListTable({
 
   const isAllSelected = items.length > 0 && items.every((item) => selectedIds.has(item.id));
 
-  const fmt = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-
   return (
     <div className="w-full overflow-hidden rounded-xl border border-warm-border-warm bg-warm-surface">
       <div ref={parentRef} className="overflow-auto" style={{ height: 'calc(100vh - 350px)' }}>
@@ -195,6 +193,7 @@ function InventoryListTableRow({
   onToggleSelect: () => void;
 }) {
   const margin = calcMargin(item.cost, item.price);
+  const fmt = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
   return (
     <tr

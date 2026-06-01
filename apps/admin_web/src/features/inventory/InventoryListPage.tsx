@@ -1,14 +1,15 @@
-import { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
+import { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown } from 'lucide-react';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
-import { ProductEditDrawer } from '../products/ProductEditDrawer';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
+import { ProductUpdateDrawer } from './ProductUpdateDrawer';
+import { ProductAddModal } from './AddProductModal';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -59,6 +60,7 @@ export function InventoryListPage() {
   const deferredSearch = useDeferredValue(debouncedSearch);
   
   // Modal Open States
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
   const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
@@ -117,6 +119,10 @@ export function InventoryListPage() {
     toggleSelectAll,
     toggleSelect,
   } = useInventoryBulkActions(storeId, tenantId, inventory);
+
+  // Stable callbacks — prevent memoized card re-renders on every parent render
+  const handleViewProduct = useCallback((item: InventoryItem) => setViewingProductId(item.id), []);
+  const handleEditProduct = useCallback((item: InventoryItem) => setEditingProduct(item), []);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -181,6 +187,25 @@ export function InventoryListPage() {
     return { total, lowStock, outOfStock, totalValue };
   }, [inventory]);
 
+  // Analytics queries
+  const { data: topSellingItems, isLoading: topSellingLoading } = useQuery({
+    queryKey: ['inventory-analytics-top-selling', storeId],
+    queryFn: () => api.inventory.getTopSellingItems(storeId!, 30, 5),
+    enabled: !!storeId,
+  });
+
+  const { data: slowMovingItems, isLoading: slowMovingLoading } = useQuery({
+    queryKey: ['inventory-analytics-slow-moving', storeId],
+    queryFn: () => api.inventory.getSlowMovingItems(storeId!, 30, 5),
+    enabled: !!storeId,
+  });
+
+  const { data: dailyTrend, isLoading: dailyTrendLoading } = useQuery({
+    queryKey: ['inventory-analytics-daily-trend', storeId],
+    queryFn: () => api.inventory.getDailyMovementTrend(storeId!, 14),
+    enabled: !!storeId,
+  });
+
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
   const chunkedItems = useMemo(() => {
@@ -239,6 +264,13 @@ export function InventoryListPage() {
         actions={
           <div className="flex gap-2">
             <Button
+              variant="primary"
+              icon={<Plus size={18} />}
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              Add Product
+            </Button>
+            <Button
               variant="secondary"
               icon={<Download size={18} />}
               onClick={() => {
@@ -270,6 +302,98 @@ export function InventoryListPage() {
         }
         className="mb-4"
       />
+
+      {/* Insights & Analytics Widgets */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        {/* Top Selling Items */}
+        <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
+          <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <TrendingDown size={12} className="text-warm-accent rotate-180" />
+            Top Selling
+          </h4>
+          {topSellingLoading ? (
+            <div className="space-y-2">
+              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-3/4 animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
+            </div>
+          ) : topSellingItems && topSellingItems.length > 0 ? (
+            <ul className="space-y-1">
+              {topSellingItems.slice(0, 5).map((item: any, i: number) => (
+                <li key={i} className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-warm-fg truncate flex-1">{item.name || item.item_name || item.product_name}</span>
+                  <span className="text-xs font-medium text-warm-accent whitespace-nowrap">{item.qty_sold || item.quantity_sold || item.total_sold}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-warm-muted italic">No data yet</p>
+          )}
+        </div>
+
+        {/* Slow Moving Items */}
+        <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
+          <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <TrendingDown size={12} className="text-warm-accent" />
+            Slow Moving
+          </h4>
+          {slowMovingLoading ? (
+            <div className="space-y-2">
+              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-3/4 animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
+            </div>
+          ) : slowMovingItems && slowMovingItems.length > 0 ? (
+            <ul className="space-y-1">
+              {slowMovingItems.slice(0, 5).map((item: any, i: number) => (
+                <li key={i} className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-warm-fg truncate flex-1">{item.name || item.item_name || item.product_name}</span>
+                  <span className="text-xs text-warm-muted whitespace-nowrap">{item.days_since_last_sale ?? item.days ?? 0}d</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-warm-muted italic">No data yet</p>
+          )}
+        </div>
+
+        {/* Daily Movement Trend */}
+        <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
+          <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <RefreshCw size={12} className="text-warm-accent" />
+            14-Day Movement
+          </h4>
+          {dailyTrendLoading ? (
+            <div className="space-y-2">
+              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
+              <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
+            </div>
+          ) : dailyTrend && dailyTrend.length > 0 ? (
+            <div className="flex items-end gap-[3px] h-8">
+              {dailyTrend.slice(-14).map((day: any, i: number) => {
+                const qty = day.total_qty ?? day.qty ?? day.movement ?? 0;
+                const maxQty = Math.max(...dailyTrend.slice(-14).map((d: any) => d.total_qty ?? d.qty ?? d.movement ?? 0), 1);
+                const height = Math.max((qty / maxQty) * 100, 4);
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-sm bg-warm-accent/60 hover:bg-warm-accent transition-colors cursor-default"
+                    style={{ height: `${height}%`, minHeight: '4px' }}
+                    title={`${day.date || day.day || ''}: ${qty} units`}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-warm-muted italic">No data yet</p>
+          )}
+        </div>
+      </div>
 
       {/* Sticky Single Toolbar */}
       <div 
@@ -413,7 +537,7 @@ export function InventoryListPage() {
                         isHighlighted={highlightedProductId === item.id}
                         isSelected={selectedIds.has(item.id)}
                         onToggleSelect={toggleSelect}
-                        onUpdateStock={(item) => setViewingProductId(item.id)}
+                        onUpdateStock={handleViewProduct}
                         tenantId={tenantId}
                         priority={virtualRow.index === 0}
                       />
@@ -429,17 +553,23 @@ export function InventoryListPage() {
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             onSelectAll={toggleSelectAll}
-            onUpdateStock={(item) => setViewingProductId(item.id)}
-            onViewHistory={(item) => setViewingProductId(item.id)}
-            onEditProduct={(item) => setEditingProduct(item)}
+            onUpdateStock={handleViewProduct}
+            onViewHistory={handleViewProduct}
+            onEditProduct={handleEditProduct}
             onDelete={(item) => console.log('Delete', item)}
           />
         )}
       </div>
 
-      <ProductEditDrawer
-        product={editingProduct}
+      <ProductAddModal
+        isOpen={isAddModalOpen}
         categories={categories}
+        onClose={() => setIsAddModalOpen(false)}
+      />
+
+      <ProductUpdateDrawer
+        product={editingProduct}
+        storeId={storeId}
         onClose={() => setEditingProduct(null)}
       />
 
