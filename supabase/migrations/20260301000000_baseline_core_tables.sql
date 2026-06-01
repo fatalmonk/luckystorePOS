@@ -55,13 +55,7 @@ ALTER TYPE "public"."po_status" OWNER TO "postgres";
 
 
 
-CREATE TYPE "public"."session_status" AS ENUM (
-    'open',
-    'closed'
-);
 
-
-ALTER TYPE "public"."session_status" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."stock_transfer_status" AS ENUM (
