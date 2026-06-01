@@ -48,12 +48,14 @@ React, Flutter, Supabase, Tailwind, TypeScript
 - **Karbar Features**: Added missing UI metrics (To Receive/Give, Total Balance) right below Trend Cards, fixed Gamification SVG, and added Quick Action Modals to `DashboardPage.tsx` with `get_dashboard_missing_metrics` RPC.
 - **MoM Trend Metrics**: Added `TrendCard` component, backed by `get_monthly_trend_metrics` RPC (sourced from `daily_sales` and displaying the actual month name). Removed duplicate Total Balance card.
 - **Cashflow Chart**: Added dynamic filterable `CashflowChart` component using `recharts`, backed by `get_cashflow_data` CTE RPC, replacing the static chart.
+- **Stock Inventory Refactor (Phase 1)**: Integrated `@tanstack/react-virtual` virtualization into both grid (cards) and list (table) layouts, implemented responsive sidebar collapsing/expansion, added a sticky category/search toolbar, and fixed Taka icon on Inventory value.
+- **Stock Inventory Refactor (Phase 2)**: Added advanced sorting, bulk action bar, bulk price/stock modals, grid selection checkboxes, and Barcode Scanner Simulation Modal integration.
 
 ## Next
-- None (All 82 bugs fixed: 14 Critical, 46 Important, 22 Minor)
+- Awaiting next feature requests or tasks.
 
 ## Blocker
 None
 
 ---
-ctx: ALL bugs fixed (82/82) | done: Fixed 14 Critical, 46 Important, 22 Nit bugs. Codebase stable. | next: Await user request
+ctx: Stock Inventory Refactor Phase 2 complete | done: Sorting, bulk actions, barcode modal | next: Next feature

@@ -151,16 +151,7 @@ class ProductTile extends StatelessWidget {
               // Circular avatar with stock badge
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: AppColors.backgroundSubtle,
-                    backgroundImage: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                      ? NetworkImage(item.imageUrl!)
-                      : null,
-                    child: item.imageUrl == null || item.imageUrl!.isEmpty
-                      ? const Icon(Icons.inventory_2, size: 32, color: AppColors.textMuted)
-                      : null,
-                  ),
+                  _ProductImage(item: item),
                   if (item.qtyOnHand < 10)
                     Positioned(
                       top: 0,
@@ -215,6 +206,29 @@ class ProductTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Safe image widget that catches network load errors during build phase.
+class _ProductImage extends StatelessWidget {
+  const _ProductImage({required this.item});
+  final PosItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 32,
+      backgroundColor: AppColors.backgroundSubtle,
+      backgroundImage: item.imageUrl != null && item.imageUrl!.isNotEmpty
+        ? NetworkImage(item.imageUrl!)
+        : null,
+      onBackgroundImageError: (_, __) {
+        // NetworkImage failed — silently fall through to placeholder
+      },
+      child: item.imageUrl == null || item.imageUrl!.isEmpty
+        ? const Icon(Icons.inventory_2, size: 32, color: AppColors.textMuted)
+        : null,
     );
   }
 }

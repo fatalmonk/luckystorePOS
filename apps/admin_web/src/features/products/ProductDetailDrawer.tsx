@@ -30,6 +30,17 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
     enabled: !!productId,
   });
 
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => api.categories.list(),
+  });
+
+  const categoryName = product?.category_id && categories
+    ? (categories.find((c: { id: string; name?: string | null; category?: string }) => c.id === product.category_id)?.name
+      || categories.find((c: { id: string; name?: string | null; category?: string }) => c.id === product.category_id)?.category
+      || 'No Category')
+    : 'No Category';
+
   const { data: stockHistory, isLoading: isHistoryLoading } = useQuery({
     queryKey: ['stock-history', storeId, productId],
     queryFn: () => api.inventory.history(storeId!, productId!),
@@ -70,7 +81,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-text-main">{product.name}</h2>
-              <div className="text-sm text-text-muted mb-2">{product.categories?.name || 'No Category'}</div>
+              <div className="text-sm text-text-muted mb-2">{categoryName}</div>
               <div className="flex gap-2">
                 <Badge variant={product.active ? 'success' : 'neutral'}>
                   {product.active ? 'Active' : 'Inactive'}
