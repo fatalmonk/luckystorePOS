@@ -51,12 +51,12 @@ INSERT INTO public.tenants (id, name) VALUES
 ('00000000-0000-0000-0000-000000000002', 'Tenant Beta');
 
 -- 2. Stores
-INSERT INTO public.stores (id, tenant_id, name) VALUES
+INSERT INTO public.stores (id,  name) VALUES
 ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001', 'Store Alpha 1'),
 ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000002', 'Store Beta 1');
 
 -- 3. Accounts (foundation-style)
-INSERT INTO public.accounts (id, tenant_id, name, type) VALUES
+INSERT INTO public.accounts (id,  name, type) VALUES
 ('a0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Sales Revenue', 'revenue'),
 ('a0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Inventory Asset', 'asset'),
 ('a0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Cost of Goods Sold', 'expense'),
@@ -81,7 +81,7 @@ INSERT INTO public.payment_methods (id, store_id, name, type) VALUES
 ('d0000000-0000-0000-0000-000000000003', '22222222-2222-2222-2222-222222222222', 'Cash', 'cash');
 
 -- 6. Items (public.items is canonical — no inventory_items table)
-INSERT INTO public.items (id, name, sku, barcode, price, cost, active) VALUES
+INSERT INTO public.items (id, name, sku, barcode, price, cost, is_active) VALUES
 ('e0000000-0000-0000-0000-000000000001', 'Alpha Product 1', 'SKU-A1', 'BAR-A1', 100.00, 70.00, true),
 ('e0000000-0000-0000-0000-000000000002', 'Alpha Product 2', 'SKU-A2', 'BAR-A2', 200.00, 150.00, true),
 ('e0000000-0000-0000-0000-000000000003', 'Beta Product 1', 'SKU-B1', 'BAR-B1', 50.00, 30.00, true);
@@ -101,12 +101,12 @@ VALUES
 ('f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alpha@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{"provider":"email","providers":["email"]}', '{}'),
 ('f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beta@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{"provider":"email","providers":["email"]}', '{}');
 
-INSERT INTO public.users (id, auth_id, tenant_id, store_id, name, role) VALUES
+INSERT INTO public.users (id, auth_id,  store_id, name, role) VALUES
 ('f0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Alpha Manager', 'manager'),
 ('f0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'Beta Manager', 'manager');
 
 -- 9. Initial Stock Movements to set Weighted Average Cost
-INSERT INTO public.stock_movements (tenant_id, store_id, item_id, quantity_change, weighted_average_cost, reference_type) VALUES
+INSERT INTO public.stock_movements ( store_id, item_id, quantity_change, weighted_average_cost, reference_type) VALUES
 ('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000001', 50, 70.00, 'INITIAL'),
 ('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000002', 20, 150.00, 'INITIAL'),
 ('00000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'e0000000-0000-0000-0000-000000000003', 100, 30.00, 'INITIAL');
