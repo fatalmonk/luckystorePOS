@@ -4,35 +4,32 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-**Inventory Inline Editing — Production Fixes (Merged PR #182)**
-- Fixed RLS: Restored `items_manage_authorized` policy (dropped by prior migration)
-- Fixed PGRST204: Removed non-existent `last_purchased_date` from update payload
-- Fixed `set_stock` RPC: Changed reason from `'Inline stock edit'` → `'correction'` (valid enum)
-- Fixed `get_low_stock_items` RPC: `i.active` → `i.is_active` column reference
-- Fixed Vercel PWA: Added rewrite rules for `sw.js`, `manifest.json`, PWA icons
-- Removed legacy `store_id` filters on tenant-scoped `items` table
-- Fixed `tsconfig.app.json` path aliases (relative `./src/*`)
-- Fixed `seed.sql` to match current schema (`is_active`, removed invalid columns)
-- DB migrations pushed to remote: `20260603223000`, `20260603232500`
-- Build: ✅ passing, merged to main
+**Production Stability Fixes (Main Branch)**
+- Fixed `set_stock` RPC: Changed reason from `'Inline stock edit'` → `'correction'` (pushed directly to main)
+- Fixed Vercel PWA assets: Added rewrite rules for `sw.js` and `manifest.json` in `vercel.json`
+- Fixed SW caching: Updated `OFFLINE_URL` in `sw.ts` to use relative path `offline.html` instead of absolute `/offline.html`
+- Fixed Manifest: Used relative icon paths and `/admin/` start_url
+- Verified all recent UI/UX fixes merged to main
 
 ## Previous
-- Purchase Receiving: Fixed `record_purchase_v2` to update `items.cost`
-- Inventory Dashboard: Phases 1-4 complete (inline editing, component extraction, type centralization)
+**Inventory Inline Editing — Production Fixes (Merged PR #182)**
+- Fixed RLS: Restored `items_manage_authorized` policy
+- Fixed PGRST204: Removed `last_purchased_date` from payload
+- Fixed `get_low_stock_items` RPC: `i.active` → `i.is_active`
+- DB migrations pushed to remote: `20260603223000`, `20260603232500`
 
 ## Done
 - PR #182 merged (inventory-ui-ux-improvements)
-- RLS policies restored on production DB
-- Vercel routing fixed for PWA assets
-- CI pipeline credentials fixed
-- All inline edit errors resolved (price, cost, mrp, stock qty)
+- Stale PR branches cleaned up
+- PWA deployment and caching bugs fixed
+- Inline edit stock adjustment errors resolved
 
 ## Next
-- Verify Vercel deployment with all fixes live
-- Monitor for any remaining RPC 400 errors
+- Verify new Vercel deployment completes successfully
+- Monitor for any remaining PWA/SW caching issues
 
 ## Blocker
 None
 
 ---
-ctx: PR#182 merged | RLS+RPC+Vercel fixed | done: 8 | next: verify production
+ctx: Main branch stabilized | done: 4 | next: verify deployment
