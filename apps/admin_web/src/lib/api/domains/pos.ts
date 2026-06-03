@@ -42,7 +42,7 @@ export const pos = {
   lookupByScan: async (scanValue: string, storeId: string): Promise<PosProduct | null> => {
     debugLog('Looking up item by scan', { scanValue, storeId });
     const { data, error } = await supabase.rpc('lookup_item_by_scan', {
-      p_scan_value: scanValue,
+      p_barcode: scanValue,
       p_store_id: storeId,
     });
     if (error) throw error;
