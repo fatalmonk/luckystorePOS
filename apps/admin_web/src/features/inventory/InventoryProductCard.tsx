@@ -137,19 +137,19 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
       )}
       onClick={() => !isEditing && onUpdateStock(item)}
     >
-      {/* Image / Status */}
-      <div className="relative w-full aspect-square bg-background-subtle">
-        {/* Selection Checkbox */}
+      {/* Image / Status - Optimized spacing */}
+      <div className="relative w-full aspect-[4/3] bg-background-subtle">
+        {/* Selection Checkbox - tighter padding */}
         {onToggleSelect && (
           <div 
-            className="absolute top-2 left-2 z-10 bg-white/80 rounded-sm backdrop-blur-sm"
+            className="absolute top-1.5 left-1.5 z-10 bg-white/80 rounded-sm backdrop-blur-sm"
             onClick={(e) => e.stopPropagation()}
           >
             <input
               type="checkbox"
               checked={isSelected}
               onChange={() => onToggleSelect(item.id)}
-              className="w-5 h-5 rounded border-border-default text-primary focus:ring-primary cursor-pointer drop-shadow-md bg-white m-0.5 block"
+              className="w-4 h-4 rounded border-border-default text-primary focus:ring-primary cursor-pointer drop-shadow-md bg-white m-0.5 block"
             />
           </div>
         )}
@@ -158,7 +158,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
         {!isEditing && (
           <div
             className={clsx(
-              "absolute top-2 right-2 z-20 transition-opacity duration-200",
+              "absolute top-1.5 right-1.5 z-20 transition-opacity duration-200",
               showEditFeatures ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             )}
             onClick={(e) => e.stopPropagation()}
@@ -168,10 +168,10 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 e.stopPropagation();
                 setIsEditing(true);
               }}
-              className="p-2 rounded-lg bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
+              className="p-1.5 rounded-md bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
               title="Quick Edit"
             >
-              <Pencil size={16} />
+              <Pencil size={14} />
             </button>
           </div>
         )}
@@ -209,10 +209,10 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           )}
         </div>
 
-        {/* Status Badge */}
-        <div className="absolute top-2 right-14 z-10">
+        {/* Status Badge - tighter positioning */}
+        <div className="absolute bottom-1.5 right-1.5 z-10">
           <span
-            className="text-[10px] px-2 py-0.5 font-bold uppercase rounded-full"
+            className="text-[10px] px-1.5 py-0.5 font-bold uppercase rounded-full"
             style={{
               backgroundColor: item.reorder_status === 'OUT' 
                 ? 'var(--color-danger-subtle)' 
@@ -231,9 +231,9 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5 p-4">
-        {/* Name - Editable */}
-        <div className="min-h-[1.75rem]">
+      <div className="flex flex-col gap-1.5 p-3">
+        {/* Name - Editable with 2-line clamp */}
+        <div className="min-h-[2.5rem]">
           {editingField === 'name' ? (
             <EditableCell
               value={item.name}
@@ -259,195 +259,182 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           )}
         </div>
 
-        {/* Stock - Editable */}
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] text-text-muted uppercase tracking-wide">Stock</span>
-          {editingField === 'current_qty' ? (
-            <EditableCell
-              value={item.current_qty}
-              type="number"
-              onSave={(val) => handleSave('current_qty', val)}
-              onCancel={handleCancel}
-              validate={validateStock}
-              min={0}
-              step={1}
-            />
-          ) : (
-            <span
-              className={clsx(
-                "text-lg font-bold font-mono tabular-nums",
-                isEditing && "hover:bg-surface-hover rounded cursor-pointer px-2 py-0.5 -mx-2 -my-0.5",
-                item.current_qty <= 5 ? "text-danger" : "text-text-primary"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                isEditing && handleStartEdit('current_qty');
-              }}
-            >
-              {item.current_qty.toLocaleString('en-IN')}
-            </span>
-          )}
+        {/* Compact metrics row */}  
+        <div className="flex items-center justify-between text-xs text-warm-muted border-t border-warm-border-warm pt-2 mt-1">  
+          <div className="flex items-center gap-3">  
+            <span className="font-medium">  
+              Stock: <span className={item.current_qty <= 5 ? 'text-danger font-semibold' : 'text-warm-fg'}>{item.current_qty}</span>  
+            </span>  
+            <span className="font-medium">  
+              Price: <span className="text-warm-fg">{formatSelling(item.price)}</span>  
+            </span>  
+          </div>  
+          <span className="font-mono text-[10px] truncate max-w-[80px]" title={item.sku || undefined}>  
+            {item.sku || '—'}  
+          </span>  
         </div>
 
-        {item.min_qty != null && item.min_qty > 0 && (
-          <div className="text-xs text-warm-muted text-right -mt-1">
-            Threshold: {item.min_qty}
-          </div>
-        )}
-
-        {/* Price Row */}
-        <div className="pt-2 border-t border-border-subtle">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              {hasMrp && (
-                <div className="text-xs text-text-muted line-through">
-                  {formatMRP(item.mrp)}
-                </div>
-              )}
-              {editingField === 'price' ? (
-                <EditableCell
-                  value={item.price || 0}
-                  type="currency"
-                  onSave={(val) => handleSave('price', val)}
-                  onCancel={handleCancel}
-                  validate={validatePrice}
-                  min={0}
-                  step={0.01}
-                />
-              ) : (
-                <span
-                  className={clsx(
-                    "text-lg font-bold tabular-nums transition-colors px-2 py-0.5 rounded-md",
-                    isEditing && "hover:opacity-80 cursor-pointer",
-                    "bg-primary-subtle text-primary"
-                  )}
-                  style={{
-                    backgroundColor: 'var(--color-primary-subtle)',
-                    color: 'var(--color-primary-default)'
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    isEditing && handleStartEdit('price');
-                  }}
-                >
-                  {formatSelling(item.price)}
-                </span>
-              )}
-            </div>
-            
-            {/* Margin badge */}
-            <div className="text-right">
-              <span className="text-[10px] text-text-muted">Margin</span>
-              <div className={clsx("text-sm font-bold font-mono", marginColor)}>
-                {margin !== null ? `${margin}%` : '—'}
-              </div>
-            </div>
-          </div>
-
-          {/* Cost Price - Editable */}
-          <div className="flex justify-between items-center mt-1">
-            <span className="text-[10px] text-text-muted">Cost</span>
-            {editingField === 'cost' ? (
-              <EditableCell
-                value={item.cost || 0}
-                type="currency"
-                onSave={(val) => handleSave('cost', val)}
-                onCancel={handleCancel}
-                min={0}
-                step={0.01}
-              />
-            ) : (
-              <span
-                className={clsx(
-                  "text-xs text-text-secondary tabular-nums font-mono",
-                  isEditing && "hover:bg-surface-hover rounded cursor-pointer px-2 py-0.5 -mx-2 -my-0.5"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  isEditing && handleStartEdit('cost');
-                }}
-              >
-                {formatPrice(item.cost)}
-              </span>
-            )}
-          </div>
-
-          {/* MRP - Editable (when in edit mode) */}
-          {isEditing && (
-            <div className="flex justify-between items-center mt-1">
-              <span className="text-[10px] text-text-muted">MRP</span>
-              {editingField === 'mrp' ? (
-                <EditableCell
-                  value={item.mrp || 0}
-                  type="currency"
-                  onSave={(val) => handleSave('mrp', val)}
-                  onCancel={handleCancel}
-                  min={0}
-                  step={0.01}
-                />
-              ) : (
-                <span
-                  className="text-xs text-text-secondary tabular-nums font-mono hover:bg-surface-hover rounded cursor-pointer px-2 py-0.5 -mx-2 -my-0.5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStartEdit('mrp');
-                  }}
-                >
-                  {formatMRP(item.mrp)}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* SKU - Editable (when in edit mode) */}
-          {isEditing && (
-            <div className="flex justify-between items-center mt-1">
-              <span className="text-[10px] text-text-muted">SKU</span>
-              {editingField === 'sku' ? (
-                <EditableCell
-                  value={item.sku || ''}
-                  type="text"
-                  onSave={(val) => handleSave('sku', val)}
-                  onCancel={handleCancel}
-                  placeholder="Enter SKU"
-                />
-              ) : (
-                <span
-                  className="text-xs text-text-tertiary font-mono hover:bg-surface-hover rounded cursor-pointer px-2 py-0.5 -mx-2 -my-0.5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStartEdit('sku');
-                  }}
-                >
-                  {item.sku || '—'}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Health Badges */}
-          {(priceError || lowMargin || !hasMrp) && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {priceError && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-medium">
-                  <span className="w-1 h-1 rounded-full bg-rose-500" />
-                  Invalid Price
-                </span>
-              )}
-              {lowMargin && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-medium">
-                  Low Margin
-                </span>
-              )}
-              {!hasMrp && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px]">
-                  No MRP
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+        {/* Edit mode: expandable details */}  
+        {isEditing ? (  
+          <div className="pt-3 border-t border-warm-border-warm mt-2 flex flex-col gap-2">  
+            {/* Stock - Editable */}  
+            <div className="flex justify-between items-center">  
+              <span className="text-xs text-text-muted">Stock</span>  
+              {editingField === 'current_qty' ? (  
+                <EditableCell  
+                  value={item.current_qty}  
+                  type="number"  
+                  onSave={(val) => handleSave('current_qty', val)}  
+                  onCancel={handleCancel}  
+                  validate={validateStock}  
+                  min={0}  
+                  step={1}  
+                />  
+              ) : (  
+                <span  
+                  className="text-sm font-bold font-mono tabular-nums cursor-pointer hover:bg-surface-hover rounded px-2 py-0.5 -mx-2 -my-0.5"  
+                  onClick={(e) => {  
+                    e.stopPropagation();  
+                    handleStartEdit('current_qty');  
+                  }}  
+                >  
+                  {item.current_qty.toLocaleString('en-IN')}  
+                </span>  
+              )}  
+            </div>  
+  
+            {/* Price - Editable */}  
+            <div className="flex justify-between items-center">  
+              <span className="text-xs text-text-muted">Price</span>  
+              {editingField === 'price' ? (  
+                <EditableCell  
+                  value={item.price || 0}  
+                  type="currency"  
+                  onSave={(val) => handleSave('price', val)}  
+                  onCancel={handleCancel}  
+                  validate={validatePrice}  
+                  min={0}  
+                  step={0.01}  
+                />  
+              ) : (  
+                <span  
+                  className="text-sm font-bold text-primary cursor-pointer hover:bg-surface-hover rounded px-2 py-0.5 -mx-2 -my-0.5"  
+                  onClick={(e) => {  
+                    e.stopPropagation();  
+                    handleStartEdit('price');  
+                  }}  
+                >  
+                  {formatSelling(item.price)}  
+                </span>  
+              )}  
+            </div>  
+  
+            {/* Cost - Editable */}  
+            <div className="flex justify-between items-center">    
+              <span className="text-xs text-text-muted">Cost</span>    
+              {editingField === 'cost' ? (  
+                <EditableCell    
+                  value={item.cost || 0}    
+                  type="currency"    
+                  onSave={(val) => handleSave('cost', val)}    
+                  onCancel={handleCancel}    
+                  min={0}    
+                  step={0.01}    
+                />    
+              ) : (    
+                <span    
+                  className="text-xs text-text-secondary tabular-nums font-mono cursor-pointer hover:bg-surface-hover rounded px-2 py-0.5 -mx-2 -my-0.5"    
+                  onClick={(e) => {    
+                    e.stopPropagation();    
+                    handleStartEdit('cost');    
+                  }}    
+                >    
+                  {formatPrice(item.cost)}    
+                </span>    
+              )}    
+            </div>    
+  
+            {/* MRP - Editable */}  
+            <div className="flex justify-between items-center">  
+              <span className="text-xs text-text-muted">MRP</span>  
+              {editingField === 'mrp' ? (  
+                <EditableCell  
+                  value={item.mrp || 0}  
+                  type="currency"  
+                  onSave={(val) => handleSave('mrp', val)}  
+                  onCancel={handleCancel}  
+                  min={0}  
+                  step={0.01}  
+                />  
+              ) : (  
+                <span  
+                  className="text-xs text-text-secondary tabular-nums font-mono cursor-pointer hover:bg-surface-hover rounded px-2 py-0.5 -mx-2 -my-0.5"  
+                  onClick={(e) => {  
+                    e.stopPropagation();  
+                    handleStartEdit('mrp');  
+                  }}  
+                >  
+                  {formatMRP(item.mrp)}  
+                </span>  
+              )}  
+            </div>  
+  
+            {/* SKU - Editable */}  
+            <div className="flex justify-between items-center">  
+              <span className="text-xs text-text-muted">SKU</span>  
+              {editingField === 'sku' ? (  
+                <EditableCell  
+                  value={item.sku || ''}  
+                  type="text"  
+                  onSave={(val) => handleSave('sku', val)}  
+                  onCancel={handleCancel}  
+                  placeholder="Enter SKU"  
+                />  
+              ) : (  
+                <span  
+                  className="text-xs text-text-tertiary font-mono cursor-pointer hover:bg-surface-hover rounded px-2 py-0.5 -mx-2 -my-0.5"  
+                  onClick={(e) => {  
+                    e.stopPropagation();  
+                    handleStartEdit('sku');  
+                  }}  
+                >  
+                  {item.sku || '—'}  
+                </span>  
+              )}  
+            </div>  
+  
+            {/* Margin display */}  
+            <div className="flex justify-between items-center pt-2 border-t border-warm-border-warm">  
+              <span className="text-xs text-text-muted">Margin</span>  
+              <div className={clsx("text-xs font-bold font-mono", marginColor)}>  
+                {margin !== null ? `${margin}%` : '—'}  
+              </div>  
+            </div>  
+          </div>  
+        ) : null}  
+  
+        {/* Health Badges */}  
+        {(priceError || lowMargin || !hasMrp) && (  
+          <div className="flex flex-wrap gap-1 mt-2">  
+            {priceError && (  
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-medium">  
+                <span className="w-1 h-1 rounded-full bg-rose-500" />  
+                Invalid Price  
+              </span>  
+            )}  
+            {lowMargin && (  
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-medium">  
+                Low Margin  
+              </span>  
+            )}  
+            {!hasMrp && (  
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px]">  
+                No MRP  
+              </span>  
+            )}  
+          </div>  
+        )}  
+      </div>  
+    </div>  
+  );  
 });
