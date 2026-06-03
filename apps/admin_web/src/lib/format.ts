@@ -3,6 +3,10 @@ export function formatCurrency(amount: number): string {
   return amount < 0 ? `-৳${absAmountStr}` : `৳${absAmountStr}`;
 }
 
+export function formatCurrencyValue(amount: number): string {
+  return Math.abs(amount).toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
 export function formatCurrencyCompact(amount: number): string {
   return `৳${amount.toFixed(2)}`;
 }

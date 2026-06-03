@@ -9,6 +9,7 @@ export interface CardProps {
   id?: string; // for animation highlighting (stock update)
   highlight?: boolean; // trigger highlight animation
   highlightColor?: 'emerald' | 'amber' | 'blue';
+  onClick?: () => void;
 }
 
 export const Card: React.FC<CardProps> = 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, CreditCard } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import type { Database } from '../../lib/database.types';

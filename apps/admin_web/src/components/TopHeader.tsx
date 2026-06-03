@@ -1,4 +1,4 @@
-import { Search, Command, Bell, Moon, Sun, Menu, PanelLeftClose, Globe, User } from 'lucide-react';
+import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, Globe, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -86,7 +86,7 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, co
             role="searchbox"
           />
           <div className="search-shortcut" aria-hidden="true">
-            <Command size={14} />
+            <span>⌘</span>
             <span>K</span>
           </div>
         </div>
@@ -97,10 +97,7 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, co
           <span className="sr-only">Language</span>
           <span className="text-sm font-bold">{i18n.language === 'bn' ? 'বাংলা' : 'EN'}</span>
         </button>
-        <button className="header-button" aria-label="View keyboard shortcuts" type="button">
-          <span className="sr-only">Keyboard shortcuts</span>
-          <Command size={16} />
-        </button>
+
         <button className="header-button" aria-label="View notifications" type="button">
           <span className="sr-only">Notifications</span>
           <Bell size={16} />

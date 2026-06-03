@@ -13,11 +13,24 @@ export function Layout() {
   const isPosPage = location.pathname.includes('/pos');
   
   const [sidebarHidden, setSidebarHidden] = useState(() => window.innerWidth < 768);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+  
+  // Persist sidebar collapse preference
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
     if (isPosPage) return true;
+    // Check saved preference first
+    const saved = localStorage.getItem('sidebar-collapsed');
+    if (saved !== null) return saved === 'true';
+    // Fallback to responsive default
     const width = window.innerWidth;
     return width >= 768 && width < 1024;
   });
+
+  const setSidebarCollapsed = (value: boolean | ((prev: boolean) => boolean)) => {
+    const newValue = typeof value === 'function' ? value(sidebarCollapsed) : value;
+    localStorage.setItem('sidebar-collapsed', String(newValue));
+    setSidebarCollapsedState(newValue);
+  };
+
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
@@ -29,23 +42,30 @@ export function Layout() {
         if (!sidebarHidden) {
           setSidebarHidden(true);
         }
-        setSidebarCollapsed(false);
-      } else {
-        if (width >= 768 && width < 1024) {
-          setSidebarCollapsed(true);
-        } else if (width >= 1024 && !isPosPage) {
-          setSidebarCollapsed(false);
-        }
+        setSidebarCollapsedState(false);
       }
+      // Don't force collapse state on desktop — respect user's preference
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarHidden, isPosPage]);
+  }, [sidebarHidden]);
 
-  // Force sidebar collapse when entering POS mode (desktop)
+  // Force sidebar collapse when entering POS mode (desktop), but save preference
   useEffect(() => {
     if (isPosPage && !isMobile) {
-      setSidebarCollapsed(true);
+      // Save current preference before forcing collapse
+      const saved = localStorage.getItem('sidebar-collapsed');
+      if (saved !== 'true') {
+        localStorage.setItem('sidebar-collapsed-restore', saved || 'false');
+      }
+      setSidebarCollapsedState(true);
+    } else if (!isPosPage && !isMobile) {
+      // Restore previous preference when leaving POS
+      const restore = localStorage.getItem('sidebar-collapsed-restore');
+      if (restore !== null) {
+        setSidebarCollapsedState(restore === 'true');
+        localStorage.removeItem('sidebar-collapsed-restore');
+      }
     }
   }, [isPosPage, isMobile]);
 

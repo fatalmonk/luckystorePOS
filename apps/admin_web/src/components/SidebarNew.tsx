@@ -51,12 +51,12 @@ function useNavGroups(): NavGroup[] {
       icon: Package,
       items: [
         { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
-          { label: t('nav.inventory'), path: '/inventory' },
-          { label: t('nav.history'), path: '/inventory/history' },
+          { label: t('nav.list'), path: '/inventory' },
+          { label: t('nav.stockHistory'), path: '/inventory/history' },
         ] },
         { icon: PlusCircle, label: t('nav.purchase'), path: '/purchase', children: [
-          { label: t('nav.purchase'), path: '/purchase' },
-          { label: t('nav.history'), path: '/purchase/history' },
+          { label: t('nav.newEntry'), path: '/purchase' },
+          { label: t('nav.purchaseHistory'), path: '/purchase/history' },
         ] },
         { icon: ShoppingCart, label: t('nav.sales'), path: '/sales' },
         { icon: BarChart3, label: t('nav.dailySales'), path: '/daily-sales' },

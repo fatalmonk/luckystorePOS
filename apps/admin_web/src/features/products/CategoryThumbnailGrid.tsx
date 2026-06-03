@@ -71,8 +71,11 @@ export const CategoryThumbnailGrid = React.memo(function CategoryThumbnailGrid({
   }, [categories]);
 
   return (
-    <div className={clsx('w-full', className)}>
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className={clsx('w-full relative', className)}>
+      {/* Gradient fade on right edge to indicate scroll */}
+      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-warm-bg/80 to-transparent z-10 pointer-events-none rounded-r-md" />
+
+      <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-0.5 scrollbar-hide [--mask:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] [mask-image:var(--mask)] [-webkit-mask-image:var(--mask)]">
         {/* All button */}
         <button
           onClick={() => onSelect(null)}
