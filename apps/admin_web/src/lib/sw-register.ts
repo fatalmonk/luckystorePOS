@@ -44,7 +44,7 @@ export function registerServiceWorker(): void {
     deferredPrompt = null;
   });
 
-  const swUrl = '/sw.js';
+  const swUrl = import.meta.env.BASE_URL + 'sw.js';
 
   if (isLocalhost) {
     // In localhost, check if a service worker still exists
