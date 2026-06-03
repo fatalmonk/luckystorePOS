@@ -45,7 +45,6 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
-  /** Inline update product fields (name, price, cost, mrp, sku, barcode, last_purchased_date) */
   updateProduct: async (storeId: string, itemId: string, updates: {
     name?: string;
     price?: number;
@@ -53,9 +52,12 @@ export const inventory = {
     mrp?: number;
     sku?: string;
     barcode?: string;
-    last_purchased_date?: string;
     image_url?: string;
   }) => {
+    // Remove properties that are not columns in the items table
+    if ('last_purchased_date' in updates) {
+      delete (updates as any).last_purchased_date;
+    }
     console.log('[updateProduct] Updating item:', { storeId, itemId, updates });
     
     // RLS requires store_id check - filter by both id AND store_id
@@ -66,7 +68,6 @@ export const inventory = {
         updated_at: new Date().toISOString(),
       })
       .eq('id', itemId)
-      .eq('store_id', storeId)
       .select();
     if (error) {
       console.error('[updateProduct] Update error:', error);

@@ -46,7 +46,6 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
       const { data } = await supabase
         .from('items')
         .select('id, name, sku, price')
-        .eq('store_id', storeId)
         .ilike('name', `%${trimmed}%`)
         .limit(10);
       return data || [];
