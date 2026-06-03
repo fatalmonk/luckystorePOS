@@ -31,10 +31,19 @@ export function useInventoryEditing(storeId: string | undefined) {
           return old.map((item: any) => (item.id === itemId ? { ...item, [field]: processedValue } : item));
         });
 
+        let result;
         if (field === 'current_qty') {
-          await api.inventory.updateStock(storeId, itemId, processedValue as number);
+          result = await api.inventory.updateStock(storeId, itemId, processedValue as number);
         } else {
-          await api.inventory.updateProduct(storeId, itemId, { [field]: processedValue });
+          result = await api.inventory.updateProduct(storeId, itemId, { [field]: processedValue });
+        }
+        
+        // Detect RLS silent failure (0 rows updated)
+        if (result === null || (Array.isArray(result) && result.length === 0)) {
+          console.error('[InlineSave] RLS blocked update or item not found:', { itemId, field });
+          queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
+          notify(`Update blocked by permissions or item not found`, 'error');
+          throw new Error('Update blocked by permissions or item not found');
         }
         notify(`${field} updated successfully`, 'success');
       } catch (err) {

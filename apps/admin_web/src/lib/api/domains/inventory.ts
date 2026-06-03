@@ -68,12 +68,11 @@ export const inventory = {
       .eq('id', itemId)
       .eq('store_id', storeId)
       .select();
-    
     if (error) {
       console.error('[updateProduct] Update error:', error);
       throw error;
     }
-    
+
     console.log('[updateProduct] Update result:', data);
     return data?.[0] ?? null;
   },

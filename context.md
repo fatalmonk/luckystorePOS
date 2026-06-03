@@ -4,6 +4,13 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
+**Purchase Receiving - Fix item cost update**
+- Issue: `record_purchase_v2` RPC updated `stock_movements` but NOT `items.cost`
+- Fix: Added `UPDATE items SET cost = v_new_avg_cost` in the purchase loop
+- Migration: `20260603000000_fix_purchase_receipt_update_item_cost.sql`
+- Build: ✅ passing
+
+## Previous
 **Inventory Dashboard Refactoring - Phase 3 Complete**
 - Extracted: `InventoryItem` interface to `types/inventory.ts` (centralized source of truth)
 - Updated: 6 files using centralized type (~90 lines of duplicate interface removed)
