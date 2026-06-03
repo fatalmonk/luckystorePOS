@@ -124,14 +124,15 @@ jobs:
       - name: Prepare .env.test
         run: |
           echo "SUPABASE_URL=http://127.0.0.1:54321" >> supabase/tests/.env.test
-          echo "DATABASE_URL=postgresql://postgres:local_only@127.0.0.1:54322/postgres" >> supabase/tests/.env.test
+          echo "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres" >> supabase/tests/.env.test
           
           # Get keys from supabase status (local dev only)
           STATUS=$(supabase status -o json)
           ANON_KEY=$(echo $STATUS | jq -r '.anon_key')
+          SERVICE_ROLE_KEY=$(echo $STATUS | jq -r '.service_role_key')
           
           echo "SUPABASE_ANON_KEY=$ANON_KEY" >> supabase/tests/.env.test
-          echo "SUPABASE_SERVICE_ROLE_KEY=local_only" >> supabase/tests/.env.test
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> supabase/tests/.env.test
 
       - name: Install test dependencies
         run: |
