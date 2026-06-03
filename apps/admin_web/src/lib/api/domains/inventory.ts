@@ -46,7 +46,7 @@ export const inventory = {
     return data;
   },
   /** Inline update product fields (name, price, cost, mrp, sku, barcode, last_purchased_date) */
-  updateProduct: async (_storeId: string, itemId: string, updates: {
+  updateProduct: async (storeId: string, itemId: string, updates: {
     name?: string;
     price?: number;
     cost?: number;
@@ -56,63 +56,9 @@ export const inventory = {
     last_purchased_date?: string;
     image_url?: string;
   }) => {
-    console.log('[updateProduct] Updating item:', { itemId, updates });
-
-    // Check if this is a price-related update (can use RPC)
-    if (updates.price !== undefined || updates.cost !== undefined || updates.mrp !== undefined) {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        throw new Error('Not authenticated');
-      }
-
-      // Get user's tenant_id - use RPC that handles RLS properly
-      const { data: user, error: roleError } = await supabase
-        .from('users')
-        .select('tenant_id')
-        .eq('auth_id', userData.user.id)
-        .single();
-
-      if (roleError || !user?.tenant_id) {
-        throw new Error('Cannot determine tenant');
-      }
-
-      // Use the update_item_prices RPC for price updates (handles NULL tenant_id)
-      const { data, error } = await supabase.rpc('update_item_prices', {
-        p_item_id: itemId,
-        p_tenant_id: user.tenant_id,
-        p_price: updates.price ?? null,
-        p_mrp: updates.mrp ?? null,
-        p_cost: updates.cost ?? null,
-      });
-
-      if (error) {
-        console.error('[updateProduct] RPC error:', error);
-        throw error;
-      }
-
-      // If there are other non-price fields to update, do them separately
-      if (updates.name !== undefined || updates.sku !== undefined || updates.barcode !== undefined) {
-        const { error: updateError } = await supabase
-          .from('items')
-          .update({
-            ...(updates.name !== undefined && { name: updates.name }),
-            ...(updates.sku !== undefined && { sku: updates.sku }),
-            ...(updates.barcode !== undefined && { barcode: updates.barcode }),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', itemId);
-
-        if (updateError) {
-          console.error('[updateProduct] Field update error:', updateError);
-          throw updateError;
-        }
-      }
-
-      console.log('[updateProduct] RPC result:', data);
-      return data?.[0] ?? null;
-    }
-
-    // Non-price updates - direct table update (RLS will check tenant_id)
+    console.log('[updateProduct] Updating item:', { storeId, itemId, updates });
+    
+    // RLS requires store_id check - filter by both id AND store_id
     const { data, error } = await supabase
       .from('items')
       .update({
@@ -120,8 +66,8 @@ export const inventory = {
         updated_at: new Date().toISOString(),
       })
       .eq('id', itemId)
+      .eq('store_id', storeId)
       .select();
-
     if (error) {
       console.error('[updateProduct] Update error:', error);
       throw error;

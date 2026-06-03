@@ -45,7 +45,6 @@ export function useInventoryEditing(storeId: string | undefined) {
           notify(`Update blocked by permissions or item not found`, 'error');
           throw new Error('Update blocked by permissions or item not found');
         }
-        
         notify(`${field} updated successfully`, 'success');
       } catch (err) {
         console.error('[InlineSave] Error:', err);
