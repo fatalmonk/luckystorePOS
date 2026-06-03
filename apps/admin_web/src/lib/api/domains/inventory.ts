@@ -83,7 +83,7 @@ export const inventory = {
       p_store_id: storeId,
       p_item_id: itemId,
       p_new_qty: newQty,
-      p_reason: 'Inline stock edit',
+      p_reason: 'correction',
     });
     if (error) throw error;
     return data;
