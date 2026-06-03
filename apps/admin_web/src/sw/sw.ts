@@ -4,7 +4,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_NAME = 'lucky-pos-v1';
 const API_CACHE_NAME = 'lucky-pos-api-v1';
-const OFFLINE_URL = '/offline.html';
+const OFFLINE_URL = 'offline.html';
 
 const PRECACHE_URLS: string[] = [OFFLINE_URL];
 
