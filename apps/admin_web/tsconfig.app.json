@@ -23,8 +23,7 @@
     "strictBindCallApply": false,
     "strictPropertyInitialization": false,
     "noImplicitThis": false,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
+
     "paths": {
       "@/*": ["src/*"],
       "@components/*": ["src/components/*"],
