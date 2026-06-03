@@ -2,20 +2,7 @@ import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { downloadCSV } from '../lib/format';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  sku?: string;
-  current_qty: number;
-  reorder_status: 'OK' | 'LOW' | 'OUT';
-  last_updated?: string;
-  price?: number;
-  cost?: number;
-  mrp?: number;
-  category_id?: string;
-  image_url?: string;
-}
+import type { InventoryItem } from '../types/inventory';
 
 export function useInventoryBulkActions(
   storeId: string | null,
