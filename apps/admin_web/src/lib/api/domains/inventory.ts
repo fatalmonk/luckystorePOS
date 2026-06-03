@@ -45,6 +45,49 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+  /** Inline update product fields (name, price, cost, mrp, sku, barcode, last_purchased_date) */
+  updateProduct: async (storeId: string, itemId: string, updates: {
+    name?: string;
+    price?: number;
+    cost?: number;
+    mrp?: number;
+    sku?: string;
+    barcode?: string;
+    last_purchased_date?: string;
+    image_url?: string;
+  }) => {
+    console.log('[updateProduct] Updating item:', { storeId, itemId, updates });
+    
+    // RLS requires store_id check - filter by both id AND store_id
+    const { data, error } = await supabase
+      .from('items')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', itemId)
+      .eq('store_id', storeId)
+      .select();
+    
+    if (error) {
+      console.error('[updateProduct] Update error:', error);
+      throw error;
+    }
+    
+    console.log('[updateProduct] Update result:', data);
+    return data?.[0] ?? null;
+  },
+  /** Update stock quantity directly (for inline editing) */
+  updateStock: async (storeId: string, itemId: string, newQty: number) => {
+    const { data, error } = await supabase.rpc('set_stock', {
+      p_store_id: storeId,
+      p_item_id: itemId,
+      p_new_qty: newQty,
+      p_reason: 'Inline stock edit',
+    });
+    if (error) throw error;
+    return data;
+  },
   history: async (storeId: string, itemId?: string) => {
     const { data, error } = await supabase.rpc('get_stock_history_simple', {
       p_store_id: storeId,

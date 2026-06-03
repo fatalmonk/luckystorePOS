@@ -29,6 +29,7 @@ export const settings = {
     return data;
   },
   addUser: async (storeId: string, user: { email: string; password: string; fullName: string; role: string; pin: string; tenantId: string }) => {
+    // 1. Create auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: user.email,
       password: user.password,
@@ -36,19 +37,17 @@ export const settings = {
     if (authError) throw authError;
     const authId = authData.user?.id;
     if (!authId) throw new Error('Signup succeeded but no auth user ID returned');
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{
-        id: authId,
-        email: user.email,
-        tenant_id: user.tenantId,
-        store_id: storeId,
-        name: user.fullName,
-        role: user.role,
-        pos_pin: user.pin,
-      }])
-      .select()
-      .single();
+    
+    // 2. Create user record via RPC (bypasses RLS)
+    const { data, error } = await supabase.rpc('create_store_user', {
+      p_email: user.email,
+      p_full_name: user.fullName,
+      p_role: user.role,
+      p_pin: user.pin,
+      p_store_id: storeId,
+      p_tenant_id: user.tenantId,
+      p_auth_id: authId,
+    });
     if (error) throw error;
     return data;
   },
@@ -94,22 +93,17 @@ export const settings = {
     return data;
   },
   updateUser: async (userId: string, updates: { name?: string; role?: string; pos_pin?: string }) => {
-    const { data, error } = await supabase
-      .from('users')
-      .update(updates)
-      .eq('id', userId)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('update_store_user', {
+      p_user_id: userId,
+      p_updates: updates,
+    });
     if (error) throw error;
     return data;
   },
   deleteUser: async (userId: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('delete_store_user', {
+      p_user_id: userId,
+    });
     if (error) throw error;
     return data;
   },

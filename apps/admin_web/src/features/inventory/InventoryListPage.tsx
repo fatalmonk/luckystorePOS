@@ -1,10 +1,12 @@
+import type { InventoryItem } from '../types/inventory';
 import { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '../../components/PageState';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus } from 'lucide-react';
+import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus, Filter, X } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { downloadCSV } from '../../lib/format';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
@@ -12,6 +14,7 @@ import { ProductUpdateDrawer } from './ProductUpdateDrawer';
 import { ProductAddModal } from './AddProductModal';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useInventoryEditing } from '../../hooks/useInventoryEditing';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -25,27 +28,13 @@ import { BulkPriceModal } from '../../components/inventory/BulkPriceModal';
 import { BulkStockModal } from '../../components/inventory/BulkStockModal';
 import { BarcodeScannerModal } from '../../components/inventory/BarcodeScannerModal';
 import { useInventoryBulkActions } from '../../hooks/useInventoryBulkActions';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  sku?: string;
-  current_qty: number;
-  reorder_status: 'OK' | 'LOW' | 'OUT';
-  min_qty?: number;
-  last_updated?: string;
-  price?: number;
-  cost?: number;  // cost price
-  mrp?: number;
-  category_id?: string;
-  image_url?: string;
-  barcode?: string;
-  last_purchased_date?: string;
-}
+import { AnalyticsWidgets } from '../../components/inventory/AnalyticsWidgets';
+import { InventoryFilterToolbar } from '../../components/inventory/InventoryFilterToolbar';
 
 export function InventoryListPage() {
   const { storeId, tenantId } = useAuth();
   const { notify } = useNotify();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
@@ -57,7 +46,18 @@ export function InventoryListPage() {
   // Advanced Sorting
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc'>('name-asc');
 
-  // Advanced Filters
+  // Collapsible widgets state
+  const [showWidgets, setShowWidgets] = useState(() => {
+    const saved = localStorage.getItem('inventory-widgets-visible');
+    return saved !== null ? saved === 'true' : true; // Default to visible
+  });
+
+  const toggleWidgets = () => {
+    const newValue = !showWidgets;
+    setShowWidgets(newValue);
+    localStorage.setItem('inventory-widgets-visible', String(newValue));
+  };
+
   const [showFilters, setShowFilters] = useState(false);
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low' | 'out'>('all');
   const [minPrice, setMinPrice] = useState('');
@@ -77,7 +77,8 @@ export function InventoryListPage() {
 
   const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', storeId],
-    queryFn: () => api.inventory.list(storeId),
+    queryFn: () => api.inventory.list(storeId!),
+    enabled: !!storeId,
   });
 
   const [columnsCount, setColumnsCount] = useState(() => {
@@ -128,11 +129,14 @@ export function InventoryListPage() {
     handleExportSelected,
     toggleSelectAll,
     toggleSelect,
-  } = useInventoryBulkActions(storeId, tenantId, inventory);
+  } = useInventoryBulkActions(storeId!, tenantId, inventory);
 
   // Stable callbacks — prevent memoized card re-renders on every parent render
   const handleViewProduct = useCallback((item: InventoryItem) => setViewingProductId(item.id), []);
   const handleEditProduct = useCallback((item: InventoryItem) => setEditingProduct(item), []);
+
+  // Inline save handler from hook
+  const { handleInlineSave } = useInventoryEditing(storeId);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -275,21 +279,21 @@ export function InventoryListPage() {
       <PageHeader
         title="Stock Inventory"
         subtitle={
-          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm font-medium">
-            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <Package size={14} className="text-primary" />
+          <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
+            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <Package size={12} className="text-primary" />
               <AnimatedMetric value={stats.total} /> SKUs
             </span>
-            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <AlertTriangle size={14} className="text-warning-dark" />
+            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <AlertTriangle size={12} className="text-warning-dark" />
               <AnimatedMetric value={stats.lowStock} /> Low
             </span>
-            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <TrendingDown size={14} className="text-danger" />
+            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <TrendingDown size={12} className="text-danger" />
               <AnimatedMetric value={stats.outOfStock} /> Out
             </span>
-            <span className="flex items-center gap-1.5 text-text-secondary px-2 py-1 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <Wallet size={14} className="text-success-dark" />
+            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <Wallet size={12} className="text-success-dark" />
               <AnimatedMetric value={stats.totalValue} format prefix="৳" /> Value
             </span>
           </div>
@@ -333,104 +337,36 @@ export function InventoryListPage() {
             </Button>
           </div>
         }
-        className="mb-4"
+        className="mb-2"
       />
 
-      {/* Insights & Analytics Widgets */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {/* Top Selling Items */}
-        <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-          <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <TrendingDown size={12} className="text-warm-accent rotate-180" />
-            Top Selling
-          </h4>
-          {topSellingLoading ? (
-            <div className="space-y-2">
-              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-3/4 animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-5/6 animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-2/3 animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
-            </div>
-          ) : topSellingItems && topSellingItems.length > 0 ? (
-            <ul className="space-y-1">
-              {topSellingItems.slice(0, 5).map((item: any, i: number) => (
-                <li key={i} className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-warm-fg truncate flex-1">{item.name || item.item_name || item.product_name}</span>
-                  <span className="text-xs font-medium text-warm-accent whitespace-nowrap">{item.qty_sold || item.quantity_sold || item.total_sold}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-warm-muted italic">No data yet</p>
-          )}
+      {/* Collapsible Analytics Widgets */}
+      <div className="-mx-6 px-6 mb-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-semibold text-warm-muted uppercase tracking-wider">Analytics</span>
+          <button
+            onClick={toggleWidgets}
+            className="flex items-center gap-1 text-xs text-warm-muted hover:text-warm-fg transition-colors"
+          >
+            {showWidgets ? 'Hide' : 'Show'}
+            {showWidgets ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
         </div>
-
-        {/* Slow Moving Items */}
-        <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-          <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <TrendingDown size={12} className="text-warm-accent" />
-            Slow Moving
-          </h4>
-          {slowMovingLoading ? (
-            <div className="space-y-2">
-              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-3/4 animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-5/6 animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-2/3 animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
-            </div>
-          ) : slowMovingItems && slowMovingItems.length > 0 ? (
-            <ul className="space-y-1">
-              {slowMovingItems.slice(0, 5).map((item: any, i: number) => (
-                <li key={i} className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-warm-fg truncate flex-1">{item.name || item.item_name || item.product_name}</span>
-                  <span className="text-xs text-warm-muted whitespace-nowrap">{item.days_since_last_sale ?? item.days ?? 0}d</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-warm-muted italic">No data yet</p>
-          )}
-        </div>
-
-        {/* Daily Movement Trend */}
-        <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-          <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <RefreshCw size={12} className="text-warm-accent" />
-            14-Day Movement
-          </h4>
-          {dailyTrendLoading ? (
-            <div className="space-y-2">
-              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-              <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
-            </div>
-          ) : dailyTrend && dailyTrend.length > 0 ? (
-            <div className="flex items-end gap-[3px] h-8">
-              {dailyTrend.slice(-14).map((day: any, i: number) => {
-                const qty = day.total_qty ?? day.qty ?? day.movement ?? 0;
-                const maxQty = Math.max(...dailyTrend.slice(-14).map((d: any) => d.total_qty ?? d.qty ?? d.movement ?? 0), 1);
-                const height = Math.max((qty / maxQty) * 100, 4);
-                return (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-sm bg-warm-accent/60 hover:bg-warm-accent transition-colors cursor-default"
-                    style={{ height: `${height}%`, minHeight: '4px' }}
-                    title={`${day.date || day.day || ''}: ${qty} units`}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-xs text-warm-muted italic">No data yet</p>
-          )}
-        </div>
+        {showWidgets && (
+          <AnalyticsWidgets
+            topSellingItems={topSellingItems}
+            slowMovingItems={slowMovingItems}
+            dailyTrend={dailyTrend}
+            topSellingLoading={topSellingLoading}
+            slowMovingLoading={slowMovingLoading}
+            dailyTrendLoading={dailyTrendLoading}
+          />
+        )}
       </div>
 
       {/* Sticky Single Toolbar */}
-      <div 
-        className="sticky -mt-4 -mx-6 px-6 pt-4 pb-4 top-0 z-20 border-b border-border-default mb-6"
+      <div
+        className="sticky -mx-6 px-6 py-3 top-0 z-20 border-b border-border-default"
         style={{ backgroundColor: 'var(--color-background-default)' }}
       >
         <div className="flex flex-col gap-3 max-w-full">
@@ -444,166 +380,29 @@ export function InventoryListPage() {
             />
           )}
           
-          {/* Toggle Filters Button */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                showFilters || hasActiveFilters
-                  ? 'bg-warm-surface border-warm-border-warm text-warm-fg'
-                  : 'bg-surface border-border-default text-text-muted hover:bg-background-subtle'
-              }`}
-            >
-              <Filter size={14} />
-              {showFilters ? 'Hide Filters' : 'Show Filters'}
-              {(hasActiveFilters && !showFilters) && (
-                <span className="w-1.5 h-1.5 rounded-full bg-warm-accent" />
-              )}
-            </button>
-            {showFilters && (
-              <span className="text-[11px] text-text-muted">Filter by stock status &amp; price range</span>
-            )}
-          </div>
-
-          {/* Collapsible Filter Bar */}
-          {showFilters && (
-            <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3 transition-all">
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                {/* Stock Status Filter */}
-                <div className="flex-1 min-w-0 w-full sm:w-auto">
-                  <label className="block text-[11px] font-medium text-warm-muted uppercase tracking-wider mb-1">
-                    Stock Status
-                  </label>
-                  <select
-                    value={stockFilter}
-                    onChange={(e) => setStockFilter(e.target.value as typeof stockFilter)}
-                    className="w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-warm-accent appearance-none cursor-pointer"
-                  >
-                    <option value="all">All Stock</option>
-                    <option value="in_stock">In Stock (&gt;0)</option>
-                    <option value="low">Low Stock</option>
-                    <option value="out">Out of Stock</option>
-                  </select>
-                </div>
-
-                {/* Min Price */}
-                <div className="w-full sm:w-28">
-                  <label className="block text-[11px] font-medium text-warm-muted uppercase tracking-wider mb-1">
-                    Min Price
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-warm-accent placeholder-warm-muted/50"
-                  />
-                </div>
-
-                {/* Max Price */}
-                <div className="w-full sm:w-28">
-                  <label className="block text-[11px] font-medium text-warm-muted uppercase tracking-wider mb-1">
-                    Max Price
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="9999"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-warm-accent placeholder-warm-muted/50"
-                  />
-                </div>
-
-                {/* Clear Filters */}
-                {hasActiveFilters && (
-                  <div className="flex items-end h-full pt-0 sm:pt-5 w-full sm:w-auto">
-                    <button
-                      onClick={() => {
-                        setStockFilter('all');
-                        setMinPrice('');
-                        setMaxPrice('');
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-warm-border-warm text-warm-muted hover:text-warm-fg hover:bg-warm-dim transition-colors w-full sm:w-auto justify-center"
-                    >
-                      <X size={14} />
-                      Clear Filters
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-              <input
-                type="text"
-                placeholder="Search inventory by name or SKU..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 rounded-md border border-border-default bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <div className="relative">
-                <ArrowUpDown size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="pl-9 pr-8 py-2 rounded-md border border-border-default bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer shadow-sm"
-                >
-                  <option value="name-asc">Name A→Z</option>
-                  <option value="name-desc">Name Z→A</option>
-                  <option value="stock-asc">Stock ↑ Low→High</option>
-                  <option value="stock-desc">Stock ↓ High→Low</option>
-                  <option value="margin-asc">Margin ↑ Low→High</option>
-                  <option value="margin-desc">Margin ↓ High→Low</option>
-                  <option value="value-asc">Value ↑ Low→High</option>
-                  <option value="value-desc">Value ↓ High→Low</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-              </div>
-              
-              <Button
-                variant="secondary"
-                icon={<ScanLine size={18} />}
-                onClick={() => setIsBarcodeModalOpen(true)}
-                title="Scan Barcode"
-                className="shadow-sm"
-              >
-                <span className="hidden sm:inline">Scan</span>
-              </Button>
-              
-              <div className="flex rounded-md border border-border-default overflow-hidden flex-shrink-0 shadow-sm">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`px-3 py-2 flex items-center justify-center transition-colors ${
-                    viewMode === 'grid' ? 'bg-primary text-primary-on' : 'bg-surface text-text-secondary hover:bg-background-subtle'
-                  }`}
-                  title="Grid View"
-                >
-                  <LayoutGrid size={16} />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`px-3 py-2 flex items-center justify-center transition-colors ${
-                    viewMode === 'list' ? 'bg-primary text-primary-on' : 'bg-surface text-text-secondary hover:bg-background-subtle'
-                  }`}
-                  title="List View"
-                >
-                  <ListIcon size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <InventoryFilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            hasActiveFilters={hasActiveFilters}
+            stockFilter={stockFilter}
+            onStockFilterChange={setStockFilter}
+            minPrice={minPrice}
+            onMinPriceChange={setMinPrice}
+            maxPrice={maxPrice}
+            onMaxPriceChange={setMaxPrice}
+            onClearFilters={() => {
+              setStockFilter('all');
+              setMinPrice('');
+              setMaxPrice('');
+            }}
+            onOpenBarcode={() => setIsBarcodeModalOpen(true)}
+          />
         </div>
       </div>
 
@@ -657,7 +456,7 @@ export function InventoryListPage() {
                       paddingBottom: '16px',
                     }}
                   >
-                    {rowItems.map((item) => (
+                    {rowItems.map((item: any) => (
                       <InventoryProductCard
                         key={item.id}
                         item={item}
@@ -667,6 +466,8 @@ export function InventoryListPage() {
                         onUpdateStock={handleViewProduct}
                         tenantId={tenantId}
                         priority={virtualRow.index === 0}
+                        onInlineSave={handleInlineSave}
+                        storeId={storeId}
                       />
                     ))}
                   </div>
@@ -677,6 +478,7 @@ export function InventoryListPage() {
         ) : (
           <InventoryListTable
             items={filteredItems}
+            storeId={storeId}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             onSelectAll={toggleSelectAll}
@@ -684,6 +486,7 @@ export function InventoryListPage() {
             onViewHistory={handleViewProduct}
             onEditProduct={handleEditProduct}
             onDelete={(item) => console.log('Delete', item)}
+            onInlineSave={handleInlineSave}
           />
         )}
       </div>

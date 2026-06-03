@@ -133,6 +133,15 @@ export default {
         '12': 'var(--space-12)',
         '16': 'var(--space-16)',
       },
+      keyframes: {
+        'flash-success': {
+          '0%': { backgroundColor: 'var(--color-success-subtle, rgba(34, 197, 94, 0.2))' },
+          '100%': { backgroundColor: 'transparent' },
+        },
+      },
+      animation: {
+        'flash-success': 'flash-success 0.5s ease-out',
+      },
       borderRadius: {
         'none': 'var(--radius-none)',
         'xs': 'var(--radius-xs)',

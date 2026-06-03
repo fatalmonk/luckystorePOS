@@ -3,7 +3,7 @@ const DEBUG_POS = import.meta.env.VITE_DEBUG_POS === 'true';
 export function debugLog(label: string, data: unknown) {
   if (DEBUG_POS) {
     // Intentionally kept for dev-only debugging
-    // eslint-disable-next-line no-console
+     
     console.log(`[${label}]:`, typeof data === 'string' ? data : JSON.stringify(data, null, 2));
   }
 }
