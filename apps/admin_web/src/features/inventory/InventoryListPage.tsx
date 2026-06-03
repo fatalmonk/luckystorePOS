@@ -138,6 +138,17 @@ export function InventoryListPage() {
   // Inline save handler from hook
   const { handleInlineSave } = useInventoryEditing(storeId);
 
+  const handleDeleteProduct = async (item: InventoryItem) => {
+    if (!window.confirm(`Are you sure you want to delete ${item.name}?`)) return;
+    try {
+      await api.inventory.deleteProduct(storeId, item.id);
+      refetch();
+    } catch (err) {
+      console.error('Failed to delete product', err);
+      alert('Failed to delete product');
+    }
+  };
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => api.categories.list(),
@@ -485,7 +496,7 @@ export function InventoryListPage() {
             onUpdateStock={handleViewProduct}
             onViewHistory={handleViewProduct}
             onEditProduct={handleEditProduct}
-            onDelete={(item) => console.log('Delete', item)}
+            onDelete={handleDeleteProduct}
             onInlineSave={handleInlineSave}
           />
         )}

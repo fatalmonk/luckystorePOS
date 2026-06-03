@@ -123,6 +123,16 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+  deleteProduct: async (storeId: string, itemId: string) => {
+    // Soft delete item by setting is_active = false
+    const { data, error } = await supabase
+      .from('items')
+      .update({ is_active: false } as any)
+      .eq('id', itemId);
+      // Removed .eq('store_id', storeId) as items are tenant-scoped
+    if (error) throw error;
+    return data;
+  },
   setMinQty: async (storeId: string, itemId: string, minQty: number) => {
     const { data, error } = await supabase
       .from('stock_alert_thresholds')
