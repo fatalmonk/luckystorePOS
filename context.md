@@ -4,25 +4,16 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-**Inventory Dashboard Refactoring - Phase 3 Complete**
-- Extracted: `InventoryItem` interface to `types/inventory.ts` (centralized source of truth)
-- Updated: 6 files using centralized type (~90 lines of duplicate interface removed)
-- Files updated: `useInventoryEditing.ts`, `useInventoryBulkActions.ts`, `InventoryListPage.tsx`, `InventoryProductCard.tsx`, `InventoryListTable.tsx`, `InventoryListTableRow.tsx`
+**Purchase Receiving - Fix item cost update**
+- Issue: `record_purchase_v2` RPC updated `stock_movements` but NOT `items.cost`
+- Fix: Added `UPDATE items SET cost = v_new_avg_cost` in the purchase loop
+- Migration: `20260603000000_fix_purchase_receipt_update_item_cost.sql`
 - Build: ✅ passing
 
 ## Previous
-**Inventory Dashboard Simplification - Phase 2 Complete**
-- Hook extracted: `useInventoryEditing.ts` (single source of truth)
-- Components extracted: `AnalyticsWidgets`, `InventoryFilterToolbar`, `InventoryListTableRow`
-- `InventoryListPage`: 802 → 548 lines (~254 lines removed)
-- `InventoryListTable`: ~620 → 220 lines (row logic extracted)
-- Build passes: ✅
-
-## Previous
-**Inventory Inline Price Edit - RLS FIX**
-- Root cause: Supabase RLS requires `store_id` filter on UPDATE
-- Error: PGRST116 — "Cannot coerce result to single JSON object"
-- Fix: Added `storeId` parameter to `updateProduct()`, filter by `store_id`
+**Inline Price Edit - RPC FIX**
+- Using `update_item_prices` RPC for price updates (handles NULL tenant_id)
+- Added RLS silent failure detection
 
 ## Done
 - Phase 1-4: Inline editing complete
