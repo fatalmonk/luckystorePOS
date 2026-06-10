@@ -4,32 +4,28 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-**Production Stability Fixes (Main Branch)**
-- Fixed `set_stock` RPC: Changed reason from `'Inline stock edit'` → `'correction'` (pushed directly to main)
-- Fixed Vercel PWA assets: Added rewrite rules for `sw.js` and `manifest.json` in `vercel.json`
-- Fixed SW caching: Updated `OFFLINE_URL` in `sw.ts` to use relative path `offline.html` instead of absolute `/offline.html`
-- Fixed Manifest: Used relative icon paths and `/admin/` start_url
-- Verified all recent UI/UX fixes merged to main
+**Inventory Card Visibility Fix (Main Branch)**
+- Fixed `border-warm-border-warm` → `border-warm` (invalid class)
+- Fixed `text-warm-muted` → `text-warm-fg` for metrics row contrast
+- Card now shows: image, name (2-line clamp), stock badge, stock count, price (৳), SKU
+- Hover state: scale + cursor-pointer | Top-left checkbox for selection
+- Committed and pushed to main (a0c1f97)
 
 ## Previous
-**Inventory Inline Editing — Production Fixes (Merged PR #182)**
-- Fixed RLS: Restored `items_manage_authorized` policy
-- Fixed PGRST204: Removed `last_purchased_date` from payload
-- Fixed `get_low_stock_items` RPC: `i.active` → `i.is_active`
-- DB migrations pushed to remote: `20260603223000`, `20260603232500`
+**Production Stability Fixes**
+- Fixed `set_stock` RPC reason, Vercel PWA assets, SW caching, Manifest
+- Inventory inline editing: RLS, PGRST204, `get_low_stock_items` RPC fixes
 
 ## Done
-- PR #182 merged (inventory-ui-ux-improvements)
-- Stale PR branches cleaned up
-- PWA deployment and caching bugs fixed
-- Inline edit stock adjustment errors resolved
+- Inventory card visibility fix (a0c1f97)
+- PR #182 merged, PWA bugs fixed, inline edit errors resolved
 
 ## Next
-- Verify new Vercel deployment completes successfully
-- Monitor for any remaining PWA/SW caching issues
+- Verify Vercel deployment with card fix
+- Check production inventory grid renders correctly
 
 ## Blocker
 None
 
 ---
-ctx: Main branch stabilized | done: 4 | next: verify deployment
+ctx: Card visibility fixed | done: 5 | next: verify prod deployment
