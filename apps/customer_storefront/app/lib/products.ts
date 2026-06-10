@@ -5,8 +5,11 @@ const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 export async function fetchProducts(q?: string, categoryId?: string): Promise<Product[]> {
   const { data, error } = await supabase.rpc('search_items_pos', {
-    p_query: q ?? '',
     p_store_id: STORE_ID,
+    p_query: q ?? '',
+    p_category_id: categoryId ?? null,
+    p_limit: 100,
+    p_offset: 0,
   });
 
   if (error) throw error;

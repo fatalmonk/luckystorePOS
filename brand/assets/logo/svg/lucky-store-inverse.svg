@@ -1,65 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store - Inverse (Dark backgrounds) -->
-<!-- Use on terracotta, charcoal, or any dark surface -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+<!-- Lucky Store — Inverse (Dark / Terracotta Backgrounds) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
   <defs>
-    <linearGradient id="bagGradInv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fff5f2"/>
-      <stop offset="100%" stop-color="#ffffff"/>
-    </linearGradient>
-    <linearGradient id="leafGradInv" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#AED581"/>
-      <stop offset="100%" stop-color="#8BC34A"/>
-    </linearGradient>
+    <solidColor id="cream" solid-color="#FAF0E6"/>
+    <solidColor id="leaf" solid-color="#AED581"/>
+    <solidColor id="leaf-light" solid-color="#C5E1A5"/>
   </defs>
 
-  <path d="M 40 85
-           C 40 70, 50 65, 65 65
-           L 135 65
-           C 150 65, 160 70, 160 85
-           L 165 165
-           C 165 180, 155 190, 140 190
-           L 60 190
-           C 45 190, 35 180, 35 165
-           Z" 
-        fill="url(#bagGradInv)"/>
-  
-  <path d="M 70 65
-           C 70 40, 80 30, 90 30
-           C 100 30, 110 40, 110 65" 
-        stroke="#b94a28" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <rect x="0" y="0" width="400" height="500" fill="#C75B3A" rx="0" id="bg"/>
 
-  <text x="102" y="150" 
-        font-family="Inter, system-ui, sans-serif" 
-        font-size="52" 
+  <!-- Leaf (lighter green for dark bg contrast) -->
+  <g id="leaf">
+    <path d="M 200 145
+             C 200 120, 205 100, 215 85" 
+          stroke="#7CB342" stroke-width="5" fill="none" stroke-linecap="round"/>
+    
+    <path d="M 215 85
+             C 195 70, 195 45, 215 30
+             C 255 40, 275 70, 255 95
+             C 245 105, 225 100, 215 85
+             Z" 
+          fill="#AED581"/>
+    
+    <path d="M 215 85
+             C 225 75, 235 60, 245 50" 
+          stroke="#C5E1A5" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Bag (cream/white on dark) -->
+  <g id="bag">
+    <path d="M 120 160
+             L 280 160
+             L 310 340
+             L 90 340
+             Z" 
+          fill="#FAF0E6"/>
+
+    <path d="M 155 160
+             C 155 110, 170 95, 200 95
+             C 230 95, 245 110, 245 160" 
+          stroke="#FAF0E6" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+    <circle cx="155" cy="160" r="6" fill="#D7CCC8"/>
+    <circle cx="245" cy="160" r="6" fill="#D7CCC8"/>
+  </g>
+
+  <!-- Serif L (terracotta on cream bag) -->
+  <g id="letter-l" fill="#C75B3A">
+    <path d="M 175 195
+             L 195 195
+             L 195 295
+             L 235 295
+             L 235 315
+             L 175 315
+             Z" />
+    
+    <path d="M 165 175
+             L 205 175
+             L 205 195
+             L 165 195
+             Z" />
+  </g>
+
+  <!-- Wordmark (cream on terracotta bg) -->
+  <text x="200" y="400" 
+        font-family="Montserrat, Inter, Arial Black, sans-serif" 
+        font-size="48" 
         font-weight="800" 
-        fill="#dc5f3b" 
+        fill="#FAF0E6" 
         text-anchor="middle"
-        letter-spacing="-2">L</text>
-
-  <path d="M 130 170
-           C 140 160, 145 145, 148 125" 
-        stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
-  
-  <path d="M 148 125
-           C 128 115, 128 95, 148 85
-           C 168 95, 168 115, 148 125
-           Z" 
-        fill="url(#leafGradInv)"/>
-
-  <text x="100" y="225" 
-        font-family="Inter, system-ui, sans-serif" 
-        font-size="22" 
-        font-weight="700" 
-        fill="#faf8f5" 
-        text-anchor="middle"
-        letter-spacing="1">LUCKY STORE</text>
-  
-  <text x="100" y="238" 
-        font-family="Inter, system-ui, sans-serif" 
-        font-size="9" 
-        font-weight="500" 
-        fill="#a8a29e" 
-        text-anchor="middle"
-        letter-spacing="2">FRESH TO YOUR DOOR</text>
+        letter-spacing="6">LUCKY STORE</text>
 </svg>
