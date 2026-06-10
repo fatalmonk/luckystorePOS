@@ -22,9 +22,9 @@ function CheckoutContent() {
   const [isPlacing, setIsPlacing] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: 'Rafiq Karim',
-    phone: '+880 1712-345678',
-    address: 'House 15, Road 4A, Dhanmondi',
+    name: '',
+    phone: '',
+    address: '',
     notes: '',
   });
 
@@ -40,42 +40,49 @@ function CheckoutContent() {
     setCurrentStep(step);
   };
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!formData.name || !formData.phone || !formData.address) {
       showToast('Please fill all required fields');
+      return;
+    }
+    if (!formData.phone.match(/^\+880\s?1\d{9}$/)) {
+      showToast('Enter valid BD phone (+880 1XXXXXXXXX)');
       return;
     }
 
     setIsPlacing(true);
 
-    // Simulate order placement
-    setTimeout(() => {
-      const now = new Date();
-      const orderNumber = `LSO-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
-        now.getDate()
-      ).padStart(2, '0')}-001`;
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumber: '',
+          customerName: formData.name,
+          customerPhone: formData.phone,
+          customerAddress: formData.address,
+          notes: formData.notes || undefined,
+          items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty, unit: c.unit })),
+          subtotal,
+          deliveryFee,
+          total,
+        }),
+      });
+      const { ok, order, error } = await res.json();
+      if (!ok) throw new Error(error || 'Order failed');
 
-      // Store order data for order page
-      const orderData = {
-        orderNumber,
-        name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
-        items: cart.reduce((s, c) => s + c.qty, 0),
-        total,
-        time: now.toLocaleTimeString('en-BD', { hour: 'numeric', minute: '2-digit', hour12: true }),
-      };
-
-      sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+      sessionStorage.setItem('lastOrder', JSON.stringify(order));
       clearCart();
-      router.push(`/order?num=${orderNumber}`);
-    }, 1400);
+      router.push(`/order?num=${order.order_number}`);
+    } catch (e: any) {
+      showToast(e?.message || 'Could not place order');
+      setIsPlacing(false);
+    }
   };
 
   return (
     <>
       <Header cartCount={cart.length} />
-
       <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="p-[18px]">
           <h2 className="text-lg font-bold tracking-tight mb-2">Checkout</h2>
@@ -83,9 +90,8 @@ function CheckoutContent() {
           {/* Steps */}
           <div className="flex items-center justify-center gap-1.5 py-5">
             {STEPS.map((step, index) => (
-              <>
+              <div key={step.id} className="flex items-center">
                 <div
-                  key={step.id}
                   className={`w-7 h-7 rounded-full grid place-items-center text-xs font-extrabold transition-colors ${
                     currentStep > step.id
                       ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
@@ -98,12 +104,12 @@ function CheckoutContent() {
                 </div>
                 {index < STEPS.length - 1 && (
                   <div
-                    className={`w-8 h-0.5 transition-colors ${
+                    className={`w-8 h-0.5 mx-1 transition-colors ${
                       currentStep > step.id ? 'bg-[#2d6a4f]' : 'bg-[#f5f5f4]'
                     }`}
                   />
                 )}
-              </>
+              </div>
             ))}
           </div>
 
@@ -112,10 +118,7 @@ function CheckoutContent() {
             <div className="animate-[fadeUp_0.25s_ease]">
               <div className="space-y-3 mb-6">
                 {cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 py-3 border-b border-[#e7e5e4]"
-                  >
+                  <div key={item.id} className="flex items-center gap-3 py-3 border-b border-[#e7e5e4]">
                     <div className="text-[22px]">{item.emoji}</div>
                     <div className="flex-1">
                       <p className="font-semibold text-sm">{item.name}</p>
@@ -143,23 +146,19 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              <Button onClick={() => goToStep(2)} fullWidth>
-                Continue →
-              </Button>
+              <Button onClick={() => goToStep(2)} fullWidth>Continue →</Button>
             </div>
           )}
 
           {/* Step 2: Details */}
           {currentStep === 2 && (
             <div className="animate-[fadeUp_0.25s_ease]">
-              {/* Store Info */}
               <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
                 <p className="text-xs text-[#a8a29e] uppercase tracking-widest mb-1">Store</p>
                 <p className="font-bold text-[15px] mb-0.5">Lucky Store — Emdad Park</p>
                 <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chattogram 4203</p>
               </div>
 
-              {/* Form */}
               <Input
                 label="Full Name *"
                 value={formData.name}
@@ -186,34 +185,31 @@ function CheckoutContent() {
               />
 
               <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => goToStep(1)} className="flex-1">
-                  ← Back
-                </Button>
-                <Button onClick={() => goToStep(3)} className="flex-1">
-                  Place Order
-                </Button>
+                <Button variant="secondary" onClick={() => goToStep(1)} className="flex-1">← Back</Button>
+                <Button onClick={() => goToStep(3)} className="flex-1">Place Order</Button>
               </div>
             </div>
           )}
 
           {/* Step 3: Confirming */}
-          {currentStep === 3 && <ConfirmingStep placeOrder={placeOrder} />}
+          {currentStep === 3 && (
+            <ConfirmingStep placeOrder={placeOrder} isPlacing={isPlacing} />
+          )}
         </div>
       </main>
     </>
   );
 }
 
-function ConfirmingStep({ placeOrder }: { placeOrder: () => void }) {
-  useEffect(() => {
-    placeOrder();
-  }, [placeOrder]);
+function ConfirmingStep({ placeOrder, isPlacing }: { placeOrder: () => void; isPlacing: boolean }) {
+  useEffect(() => { placeOrder(); }, []);
 
   return (
     <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
       <div className="text-6xl mb-4">⏳</div>
       <h3 className="text-lg font-bold mb-2">Confirming…</h3>
       <p className="text-[#78716c]">Checking stock availability</p>
+      {isPlacing && <p className="text-sm text-[#a8a29e] mt-2">Please wait...</p>}
     </div>
   );
 }
