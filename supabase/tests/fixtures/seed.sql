@@ -98,8 +98,8 @@ INSERT INTO public.stock_levels (store_id, item_id, qty) VALUES
 -- For local tests we first insert into auth.users, then public.users.
 INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, confirmation_token, raw_app_meta_data, raw_user_meta_data)
 VALUES
-('f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alpha@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{"provider":"email","providers":["email"]}', '{}'),
-('f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beta@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{"provider":"email","providers":["email"]}', '{}');
+('f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alpha@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{}', '{}'),
+('f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beta@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{}', '{}');
 
 INSERT INTO public.users (id, auth_id, store_id, name, role) VALUES
 ('f0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Alpha Manager', 'manager'),
