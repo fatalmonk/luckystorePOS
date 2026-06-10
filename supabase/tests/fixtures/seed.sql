@@ -51,12 +51,12 @@ INSERT INTO public.tenants (id, name) VALUES
 ('00000000-0000-0000-0000-000000000002', 'Tenant Beta');
 
 -- 2. Stores
-INSERT INTO public.stores (id,  name) VALUES
+INSERT INTO public.stores (id, tenant_id, name) VALUES
 ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001', 'Store Alpha 1'),
 ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000002', 'Store Beta 1');
 
 -- 3. Accounts (foundation-style)
-INSERT INTO public.accounts (id,  name, type) VALUES
+INSERT INTO public.accounts (id, tenant_id, name, type) VALUES
 ('a0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Sales Revenue', 'revenue'),
 ('a0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Inventory Asset', 'asset'),
 ('a0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Cost of Goods Sold', 'expense'),
@@ -98,15 +98,15 @@ INSERT INTO public.stock_levels (store_id, item_id, qty) VALUES
 -- For local tests we first insert into auth.users, then public.users.
 INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, confirmation_token, raw_app_meta_data, raw_user_meta_data)
 VALUES
-('f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alpha@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{"provider":"email","providers":["email"]}', '{}'),
-('f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beta@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{"provider":"email","providers":["email"]}', '{}');
+('f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alpha@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{}', '{}'),
+('f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beta@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{}', '{}');
 
-INSERT INTO public.users (id, auth_id,  store_id, name, role) VALUES
+INSERT INTO public.users (id, auth_id, tenant_id, store_id, name, role) VALUES
 ('f0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Alpha Manager', 'manager'),
 ('f0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'Beta Manager', 'manager');
 
 -- 9. Initial Stock Movements to set Weighted Average Cost
-INSERT INTO public.stock_movements ( store_id, item_id, quantity_change, weighted_average_cost, reference_type) VALUES
-('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000001', 50, 70.00, 'INITIAL'),
-('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000002', 20, 150.00, 'INITIAL'),
-('00000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'e0000000-0000-0000-0000-000000000003', 100, 30.00, 'INITIAL');
+INSERT INTO public.stock_movements (store_id, item_id, quantity_change, weighted_average_cost, reference_type) VALUES
+('11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000001', 50, 70.00, 'INITIAL'),
+('11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000002', 20, 150.00, 'INITIAL'),
+('22222222-2222-2222-2222-222222222222', 'e0000000-0000-0000-0000-000000000003', 100, 30.00, 'INITIAL');
