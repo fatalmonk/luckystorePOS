@@ -1,0 +1,25 @@
+@import url('./tokens.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #faf8f5;
+  --foreground: #1c1917;
+}
+
+@layer base {
+  body {
+    @apply bg-[#ece9e4] text-[#1c1917];
+  }
+}
+
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

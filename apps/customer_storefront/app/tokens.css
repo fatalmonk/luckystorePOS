@@ -1,0 +1,254 @@
+/* Hallmark · macrostructure: Mobile-First App Shell · genre: modern-minimal · theme: Warm Modern
+ * paper: #faf8f5 · accent: #dc5f3b terracotta · display: system-ui · body: system-ui
+ * diversification: first-run · studied: no · source: reference HTML
+ */
+
+:root {
+  /* Paper scale - warm neutral */
+  --color-paper: #faf8f5;
+  --color-surface: #ffffff;
+  --color-foreground: #1c1917;
+  --color-muted: #78716c;
+  --color-dim: #a8a29e;
+  --color-border: #e7e5e4;
+  --color-border-light: #f5f5f4;
+
+  /* Accent - Lucky Store terracotta */
+  --color-accent: #dc5f3b;
+  --color-accent-hover: #c4542e;
+  --color-accent-ghost: rgba(220, 95, 59, 0.07);
+  --color-accent-text: #9c4221;
+
+  /* Semantic - status colors */
+  --color-success: #2d6a4f;
+  --color-success-bg: rgba(45, 106, 79, 0.08);
+  --color-warning: #b45309;
+  --color-warning-bg: rgba(180, 83, 9, 0.08);
+  --color-danger: #c3312f;
+  --color-danger-bg: rgba(195, 49, 47, 0.07);
+
+  /* Radius scale */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  /* Shadows - soft warm */
+  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.04);
+  --shadow-md: 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-lg: 0 16px 48px rgba(28, 25, 23, 0.10);
+
+  /* Dimensions */
+  --header-h: 60px;
+  --bottom-h: 68px;
+
+  /* Animation */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Type scale - responsive base */
+  --text-h1: clamp(1.25rem, 2vw + 0.5rem, 1.875rem);
+  --text-h2: clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem);
+  --text-h3: clamp(0.9375rem, 0.8vw + 0.5rem, 1.125rem);
+  --text-body: clamp(0.875rem, 0.5vw + 0.5rem, 1rem);
+  --text-small: clamp(0.75rem, 0.3vw + 0.5rem, 0.875rem);
+  --text-xs: clamp(0.6875rem, 0.2vw + 0.5rem, 0.75rem);
+}
+
+/* Base resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-foreground);
+  background: #ece9e4;
+}
+
+/* Hide scrollbars but keep functionality */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* App container - fluid, responsive scaling */
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper);
+  position: relative;
+}
+
+/* Responsive container with max-width scaling */
+@media (min-width: 640px) {
+  .app-container {
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@media (min-width: 1536px) {
+  .app-container {
+    max-width: 1440px;
+  }
+}
+
+/* Typography utilities */
+.text-h1 {
+  font-size: var(--text-h1);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.text-h2 {
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.text-h3 {
+  font-size: var(--text-h3);
+  font-weight: 700;
+}
+
+.text-body {
+  font-size: var(--text-body);
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.text-small {
+  font-size: var(--text-small);
+  color: var(--color-dim);
+  line-height: 1.5;
+}
+
+.text-xs {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Price styling */
+.price {
+  font-weight: 700;
+  font-size: clamp(0.9375rem, 0.8vw + 0.5rem, 1.125rem);
+  letter-spacing: -0.02em;
+}
+
+/* Screen transitions */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.25s ease forwards;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Add to cart pulse animation */
+@keyframes cartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.cart-pulse {
+  animation: cartPulse 0.3s var(--ease-out);
+}
+
+/* Live dot pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+/* Focus states */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1024px) {
+  .desktop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+/* Ensure images don't break layout */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
