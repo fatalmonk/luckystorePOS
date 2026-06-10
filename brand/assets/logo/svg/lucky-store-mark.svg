@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lucky Store - Mark Only (Icon/App Icon) -->
+<!-- Use this for favicons, app icons, avatars, small spaces -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bagGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e88868"/>
+      <stop offset="100%" stop-color="#dc5f3b"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7CB342"/>
+      <stop offset="100%" stop-color="#558B2F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle for visibility on varying surfaces -->
+  <circle cx="100" cy="100" r="92" fill="#faf8f5"/>
+
+  <!-- Bag body -->
+  <path d="M 50 80
+           C 50 65, 60 60, 75 60
+           L 125 60
+           C 140 60, 150 65, 150 80
+           L 155 145
+           C 155 160, 145 168, 130 168
+           L 70 168
+           C 55 168, 45 160, 45 145
+           Z" 
+        fill="url(#bagGrad)"/>
+  
+  <!-- Handle -->
+  <path d="M 80 60
+           C 80 40, 88 32, 96 32
+           C 104 32, 112 40, 112 60" 
+        stroke="#c4542e" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- Bold L -->
+  <text x="102" y="135" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="48" 
+        font-weight="800" 
+        fill="white" 
+        text-anchor="middle"
+        letter-spacing="-2">L</text>
+
+  <!-- Growing leaf -->
+  <path d="M 125 155
+           C 135 145, 140 130, 142 115" 
+        stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <path d="M 142 115
+           C 125 108, 125 90, 142 82
+           C 159 90, 159 108, 142 115
+           Z" 
+        fill="url(#leafGrad)"/>
+</svg>

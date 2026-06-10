@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lucky Store - Canva-Optimized Logo -->
+<!-- Upload to Canva: drag into design, ungroup if needed -->
+<!-- Fonts: Inter Bold and Hind Siliguri may need manual replacement -->
+<!-- Recommendation: Use this as a tracing guide, or upload + lock as watermark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <!-- Flat colors only — no complex gradients for Canva -->
+    <solidColor id="terracotta" solid-color="#dc5f3b"/>
+    <solidColor id="leaf" solid-color="#7CB342"/>
+    <solidColor id="charcoal" solid-color="#1c1917"/>
+    <solidColor id="white" solid-color="#ffffff"/>
+    <solidColor id="cream" solid-color="#faf8f5"/>
+  </defs>
+
+  <!-- Background circle (for visibility on any canvas) -->
+  <circle cx="200" cy="200" r="190" fill="#faf8f5"/>
+
+  <!-- ===== SHOPPING BAG (flat style) ===== -->
+  <g id="bag">
+    <!-- Main bag body — flat terracotta -->
+    <path d="M 100 160
+             C 100 135, 115 125, 140 125
+             L 260 125
+             C 285 125, 300 135, 300 160
+             L 310 280
+             C 310 305, 295 320, 270 320
+             L 130 320
+             C 105 320, 90 305, 90 280
+             Z" 
+          fill="#dc5f3b"/>
+
+    <!-- Bag highlight (simple white band) -->
+    <path d="M 108 175
+             L 115 265
+             C 115 280, 125 288, 140 288
+             L 150 288
+             L 135 175
+             Z" 
+          fill="white" opacity="0.12"/>
+
+    <!-- Bag opening line -->
+    <path d="M 100 160
+             C 140 175, 200 175, 240 175
+             C 260 175, 280 172, 300 160" 
+          stroke="#b94a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- Handle -->
+    <path d="M 140 125
+             C 140 80, 155 55, 180 55
+             C 205 55, 220 80, 220 125" 
+          stroke="#b94a28" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M 180 55
+             C 205 55, 220 80, 220 125" 
+          stroke="#dc5f3b" stroke-width="12" fill="none" stroke-linecap="round"/>
+
+    <!-- Handle connection dots -->
+    <circle cx="140" cy="125" r="7" fill="#dc5f3b"/>
+    <circle cx="220" cy="125" r="7" fill="#dc5f3b"/>
+  </g>
+
+  <!-- ===== LETTER "L" AS PATH (outlined, no font needed) ===== -->
+  <g id="letter-l" fill="white">
+    <!-- L vertical stroke -->
+    <path d="M 162 180
+             L 186 180
+             L 186 255
+             L 236 255
+             L 236 275
+             L 162 275
+             Z" />
+  </g>
+
+  <!-- ===== LEAF (flat style) ===== -->
+  <g id="leaf">
+    <!-- Stem -->
+    <path d="M 250 300
+             C 270 280, 280 250, 285 220" 
+          stroke="#558B2F" stroke-width="6" fill="none" stroke-linecap="round"/>
+    
+    <!-- Leaf body — simple pointed oval -->
+    <path d="M 285 220
+             C 245 205, 245 165, 285 145
+             C 325 165, 325 205, 285 220
+             Z" 
+          fill="#7CB342"/>
+    
+    <!-- Leaf vein -->
+    <path d="M 285 220
+             C 285 200, 285 180, 285 160" 
+          stroke="#33691E" stroke-width="3" fill="none" opacity="0.4"/>
+
+    <!-- Dewdrop -->
+    <ellipse cx="298" cy="185" rx="5" ry="7" fill="white" opacity="0.7"/>
+  </g>
+
+  <!-- ===== WORDMARK (text — replace manually in Canva if font not available) ===== -->
+  <text x="200" y="375" 
+        font-family="Inter, Arial Black, sans-serif" 
+        font-size="42" 
+        font-weight="900" 
+        fill="#1c1917" 
+        text-anchor="middle"
+        letter-spacing="3"
+        id="wordmark">LUCKY STORE</text>
+  
+  <text x="200" y="395" 
+        font-family="Inter, Arial, sans-serif" 
+        font-size="16" 
+        font-weight="500" 
+        fill="#78716c" 
+        text-anchor="middle"
+        letter-spacing="4"
+        id="tagline">FRESH TO YOUR DOOR</text>
+
+  <!-- ===== GROUPING GUIDE FOR CANVA ===== --
+<!-- In Canva: -->
+<!-- 1. Upload this SVG -->
+<!-- 2. Select &gt; Ungroup (it should ungroup into bag, L, leaf, text layers) -->
+<!-- 3. If fonts appear as default: select text layer &gt; replace with Inter or similar bold sans-serif -->
+<!-- 4. Lock the logo group to prevent accidental moves -->
+<!-- 5. Use as watermark in corner, or center for profile/header use -->
+<!-- Alternative: Use the high-res PNG version as a locked image layer instead -->
+</svg>
