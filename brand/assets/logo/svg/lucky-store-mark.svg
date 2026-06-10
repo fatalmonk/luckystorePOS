@@ -1,56 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store - Mark Only (Icon/App Icon) -->
-<!-- Use this for favicons, app icons, avatars, small spaces -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<!-- Lucky Store — Mark Only (Icon / App Icon / Favicon) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
   <defs>
-    <linearGradient id="bagGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e88868"/>
-      <stop offset="100%" stop-color="#dc5f3b"/>
-    </linearGradient>
-    <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7CB342"/>
-      <stop offset="100%" stop-color="#558B2F"/>
-    </linearGradient>
+    <solidColor id="terracotta" solid-color="#C75B3A"/>
+    <solidColor id="leaf" solid-color="#7CB342"/>
+    <solidColor id="leaf-light" solid-color="#9CCC65"/>
   </defs>
 
-  <!-- Background circle for visibility on varying surfaces -->
-  <circle cx="100" cy="100" r="92" fill="#faf8f5"/>
+  <!-- Background circle for icon visibility -->
+  <circle cx="200" cy="200" r="190" fill="#FAF0E6"/>
 
-  <!-- Bag body -->
-  <path d="M 50 80
-           C 50 65, 60 60, 75 60
-           L 125 60
-           C 140 60, 150 65, 150 80
-           L 155 145
-           C 155 160, 145 168, 130 168
-           L 70 168
-           C 55 168, 45 160, 45 145
-           Z" 
-        fill="url(#bagGrad)"/>
-  
-  <!-- Handle -->
-  <path d="M 80 60
-           C 80 40, 88 32, 96 32
-           C 104 32, 112 40, 112 60" 
-        stroke="#c4542e" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Leaf -->
+  <g id="leaf">
+    <path d="M 200 145
+             C 200 120, 205 100, 215 85" 
+          stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
+    
+    <path d="M 215 85
+             C 195 70, 195 45, 215 30
+             C 255 40, 275 70, 255 95
+             C 245 105, 225 100, 215 85
+             Z" 
+          fill="#7CB342"/>
+    
+    <path d="M 215 85
+             C 225 75, 235 60, 245 50" 
+          stroke="#9CCC65" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
 
-  <!-- Bold L -->
-  <text x="102" y="135" 
-        font-family="Inter, system-ui, sans-serif" 
-        font-size="48" 
-        font-weight="800" 
-        fill="white" 
-        text-anchor="middle"
-        letter-spacing="-2">L</text>
+  <!-- Bag -->
+  <g id="bag">
+    <path d="M 120 160
+             L 280 160
+             L 310 340
+             L 90 340
+             Z" 
+          fill="#C75B3A"/>
 
-  <!-- Growing leaf -->
-  <path d="M 125 155
-           C 135 145, 140 130, 142 115" 
-        stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
-  
-  <path d="M 142 115
-           C 125 108, 125 90, 142 82
-           C 159 90, 159 108, 142 115
-           Z" 
-        fill="url(#leafGrad)"/>
+    <path d="M 155 160
+             C 155 110, 170 95, 200 95
+             C 230 95, 245 110, 245 160" 
+          stroke="#C75B3A" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+    <circle cx="155" cy="160" r="6" fill="#8B3A22"/>
+    <circle cx="245" cy="160" r="6" fill="#8B3A22"/>
+  </g>
+
+  <!-- Serif L -->
+  <g id="letter-l" fill="#FFFFFF">
+    <path d="M 175 195
+             L 195 195
+             L 195 295
+             L 235 295
+             L 235 315
+             L 175 315
+             Z" />
+    
+    <path d="M 165 175
+             L 205 175
+             L 205 195
+             L 165 195
+             Z" />
+  </g>
 </svg>

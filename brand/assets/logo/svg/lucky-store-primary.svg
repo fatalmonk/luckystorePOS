@@ -1,112 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store - Primary Logo (Option A) -->
-<!-- Shopping bag with growing leaf + bold L -->
-<!-- Safe for all backgrounds. Use inverted version on dark surfaces. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+<!-- Lucky Store — Final Primary Logo -->
+<!-- Flat trapezoid bag, serif L, leaf behind handle, bold wordmark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
   <defs>
-    <!-- Terracotta accent -->
-    <linearGradient id="bagGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e88868"/>
-      <stop offset="100%" stop-color="#dc5f3b"/>
-    </linearGradient>
-    <!-- Leaf gradient -->
-    <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7CB342"/>
-      <stop offset="100%" stop-color="#558B2F"/>
-    </linearGradient>
-    <!-- Drop shadow -->
-    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(28,25,23,0.12)"/>
-    </filter>
+    <!-- Flat terracotta -->
+    <solidColor id="terracotta" solid-color="#C75B3A"/>
+    <!-- Darker terracotta for handle shadow/depth -->
+    <solidColor id="terracotta-dark" solid-color="#A84A2F"/>
+    <!-- Fresh leaf green -->
+    <solidColor id="leaf" solid-color="#7CB342"/>
+    <!-- Lighter leaf for vein -->
+    <solidColor id="leaf-light" solid-color="#9CCC65"/>
+    <!-- Cream background (only for isolated preview; set transparent for overlay use) -->
+    <solidColor id="cream" solid-color="#FAF0E6"/>
   </defs>
 
-  <!-- ===== BACKGROUND CIRCLE (optional mark-only) ===== -->
-  <circle cx="100" cy="100" r="92" fill="#faf8f5" opacity="0" id="bg-circle"/>
+  <!-- Optional background circle for avatar/social use -->
+  <rect x="0" y="0" width="400" height="500" fill="#FAF0E6" rx="0" id="bg"/>
 
-  <!-- ===== SHOPPING BAG BODY ===== -->
-  <g filter="url(#shadow)">
-    <!-- Bag body -->
-    <path d="M 40 85
-             C 40 70, 50 65, 65 65
-             L 135 65
-             C 150 65, 160 70, 160 85
-             L 165 165
-             C 165 180, 155 190, 140 190
-             L 60 190
-             C 45 190, 35 180, 35 165
-             Z" 
-          fill="url(#bagGrad)"/>
-    
-    <!-- Bag highlight (subtle sheen) -->
-    <path d="M 45 90
-             L 50 160
-             C 50 170, 55 175, 65 175
-             L 70 175
-             L 60 90
-             Z" 
-          fill="white" opacity="0.1"/>
-
-    <!-- Bag opening fold -->
-    <path d="M 40 85
-             C 60 95, 80 95, 100 95
-             C 120 95, 140 95, 160 85" 
-          stroke="#c4542e" stroke-width="2" fill="none" opacity="0.3"/>
-
-    <!-- ===== HANDLES ===== -->
-    <path d="M 70 65
-             C 70 40, 80 30, 90 30
-             C 100 30, 110 40, 110 65" 
-          stroke="#c4542e" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <path d="M 90 30
-             C 100 30, 110 40, 110 65" 
-          stroke="#dc5f3b" stroke-width="6" fill="none" stroke-linecap="round"/>
-
-    <!-- ===== BOLD LETTER "L" ===== -->
-    <text x="102" y="150" 
-          font-family="Inter, system-ui, sans-serif" 
-          font-size="52" 
-          font-weight="800" 
-          fill="white" 
-          text-anchor="middle"
-          letter-spacing="-2">L</text>
-
-    <!-- ===== GROWING LEAF ===== -->
-    <!-- Stem emerging from the bag -->
-    <path d="M 130 170
-             C 140 160, 145 145, 148 125" 
-          stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- ===== LEAF (behind bag + handle) ===== -->
+  <g id="leaf">
+    <!-- Stem -->
+    <path d="M 200 145
+             C 200 120, 205 100, 215 85" 
+          stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
     
     <!-- Leaf body -->
-    <path d="M 148 125
-             C 128 115, 128 95, 148 85
-             C 168 95, 168 115, 148 125
+    <path d="M 215 85
+             C 195 70, 195 45, 215 30
+             C 255 40, 275 70, 255 95
+             C 245 105, 225 100, 215 85
              Z" 
-          fill="url(#leafGrad)"/>
+          fill="#7CB342"/>
     
-    <!-- Leaf vein -->
-    <path d="M 148 125
-             C 148 115, 148 105, 148 95" 
-          stroke="#33691E" stroke-width="1.5" fill="none" opacity="0.4"/>
-
-    <!-- Dewdrop on leaf -->
-    <ellipse cx="155" cy="108" rx="2.5" ry="3.5" fill="white" opacity="0.6"/>
+    <!-- Leaf vein (lighter arc) -->
+    <path d="M 215 85
+             C 225 75, 235 60, 245 50" 
+          stroke="#9CCC65" stroke-width="3" fill="none" stroke-linecap="round"/>
   </g>
 
-  <!-- ===== WORDMARK (below mark) ===== -->
-  <text x="100" y="225" 
-        font-family="Inter, system-ui, sans-serif" 
-        font-size="22" 
-        font-weight="700" 
-        fill="#1c1917" 
+  <!-- ===== SHOPPING BAG (flat terracotta trapezoid) ===== -->
+  <g id="bag">
+    <!-- Main bag body -->
+    <path d="M 120 160
+             L 280 160
+             L 310 340
+             L 90 340
+             Z" 
+          fill="#C75B3A"/>
+
+    <!-- Handle (arching over top) -->
+    <path d="M 155 160
+             C 155 110, 170 95, 200 95
+             C 230 95, 245 110, 245 160" 
+          stroke="#C75B3A" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+    <!-- Handle attachment dots -->
+    <circle cx="155" cy="160" r="6" fill="#8B3A22"/>
+    <circle cx="245" cy="160" r="6" fill="#8B3A22"/>
+  </g>
+
+  <!-- ===== SERIF LETTER "L" (white, centered on bag) ===== -->
+  <g id="letter-l" fill="#FFFFFF">
+    <!-- Vertical stroke -->
+    <path d="M 175 195
+             L 195 195
+             L 195 295
+             L 235 295
+             L 235 315
+             L 175 315
+             Z" />
+    
+    <!-- Top serif (slab) -->
+    <path d="M 165 175
+             L 205 175
+             L 205 195
+             L 165 195
+             Z" />
+  </g>
+
+  <!-- ===== WORDMARK ===== -->
+  <text x="200" y="400" 
+        font-family="Montserrat, Inter, Arial Black, sans-serif" 
+        font-size="48" 
+        font-weight="800" 
+        fill="#C75B3A" 
         text-anchor="middle"
-        letter-spacing="1">LUCKY STORE</text>
-  
-  <!-- Tagline -->
-  <text x="100" y="238" 
-        font-family="Inter, system-ui, sans-serif" 
-        font-size="9" 
-        font-weight="500" 
-        fill="#78716c" 
-        text-anchor="middle"
-        letter-spacing="2">FRESH TO YOUR DOOR</text>
+        letter-spacing="6"
+        id="wordmark">LUCKY STORE</text>
 </svg>
