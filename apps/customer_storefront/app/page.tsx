@@ -27,7 +27,7 @@ function HomeContent() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Failed to load products:', err);
+        console.error('Failed to load products:', err?.message ?? err, err?.code, err?.details);
         setLoading(false);
       });
   }, []);
