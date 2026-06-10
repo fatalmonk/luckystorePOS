@@ -4,12 +4,11 @@
 React, Flutter, Supabase, Tailwind, TypeScript
 
 ## Current
-**Inventory Card Visibility Fix (Main Branch)**
-- Fixed `border-warm-border-warm` → `border-warm` (invalid class)
-- Fixed `text-warm-muted` → `text-warm-fg` for metrics row contrast
-- Card now shows: image, name (2-line clamp), stock badge, stock count, price (৳), SKU
-- Hover state: scale + cursor-pointer | Top-left checkbox for selection
-- Committed and pushed to main (a0c1f97)
+**Inventory Card Refactor + Parallel Stock Lookups (Main Branch)**
+- InventoryProductCard: complete rewrite, removed image upload/edit panel, inline stock/price editing, compact layout, lucide Package icon, aspect-square image
+- InventoryListPage: virtualizer estimateSize 320→340
+- usePosSale: parallel stock lookups via Promise.all
+- Committed and pushed to main (e820bdd)
 
 ## Previous
 **Production Stability Fixes**
@@ -28,4 +27,4 @@ React, Flutter, Supabase, Tailwind, TypeScript
 None
 
 ---
-ctx: Card visibility fixed | done: 5 | next: verify prod deployment
+ctx: Card refactor + parallel lookups pushed | done: 6 | next: verify prod deployment

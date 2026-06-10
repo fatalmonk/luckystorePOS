@@ -143,9 +143,9 @@ export function InventoryListTableRow({
       </td>
 
       {/* Product Name + Image */}
-      <td className="px-4 py-3 group/row border-r border-warm-border-warm/50 max-w-[380px] w-[380px] overflow-hidden">
+      <td className="px-4 py-3 group/row w-full max-w-[400px]">
         <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-warm-accent/20 to-warm-accent/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="relative w-9 h-9 rounded-md bg-surface-subtle flex items-center justify-center overflow-hidden flex-shrink-0">
             <ImageUploadZone
               currentImageUrl={item.image_url}
               onUpload={handleImageUpload}
@@ -175,41 +175,15 @@ export function InventoryListTableRow({
                 {item.name}
               </div>
             )}
-            {item.barcode && (
-              <div className="text-xs text-warm-dim font-mono">{item.barcode}</div>
+            {item.sku && (
+              <div className="text-[11px] text-warm-dim font-mono">{item.sku}</div>
             )}
           </div>
         </div>
       </td>
 
-      {/* Category */}
-      <td className="px-4 py-3 text-sm text-warm-muted cursor-pointer border-r border-warm-border-warm/50" onClick={onClick}>
-        {item.category_name || '—'}
-      </td>
-
-      {/* SKU - Editable */}
-      <td className="px-4 py-3 text-sm text-warm-dim font-mono whitespace-nowrap min-w-[120px] border-r border-warm-border-warm/50">
-        {isEditing('sku') ? (
-          <EditableCell
-            value={item.sku || ''}
-            type="text"
-            onSave={(val) => handleSave('sku', val)}
-            onCancel={() => setEditingCell(null)}
-            placeholder="Enter SKU"
-          />
-        ) : (
-          <div
-            className="cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1"
-            onClick={() => startEditing('sku')}
-            title="Click to edit"
-          >
-            {item.sku || '—'}
-          </div>
-        )}
-      </td>
-
       {/* Stock - Editable */}
-      <td className="px-4 py-3 text-center whitespace-nowrap border-r border-warm-border-warm/50">
+      <td className="px-4 py-3 text-center whitespace-nowrap">
         {isEditing('current_qty') ? (
           <EditableCell
             value={item.current_qty}
@@ -221,17 +195,49 @@ export function InventoryListTableRow({
             step={1}
           />
         ) : (
-          <div
+          <span
             className={clsx(
-              'cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1 text-sm font-bold font-mono tabular-nums',
-              item.reorder_status === 'OUT' ? 'text-warm-danger' :
-              item.reorder_status === 'LOW' ? 'text-warm-warning' : 'text-warm-success'
+              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold font-mono tabular-nums',
+              item.reorder_status === 'OUT' ? 'bg-warm-danger/10 text-warm-danger' :
+              item.reorder_status === 'LOW' ? 'bg-warm-warning/10 text-warm-warning' :
+              'bg-warm-success/10 text-warm-success'
             )}
-            onClick={() => startEditing('current_qty')}
-            title="Click to edit"
           >
-            {item.current_qty.toLocaleString('en-IN')}
+            {item.current_qty.toLocaleString('en-IN')} pcs
+          </span>
+        )}
+      </td>
+
+      {/* Selling - Price + MRP */}
+      <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
+        {item.price ? (
+          <div className="flex flex-col items-end">
+            <span className="text-sm font-semibold text-warm-fg">৳{item.price.toLocaleString('en-IN')}</span>
+            {item.mrp && item.mrp > item.price && (
+              <span className="text-[11px] text-warm-dim line-through">MRP ৳{item.mrp.toLocaleString('en-IN')}</span>
+            )}
           </div>
+        ) : (
+          <span className="text-warm-dim">—</span>
+        )}
+      </td>
+
+      {/* Profit */}
+      <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
+        {item.cost && item.price ? (
+          <div className="flex flex-col items-end">
+            <span className="text-sm font-semibold text-warm-fg">৳{(item.price - item.cost).toLocaleString('en-IN')}</span>
+            <span className={clsx(
+              'text-[11px] font-bold',
+              margin >= 30 ? 'text-warm-success' :
+              margin >= 15 ? 'text-warm-warning' :
+              'text-warm-danger'
+            )}>
+              {margin}%
+            </span>
+          </div>
+        ) : (
+          <span className="text-warm-dim">—</span>
         )}
       </td>
 
@@ -249,122 +255,14 @@ export function InventoryListTableRow({
         </span>
       </td>
 
-      {/* Cost - Editable */}
-      <td className="px-4 py-3 text-sm text-right text-warm-dim font-mono">
-        {isEditing('cost') ? (
-          <EditableCell
-            value={item.cost || 0}
-            type="currency"
-            onSave={(val) => handleSave('cost', val)}
-            onCancel={() => setEditingCell(null)}
-            onChange={(val) => setLiveCost(Number(val))}
-            min={0}
-            step={0.01}
-          />
-        ) : (
-          <div
-            className="cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1"
-            onClick={() => startEditing('cost')}
-            title="Click to edit"
-          >
-            {item.cost ? formatCurrency(item.cost) : '—'}
+      {/* Last Updated */}
+      <td className="px-4 py-3 text-right text-sm text-warm-dim">
+        {item.last_updated ? (
+          <div className="cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1" onClick={() => startEditing('last_purchased_date')} title="Click to edit">
+            {new Date(item.last_updated).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
           </div>
-        )}
-      </td>
-
-      {/* Price - Editable */}
-      <td className="px-4 py-3 text-sm text-right font-semibold text-warm-fg font-mono">
-        {isEditing('price') ? (
-          <EditableCell
-            value={item.price || 0}
-            type="currency"
-            onSave={(val) => handleSave('price', val)}
-            onCancel={() => setEditingCell(null)}
-            onChange={(val) => setLivePrice(Number(val))}
-            validate={validatePrice}
-            min={0}
-            step={0.01}
-          />
-        ) : (
-          <div
-            className={clsx(
-              'cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1',
-              (!item.price || item.price === 0) && 'text-warm-danger'
-            )}
-            onClick={() => startEditing('price')}
-            title="Click to edit"
-          >
-            {item.price ? formatCurrency(item.price) : '—'}
-          </div>
-        )}
-      </td>
-
-      {/* MRP - Editable */}
-      <td className="px-4 py-3 text-sm text-right text-warm-dim font-mono">
-        {isEditing('mrp') ? (
-          <EditableCell
-            value={item.mrp || ''}
-            type="currency"
-            onSave={(val) => handleSave('mrp', val)}
-            onCancel={() => setEditingCell(null)}
-            min={0}
-            step={0.01}
-            allowEmpty={true}
-          />
-        ) : (
-          <div
-            className="cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1"
-            onClick={() => startEditing('mrp')}
-            title="Click to edit"
-          >
-            {item.mrp ? formatCurrency(item.mrp) : '—'}
-          </div>
-        )}
-      </td>
-
-      {/* Margin */}
-      <td className="px-4 py-3 text-sm text-right font-mono">
-        {margin !== null ? (
-          <span
-            className={clsx(
-              'text-xs font-bold px-2 py-0.5 rounded-full',
-              margin >= 30 ? 'bg-warm-success/10 text-warm-success' :
-              margin >= 15 ? 'bg-warm-warning/10 text-warm-warning' :
-              'bg-warm-danger/10 text-warm-danger'
-            )}
-          >
-            {margin}%
-          </span>
         ) : (
           <span className="text-warm-dim">—</span>
-        )}
-      </td>
-
-      {/* Last Purchased - Editable */}
-      <td className="px-4 py-3 text-sm text-right text-warm-dim font-mono">
-        {isEditing('last_purchased_date') ? (
-          <EditableCell
-            value={item.last_purchased_date || ''}
-            type="date"
-            onSave={(val) => handleSave('last_purchased_date', val)}
-            onCancel={() => setEditingCell(null)}
-            allowEmpty={true}
-          />
-        ) : (
-          <div
-            className="cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1"
-            onClick={() => startEditing('last_purchased_date')}
-            title="Click to edit"
-          >
-            {item.last_purchased_date ? (
-              new Date(item.last_purchased_date).toLocaleDateString('en-IN', {
-                day: '2-digit',
-                month: 'short',
-              })
-            ) : (
-              '—'
-            )}
-          </div>
         )}
       </td>
 

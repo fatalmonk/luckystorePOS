@@ -232,7 +232,13 @@ export function InventoryListPage() {
     const lowStock = all.filter((p: InventoryItem) => p.reorder_status === 'LOW').length;
     const outOfStock = all.filter((p: InventoryItem) => p.reorder_status === 'OUT').length;
     const totalValue = all.reduce((sum: number, p: InventoryItem) => sum + ((p.price || 0) * p.current_qty), 0);
-    return { total, lowStock, outOfStock, totalValue };
+    const potentialGP = all.reduce((sum: number, p: InventoryItem) => {
+      const price = p.price || 0;
+      const cost = p.cost || 0;
+      if (price <= 0 || cost >= price) return sum;
+      return sum + (price - cost) * p.current_qty;
+    }, 0);
+    return { total, lowStock, outOfStock, totalValue, potentialGP };
   }, [inventory]);
 
   // Analytics queries
@@ -306,6 +312,10 @@ export function InventoryListPage() {
             <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
               <Wallet size={12} className="text-success-dark" />
               <AnimatedMetric value={stats.totalValue} format prefix="৳" /> Value
+            </span>
+            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
+              <TrendingUp size={12} className="text-success-dark" />
+              <AnimatedMetric value={stats.potentialGP} format prefix="৳" /> GP
             </span>
           </div>
         }
