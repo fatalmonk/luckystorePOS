@@ -30,6 +30,8 @@ create unique index if not exists uq_categories_slug on public.categories(slug) 
 -- RLS: anon read only active categories for the single store
 alter table public.categories enable row level security;
 
+drop policy if exists "Allow anon read categories for store" on public.categories;
+
 create policy "Allow anon read categories for store"
 on public.categories for select
 to anon

@@ -13,18 +13,21 @@ create table if not exists public.wishlist (
 alter table public.wishlist enable row level security;
 
 -- Anon can insert their own, but NOT read
+drop policy if exists "Allow anon insert wishlist" on public.wishlist;
 create policy "Allow anon insert wishlist"
 on public.wishlist for insert
 to anon
 with check (true);
 
 -- Anon cannot select (prevents browsing others' wishlists)
+drop policy if exists "Disallow anon select wishlist" on public.wishlist;
 create policy "Disallow anon select wishlist"
 on public.wishlist for select
 to anon
 using (false);
 
 -- Admin can read for restock planning
+drop policy if exists "Allow admin read wishlist" on public.wishlist;
 create policy "Allow admin read wishlist"
 on public.wishlist for select
 to authenticated

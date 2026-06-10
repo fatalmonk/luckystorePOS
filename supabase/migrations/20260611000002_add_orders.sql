@@ -24,12 +24,14 @@ create index if not exists idx_orders_status on public.orders(status);
 alter table public.orders enable row level security;
 
 -- Anon can insert
+drop policy if exists "Allow anon insert orders" on public.orders;
 create policy "Allow anon insert orders"
 on public.orders for insert
 to anon
 with check (true);
 
 -- Admin/tenant-scoped read
+drop policy if exists "Allow tenant read orders" on public.orders;
 create policy "Allow tenant read orders"
 on public.orders for select
 to authenticated
