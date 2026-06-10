@@ -105,31 +105,27 @@ export function InventoryListTable({
                   className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface w-full max-w-[400px] border-r border-warm-border-warm/50">Product</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface border-r border-warm-border-warm/50">Category</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap min-w-[120px] border-r border-warm-border-warm/50">SKU</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap border-r border-warm-border-warm/50">Stock</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface">Status</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Cost</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Price</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">MRP</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface">Margin</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Last Purchased</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface w-full max-w-[400px]">Product</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Stock</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Selling</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Profit</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface">Status</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Updated</th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface">Actions</th>
             </tr>
           </thead>
 
-          {/* Table Body - Ensure Proper Z-Index */}
+          {/* Table Body */}
           <tbody className="relative z-10">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={12} className="px-4 py-12 text-center text-sm text-warm-dim">No inventory items found. Add products to start tracking stock levels.</td>
+                <td colSpan={8} className="px-4 py-12 text-center text-sm text-warm-dim">No inventory items found. Add products to start tracking stock levels.</td>
               </tr>
             ) : (
               <>
                 {paddingTop > 0 && (
                   <tr>
-                    <td colSpan={12} style={{ height: `${paddingTop}px`, padding: 0 }} />
+                    <td colSpan={8} style={{ height: `${paddingTop}px`, padding: 0 }} />
                   </tr>
                 )}
                 {virtualItems.map((virtualRow) => {
@@ -161,7 +157,7 @@ export function InventoryListTable({
                 })}
                 {paddingBottom > 0 && (
                   <tr>
-                    <td colSpan={12} style={{ height: `${paddingBottom}px`, padding: 0 }} />
+                    <td colSpan={8} style={{ height: `${paddingBottom}px`, padding: 0 }} />
                   </tr>
                 )}
               </>
