@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lucky Store - Inverse (Dark backgrounds) -->
+<!-- Use on terracotta, charcoal, or any dark surface -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <defs>
+    <linearGradient id="bagGradInv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff5f2"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="leafGradInv" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#AED581"/>
+      <stop offset="100%" stop-color="#8BC34A"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M 40 85
+           C 40 70, 50 65, 65 65
+           L 135 65
+           C 150 65, 160 70, 160 85
+           L 165 165
+           C 165 180, 155 190, 140 190
+           L 60 190
+           C 45 190, 35 180, 35 165
+           Z" 
+        fill="url(#bagGradInv)"/>
+  
+  <path d="M 70 65
+           C 70 40, 80 30, 90 30
+           C 100 30, 110 40, 110 65" 
+        stroke="#b94a28" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+  <text x="102" y="150" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="52" 
+        font-weight="800" 
+        fill="#dc5f3b" 
+        text-anchor="middle"
+        letter-spacing="-2">L</text>
+
+  <path d="M 130 170
+           C 140 160, 145 145, 148 125" 
+        stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <path d="M 148 125
+           C 128 115, 128 95, 148 85
+           C 168 95, 168 115, 148 125
+           Z" 
+        fill="url(#leafGradInv)"/>
+
+  <text x="100" y="225" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="22" 
+        font-weight="700" 
+        fill="#faf8f5" 
+        text-anchor="middle"
+        letter-spacing="1">LUCKY STORE</text>
+  
+  <text x="100" y="238" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="9" 
+        font-weight="500" 
+        fill="#a8a29e" 
+        text-anchor="middle"
+        letter-spacing="2">FRESH TO YOUR DOOR</text>
+</svg>
