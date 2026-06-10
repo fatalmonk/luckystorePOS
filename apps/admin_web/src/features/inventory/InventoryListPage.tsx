@@ -267,7 +267,7 @@ export function InventoryListPage() {
   const gridVirtualizer = useVirtualizer({
     count: chunkedItems.length,
     getScrollElement: () => gridScrollRef.current,
-    estimateSize: () => 320,
+    estimateSize: () => 340,
     overscan: 1,
   });
 

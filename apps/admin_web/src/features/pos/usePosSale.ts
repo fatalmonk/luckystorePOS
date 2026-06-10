@@ -143,8 +143,14 @@ export function usePosSale(
     setIsProcessing(true);
 
     try {
-      for (const cartItem of cart) {
-        const fresh = storeId ? await api.pos.lookupByScan(cartItem.product.sku || cartItem.product.id, storeId) : null;
+      const stockResults = await Promise.all(
+        cart.map(async (cartItem) => {
+          const fresh = storeId ? await api.pos.lookupByScan(cartItem.product.sku || cartItem.product.id, storeId) : null;
+          return { cartItem, fresh };
+        })
+      );
+
+      for (const { cartItem, fresh } of stockResults) {
         if (!fresh || fresh.stock < cartItem.qty) {
           onError(`${cartItem.product.name} is now out of stock. Please adjust quantity.`);
           setIsProcessing(false);
