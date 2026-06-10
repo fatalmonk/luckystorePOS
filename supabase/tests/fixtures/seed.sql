@@ -101,9 +101,9 @@ VALUES
 ('f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alpha@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{}', '{}'),
 ('f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beta@test.local', crypt('testpass123', gen_salt('bf')), NOW(), NOW(), NOW(), '', '{}', '{}');
 
-INSERT INTO public.users (id, auth_id, store_id, name, role) VALUES
-('f0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Alpha Manager', 'manager'),
-('f0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'Beta Manager', 'manager');
+INSERT INTO public.users (id, auth_id, tenant_id, store_id, name, role) VALUES
+('f0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Alpha Manager', 'manager'),
+('f0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'Beta Manager', 'manager');
 
 -- 9. Initial Stock Movements to set Weighted Average Cost
 INSERT INTO public.stock_movements (store_id, item_id, quantity_change, weighted_average_cost, reference_type) VALUES
