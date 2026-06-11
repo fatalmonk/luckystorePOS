@@ -58,9 +58,7 @@ describe('Supabase RPC Integration Tests', () => {
     it('should filter items by store and query', async () => {
       const { data, error } = await supabase.rpc('search_items_pos', {
         p_query: 'Alpha',
-        p_store_id: storeA1,
-        p_limit: 50,
-        p_offset: 0
+        p_store_id: storeA1
       });
 
       expect(error).toBeNull();
@@ -68,19 +66,19 @@ describe('Supabase RPC Integration Tests', () => {
       expect(data[0].name).toContain('Alpha');
     });
 
-    it('should not return items from another store if they dont exist there', async () => {
-      // itemB1 is only in storeB1
+    it('should return Beta item with 0 stock when queried from storeA1', async () => {
+      // itemB1 is only in storeB1, but search_items_pos returns all matching items
+      // with stock from the specified store (0 if not stocked there)
       const { data, error } = await supabase.rpc('search_items_pos', {
         p_query: 'Beta',
-        p_store_id: storeA1,
-        p_limit: 50,
-        p_offset: 0
+        p_store_id: storeA1
       });
 
       expect(error).toBeNull();
-      // search_items_pos returns (item_id, name, price, stock) — no qty_on_hand
+      // search_items_pos returns (item_id, name, price, stock)
       const betaItem = data?.find((i: any) => i.name === 'Beta Product 1');
-      expect(betaItem?.qty_on_hand).toBe(0);
+      expect(betaItem).toBeDefined();
+      expect(betaItem?.stock).toBe(0);
     });
   });
 

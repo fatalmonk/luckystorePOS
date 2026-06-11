@@ -106,7 +106,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: supabase/tests/package.json
+          cache-dependency-path: supabase/tests/package-lock.json
 
       - name: Install Supabase CLI
         run: npm install -g supabase
