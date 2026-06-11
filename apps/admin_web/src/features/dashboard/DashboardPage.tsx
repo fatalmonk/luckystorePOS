@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { clsx } from "clsx";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -20,6 +20,8 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { storeId, user } = useAuth();
   const { notify } = useNotify();
+  const queryClient = useQueryClient();
+  const notifiedOrders = React.useRef<Set<string>>(new Set());
 
   const [isSalesModalOpen, setIsSalesModalOpen] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
@@ -80,6 +82,95 @@ export function DashboardPage() {
       notify('New sale recorded on another device', 'success');
     },
   });
+
+  // Helper to play chime sound using Web Audio API (so no external assets are required)
+  const playChime = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const now = ctx.currentTime;
+      
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(523.25, now); // C5
+      gain1.gain.setValueAtTime(0.15, now);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.15);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(659.25, now + 0.12); // E5
+      gain2.gain.setValueAtTime(0.15, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.3);
+    } catch (e) {
+      console.error('Failed to play notification chime', e);
+    }
+  };
+
+  // Realtime order subscription (Postgres changes)
+  useRealtimeSubscription({
+    table: 'orders',
+    event: 'INSERT',
+    filter: storeId ? `store_id=eq.${storeId}` : undefined,
+    invalidateKeys: [['dashboard-delivery-orders', storeId]],
+    onEvent: (payload) => {
+      const order = payload.new as any;
+      if (order && order.order_number) {
+        if (!notifiedOrders.current.has(order.order_number)) {
+          notifiedOrders.current.add(order.order_number);
+          playChime();
+          notify(`Critical: New Delivery Order ${order.order_number} placed!`, 'success');
+        }
+      }
+    },
+  });
+
+  // Realtime order subscription (Broadcast Channel)
+  React.useEffect(() => {
+    if (!storeId) return;
+    const channel = supabase.channel(`store-notifications:${storeId}`);
+    channel.on('broadcast', { event: 'new-delivery-order' }, (payload: any) => {
+      const order = payload.payload;
+      if (order && order.orderNumber) {
+        if (!notifiedOrders.current.has(order.orderNumber)) {
+          notifiedOrders.current.add(order.orderNumber);
+          playChime();
+          notify(`Critical: New Delivery Order ${order.orderNumber} placed!`, 'success');
+          queryClient.invalidateQueries({ queryKey: ['dashboard-delivery-orders', storeId] });
+        }
+      }
+    }).subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [storeId, queryClient, notify]);
+
+  // Query to fetch dashboard delivery orders
+  const deliveryOrdersQuery = useQuery({
+    queryKey: ['dashboard-delivery-orders', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!storeId,
+  });
+  const deliveryOrders = deliveryOrdersQuery.data || [];
 
   const statsQuery = useQuery({
     queryKey: ['dashboard-stats', storeId],
@@ -369,6 +460,46 @@ export function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
             {/* Left Column - CashflowChart & Sales vs Expenses Chart */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Delivery Orders Widget */}
+              <div className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider flex items-center gap-2">
+                    <ShoppingBag size={14} className="text-warm-accent" />
+                    Recent Delivery Orders
+                  </h3>
+                  <a href="/admin/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                    View All
+                  </a>
+                </div>
+                {deliveryOrders.length === 0 ? (
+                  <p className="text-sm text-warm-muted py-2">No recent delivery orders.</p>
+                ) : (
+                  <div className="divide-y divide-warm-border-warm/40">
+                    {deliveryOrders.map((ord: any) => (
+                      <div key={ord.id} className="py-3 flex justify-between items-center text-xs first:pt-0 last:pb-0">
+                        <div>
+                          <p className="font-mono font-bold text-warm-fg">{ord.order_number}</p>
+                          <p className="text-warm-muted mt-0.5">{ord.customer_name} · {ord.customer_phone}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-mono font-bold text-warm-success">{formatCurrency(ord.total)}</p>
+                          <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold mt-1 uppercase ${
+                            ord.status === 'pending' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                            ord.status === 'confirmed' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                            ord.status === 'preparing' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
+                            ord.status === 'out_for_delivery' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' :
+                            ord.status === 'delivered' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                            'bg-rose-100 text-rose-800 border border-rose-200'
+                          }`}>
+                            {ord.status.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <CashflowChart />
 
               {/* Sales vs Expenses Comparison Section */}
@@ -615,63 +746,111 @@ export function DashboardPage() {
 
         {/* Tab 3: Operations */}
         {activeTab === 'operations' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
-            {/* Low Stock Alerts */}
+          <div className="space-y-8 animate-fade-in">
+            {/* Delivery Orders Widget */}
             <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
-              <div className="px-6 py-4 border-b border-warm-border">
+              <div className="px-6 py-4 border-b border-warm-border flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
-                  <AlertTriangle size={18} className="text-warm-warning" />
-                  Low Stock Alerts
+                  <ShoppingBag size={18} className="text-warm-accent" />
+                  Active Delivery Orders
                 </h3>
+                <a href="/admin/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                  Manage Orders
+                </a>
               </div>
-              {lowStock && lowStock.length > 0 ? (
-                <ul className="divide-y divide-warm-border">
-                  {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
-                    <li key={item.id} className="flex justify-between items-center px-6 py-3">
-                      <span className="text-sm text-warm-fg">{item.name}</span>
-                      <span className="text-sm font-semibold text-warm-danger">{item.quantity} left</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
+              {deliveryOrders.filter((o: any) => o.status !== 'delivered' && o.status !== 'cancelled').length === 0 ? (
                 <div className="px-6 py-8 text-center text-warm-muted">
-                  <Package size={32} className="mx-auto mb-2 text-warm-success" />
-                  <p>Stock is healthy</p>
-                  <p className="text-sm text-warm-dim">No items are currently running low.</p>
+                  <ShoppingBag size={32} className="mx-auto mb-2 text-warm-success" />
+                  <p>No active delivery orders</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-warm-border">
+                  {deliveryOrders
+                    .filter((o: any) => o.status !== 'delivered' && o.status !== 'cancelled')
+                    .slice(0, 5)
+                    .map((ord: any) => (
+                      <div key={ord.id} className="px-6 py-3.5 flex justify-between items-center">
+                        <div className="space-y-1">
+                          <p className="text-sm font-mono font-bold text-warm-fg">{ord.order_number}</p>
+                          <p className="text-xs text-warm-muted">
+                            {ord.customer_name} · {ord.customer_phone} · {ord.customer_address}
+                          </p>
+                        </div>
+                        <div className="text-right space-y-1">
+                          <p className="text-sm font-mono font-bold text-warm-success">{formatCurrency(ord.total)}</p>
+                          <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            ord.status === 'pending' ? 'bg-amber-100 text-amber-800' :
+                            ord.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                            ord.status === 'preparing' ? 'bg-purple-100 text-purple-800' :
+                            'bg-indigo-100 text-indigo-800'
+                          }`}>
+                            {ord.status.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               )}
             </section>
 
-            {/* Reminders */}
-            <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
-              <div className="px-6 py-4 border-b border-warm-border">
-                <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
-                  <Bell size={18} className="text-warm-accent" />
-                  Upcoming Reminders
-                </h3>
-              </div>
-              {reminders && reminders.length > 0 ? (
-                <ul className="divide-y divide-warm-border">
-                  {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
-                    <li key={reminder.id} className="flex flex-col gap-1 px-6 py-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-warm-fg">{reminder.title}</span>
-                        <span className="text-xs text-warm-muted">
-                          {format(parseISO(reminder.reminderDate), 'dd MMM')}
-                        </span>
-                      </div>
-                      {reminder.description && (
-                        <span className="text-xs text-warm-muted line-clamp-1">{reminder.description}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="px-6 py-8 text-center text-warm-muted">
-                  <p>No upcoming reminders</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Low Stock Alerts */}
+              <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
+                <div className="px-6 py-4 border-b border-warm-border">
+                  <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
+                    <AlertTriangle size={18} className="text-warm-warning" />
+                    Low Stock Alerts
+                  </h3>
                 </div>
-              )}
-            </section>
+                {lowStock && lowStock.length > 0 ? (
+                  <ul className="divide-y divide-warm-border">
+                    {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
+                      <li key={item.id} className="flex justify-between items-center px-6 py-3">
+                        <span className="text-sm text-warm-fg">{item.name}</span>
+                        <span className="text-sm font-semibold text-warm-danger">{item.quantity} left</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-6 py-8 text-center text-warm-muted">
+                    <Package size={32} className="mx-auto mb-2 text-warm-success" />
+                    <p>Stock is healthy</p>
+                    <p className="text-sm text-warm-dim">No items are currently running low.</p>
+                  </div>
+                )}
+              </section>
+
+              {/* Reminders */}
+              <section className="bg-warm-surface border border-warm-border-warm rounded-xl shadow-sm">
+                <div className="px-6 py-4 border-b border-warm-border">
+                  <h3 className="text-lg font-semibold text-warm-fg font-display flex items-center gap-2">
+                    <Bell size={18} className="text-warm-accent" />
+                    Upcoming Reminders
+                  </h3>
+                </div>
+                {reminders && reminders.length > 0 ? (
+                  <ul className="divide-y divide-warm-border">
+                    {reminders.slice(0, 5).map((reminder: { id: string, title: string, reminderDate: string, description: string | null }) => (
+                      <li key={reminder.id} className="flex flex-col gap-1 px-6 py-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-warm-fg">{reminder.title}</span>
+                          <span className="text-xs text-warm-muted">
+                            {format(parseISO(reminder.reminderDate), 'dd MMM')}
+                          </span>
+                        </div>
+                        {reminder.description && (
+                          <span className="text-xs text-warm-muted line-clamp-1">{reminder.description}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-6 py-8 text-center text-warm-muted">
+                    <p>No upcoming reminders</p>
+                  </div>
+                )}
+              </section>
+            </div>
           </div>
         )}
       </div>
