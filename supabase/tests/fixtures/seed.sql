@@ -106,7 +106,7 @@ INSERT INTO public.users (id, auth_id, tenant_id, store_id, name, role) VALUES
 ('f0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'Beta Manager', 'manager');
 
 -- 9. Initial Stock Movements to set Weighted Average Cost
-INSERT INTO public.stock_movements (store_id, item_id, quantity_change, weighted_average_cost, reference_type) VALUES
+INSERT INTO public.stock_movements (store_id, item_id, delta, weighted_average_cost, reference_type) VALUES
 ('11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000001', 50, 70.00, 'INITIAL'),
 ('11111111-1111-1111-1111-111111111111', 'e0000000-0000-0000-0000-000000000002', 20, 150.00, 'INITIAL'),
 ('22222222-2222-2222-2222-222222222222', 'e0000000-0000-0000-0000-000000000003', 100, 30.00, 'INITIAL');
