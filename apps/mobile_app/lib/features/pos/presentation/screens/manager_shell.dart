@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -34,6 +35,125 @@ class ManagerShell extends StatefulWidget {
 
 class _ManagerShellState extends State<ManagerShell> {
   int _selectedIndex = 0;
+  RealtimeChannel? _orderDbChannel;
+  RealtimeChannel? _orderBroadcastChannel;
+  final Set<String> _notifiedOrders = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _subscribeToOrders();
+    });
+  }
+
+  void _subscribeToOrders() {
+    final auth = context.read<AuthProvider>();
+    final storeId = auth.appUser?.storeId;
+    if (storeId == null || storeId.isEmpty) {
+      debugPrint('[ManagerShell] No store ID found for realtime orders subscription');
+      return;
+    }
+
+    final client = Supabase.instance.client;
+    
+    // 1. DB replication changes on orders table
+    _orderDbChannel = client.channel('orders-db-changes');
+    _orderDbChannel!.onPostgresChanges(
+      event: PostgresChangeEvent.insert,
+      schema: 'public',
+      table: 'orders',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'store_id',
+        value: storeId,
+      ),
+      callback: (payload) {
+        final newRecord = payload.newRecord;
+        if (newRecord.isNotEmpty) {
+          debugPrint('[ManagerShell] Realtime DB insert order: $newRecord');
+          _showOrderNotification(Map<String, dynamic>.from(newRecord));
+        }
+      },
+    );
+    _orderDbChannel!.subscribe();
+
+    // 2. Direct broadcast messages
+    _orderBroadcastChannel = client.channel('store-notifications:$storeId');
+    _orderBroadcastChannel!.onBroadcast(
+      event: 'new-delivery-order',
+      callback: (payload) {
+        debugPrint('[ManagerShell] Realtime broadcast order: $payload');
+        final orderData = payload['payload'] as Map<String, dynamic>? ?? payload;
+        _showOrderNotification(Map<String, dynamic>.from(orderData));
+      },
+    );
+    _orderBroadcastChannel!.subscribe();
+    
+    debugPrint('[ManagerShell] Subscribed to realtime orders for store $storeId');
+  }
+
+  void _showOrderNotification(Map<String, dynamic> order) {
+    final orderNum = order['order_number'] as String? ?? order['orderNumber'] as String? ?? 'New';
+    
+    // Deduplicate to avoid notifying twice (DB insert + Broadcast)
+    if (_notifiedOrders.contains(orderNum)) return;
+    _notifiedOrders.add(orderNum);
+
+    final customer = order['customer_name'] as String? ?? 'Customer';
+    final total = order['total']?.toString() ?? '0';
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.delivery_dining, color: Color(0xFFE8B84B)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'CRITICAL: New Order Placed!',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  Text(
+                    'Order: $orderNum · $customer · ৳$total',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF1E293B),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 10),
+        action: SnackBarAction(
+          label: 'VIEW',
+          textColor: const Color(0xFFE8B84B),
+          onPressed: () {
+            // Switch to dashboard tab
+            _onTabSelected(1);
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    if (_orderDbChannel != null) {
+      Supabase.instance.client.removeChannel(_orderDbChannel!);
+    }
+    if (_orderBroadcastChannel != null) {
+      Supabase.instance.client.removeChannel(_orderBroadcastChannel!);
+    }
+    super.dispose();
+  }
 
   // Tab definitions — order matters; index must match the nav items below.
   static const _tabs = [

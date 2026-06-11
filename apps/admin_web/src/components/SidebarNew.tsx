@@ -42,6 +42,7 @@ function useNavGroups(): NavGroup[] {
       items: [
         { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/' },
         { icon: Monitor, label: t('nav.quickPos'), path: '/pos' },
+        { icon: ShoppingBag, label: t('nav.deliveryOrders', 'Delivery Orders'), path: '/delivery-orders' },
         { icon: TrendingDown, label: t('nav.competitorPrices'), path: '/competitor-prices' },
       ]
     },
