@@ -30,6 +30,7 @@ const LazyImportPartiesPage = React.lazy(() => import('../features/import/Import
 const LazyImportProductsPage = React.lazy(() => import('../features/import/ImportProductsPage').then(m => ({ default: m.ImportProductsPage })));
 const LazyOtherIncomePage = React.lazy(() => import('../features/otherIncome/OtherIncomePage').then(m => ({ default: m.OtherIncomePage })));
 const LazyStaffDashboardPage = React.lazy(() => import('../features/staff/StaffDashboardPage').then(m => ({ default: m.StaffDashboardPage })));
+const LazyDeliveryOrdersPage = React.lazy(() => import('../features/deliveryOrders/DeliveryOrdersPage').then(m => ({ default: m.DeliveryOrdersPage })));
 
 function SuspenseFallback() {
   return (
@@ -69,6 +70,7 @@ export function App() {
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<DashboardPage />} />
+                  <Route path="delivery-orders" element={<LazyRoute><LazyDeliveryOrdersPage /></LazyRoute>} />
                   <Route path="products" element={<Navigate to="/admin/inventory" replace />} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
                   <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
