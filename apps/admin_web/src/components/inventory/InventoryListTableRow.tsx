@@ -36,6 +36,7 @@ interface InventoryListTableRowProps {
   onInlineSave: (itemId: string, field: keyof InventoryItem, value: string | number) => Promise<void>;
   onTabNavigation: (rowId: string, field: string, direction: 'forward' | 'backward') => void;
   storeId?: string;
+  compact?: boolean;
 }
 
 // Mock competitor data - replace with API call

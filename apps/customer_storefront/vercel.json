@@ -1,6 +1,5 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm ci --legacy-peer-deps",
-  "outputDirectory": ".next",
-  "rootDirectory": "."
+  "outputDirectory": ".next"
 }
