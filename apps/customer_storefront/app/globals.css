@@ -22,4 +22,45 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Glassmorphism surface */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border-color: var(--glass-border);
+  }
+
+  /* Tactile press feedback */
+  .press-feedback:active {
+    transform: scale(var(--press-scale));
+    transition: transform 0.1s ease;
+  }
+
+  /* Scroll edge fade masks */
+  .scroll-edge-mask {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 4%,
+      black 96%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 4%,
+      black 96%,
+      transparent 100%
+    );
+  }
+
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

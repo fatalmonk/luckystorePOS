@@ -45,8 +45,8 @@ function CheckoutContent() {
       showToast('Please fill all required fields');
       return;
     }
-    if (!formData.phone.match(/^\+880\s?1\d{9}$/)) {
-      showToast('Enter valid BD phone (+880 1XXXXXXXXX)');
+    if (!formData.phone.match(/^(?:\+880|0)1\d{9}$/)) {
+      showToast('Enter valid phone (01XXXXXXXXX or +8801XXXXXXXXX)');
       return;
     }
 
@@ -96,7 +96,7 @@ function CheckoutContent() {
                     currentStep > step.id
                       ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
                       : currentStep === step.id
-                      ? 'bg-[#dc5f3b] text-white'
+                      ? 'bg-[#FFF34D] text-[#5c5200]'
                       : 'bg-[#f5f5f4] text-[#a8a29e]'
                   }`}
                 >

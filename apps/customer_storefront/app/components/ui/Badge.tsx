@@ -13,7 +13,7 @@ export function Badge({ children, variant = 'success', className = '' }: BadgePr
     success: 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]',
     warning: 'bg-[rgba(180,83,9,0.08)] text-[#b45309]',
     danger: 'bg-[rgba(195,49,47,0.07)] text-[#c3312f]',
-    accent: 'bg-[#dc5f3b] text-white',
+    accent: 'bg-[#FFF34D] text-[#5c5200]',
   };
 
   return (
