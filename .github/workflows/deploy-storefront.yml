@@ -50,7 +50,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
       - name: Build
-        run: vercel build --cwd=./apps/customer_storefront --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
+        run: vercel build --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
@@ -60,7 +60,7 @@ jobs:
       
       - name: Deploy to Preview
         if: github.event_name == 'pull_request'
-        run: vercel deploy --prebuilt --cwd=./apps/customer_storefront
+        run: vercel deploy --prebuilt
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
@@ -68,7 +68,7 @@ jobs:
       
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: vercel deploy --prebuilt --prod --cwd=./apps/customer_storefront
+        run: vercel deploy --prebuilt --prod
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
