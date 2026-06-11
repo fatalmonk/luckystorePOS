@@ -52,14 +52,14 @@ function CartContent() {
                     <div className="flex items-center gap-2.5">
                       <button
                         onClick={() => updateQty(item.id, -1)}
-                        className="w-6 h-7 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#dc5f3b] hover:text-[#dc5f3b] transition-colors"
+                        className="w-6 h-7 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
                       >
                         −
                       </button>
                       <span className="font-bold text-sm min-w-[24px] text-center">{item.qty}</span>
                       <button
                         onClick={() => updateQty(item.id, 1)}
-                        className="w-6 h-7 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#dc5f3b] hover:text-[#dc5f3b] transition-colors"
+                        className="w-6 h-7 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
                       >
                         +
                       </button>
@@ -82,7 +82,7 @@ function CartContent() {
                   <span>{deliveryFee === 0 ? 'FREE' : `৳${deliveryFee}`}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between mb-2.5 text-sm text-[#dc5f3b]">
+                  <div className="flex justify-between mb-2.5 text-sm text-[#5c5200]">
                     <span>Discount (FREE500)</span>
                     <span>−৳{discount}</span>
                   </div>

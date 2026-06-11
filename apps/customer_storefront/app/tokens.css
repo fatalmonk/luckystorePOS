@@ -1,5 +1,5 @@
 /* Hallmark · macrostructure: Mobile-First App Shell · genre: modern-minimal · theme: Warm Modern
- * paper: #faf8f5 · accent: #dc5f3b terracotta · display: system-ui · body: system-ui
+ * paper: #faf8f5 · accent: #FFED29 terracotta · display: system-ui · body: system-ui
  * diversification: first-run · studied: no · source: reference HTML
  */
 
@@ -13,11 +13,13 @@
   --color-border: #e7e5e4;
   --color-border-light: #f5f5f4;
 
-  /* Accent - Lucky Store terracotta */
-  --color-accent: #dc5f3b;
-  --color-accent-hover: #c4542e;
-  --color-accent-ghost: rgba(220, 95, 59, 0.07);
-  --color-accent-text: #9c4221;
+  /* Accent - Lucky Store yellow palette */
+  --color-accent: #FFF34D;
+  --color-accent-hover: #FBEF51;
+  --color-accent-ghost: rgba(255, 243, 77, 0.12);
+  --color-accent-text: #5c5200;
+  --color-accent-muted: #E2DA6A;
+  --color-accent-olive: #C4C087;
 
   /* Semantic - status colors */
   --color-success: #2d6a4f;
@@ -33,10 +35,19 @@
   --radius-lg: 18px;
   --radius-xl: 24px;
 
-  /* Shadows - soft warm */
-  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.04);
-  --shadow-md: 0 4px 16px rgba(28, 25, 23, 0.06);
-  --shadow-lg: 0 16px 48px rgba(28, 25, 23, 0.10);
+  /* Shadows — 3-level spatial system, top-left light source */
+  --shadow-rest: 0 1px 3px rgba(28, 25, 23, 0.05), 0 1px 2px rgba(28, 25, 23, 0.03);
+  --shadow-hover: 0 4px 12px rgba(28, 25, 23, 0.08), 0 2px 4px rgba(28, 25, 23, 0.04);
+  --shadow-elevated: 0 12px 40px rgba(28, 25, 23, 0.12), 0 4px 12px rgba(28, 25, 23, 0.06);
+  /* Legacy aliases */
+  --shadow-sm: var(--shadow-rest);
+  --shadow-md: var(--shadow-hover);
+  --shadow-lg: var(--shadow-elevated);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(250, 248, 245, 0.82);
+  --glass-blur: 14px;
+  --glass-border: rgba(231, 229, 228, 0.5);
 
   /* Dimensions */
   --header-h: 60px;
@@ -45,7 +56,9 @@
   /* Animation */
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
   --transition-base: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --press-scale: 0.96;
 
   /* Typography */
   --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -181,25 +194,66 @@ body {
   animation: fadeUp 0.25s ease forwards;
 }
 
-/* Card hover lift */
+/* Card spatial hover — 3-level shadow system */
 .card-hover {
-  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  box-shadow: var(--shadow-rest);
+  transition: transform 0.22s var(--ease-out), box-shadow 0.22s var(--ease-out);
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
 }
 
-/* Add to cart pulse animation */
-@keyframes cartPulse {
+.card-hover:active {
+  transform: translateY(-1px) scale(var(--press-scale));
+  box-shadow: var(--shadow-rest);
+}
+
+/* Add to cart — elastic bounce */
+@keyframes elasticBounce {
   0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  30% { transform: scale(1.35); }
+  50% { transform: scale(0.9); }
+  70% { transform: scale(1.12); }
   100% { transform: scale(1); }
 }
 
-.cart-pulse {
-  animation: cartPulse 0.3s var(--ease-out);
+.cart-bounce {
+  animation: elasticBounce 0.5s var(--ease-elastic);
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    105deg,
+    #f0ede8 0%,
+    #f0ede8 35%,
+    #faf8f5 50%,
+    #f0ede8 65%,
+    #f0ede8 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Cart fly animation */
+@keyframes flyToCart {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  70% { opacity: 0.6; transform: translate(var(--fly-x), var(--fly-y)) scale(0.3); }
+  100% { opacity: 0; transform: translate(var(--fly-x), var(--fly-y)) scale(0.15); }
+}
+
+.fly-to-cart {
+  animation: flyToCart 0.55s var(--ease-out) forwards;
+  pointer-events: none;
+  position: fixed;
+  z-index: 9999;
 }
 
 /* Live dot pulse */

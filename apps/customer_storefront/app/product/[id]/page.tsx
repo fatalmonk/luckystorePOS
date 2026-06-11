@@ -110,14 +110,14 @@ function ProductContent({ params }: { params: Promise<{ id: string }> }) {
             <div className="flex items-center gap-2 mb-4">
               <button
                 onClick={() => updateQty(product.id, -1)}
-                className="w-10 h-10 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center font-semibold hover:border-[#dc5f3b]"
+                className="w-10 h-10 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center font-semibold hover:border-[#FFF34D]"
               >
                 −
               </button>
               <span className="font-bold text-lg min-w-[32px] text-center">{qtyInCart}</span>
               <button
                 onClick={() => updateQty(product.id, 1)}
-                className="w-10 h-10 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center font-semibold hover:border-[#dc5f3b]"
+                className="w-10 h-10 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center font-semibold hover:border-[#FFF34D]"
               >
                 +
               </button>
