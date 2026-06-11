@@ -1,9 +1,10 @@
 import type { InventoryItem } from '../../types/inventory';
-import { useEffect, useState, useMemo } from 'react';
-import { MoreVertical, History, Pencil, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MoreVertical, History, Pencil, Trash2, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { EditableCell } from '../../components/ui/EditableCell';
 import { ImageUploadZone } from '../../components/inventory/ImageUploadZone';
+import { SmartPricingEditor } from './SmartPricingEditor';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import { useNotify } from '../../components/NotificationContext';
 import { formatCurrency } from '../../lib/format';
@@ -13,11 +14,21 @@ const calcMargin = (cost?: number, price?: number) => {
   return Math.round(((price - cost) / price) * 100);
 };
 
+const getMarginColor = (margin: number | null): string => {
+  if (margin === null) return 'text-warm-dim';
+  if (margin >= 30) return 'text-warm-success';
+  if (margin >= 15) return 'text-warm-warning';
+  return 'text-warm-danger';
+};
+
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   OK: { bg: 'bg-warm-success/10', text: 'text-warm-success', border: 'border-warm-success/20' },
   LOW: { bg: 'bg-warm-warning/10', text: 'text-warm-warning', border: 'border-warm-warning/20' },
   OUT: { bg: 'bg-warm-danger/10', text: 'text-warm-danger', border: 'border-warm-danger/20' },
 };
+
+// TODO: Replace MOCK_COMPETITORS with real API call to fetch live competitor prices
+const MOCK_COMPETITORS: Record<string, { name: string; price: number; logo: string }[]> = {};
 
 interface InventoryListTableRowProps {
   index: number;
@@ -36,11 +47,7 @@ interface InventoryListTableRowProps {
   onInlineSave: (itemId: string, field: keyof InventoryItem, value: string | number) => Promise<void>;
   onTabNavigation: (rowId: string, field: string, direction: 'forward' | 'backward') => void;
   storeId?: string;
-  compact?: boolean;
 }
-
-// Mock competitor data - replace with API call
-const MOCK_COMPETITORS: Record<string, { name: string; price: number; logo: string }[]> = {};
 
 export function InventoryListTableRow({
   index,
@@ -62,45 +69,17 @@ export function InventoryListTableRow({
 }: InventoryListTableRowProps) {
   const { notify } = useNotify();
   const { mutateAsync: uploadImage } = useImageUpload();
-  const [liveCost, setLiveCost] = useState<number | undefined>(undefined);
-  const [livePrice, setLivePrice] = useState<number | undefined>(undefined);
-  const [liveMrp, setLiveMrp] = useState<number | undefined>(undefined);
-  const [selectedMarkup, setSelectedMarkup] = useState<number | null>(null);
   const [showSmartPricing, setShowSmartPricing] = useState(false);
 
-  // Competitor prices - would come from API
-  const competitorPrices = useMemo(() => {
-    return MOCK_COMPETITORS[item.id] || [
-      { name: 'Shwapno', price: (item.cost || 0) * 1.25, logo: 'S' },
-      { name: 'Chaldal', price: (item.cost || 0) * 1.22, logo: 'C' },
-      { name: 'Agora', price: (item.cost || 0) * 1.28, logo: 'A' },
-    ];
-  }, [item.id, item.cost]);
-
-  // Calculate proposed price based on markup
-  const cost = liveCost !== undefined ? liveCost : (item.cost || 0);
-  const mrp = liveMrp !== undefined ? liveMrp : (item.mrp || 0);
-  const proposedPrice = selectedMarkup ? Math.round(cost * (1 + selectedMarkup / 100)) : (livePrice !== undefined ? livePrice : (item.price || 0));
-  
-  // Check if proposed price exceeds MRP
-  const exceedsMrp = mrp > 0 && proposedPrice > mrp;
-  const finalPrice = exceedsMrp ? mrp : proposedPrice;
-
-  const margin = calcMargin(
-    liveCost !== undefined ? liveCost : item.cost,
-    livePrice !== undefined ? livePrice : item.price
-  );
+  const margin = calcMargin(item.cost, item.price);
 
   const isEditing = (field: string) =>
     editingCell?.rowId === item.id && editingCell?.field === field;
 
-  // Reset live values when editing finishes or starts
+  // Reset smart pricing when row changes
   useEffect(() => {
     if (!editingCell || editingCell.rowId !== item.id) {
-      setLiveCost(undefined);
-      setLivePrice(undefined);
-      setLiveMrp(undefined);
-      setSelectedMarkup(null);
+      setShowSmartPricing(false);
     }
   }, [editingCell, item.id]);
 
@@ -235,98 +214,20 @@ export function InventoryListTableRow({
         )}
       </td>
 
-      {/* Selling - Price + MRP */}
+      <!-- Selling - Price + MRP -->
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {showSmartPricing ? (
-          // Smart Pricing Inline Editor
-          <div className="flex flex-col items-end gap-2 bg-warm-surface-hover rounded-lg p-3 border border-warm-border-warm shadow-sm">
-            {/* Cost Display */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-warm-dim">Cost:</span>
-              <span className="font-semibold text-warm-fg">৳{cost.toLocaleString('en-IN')}</span>
-            </div>
-            
-            {/* Competitor Insights */}
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-              <span className="text-xs text-warm-dim">Market:</span>
-              {competitorPrices.map((comp) => (
-                <div key={comp.name} className="flex items-center gap-1 text-[10px] bg-surface px-1.5 py-0.5 rounded" title={comp.name}>
-                  <span className="font-medium text-warm-muted">{comp.logo}</span>
-                  <span className="text-warm-fg">৳{comp.price.toLocaleString('en-IN')}</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* MRP Display */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-warm-dim">MRP (Ceiling):</span>
-              <span className={clsx('font-semibold', exceedsMrp ? 'text-warm-danger' : 'text-warm-fg')}>
-                ৳{mrp.toLocaleString('en-IN')}
-              </span>
-            </div>
-            
-            {/* Markup Segmented Control */}
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-[10px] text-warm-muted">Quick Markup</span>
-              <div className="flex rounded-md overflow-hidden border border-warm-border-warm">
-                {[10, 15, 20, 25].map((markup) => (
-                  <button
-                    key={markup}
-                    onClick={() => setSelectedMarkup(markup)}
-                    className={clsx(
-                      'px-2 py-1 text-[11px] font-medium transition-colors',
-                      selectedMarkup === markup
-                        ? 'bg-warm-accent text-white'
-                        : 'bg-warm-surface text-warm-muted hover:bg-warm-surface-hover'
-                    )}
-                  >
-                    {markup}%
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Final Price with Validation */}
-            <div className="flex items-center gap-2 mt-1">
-              {exceedsMrp && (
-                <span className="flex items-center gap-1 text-[10px] text-warm-danger">
-                  <AlertCircle size={10} />
-                  Max Retail Price Reached
-                </span>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-warm-dim">Final:</span>
-                <span className={clsx(
-                  'text-sm font-bold font-mono',
-                  exceedsMrp ? 'text-warm-danger' : 'text-warm-success'
-                )}>
-                  ৳{finalPrice.toLocaleString('en-IN')}
-                  {selectedMarkup && !exceedsMrp && (
-                    <span className="ml-1 text-[10px] text-warm-muted">({selectedMarkup}%)</span>
-                  )}
-                </span>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2 mt-1">
-              <button
-                onClick={() => {
-                  onInlineSave(item.id, 'price', finalPrice);
-                  setShowSmartPricing(false);
-                }}
-                className="px-3 py-1 text-[11px] bg-warm-accent text-white rounded hover:bg-warm-accent/90 transition-colors"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setShowSmartPricing(false)}
-                className="px-3 py-1 text-[11px] bg-warm-surface text-warm-muted rounded hover:bg-warm-surface-hover transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          <SmartPricingEditor
+            itemId={item.id}
+            cost={item.cost || 0}
+            mrp={item.mrp || 0}
+            currentPrice={item.price || 0}
+            onSave={(price) => {
+              onInlineSave(item.id, 'price', price);
+              setShowSmartPricing(false);
+            }}
+            onCancel={() => setShowSmartPricing(false)}
+          />
         ) : item.price ? (
           <div className="flex flex-col items-end">
             <div className="flex items-center gap-2">
@@ -348,17 +249,14 @@ export function InventoryListTableRow({
         )}
       </td>
 
-      {/* Profit - Condensed View */}
+      <!-- Profit - Condensed View -->
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {item.cost && item.price ? (
           <div className="flex flex-col items-end">
-            <span className="text-sm font-semibold text-warm-fg">৳{(item.price - item.cost).toLocaleString('en-IN')}</span>
-            <span className={clsx(
-              'text-[11px] font-bold',
-              margin >= 30 ? 'text-warm-success' :
-              margin >= 15 ? 'text-warm-warning' :
-              'text-warm-danger'
-            )}>
+            <span className="text-sm font-semibold text-warm-fg">
+              ৳{(item.price - item.cost).toLocaleString('en-IN')}
+            </span>
+            <span className={clsx('text-[11px] font-bold', getMarginColor(margin))}>
               {margin}%
             </span>
           </div>
