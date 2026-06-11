@@ -1,6 +1,6 @@
 import type { InventoryItem } from '../../types/inventory';
-import { useEffect, useState } from 'react';
-import { MoreVertical, History, Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { MoreVertical, History, Pencil, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { EditableCell } from '../../components/ui/EditableCell';
 import { ImageUploadZone } from '../../components/inventory/ImageUploadZone';
@@ -38,6 +38,9 @@ interface InventoryListTableRowProps {
   storeId?: string;
 }
 
+// Mock competitor data - replace with API call
+const MOCK_COMPETITORS: Record<string, { name: string; price: number; logo: string }[]> = {};
+
 export function InventoryListTableRow({
   index,
   item,
@@ -60,6 +63,27 @@ export function InventoryListTableRow({
   const { mutateAsync: uploadImage } = useImageUpload();
   const [liveCost, setLiveCost] = useState<number | undefined>(undefined);
   const [livePrice, setLivePrice] = useState<number | undefined>(undefined);
+  const [liveMrp, setLiveMrp] = useState<number | undefined>(undefined);
+  const [selectedMarkup, setSelectedMarkup] = useState<number | null>(null);
+  const [showSmartPricing, setShowSmartPricing] = useState(false);
+
+  // Competitor prices - would come from API
+  const competitorPrices = useMemo(() => {
+    return MOCK_COMPETITORS[item.id] || [
+      { name: 'Shwapno', price: (item.cost || 0) * 1.25, logo: 'S' },
+      { name: 'Chaldal', price: (item.cost || 0) * 1.22, logo: 'C' },
+      { name: 'Agora', price: (item.cost || 0) * 1.28, logo: 'A' },
+    ];
+  }, [item.id, item.cost]);
+
+  // Calculate proposed price based on markup
+  const cost = liveCost !== undefined ? liveCost : (item.cost || 0);
+  const mrp = liveMrp !== undefined ? liveMrp : (item.mrp || 0);
+  const proposedPrice = selectedMarkup ? Math.round(cost * (1 + selectedMarkup / 100)) : (livePrice !== undefined ? livePrice : (item.price || 0));
+  
+  // Check if proposed price exceeds MRP
+  const exceedsMrp = mrp > 0 && proposedPrice > mrp;
+  const finalPrice = exceedsMrp ? mrp : proposedPrice;
 
   const margin = calcMargin(
     liveCost !== undefined ? liveCost : item.cost,
@@ -74,6 +98,8 @@ export function InventoryListTableRow({
     if (!editingCell || editingCell.rowId !== item.id) {
       setLiveCost(undefined);
       setLivePrice(undefined);
+      setLiveMrp(undefined);
+      setSelectedMarkup(null);
     }
   }, [editingCell, item.id]);
 
@@ -210,9 +236,108 @@ export function InventoryListTableRow({
 
       {/* Selling - Price + MRP */}
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
-        {item.price ? (
+        {showSmartPricing ? (
+          // Smart Pricing Inline Editor
+          <div className="flex flex-col items-end gap-2 bg-warm-surface-hover rounded-lg p-3 border border-warm-border-warm shadow-sm">
+            {/* Cost Display */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-warm-dim">Cost:</span>
+              <span className="font-semibold text-warm-fg">৳{cost.toLocaleString('en-IN')}</span>
+            </div>
+            
+            {/* Competitor Insights */}
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <span className="text-xs text-warm-dim">Market:</span>
+              {competitorPrices.map((comp) => (
+                <div key={comp.name} className="flex items-center gap-1 text-[10px] bg-surface px-1.5 py-0.5 rounded" title={comp.name}>
+                  <span className="font-medium text-warm-muted">{comp.logo}</span>
+                  <span className="text-warm-fg">৳{comp.price.toLocaleString('en-IN')}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* MRP Display */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-warm-dim">MRP (Ceiling):</span>
+              <span className={clsx('font-semibold', exceedsMrp ? 'text-warm-danger' : 'text-warm-fg')}>
+                ৳{mrp.toLocaleString('en-IN')}
+              </span>
+            </div>
+            
+            {/* Markup Segmented Control */}
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[10px] text-warm-muted">Quick Markup</span>
+              <div className="flex rounded-md overflow-hidden border border-warm-border-warm">
+                {[10, 15, 20, 25].map((markup) => (
+                  <button
+                    key={markup}
+                    onClick={() => setSelectedMarkup(markup)}
+                    className={clsx(
+                      'px-2 py-1 text-[11px] font-medium transition-colors',
+                      selectedMarkup === markup
+                        ? 'bg-warm-accent text-white'
+                        : 'bg-warm-surface text-warm-muted hover:bg-warm-surface-hover'
+                    )}
+                  >
+                    {markup}%
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Final Price with Validation */}
+            <div className="flex items-center gap-2 mt-1">
+              {exceedsMrp && (
+                <span className="flex items-center gap-1 text-[10px] text-warm-danger">
+                  <AlertCircle size={10} />
+                  Max Retail Price Reached
+                </span>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-warm-dim">Final:</span>
+                <span className={clsx(
+                  'text-sm font-bold font-mono',
+                  exceedsMrp ? 'text-warm-danger' : 'text-warm-success'
+                )}>
+                  ৳{finalPrice.toLocaleString('en-IN')}
+                  {selectedMarkup && !exceedsMrp && (
+                    <span className="ml-1 text-[10px] text-warm-muted">({selectedMarkup}%)</span>
+                  )}
+                </span>
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                onClick={() => {
+                  onInlineSave(item.id, 'price', finalPrice);
+                  setShowSmartPricing(false);
+                }}
+                className="px-3 py-1 text-[11px] bg-warm-accent text-white rounded hover:bg-warm-accent/90 transition-colors"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowSmartPricing(false)}
+                className="px-3 py-1 text-[11px] bg-warm-surface text-warm-muted rounded hover:bg-warm-surface-hover transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : item.price ? (
           <div className="flex flex-col items-end">
-            <span className="text-sm font-semibold text-warm-fg">৳{item.price.toLocaleString('en-IN')}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-warm-fg">৳{item.price.toLocaleString('en-IN')}</span>
+              <button
+                onClick={() => setShowSmartPricing(true)}
+                className="p-1 rounded hover:bg-warm-surface-hover text-warm-muted hover:text-warm-accent transition-colors"
+                title="Smart Pricing"
+              >
+                <TrendingUp size={14} />
+              </button>
+            </div>
             {item.mrp && item.mrp > item.price && (
               <span className="text-[11px] text-warm-dim line-through">MRP ৳{item.mrp.toLocaleString('en-IN')}</span>
             )}
@@ -222,7 +347,7 @@ export function InventoryListTableRow({
         )}
       </td>
 
-      {/* Profit */}
+      {/* Profit - Condensed View */}
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {item.cost && item.price ? (
           <div className="flex flex-col items-end">
