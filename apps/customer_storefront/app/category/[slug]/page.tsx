@@ -3,6 +3,7 @@ import { CategoryContent } from '../CategoryContent';
 import { fetchCategories } from '../../lib/products';
 import { CATEGORY_GROUPS } from '../../lib/types';
 
+export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export async function generateStaticParams() {

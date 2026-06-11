@@ -1,5 +1,9 @@
 {
+  "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm ci --legacy-peer-deps",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
 }
