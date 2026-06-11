@@ -71,27 +71,23 @@ export function useCart() {
     setCart([]);
   }, []);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const displayCart = mounted ? cart : [];
-  const displayTotalItems = mounted ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
-  const displaySubtotal = mounted ? cart.reduce((sum, item) => sum + item.price * item.qty, 0) : 0;
-  const displayDeliveryFee = displaySubtotal >= 500 ? 0 : (mounted ? 40 : 0);
-  const displayDiscount = displaySubtotal >= 500 ? 40 : 0;
-  const displayTotal = displaySubtotal + displayDeliveryFee - displayDiscount;
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const deliveryFee = subtotal >= 500 ? 0 : 40;
+  const discount = subtotal >= 500 ? 40 : 0;
+  const total = subtotal + deliveryFee - discount;
 
   return {
-    cart: displayCart,
+    cart,
     isLoaded,
     addToCart,
     updateQty,
     removeFromCart,
     clearCart,
-    totalItems: displayTotalItems,
-    subtotal: displaySubtotal,
-    deliveryFee: displayDeliveryFee,
-    discount: displayDiscount,
-    total: displayTotal,
+    totalItems,
+    subtotal,
+    deliveryFee,
+    discount,
+    total,
   };
 }

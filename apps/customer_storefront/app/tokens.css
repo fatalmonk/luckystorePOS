@@ -295,3 +295,14 @@ body {
     gap: 1.25rem;
   }
 }
+
+/* Ensure images don't break layout */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}

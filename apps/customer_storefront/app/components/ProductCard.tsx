@@ -168,9 +168,9 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-9 rounded-full border-2 border-[#0071DC] text-[#0071DC] text-sm font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all disabled:border-[#a8a29e] disabled:text-[#a8a29e] disabled:hover:bg-white"
+              className="w-full h-[48px] min-h-[44px] rounded-full border-2 border-[#0071DC] text-[#0071DC] text-sm font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all duration-200 disabled:border-[#a8a29e] disabled:text-[#a8a29e] disabled:hover:bg-white"
             >
-              Add
+              Add to Cart
             </button>
           )}
         </div>
