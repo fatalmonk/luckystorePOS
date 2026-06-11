@@ -43,12 +43,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           </div>
         ))}
       </div>
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes toastIn {
           from { opacity: 0; transform: translateY(-8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-      `}</style>
+      `}} />
     </ToastContext.Provider>
   );
 }
