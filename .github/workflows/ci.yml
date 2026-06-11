@@ -117,6 +117,11 @@ jobs:
       - name: Reset Database
         run: supabase db reset
 
+      - name: Ensure RPC Functions Exist
+        run: |
+          # Explicitly apply the RPC function migration to ensure functions exist
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/migrations/20260612015717_ensure_rpc_functions.sql
+
       - name: Seed Test Data
         run: |
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/tests/fixtures/seed.sql
