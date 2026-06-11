@@ -35,5 +35,33 @@ export async function createOrder(input: OrderInput) {
   });
 
   if (error) throw error;
+
+  // Broadcast realtime notification to admin web and mobile app
+  try {
+    const channel = supabase.channel(`store-notifications:${STORE_ID}`);
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        channel.send({
+          type: 'broadcast',
+          event: 'new-delivery-order',
+          payload: {
+            id: (data as any).id,
+            orderNumber: (data as any).order_number || input.orderNumber,
+            customerName: input.customerName,
+            customerPhone: input.customerPhone,
+            customerAddress: input.customerAddress,
+            total: input.total,
+            itemsCount: input.items.length,
+            storeId: STORE_ID,
+          },
+        }).then(() => {
+          supabase.removeChannel(channel);
+        });
+      }
+    });
+  } catch (err) {
+    console.error('Failed to send realtime broadcast:', err);
+  }
+
   return data as { id: string; order_number: string };
 }
