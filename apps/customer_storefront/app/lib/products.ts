@@ -3,12 +3,12 @@ import type { Product, Category } from './types';
 
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
-export async function fetchProducts(q?: string, categoryId?: string): Promise<Product[]> {
+export async function fetchProducts(q?: string, categoryId?: string, categoryIds?: string[]): Promise<Product[]> {
   const { data, error } = await supabase.rpc('search_items_pos', {
     p_store_id: STORE_ID,
     p_query: q ?? '',
     p_category_id: categoryId ?? null,
-    p_limit: 100,
+    p_limit: 200,
     p_offset: 0,
   });
 
@@ -16,9 +16,16 @@ export async function fetchProducts(q?: string, categoryId?: string): Promise<Pr
 
   let items = data ?? [];
 
-  // Client-side category filter (search_items_pos returns all items for store)
+  // Client-side category filter
   if (categoryId) {
     items = items.filter((item: any) => item.category_id === categoryId || item.category === categoryId);
+  }
+
+  // Multi-category filter (for group pages)
+  if (categoryIds && categoryIds.length > 0) {
+    items = items.filter((item: any) =>
+      categoryIds.includes(item.category_id) || categoryIds.includes(item.category)
+    );
   }
 
   return items.map((item: any) => {
@@ -66,4 +73,21 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   produce: '🥬',
   bakery: '🍞',
   frozen: '🧊',
+  chips: '🥔',
+  'biscuits-cookies': '🍘',
+  'chocolates-candies': '🍫',
+  'ice-cream': '🍦',
+  'tea-coffee': '☕',
+  cereals: '🥣',
+  oil: '🫒',
+  'rice-grain': '🌾',
+  condiments: '🥫',
+  spices: '🌶️',
+  eggs: '🥚',
+  'personal-care': '🧴',
+  'cleaning-supply': '🧽',
+  'air-freshener': '🌸',
+  'baby-care': '🍼',
+  electronics: '🔌',
+  'baking-needs': '🧁',
 };
