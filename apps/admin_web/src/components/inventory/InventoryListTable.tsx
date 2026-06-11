@@ -14,6 +14,7 @@ interface InventoryListTableProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onSelectAll: (ids: string[], isAllSelected: boolean) => void;
+  compact?: boolean;
 }
 
 export function InventoryListTable({
@@ -27,6 +28,7 @@ export function InventoryListTable({
   selectedIds,
   onToggleSelect,
   onSelectAll,
+  compact = false,
 }: InventoryListTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
@@ -35,7 +37,7 @@ export function InventoryListTable({
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 72,
+    estimateSize: () => compact ? 32 : 72,
     overscan: 5,
   });
 
@@ -152,6 +154,7 @@ export function InventoryListTable({
                       onInlineSave={onInlineSave}
                       onTabNavigation={handleTabNavigation}
                       storeId={storeId}
+                      compact={compact}
                     />
                   );
                 })}
