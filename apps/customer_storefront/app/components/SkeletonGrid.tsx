@@ -3,13 +3,12 @@
 export function SkeletonCard() {
   return (
     <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
-      <div className="aspect-square bg-gray-200 animate-pulse" />
-      <div className="p-3 sm:p-4 space-y-2">
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4" />
-        <div className="h-8 bg-gray-200 rounded animate-pulse w-1/3" />
+      <div className="h-36 sm:h-40 lg:h-44 bg-gray-200 animate-pulse" />
+      <div className="p-2.5 sm:p-3 space-y-1.5">
+        <div className="h-8 bg-gray-200 rounded animate-pulse" />
+        <div className="h-5 bg-gray-200 rounded animate-pulse w-1/3" />
         <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
-        <div className="h-3 bg-gray-200 rounded animate-pulse w-2/5" />
-        <div className="h-10 bg-gray-200 rounded-full animate-pulse mt-2" />
+        <div className="h-9 bg-gray-200 rounded-full animate-pulse mt-1" />
       </div>
     </div>
   );
@@ -18,11 +17,11 @@ export function SkeletonCard() {
 export function SkeletonCardCompact() {
   return (
     <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
-      <div className="aspect-square bg-gray-200 animate-pulse" />
-      <div className="p-3 sm:p-4 space-y-2">
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4" />
-        <div className="h-6 bg-gray-200 rounded animate-pulse w-1/3" />
-        <div className="h-8 bg-gray-200 rounded-full animate-pulse mt-2 w-3/4" />
+      <div className="h-36 sm:h-40 bg-gray-200 animate-pulse" />
+      <div className="p-2.5 sm:p-3 space-y-1.5">
+        <div className="h-5 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3" />
+        <div className="h-9 bg-gray-200 rounded-full animate-pulse mt-1 w-3/4" />
       </div>
     </div>
   );

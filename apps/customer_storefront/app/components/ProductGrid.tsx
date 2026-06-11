@@ -19,7 +19,7 @@ export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: Pro
 
   return (
     <div data-testid="product-grid" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
-      {products.map((product) => {
+      {products.map((product, index) => {
         let addBtnRef: HTMLButtonElement | null = null;
         return (
           <ProductCard
@@ -32,6 +32,7 @@ export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: Pro
             stock={product.stock}
             image_url={product.image_url}
             qtyInCart={getQtyInCart(product.id)}
+            priority={index < 6}
             onAdd={() => onAdd(product, addBtnRef)}
             onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
             onClick={() => onClick(product.id)}

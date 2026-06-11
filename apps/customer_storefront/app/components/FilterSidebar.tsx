@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { CATEGORY_LABELS } from '../lib/types';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 interface FilterSidebarProps {
   categories: { id: string; slug: string; name: string; emoji: string }[];
   activeFilters: {
-    priceRange?: [number, number];
     brands?: string[];
     availability?: string[];
     sort?: string;
@@ -16,14 +15,9 @@ interface FilterSidebarProps {
     q?: string;
   };
   onFilterChange: (filters: Record<string, string | undefined>) => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
-
-const priceRanges = [
-  { label: 'Under ৳100', min: 0, max: 100 },
-  { label: '৳100 – ৳500', min: 100, max: 500 },
-  { min: 500, max: 1000, label: '৳500 – ৳1000' },
-  { label: 'Over ৳1000', min: 1000, max: null },
-];
 
 const availabilityOptions = [
   { value: 'in_stock', label: 'In Stock' },
@@ -41,46 +35,39 @@ export function FilterSidebar({
   categories,
   activeFilters,
   onFilterChange,
+  mobileOpen = false,
+  onMobileClose,
 }: FilterSidebarProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const sheetRef = useRef<HTMLDivElement>(null);
   const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({
-    price: true,
     category: true,
     availability: true,
     sort: true,
   });
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const sheetRef = useRef<HTMLDivElement>(null);
 
   // Close mobile sheet on backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === sheetRef.current) {
-      setMobileOpen(false);
+      if (onMobileClose) onMobileClose();
     }
   };
 
   // Handle filter changes
-  const handlePriceChange = (range: { min: number; max: number | null }) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (range.min === 0 && range.max === null) {
-      params.delete('price');
-    } else {
-      params.set('price', `${range.min},${range.max || ''}`);
-    }
-    onFilterChange(Object.fromEntries(params));
-    router.push(`/category?${params.toString()}`, { scroll: false });
-  };
-
   const handleCategoryChange = (slug: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (slug) {
-      params.set('cat', slug);
-    } else {
-      params.delete('cat');
-    }
+    // remove category from query params
+    params.delete('cat');
     onFilterChange(Object.fromEntries(params));
-    router.push(`/category?${params.toString()}`, { scroll: false });
+    
+    const queryString = params.toString();
+    if (slug) {
+      router.push(queryString ? `/category/${slug}?${queryString}` : `/category/${slug}`, { scroll: false });
+    } else {
+      router.push(queryString ? `/category?${queryString}` : `/category`, { scroll: false });
+    }
   };
 
   const handleAvailabilityChange = (value: string) => {
@@ -95,7 +82,8 @@ export function FilterSidebar({
       params.delete('availability');
     }
     onFilterChange(Object.fromEntries(params));
-    router.push(`/category?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
   };
 
   const handleSortChange = (value: string) => {
@@ -106,11 +94,12 @@ export function FilterSidebar({
       params.set('sort', value);
     }
     onFilterChange(Object.fromEntries(params));
-    router.push(`/category?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
   };
 
   const handleClearAll = () => {
-    router.push('/category', { scroll: false });
+    router.push(pathname, { scroll: false });
   };
 
   const hasActiveFilters = Object.values(activeFilters).some(
@@ -221,20 +210,6 @@ export function FilterSidebar({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
-          <AccordionSection id="price" title="Price Range">
-            {priceRanges.map((range) => (
-              <RadioOption
-                key={range.label}
-                label={range.label}
-                checked={
-                  activeFilters.priceRange?.[0] === range.min &&
-                  activeFilters.priceRange?.[1] === range.max
-                }
-                onChange={() => handlePriceChange(range)}
-              />
-            ))}
-          </AccordionSection>
-
           <AccordionSection id="category" title="Category">
             {categories.map((cat) => (
               <FilterOption
@@ -274,7 +249,7 @@ export function FilterSidebar({
         {/* Apply button (sticky bottom) */}
         <div className="border-t border-[#f5f5f4] p-4">
           <button
-            onClick={() => setMobileOpen(false)}
+            onClick={() => onMobileClose?.()}
             className="w-full h-[50px] bg-[#FFF34D] text-[#5c5200] rounded-full font-bold text-base hover:bg-[#FBEF51] transition-colors press-feedback"
           >
             Show Results
@@ -300,20 +275,6 @@ export function FilterSidebar({
           )}
         </div>
         <div className="space-y-6">
-          <AccordionSection id="price" title="Price Range">
-            {priceRanges.map((range) => (
-              <RadioOption
-                key={range.label}
-                label={range.label}
-                checked={
-                  activeFilters.priceRange?.[0] === range.min &&
-                  activeFilters.priceRange?.[1] === range.max
-                }
-                onChange={() => handlePriceChange(range)}
-              />
-            ))}
-          </AccordionSection>
-
           <AccordionSection id="category" title="Category">
             {categories.map((cat) => (
               <FilterOption

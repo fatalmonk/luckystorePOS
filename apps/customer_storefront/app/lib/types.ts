@@ -21,7 +21,87 @@ export type Category =
   | 'household'
   | 'produce'
   | 'bakery'
-  | 'frozen';
+  | 'frozen'
+  | 'chips'
+  | 'biscuits-cookies'
+  | 'chocolates-candies'
+  | 'ice-cream'
+  | 'tea-coffee'
+  | 'cereals'
+  | 'oil'
+  | 'rice-grain'
+  | 'condiments'
+  | 'spices'
+  | 'eggs'
+  | 'personal-care'
+  | 'cleaning-supply'
+  | 'air-freshener'
+  | 'baby-care'
+  | 'electronics'
+  | 'baking-needs';
+
+export interface CategoryGroup {
+  slug: string;
+  label: string;
+  emoji: string;
+  subCategories: Category[];
+}
+
+/** Category groups — each group page aggregates multiple sub-categories into swimlanes */
+export const CATEGORY_GROUPS: CategoryGroup[] = [
+  {
+    slug: 'snacks',
+    label: 'Snacks',
+    emoji: '🍪',
+    subCategories: ['snacks', 'chips', 'biscuits-cookies', 'chocolates-candies', 'ice-cream', 'tea-coffee', 'beverages', 'cereals'],
+  },
+  {
+    slug: 'cooking-needs',
+    label: 'Cooking Needs',
+    emoji: '🍳',
+    subCategories: ['oil', 'rice-grain', 'condiments', 'spices'],
+  },
+  {
+    slug: 'dairy-eggs',
+    label: 'Dairy & Eggs',
+    emoji: '🥛',
+    subCategories: ['dairy', 'eggs'],
+  },
+  {
+    slug: 'personal-care',
+    label: 'Personal Care',
+    emoji: '🧴',
+    subCategories: ['personal-care', 'cleaning-supply', 'air-freshener'],
+  },
+  {
+    slug: 'baby-care',
+    label: 'Baby Care',
+    emoji: '🍼',
+    subCategories: ['baby-care'],
+  },
+  {
+    slug: 'electronics',
+    label: 'Electronics',
+    emoji: '🔌',
+    subCategories: ['electronics'],
+  },
+  {
+    slug: 'baking-needs',
+    label: 'Baking Needs',
+    emoji: '🧁',
+    subCategories: ['baking-needs'],
+  },
+];
+
+/** Check if a slug is a category group */
+export function getCategoryGroup(slug: string): CategoryGroup | undefined {
+  return CATEGORY_GROUPS.find((g) => g.slug === slug);
+}
+
+/** Check if a slug is a category group */
+export function isCategoryGroup(slug: string): boolean {
+  return CATEGORY_GROUPS.some((g) => g.slug === slug);
+}
 
 export interface CartItem extends Product {
   qty: number;
@@ -60,6 +140,23 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   produce: 'Fresh',
   bakery: 'Bakery',
   frozen: 'Frozen',
+  chips: 'Chips',
+  'biscuits-cookies': 'Biscuits & Cookies',
+  'chocolates-candies': 'Chocolates & Candies',
+  'ice-cream': 'Ice Cream',
+  'tea-coffee': 'Tea & Coffee',
+  cereals: 'Cereals',
+  oil: 'Oil',
+  'rice-grain': 'Rice & Grain',
+  condiments: 'Condiments',
+  spices: 'Spices',
+  eggs: 'Eggs',
+  'personal-care': 'Personal Care',
+  'cleaning-supply': 'Cleaning Supply',
+  'air-freshener': 'Air Freshener',
+  'baby-care': 'Baby Care',
+  electronics: 'Electronics',
+  'baking-needs': 'Baking Needs',
 };
 
 export const CATEGORY_EMOJIS: Record<Category, string> = {
@@ -71,4 +168,21 @@ export const CATEGORY_EMOJIS: Record<Category, string> = {
   produce: '🥬',
   bakery: '🍞',
   frozen: '🧊',
+  chips: '🥔',
+  'biscuits-cookies': '🍘',
+  'chocolates-candies': '🍫',
+  'ice-cream': '🍦',
+  'tea-coffee': '☕',
+  cereals: '🥣',
+  oil: '🫒',
+  'rice-grain': '🌾',
+  condiments: '🥫',
+  spices: '🌶️',
+  eggs: '🥚',
+  'personal-care': '🧴',
+  'cleaning-supply': '🧽',
+  'air-freshener': '🌸',
+  'baby-care': '🍼',
+  electronics: '🔌',
+  'baking-needs': '🧁',
 };
