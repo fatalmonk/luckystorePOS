@@ -77,11 +77,7 @@ export function CategoryGrid({ categories, active, sticky = false }: CategoryGri
               <button
                 key={cat.id}
                 onClick={() => {
-<<<<<<< HEAD
-                  router.push(`/category?cat=${cat.slug}`);
-=======
                   router.push(`/category/${cat.slug}`);
->>>>>>> feat/delivery-orders-realtime
                   setDepartmentsOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-[#44403c] hover:bg-[#f5f5f4] transition-colors"
