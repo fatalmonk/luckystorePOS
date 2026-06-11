@@ -214,7 +214,7 @@ export function InventoryListTableRow({
         )}
       </td>
 
-      <!-- Selling - Price + MRP -->
+      {/* Selling - Price + MRP */}
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {showSmartPricing ? (
           <SmartPricingEditor
@@ -249,7 +249,7 @@ export function InventoryListTableRow({
         )}
       </td>
 
-      <!-- Profit - Condensed View -->
+      {/* Profit - Condensed View */}
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {item.cost && item.price ? (
           <div className="flex flex-col items-end">
