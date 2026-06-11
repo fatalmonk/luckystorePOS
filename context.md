@@ -1,7 +1,7 @@
 Lucky Store
-Stack: React, Next.js 14 (App Router), Supabase, Tailwind, TypeScript
-Current: Storefront UI enhancement plan complete — all 11 tasks done
-Done: Header redesign (68px sticky yellow bg, location pill, dominant search, account+cart), CategoryGrid (Departments dropdown, thematic pills, sticky), FilterSidebar (desktop accordion + mobile bottom sheet), ProductCard (price-first, badges, per-unit pricing, star rating, fulfillment), Skeleton components (card, carousel, grid, hero), Shallow routing (URL-based filters), PromoGrid (asymmetric large+stacked), SocialCarousel (portrait creator cards), Mobile enhancements (44px touch targets, bottom sheet toggle), Performance (lazy images, debounce utils), Homepage integration (Hero→Categories→Promo→Carousel→Social)
+Stack: React, Next.js 14 (App Router), Supabase, Tailwind, TypeScript, Flutter
+Current: Delivery Orders real-time notifications and management setup completed
+Done: Header redesign, CategoryGrid, FilterSidebar, ProductCard, Skeleton components, Shallow routing, PromoGrid, SocialCarousel, Mobile enhancements, Performance, Homepage integration, Category page infinite loop fix, Delivery Orders real-time notifications & widgets
 Blocker: none
 Next: Phase 3 (Warm Night dark mode) or deploy
-ctx: storefront redesign | done: 11/11 | next: dark mode or deploy
+ctx: delivery orders realtime | done: 13/13 | next: dark mode or deploy

@@ -40,11 +40,11 @@ export function CategoryGrid({ categories, active, sticky = false }: CategoryGri
     <button
       onClick={() => {
         if (slug === 'all') {
-          router.push(sticky ? '/category' : '/category?cat=all');
+          router.push('/category');
         } else if (slug === 'deals' || slug === 'new' || slug === 'bestsellers') {
           router.push(`/category?theme=${slug}`);
         } else {
-          router.push(`/category?cat=${slug}`);
+          router.push(`/category/${slug}`);
         }
       }}
       className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 press-feedback ${
@@ -77,7 +77,7 @@ export function CategoryGrid({ categories, active, sticky = false }: CategoryGri
               <button
                 key={cat.id}
                 onClick={() => {
-                  router.push(`/category?cat=${cat.slug}`);
+                  router.push(`/category/${cat.slug}`);
                   setDepartmentsOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-[#44403c] hover:bg-[#f5f5f4] transition-colors"
