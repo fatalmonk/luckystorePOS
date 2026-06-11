@@ -26,7 +26,7 @@ export function Button({
   `;
 
   const variantStyles = {
-    primary: 'bg-[#dc5f3b] text-white hover:bg-[#c4542e]',
+    primary: 'bg-[#FFF34D] text-[#5c5200] hover:bg-[#FBEF51]',
     secondary: 'bg-[#faf8f5] text-[#1c1917] border border-[#e7e5e4] hover:bg-[#f5f5f4]',
     ghost: 'bg-transparent text-[#1c1917] hover:bg-[#faf8f5]',
   };

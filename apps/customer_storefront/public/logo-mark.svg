@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lucky Store — Mark Only (Icon / App Icon / Favicon) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <solidColor id="terracotta" solid-color="#C75B3A"/>
+    <solidColor id="leaf" solid-color="#7CB342"/>
+    <solidColor id="leaf-light" solid-color="#9CCC65"/>
+  </defs>
+
+  <!-- Background circle for icon visibility -->
+  <circle cx="200" cy="200" r="190" fill="#FAF0E6"/>
+
+  <!-- Leaf -->
+  <g id="leaf">
+    <path d="M 200 145
+             C 200 120, 205 100, 215 85" 
+          stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
+    
+    <path d="M 215 85
+             C 195 70, 195 45, 215 30
+             C 255 40, 275 70, 255 95
+             C 245 105, 225 100, 215 85
+             Z" 
+          fill="#7CB342"/>
+    
+    <path d="M 215 85
+             C 225 75, 235 60, 245 50" 
+          stroke="#9CCC65" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Bag -->
+  <g id="bag">
+    <path d="M 120 160
+             L 280 160
+             L 310 340
+             L 90 340
+             Z" 
+          fill="#C75B3A"/>
+
+    <path d="M 155 160
+             C 155 110, 170 95, 200 95
+             C 230 95, 245 110, 245 160" 
+          stroke="#C75B3A" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+    <circle cx="155" cy="160" r="6" fill="#8B3A22"/>
+    <circle cx="245" cy="160" r="6" fill="#8B3A22"/>
+  </g>
+
+  <!-- Serif L -->
+  <g id="letter-l" fill="#FFFFFF">
+    <path d="M 175 195
+             L 195 195
+             L 195 295
+             L 235 295
+             L 235 315
+             L 175 315
+             Z" />
+    
+    <path d="M 165 175
+             L 205 175
+             L 205 195
+             L 165 195
+             Z" />
+  </g>
+</svg>

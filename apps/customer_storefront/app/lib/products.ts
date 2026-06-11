@@ -21,24 +21,29 @@ export async function fetchProducts(q?: string, categoryId?: string): Promise<Pr
     items = items.filter((item: any) => item.category_id === categoryId || item.category === categoryId);
   }
 
-  return items.map((item: any) => ({
-    id: item.id ?? item.item_id,
-    name: item.name,
-    emoji: CATEGORY_EMOJIS[item.category as Category] ?? '📦',
-    price: Number(item.price),
-    unit: 'pc',
-    category: item.category as Category,
-    stock: Number(item.stock ?? item.qty_on_hand ?? 0),
-    description: item.description ?? '',
-    image_url: item.image_url,
-  }));
+  return items.map((item: any) => {
+    const price = Number(item.price);
+    const originalPrice = Number(item.mrp || item.price);
+    return {
+      id: item.id ?? item.item_id,
+      name: item.name,
+      emoji: CATEGORY_EMOJIS[item.category as Category] ?? '📦',
+      price,
+      originalPrice: originalPrice > price ? originalPrice : undefined,
+      badge: originalPrice > price ? 'On Sale' : undefined,
+      unit: 'pc',
+      category: item.category as Category,
+      stock: Number(item.stock ?? item.qty_on_hand ?? 0),
+      description: item.description ?? '',
+      image_url: item.image_url,
+    };
+  });
 }
 
 export async function fetchCategories(): Promise<{ id: string; slug: Category; name: string; emoji: string }[]> {
   const { data, error } = await supabase
     .from('categories')
     .select('id, slug, category, emoji')
-    .eq('store_id', STORE_ID)
     .eq('active', true)
     .order('display_order');
 

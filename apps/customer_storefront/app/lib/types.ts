@@ -3,6 +3,8 @@ export interface Product {
   name: string;
   emoji: string;
   price: number;
+  originalPrice?: number;
+  badge?: string;
   unit: string;
   category: Category;
   stock: number;

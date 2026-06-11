@@ -1,30 +1,7 @@
-# Lucky Store POS
-
-## Stack
-React, Flutter, Supabase, Tailwind, TypeScript
-
-## Current
-**Inventory Card Refactor + Parallel Stock Lookups (Main Branch)**
-- InventoryProductCard: complete rewrite, removed image upload/edit panel, inline stock/price editing, compact layout, lucide Package icon, aspect-square image
-- InventoryListPage: virtualizer estimateSize 320→340
-- usePosSale: parallel stock lookups via Promise.all
-- Committed and pushed to main (e820bdd)
-
-## Previous
-**Production Stability Fixes**
-- Fixed `set_stock` RPC reason, Vercel PWA assets, SW caching, Manifest
-- Inventory inline editing: RLS, PGRST204, `get_low_stock_items` RPC fixes
-
-## Done
-- Inventory card visibility fix (a0c1f97)
-- PR #182 merged, PWA bugs fixed, inline edit errors resolved
-
-## Next
-- Verify Vercel deployment with card fix
-- Check production inventory grid renders correctly
-
-## Blocker
-None
-
----
-ctx: Card refactor + parallel lookups pushed | done: 6 | next: verify prod deployment
+Lucky Store
+Stack: React, Next.js 14 (App Router), Supabase, Tailwind, TypeScript
+Current: Storefront UI enhancement plan complete — all 11 tasks done
+Done: Header redesign (68px sticky yellow bg, location pill, dominant search, account+cart), CategoryGrid (Departments dropdown, thematic pills, sticky), FilterSidebar (desktop accordion + mobile bottom sheet), ProductCard (price-first, badges, per-unit pricing, star rating, fulfillment), Skeleton components (card, carousel, grid, hero), Shallow routing (URL-based filters), PromoGrid (asymmetric large+stacked), SocialCarousel (portrait creator cards), Mobile enhancements (44px touch targets, bottom sheet toggle), Performance (lazy images, debounce utils), Homepage integration (Hero→Categories→Promo→Carousel→Social)
+Blocker: none
+Next: Phase 3 (Warm Night dark mode) or deploy
+ctx: storefront redesign | done: 11/11 | next: dark mode or deploy

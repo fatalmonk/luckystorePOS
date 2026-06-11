@@ -1,23 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { ToastProvider, useToast } from './components/Toast';
 import { CartProvider, useCartContext } from './components/CartProvider';
-import { ProductGrid } from './components/ProductGrid';
+import { ProductCarousel } from './components/ProductCarousel';
 import { CategoryGrid } from './components/CategoryGrid';
+import { HeroBanner } from './components/HeroBanner';
+import { CartSheet } from './components/CartSheet';
+import { CartFlyAnimation } from './components/CartFlyAnimation';
+import { PromoGrid, PromoGridSkeleton } from './components/PromoGrid';
+import { SocialCarousel, SocialCarouselSkeleton } from './components/SocialCarousel';
+import { SkeletonCarousel, SkeletonHeader, SkeletonHero } from './components/SkeletonGrid';
 import { fetchProducts, fetchCategories } from './lib/products';
 import type { Product } from './lib/types';
+
+interface FlyItem {
+  id: string;
+  emoji: string;
+  startX: number;
+  startY: number;
+}
 
 function HomeContent() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { cart, addToCart, updateQty, totalItems } = useCartContext();
+  const { cart, addToCart, updateQty, totalItems, total } = useCartContext();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{ id: string; slug: string; name: string; emoji: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cartSheetOpen, setCartSheetOpen] = useState(false);
+  const [flyItems, setFlyItems] = useState<FlyItem[]>([]);
 
   useEffect(() => {
     Promise.all([fetchProducts(), fetchCategories()])
@@ -32,54 +47,90 @@ function HomeContent() {
       });
   }, []);
 
-  const getQtyInCart = (productId: string) => {
-    const item = cart.find((c) => c.id === productId);
-    return item?.qty || 0;
-  };
+  const handleAddToCart = useCallback((product: Product, buttonEl?: HTMLButtonElement | null) => {
+    addToCart(product);
+    showToast(`Added ${product.name}`);
+
+    if (buttonEl) {
+      const rect = buttonEl.getBoundingClientRect();
+      setFlyItems((prev) => [
+        ...prev,
+        {
+          id: `${product.id}-${Date.now()}`,
+          emoji: product.emoji,
+          startX: rect.left + rect.width / 2,
+          startY: rect.top + rect.height / 2,
+        },
+      ]);
+    }
+  }, [addToCart, showToast]);
+
+  const handleFlyComplete = useCallback((id: string) => {
+    setFlyItems((prev) => prev.filter((item) => item.id !== id));
+  }, []);
 
   return (
     <>
-      <Header cartCount={totalItems} />
+      <Header
+        cartCount={totalItems}
+        onCartClick={() => setCartSheetOpen(true)}
+      />
       <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="p-4 sm:p-6 lg:p-8 xl:p-10">
-          {/* Promo Banner */}
-          <section className="relative bg-gradient-to-br from-[#dc5f3b] to-[#b94a28] text-white rounded-[14px] p-5 sm:p-6 lg:p-8 mb-6 lg:mb-8 overflow-hidden">
-            <div className="absolute -top-5 -right-5 w-[100px] h-[100px] bg-white/5 rounded-full" />
-            <div className="relative max-w-3xl">
-              <p className="text-[11px] sm:text-xs font-bold uppercase tracking-widest opacity-85 mb-2">Week 1 Launch</p>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold mb-2 leading-tight">Free Delivery on orders ৳500+</h2>
-              <p className="text-sm sm:text-base opacity-92">Cash on delivery. No app download needed.</p>
-            </div>
-          </section>
+        <div className="p-4 sm:p-6 lg:p-8 xl:px-10">
+          {/* Hero Banner */}
+          {loading ? (
+            <SkeletonHero />
+          ) : (
+            <HeroBanner
+              title="Free Delivery on orders ৳500+"
+              subtitle="Cash on delivery. No app download needed."
+              badge="Week 1 Launch"
+              bgGradient="from-[#FFF34D] to-[#C4C087]"
+            />
+          )}
 
+          {/* Secondary Navigation - CategoryGrid */}
           <CategoryGrid categories={categories} />
 
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight">Popular Now</h2>
-            </div>
+          {/* Promo Grid (Asymmetric) */}
+          {loading ? (
+            <PromoGridSkeleton />
+          ) : (
+            <PromoGrid />
+          )}
+
+          {/* Popular Now Carousel */}
+          <section className="mb-8">
+            <h2 className="text-lg font-bold mb-3">Popular Now</h2>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-[#e7e5e4] rounded-[14px] h-64 animate-pulse" />
-                ))}
-              </div>
+              <SkeletonCarousel count={4} />
             ) : (
-              <ProductGrid
+              <ProductCarousel
+                title="Popular Now"
                 products={products.slice(0, 12)}
                 cart={cart}
-                onAdd={(product) => {
-                  addToCart(product);
-                  showToast(`Added ${product.name}`);
-                }}
+                onAdd={handleAddToCart}
                 onUpdateQty={(id, delta) => updateQty(id, delta)}
                 onClick={(id) => router.push(`/product/${id}`)}
               />
             )}
           </section>
+
+          {/* Social Commerce Carousel */}
+          {loading ? (
+            <SocialCarouselSkeleton count={5} />
+          ) : (
+            <SocialCarousel />
+          )}
         </div>
       </main>
-      <BottomNav cartCount={totalItems} />
+      <BottomNav
+        cartCount={totalItems}
+        cartTotal={total}
+        onCartPillClick={() => setCartSheetOpen(true)}
+      />
+      <CartSheet open={cartSheetOpen} onClose={() => setCartSheetOpen(false)} />
+      <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
     </>
   );
 }

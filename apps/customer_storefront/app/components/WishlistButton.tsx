@@ -70,12 +70,12 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+880 1XXXXXXXXX (optional)"
-          className="flex-1 h-10 px-3 bg-white border border-[#e7e5e4] rounded-md text-sm text-[#1c1917] focus:outline-none focus:border-[#dc5f3b]"
+          className="flex-1 h-10 px-3 bg-white border border-[#e7e5e4] rounded-md text-sm text-[#1c1917] focus:outline-none focus:border-[#FFF34D]"
         />
         <button
           onClick={handleNotify}
           disabled={false}
-          className="px-4 bg-[#dc5f3b] text-white rounded-md text-sm font-semibold hover:bg-[#c4542e] disabled:opacity-50"
+          className="px-4 bg-[#FFF34D] text-[#5c5200] rounded-md text-sm font-semibold hover:bg-[#FBEF51] disabled:opacity-50"
         >
           Save
         </button>
@@ -94,7 +94,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
   return (
     <button
       onClick={() => setStatus('phone')}
-      className="w-full h-10 bg-white border border-[#e7e5e4] rounded-md text-[#1c1917] text-sm font-semibold hover:border-[#dc5f3b] transition-colors"
+      className="w-full h-10 bg-white border border-[#e7e5e4] rounded-md text-[#1c1917] text-sm font-semibold hover:border-[#FFF34D] transition-colors"
     >
       Notify when available
     </button>
