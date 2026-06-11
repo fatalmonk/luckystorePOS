@@ -23,9 +23,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/customer_storefront
     
     steps:
       - name: Checkout
@@ -42,6 +39,7 @@ jobs:
         run: npm install --global vercel@latest
       
       - name: Install dependencies
+        working-directory: apps/customer_storefront
         run: npm ci --legacy-peer-deps
       
       - name: Pull Vercel Environment
@@ -52,7 +50,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
       - name: Build
-        run: vercel build --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
+        run: vercel build --cwd=./apps/customer_storefront --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
@@ -62,7 +60,7 @@ jobs:
       
       - name: Deploy to Preview
         if: github.event_name == 'pull_request'
-        run: vercel deploy --prebuilt
+        run: vercel deploy --prebuilt --cwd=./apps/customer_storefront
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
@@ -70,7 +68,7 @@ jobs:
       
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: vercel deploy --prebuilt --prod
+        run: vercel deploy --prebuilt --prod --cwd=./apps/customer_storefront
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
