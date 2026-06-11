@@ -1,0 +1,77 @@
+# Deploy Customer Storefront to Vercel
+# This workflow deploys apps/customer_storefront to the separate Vercel project
+
+name: Deploy Storefront
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/customer_storefront/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/deploy-storefront.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/customer_storefront/**'
+      - 'supabase/migrations/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/customer_storefront
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/customer_storefront/package-lock.json
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=preview
+        env:
+          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
+          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Build
+        run: vercel build
+        env:
+          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
+          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      
+      - name: Deploy to Preview
+        if: github.event_name == 'pull_request'
+        run: vercel deploy --prebuilt
+        env:
+          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
+          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: vercel deploy --prebuilt --prod
+        env:
+          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
+          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
