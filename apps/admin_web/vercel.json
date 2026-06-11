@@ -1,8 +1,5 @@
 {
   "framework": "vite",
-  "buildCommand": "cd apps/admin_web && npm install && npm run build",
-  "outputDirectory": "apps/admin_web/dist",
-  "installCommand": "cd apps/admin_web && npm install",
   "headers": [
     {
       "source": "/(.*)",
