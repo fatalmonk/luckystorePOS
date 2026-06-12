@@ -65,11 +65,11 @@
 
 | Element | Light BG | Dark BG |
 |---------|----------|---------|
-| Bag | `#dc5f3b` | `#ffffff` |
-| L letter | `#ffffff` | `#dc5f3b` |
-| Leaf | `#7CB342` | `#AED581` |
-| Wordmark | `#1c1917` | `#faf8f5` |
-| Tagline | `#78716c` | `#a8a29e` |
+| Bag | `#E8B84B` | `#FFFFFF` |
+| L letter | `#FFFFFF` | `#E8B84B` |
+| Leaf | `#15803D` | `#22C55E` |
+| Wordmark | `#0F172A` | `#F8FAFC` |
+| Tagline | `#475569` | `#94A3B8` |
 
 ### ❌ Never Do
 - Stretch, rotate, or warp the logo
@@ -106,8 +106,8 @@
 **Specs:**
 - Canvas: `1080×1350px` (4:5) or `1080×1080px` (1:1)
 - Photo area: Top 65%
-- Gradient overlay bottom: `#1c1917` → transparent
-- Price CTA: Terracotta `#dc5f3b` pill
+- Gradient overlay bottom: `#0F172A` → transparent
+- Price CTA: Gold `#E8B84B` pill
 - Font: Inter Bold (English), Hind Siliguri Bold (Bangla)
 
 ### Instagram Story (9:16)
@@ -122,7 +122,7 @@
 │   photo]       │
 │                │
 │  ┌──────────┐  │
-│  │ Swipe Up │  │  ← Terracotta pill, bottom
+│  │ Swipe Up │  │  ← Gold pill, bottom
 │  │ to Order │  │
 │  └──────────┘  │
 └────────────────┘
@@ -132,14 +132,14 @@
 - Canvas: `1080×1920px`
 - Full-bleed photo
 - Stickers: Inter Bold, white with `rgba(0,0,0,0.5)` backdrop
-- "Swipe Up" pill: `#dc5f3b`, rounded `9999px`
+- "Swipe Up" pill: `#E8B84B`, rounded `9999px`
 
 ### Facebook Cover (16:9)
 
 - Canvas: `820×312px`
 - Left third: Logo + tagline
 - Right two-thirds: Seasonal hero photo
-- Overlay gradient left-to-right: opaque `#faf8f5` → transparent
+- Overlay gradient left-to-right: opaque `#F8FAFC` → transparent
 - Update seasonally per campaign calendar
 
 ### WhatsApp Status (9:16)
@@ -224,18 +224,23 @@ Add these to your swatches:
 
 | Name | Hex | Usage |
 |------|-----|-------|
-| Terracotta | `#dc5f3b` | CTAs, logo bag, active states |
-| Terracotta Dark | `#c4542e` | Hover, pressed |
-| Ivory | `#faf8f5` | Backgrounds, cards |
-| White | `#ffffff` | Surfaces, inverse logo |
-| Charcoal | `#1c1917` | Headlines, body text |
-| Muted Grey | `#78716c` | Captions, meta text |
-| Light Grey | `#a8a29e` | Disabled, placeholders |
-| Border | `#e7e5e4` | Dividers, card outlines |
-| Success Green | `#2d6a4f` | In stock, confirmed |
-| Warning Orange | `#b45309` | Low stock, limited |
-| Danger Red | `#c3312f` | Sold out, cancelled |
-| Leaf Green | `#7CB342` | Logo leaf, fresh accents |
+| Gold | `#E8B84B` | CTAs, logo accent, active states |
+| Gold Dark | `#D4941A` | Hover, pressed |
+| Gold Deeper | `#B0781A` | Active/pressed |
+| Gold Subtle | `#FEF3C7` | Backgrounds, badges |
+| Gold On | `#1E293B` | Text on gold |
+| Slate 50 | `#F8FAFC` | Backgrounds |
+| Slate 100 | `#F1F5F9` | Subtle backgrounds |
+| White | `#FFFFFF` | Surfaces |
+| Slate 950 | `#0F172A` | Headlines, body text |
+| Slate 600 | `#475569` | Captions, meta text |
+| Slate 400 | `#94A3B8` | Disabled, placeholders |
+| Slate 200 | `#E2E8F0` | Dividers, card outlines |
+| Teal | `#0D9488` | Secondary actions |
+| Success Green | `#22C55E` | In stock, confirmed |
+| Warning Amber | `#FBBF24` | Low stock, limited |
+| Danger Red | `#EF4444` | Sold out, cancelled |
+| Leaf Green | `#15803D` | Logo leaf, fresh accents |
 
 ---
 

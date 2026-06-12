@@ -1,0 +1,1440 @@
+<!doctype html>
+<html lang="en"><head><script data-od-sandbox-shim="">(function(){
+  function makeStore(){
+    var data = {};
+    var api = {
+      getItem: function(k){ return Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null; },
+      setItem: function(k, v){ data[k] = String(v); },
+      removeItem: function(k){ delete data[k]; },
+      clear: function(){ data = {}; },
+      key: function(i){ return Object.keys(data)[i] || null; }
+    };
+    Object.defineProperty(api, 'length', { get: function(){ return Object.keys(data).length; } });
+    return api;
+  }
+  function tryShim(name){
+    var works = false;
+    try { works = !!window[name] && typeof window[name].getItem === 'function'; void window[name].length; }
+    catch (_) { works = false; }
+    if (works) return;
+    try { Object.defineProperty(window, name, { configurable: true, value: makeStore() }); }
+    catch (_) { try { window[name] = makeStore(); } catch (___) {} }
+  }
+  tryShim('localStorage');
+  tryShim('sessionStorage');
+  document.addEventListener('click', (e) => {
+    if (!e.target || !(e.target instanceof Element)) return;
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (href === null) return;
+    var isAnchor = href.startsWith('#') || href === '';
+    if (isAnchor) {
+      e.preventDefault();
+      if (href === '' || href === '#') {
+        window.scrollTo({ top: 0 });
+        history.replaceState(null, '', ' ');
+      } else {
+        var targetId = href.slice(1);
+        var target = targetId ? document.getElementById(targetId) : null;
+        if (target) {
+          target.scrollIntoView();
+          location.hash === href && history.replaceState(null, '', ' ');
+          location.hash = href;
+        }
+      }
+    } else if (link.getAttribute('target') === '_blank') {
+      e.preventDefault();
+      let safe = false;
+      try {
+        var url = new URL(href, location.href);
+        safe =
+          url.protocol === 'http:' ||
+          url.protocol === 'https:' ||
+          url.protocol === 'mailto:';
+      } catch (_) {}
+      safe && window.open(href, '_blank', 'noopener,noreferrer');
+    }
+  });
+})();</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lucky Store POS Design System v2 — Operational Design Language for Retail</title>
+  <style>
+    :root {
+      /* ===== COLOR TOKENS (Light) ===== */
+      --color-paper: #faf8f5;
+      --color-surface: #ffffff;
+      --color-surface-hover: #f5f3f0;
+      --color-foreground: #1c1917;
+      --color-muted: #78716c;
+      --color-dim: #a8a29e;
+      --color-border: #e7e5e4;
+      --color-border-strong: #d6d3d1;
+      --color-border-light: #f5f5f4;
+      --color-accent: #bf4e2d;
+      --color-accent-hover: #aa4527;
+      --color-accent-ghost: rgba(191,78,45,0.08);
+      --color-accent-strong: rgba(191,78,45,0.12);
+      --color-success: #1e5c3a;
+      --color-success-bg: rgba(30,92,58,0.08);
+      --color-success-strong: rgba(30,92,58,0.12);
+      --color-warning: #8c4200;
+      --color-warning-bg: rgba(140,66,0,0.08);
+      --color-warning-strong: rgba(140,66,0,0.12);
+      --color-danger: #a32624;
+      --color-danger-bg: rgba(163,38,36,0.07);
+      --color-danger-strong: rgba(163,38,36,0.12);
+
+      /* Payment method colors */
+      --color-cash: #2b7a3b;
+      --color-bkash: #e61e2a;
+      --color-nagad: #d92b7f;
+      --color-card: #1a3c6e;
+
+      /* ===== DARK MODE TOKENS ===== */
+      --color-paper-dark: #1f1a17;
+      --color-surface-dark: #2a2420;
+      --color-surface-hover-dark: #332c27;
+      --color-foreground-dark: #faf8f5;
+      --color-muted-dark: #b8b0a8;
+      --color-dim-dark: #8a837b;
+      --color-border-dark: #3d3630;
+      --color-border-strong-dark: #4a423b;
+      --color-border-light-dark: #2a2420;
+      --color-accent-dark: #e07a5d;
+      --color-accent-hover-dark: #e89075;
+      --color-accent-ghost-dark: rgba(224,122,93,0.12);
+      --color-success-dark: #5ec98a;
+      --color-success-bg-dark: rgba(94,201,138,0.12);
+      --color-warning-dark: #f5b84e;
+      --color-warning-bg-dark: rgba(245,184,78,0.12);
+      --color-danger-dark: #f47c7a;
+      --color-danger-bg-dark: rgba(244,124,122,0.10);
+
+      /* ===== TYPOGRAPHY ===== */
+      --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-bengali: 'Hind Siliguri', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --text-h1: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
+      --text-h2: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
+      --text-h3: clamp(1.125rem, 1.5vw + 0.4rem, 1.5rem);
+      --text-body: clamp(0.875rem, 0.5vw + 0.5rem, 1rem);
+      --text-small: clamp(0.8125rem, 0.3vw + 0.5rem, 0.9375rem);
+      --text-xs: clamp(0.75rem, 0.2vw + 0.5rem, 0.8125rem);
+      --text-xxs: 0.6875rem;
+
+      /* ===== SPACING (4px base) ===== */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+
+      /* ===== RADIUS ===== */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-pill: 999px;
+
+      /* ===== SHADOWS ===== */
+      --shadow-sm: 0 1px 2px rgba(28,25,23,0.05), 0 1px 3px rgba(28,25,23,0.04);
+      --shadow-md: 0 4px 8px rgba(28,25,23,0.06), 0 2px 4px rgba(28,25,23,0.04);
+      --shadow-lg: 0 12px 24px rgba(28,25,23,0.08), 0 4px 8px rgba(28,25,23,0.05);
+      --shadow-xl: 0 20px 40px rgba(28,25,23,0.10), 0 8px 16px rgba(28,25,23,0.06);
+
+      /* ===== MOTION ===== */
+      --duration-instant: 80ms;
+      --duration-fast: 150ms;
+      --duration-standard: 200ms;
+      --duration-slow: 300ms;
+      --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+      --active-scale: 0.97;
+      --hover-lift: -1px;
+
+      /* ===== LAYOUT ===== */
+      --header-height: 56px;
+      --bottom-nav-height: 64px;
+      --sidebar-width: 260px;
+      --sidebar-collapsed: 64px;
+      --container-max: 1440px;
+      --container-padding-mobile: 16px;
+      --container-padding-tablet: 24px;
+      --container-padding-desktop: 32px;
+
+      /* ===== Z-INDEX ===== */
+      --z-dropdown: 100;
+      --z-sticky: 200;
+      --z-modal: 300;
+      --z-toast: 400;
+      --z-tooltip: 500;
+    }
+
+    /* ===== DARK MODE ===== */
+    [data-theme="dark"] {
+      --color-paper: var(--color-paper-dark);
+      --color-surface: var(--color-surface-dark);
+      --color-surface-hover: var(--color-surface-hover-dark);
+      --color-foreground: var(--color-foreground-dark);
+      --color-muted: var(--color-muted-dark);
+      --color-dim: var(--color-dim-dark);
+      --color-border: var(--color-border-dark);
+      --color-border-strong: var(--color-border-strong-dark);
+      --color-border-light: var(--color-border-light-dark);
+      --color-accent: var(--color-accent-dark);
+      --color-accent-hover: var(--color-accent-hover-dark);
+      --color-accent-ghost: var(--color-accent-ghost-dark);
+      --color-success: var(--color-success-dark);
+      --color-success-bg: var(--color-success-bg-dark);
+      --color-warning: var(--color-warning-dark);
+      --color-warning-bg: var(--color-warning-bg-dark);
+      --color-danger: var(--color-danger-dark);
+      --color-danger-bg: var(--color-danger-bg-dark);
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
+    @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
+
+    html{font-size:16px;-webkit-text-size-adjust:100%}
+    body{
+      margin:0;
+      background:var(--color-paper);
+      color:var(--color-foreground);
+      font-family:var(--font-body);
+      line-height:1.6;
+      font-size:var(--text-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+    }
+
+    .wrap{max-width:var(--container-max);margin:0 auto;padding:var(--space-10) var(--container-padding-desktop) var(--space-16)}
+    @media (max-width:768px){.wrap{padding:var(--space-6) var(--container-padding-mobile) var(--space-10)}}
+
+    .badge{
+      display:inline-block;
+      font-family:var(--font-mono);
+      font-size:var(--text-xxs);
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      padding:var(--space-1) var(--space-3);
+      border-radius:var(--radius-pill);
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      color:var(--color-muted);
+      margin-bottom:var(--space-4);
+      font-weight:600;
+    }
+
+    h1{
+      font-family:var(--font-display);
+      font-size:var(--text-h1);
+      line-height:1.1;
+      letter-spacing:-0.02em;
+      margin:0 0 var(--space-2);
+      font-weight:700;
+    }
+    .subtitle{
+      font-size:var(--text-body);
+      color:var(--color-muted);
+      margin:0 0 var(--space-8);
+      max-width:60ch;
+      line-height:1.7;
+    }
+    .kicker{
+      font-family:var(--font-mono);
+      font-size:var(--text-small);
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      color:var(--color-accent);
+      font-weight:600;
+      margin:var(--space-8) 0 var(--space-3);
+      display:block;
+    }
+
+    .section-title{
+      font-family:var(--font-display);
+      font-size:var(--text-h2);
+      font-weight:600;
+      margin:0 0 var(--space-2);
+      letter-spacing:-0.01em;
+    }
+    .section-desc{
+      color:var(--color-muted);
+      margin:0 0 var(--space-6);
+      max-width:55ch;
+    }
+
+    /* ===== PALETTE ===== */
+    .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--space-4)}
+    .swatch{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface);transition:transform var(--duration-fast) var(--easing-standard),box-shadow var(--duration-fast) var(--easing-standard)}
+    .swatch:hover{transform:translateY(var(--hover-lift));box-shadow:var(--shadow-md)}
+    .swatch .chip{height:80px}
+    .swatch .meta{padding:var(--space-3);display:flex;flex-direction:column;gap:2px}
+    .swatch .name{font-size:var(--text-small);font-weight:600;color:var(--color-foreground)}
+    .swatch .hex{font-family:var(--font-mono);font-size:var(--text-xxs);color:var(--color-muted);letter-spacing:0.02em}
+
+    /* ===== TYPOGRAPHY TABLE ===== */
+    .typo-table{width:100%;border-collapse:collapse;font-size:var(--text-small)}
+    .typo-table th,.typo-table td{padding:var(--space-3) var(--space-4);text-align:left;vertical-align:top;border-bottom:1px solid var(--color-border-light)}
+    .typo-table th{background:var(--color-paper);font-weight:600;font-size:var(--text-xxs);letter-spacing:0.06em;text-transform:uppercase;color:var(--color-muted)}
+    .typo-table tr:last-child td{border-bottom:none}
+    .typo-table code{font-family:var(--font-mono);background:var(--color-surface);border:1px solid var(--color-border);padding:2px 6px;border-radius:4px;font-size:0.9em}
+    .typo-sample{font-family:var(--font-display);font-weight:600}
+    .typo-sample.body{font-family:var(--font-body);font-weight:400}
+    .typo-sample.bengali{font-family:var(--font-bengali)}
+    .typo-sample.mono{font-family:var(--font-mono)}
+    .typo-sample.price{font-weight:700;letter-spacing:-0.02em;color:var(--color-accent)}
+
+    /* ===== COMPONENT GRID ===== */
+    .components{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--space-5)}
+    @media (max-width:640px){.components{grid-template-columns:1fr}}
+    .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);transition:box-shadow var(--duration-fast) var(--easing-standard),border-color var(--duration-fast) var(--easing-standard)}
+    .card:hover{box-shadow:var(--shadow-md);border-color:var(--color-border-strong)}
+    .card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-4);gap:var(--space-3)}
+    .card .eyebrow{font-family:var(--font-mono);font-size:var(--text-xxs);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-accent);font-weight:600;white-space:nowrap;flex-shrink:0;padding-top:2px}
+    .card h3{font-family:var(--font-display);font-size:var(--text-h3);margin:0;letter-spacing:-0.01em;font-weight:600;color:var(--color-foreground)}
+    .card p{margin:0;color:var(--color-muted);font-size:var(--text-small);line-height:1.6}
+    .btn-row{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;margin-top:var(--space-4)}
+
+    /* ===== BUTTONS ===== */
+    .btn{
+      font:inherit;
+      cursor:pointer;
+      border-radius:var(--radius-md);
+      padding:var(--space-2) var(--space-5);
+      font-weight:600;
+      font-size:var(--text-small);
+      transition:all var(--duration-fast) var(--easing-standard);
+      border:1px solid transparent;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:var(--space-2);
+      min-height:44px;
+      min-width:44px;
+    }
+    .btn:active{transform:scale(var(--active-scale))}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .btn-primary{background:var(--color-accent);color:#fff}
+    .btn-primary:hover{background:var(--color-accent-hover)}
+    .btn-secondary{background:var(--color-paper);color:var(--color-foreground);border-color:var(--color-border)}
+    .btn-secondary:hover{background:var(--color-surface-hover);border-color:var(--color-border-strong)}
+    .btn-ghost{background:transparent;color:var(--color-foreground);padding:var(--space-2) var(--space-3)}
+    .btn-ghost:hover{background:var(--color-accent-ghost);color:var(--color-accent)}
+    .btn-danger{background:var(--color-danger-bg);color:var(--color-danger);border-color:transparent}
+    .btn-danger:hover{background:var(--color-danger-strong)}
+    .btn-success{background:var(--color-success-bg);color:var(--color-success);border-color:transparent}
+    .btn-success:hover{background:var(--color-success-strong)}
+    .btn-icon{padding:var(--space-2);width:44px;height:44px}
+
+    /* Payment method buttons */
+    .btn-cash{background:var(--color-cash);color:#fff}
+    .btn-cash:hover{filter:brightness(0.9)}
+    .btn-bkash{background:var(--color-bkash);color:#fff}
+    .btn-bkash:hover{filter:brightness(0.9)}
+    .btn-nagad{background:var(--color-nagad);color:#fff}
+    .btn-nagad:hover{filter:brightness(0.9)}
+    .btn-card{background:var(--color-card);color:#fff}
+    .btn-card:hover{filter:brightness(0.9)}
+
+    /* ===== BADGES ===== */
+    .badge-pill{
+      display:inline-flex;
+      align-items:center;
+      padding:var(--space-1) var(--space-3);
+      border-radius:var(--radius-pill);
+      font-size:var(--text-xxs);
+      font-weight:700;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+      line-height:1;
+    }
+    .badge-success{background:var(--color-success-bg);color:var(--color-success)}
+    .badge-warning{background:var(--color-warning-bg);color:var(--color-warning)}
+    .badge-danger{background:var(--color-danger-bg);color:var(--color-danger)}
+    .badge-neutral{background:var(--color-border-light);color:var(--color-muted)}
+    .badge-accent{background:var(--color-accent-ghost);color:var(--color-accent)}
+    .badge-cash{background:rgba(43,122,59,0.12);color:var(--color-cash)}
+    .badge-bkash{background:rgba(230,30,42,0.12);color:var(--color-bkash)}
+    .badge-nagad{background:rgba(217,43,127,0.12);color:var(--color-nagad)}
+    .badge-card{background:rgba(26,60,110,0.12);color:var(--color-card)}
+
+    /* ===== INPUT ===== */
+    .input-demo{
+      width:100%;
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-md);
+      padding:var(--space-3) var(--space-4);
+      font-size:var(--text-body);
+      color:var(--color-foreground);
+      transition:border-color var(--duration-fast) var(--easing-standard),box-shadow var(--duration-fast) var(--easing-standard);
+      min-height:44px;
+    }
+    .input-demo:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-ghost)}
+    .input-demo::placeholder{color:var(--color-dim)}
+    .input-demo:disabled{background:var(--color-border-light);cursor:not-allowed}
+
+    /* ===== POS PRODUCT CARD ===== */
+    .pos-product-card{
+      display:grid;
+      grid-template-columns:56px 1fr auto;
+      gap:var(--space-3);
+      align-items:center;
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-md);
+      padding:var(--space-3);
+      transition:box-shadow var(--duration-fast) var(--easing-standard),border-color var(--duration-fast) var(--easing-standard);
+    }
+    .pos-product-card:hover{box-shadow:var(--shadow-sm);border-color:var(--color-border-strong)}
+    .pos-thumb{width:56px;height:56px;border-radius:var(--radius-sm);background:var(--color-border-light);flex-shrink:0}
+    .pos-thumb.placeholder{display:flex;align-items:center;justify-content:center;color:var(--color-dim);font-size:20px}
+    .product-main{min-width:0}
+    .product-title{font-family:var(--font-display);font-size:var(--text-body);font-weight:600;color:var(--color-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 2px}
+    .product-sku{font-family:var(--font-mono);font-size:var(--text-xxs);color:var(--color-dim);margin:0 0 var(--space-2);letter-spacing:0.02em}
+    .metrics{display:flex;flex-wrap:wrap;gap:var(--space-3);font-size:var(--text-small)}
+    .metric{display:flex;align-items:center;gap:var(--space-1);font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+    .metric-label{color:var(--color-muted)}
+    .metric-value{color:var(--color-foreground);font-weight:600}
+    .metric-value.accent{color:var(--color-accent)}
+    .metric-value.success{color:var(--color-success)}
+    .metric-value.warning{color:var(--color-warning)}
+    .actions{display:flex;align-items:center;gap:var(--space-1);flex-shrink:0}
+    .qty-stepper{display:flex;align-items:center;border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden;background:var(--color-paper)}
+    .qty-btn{width:36px;height:36px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;color:var(--color-foreground);font-size:var(--text-h3);line-height:1;cursor:pointer;transition:background var(--duration-instant)}
+    .qty-btn:hover{background:var(--color-border-light)}
+    .qty-btn:active{background:var(--color-border)}
+    .qty-value{min-width:40px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-body);font-variant-numeric:tabular-nums}
+
+    /* ===== CHECKOUT PANEL ===== */
+    .checkout-panel{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+    }
+    .checkout-header{
+      background:var(--color-paper);
+      border-bottom:1px solid var(--color-border);
+      padding:var(--space-4) var(--space-5);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-3);
+    }
+    .invoice-meta{display:flex;flex-direction:column;gap:2px}
+    .invoice-id{font-family:var(--font-display);font-size:var(--text-body);font-weight:700;color:var(--color-foreground)}
+    .invoice-time{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-muted)}
+    .checkout-body{padding:var(--space-4) var(--space-5);max-height:300px;overflow:auto}
+    .line-items{display:flex;flex-direction:column;gap:var(--space-2)}
+    .line-item{display:grid;grid-template-columns:1fr auto auto;gap:var(--space-3);align-items:center;padding:var(--space-2) 0;border-bottom:1px solid var(--color-border-light);font-size:var(--text-small)}
+    .line-item:last-child{border-bottom:none}
+    .line-name{font-weight:500;color:var(--color-foreground);min-width:0}
+    .line-qty{font-family:var(--font-mono);color:var(--color-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+    .line-price{font-family:var(--font-display);font-weight:700;color:var(--color-foreground);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+    .totals{padding:var(--space-4) var(--space-5);border-top:1px solid var(--color-border);background:var(--color-paper);display:flex;flex-direction:column;gap:var(--space-2)}
+    .total-row{display:flex;justify-content:space-between;font-size:var(--text-body)}
+    .total-row.grand{font-family:var(--font-display);font-size:var(--text-h3);font-weight:700;padding-top:var(--space-2);border-top:2px solid var(--color-border);margin-top:var(--space-2)}
+    .total-label{color:var(--color-muted)}
+    .total-value{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--color-foreground);font-weight:600}
+    .total-row.grand .total-value{color:var(--color-accent)}
+    .checkout-actions{padding:var(--space-4) var(--space-5);border-top:1px solid var(--color-border);background:var(--color-paper);display:flex;gap:var(--space-2);flex-wrap:wrap}
+    .checkout-actions .btn{flex:1;min-width:100px}
+
+    /* ===== PAYMENT STATE BADGES ===== */
+    .payment-state{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);border-radius:var(--radius-md);font-size:var(--text-small);font-weight:600}
+    .payment-state.pending{background:var(--color-warning-bg);color:var(--color-warning);border:1px solid var(--color-warning-strong)}
+    .payment-state.paid{background:var(--color-success-bg);color:var(--color-success);border:1px solid var(--color-success-strong)}
+    .payment-state.partial{background:var(--color-accent-ghost);color:var(--color-accent);border:1px solid var(--color-accent-strong)}
+    .payment-state.failed{background:var(--color-danger-bg);color:var(--color-danger);border:1px solid var(--color-danger-strong)}
+    .payment-state .icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+    /* ===== INVENTORY TABLE ===== */
+    .table-wrap{overflow-x:auto;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
+    table.inventory{width:100%;border-collapse:collapse;font-size:var(--text-small)}
+    table.inventory thead th{
+      position:sticky;top:0;z-index:10;
+      background:var(--color-paper);
+      border-bottom:2px solid var(--color-border);
+      padding:var(--space-3) var(--space-4);
+      font-family:var(--font-mono);
+      font-size:var(--text-xxs);
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+      color:var(--color-muted);
+      font-weight:600;
+      text-align:left;
+      white-space:nowrap;
+    }
+    table.inventory tbody td{
+      padding:var(--space-3) var(--space-4);
+      border-bottom:1px solid var(--color-border-light);
+      vertical-align:middle;
+    }
+    table.inventory tbody tr:nth-child(even) td{background:var(--color-border-light)}
+    table.inventory tbody tr:hover td{background:var(--color-accent-ghost)}
+    table.inventory tbody tr:last-child td{border-bottom:none}
+    table.inventory .sku{font-family:var(--font-mono);color:var(--color-foreground);font-weight:500}
+    table.inventory .name{font-weight:500;color:var(--color-foreground);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    table.inventory .price{font-family:var(--font-display);font-variant-numeric:tabular-nums;font-weight:600;color:var(--color-foreground);text-align:right;white-space:nowrap}
+    table.inventory .margin{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+    table.inventory .margin.positive{color:var(--color-success);font-weight:600}
+    table.inventory .stock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+    table.inventory .stock.low{color:var(--color-warning);font-weight:600}
+    table.inventory .stock.zero{color:var(--color-danger);font-weight:600}
+    table.inventory .actions{white-space:nowrap}
+
+    /* ===== RECEIPT TEMPLATES ===== */
+    .receipt{background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-5);font-family:var(--font-mono);font-size:var(--text-small);line-height:1.5;color:#1c1917}
+    .receipt-58mm{max-width:220px;margin:0 auto}
+    .receipt-80mm{max-width:300px;margin:0 auto}
+    .receipt .header{text-align:center;margin-bottom:var(--space-4);border-bottom:1px dashed var(--color-border);padding-bottom:var(--space-3)}
+    .receipt .shop-name{font-family:var(--font-display);font-size:var(--text-h3);font-weight:700;margin:0 0 4px}
+    .receipt .shop-tagline{font-size:var(--text-xxs);color:var(--color-muted);margin:0}
+    .receipt .meta{display:flex;justify-content:space-between;font-size:var(--text-xxs);color:var(--color-muted);margin-bottom:var(--space-3)}
+    .receipt .items{border-top:1px dashed var(--color-border);border-bottom:1px dashed var(--color-border);padding:var(--space-3) 0;margin-bottom:var(--space-3)}
+    .receipt .item{display:flex;justify-content:space-between;margin:var(--space-2) 0}
+    .receipt .item-name{flex:1}
+    .receipt .item-price{text-align:right;white-space:nowrap;margin-left:var(--space-3)}
+    .receipt .totals{display:flex;flex-direction:column;gap:4px}
+    .receipt .total-row{display:flex;justify-content:space-between}
+    .receipt .grand{font-weight:700;font-size:var(--text-body);border-top:1px dashed var(--color-border);padding-top:var(--space-2);margin-top:var(--space-2)}
+    .receipt .payment{margin-top:var(--space-3);border-top:1px dashed var(--color-border);padding-top:var(--space-3);font-size:var(--text-xxs)}
+    .receipt .qr-placeholder{width:100%;aspect-ratio:1;background:var(--color-border-light);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--color-dim);font-size:var(--text-xxs);margin-top:var(--space-3)}
+
+    /* ===== BARCODE SCANNER ===== */
+    .barcode-scanner{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:var(--space-4);
+    }
+    .scanner-state{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      padding:var(--space-6);
+      text-align:center;
+      transition:border-color var(--duration-fast) var(--easing-standard)
+    }
+    .scanner-state.scanning{border-color:var(--color-accent);background:var(--color-accent-ghost)}
+    .scanner-state.success{border-color:var(--color-success);background:var(--color-success-bg)}
+    .scanner-state.error{border-color:var(--color-danger);background:var(--color-danger-bg)}
+    .scanner-icon{width:64px;height:64px;margin:0 auto var(--space-4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px}
+    .scanner-state.scanning .scanner-icon{background:var(--color-accent);color:#fff;animation:pulse 1.5s ease-in-out infinite}
+    .scanner-state.success .scanner-icon{background:var(--color-success);color:#fff}
+    .scanner-state.error .scanner-icon{background:var(--color-danger);color:#fff}
+    .scanner-title{font-family:var(--font-display);font-size:var(--text-h3);font-weight:600;margin:0 0 var(--space-1)}
+    .scanner-desc{color:var(--color-muted);font-size:var(--text-small);margin:0 0 var(--space-4)}
+    .scanner-data{font-family:var(--font-mono);font-size:var(--text-small);color:var(--color-foreground);background:var(--color-paper);padding:var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--color-border)}
+
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.05)}}
+
+    /* ===== EMPTY STATES ===== */
+    .empty-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-4)}
+    .empty-state{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      padding:var(--space-8) var(--space-5);
+      text-align:center;
+    }
+    .empty-icon{width:64px;height:64px;margin:0 auto var(--space-4);border-radius:50%;background:var(--color-border-light);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--color-muted)}
+    .empty-title{font-family:var(--font-display);font-size:var(--text-h3);font-weight:600;margin:0 0 var(--space-2);color:var(--color-foreground)}
+    .empty-desc{color:var(--color-muted);font-size:var(--text-small);margin:0 0 var(--space-5);max-width:240px;margin-left:auto;margin-right:auto}
+    .empty-state .btn{min-width:160px}
+
+    /* ===== LOADING SKELETONS ===== */
+    .skeletons{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)}
+    .skeleton{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      padding:var(--space-5);
+    }
+    .skeleton-row{display:flex;gap:var(--space-3);align-items:center;margin-bottom:var(--space-3)}
+    .skeleton-row:last-child{margin-bottom:0}
+    .skeleton-bar{height:12px;border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--color-border-light) 25%,var(--color-border) 50%,var(--color-border-light) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+    .skeleton-bar.w-1{width:60px}
+    .skeleton-bar.w-2{width:120px}
+    .skeleton-bar.w-3{width:180px}
+    .skeleton-bar.w-4{width:240px}
+    .skeleton-bar.w-full{width:100%}
+    .skeleton-bar.h-4{height:4px}
+    .skeleton-bar.h-8{height:8px}
+    .skeleton-bar.h-16{height:16px}
+    .skeleton-bar.h-24{height:24px}
+    .skeleton-bar.h-32{height:32px}
+    .skeleton-bar.h-56{height:56px}
+    .skeleton-bar.round-full{border-radius:50%;width:48px;height:48px;flex-shrink:0}
+    .skeleton-bar.round{width:56px;height:56px;border-radius:var(--radius-sm);flex-shrink:0}
+
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ===== DASHBOARD KPI CARDS ===== */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-4)}
+    .kpi-card{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      padding:var(--space-5);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-2);
+      transition:box-shadow var(--duration-fast) var(--easing-standard),border-color var(--duration-fast) var(--easing-standard);
+    }
+    .kpi-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-border-strong)}
+    .kpi-label{font-family:var(--font-mono);font-size:var(--text-xxs);letter-spacing:0.06em;text-transform:uppercase;color:var(--color-muted);font-weight:600}
+    .kpi-value{font-family:var(--font-display);font-size:clamp(1.75rem,4vw,2.5rem);font-weight:700;letter-spacing:-0.02em;line-height:1.1;color:var(--color-foreground)}
+    .kpi-trend{display:flex;align-items:center;gap:var(--space-1);font-size:var(--text-small);font-weight:600;font-family:var(--font-mono)}
+    .kpi-trend.positive{color:var(--color-success)}
+    .kpi-trend.negative{color:var(--color-danger)}
+    .kpi-trend.neutral{color:var(--color-muted)}
+    .kpi-trend svg{width:16px;height:16px;flex-shrink:0}
+
+    /* ===== DARK MODE TOGGLE ===== */
+    .theme-toggle{
+      position:fixed;
+      top:var(--space-4);
+      right:var(--space-4);
+      z-index:var(--z-tooltip);
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-pill);
+      padding:var(--space-2) var(--space-3);
+      display:flex;
+      align-items:center;
+      gap:var(--space-2);
+      font-size:var(--text-small);
+      font-weight:500;
+      box-shadow:var(--shadow-lg);
+    }
+    .theme-toggle .toggle{width:44px;height:24px;border-radius:var(--radius-pill);background:var(--color-border);border:none;position:relative;cursor:pointer;transition:background var(--duration-fast)}
+    .theme-toggle .toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:transform var(--duration-fast) var(--easing-standard)}
+    [data-theme="dark"] .theme-toggle .toggle{background:var(--color-accent)}
+    [data-theme="dark"] .theme-toggle .toggle::after{transform:translateX(20px)}
+    .theme-toggle span{font-family:var(--font-mono);font-size:var(--text-xxs);text-transform:uppercase;letter-spacing:0.06em;color:var(--color-muted)}
+
+    /* ===== SECTION DIVIDERS ===== */
+    .section-divider{border-top:1px solid var(--color-border);margin:var(--space-12) 0}
+
+    /* ===== PROSE / DOCS ===== */
+    .prose{border-top:1px solid var(--color-border);padding-top:var(--space-8);color:var(--color-foreground)}
+    .prose h1,.prose h2,.prose h3{font-family:var(--font-display);letter-spacing:-0.01em}
+    .prose h1{font-size:var(--text-h1);margin-top:0}
+    .prose h2{font-size:var(--text-h2);margin-top:var(--space-10)}
+    .prose h3{font-size:var(--text-h3);margin-top:var(--space-8)}
+    .prose p,.prose ul,.prose ol{margin:var(--space-3) 0;line-height:1.7}
+    .prose code{font-family:var(--font-mono);background:var(--color-surface);border:1px solid var(--color-border);padding:2px 6px;border-radius:4px;font-size:0.92em}
+    .prose pre{background:var(--color-paper);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);overflow:auto;font-family:var(--font-mono);font-size:var(--text-small);line-height:1.55}
+    .prose pre code{background:transparent;border:none;padding:0;font-size:inherit}
+    .prose table{width:100%;border-collapse:collapse;font-size:var(--text-small);line-height:1.5;margin:var(--space-4) 0}
+    .prose th,.prose td{padding:var(--space-2) var(--space-3);text-align:left;vertical-align:top;border-bottom:1px solid var(--color-border-light)}
+    .prose th{background:var(--color-paper);font-weight:600;font-size:var(--text-xxs);letter-spacing:0.04em;text-transform:uppercase;color:var(--color-muted)}
+    .prose tr:last-child td{border-bottom:none}
+
+    /* ===== FOOTER ===== */
+    .footer{margin-top:var(--space-12);padding-top:var(--space-6);border-top:1px solid var(--color-border);font-size:var(--text-small);color:var(--color-muted);text-align:center}
+    .footer a{color:var(--color-accent);text-decoration:none;border-bottom:1px solid transparent}
+    .footer a:hover{border-bottom-color:var(--color-accent)}
+
+    /* ===== VISUAL ROWS FOR SPACING/RADIUS/SHADOW ===== */
+    .visual-row{display:flex;align-items:center;gap:var(--space-4);padding:var(--space-2) 0}
+    .visual-label{width:110px;font-family:var(--font-mono);font-size:var(--text-xxs);text-transform:uppercase;letter-spacing:0.06em;color:var(--color-muted);flex-shrink:0}
+    .visual-bar{height:12px;border-radius:var(--radius-sm);background:var(--color-accent-ghost);border:1px solid var(--color-border)}
+    .visual-value{font-family:var(--font-mono);font-size:var(--text-xxs);color:var(--color-dim);min-width:70px}
+    .visual-radius{width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:var(--color-paper);border:1px solid var(--color-border);font-family:var(--font-mono);font-size:var(--text-xxs);color:var(--color-dim)}
+    .visual-shadow{flex:1;max-width:200px;height:100px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+  </style>
+</head>
+<body>
+  <div class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
+    <div class="toggle" aria-label="Toggle dark mode"></div>
+    <span>Theme</span>
+  </div>
+
+  <main class="wrap">
+    <span class="badge">Design System v2 · Operational Design Language for Retail</span>
+    <h1>Lucky Store POS</h1>
+    <p class="subtitle">Built for Bangladeshi retail operations: cashiers, inventory staff, supervisors, and customers. From countertop POS to customer storefront — one coherent system.</p>
+
+    <!-- SECTION A: CUSTOMER STOREFRONT -->
+    <span class="kicker">Section A — Customer Storefront</span>
+    <p class="section-desc">Large product cards, imagery, wishlist, promotions. Optimized for browsing and discovery on mobile and desktop.</p>
+
+    <section>
+      <h2 class="section-title">Palette — Storefront</h2>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--color-paper)"></div><div class="meta"><span class="name">Paper</span><span class="hex">#faf8f5</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-surface)"></div><div class="meta"><span class="name">Surface</span><span class="hex">#ffffff</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-foreground)"></div><div class="meta"><span class="name">Foreground</span><span class="hex">#1c1917</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-muted)"></div><div class="meta"><span class="name">Muted</span><span class="hex">#78716c</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-dim)"></div><div class="meta"><span class="name">Dim</span><span class="hex">#a8a29e</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-border)"></div><div class="meta"><span class="name">Border</span><span class="hex">#e7e5e4</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-border-light)"></div><div class="meta"><span class="name">Border Light</span><span class="hex">#f5f5f4</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent)"></div><div class="meta"><span class="name">Accent</span><span class="hex">#bf4e2d</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-hover)"></div><div class="meta"><span class="name">Accent Hover</span><span class="hex">#aa4527</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-ghost)"></div><div class="meta"><span class="name">Accent Ghost</span><span class="hex">rgba(191,78,45,0.08)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-success)"></div><div class="meta"><span class="name">Success</span><span class="hex">#1e5c3a</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-success-bg)"></div><div class="meta"><span class="name">Success BG</span><span class="hex">rgba(30,92,58,0.08)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-warning)"></div><div class="meta"><span class="name">Warning</span><span class="hex">#8c4200</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-warning-bg)"></div><div class="meta"><span class="name">Warning BG</span><span class="hex">rgba(140,66,0,0.08)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-danger)"></div><div class="meta"><span class="name">Danger</span><span class="hex">#a32624</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-danger-bg)"></div><div class="meta"><span class="name">Danger BG</span><span class="hex">rgba(163,38,36,0.07)</span></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Typography — Storefront</h2>
+      <table class="typo-table">
+        <thead><tr><th>Role</th><th>Font</th><th>Size (clamp)</th><th>Weight</th><th>Sample</th></tr></thead>
+        <tbody>
+          <tr><td>Display H1</td><td>Inter</td><td><code>clamp(1.5rem, 3vw+0.5rem, 2.25rem)</code></td><td>700</td><td class="typo-sample">The grid carries warmth</td></tr>
+          <tr><td>Display H2</td><td>Inter</td><td><code>clamp(1.25rem, 2vw+0.5rem, 1.75rem)</code></td><td>600</td><td class="typo-sample">The grid carries warmth</td></tr>
+          <tr><td>Heading 3</td><td>Inter</td><td><code>clamp(1.125rem, 1.5vw+0.4rem, 1.5rem)</code></td><td>600</td><td class="typo-sample">The grid carries warmth</td></tr>
+          <tr><td>Body</td><td>Inter</td><td><code>clamp(0.875rem, 0.5vw+0.5rem, 1rem)</code></td><td>400</td><td class="typo-sample body">Body copy reads at sixteen pixels with generous leading.</td></tr>
+          <tr><td>Small</td><td>Inter</td><td><code>clamp(0.8125rem, 0.3vw+0.5rem, 0.9375rem)</code></td><td>400</td><td class="typo-sample body" style="font-size:var(--text-small)">Fine print and metadata, still legible on mobile.</td></tr>
+          <tr><td>XS</td><td>Inter</td><td><code>clamp(0.75rem, 0.2vw+0.5rem, 0.8125rem)</code></td><td>400</td><td class="typo-sample body" style="font-size:var(--text-xs)">Captions and timestamps.</td></tr>
+          <tr><td>Bengali</td><td>Hind Siliguri</td><td>Matches body scale</td><td>400/500</td><td class="typo-sample bengali">লাকি স্টোর — বাংলা ফন্ট</td></tr>
+          <tr><td>Price</td><td>Inter</td><td>H2 scale</td><td>700</td><td class="typo-sample price">৳1,249.00</td></tr>
+          <tr><td>Mono</td><td>JetBrains Mono</td><td>0.8125rem fixed</td><td>400</td><td class="typo-sample mono">/* monospace */</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 class="section-title">Spacing &amp; Radius</h2>
+      <div class="components">
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Spacing</span><h3>4px base unit</h3></div>
+          <div>
+            <div class="visual-row"><span class="visual-label">space-1</span><div class="visual-bar" style="width:4px"></div><span class="visual-value">4px</span></div>
+            <div class="visual-row"><span class="visual-label">space-2</span><div class="visual-bar" style="width:8px"></div><span class="visual-value">8px</span></div>
+            <div class="visual-row"><span class="visual-label">space-3</span><div class="visual-bar" style="width:12px"></div><span class="visual-value">12px</span></div>
+            <div class="visual-row"><span class="visual-label">space-4</span><div class="visual-bar" style="width:16px"></div><span class="visual-value">16px</span></div>
+            <div class="visual-row"><span class="visual-label">space-5</span><div class="visual-bar" style="width:20px"></div><span class="visual-value">20px</span></div>
+            <div class="visual-row"><span class="visual-label">space-6</span><div class="visual-bar" style="width:24px"></div><span class="visual-value">24px</span></div>
+            <div class="visual-row"><span class="visual-label">space-8</span><div class="visual-bar" style="width:32px"></div><span class="visual-value">32px</span></div>
+            <div class="visual-row"><span class="visual-label">space-10</span><div class="visual-bar" style="width:40px"></div><span class="visual-value">40px</span></div>
+            <div class="visual-row"><span class="visual-label">space-12</span><div class="visual-bar" style="width:48px"></div><span class="visual-value">48px</span></div>
+            <div class="visual-row"><span class="visual-label">space-16</span><div class="visual-bar" style="width:64px"></div><span class="visual-value">64px</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Radius</span><h3>Four named sizes</h3></div>
+          <div>
+            <div class="visual-row"><span class="visual-label">radius-sm</span><div class="visual-radius" style="border-radius:var(--radius-sm)"></div><span class="visual-value">8px</span></div>
+            <div class="visual-row"><span class="visual-label">radius-md</span><div class="visual-radius" style="border-radius:var(--radius-md)"></div><span class="visual-value">12px</span></div>
+            <div class="visual-row"><span class="visual-label">radius-lg</span><div class="visual-radius" style="border-radius:var(--radius-lg)"></div><span class="visual-value">16px</span></div>
+            <div class="visual-row"><span class="visual-label">radius-xl</span><div class="visual-radius" style="border-radius:var(--radius-xl)"></div><span class="visual-value">20px</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Shadows</span><h3>Warm black tint</h3></div>
+          <div>
+            <div class="visual-row"><span class="visual-label">shadow-sm</span><div class="visual-shadow" style="box-shadow:var(--shadow-sm)"></div></div>
+            <div class="visual-row"><span class="visual-label">shadow-md</span><div class="visual-shadow" style="box-shadow:var(--shadow-md)"></div></div>
+            <div class="visual-row"><span class="visual-label">shadow-lg</span><div class="visual-shadow" style="box-shadow:var(--shadow-lg)"></div></div>
+            <div class="visual-row"><span class="visual-label">shadow-xl</span><div class="visual-shadow" style="box-shadow:var(--shadow-xl)"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Components — Storefront</h2>
+      <div class="components">
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Card</span><h3>Product display card</h3></div>
+          <p>Large imagery, generous whitespace. Used for catalog browsing, promotions, category landing.</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Buttons</span><h3>Three weights</h3></div>
+          <div class="btn-row">
+            <button class="btn btn-primary">Primary</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-ghost">Ghost</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Badges</span><h3>Status indicators</h3></div>
+          <div class="badge-row" style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)">
+            <span class="badge-pill badge-success">In Stock</span>
+            <span class="badge-pill badge-warning">Low Stock</span>
+            <span class="badge-pill badge-danger">Out of Stock</span>
+            <span class="badge-pill badge-accent">New</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Input</span><h3>Search &amp; forms</h3></div>
+          <input class="input-demo" type="text" placeholder="Search products, brands, categories…" />
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Product Card</span><h3>Catalog item (large)</h3></div>
+          <div style="background:var(--color-border-light);aspect-ratio:1;border-radius:var(--radius-md);margin-bottom:var(--space-3);display:flex;align-items:center;justify-content:center;color:var(--color-dim);font-size:24px">📦</div>
+          <p class="product-title">Organic Basmati Rice</p>
+          <p class="product-sku">SKU: LS-001284</p>
+          <div class="metrics">
+            <span class="metric"><span class="metric-value price">৳180</span>/kg</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Wishlist</span><h3>Save for later</h3></div>
+          <button class="btn btn-ghost" style="width:100%"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> Add to Wishlist</button>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- SECTION B: POS OPERATIONS -->
+    <span class="kicker">Section B — POS Operations</span>
+    <p class="section-desc">Compact cards, dense tables, checkout panel, barcode scanner, payments, receipts. Optimized for speed, accuracy, and all-day use on countertop hardware.</p>
+
+    <section>
+      <h2 class="section-title">Palette — POS (Additions)</h2>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--color-border-strong)"></div><div class="meta"><span class="name">Border Strong</span><span class="hex">#d6d3d1</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-surface-hover)"></div><div class="meta"><span class="name">Surface Hover</span><span class="hex">#f5f3f0</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-strong)"></div><div class="meta"><span class="name">Accent Strong</span><span class="hex">rgba(191,78,45,0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-cash)"></div><div class="meta"><span class="name">Cash</span><span class="hex">#2b7a3b</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-bkash)"></div><div class="meta"><span class="name">bKash</span><span class="hex">#e61e2a</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-nagad)"></div><div class="meta"><span class="name">Nagad</span><span class="hex">#d92b7f</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-card)"></div><div class="meta"><span class="name">Card</span><span class="hex">#1a3c6e</span></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">POS Product Card (Compact)</h2>
+      <p class="section-desc">56×56px thumb, SKU, three prices (Cost/MRP/Sell), margin %, stock, qty stepper. One line per product — built for scanning speed.</p>
+      <div class="components">
+        <div class="card" style="padding:0">
+          <div class="pos-product-card">
+            <div class="thumb placeholder">🌾</div>
+            <div class="product-main">
+              <p class="product-title">Organic Basmati Rice</p>
+              <p class="product-sku">SKU: LS-001284</p>
+              <div class="metrics">
+                <span class="metric"><span class="metric-label">Cost</span><span class="metric-value">৳140</span></span>
+                <span class="metric"><span class="metric-label">MRP</span><span class="metric-value">৳180</span></span>
+                <span class="metric"><span class="metric-label">Sell</span><span class="metric-value accent">৳165</span></span>
+              </div>
+              <div class="metrics">
+                <span class="metric"><span class="metric-label">Stock</span><span class="metric-value success">124</span></span>
+                <span class="metric"><span class="metric-label">Margin</span><span class="metric-value accent">15.2%</span></span>
+              </div>
+            </div>
+            <div class="actions">
+              <div class="qty-stepper">
+                <button class="qty-btn" aria-label="Decrease">−</button>
+                <span class="qty-value">2</span>
+                <button class="qty-btn" aria-label="Increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="pos-product-card">
+            <div class="thumb placeholder">🍌</div>
+            <div class="product-main">
+              <p class="product-title">Fresh Bananas</p>
+              <p class="product-sku">SKU: LS-000892</p>
+              <div class="metrics">
+                <span class="metric"><span class="metric-label">Cost</span><span class="metric-value">৳50</span></span>
+                <span class="metric"><span class="metric-label">MRP</span><span class="metric-value">৳70</span></span>
+                <span class="metric"><span class="metric-label">Sell</span><span class="metric-value accent">৳60</span></span>
+              </div>
+              <div class="metrics">
+                <span class="metric"><span class="metric-label">Stock</span><span class="metric-value warning">8</span></span>
+                <span class="metric"><span class="metric-label">Margin</span><span class="metric-value accent">20.0%</span></span>
+              </div>
+            </div>
+            <div class="actions">
+              <div class="qty-stepper">
+                <button class="qty-btn" aria-label="Decrease">−</button>
+                <span class="qty-value">1</span>
+                <button class="qty-btn" aria-label="Increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="pos-product-card" style="opacity:0.5">
+            <div class="thumb placeholder">❌</div>
+            <div class="product-main">
+              <p class="product-title">Imported Olive Oil</p>
+              <p class="product-sku">SKU: LS-002101</p>
+              <div class="metrics">
+                <span class="metric"><span class="metric-label">Cost</span><span class="metric-value">৳420</span></span>
+                <span class="metric"><span class="metric-label">MRP</span><span class="metric-value">৳550</span></span>
+                <span class="metric"><span class="metric-label">Sell</span><span class="metric-value accent">৳495</span></span>
+              </div>
+              <div class="metrics">
+                <span class="metric"><span class="metric-label">Stock</span><span class="metric-value danger">0</span></span>
+                <span class="metric"><span class="metric-label">Margin</span><span class="metric-value accent">17.9%</span></span>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-ghost btn-icon" aria-label="Notify when available"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Checkout Panel</h2>
+      <p class="section-desc">Invoice header, line items with qty/price, running totals (subtotal, discount, VAT, grand total), payment method buttons. The heart of every sale.</p>
+      <div class="card" style="padding:0">
+        <div class="checkout-panel">
+          <div class="checkout-header">
+            <div class="invoice-meta">
+              <span class="invoice-id">Invoice #10482</span>
+              <span class="invoice-time">2026-06-12 · 14:32 · Cashier: Rahim</span>
+            </div>
+            <span class="badge-pill badge-paid">Paid</span>
+          </div>
+          <div class="checkout-body">
+            <div class="line-items">
+              <div class="line-item">
+                <span class="line-name">Organic Basmati Rice × 2</span>
+                <span class="line-qty">2 kg</span>
+                <span class="line-price">৳330</span>
+              </div>
+              <div class="line-item">
+                <span class="line-name">Fresh Bananas × 1</span>
+                <span class="line-qty">1 doz</span>
+                <span class="line-price">৳60</span>
+              </div>
+              <div class="line-item">
+                <span class="line-name">Green Tea 100g × 2</span>
+                <span class="line-qty">2 pcs</span>
+                <span class="line-price">৳230</span>
+              </div>
+            </div>
+          </div>
+          <div class="totals">
+            <div class="total-row"><span class="total-label">Subtotal (3 items)</span><span class="total-value">৳620</span></div>
+            <div class="total-row"><span class="total-label">Discount</span><span class="total-value" style="color:var(--color-success)">−৳20</span></div>
+            <div class="total-row"><span class="total-label">VAT (5%)</span><span class="total-value">৳30</span></div>
+            <div class="total-row grand"><span class="total-label">TOTAL</span><span class="total-value">৳630</span></div>
+          </div>
+          <div class="checkout-actions">
+            <button class="btn btn-cash">Cash</button>
+            <button class="btn btn-bkash">bKash</button>
+            <button class="btn btn-nagad">Nagad</button>
+            <button class="btn btn-card">Card</button>
+            <button class="btn btn-secondary">Split</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Payment States</h2>
+      <p class="section-desc">Inline badges for order lists, payment screens, and reconciliation. Bangladesh-specific methods included.</p>
+      <div class="components">
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Order States</span><h3>Payment status badges</h3></div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-3)">
+            <span class="payment-state pending"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Awaiting Payment</span>
+            <span class="payment-state paid"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Paid</span>
+            <span class="payment-state partial"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Partial Payment</span>
+            <span class="payment-state failed"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Failed Payment</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Method Badges</span><h3>Payment method tags</h3></div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-3)">
+            <span class="badge-pill badge-cash">Cash</span>
+            <span class="badge-pill badge-bkash">bKash</span>
+            <span class="badge-pill badge-nagad">Nagad</span>
+            <span class="badge-pill badge-card">Card</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Buttons</span><h3>Payment method selectors</h3></div>
+          <div class="btn-row">
+            <button class="btn btn-cash">Cash</button>
+            <button class="btn btn-bkash">bKash</button>
+            <button class="btn btn-nagad">Nagad</button>
+            <button class="btn btn-card">Card</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Inventory Table</h2>
+      <p class="section-desc">Sticky headers, zebra stripes, hover highlight, mobile horizontal scroll. POS operators spend hours here — density and scannability are paramount.</p>
+      <div class="card" style="padding:0">
+        <div class="table-wrap">
+          <table class="inventory">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Product</th>
+                <th>Cost</th>
+                <th>Sell</th>
+                <th>Margin</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="sku">LS-001284</td><td class="name">Organic Basmati Rice</td><td class="price">৳140</td><td class="price">৳165</td><td class="margin positive">15.2%</td><td class="stock">124</td><td class="actions"><button class="btn btn-ghost btn-icon" title="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn btn-ghost btn-icon" title="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+              <tr><td class="sku">LS-000892</td><td class="name">Fresh Bananas</td><td class="price">৳50</td><td class="price">৳60</td><td class="margin positive">20.0%</td><td class="stock low">8</td><td class="actions"><button class="btn btn-ghost btn-icon" title="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn btn-ghost btn-icon" title="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+              <tr><td class="sku">LS-002101</td><td class="name">Imported Olive Oil</td><td class="price">৳420</td><td class="price">৳495</td><td class="margin positive">17.9%</td><td class="stock zero">0</td><td class="actions"><button class="btn btn-ghost btn-icon" title="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn btn-ghost btn-icon" title="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+              <tr><td class="sku">LS-000456</td><td class="name">Whole Milk 1L</td><td class="price">৳65</td><td class="price">৳80</td><td class="margin positive">18.8%</td><td class="stock">210</td><td class="actions"><button class="btn btn-ghost btn-icon" title="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn btn-ghost btn-icon" title="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+              <tr><td class="sku">LS-001789</td><td class="name">Artisan Sourdough</td><td class="price">৳45</td><td class="price">৳65</td><td class="margin positive">30.8%</td><td class="stock low">3</td><td class="actions"><button class="btn btn-ghost btn-icon" title="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn btn-ghost btn-icon" title="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Thermal Receipt Templates</h2>
+      <p class="section-desc">58mm and 80mm formats. Monospace, dashed separators, QR placeholder. Ready for ESC/POS printers.</p>
+      <div class="components">
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">58mm</span><h3>Standard receipt</h3></div>
+          <div class="receipt receipt-58mm">
+            <div class="header">
+              <p class="shop-name">Lucky Store</p>
+              <p class="shop-tagline">Chattogram · 018xx-xxxxxx</p>
+            </div>
+            <div class="meta">
+              <span>Invoice #10482</span>
+              <span>2026-06-12 14:32</span>
+            </div>
+            <div class="meta">
+              <span>Cashier: Rahim</span>
+              <span>Counter: 1</span>
+            </div>
+            <div class="items">
+              <div class="item"><span class="item-name">Org. Basmati Rice</span><span class="item-price">2 × 165 = 330</span></div>
+              <div class="item"><span class="item-name">Fresh Bananas</span><span class="item-price">1 × 60 = 60</span></div>
+              <div class="item"><span class="item-name">Green Tea 100g</span><span class="item-price">2 × 115 = 230</span></div>
+            </div>
+            <div class="totals">
+              <div class="total-row"><span>Subtotal</span><span>৳620</span></div>
+              <div class="total-row"><span>Discount</span><span>−৳20</span></div>
+              <div class="total-row"><span>VAT (5%)</span><span>৳30</span></div>
+              <div class="total-row grand"><span>TOTAL</span><span>৳630</span></div>
+            </div>
+            <div class="payment">
+              <div class="total-row"><span>Cash</span><span>৳700</span></div>
+              <div class="total-row"><span>Change</span><span>৳70</span></div>
+              <div class="total-row" style="margin-top:8px"><span>Method</span><span>Cash</span></div>
+            </div>
+            <p style="text-align:center;font-size:10px;color:#78716c;margin-top:12px">Thank you for shopping with us!</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">80mm</span><h3>Detailed receipt</h3></div>
+          <div class="receipt receipt-80mm">
+            <div class="header">
+              <p class="shop-name">Lucky Store</p>
+              <p class="shop-tagline">Chattogram, Bangladesh · VAT: 123456789</p>
+            </div>
+            <div class="meta">
+              <span>Invoice #10482</span>
+              <span>2026-06-12 14:32</span>
+            </div>
+            <div class="meta">
+              <span>Customer: Walk-in</span>
+              <span>Cashier: Rahim</span>
+            </div>
+            <div class="meta">
+              <span>Counter: 1</span>
+              <span>Payment: bKash</span>
+            </div>
+            <div class="items">
+              <div class="item"><span class="item-name">Organic Basmati Rice (LS-001284)</span><span class="item-price">2 kg × ৳165 = ৳330</span></div>
+              <div class="item"><span class="item-name">Fresh Bananas (LS-000892)</span><span class="item-price">1 doz × ৳60 = ৳60</span></div>
+              <div class="item"><span class="item-name">Green Tea 100g (LS-000765)</span><span class="item-price">2 pcs × ৳115 = ৳230</span></div>
+            </div>
+            <div class="totals">
+              <div class="total-row"><span>Subtotal (3 items, 5 qty)</span><span>৳620</span></div>
+              <div class="total-row"><span>Discount (Loyalty 3%)</span><span>−৳20</span></div>
+              <div class="total-row"><span>VAT (5%)</span><span>৳30</span></div>
+              <div class="total-row grand"><span>TOTAL</span><span>৳630</span></div>
+            </div>
+            <div class="payment">
+              <div class="total-row"><span>bKash</span><span>৳630</span></div>
+              <div class="total-row"><span>Txn ID</span><span>BK123456789</span></div>
+            </div>
+            <div class="qr-placeholder"></div>
+            <p style="text-align:center;font-size:10px;color:#78716c;margin-top:12px">Thank you! Visit again · lucky-store.com</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Barcode Scanner States</h2>
+      <p class="section-desc">Full-screen overlay states for the hardware scanner integration. Scanning → Success/Error with product data or manual entry fallback.</p>
+      <div class="barcode-scanner">
+        <div class="scanner-state scanning">
+          <div class="scanner-icon">⟳</div>
+          <p class="scanner-title">Scanning…</p>
+          <p class="scanner-desc">Point camera at barcode</p>
+        </div>
+        <div class="scanner-state success">
+          <div class="scanner-icon">✓</div>
+          <p class="scanner-title">Product Found</p>
+          <p class="scanner-desc">Added to current sale</p>
+          <div class="scanner-data">Org. Basmati Rice · ৳165/kg · SKU: LS-001284</div>
+        </div>
+        <div class="scanner-state error">
+          <div class="scanner-icon">⚠</div>
+          <p class="scanner-title">Barcode Not Found</p>
+          <p class="scanner-desc">No product matches this code</p>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+            <button class="btn btn-primary btn-icon">+ Create</button>
+            <button class="btn btn-secondary btn-icon">Manual</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Empty States</h2>
+      <p class="section-desc">Helpful, actionable messaging when data is absent — search results, order history, offline mode.</p>
+      <div class="empty-states">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <p class="empty-title">No Products Found</p>
+          <p class="empty-desc">Try adjusting your search or check spelling. No results for "organic olive oil".</p>
+          <button class="btn btn-primary">Clear Filters</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p class="empty-title">No Orders Yet</p>
+          <p class="empty-desc">Your order history will appear here once you make a purchase.</p>
+          <button class="btn btn-primary">Start Shopping</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📴</div>
+          <p class="empty-title">No Internet Connection</p>
+          <p class="empty-desc">You're in offline mode. Changes sync when connection restores.</p>
+          <span class="badge-pill badge-warning">Offline Mode</span>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📦</div>
+          <p class="empty-title">Inventory Empty</p>
+          <p class="empty-desc">No products added yet. Start by creating your first item.</p>
+          <button class="btn btn-primary">Add Product</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Loading Skeletons</h2>
+      <p class="section-desc">Perceived performance standards. Shimmer animation respects <code>prefers-reduced-motion</code>.</p>
+      <div class="skeletons">
+        <div class="skeleton">
+          <h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-4);color:var(--color-foreground)">Product Card Skeleton</h4>
+          <div class="skeleton-row"><div class="skeleton-bar round"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="skeleton-bar w-3 h-16"></div><div class="skeleton-bar w-2 h-8"></div><div class="skeleton-bar w-4 h-8"></div></div></div>
+          <div class="skeleton-row" style="margin-top:12px"><div class="skeleton-bar w-2"></div><div class="skeleton-bar w-2"></div></div>
+        </div>
+        <div class="skeleton">
+          <h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-4);color:var(--color-foreground)">Table Row Skeleton</h4>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-3"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-3"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-3"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-3"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-3"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+        </div>
+        <div class="skeleton">
+          <h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-4);color:var(--color-foreground)">Checkout Panel Skeleton</h4>
+          <div class="skeleton-row"><div class="skeleton-bar w-2"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row" style="margin-top:16px"><div class="skeleton-bar w-4 h-12"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-4 h-12"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-4 h-12"></div></div>
+          <div class="skeleton-row" style="margin-top:16px"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+          <div class="skeleton-row" style="margin-top:16px"><div class="skeleton-bar w-2 h-24"></div></div>
+          <div class="skeleton-row" style="margin-top:16px"><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div><div class="skeleton-bar w-1"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Owner Dashboard — KPI Cards</h2>
+      <p class="section-desc">At-a-glance metrics for shop owners. Positive/negative/neutral trend colors. Compact, scannable, mobile-first.</p>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Today's Sales</span>
+          <span class="kpi-value">৳245,000</span>
+          <span class="kpi-trend positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg> +12% vs yesterday</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Gross Margin</span>
+          <span class="kpi-value">18.6%</span>
+          <span class="kpi-trend positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg> +0.4pp vs last week</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Low Stock Items</span>
+          <span class="kpi-value">14</span>
+          <span class="kpi-trend negative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg> 3 critical (<5 units)</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Transactions</span>
+          <span class="kpi-value">342</span>
+          <span class="kpi-trend neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg> Avg ৳716/txn</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Cash in Drawer</span>
+          <span class="kpi-value">৳85,000</span>
+          <span class="kpi-trend positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg> +৳12,000 today</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Digital Payments</span>
+          <span class="kpi-value">68%</span>
+          <span class="kpi-trend positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg> bKash 42% · Nagad 18% · Card 8%</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- SYSTEM-WIDE TOKENS -->
+    <span class="kicker">System-Wide Tokens</span>
+    <p class="section-desc">Shared across Storefront (A) and POS (B). Single source in <code>design-tokens/tokens.json</code> → CSS + Dart.</p>
+
+    <section>
+      <h2 class="section-title">Dark Mode Tokens (Defined)</h2>
+      <p class="section-desc">Future-proofing. Not yet active in production but Tokens exist in the build. Toggle above to preview.</p>
+      <div class="components">
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Light → Dark</span><h3>Surface mapping</h3></div>
+          <table class="typo-table" style="font-size:var(--text-small)">
+            <thead><tr><th>Token</th><th>Light</th><th>Dark</th></tr></thead>
+            <tbody>
+              <tr><td><code>--color-paper</code></td><td>#faf8f5</td><td>#1f1a17</td></tr>
+              <tr><td><code>--color-surface</code></td><td>#ffffff</td><td>#2a2420</td></tr>
+              <tr><td><code>--color-surface-hover</code></td><td>#f5f3f0</td><td>#332c27</td></tr>
+              <tr><td><code>--color-foreground</code></td><td>#1c1917</td><td>#faf8f5</td></tr>
+              <tr><td><code>--color-muted</code></td><td>#78716c</td><td>#b8b0a8</td></tr>
+              <tr><td><code>--color-border</code></td><td>#e7e5e4</td><td>#3d3630</td></tr>
+              <tr><td><code>--color-accent</code></td><td>#bf4e2d</td><td>#e07a5d</td></tr>
+              <tr><td><code>--color-success</code></td><td>#1e5c3a</td><td>#5ec98a</td></tr>
+              <tr><td><code>--color-warning</code></td><td>#8c4200</td><td>#f5b84e</td></tr>
+              <tr><td><code>--color-danger</code></td><td>#a32624</td><td>#f47c7a</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Motion</span><h3>Standard durations</h3></div>
+          <table class="typo-table" style="font-size:var(--text-small)">
+            <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+            <tbody>
+              <tr><td><code>--duration-instant</code></td><td>80ms</td><td>Press feedback, checkbox toggle</td></tr>
+              <tr><td><code>--duration-fast</code></td><td>150ms</td><td>Hover, badge appear</td></tr>
+              <tr><td><code>--duration-standard</code></td><td>200ms</td><td>Card hover, drawer, tooltip</td></tr>
+              <tr><td><code>--duration-slow</code></td><td>300ms</td><td>Modal, sheet, page transition</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="eyebrow">Layout</span><h3>Fixed dimensions</h3></div>
+          <table class="typo-table" style="font-size:var(--text-small)">
+            <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+            <tbody>
+              <tr><td><code>--header-height</code></td><td>56px</td><td>Top app bar</td></tr>
+              <tr><td><code>--bottom-nav-height</code></td><td>64px</td><td>Mobile bottom nav</td></tr>
+              <tr><td><code>--sidebar-width</code></td><td>260px</td><td>Desktop sidebar</td></tr>
+              <tr><td><code>--container-max</code></td><td>1440px</td><td>Max content width</td></tr>
+              <tr><td><code>--container-padding-mobile</code></td><td>16px</td><td>Mobile page padding</td></tr>
+              <tr><td><code>--container-padding-desktop</code></td><td>32px</td><td>Desktop page padding</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Tailwind Class Reference (Complete)</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-4)">
+        <div class="card"><h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-3)">Backgrounds</h4><div style="font-family:var(--font-mono);font-size:var(--text-xxs);display:flex;flex-direction:column;gap:4px">
+          <div><span style="color:var(--color-accent)">bg-warm-bg</span> → <code>var(--color-paper)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-surface</span> → <code>var(--color-surface)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-surface-hover</span> → <code>var(--color-surface-hover)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-accent</span> → <code>var(--color-accent)</code></div>
+          <div><span style="color:var(--color-accent)">hover:bg-warm-accent-hover</span> → <code>var(--color-accent-hover)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-accent-ghost</span> → <code>var(--color-accent-ghost)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-success-bg</span> → <code>var(--color-success-bg)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-warning-bg</span> → <code>var(--color-warning-bg)</code></div>
+          <div><span style="color:var(--color-accent)">bg-warm-danger-bg</span> → <code>var(--color-danger-bg)</code></div>
+        </div></div>
+        <div class="card"><h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-3)">Text</h4><div style="font-family:var(--font-mono);font-size:var(--text-xxs);display:flex;flex-direction:column;gap:4px">
+          <div><span style="color:var(--color-accent)">text-warm-fg</span> → <code>var(--color-foreground)</code></div>
+          <div><span style="color:var(--color-accent)">text-warm-muted</span> → <code>var(--color-muted)</code></div>
+          <div><span style="color:var(--color-accent)">text-warm-dim</span> → <code>var(--color-dim)</code></div>
+          <div><span style="color:var(--color-accent)">text-warm-success</span> → <code>var(--color-success)</code></div>
+          <div><span style="color:var(--color-accent)">text-warm-warning</span> → <code>var(--color-warning)</code></div>
+          <div><span style="color:var(--color-accent)">text-warm-danger</span> → <code>var(--color-danger)</code></div>
+          <div><span style="color:var(--color-accent)">text-white</span> (on accent)</div>
+        </div></div>
+        <div class="card"><h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-3)">Borders &amp; Radius</h4><div style="font-family:var(--font-mono);font-size:var(--text-xxs);display:flex;flex-direction:column;gap:4px">
+          <div><span style="color:var(--color-accent)">border-warm-border</span> → <code>var(--color-border)</code></div>
+          <div><span style="color:var(--color-accent)">border-warm-strong</span> → <code>var(--color-border-strong)</code></div>
+          <div><span style="color:var(--color-accent)">rounded-warm-sm</span> → <code>var(--radius-sm)</code> (8px)</div>
+          <div><span style="color:var(--color-accent)">rounded-warm-md</span> → <code>var(--radius-md)</code> (12px)</div>
+          <div><span style="color:var(--color-accent)">rounded-warm-lg</span> → <code>var(--radius-lg)</code> (16px)</div>
+          <div><span style="color:var(--color-accent)">rounded-warm-xl</span> → <code>var(--radius-xl)</code> (20px)</div>
+          <div><span style="color:var(--color-accent)">rounded-warm-pill</span> → <code>var(--radius-pill)</code></div>
+        </div></div>
+        <div class="card"><h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-3)">Shadows</h4><div style="font-family:var(--font-mono);font-size:var(--text-xxs);display:flex;flex-direction:column;gap:4px">
+          <div><span style="color:var(--color-accent)">shadow-warm-sm</span> → <code>var(--shadow-sm)</code></div>
+          <div><span style="color:var(--color-accent)">shadow-warm-md</span> → <code>var(--shadow-md)</code></div>
+          <div><span style="color:var(--color-accent)">shadow-warm-lg</span> → <code>var(--shadow-lg)</code></div>
+          <div><span style="color:var(--color-accent)">shadow-warm-xl</span> → <code>var(--shadow-xl)</code></div>
+        </div></div>
+        <div class="card"><h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-3)">Typography</h4><div style="font-family:var(--font-mono);font-size:var(--text-xxs);display:flex;flex-direction:column;gap:4px">
+          <div><span style="color:var(--color-accent)">text-h1</span> → <code>var(--text-h1)</code></div>
+          <div><span style="color:var(--color-accent)">text-h2</span> → <code>var(--text-h2)</code></div>
+          <div><span style="color:var(--color-accent)">text-h3</span> → <code>var(--text-h3)</code></div>
+          <div><span style="color:var(--color-accent)">text-body</span> → <code>var(--text-body)</code></div>
+          <div><span style="color:var(--color-accent)">text-small</span> → <code>var(--text-small)</code></div>
+          <div><span style="color:var(--color-accent)">text-xs</span> → <code>var(--text-xs)</code></div>
+          <div><span style="color:var(--color-accent)">text-price</span> → bold, tight tracking</div>
+        </div></div>
+        <div class="card"><h4 style="font-family:var(--font-display);font-size:var(--text-small);margin:0 0 var(--space-3)">Motion</h4><div style="font-family:var(--font-mono);font-size:var(--text-xxs);display:flex;flex-direction:column;gap:4px">
+          <div><span style="color:var(--color-accent)">duration-80</span> → <code>var(--duration-instant)</code></div>
+          <div><span style="color:var(--color-accent)">duration-150</span> → <code>var(--duration-fast)</code></div>
+          <div><span style="color:var(--color-accent)">duration-200</span> → <code>var(--duration-standard)</code></div>
+          <div><span style="color:var(--color-accent)">duration-300</span> → <code>var(--duration-slow)</code></div>
+          <div><span style="color:var(--color-accent)">ease-standard</span> → <code>cubic-bezier(0.4,0,0.2,1)</code></div>
+          <div><span style="color:var(--color-accent)">motion-reduce</span> → disables all</div>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="prose">
+      <h1>Lucky Store POS Design System v2</h1>
+      <blockquote>
+        <p>Category: Retail POS · Omnichannel · Bangladesh</p>
+        <p>Operational design language for neighborhood retail. Two surfaces (Storefront + POS), one token source. Built for cashiers, inventory staff, supervisors, and customers.</p>
+      </blockquote>
+
+      <h2>Architecture</h2>
+      <p>The system is split into two <strong>distinct surfaces</strong> sharing one token foundation:</p>
+      <ul>
+        <li><strong>Section A — Customer Storefront</strong>: Large cards, imagery, wishlist, promotions. Optimized for browsing on mobile/desktop.</li>
+        <li><strong>Section B — POS Operations</strong>: Compact cards, dense tables, checkout panel, barcode scanner, payments, receipts. Optimized for speed and all-day countertop use.</li>
+      </ul>
+      <p>This separation prevents the classic mistake of forcing catalog UI patterns onto high-frequency POS workflows.</p>
+
+      <h2>Color System</h2>
+      <p>Warm minimal palette: ivory paper (<code>#faf8f5</code>), white surfaces, terracotta accent (<code>#bf4e2d</code> — updated from <code>#dc5f3b</code> for WCAG AA contrast on legacy POS monitors). No cold blue-greys. Semantic pairs (text + bg) for Success/Warning/Danger. Bangladesh payment method colors: Cash (green), bKash (red), Nagad (magenta), Card (blue).</p>
+      <p><strong>Dark mode tokens defined</strong> but not yet activated — toggle in top-right to preview.</p>
+
+      <h2>Typography</h2>
+      <p>Inter (Latin) + Hind Siliguri (Bengali) — fluid <code>clamp()</code> scale, no fixed px breakpoints. Price uses H2 scale at weight 700. Mono uses JetBrains Mono for SKUs, prices, timestamps.</p>
+
+      <h2>Spacing &amp; Radius</h2>
+      <p>4px base unit (space-1 through space-16). Four radius sizes with <code>radius-md (12px)</code> as universal default. Shadows use warm black tint (<code>rgba(28,25,23,α)</code>) for cohesive elevation.</p>
+
+      <h2>Motion</h2>
+      <p>Four standardized durations (80/150/200/300ms) with <code>cubic-bezier(0.4,0,0.2,1)</code>. Active press <code>scale(0.97)</code>, hover lift <code>translateY(-1px)</code>. Full <code>prefers-reduced-motion</code> support.</p>
+
+      <h2>POS-Specific Components</h2>
+      <h3>POS Product Card</h3>
+      <p>56×56px thumbnail, SKU, Cost/MRP/Sell prices, margin %, stock, qty stepper. One line — built for scanning speed, not browsing.</p>
+
+      <h3>Checkout Panel</h3>
+      <p>Invoice header, line items (name, qty, price), running totals (subtotal, discount, VAT, grand total), payment method buttons (Cash, bKash, Nagad, Card, Split). The operational heart.</p>
+
+      <h3>Payment States</h3>
+      <p>Four order states (Awaiting, Paid, Partial, Failed) + four method badges (Cash, bKash, Nagad, Card) + method selector buttons.</p>
+
+      <h3>Inventory Table</h3>
+      <p>Sticky headers, zebra stripes, hover highlight, mobile horizontal scroll. SKU (mono), Product (truncated), Cost/Sell (mono, right), Margin (mono, right, green), Stock (mono, right, red/yellow/green), Actions.</p>
+
+      <h3>Receipt Templates</h3>
+      <p>58mm (standard) and 80mm (detailed) thermal formats. Monospace, dashed separators, QR placeholder. ESC/POS ready.</p>
+
+      <h3>Barcode Scanner</h3>
+      <p>Three states: Scanning (animated), Success (product data), Error (create/manual fallback). Full-screen overlay for hardware integration.</p>
+
+      <h3>Empty States</h3>
+      <p>No Products, No Orders, Offline Mode, Empty Inventory — all with icon, title, description, primary action.</p>
+
+      <h3>Loading Skeletons</h3>
+      <p>Product card, table rows, checkout panel. Shimmer animation (1.5s) respects <code>prefers-reduced-motion</code>.</p>
+
+      <h3>Dashboard KPIs</h3>
+      <p>Six cards: Today's Sales, Gross Margin, Low Stock, Transactions, Cash in Drawer, Digital Payments %. Trend indicators (positive/negative/neutral) with sparkline-ready SVG arrows.</p>
+
+      <h2>Cross-Platform Token Sync</h2>
+      <p>Canonical source: <code>design-tokens/tokens.json</code>. Build outputs:</p>
+      <ul>
+        <li><code>output/tokens.css</code> → <code>apps/customer_storefront/app/styles/tokens.css</code></li>
+        <li><code>output/tokens.ts</code> → web apps</li>
+        <li><code>output/tokens.dart</code> → <code>apps/mobile_app/lib/core/theme/tokens.dart</code></li>
+      </ul>
+      <p>Run <code>npm run build</code> in <code>design-tokens/</code> after edits. Tailwind mapping uses <code>warm-*</code> prefix (e.g., <code>bg-warm-bg</code> → <code>var(--color-paper)</code>).</p>
+
+      <h2>Accessibility</h2>
+      <ul>
+        <li>Contrast: <strong>4.5:1</strong> body text (<code>#1c1917</code> on <code>#faf8f5</code>), <strong>3:1</strong> large text on accent</li>
+        <li>Focus ring: <code>2px solid var(--color-accent)</code> with <code>2px</code> offset</li>
+        <li>Tap targets: minimum <strong>44×44px</strong> (all buttons, inputs, clickable rows)</li>
+        <li><code>prefers-reduced-motion</code>: transitions disabled</li>
+        <li>Dark mode tokens ensure future AA compliance</li>
+      </ul>
+
+      <h2>Quick Reference</h2>
+      <pre><code>// Backgrounds
+<div class="bg-warm-bg"></div>        // page
+<div class="bg-warm-surface"></div>   // card
+
+// Text
+<p class="text-warm-fg"></p>        // primary
+<p class="text-warm-muted"></p>    // secondary
+
+// Borders &amp; Radius
+<div class="border border-warm-border rounded-warm-md"></div>
+
+// Shadow
+<div class="shadow-warm-md"></div>
+
+// Accent
+<button class="bg-warm-accent hover:bg-warm-accent-hover text-white"></button>
+
+// POS Product Card
+<div class="pos-product-card">...</div>
+
+// Checkout Panel
+<div class="checkout-panel">...</div>
+
+// Payment State
+<span class="payment-state paid">Paid</span>
+
+// Inventory Table
+<table class="inventory">...</table>
+
+// Thermal Receipt
+<div class="receipt receipt-58mm">...</div></code></pre>
+    </section>
+
+    <div class="footer">
+      Lucky Store POS Design System v2 · Operational Design Language for Retail · Chattogram, Bangladesh · <a href="https://github.com/fatalmonk/luckystorePOS" target="_blank">GitHub</a>
+    </div>
+  </main>
+</body>
+</html>
