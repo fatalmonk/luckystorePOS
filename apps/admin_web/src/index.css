@@ -79,6 +79,11 @@
   animation: status-pop 0.3s ease-out;
 }
 
+/* Remove top padding on scroll container only for the inventory page to prevent scrolled rows showing above sticky toolbar */
+.main-content.inventory-page-scroll {
+  padding-top: 0 !important;
+}
+
 /* ===== INVENTORY TABLE DESIGN SYSTEM V2 ===== */
 .table-wrap {
   overflow-x: visible;
@@ -97,7 +102,7 @@ table.inventory thead th {
   position: sticky;
   top: var(--table-sticky-top, 0px);
   z-index: 30;
-  background: var(--color-paper) !important;
+  background-color: var(--color-paper) !important;
   border-bottom: 2px solid var(--color-border);
   padding: var(--space-3) var(--space-4);
   font-family: var(--font-mono);

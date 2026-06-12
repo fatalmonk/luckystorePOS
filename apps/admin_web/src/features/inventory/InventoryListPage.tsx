@@ -274,6 +274,18 @@ export function InventoryListPage() {
     return () => resizeObserver.disconnect();
   }, []);
 
+  useEffect(() => {
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+      mainContent.classList.add('inventory-page-scroll');
+    }
+    return () => {
+      if (mainContent) {
+        mainContent.classList.remove('inventory-page-scroll');
+      }
+    };
+  }, []);
+
   const chunkedItems = useMemo(() => {
     const chunks: InventoryItem[][] = [];
     for (let i = 0; i < filteredItems.length; i += columnsCount) {
@@ -291,7 +303,7 @@ export function InventoryListPage() {
 
   if (error) {
     return (
-      <div className="inventory-container">
+      <div className="inventory-container pt-6">
         <PageHeader
           title="Stock Inventory"
           subtitle="Monitor and adjust stock levels."
@@ -304,7 +316,7 @@ export function InventoryListPage() {
   }
 
   return (
-    <div className="inventory-container flex flex-col">
+    <div className="inventory-container flex flex-col pt-6">
       <PageHeader
         title="Stock Inventory"
         subtitle={

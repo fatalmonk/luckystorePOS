@@ -102,7 +102,7 @@ export function InventoryListTable({
         {/* Sticky Header - Solid Background + Proper Z-Index */}
         <thead>
           <tr className="border-b border-warm-border-warm">
-            <th className="w-10 px-4 py-3 text-center">
+            <th className="w-10 px-4 py-3 text-center bg-warm-bg">
               <input
                 type="checkbox"
                 checked={isAllSelected}
@@ -110,15 +110,15 @@ export function InventoryListTable({
                 className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
               />
             </th>
-            <th className="px-4 py-3 text-left w-[250px] md:w-[300px]">Product</th>
-            <th className="px-4 py-3 text-center whitespace-nowrap w-[90px]">Stock</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px]">Cost</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px]">MRP</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px]">Selling</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px]">Margin</th>
-            <th className="px-4 py-3 text-center w-[80px]">Status</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[100px]">Purchase</th>
-            <th className="px-4 py-3 text-right w-[80px]">Actions</th>
+            <th className="px-4 py-3 text-left w-[250px] md:w-[300px] bg-warm-bg">Product</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap w-[90px] bg-warm-bg">Stock</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px] bg-warm-bg">Cost</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px] bg-warm-bg">MRP</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px] bg-warm-bg">Selling</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px] bg-warm-bg">Margin</th>
+            <th className="px-4 py-3 text-center w-[80px] bg-warm-bg">Status</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[100px] bg-warm-bg">Purchase</th>
+            <th className="px-4 py-3 text-right w-[80px] bg-warm-bg">Actions</th>
           </tr>
         </thead>
 
