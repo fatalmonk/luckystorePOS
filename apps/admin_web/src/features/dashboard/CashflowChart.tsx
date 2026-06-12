@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from "@/lib/supabase";
+import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { SkeletonBlock } from '../../components/PageState';
+import type { CashflowData } from '../../lib/api/domains/dashboard';
 
 export const CashflowChart = () => {
   const { storeId } = useAuth();
   const [range, setRange] = useState(7);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<CashflowData[]>({
     queryKey: ['dashboard-cashflow', storeId, range],
-    queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase.rpc('get_cashflow_data', { p_store_id: storeId, p_days: range });
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => api.dashboard.getCashflowData(storeId!, range),
     enabled: !!storeId,
   });
 

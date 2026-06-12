@@ -18,11 +18,10 @@ interface SlowMovingItem {
 }
 
 interface DailyTrend {
-  date?: string;
-  day?: string;
-  total_qty?: number;
-  qty?: number;
-  movement?: number;
+  net_delta: number;
+  total_in: number;
+  total_out: number;
+  trend_date: string;
 }
 
 interface AnalyticsWidgetsProps {
@@ -123,15 +122,15 @@ export function AnalyticsWidgets({
         ) : dailyTrend && dailyTrend.length > 0 ? (
           <div className="flex items-end gap-[3px] h-8">
             {dailyTrend.slice(-14).map((day: DailyTrend, i: number) => {
-              const qty = day.total_qty ?? day.qty ?? day.movement ?? 0;
-              const maxQty = Math.max(...dailyTrend.slice(-14).map((d: DailyTrend) => d.total_qty ?? d.qty ?? d.movement ?? 0), 1);
+              const qty = Math.abs(day.net_delta);
+              const maxQty = Math.max(...dailyTrend.slice(-14).map((d: DailyTrend) => Math.abs(d.net_delta)), 1);
               const height = Math.max((qty / maxQty) * 100, 4);
               return (
                 <div
                   key={i}
                   className="flex-1 rounded-sm bg-warm-accent/60 hover:bg-warm-accent transition-colors cursor-default"
                   style={{ height: `${height}%`, minHeight: '4px' }}
-                  title={`${day.date || day.day || ''}: ${qty} units`}
+                  title={`${day.trend_date}: ${qty} units`}
                 />
               );
             })}

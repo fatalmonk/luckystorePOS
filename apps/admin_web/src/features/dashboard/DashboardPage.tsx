@@ -26,26 +26,17 @@ export function DashboardPage() {
   const [isSalesModalOpen, setIsSalesModalOpen] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
+  // Typed API calls
   const missingMetricsQuery = useQuery({
     queryKey: ['dashboard-missing-metrics', storeId],
-    queryFn: async () => {
-      if (!storeId) return null;
-      const { data, error } = await supabase.rpc('get_dashboard_missing_metrics', { p_store_id: storeId });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => api.dashboard.getMissingMetrics(storeId!),
     enabled: !!storeId,
   });
   const missingMetrics = missingMetricsQuery.data || { toReceive: 0, toGive: 0, totalBalance: 0 };
 
   const monthlyTrendQuery = useQuery({
     queryKey: ['dashboard-monthly-trend', storeId],
-    queryFn: async () => {
-      if (!storeId) return null;
-      const { data, error } = await supabase.rpc('get_monthly_trend_metrics', { p_store_id: storeId });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => api.dashboard.getMonthlyTrend(storeId!),
     enabled: !!storeId,
   });
   const trends = monthlyTrendQuery.data || {
@@ -185,12 +176,7 @@ export function DashboardPage() {
 
   const retailKpisQuery = useQuery({
     queryKey: ['retail-kpis', storeId],
-    queryFn: async () => {
-      if (!storeId) return null;
-      const { data, error } = await supabase.rpc('get_retail_kpis', { p_store_id: storeId, p_days: 30 });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => api.dashboard.getRetailKpis(storeId!, 30),
     enabled: !!storeId,
   });
 
@@ -804,10 +790,10 @@ export function DashboardPage() {
                 </div>
                 {lowStock && lowStock.length > 0 ? (
                   <ul className="divide-y divide-warm-border">
-                    {lowStock.slice(0, 5).map((item: { id: string, name: string, quantity: number }) => (
-                      <li key={item.id} className="flex justify-between items-center px-6 py-3">
-                        <span className="text-sm text-warm-fg">{item.name}</span>
-                        <span className="text-sm font-semibold text-warm-danger">{item.quantity} left</span>
+                    {lowStock.slice(0, 5).map((item: { item_id: string; item_name: string; current_qty: number }) => (
+                      <li key={item.item_id} className="flex justify-between items-center px-6 py-3">
+                        <span className="text-sm text-warm-fg">{item.item_name}</span>
+                        <span className="text-sm font-semibold text-warm-danger">{item.current_qty} left</span>
                       </li>
                     ))}
                   </ul>

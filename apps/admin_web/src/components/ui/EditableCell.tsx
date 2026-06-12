@@ -22,6 +22,8 @@ interface EditableCellProps {
   inputClassName?: string;
   /** Show green flash animation on successful save */
   flashOnSave?: boolean;
+  /** Auto focus the input when entering edit mode */
+  autoFocus?: boolean;
 }
 
 export function EditableCell({

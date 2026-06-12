@@ -1,4 +1,4 @@
-import type { InventoryItem } from '../types/inventory';
+import type { InventoryItem } from '@/types/inventory';
 import { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -405,14 +405,14 @@ export function InventoryListPage() {
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             sortBy={sortBy}
-            onSortChange={setSortBy}
+            onSortChange={(sort: string) => setSortBy(sort as 'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc')}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
             hasActiveFilters={hasActiveFilters}
             stockFilter={stockFilter}
-            onStockFilterChange={setStockFilter}
+            onStockFilterChange={(filter: string) => setStockFilter(filter as 'all' | 'in_stock' | 'low' | 'out')}
             minPrice={minPrice}
             onMinPriceChange={setMinPrice}
             maxPrice={maxPrice}
