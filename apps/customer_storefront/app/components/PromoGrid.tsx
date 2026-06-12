@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface PromoItem {
@@ -11,7 +10,6 @@ interface PromoItem {
   ctaText: string;
   ctaHref: string;
   bgColor?: string;
-  bgImage?: string;
   gradient?: string;
 }
 
@@ -23,8 +21,8 @@ const defaultPromos: PromoItem[] = [
     subtitle: 'Up to 50% off essentials',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: '/promo-large.jpg',
-    gradient: 'from-black/70 to-transparent',
+    bgColor: '#1e293b',
+    gradient: 'linear-gradient(135deg, #E8B84B 0%, #D4941A 40%, #1e293b 100%)',
   },
   {
     id: 'fresh-arrivals',
@@ -52,14 +50,12 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
 
   if (!largePromo) return null;
 
-  // Compute styles outside JSX to avoid parser issues
-  const largePromoBgStyle = largePromo.bgImage
-    ? {}
+  // Compute styles outside JSX
+  const largePromoBgStyle = largePromo.gradient
+    ? { background: largePromo.gradient }
     : largePromo.bgColor
     ? { background: `linear-gradient(to bottom right, ${largePromo.bgColor}, ${largePromo.bgColor})` }
     : { background: 'linear-gradient(to bottom right, #FFF34D, #FBEF51)' };
-
-  const largePromoGradient = largePromo.gradient || 'from-black/70 to-transparent';
 
   return (
     <section className="mb-8 px-4 sm:px-6 lg:px-8 xl:px-10" aria-label="Promotions">
@@ -69,20 +65,7 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
           href={largePromo.ctaHref}
           className="relative col-span-1 md:col-span-2 h-64 flex flex-col justify-end overflow-hidden rounded-[18px] p-5 group"
         >
-          {largePromo.bgImage ? (
-            <>
-              <Image
-                src={largePromo.bgImage}
-                alt=""
-                fill
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                priority
-              />
-              <div className={`absolute inset-0 ${largePromoGradient} z-10`} />
-            </>
-          ) : (
-            <div className="absolute inset-0 z-0" style={largePromoBgStyle} />
-          )}
+          <div className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105" style={largePromoBgStyle} />
           <div className="relative z-20 w-full md:w-3/4">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
               {largePromo.title}
@@ -108,16 +91,8 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
               className="relative flex flex-1 flex-col justify-end overflow-hidden rounded-[18px] p-4 group"
               style={promo.bgColor ? { backgroundColor: promo.bgColor } : {}}
             >
-              {promo.bgImage && (
-                <>
-                  <Image
-                    src={promo.bgImage}
-                    alt=""
-                    fill
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/30" />
-                </>
+              {promo.bgColor && (
+                <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ backgroundColor: promo.bgColor }} />
               )}
               <div className="relative z-10">
                 <h3 className="text-lg font-bold text-black mb-2">
