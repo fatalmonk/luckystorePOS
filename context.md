@@ -14,6 +14,7 @@ Smart Pricing inline editor with competitor insights + CI test fixes
 - Smart Pricing inline editor with competitor insights
 - RPC functions grants for CI tests
 - Added docs/ to .gitignore and untracked existing docs/ files
+- Relocated brand assets to lucky-store-brand-guidelines/
 
 ## Decisions
 - Vercel deploys use Root Directory natively (no --cwd flags)
