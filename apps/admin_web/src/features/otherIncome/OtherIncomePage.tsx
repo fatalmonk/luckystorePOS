@@ -14,11 +14,11 @@ import { formatCurrency } from '../../lib/format';
 const incomeFormSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   category: z.enum(['Display Fee', 'Delivery', 'Miscellaneous'], {
-    errorMap: () => ({ message: 'Category must be selected' }),
+    message: 'Category must be selected',
   }),
-  amount: z.number({ invalid_type_error: 'Amount must be a number' }).min(1, 'Amount must be at least 1'),
+  amount: z.number({ message: 'Amount must be a number' }).min(1, 'Amount must be at least 1'),
   paymentMethod: z.enum(['Cash', 'bKash', 'Bank'], {
-    errorMap: () => ({ message: 'Payment method must be selected' }),
+    message: 'Payment method must be selected',
   }),
   notes: z.string().optional(),
 });

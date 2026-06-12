@@ -9,11 +9,9 @@ import { useTranslation } from 'react-i18next';
 const partySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   type: z.enum(['customer', 'supplier'], {
-    errorMap: () => ({ message: 'Type must be customer or supplier' }),
+    message: 'Type must be customer or supplier',
   }),
   phone: z.string().optional(),
-  email: z.string().email('Invalid email address').or(z.literal('')).optional(),
-  address: z.string().optional(),
 });
 
 export const ImportPartiesPage: React.FC = () => {
@@ -53,8 +51,6 @@ export const ImportPartiesPage: React.FC = () => {
       name: row.name.trim(),
       type: row.type,
       phone: row.phone?.trim() || null,
-      email: row.email?.trim() || null,
-      address: row.address?.trim() || null,
     }));
 
     const { error } = await supabase.from('parties').insert(payload);

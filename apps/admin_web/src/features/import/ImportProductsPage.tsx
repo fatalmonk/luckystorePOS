@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  price: z.number({ invalid_type_error: 'Sales Price must be a number' }).min(0, 'Sales Price cannot be negative'),
-  cost: z.number({ invalid_type_error: 'Purchase Price must be a number' }).min(0, 'Purchase Price cannot be negative'),
+  price: z.number({ message: 'Sales Price must be a number' }).min(0, 'Sales Price cannot be negative'),
+  cost: z.number({ message: 'Purchase Price must be a number' }).min(0, 'Purchase Price cannot be negative'),
   sku: z.string().optional(),
   barcode: z.string().optional(),
   category_id: z.string().optional(),
@@ -73,14 +73,13 @@ export const ImportProductsPage: React.FC = () => {
       const catObj = categories.find((c) => c.name === row.category_id);
       return {
         tenant_id: tenantId,
-        store_id: storeId || null,
         name: row.name.trim(),
         price: Number(row.price),
         cost: Number(row.cost),
         sku: row.sku?.trim() || `GEN-${Math.floor(Math.random() * 100000)}`,
         barcode: row.barcode?.trim() || null,
         category_id: catObj ? catObj.id : null,
-        active: true,
+        is_active: true,
       };
     });
 

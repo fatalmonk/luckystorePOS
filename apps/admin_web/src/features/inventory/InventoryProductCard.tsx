@@ -1,4 +1,4 @@
-import type { InventoryItem } from '../types/inventory';
+import type { InventoryItem } from '@/types/inventory';
 import React, { useState, useCallback } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { Pencil, Package } from 'lucide-react';
@@ -15,6 +15,7 @@ interface InventoryProductCardProps {
   isEditMode?: boolean;
   onInlineSave?: (itemId: string, field: keyof InventoryItem, value: string | number) => Promise<void>;
   storeId?: string;
+  tenantId?: string;
 }
 
 const formatMRP = (num?: number): string => {
@@ -167,7 +168,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 type="number"
                 onSave={(val) => handleSave('current_qty', val)}
                 onCancel={handleCancel}
-                validate={(v) => v >= 0 ? null : 'Invalid'}
+                validate={(v) => Number(v) >= 0 ? null : 'Invalid'}
                 inputClassName="w-12 text-[10px]"
                 autoFocus
               />

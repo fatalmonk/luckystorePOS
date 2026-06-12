@@ -9,8 +9,16 @@ import { useNotify } from '../../components/NotificationContext';
 import type { Database } from '../../lib/database.types';
 import { PriceHistoryMini } from './PriceHistoryMini';
 
+// Extended product type that includes fields from get_inventory_list RPC
+interface ExtendedProduct extends Database['public']['Tables']['items']['Row'] {
+  current_qty?: number;
+  category_name?: string;
+  reorder_status?: string;
+  last_purchased_date?: string;
+}
+
 interface ProductUpdateDrawerProps {
-  product: Database['public']['Tables']['items']['Row'] | null;
+  product: ExtendedProduct | null;
   storeId: string;
   onClose: () => void;
   /** Called with product name after successful update, for highlighting parent card */
