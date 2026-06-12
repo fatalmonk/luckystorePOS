@@ -204,3 +204,7 @@ data/*.json
 .aionrs/
 .env
 .env.local
+
+# Vercel custom public output directory
+dist_public/
+
