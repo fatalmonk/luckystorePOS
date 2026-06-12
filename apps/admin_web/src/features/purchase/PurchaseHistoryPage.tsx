@@ -11,6 +11,32 @@ import { formatCurrency } from '../../lib/format';
 
 type DateFilter = 'today' | 'week' | 'month' | 'all';
 
+interface PurchaseReceipt {
+  id: string;
+  invoice_number: string | null;
+  invoice_total: number | null;
+  amount_paid: number | null;
+  status: string;
+  created_at: string;
+  parties?: {
+    name: string;
+  };
+  purchase_receipt_items?: {
+    id: string;
+    quantity: number;
+    unit_cost: number;
+    items?: {
+      name: string;
+      sku: string | null;
+    };
+  }[];
+}
+
+interface DateFilters {
+  startDate?: string;
+  endDate?: string;
+}
+
 export function PurchaseHistoryPage() {
   const { storeId } = useAuth();
   const [dateFilter, setDateFilter] = useState<DateFilter>('month');
@@ -20,7 +46,7 @@ export function PurchaseHistoryPage() {
     queryKey: ['purchase-receipts', storeId, dateFilter],
     queryFn: () => {
       if (!storeId) return [];
-      const filters: unknown = {};
+      const filters: DateFilters = {};
       const today = new Date();
 
       if (dateFilter === 'today') {
@@ -36,7 +62,7 @@ export function PurchaseHistoryPage() {
         filters.endDate = today.toISOString().split('T')[0];
       }
 
-      return api.purchases.list(storeId, filters);
+      return api.purchases.list(storeId, filters) as Promise<PurchaseReceipt[]>;
     },
     enabled: !!storeId,
   });
@@ -156,7 +182,7 @@ export function PurchaseHistoryPage() {
                 </td>
               </tr>
             ) : (
-              filteredReceipts.map((receipt: unknown) => (
+              filteredReceipts.map((receipt: PurchaseReceipt) => (
                 <>
                   <tr
                     key={receipt.id}
@@ -211,7 +237,7 @@ export function PurchaseHistoryPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {receipt.purchase_receipt_items.map((item: Record<string, unknown>) => (
+                              {receipt.purchase_receipt_items?.map((item) => (
                                 <tr key={item.id} className="border-t border-gray-200">
                                   <td className="py-2">{item.items?.name || 'Unknown Product'}</td>
                                   <td className="py-2 text-text-muted">{item.items?.sku || '-'}</td>

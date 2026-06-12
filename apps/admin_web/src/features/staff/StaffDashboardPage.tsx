@@ -128,7 +128,8 @@ export const StaffDashboardPage: React.FC = () => {
           </div>
           <div>
             <p className="text-xs text-warm-dim font-bold uppercase tracking-wider">Sales processed today</p>
-            <h3 className="text-2xl font-black text-warm-fg mt-1">{formatCurrency(loadingPerformance ? '...' : totalRevenueToday)}
+            <h3 className="text-2xl font-black text-warm-fg mt-1">
+              {loadingPerformance ? '...' : formatCurrency(totalRevenueToday)}
             </h3>
           </div>
         </div>

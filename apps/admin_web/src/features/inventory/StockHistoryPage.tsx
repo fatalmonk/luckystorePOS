@@ -9,6 +9,16 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 
+interface StockHistoryEntry {
+  id: string;
+  delta: number;
+  item_name: string;
+  reason: string;
+  notes?: string;
+  performer_name?: string;
+  created_at: string;
+}
+
 export function StockHistoryPage() {
   const { storeId } = useAuth();
 
@@ -60,7 +70,7 @@ export function StockHistoryPage() {
           />
         ) : (
           <div className="divide-y divide-border-default">
-            {history?.map((log: unknown) => (
+            {history?.map((log: StockHistoryEntry) => (
               <div
                 key={log.id}
                 className="flex items-center gap-6 p-4 sm:p-6 transition-colors hover:bg-background-subtle"

@@ -74,19 +74,20 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
       }
 
       // 2. Create item
+      const insertData: any = {
+        name,
+        sku: sku || null,
+        barcode: barcode || null,
+        category_id: categoryId || null,
+        price,
+        cost: cost || null,
+        mrp: mrp || null,
+        image_url: imageUrl || null,
+        is_active: true,
+      };
       const { data: item, error: createError } = await supabase
         .from('items')
-        .insert({
-          name,
-          sku: sku || null,
-          barcode: barcode || null,
-          category_id: categoryId || null,
-          price,
-          cost: cost || null,
-          mrp: mrp || null,
-          image_url: imageUrl || null,
-          active: true,
-        })
+        .insert(insertData)
         .select()
         .single();
       if (createError) throw new Error(createError.message);

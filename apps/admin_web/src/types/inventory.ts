@@ -20,7 +20,7 @@ export interface InventoryItem {
   image_url?: string;
   last_purchased_date?: string;
   min_qty?: number;
-  active?: boolean;
+  is_active?: boolean;
 }
 
 export const INVENTORY_NUMERIC_FIELDS = ['price', 'cost', 'mrp', 'current_qty'] as const;
