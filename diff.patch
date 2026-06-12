@@ -1,0 +1,1393 @@
+diff --git a/apps/admin_web/src/lib/api/domains/competitorPrices.ts b/apps/admin_web/src/lib/api/domains/competitorPrices.ts
+index 04aed30..2ef4698 100644
+--- a/apps/admin_web/src/lib/api/domains/competitorPrices.ts
++++ b/apps/admin_web/src/lib/api/domains/competitorPrices.ts
+@@ -88,7 +88,7 @@ export async function updateCompetitorPrice(
+     .update({
+       ...data,
+       competitor_url: data.competitor_url || null,
+-      updated_at: new Date().toISOString(),
++      updated_at: new Date().toISOString() as never,
+     })
+     .eq('id', id);
+ 
+@@ -107,8 +107,8 @@ export async function deleteCompetitorPrice(id: string): Promise<void> {
+ export async function fetchCompetitorNames(storeId: string): Promise<string[]> {
+   const { data, error } = await supabase
+     .from('competitor_prices')
+-    .select('competitor_name')
+-    .eq('store_id', storeId)
++    .select('competitor_name, store_id')
++    .eq('store_id' as any, storeId)
+     .order('competitor_name');
+ 
+   if (error) throw error;
+diff --git a/apps/admin_web/src/lib/api/domains/pos.ts b/apps/admin_web/src/lib/api/domains/pos.ts
+index 6996d0b..f27a22d 100644
+--- a/apps/admin_web/src/lib/api/domains/pos.ts
++++ b/apps/admin_web/src/lib/api/domains/pos.ts
+@@ -21,7 +21,7 @@ export const pos = {
+     const { data, error } = await supabase.rpc('get_pos_categories', { p_store_id: storeId });
+     if (error) throw error;
+     debugLog('Raw categories response', data);
+-    return mapCategories(data);
++    return mapCategories(data as any);
+   },
+   getProducts: async (storeId: string, search?: string, categoryId?: string): Promise<PosProduct[]> => {
+     debugLog('Fetching products', { storeId, search, categoryId });
+@@ -42,7 +42,7 @@ export const pos = {
+   lookupByScan: async (scanValue: string, storeId: string): Promise<PosProduct | null> => {
+     debugLog('Looking up item by scan', { scanValue, storeId });
+     const { data, error } = await supabase.rpc('lookup_item_by_scan', {
+-      p_barcode: scanValue,
++      p_scan_value: scanValue,
+       p_store_id: storeId,
+     });
+     if (error) throw error;
+diff --git a/apps/admin_web/src/lib/api/domains/products.ts b/apps/admin_web/src/lib/api/domains/products.ts
+index 8d31d0a..c212e55 100644
+--- a/apps/admin_web/src/lib/api/domains/products.ts
++++ b/apps/admin_web/src/lib/api/domains/products.ts
+@@ -6,7 +6,7 @@ export const products = {
+     const { data, error } = await supabase
+       .from('items')
+       .select('*')
+-      .eq('is_active', true)
++      .eq('active', true)
+       .order('name');
+     if (error) throw error;
+     return data;
+diff --git a/apps/admin_web/src/lib/api/domains/purchases.ts b/apps/admin_web/src/lib/api/domains/purchases.ts
+index 7a2ad32..587c8c7 100644
+--- a/apps/admin_web/src/lib/api/domains/purchases.ts
++++ b/apps/admin_web/src/lib/api/domains/purchases.ts
+@@ -43,7 +43,7 @@ export const purchases = {
+ 
+     if (totalError) throw totalError;
+ 
+-    const totalValue = totalData?.reduce((sum: number, r: unknown) => sum + (r.invoice_total || 0), 0) || 0;
++    const totalValue = totalData?.reduce((sum: number, r: any) => sum + (r.invoice_total || 0), 0) || 0;
+ 
+     const { count: draftCount, error: draftError } = await supabase
+       .from('purchase_receipts')
+diff --git a/apps/admin_web/src/lib/api/domains/reports.ts b/apps/admin_web/src/lib/api/domains/reports.ts
+index d23525e..66e9ce9 100644
+--- a/apps/admin_web/src/lib/api/domains/reports.ts
++++ b/apps/admin_web/src/lib/api/domains/reports.ts
+@@ -69,7 +69,7 @@ export const reports = {
+     const { data: items, error: itemsError } = await supabase
+       .from('items')
+       .select('id, name, sku, cost, price, is_active')
+-      .eq('is_active', true);
++      .eq('active', true);
+ 
+     if (itemsError) throw itemsError;
+ 
+diff --git a/apps/admin_web/src/lib/api/domains/settings.ts b/apps/admin_web/src/lib/api/domains/settings.ts
+index 6fc5b63..d8aa5c2 100644
+--- a/apps/admin_web/src/lib/api/domains/settings.ts
++++ b/apps/admin_web/src/lib/api/domains/settings.ts
+@@ -39,7 +39,7 @@ export const settings = {
+     if (!authId) throw new Error('Signup succeeded but no auth user ID returned');
+     
+     // 2. Create user record via RPC (bypasses RLS)
+-    const { data, error } = await supabase.rpc('create_store_user', {
++    const { data, error } = await supabase.rpc('create_store_user' as any, {
+       p_email: user.email,
+       p_full_name: user.fullName,
+       p_role: user.role,
+@@ -93,7 +93,7 @@ export const settings = {
+     return data;
+   },
+   updateUser: async (userId: string, updates: { name?: string; role?: string; pos_pin?: string }) => {
+-    const { data, error } = await supabase.rpc('update_store_user', {
++    const { data, error } = await supabase.rpc('update_store_user' as any, {
+       p_user_id: userId,
+       p_updates: updates,
+     });
+@@ -101,7 +101,7 @@ export const settings = {
+     return data;
+   },
+   deleteUser: async (userId: string) => {
+-    const { data, error } = await supabase.rpc('delete_store_user', {
++    const { data, error } = await supabase.rpc('delete_store_user' as any, {
+       p_user_id: userId,
+     });
+     if (error) throw error;
+diff --git a/apps/admin_web/src/styles/tokens.css b/apps/admin_web/src/styles/tokens.css
+index 5635607..c2d5474 100644
+--- a/apps/admin_web/src/styles/tokens.css
++++ b/apps/admin_web/src/styles/tokens.css
+@@ -1,7 +1,8 @@
+ /**
+  * Lucky Store Design Token Dictionary
+  * Version: 1.0.0
+- * Note: Do not edit these values directly. Refer to the canonical design dictionary.
++ * Source: design-tokens/tokens.json (canonical)
++ * This file is generated - do not edit directly
+  */
+ :root {
+   /* 1.1 Primitives (Raw Hex Scale) */
+@@ -10,7 +11,12 @@
+   --color-primitive-indigo-500: #4F46E5;
+   --color-primitive-indigo-600: #4338CA;
+   --color-primitive-indigo-700: #3730A3;
+-  
++
++  --color-primitive-teal-50: #F0FDFA;
++  --color-primitive-teal-500: #0D9488;
++  --color-primitive-teal-600: #0F766E;
++  --color-primitive-teal-700: #0F766E;
++
+   --color-primitive-green-50: #F0FDF4;
+   --color-primitive-green-500: #22C55E;
+   --color-primitive-green-700: #15803D;
+@@ -23,6 +29,11 @@
+   --color-primitive-amber-400: #FBBF24;
+   --color-primitive-amber-600: #D97706;
+ 
++  --color-primitive-yellow-50: #FEF3C7;
++  --color-primitive-yellow-400: #E8B84B;
++  --color-primitive-yellow-600: #D4941A;
++  --color-primitive-yellow-700: #B0781A;
++
+   --color-primitive-neutral-0: #FFFFFF;
+   --color-primitive-neutral-50: #F8FAFC;
+   --color-primitive-neutral-100: #F1F5F9;
+@@ -33,66 +44,68 @@
+   --color-primitive-neutral-900: #0F172A;
+ 
+   /* 1.2 Semantic Tokens (Light Mode Default) */
+-  
++
+   /* Background */
+-  --color-background-default: #f5f4ed;
+-  --color-background-subtle: #faf9f5;
++  --color-background-default: #F8FAFC;
++  --color-background-subtle: #F1F5F9;
+ 
+   /* Surface */
+-  --color-surface-default: #faf9f5;
+-  --color-surface-raised: #faf9f5;
+-  --color-surface-overlay: rgba(20, 20, 19, 0.45);
+-
+-  /* Primary (Terracotta Accent) */
+-  --color-primary-default: #c96442;
+-  --color-primary-hover: #d97757;
+-  --color-primary-pressed: #b53333;
+-  --color-primary-subtle: #f5f4ed;
+-  --color-primary-on: #ffffff;
+-
+-  /* Secondary (Sage Green) */
+-  --color-secondary-default: #4a7c59;
+-  --color-secondary-hover: #3d664a;
+-  --color-secondary-subtle: #faf9f5;
+-  --color-secondary-on: #ffffff;
++  --color-surface-default: #FFFFFF;
++  --color-surface-raised: #FFFFFF;
++  --color-surface-overlay: rgba(15, 23, 42, 0.45);
++
++  /* Primary (Gold-Yellow) */
++  --color-primary-default: #E8B84B;
++  --color-primary-hover: #D4941A;
++  --color-primary-pressed: #B0781A;
++  --color-primary-subtle: #FEF3C7;
++  --color-primary-on: #1E293B;
++
++  /* Secondary (Teal) */
++  --color-secondary-default: #0D9488;
++  --color-secondary-hover: #0F766E;
++  --color-secondary-subtle: #F0FDFA;
++  --color-secondary-on: #FFFFFF;
+ 
+   /* Semantic - Success */
+-  --color-success-default: #4a7c59;
+-  --color-success-dark: #3d664a;
+-  --color-success-subtle: #f5f4ed;
+-  --color-success-on: #ffffff;
++  --color-success-default: #22C55E;
++  --color-success-dark: #15803D;
++  --color-success-subtle: #F0FDF4;
++  --color-success-on: #FFFFFF;
+ 
+   /* Semantic - Danger */
+-  --color-danger-default: #b53333;
+-  --color-danger-dark: #9e2a2a;
+-  --color-danger-subtle: #faf9f5;
+-  --color-danger-on: #ffffff;
++  --color-danger-default: #EF4444;
++  --color-danger-dark: #B91C1C;
++  --color-danger-subtle: #FFF1F2;
++  --color-danger-on: #FFFFFF;
+ 
+   /* Semantic - Warning */
+-  --color-warning-default: #c9a227;
+-  --color-warning-dark: #ac861d;
+-  --color-warning-subtle: #faf9f5;
+-  --color-warning-on: #ffffff;
++  --color-warning-default: #FBBF24;
++  --color-warning-dark: #D97706;
++  --color-warning-subtle: #FFFBEB;
++  --color-warning-on: #1E293B;
+ 
+   /* Semantic - Info */
+   --color-info-default: #3B82F6;
+   --color-info-subtle: #EFF6FF;
+-  --color-info-on: #ffffff;
++  --color-info-on: #FFFFFF;
+ 
+   /* Borders */
+-  --color-border-default: #e8e6dc;
+-  --color-border-strong: #b0aea5;
++  --color-border-default: #E2E8F0;
++  --color-border-strong: #94A3B8;
+ 
+   /* Text */
+-  --color-text-primary: #141413;
+-  --color-text-secondary: #5e5d59;
+-  --color-text-muted: #87867f;
+-  --color-text-inverse: #ffffff;
+-  --color-text-link: #c96442;
++  --color-text-primary: #0F172A;
++  --color-text-secondary: #475569;
++  --color-text-muted: #94A3B8;
++  --color-text-inverse: #FFFFFF;
++  --color-text-link: #4F46E5;
+ 
+   /* 2. Typography */
+-  --font-family-primary: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+-  --font-family-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
++  --font-family-display: 'Inter', 'Hind Siliguri', system-ui, sans-serif;
++  --font-family-body: 'Inter', 'Hind Siliguri', system-ui, sans-serif;
++  --font-family-bengali: 'Hind Siliguri', 'Inter', system-ui, sans-serif;
++  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+ 
+   --font-display-size: 32px;
+   --font-display-line-height: 1.2;
+@@ -134,14 +147,6 @@
+   --font-label-sm-line-height: 1.2;
+   --font-label-sm-weight: 500;
+ 
+-  --font-mono-md-size: 14px;
+-  --font-mono-md-line-height: 1.4;
+-  --font-mono-md-weight: 400;
+-
+-  --font-mono-lg-size: 20px;
+-  --font-mono-lg-line-height: 1.2;
+-  --font-mono-lg-weight: 500;
+-
+   /* 3. Spacing Scale */
+   --space-1: 4px;
+   --space-2: 8px;
+@@ -154,17 +159,6 @@
+   --space-12: 48px;
+   --space-16: 64px;
+ 
+-  /* Inset convenience aliases */
+-  --inset-sm: var(--space-2);
+-  --inset-md: var(--space-4);
+-  --inset-lg: var(--space-6);
+-  --inset-squish-sm-y: 4px;
+-  --inset-squish-sm-x: 8px;
+-  --inset-squish-md-y: 8px;
+-  --inset-squish-md-x: 16px;
+-  --inset-squish-lg-y: 12px;
+-  --inset-squish-lg-x: 24px;
+-
+   /* 4. Border Radii */
+   --radius-none: 0px;
+   --radius-xs: 4px;
+@@ -179,7 +173,7 @@
+   --elevation-2: 0px 4px 8px -2px rgba(15, 23, 42, 0.10), 0px 2px 4px -2px rgba(15, 23, 42, 0.06);
+   --elevation-3: 0px 20px 40px -8px rgba(15, 23, 42, 0.14), 0px 8px 16px -4px rgba(15, 23, 42, 0.08);
+ 
+-  /* 7. Motion & Animation */
++  /* 6. Motion & Animation */
+   --motion-duration-fast: 120ms;
+   --motion-duration-normal: 220ms;
+   --motion-duration-slow: 350ms;
+@@ -187,22 +181,22 @@
+   --motion-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+   --motion-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+ 
+-  /* 8. Legacy Token Aliases (Deprecation Bridge) */
++  /* 7. Legacy Token Aliases (Deprecation Bridge) */
+   --bg-app: var(--color-background-default);
+   --bg-sidebar: var(--color-surface-default);
+   --bg-sidebar-hover: var(--color-background-subtle);
+   --bg-header: var(--color-surface-default);
+   --bg-card: var(--color-surface-default);
+   --bg-input: var(--color-surface-default);
+-  
++
+   --text-main: var(--color-text-primary);
+   --text-muted: var(--color-text-muted);
+   --text-sidebar: var(--color-text-secondary);
+   --text-sidebar-active: var(--color-primary-default);
+-  
++
+   --border-color: var(--color-border-default);
+   --border-light: var(--color-border-default);
+-  
++
+   --shadow-sm: var(--elevation-1);
+   --shadow-md: var(--elevation-2);
+   --shadow-lg: var(--elevation-3);
+@@ -214,126 +208,65 @@
+   --color-warning: var(--color-warning-default);
+ 
+   /* ============================================
+-     WARM DESIGN SYSTEM (Redesign Phase)
+-     Anthropic-inspired, luxury admin palette
++     DARK MODE — Unified Design System Dark Palette
++     Triggered by: [data-theme="dark"] on <html>
+      ============================================ */
+-  
+-  /* Warm Backgrounds */
+-  --warm-bg: #f5f4ed;
+-  --warm-surface: #faf9f5;
+-  
+-  /* Warm Slate scale for Tailwind gray/slate overrides */
+-  --slate-50: #faf9f5;
+-  --slate-100: #f5f4ed;
+-  --slate-200: #e8e6dc;
+-  --slate-300: #d1cfc5;
+-  --slate-400: #b0aea5;
+-  --slate-500: #87867f;
+-  --slate-600: #5e5d59;
+-  --slate-700: #4d4c48;
+-  --slate-800: #30302e;
+-  --slate-900: #141413;
+-  
+-  /* Warm Text */
+-  --warm-fg: #141413;
+-  --warm-muted: #5e5d59;
+-  --warm-dim: #87867f;
+-  
+-  /* Warm Borders */
+-  --warm-border: #f0eee6;
+-  --warm-border-warm: #e8e6dc;
+-  
+-  /* Warm Accent (Terracotta) */
+-  --warm-accent: #c96442;
+-  --warm-accent-light: #d97757;
+-  
+-  /* Warm Semantic */
+-  --warm-success: #4a7c59;
+-  --warm-warning: #c9a227;
+-  --warm-danger: #b53333;
+-  
+-  /* Warm Depth */
+-  --warm-sand: #e8e6dc;
+-  --warm-charcoal: #4d4c48;
+-  --warm-dark: #30302e;
+-  --warm-deep: #141413;
+-  --warm-silver: #b0aea5;
+-  --warm-ring: #d1cfc5;
+-  
+-  /* Warm Typography */
+-  --font-display: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+-  --font-mono-warm: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+-  
+-  /* Warm Spacing */
+-  --sidebar-expanded: 260px;
+-  --sidebar-collapsed: 72px;
+-  --header-height: 64px;
+-  
+-  /* Warm Transitions */
+-  --transition-warm: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+-}
+-
+-/* ============================================
+-   DARK MODE — Warm Luxury Dark Palette
+-   Triggered by: [data-theme="dark"] on <html>
+-   ============================================ */
+ [data-theme="dark"] {
+-  /* Backgrounds (deep warm darks) */
+-  --color-background-default: #1a1917;
+-  --color-background-subtle: #201f1d;
++  /* Backgrounds */
++  --color-background-default: #0F172A;
++  --color-background-subtle: #1E293B;
+ 
+   /* Surfaces */
+-  --color-surface-default: #201f1d;
+-  --color-surface-raised: #2a2927;
++  --color-surface-default: #1E293B;
++  --color-surface-raised: #334155;
+   --color-surface-overlay: rgba(0, 0, 0, 0.6);
+ 
+-  /* Primary — terracotta stays, slightly lighter in dark */
+-  --color-primary-default: #d97757;
+-  --color-primary-hover: #e08868;
+-  --color-primary-pressed: #c96442;
+-  --color-primary-subtle: #2a1f1a;
+-  --color-primary-on: #ffffff;
++  /* Primary — yellow/gold adjusted for dark */
++  --color-primary-default: #E8B84B;
++  --color-primary-hover: #F0C85C;
++  --color-primary-pressed: #D4941A;
++  --color-primary-subtle: #2D2610;
++  --color-primary-on: #1E293B;
+ 
+-  /* Secondary */
+-  --color-secondary-default: #5a9c6f;
+-  --color-secondary-hover: #4a7c59;
+-  --color-secondary-subtle: #1a2420;
+-  --color-secondary-on: #ffffff;
++  /* Secondary — teal adjusted for dark */
++  --color-secondary-default: #14B8A6;
++  --color-secondary-hover: #0D9488;
++  --color-secondary-subtle: #0A1F1D;
++  --color-secondary-on: #FFFFFF;
+ 
+   /* Semantic — Success */
+-  --color-success-default: #5a9c6f;
+-  --color-success-dark: #4a7c59;
+-  --color-success-subtle: #1a2420;
+-  --color-success-on: #ffffff;
++  --color-success-default: #22C55E;
++  --color-success-dark: #16A34A;
++  --color-success-subtle: #0A2D15;
++  --color-success-on: #FFFFFF;
+ 
+   /* Semantic — Danger */
+-  --color-danger-default: #d94f4f;
+-  --color-danger-dark: #b53333;
+-  --color-danger-subtle: #2a1a1a;
+-  --color-danger-on: #ffffff;
++  --color-danger-default: #EF4444;
++  --color-danger-dark: #F87171;
++  --color-danger-subtle: #2D0A0A;
++  --color-danger-on: #FFFFFF;
+ 
+   /* Semantic — Warning */
+-  --color-warning-default: #d4a827;
+-  --color-warning-dark: #c9a227;
+-  --color-warning-subtle: #2a2010;
+-  --color-warning-on: #ffffff;
++  --color-warning-default: #FBBF24;
++  --color-warning-dark: #FCD34D;
++  --color-warning-subtle: #2D2000;
++  --color-warning-on: #1E293B;
+ 
+   /* Info */
+-  --color-info-default: #5b9bd5;
+-  --color-info-subtle: #1a2030;
+-  --color-info-on: #ffffff;
++  --color-info-default: #60A5FA;
++  --color-info-subtle: #0A1D2D;
++  --color-info-on: #FFFFFF;
+ 
+   /* Borders */
+-  --color-border-default: #333230;
+-  --color-border-strong: #4d4c48;
++  --color-border-default: #334155;
++  --color-border-strong: #475569;
+ 
+   /* Text */
+-  --color-text-primary: #f5f4ed;
+-  --color-text-secondary: #c5c3bc;
+-  --color-text-muted: #87867f;
+-  --color-text-inverse: #141413;
+-  --color-text-link: #d97757;
++  --color-text-primary: #F8FAFC;
++  --color-text-secondary: #CBD5E1;
++  --color-text-muted: #94A3B8;
++  --color-text-inverse: #0F172A;
++  --color-text-link: #93C5FD;
+ 
+   /* Legacy aliases (so legacy components get dark mode too) */
+   --bg-app: var(--color-background-default);
+@@ -348,38 +281,6 @@
+   --text-sidebar-active: var(--color-primary-default);
+   --border-color: var(--color-border-default);
+ 
+-  /* Warm tokens — dark equivalents */
+-  --warm-bg: #1a1917;
+-  --warm-surface: #201f1d;
+-
+-  /* Warm Slate scale for Tailwind gray/slate overrides - Inverted in dark mode */
+-  --slate-50: #141413;
+-  --slate-100: #30302e;
+-  --slate-200: #4d4c48;
+-  --slate-300: #5e5d59;
+-  --slate-400: #87867f;
+-  --slate-500: #b0aea5;
+-  --slate-600: #d1cfc5;
+-  --slate-700: #e8e6dc;
+-  --slate-800: #f5f4ed;
+-  --slate-900: #faf9f5;
+-  --warm-fg: #f5f4ed;
+-  --warm-muted: #c5c3bc;
+-  --warm-dim: #87867f;
+-  --warm-border: #2a2927;
+-  --warm-border-warm: #333230;
+-  --warm-accent: #d97757;
+-  --warm-accent-light: #e08868;
+-  --warm-success: #5a9c6f;
+-  --warm-warning: #d4a827;
+-  --warm-danger: #d94f4f;
+-  --warm-sand: #333230;
+-  --warm-charcoal: #c5c3bc;
+-  --warm-dark: #e8e6dc;
+-  --warm-deep: #f5f4ed;
+-  --warm-silver: #87867f;
+-  --warm-ring: #4d4c48;
+-
+   /* Elevations — stronger in dark */
+   --elevation-1: 0px 1px 4px 0px rgba(0, 0, 0, 0.3), 0px 1px 2px -1px rgba(0, 0, 0, 0.2);
+   --elevation-2: 0px 4px 12px -2px rgba(0, 0, 0, 0.35), 0px 2px 6px -2px rgba(0, 0, 0, 0.2);
+@@ -389,5 +290,4 @@
+ /* Smooth theme transition */
+ html {
+   transition: background-color 0.2s ease, color 0.2s ease;
+-}
+-
++}
+\ No newline at end of file
+diff --git a/brand/README.md b/brand/README.md
+index 3ca0b64..e4dff90 100644
+--- a/brand/README.md
++++ b/brand/README.md
+@@ -65,11 +65,11 @@
+ 
+ | Element | Light BG | Dark BG |
+ |---------|----------|---------|
+-| Bag | `#dc5f3b` | `#ffffff` |
+-| L letter | `#ffffff` | `#dc5f3b` |
+-| Leaf | `#7CB342` | `#AED581` |
+-| Wordmark | `#1c1917` | `#faf8f5` |
+-| Tagline | `#78716c` | `#a8a29e` |
++| Bag | `#E8B84B` | `#FFFFFF` |
++| L letter | `#FFFFFF` | `#E8B84B` |
++| Leaf | `#15803D` | `#22C55E` |
++| Wordmark | `#0F172A` | `#F8FAFC` |
++| Tagline | `#475569` | `#94A3B8` |
+ 
+ ### ❌ Never Do
+ - Stretch, rotate, or warp the logo
+@@ -106,8 +106,8 @@
+ **Specs:**
+ - Canvas: `1080×1350px` (4:5) or `1080×1080px` (1:1)
+ - Photo area: Top 65%
+-- Gradient overlay bottom: `#1c1917` → transparent
+-- Price CTA: Terracotta `#dc5f3b` pill
++- Gradient overlay bottom: `#0F172A` → transparent
++- Price CTA: Gold `#E8B84B` pill
+ - Font: Inter Bold (English), Hind Siliguri Bold (Bangla)
+ 
+ ### Instagram Story (9:16)
+@@ -122,7 +122,7 @@
+ │   photo]       │
+ │                │
+ │  ┌──────────┐  │
+-│  │ Swipe Up │  │  ← Terracotta pill, bottom
++│  │ Swipe Up │  │  ← Gold pill, bottom
+ │  │ to Order │  │
+ │  └──────────┘  │
+ └────────────────┘
+@@ -132,14 +132,14 @@
+ - Canvas: `1080×1920px`
+ - Full-bleed photo
+ - Stickers: Inter Bold, white with `rgba(0,0,0,0.5)` backdrop
+-- "Swipe Up" pill: `#dc5f3b`, rounded `9999px`
++- "Swipe Up" pill: `#E8B84B`, rounded `9999px`
+ 
+ ### Facebook Cover (16:9)
+ 
+ - Canvas: `820×312px`
+ - Left third: Logo + tagline
+ - Right two-thirds: Seasonal hero photo
+-- Overlay gradient left-to-right: opaque `#faf8f5` → transparent
++- Overlay gradient left-to-right: opaque `#F8FAFC` → transparent
+ - Update seasonally per campaign calendar
+ 
+ ### WhatsApp Status (9:16)
+@@ -224,18 +224,23 @@ Add these to your swatches:
+ 
+ | Name | Hex | Usage |
+ |------|-----|-------|
+-| Terracotta | `#dc5f3b` | CTAs, logo bag, active states |
+-| Terracotta Dark | `#c4542e` | Hover, pressed |
+-| Ivory | `#faf8f5` | Backgrounds, cards |
+-| White | `#ffffff` | Surfaces, inverse logo |
+-| Charcoal | `#1c1917` | Headlines, body text |
+-| Muted Grey | `#78716c` | Captions, meta text |
+-| Light Grey | `#a8a29e` | Disabled, placeholders |
+-| Border | `#e7e5e4` | Dividers, card outlines |
+-| Success Green | `#2d6a4f` | In stock, confirmed |
+-| Warning Orange | `#b45309` | Low stock, limited |
+-| Danger Red | `#c3312f` | Sold out, cancelled |
+-| Leaf Green | `#7CB342` | Logo leaf, fresh accents |
++| Gold | `#E8B84B` | CTAs, logo accent, active states |
++| Gold Dark | `#D4941A` | Hover, pressed |
++| Gold Deeper | `#B0781A` | Active/pressed |
++| Gold Subtle | `#FEF3C7` | Backgrounds, badges |
++| Gold On | `#1E293B` | Text on gold |
++| Slate 50 | `#F8FAFC` | Backgrounds |
++| Slate 100 | `#F1F5F9` | Subtle backgrounds |
++| White | `#FFFFFF` | Surfaces |
++| Slate 950 | `#0F172A` | Headlines, body text |
++| Slate 600 | `#475569` | Captions, meta text |
++| Slate 400 | `#94A3B8` | Disabled, placeholders |
++| Slate 200 | `#E2E8F0` | Dividers, card outlines |
++| Teal | `#0D9488` | Secondary actions |
++| Success Green | `#22C55E` | In stock, confirmed |
++| Warning Amber | `#FBBF24` | Low stock, limited |
++| Danger Red | `#EF4444` | Sold out, cancelled |
++| Leaf Green | `#15803D` | Logo leaf, fresh accents |
+ 
+ ---
+ 
+diff --git a/brand/assets/logo/canva-svg/lucky-store-canva.svg b/brand/assets/logo/canva-svg/lucky-store-canva.svg
+index 012f3fb..ade3572 100644
+--- a/brand/assets/logo/canva-svg/lucky-store-canva.svg
++++ b/brand/assets/logo/canva-svg/lucky-store-canva.svg
+@@ -1,28 +1,28 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<!-- Lucky Store — Canva-Optimized Final Logo -->
+-<!-- Flat terracotta trapezoid bag, serif L, leaf behind handle, bold wordmark -->
++<!-- Lucky Store — Canva-Optimized Final Logo - Gold Variant -->
++<!-- Flat gold trapezoid bag, serif L, leaf behind handle, bold wordmark -->
+ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+   <defs>
+-    <solidColor id="terracotta" solid-color="#C75B3A"/>
+-    <solidColor id="leaf" solid-color="#7CB342"/>
+-    <solidColor id="leaf-light" solid-color="#9CCC65"/>
++    <solidColor id="gold" solid-color="#E8B84B"/>
++    <solidColor id="leaf" solid-color="#15803D"/>
++    <solidColor id="leaf-light" solid-color="#22C55E"/>
+   </defs>
+ 
+-  <rect x="0" y="0" width="400" height="500" fill="#FAF0E6" rx="0" id="bg"/>
++  <rect x="0" y="0" width="400" height="500" fill="#F8FAFC" rx="0" id="bg"/>
+ 
+   <g id="leaf">
+     <path d="M 200 145
+              C 200 120, 205 100, 215 85" 
+-          stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
++          stroke="#0F5A26" stroke-width="5" fill="none" stroke-linecap="round"/>
+     <path d="M 215 85
+              C 195 70, 195 45, 215 30
+              C 255 40, 275 70, 255 95
+              C 245 105, 225 100, 215 85
+              Z" 
+-          fill="#7CB342"/>
++          fill="#15803D"/>
+     <path d="M 215 85
+              C 225 75, 235 60, 245 50" 
+-          stroke="#9CCC65" stroke-width="3" fill="none" stroke-linecap="round"/>
++          stroke="#22C55E" stroke-width="3" fill="none" stroke-linecap="round"/>
+   </g>
+ 
+   <g id="bag">
+@@ -31,15 +31,15 @@
+              L 310 340
+              L 90 340
+              Z" 
+-          fill="#C75B3A"/>
++          fill="#E8B84B"/>
+ 
+     <path d="M 155 160
+              C 155 110, 170 95, 200 95
+              C 230 95, 245 110, 245 160" 
+-          stroke="#C75B3A" stroke-width="10" fill="none" stroke-linecap="round"/>
++          stroke="#E8B84B" stroke-width="10" fill="none" stroke-linecap="round"/>
+ 
+-    <circle cx="155" cy="160" r="6" fill="#8B3A22"/>
+-    <circle cx="245" cy="160" r="6" fill="#8B3A22"/>
++    <circle cx="155" cy="160" r="6" fill="#B0781A"/>
++    <circle cx="245" cy="160" r="6" fill="#B0781A"/>
+   </g>
+ 
+   <g id="letter-l" fill="#FFFFFF">
+@@ -58,11 +58,11 @@
+   </g>
+ 
+   <text x="200" y="400" 
+-        font-family="Montserrat, Inter, Arial Black, sans-serif" 
++        font-family="Inter, Arial Black, sans-serif" 
+         font-size="48" 
+         font-weight="800" 
+-        fill="#C75B3A" 
++        fill="#E8B84B" 
+         text-anchor="middle"
+         letter-spacing="6"
+         id="wordmark">LUCKY STORE</text>
+-</svg>
++</svg>
+\ No newline at end of file
+diff --git a/brand/assets/logo/svg/lucky-store-inverse.svg b/brand/assets/logo/svg/lucky-store-inverse.svg
+index 78c7afe..fa7955d 100644
+--- a/brand/assets/logo/svg/lucky-store-inverse.svg
++++ b/brand/assets/logo/svg/lucky-store-inverse.svg
+@@ -1,52 +1,52 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<!-- Lucky Store — Inverse (Dark / Terracotta Backgrounds) -->
++<!-- Lucky Store — Inverse (Dark / Gold Backgrounds) - Gold Variant -->
+ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+   <defs>
+-    <solidColor id="cream" solid-color="#FAF0E6"/>
+-    <solidColor id="leaf" solid-color="#AED581"/>
+-    <solidColor id="leaf-light" solid-color="#C5E1A5"/>
++    <solidColor id="slate-bg" solid-color="#0F172A"/>
++    <solidColor id="leaf" solid-color="#22C55E"/>
++    <solidColor id="leaf-light" solid-color="#4ADE80"/>
+   </defs>
+ 
+-  <rect x="0" y="0" width="400" height="500" fill="#C75B3A" rx="0" id="bg"/>
++  <rect x="0" y="0" width="400" height="500" fill="#E8B84B" rx="0" id="bg"/>
+ 
+   <!-- Leaf (lighter green for dark bg contrast) -->
+   <g id="leaf">
+     <path d="M 200 145
+              C 200 120, 205 100, 215 85" 
+-          stroke="#7CB342" stroke-width="5" fill="none" stroke-linecap="round"/>
+-    
++          stroke="#15803D" stroke-width="5" fill="none" stroke-linecap="round"/>
++   
+     <path d="M 215 85
+              C 195 70, 195 45, 215 30
+              C 255 40, 275 70, 255 95
+              C 245 105, 225 100, 215 85
+              Z" 
+-          fill="#AED581"/>
+-    
++          fill="#22C55E"/>
++   
+     <path d="M 215 85
+              C 225 75, 235 60, 245 50" 
+-          stroke="#C5E1A5" stroke-width="3" fill="none" stroke-linecap="round"/>
++          stroke="#4ADE80" stroke-width="3" fill="none" stroke-linecap="round"/>
+   </g>
+ 
+-  <!-- Bag (cream/white on dark) -->
++  <!-- Bag (white/slate on gold) -->
+   <g id="bag">
+     <path d="M 120 160
+              L 280 160
+              L 310 340
+              L 90 340
+              Z" 
+-          fill="#FAF0E6"/>
++          fill="#F8FAFC"/>
+ 
+     <path d="M 155 160
+              C 155 110, 170 95, 200 95
+              C 230 95, 245 110, 245 160" 
+-          stroke="#FAF0E6" stroke-width="10" fill="none" stroke-linecap="round"/>
++          stroke="#F8FAFC" stroke-width="10" fill="none" stroke-linecap="round"/>
+ 
+-    <circle cx="155" cy="160" r="6" fill="#D7CCC8"/>
+-    <circle cx="245" cy="160" r="6" fill="#D7CCC8"/>
++    <circle cx="155" cy="160" r="6" fill="#E2E8F0"/>
++    <circle cx="245" cy="160" r="6" fill="#E2E8F0"/>
+   </g>
+ 
+-  <!-- Serif L (terracotta on cream bag) -->
+-  <g id="letter-l" fill="#C75B3A">
++  <!-- Serif L (gold on white bag) -->
++  <g id="letter-l" fill="#E8B84B">
+     <path d="M 175 195
+              L 195 195
+              L 195 295
+@@ -54,7 +54,7 @@
+              L 235 315
+              L 175 315
+              Z" />
+-    
++   
+     <path d="M 165 175
+              L 205 175
+              L 205 195
+@@ -62,12 +62,12 @@
+              Z" />
+   </g>
+ 
+-  <!-- Wordmark (cream on terracotta bg) -->
++  <!-- Wordmark (slate on gold bg) -->
+   <text x="200" y="400" 
+-        font-family="Montserrat, Inter, Arial Black, sans-serif" 
++        font-family="Inter, Arial Black, sans-serif" 
+         font-size="48" 
+         font-weight="800" 
+-        fill="#FAF0E6" 
++        fill="#0F172A" 
+         text-anchor="middle"
+         letter-spacing="6">LUCKY STORE</text>
+-</svg>
++</svg>
+\ No newline at end of file
+diff --git a/brand/assets/logo/svg/lucky-store-mark.svg b/brand/assets/logo/svg/lucky-store-mark.svg
+index d93e8a9..77842c1 100644
+--- a/brand/assets/logo/svg/lucky-store-mark.svg
++++ b/brand/assets/logo/svg/lucky-store-mark.svg
+@@ -1,31 +1,32 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<!-- Lucky Store — Mark Only (Icon / App Icon / Favicon) -->
++<!-- Lucky Store — Mark Only (Icon / App Icon / Favicon) - Gold Variant -->
+ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+   <defs>
+-    <solidColor id="terracotta" solid-color="#C75B3A"/>
+-    <solidColor id="leaf" solid-color="#7CB342"/>
+-    <solidColor id="leaf-light" solid-color="#9CCC65"/>
++    <solidColor id="gold" solid-color="#E8B84B"/>
++    <solidColor id="gold-dark" solid-color="#B0781A"/>
++    <solidColor id="leaf" solid-color="#15803D"/>
++    <solidColor id="leaf-light" solid-color="#22C55E"/>
+   </defs>
+ 
+   <!-- Background circle for icon visibility -->
+-  <circle cx="200" cy="200" r="190" fill="#FAF0E6"/>
++  <circle cx="200" cy="200" r="190" fill="#F8FAFC"/>
+ 
+   <!-- Leaf -->
+   <g id="leaf">
+     <path d="M 200 145
+              C 200 120, 205 100, 215 85" 
+-          stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
+-    
++          stroke="#0F5A26" stroke-width="5" fill="none" stroke-linecap="round"/>
++   
+     <path d="M 215 85
+              C 195 70, 195 45, 215 30
+              C 255 40, 275 70, 255 95
+              C 245 105, 225 100, 215 85
+              Z" 
+-          fill="#7CB342"/>
+-    
++          fill="#15803D"/>
++   
+     <path d="M 215 85
+              C 225 75, 235 60, 245 50" 
+-          stroke="#9CCC65" stroke-width="3" fill="none" stroke-linecap="round"/>
++          stroke="#22C55E" stroke-width="3" fill="none" stroke-linecap="round"/>
+   </g>
+ 
+   <!-- Bag -->
+@@ -35,15 +36,15 @@
+              L 310 340
+              L 90 340
+              Z" 
+-          fill="#C75B3A"/>
++          fill="#E8B84B"/>
+ 
+     <path d="M 155 160
+              C 155 110, 170 95, 200 95
+              C 230 95, 245 110, 245 160" 
+-          stroke="#C75B3A" stroke-width="10" fill="none" stroke-linecap="round"/>
++          stroke="#E8B84B" stroke-width="10" fill="none" stroke-linecap="round"/>
+ 
+-    <circle cx="155" cy="160" r="6" fill="#8B3A22"/>
+-    <circle cx="245" cy="160" r="6" fill="#8B3A22"/>
++    <circle cx="155" cy="160" r="6" fill="#B0781A"/>
++    <circle cx="245" cy="160" r="6" fill="#B0781A"/>
+   </g>
+ 
+   <!-- Serif L -->
+@@ -55,11 +56,11 @@
+              L 235 315
+              L 175 315
+              Z" />
+-    
++   
+     <path d="M 165 175
+              L 205 175
+              L 205 195
+              L 165 195
+              Z" />
+   </g>
+-</svg>
++</svg>
+\ No newline at end of file
+diff --git a/brand/assets/logo/svg/lucky-store-primary.svg b/brand/assets/logo/svg/lucky-store-primary.svg
+index dcb76e6..07308a9 100644
+--- a/brand/assets/logo/svg/lucky-store-primary.svg
++++ b/brand/assets/logo/svg/lucky-store-primary.svg
+@@ -1,45 +1,45 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<!-- Lucky Store — Final Primary Logo -->
++<!-- Lucky Store — Final Primary Logo - Gold Variant -->
+ <!-- Flat trapezoid bag, serif L, leaf behind handle, bold wordmark -->
+ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+   <defs>
+-    <!-- Flat terracotta -->
+-    <solidColor id="terracotta" solid-color="#C75B3A"/>
+-    <!-- Darker terracotta for handle shadow/depth -->
+-    <solidColor id="terracotta-dark" solid-color="#A84A2F"/>
++    <!-- Flat gold -->
++    <solidColor id="gold" solid-color="#E8B84B"/>
++    <!-- Darker gold for handle shadow/depth -->
++    <solidColor id="gold-dark" solid-color="#B0781A"/>
+     <!-- Fresh leaf green -->
+-    <solidColor id="leaf" solid-color="#7CB342"/>
++    <solidColor id="leaf" solid-color="#15803D"/>
+     <!-- Lighter leaf for vein -->
+-    <solidColor id="leaf-light" solid-color="#9CCC65"/>
+-    <!-- Cream background (only for isolated preview; set transparent for overlay use) -->
+-    <solidColor id="cream" solid-color="#FAF0E6"/>
++    <solidColor id="leaf-light" solid-color="#22C55E"/>
++    <!-- Slate background (only for isolated preview; set transparent for overlay use) -->
++    <solidColor id="slate-bg" solid-color="#F8FAFC"/>
+   </defs>
+ 
+-  <!-- Optional background circle for avatar/social use -->
+-  <rect x="0" y="0" width="400" height="500" fill="#FAF0E6" rx="0" id="bg"/>
++  <!-- Optional background for avatar/social use -->
++  <rect x="0" y="0" width="400" height="500" fill="#F8FAFC" rx="0" id="bg"/>
+ 
+   <!-- ===== LEAF (behind bag + handle) ===== -->
+   <g id="leaf">
+     <!-- Stem -->
+     <path d="M 200 145
+              C 200 120, 205 100, 215 85" 
+-          stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
+-    
++          stroke="#0F5A26" stroke-width="5" fill="none" stroke-linecap="round"/>
++   
+     <!-- Leaf body -->
+     <path d="M 215 85
+              C 195 70, 195 45, 215 30
+              C 255 40, 275 70, 255 95
+              C 245 105, 225 100, 215 85
+              Z" 
+-          fill="#7CB342"/>
+-    
++          fill="#15803D"/>
++   
+     <!-- Leaf vein (lighter arc) -->
+     <path d="M 215 85
+              C 225 75, 235 60, 245 50" 
+-          stroke="#9CCC65" stroke-width="3" fill="none" stroke-linecap="round"/>
++          stroke="#22C55E" stroke-width="3" fill="none" stroke-linecap="round"/>
+   </g>
+ 
+-  <!-- ===== SHOPPING BAG (flat terracotta trapezoid) ===== -->
++  <!-- ===== SHOPPING BAG (flat gold trapezoid) ===== -->
+   <g id="bag">
+     <!-- Main bag body -->
+     <path d="M 120 160
+@@ -47,17 +47,17 @@
+              L 310 340
+              L 90 340
+              Z" 
+-          fill="#C75B3A"/>
++          fill="#E8B84B"/>
+ 
+     <!-- Handle (arching over top) -->
+     <path d="M 155 160
+              C 155 110, 170 95, 200 95
+              C 230 95, 245 110, 245 160" 
+-          stroke="#C75B3A" stroke-width="10" fill="none" stroke-linecap="round"/>
++          stroke="#E8B84B" stroke-width="10" fill="none" stroke-linecap="round"/>
+ 
+     <!-- Handle attachment dots -->
+-    <circle cx="155" cy="160" r="6" fill="#8B3A22"/>
+-    <circle cx="245" cy="160" r="6" fill="#8B3A22"/>
++    <circle cx="155" cy="160" r="6" fill="#B0781A"/>
++    <circle cx="245" cy="160" r="6" fill="#B0781A"/>
+   </g>
+ 
+   <!-- ===== SERIF LETTER "L" (white, centered on bag) ===== -->
+@@ -70,7 +70,7 @@
+              L 235 315
+              L 175 315
+              Z" />
+-    
++   
+     <!-- Top serif (slab) -->
+     <path d="M 165 175
+              L 205 175
+@@ -81,11 +81,11 @@
+ 
+   <!-- ===== WORDMARK ===== -->
+   <text x="200" y="400" 
+-        font-family="Montserrat, Inter, Arial Black, sans-serif" 
++        font-family="Inter, Arial Black, sans-serif" 
+         font-size="48" 
+         font-weight="800" 
+-        fill="#C75B3A" 
++        fill="#E8B84B" 
+         text-anchor="middle"
+         letter-spacing="6"
+         id="wordmark">LUCKY STORE</text>
+-</svg>
++</svg>
+\ No newline at end of file
+diff --git a/design-tokens/tokens.json b/design-tokens/tokens.json
+index 9b48fd9..0ed4c7c 100644
+--- a/design-tokens/tokens.json
++++ b/design-tokens/tokens.json
+@@ -1,38 +1,61 @@
+ {
+   "color": {
+-    "paper": { "value": "#faf8f5" },
+-    "surface": { "value": "#ffffff" },
+-    "foreground": { "value": "#1c1917" },
+-    "muted": { "value": "#78716c" },
+-    "dim": { "value": "#a8a29e" },
+-    "border": { "value": "#e7e5e4" },
+-    "border-light": { "value": "#f5f5f4" },
+-    "accent": { "value": "#dc5f3b" },
+-    "accent-hover": { "value": "#c4542e" },
+-    "accent-ghost": { "value": "rgba(220, 95, 59, 0.08)" },
+-    "accent-text": { "value": "#dc5f3b" },
+-    "success": { "value": "#2d6a4f" },
+-    "success-bg": { "value": "rgba(45, 106, 79, 0.08)" },
+-    "warning": { "value": "#b45309" },
+-    "warning-bg": { "value": "rgba(180, 83, 9, 0.08)" },
+-    "danger": { "value": "#dc2626" },
+-    "danger-bg": { "value": "rgba(220, 38, 38, 0.08)" }
++    "background-default": { "value": "#F8FAFC" },
++    "background-subtle": { "value": "#F1F5F9" },
++    "surface-default": { "value": "#FFFFFF" },
++    "surface-raised": { "value": "#FFFFFF" },
++    "surface-overlay": { "value": "rgba(15, 23, 42, 0.45)" },
++    "primary-default": { "value": "#E8B84B" },
++    "primary-hover": { "value": "#D4941A" },
++    "primary-pressed": { "value": "#B0781A" },
++    "primary-subtle": { "value": "#FEF3C7" },
++    "primary-on": { "value": "#1E293B" },
++    "secondary-default": { "value": "#0D9488" },
++    "secondary-hover": { "value": "#0F766E" },
++    "secondary-subtle": { "value": "#F0FDFA" },
++    "secondary-on": { "value": "#FFFFFF" },
++    "success-default": { "value": "#22C55E" },
++    "success-dark": { "value": "#15803D" },
++    "success-subtle": { "value": "#F0FDF4" },
++    "success-on": { "value": "#FFFFFF" },
++    "danger-default": { "value": "#EF4444" },
++    "danger-dark": { "value": "#B91C1C" },
++    "danger-subtle": { "value": "#FFF1F2" },
++    "danger-on": { "value": "#FFFFFF" },
++    "warning-default": { "value": "#FBBF24" },
++    "warning-dark": { "value": "#D97706" },
++    "warning-subtle": { "value": "#FFFBEB" },
++    "warning-on": { "value": "#1E293B" },
++    "info-default": { "value": "#3B82F6" },
++    "info-subtle": { "value": "#EFF6FF" },
++    "info-on": { "value": "#FFFFFF" },
++    "border-default": { "value": "#E2E8F0" },
++    "border-strong": { "value": "#94A3B8" },
++    "text-primary": { "value": "#0F172A" },
++    "text-secondary": { "value": "#475569" },
++    "text-muted": { "value": "#94A3B8" },
++    "text-inverse": { "value": "#FFFFFF" },
++    "text-link": { "value": "#4F46E5" }
+   },
+   "font": {
+-    "display": { "value": "'Inter', system-ui, sans-serif" },
+-    "body": { "value": "'Inter', system-ui, sans-serif" },
++    "display": { "value": "'Inter', 'Hind Siliguri', system-ui, sans-serif" },
++    "body": { "value": "'Inter', 'Hind Siliguri', system-ui, sans-serif" },
++    "bengali": { "value": "'Hind Siliguri', 'Inter', system-ui, sans-serif" },
+     "mono": { "value": "'JetBrains Mono', ui-monospace, monospace" }
+   },
+   "radius": {
++    "none": { "value": "0px" },
++    "xs": { "value": "4px" },
+     "sm": { "value": "8px" },
+     "md": { "value": "12px" },
+-    "lg": { "value": "14px" },
+-    "xl": { "value": "20px" }
++    "lg": { "value": "16px" },
++    "xl": { "value": "24px" },
++    "full": { "value": "9999px" }
+   },
+   "shadow": {
+-    "sm": { "value": "0 1px 2px rgba(28, 25, 23, 0.04)" },
+-    "md": { "value": "0 4px 12px rgba(28, 25, 23, 0.08)" },
+-    "lg": { "value": "0 8px 24px rgba(28, 25, 23, 0.12)" }
++    "elevation-1": { "value": "0px 1px 3px rgba(15,23,42,0.08), 0px 1px 2px -1px rgba(15,23,42,0.06)" },
++    "elevation-2": { "value": "0px 4px 8px rgba(15,23,42,0.10), 0px 2px 4px -2px rgba(15,23,42,0.06)" },
++    "elevation-3": { "value": "0px 20px 40px rgba(15,23,42,0.14), 0px 8px 16px -4px rgba(15,23,42,0.08)" }
+   },
+   "space": {
+     "1": { "value": "4px" },
+@@ -42,6 +65,16 @@
+     "5": { "value": "20px" },
+     "6": { "value": "24px" },
+     "8": { "value": "32px" },
+-    "10": { "value": "40px" }
++    "10": { "value": "40px" },
++    "12": { "value": "48px" },
++    "16": { "value": "64px" }
++  },
++  "motion": {
++    "duration-fast": { "value": "120ms" },
++    "duration-normal": { "value": "220ms" },
++    "duration-slow": { "value": "350ms" },
++    "easing-standard": { "value": "cubic-bezier(0.4, 0, 0.2, 1)" },
++    "easing-decelerate": { "value": "cubic-bezier(0.0, 0.0, 0.2, 1)" },
++    "easing-accelerate": { "value": "cubic-bezier(0.4, 0.0, 1, 1)" }
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/docs/BRAND_GUIDELINES.md b/docs/BRAND_GUIDELINES.md
+index 4eb6450..a34fdd1 100644
+--- a/docs/BRAND_GUIDELINES.md
++++ b/docs/BRAND_GUIDELINES.md
+@@ -78,26 +78,37 @@ Maintain minimum clear space equal to the height of the "L" in all directions:
+ 
+ | Role | Hex | Name | Usage |
+ |------|-----|------|-------|
+-| Primary accent | `#dc5f3b` | Terracotta | CTA buttons, links, highlights, logo accent |
+-| Primary hover | `#c4542e` | Terracotta dark | Hover/active states |
+-| Paper | `#faf8f5` | Warm ivory | Page backgrounds, cards |
+-| Surface | `#ffffff` | White | Cards, dialogs, sheets |
+-| Foreground | `#1c1917` | Warm charcoal | Primary text |
+-| Muted | `#78716c` | Warm grey | Secondary text, captions |
+-| Dim | `#a8a29e` | Light warm grey | Placeholder, disabled |
+-| Border | `#e7e5e4` | Warm border | Dividers, card borders |
++| Primary accent | `#E8B84B` | Gold | CTA buttons, links, highlights, logo accent |
++| Primary hover | `#D4941A` | Gold dark | Hover/active states |
++| Primary pressed | `#B0781A` | Gold deeper | Active/pressed states |
++| Primary subtle | `#FEF3C7` | Gold 50 | Backgrounds, badges |
++| Primary on | `#1E293B` | Slate 900 | Text on primary |
++| Background | `#F8FAFC` | Slate 50 | Page backgrounds |
++| Background subtle | `#F1F5F9` | Slate 100 | Subtle backgrounds |
++| Surface | `#FFFFFF` | White | Cards, dialogs, sheets |
++| Surface raised | `#FFFFFF` | White | Raised surfaces |
++| Foreground | `#0F172A` | Slate 950 | Primary text |
++| Secondary | `#0D9488` | Teal 600 | Secondary actions |
++| Muted | `#475569` | Slate 600 | Secondary text, captions |
++| Dim | `#94A3B8` | Slate 400 | Placeholder, disabled |
++| Border | `#E2E8F0` | Slate 200 | Dividers, card borders |
++| Border strong | `#94A3B8` | Slate 400 | Strong dividers |
+ 
+ ### Accent Palette
+ 
+ | Role | Hex | Usage |
+ |------|-----|-------|
+-| Success | `#2d6a4f` | In stock, confirmed, positive |
+-| Warning | `#b45309` | Low stock, pending, attention |
+-| Danger | `#c3312f` | Out of stock, error, cancelled |
++| Success | `#22C55E` | In stock, confirmed, positive |
++| Success dark | `#15803D` | Success hover |
++| Warning | `#FBBF24` | Low stock, pending, attention |
++| Warning dark | `#D97706` | Warning hover |
++| Danger | `#EF4444` | Out of stock, error, cancelled |
++| Danger dark | `#B91C1C` | Danger hover |
++| Info | `#3B82F6` | Informational, links |
+ 
+ ### Print Considerations
+-- Terracotta is CMYK approx: `C:0 M:58 Y:68 K:13`
+-- Ivory paper is `C:0 M:2 Y:5 K:0`
++- Gold is CMYK approx: `C:15 M:25 Y:100 K:0`
++- Background is `C:0 M:0 Y:2 K:0`
+ - Always print on off-white or kraft stock when possible to maintain warmth
+ 
+ ---
+@@ -108,8 +119,8 @@ Maintain minimum clear space equal to the height of the "L" in all directions:
+ 
+ | Purpose | Font | Weights | Fallback |
+ |---------|------|---------|----------|
+-| Display / Headlines | **Inter** | 700, 800 | system-ui, sans-serif |
+-| Body / UI | **Inter** | 400, 500, 600 | system-ui, sans-serif |
++| Display / Headlines (English) | **Inter** | 700, 800 | system-ui, sans-serif |
++| Body / UI (English) | **Inter** | 400, 500, 600 | system-ui, sans-serif |
+ | Bengali Text | **Hind Siliguri** | 400, 700 | system-ui, sans-serif |
+ | Monospace | **JetBrains Mono** | 400 | ui-monospace |
+ 
+@@ -127,9 +138,11 @@ Maintain minimum clear space equal to the height of the "L" in all directions:
+ | Tag / Badge | `0.625rem` | 700 | 1 | `0.05em` |
+ 
+ ### Mixed-Language Typography Rules
+-- English headlines, body, prices: Inter
+-- Bangla headlines: Hind Siliguri Bold (`700`)
+-- Bangla body: Hind Siliguri Regular (`400`)
++- English headlines, body, prices: **Inter**
++- Bangla headlines: **Hind Siliguri Bold** (`700`)
++- Bangla body: **Hind Siliguri Regular** (`400`)
++- CSS: Use `font-family: 'Inter', 'Hind Siliguri', system-ui, sans-serif;` for mixed content — browser picks correct glyph per character
++- Flutter: Use `fontFamilyFallback: ['HindSiliguri', 'Inter']` on English text styles
+ - Never mix serif + sans-serif on the same line
+ - Never use Comic Sans, Poppins, or decorative display fonts
+ 
+diff --git a/landing/index.html b/landing/index.html
+index a5e52ef..198f4d5 100644
+--- a/landing/index.html
++++ b/landing/index.html
+@@ -9,51 +9,56 @@
+     <title>Lucky Store POS - Modern Point of Sale System</title>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
++    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+     <style>
+-        /* ===== Design Tokens (from tokens.css warm palette) ===== */
++        /* ===== Design Tokens (Unified Design System) ===== */
+         :root {
+-            --color-background-default: #f5f4ed;
+-            --color-background-subtle: #faf9f5;
+-            --color-surface-default: #faf9f5;
+-            --color-surface-raised: #faf9f5;
+-            --color-primary-default: #c96442;
+-            --color-primary-hover: #d97757;
+-            --color-primary-pressed: #b53333;
+-            --color-primary-subtle: #f5f4ed;
+-            --color-primary-on: #ffffff;
+-            --color-secondary-default: #4a7c59;
+-            --color-secondary-hover: #3d664a;
+-            --color-secondary-subtle: #faf9f5;
+-            --color-secondary-on: #ffffff;
+-            --color-success-default: #4a7c59;
+-            --color-success-dark: #3d664a;
+-            --color-success-subtle: #f5f4ed;
+-            --color-success-on: #ffffff;
+-            --color-danger-default: #b53333;
+-            --color-danger-dark: #9e2a2a;
+-            --color-danger-subtle: #faf9f5;
+-            --color-danger-on: #ffffff;
+-            --color-warning-default: #c9a227;
+-            --color-warning-dark: #ac861d;
+-            --color-warning-subtle: #faf9f5;
+-            --color-warning-on: #ffffff;
+-            --color-border-default: #e8e6dc;
+-            --color-border-strong: #b0aea5;
+-            --color-text-primary: #141413;
+-            --color-text-secondary: #5e5d59;
+-            --color-text-muted: #87867f;
+-            --color-text-inverse: #ffffff;
++            --color-background-default: #F8FAFC;
++            --color-background-subtle: #F1F5F9;
++            --color-surface-default: #FFFFFF;
++            --color-surface-raised: #FFFFFF;
++            --color-primary-default: #E8B84B;
++            --color-primary-hover: #D4941A;
++            --color-primary-pressed: #B0781A;
++            --color-primary-subtle: #FEF3C7;
++            --color-primary-on: #1E293B;
++            --color-secondary-default: #0D9488;
++            --color-secondary-hover: #0F766E;
++            --color-secondary-subtle: #F0FDFA;
++            --color-secondary-on: #FFFFFF;
++            --color-success-default: #22C55E;
++            --color-success-dark: #15803D;
++            --color-success-subtle: #F0FDF4;
++            --color-success-on: #FFFFFF;
++            --color-danger-default: #EF4444;
++            --color-danger-dark: #B91C1C;
++            --color-danger-subtle: #FFF1F2;
++            --color-danger-on: #FFFFFF;
++            --color-warning-default: #FBBF24;
++            --color-warning-dark: #D97706;
++            --color-warning-subtle: #FFFBEB;
++            --color-warning-on: #1E293B;
++            --color-info-default: #3B82F6;
++            --color-info-subtle: #EFF6FF;
++            --color-info-on: #FFFFFF;
++            --color-border-default: #E2E8F0;
++            --color-border-strong: #94A3B8;
++            --color-text-primary: #0F172A;
++            --color-text-secondary: #475569;
++            --color-text-muted: #94A3B8;
++            --color-text-inverse: #FFFFFF;
++            --color-text-link: #4F46E5;
+             --radius-xs: 4px;
+             --radius-sm: 8px;
+             --radius-md: 12px;
+             --radius-lg: 16px;
+             --radius-xl: 24px;
+             --radius-full: 9999px;
+-            --elevation-1: 0px 1px 3px 0px rgba(15, 23, 42, 0.08), 0px 1px 2px -1px rgba(15, 23, 42, 0.06);
+-            --elevation-2: 0px 4px 8px -2px rgba(15, 23, 42, 0.10), 0px 2px 4px -2px rgba(15, 23, 42, 0.06);
+-            --elevation-3: 0px 20px 40px -8px rgba(15, 23, 42, 0.14), 0px 8px 16px -4px rgba(15, 23, 42, 0.08);
+-            --font-family-primary: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
++            --elevation-1: 0px 1px 3px rgba(15,23,42,0.08), 0px 1px 2px -1px rgba(15,23,42,0.06);
++            --elevation-2: 0px 4px 8px rgba(15,23,42,0.10), 0px 2px 4px -2px rgba(15,23,42,0.06);
++            --elevation-3: 0px 20px 40px rgba(15,23,42,0.14), 0px 8px 16px -4px rgba(15,23,42,0.08);
++            --font-family-primary: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
++            --font-family-bengali: 'Hind Siliguri', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+             --motion-duration-fast: 120ms;
+             --motion-duration-normal: 220ms;
+             --motion-duration-slow: 350ms;
+diff --git a/package-lock.json b/package-lock.json
+index dc81964..04cd0dd 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -70,20 +70,20 @@
+       "version": "1.0.0",
+       "dependencies": {
+         "@supabase/supabase-js": "^2.45.0",
+-        "@types/node": "^20.19.43",
+-        "@types/react": "^18.3.31",
+-        "@types/react-dom": "^18",
+         "autoprefixer": "^10.4.20",
+         "next": "^15.0.8",
+         "postcss": "^8.4.40",
+         "react": "^19.0.0",
+         "react-dom": "^19.0.0",
+         "tailwindcss": "^3.4.7",
+-        "typescript": "^5.9.3",
+         "zod": "^3.23.0"
+       },
+       "devDependencies": {
+-        "@playwright/test": "^1.45.0"
++        "@playwright/test": "^1.45.0",
++        "@types/node": "^20.19.43",
++        "@types/react": "^18.3.31",
++        "@types/react-dom": "^18",
++        "typescript": "^5.9.3"
+       },
+       "engines": {
+         "node": ">=18.0.0"
+@@ -93,6 +93,7 @@
+       "version": "20.19.43",
+       "resolved": "https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz",
+       "integrity": "sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==",
++      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "undici-types": "~6.21.0"
+@@ -102,6 +103,7 @@
+       "version": "18.3.31",
+       "resolved": "https://registry.npmjs.org/@types/react/-/react-18.3.31.tgz",
+       "integrity": "sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==",
++      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "@types/prop-types": "*",
+@@ -112,6 +114,7 @@
+       "version": "18.3.7",
+       "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.3.7.tgz",
+       "integrity": "sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==",
++      "dev": true,
+       "license": "MIT",
+       "peerDependencies": {
+         "@types/react": "^18.0.0"
+@@ -121,6 +124,7 @@
+       "version": "5.9.3",
+       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+       "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
++      "dev": true,
+       "license": "Apache-2.0",
+       "bin": {
+         "tsc": "bin/tsc",
+@@ -2453,6 +2457,7 @@
+       "version": "15.7.15",
+       "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.15.tgz",
+       "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==",
++      "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/@types/react": {
+@@ -3739,6 +3744,7 @@
+       "version": "3.2.3",
+       "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
++      "devOptional": true,
+       "license": "MIT"
+     },
+     "node_modules/customer_storefront": {
+@@ -7800,6 +7806,7 @@
+       "version": "6.21.0",
+       "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz",
+       "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==",
++      "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/update-browserslist-db": {
