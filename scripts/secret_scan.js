@@ -12,15 +12,22 @@ function isGitIgnored(filePath) {
   // Skip all .env files EXCEPT .env.example
   if (rel.startsWith('.env')) return rel !== '.env.example';
   if (rel.startsWith('apps/admin_web/.env')) return true;
+  if (rel.startsWith('apps/customer_storefront/.env')) return true;
   if (rel.startsWith('apps/mobile_app/.env')) return true;
+  if (rel.startsWith('apps/mobile_app/env/')) return true;
   if (rel.startsWith('apps/mobile_app/.dart_tool/')) return true;
   if (rel.startsWith('apps/mobile_app/flutter/')) return true;
   if (rel.startsWith('apps/mobile_app/build/')) return true;
+  if (rel.startsWith('apps/customer_storefront/.next/')) return true;
+  if (rel.startsWith('apps/customer_storefront/dist/')) return true;
   if (rel.startsWith('apps/admin_web/dist/')) return true;
+  if (rel.startsWith('dist_public/')) return true;
+  if (rel.includes('.vercel')) return true;
   if (rel.startsWith('docs/')) return true;
+  if (rel.startsWith('lucky-store-brand-guidelines/')) return true;
   if (rel.startsWith('scripts/data/')) return true;
   if (rel.startsWith('scripts/deploy/')) return true;
-  if (rel.startsWith('supabase/tests/.env.test.example')) return true;
+  if (rel.startsWith('supabase/tests/.env.test')) return true;
   if (rel.startsWith('.github/workflows/ci.yml')) return true;
   if (rel.startsWith('apps/mobile_app/assets/address_selection.html')) return true;
   if (rel.includes('.venv/')) return true;
