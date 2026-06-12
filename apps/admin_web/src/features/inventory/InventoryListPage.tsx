@@ -260,7 +260,19 @@ export function InventoryListPage() {
     enabled: !!storeId,
   });
 
-  const gridScrollRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [toolbarHeight, setToolbarHeight] = useState(140);
+
+  useEffect(() => {
+    if (!toolbarRef.current) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setToolbarHeight(entry.target.clientHeight);
+      }
+    });
+    resizeObserver.observe(toolbarRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const chunkedItems = useMemo(() => {
     const chunks: InventoryItem[][] = [];
@@ -272,8 +284,8 @@ export function InventoryListPage() {
 
   const gridVirtualizer = useVirtualizer({
     count: chunkedItems.length,
-    getScrollElement: () => gridScrollRef.current,
-    estimateSize: () => 340,
+    getScrollElement: () => (document.querySelector('.main-content') as HTMLDivElement) || null,
+    estimateSize: () => 380,
     overscan: 1,
   });
 
@@ -292,7 +304,7 @@ export function InventoryListPage() {
   }
 
   return (
-    <div className="inventory-container flex flex-col h-full">
+    <div className="inventory-container flex flex-col">
       <PageHeader
         title="Stock Inventory"
         subtitle={
@@ -387,7 +399,8 @@ export function InventoryListPage() {
 
       {/* Sticky Single Toolbar */}
       <div
-        className="sticky -mx-6 px-6 py-3 top-0 z-20 border-b border-border-default"
+        ref={toolbarRef}
+        className="sticky -mx-6 px-6 py-3 top-0 z-40 border-b border-border-default"
         style={{ backgroundColor: 'var(--color-background-default)' }}
       >
         <div className="flex flex-col gap-3 max-w-full">
@@ -452,49 +465,43 @@ export function InventoryListPage() {
           </Card>
         ) : viewMode === 'grid' ? (
           <div
-            ref={gridScrollRef}
-            className="overflow-y-auto pr-2 scrollbar-thin"
-            style={{ height: 'calc(100vh - 350px)' }}
+            style={{
+              height: `${gridVirtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
           >
-            <div
-              style={{
-                height: `${gridVirtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-              }}
-            >
-              {gridVirtualizer.getVirtualItems().map((virtualRow) => {
-                const rowItems = chunkedItems[virtualRow.index];
-                if (!rowItems) return null;
-                return (
-                  <div
-                    key={virtualRow.index}
-                    className="absolute top-0 left-0 w-full grid gap-4"
-                    style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                      gridTemplateColumns: `repeat(${columnsCount}, minmax(0, 1fr))`,
-                      paddingBottom: '16px',
-                    }}
-                  >
-                    {rowItems.map((item: any) => (
-                      <InventoryProductCard
-                        key={item.id}
-                        item={item}
-                        isHighlighted={highlightedProductId === item.id}
-                        isSelected={selectedIds.has(item.id)}
-                        onToggleSelect={toggleSelect}
-                        onUpdateStock={handleViewProduct}
-                        tenantId={tenantId}
-                        priority={virtualRow.index === 0}
-                        onInlineSave={handleInlineSave}
-                        storeId={storeId}
-                      />
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+            {gridVirtualizer.getVirtualItems().map((virtualRow) => {
+              const rowItems = chunkedItems[virtualRow.index];
+              if (!rowItems) return null;
+              return (
+                <div
+                  key={virtualRow.index}
+                  className="absolute top-0 left-0 w-full grid gap-4"
+                  style={{
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    gridTemplateColumns: `repeat(${columnsCount}, minmax(0, 1fr))`,
+                    paddingBottom: '16px',
+                  }}
+                >
+                  {rowItems.map((item: any) => (
+                    <InventoryProductCard
+                      key={item.id}
+                      item={item}
+                      isHighlighted={highlightedProductId === item.id}
+                      isSelected={selectedIds.has(item.id)}
+                      onToggleSelect={toggleSelect}
+                      onUpdateStock={handleViewProduct}
+                      tenantId={tenantId}
+                      priority={virtualRow.index === 0}
+                      onInlineSave={handleInlineSave}
+                      storeId={storeId}
+                    />
+                  ))}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <InventoryListTable
@@ -508,6 +515,8 @@ export function InventoryListPage() {
             onEditProduct={handleEditProduct}
             onDelete={handleDeleteProduct}
             onInlineSave={handleInlineSave}
+            scrollElement={(document.querySelector('.main-content') as HTMLDivElement) || null}
+            toolbarHeight={toolbarHeight}
           />
         )}
       </div>

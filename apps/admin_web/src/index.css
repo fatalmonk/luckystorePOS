@@ -78,3 +78,110 @@
 .animate-status-pop {
   animation: status-pop 0.3s ease-out;
 }
+
+/* ===== INVENTORY TABLE DESIGN SYSTEM V2 ===== */
+.table-wrap {
+  overflow-x: visible;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+table.inventory {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+}
+
+table.inventory thead th {
+  position: sticky;
+  top: var(--table-sticky-top, 0px);
+  z-index: 30;
+  background: var(--color-paper) !important;
+  border-bottom: 2px solid var(--color-border);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xxs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+table.inventory tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+
+table.inventory tbody tr:nth-child(even) td {
+  background: var(--color-border-light);
+}
+
+table.inventory tbody tr:hover td {
+  background: var(--color-accent-ghost) !important;
+}
+
+table.inventory tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table.inventory .sku {
+  font-family: var(--font-mono);
+  color: var(--color-foreground);
+  font-weight: 500;
+}
+
+table.inventory .name {
+  font-weight: 500;
+  color: var(--color-foreground);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+table.inventory .price {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-foreground);
+  text-align: right;
+  white-space: nowrap;
+}
+
+table.inventory .margin {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+table.inventory .margin.positive {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+table.inventory .stock {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+table.inventory .stock.low {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+table.inventory .stock.zero {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+table.inventory .actions {
+  white-space: nowrap;
+}
+

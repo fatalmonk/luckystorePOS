@@ -1,153 +1,56 @@
 /**
- * Lucky Store Design Token Dictionary
- * Version: 1.0.0
- * Source: design-tokens/tokens.json (canonical)
- * This file is generated - do not edit directly
+ * Lucky Store Design Token Dictionary — Design System v2
+ * Operational Design Language for Retail
  */
 :root {
-  /* 1.1 Primitives (Raw Hex Scale) */
-  --color-primitive-indigo-50: #EEF2FF;
-  --color-primitive-indigo-100: #E0E7FF;
-  --color-primitive-indigo-500: #4F46E5;
-  --color-primitive-indigo-600: #4338CA;
-  --color-primitive-indigo-700: #3730A3;
+  /* ===== COLOR TOKENS (Light) ===== */
+  --color-paper: #faf8f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f3f0;
+  --color-foreground: #1c1917;
+  --color-muted: #78716c;
+  --color-dim: #a8a29e;
+  --color-border: #e7e5e4;
+  --color-border-strong: #d6d3d1;
+  --color-border-light: #f5f5f4;
+  --color-accent: #FFF34D;
+  --color-accent-hover: #FBEF51;
+  --color-accent-ghost: rgba(255, 243, 77, 0.12);
+  --color-accent-strong: rgba(255, 243, 77, 0.18);
+  --color-accent-text: #5c5200;
+  --color-accent-muted: #E2DA6A;
+  --color-accent-olive: #C4C087;
+  --color-success: #1e5c3a;
+  --color-success-bg: rgba(30, 92, 58, 0.08);
+  --color-success-strong: rgba(30, 92, 58, 0.12);
+  --color-warning: #8c4200;
+  --color-warning-bg: rgba(140, 66, 0, 0.08);
+  --color-warning-strong: rgba(140, 66, 0, 0.12);
+  --color-danger: #a32624;
+  --color-danger-bg: rgba(163, 38, 36, 0.07);
+  --color-danger-strong: rgba(163, 38, 36, 0.12);
 
-  --color-primitive-teal-50: #F0FDFA;
-  --color-primitive-teal-500: #0D9488;
-  --color-primitive-teal-600: #0F766E;
-  --color-primitive-teal-700: #0F766E;
+  /* Payment method colors */
+  --color-cash: #2b7a3b;
+  --color-bkash: #e61e2a;
+  --color-nagad: #d92b7f;
+  --color-card: #1a3c6e;
 
-  --color-primitive-green-50: #F0FDF4;
-  --color-primitive-green-500: #22C55E;
-  --color-primitive-green-700: #15803D;
+  /* ===== TYPOGRAPHY ===== */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-bengali: 'Hind Siliguri', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  --color-primitive-red-50: #FFF1F2;
-  --color-primitive-red-500: #EF4444;
-  --color-primitive-red-700: #B91C1C;
+  --text-h1: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
+  --text-h2: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
+  --text-h3: clamp(1.125rem, 1.5vw + 0.4rem, 1.5rem);
+  --text-body: clamp(0.875rem, 0.5vw + 0.5rem, 1rem);
+  --text-small: clamp(0.8125rem, 0.3vw + 0.5rem, 0.9375rem);
+  --text-xs: clamp(0.75rem, 0.2vw + 0.5rem, 0.8125rem);
+  --text-xxs: 0.6875rem;
 
-  --color-primitive-amber-50: #FFFBEB;
-  --color-primitive-amber-400: #FBBF24;
-  --color-primitive-amber-600: #D97706;
-
-  --color-primitive-yellow-50: #FEF3C7;
-  --color-primitive-yellow-400: #E8B84B;
-  --color-primitive-yellow-600: #D4941A;
-  --color-primitive-yellow-700: #B0781A;
-
-  --color-primitive-neutral-0: #FFFFFF;
-  --color-primitive-neutral-50: #F8FAFC;
-  --color-primitive-neutral-100: #F1F5F9;
-  --color-primitive-neutral-200: #E2E8F0;
-  --color-primitive-neutral-400: #94A3B8;
-  --color-primitive-neutral-600: #475569;
-  --color-primitive-neutral-800: #1E293B;
-  --color-primitive-neutral-900: #0F172A;
-
-  /* 1.2 Semantic Tokens (Light Mode Default) */
-
-  /* Background */
-  --color-background-default: #F8FAFC;
-  --color-background-subtle: #F1F5F9;
-
-  /* Surface */
-  --color-surface-default: #FFFFFF;
-  --color-surface-raised: #FFFFFF;
-  --color-surface-overlay: rgba(15, 23, 42, 0.45);
-
-  /* Primary (Gold-Yellow) */
-  --color-primary-default: #E8B84B;
-  --color-primary-hover: #D4941A;
-  --color-primary-pressed: #B0781A;
-  --color-primary-subtle: #FEF3C7;
-  --color-primary-on: #1E293B;
-
-  /* Secondary (Teal) */
-  --color-secondary-default: #0D9488;
-  --color-secondary-hover: #0F766E;
-  --color-secondary-subtle: #F0FDFA;
-  --color-secondary-on: #FFFFFF;
-
-  /* Semantic - Success */
-  --color-success-default: #22C55E;
-  --color-success-dark: #15803D;
-  --color-success-subtle: #F0FDF4;
-  --color-success-on: #FFFFFF;
-
-  /* Semantic - Danger */
-  --color-danger-default: #EF4444;
-  --color-danger-dark: #B91C1C;
-  --color-danger-subtle: #FFF1F2;
-  --color-danger-on: #FFFFFF;
-
-  /* Semantic - Warning */
-  --color-warning-default: #FBBF24;
-  --color-warning-dark: #D97706;
-  --color-warning-subtle: #FFFBEB;
-  --color-warning-on: #1E293B;
-
-  /* Semantic - Info */
-  --color-info-default: #3B82F6;
-  --color-info-subtle: #EFF6FF;
-  --color-info-on: #FFFFFF;
-
-  /* Borders */
-  --color-border-default: #E2E8F0;
-  --color-border-strong: #94A3B8;
-
-  /* Text */
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94A3B8;
-  --color-text-inverse: #FFFFFF;
-  --color-text-link: #4F46E5;
-
-  /* 2. Typography */
-  --font-family-display: 'Inter', 'Hind Siliguri', system-ui, sans-serif;
-  --font-family-body: 'Inter', 'Hind Siliguri', system-ui, sans-serif;
-  --font-family-bengali: 'Hind Siliguri', 'Inter', system-ui, sans-serif;
-  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-  --font-display-size: 32px;
-  --font-display-line-height: 1.2;
-  --font-display-weight: 700;
-
-  --font-heading-xl-size: 24px;
-  --font-heading-xl-line-height: 1.3;
-  --font-heading-xl-weight: 700;
-
-  --font-heading-lg-size: 20px;
-  --font-heading-lg-line-height: 1.3;
-  --font-heading-lg-weight: 600;
-
-  --font-heading-md-size: 16px;
-  --font-heading-md-line-height: 1.4;
-  --font-heading-md-weight: 600;
-
-  --font-body-lg-size: 15px;
-  --font-body-lg-line-height: 1.5;
-  --font-body-lg-weight: 400;
-
-  --font-body-md-size: 14px;
-  --font-body-md-line-height: 1.5;
-  --font-body-md-weight: 400;
-
-  --font-body-sm-size: 13px;
-  --font-body-sm-line-height: 1.5;
-  --font-body-sm-weight: 400;
-
-  --font-label-lg-size: 14px;
-  --font-label-lg-line-height: 1.2;
-  --font-label-lg-weight: 500;
-
-  --font-label-md-size: 13px;
-  --font-label-md-line-height: 1.2;
-  --font-label-md-weight: 500;
-
-  --font-label-sm-size: 11px;
-  --font-label-sm-line-height: 1.2;
-  --font-label-sm-weight: 500;
-
-  /* 3. Spacing Scale */
+  /* ===== SPACING (4px base) ===== */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -159,136 +62,205 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* 4. Border Radii */
+  /* ===== RADIUS ===== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ===== SHADOWS ===== */
+  --shadow-sm: 0 1px 2px rgba(28,25,23,0.05), 0 1px 3px rgba(28,25,23,0.04);
+  --shadow-md: 0 4px 8px rgba(28,25,23,0.06), 0 2px 4px rgba(28,25,23,0.04);
+  --shadow-lg: 0 12px 24px rgba(28,25,23,0.08), 0 4px 8px rgba(28,25,23,0.05);
+  --shadow-xl: 0 20px 40px rgba(28,25,23,0.10), 0 8px 16px rgba(28,25,23,0.06);
+
+  /* ===== MOTION ===== */
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-standard: 200ms;
+  --duration-slow: 300ms;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --active-scale: 0.97;
+  --hover-lift: -1px;
+
+  /* ===== LAYOUT ===== */
+  --header-height: 56px;
+  --bottom-nav-height: 64px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 64px;
+  --container-max: 1440px;
+  --container-padding-mobile: 16px;
+  --container-padding-tablet: 24px;
+  --container-padding-desktop: 32px;
+
+  /* ===== Z-INDEX ===== */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+  --z-tooltip: 500;
+
+  /* ===== TAILWIND WARM REDESIGN MAPPINGS ===== */
+  --warm-bg: var(--color-paper);
+  --warm-surface: var(--color-surface);
+  --warm-surface-hover: var(--color-surface-hover);
+  --warm-fg: var(--color-foreground);
+  --warm-muted: var(--color-muted);
+  --warm-dim: var(--color-dim);
+  --warm-border: var(--color-border);
+  --warm-border-warm: var(--color-border);
+  --warm-border-strong: var(--color-border-strong);
+  --warm-accent: var(--color-accent);
+  --warm-accent-light: var(--color-accent-ghost);
+  --warm-success: var(--color-success);
+  --warm-success-bg: var(--color-success-bg);
+  --warm-warning: var(--color-warning);
+  --warm-warning-bg: var(--color-warning-bg);
+  --warm-danger: var(--color-danger);
+  --warm-danger-bg: var(--color-danger-bg);
+
+  /* ===== LAYOUT & CORE COMPATIBILITY ALIASES ===== */
+  --color-background-default: var(--color-paper);
+  --color-background-subtle: var(--color-border-light);
+  --color-surface-default: var(--color-surface);
+  --color-surface-raised: var(--color-surface);
+  --color-surface-overlay: rgba(15, 23, 42, 0.45);
+
+  --color-primary-default: var(--color-accent);
+  --color-primary-hover: var(--color-accent-hover);
+  --color-primary-pressed: var(--color-accent-hover);
+  --color-primary-subtle: var(--color-accent-ghost);
+  --color-primary-on: #000000;
+
+  --color-secondary-default: #0d9488;
+  --color-secondary-hover: #0f766e;
+  --color-secondary-subtle: #f0fdfa;
+  --color-secondary-on: #ffffff;
+
+  --color-success-default: var(--color-success);
+  --color-success-dark: var(--color-success);
+  --color-success-subtle: var(--color-success-bg);
+  --color-success-on: #ffffff;
+
+  --color-danger-default: var(--color-danger);
+  --color-danger-dark: var(--color-danger);
+  --color-danger-subtle: var(--color-danger-bg);
+  --color-danger-on: #ffffff;
+
+  --color-warning-default: var(--color-warning);
+  --color-warning-dark: var(--color-warning);
+  --color-warning-subtle: var(--color-warning-bg);
+  --color-warning-on: #ffffff;
+
+  --color-info-default: #3b82f6;
+  --color-info-subtle: #eff6ff;
+  --color-info-on: #ffffff;
+
+  --color-border-default: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-text-primary: var(--color-foreground);
+  --color-text-secondary: var(--color-muted);
+  --color-text-muted: var(--color-dim);
+  --color-text-inverse: var(--color-surface);
+  --color-text-link: var(--color-accent);
+
+  /* Font Family Compatibility */
+  --font-family-primary: var(--font-body);
+  --font-family-mono: var(--font-mono);
+
+  /* Radius Compatibility */
   --radius-none: 0px;
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
 
-  /* 5. Elevation & Shadows */
-  --elevation-1: 0px 1px 3px 0px rgba(15, 23, 42, 0.08), 0px 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --elevation-2: 0px 4px 8px -2px rgba(15, 23, 42, 0.10), 0px 2px 4px -2px rgba(15, 23, 42, 0.06);
-  --elevation-3: 0px 20px 40px -8px rgba(15, 23, 42, 0.14), 0px 8px 16px -4px rgba(15, 23, 42, 0.08);
+  /* Elevation Compatibility */
+  --elevation-1: var(--shadow-sm);
+  --elevation-2: var(--shadow-md);
+  --elevation-3: var(--shadow-lg);
 
-  /* 6. Motion & Animation */
-  --motion-duration-fast: 120ms;
-  --motion-duration-normal: 220ms;
-  --motion-duration-slow: 350ms;
-  --motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --motion-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
-  --motion-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+  /* Neutral color fallback for sidebar/layout */
+  --color-neutral-900: #0f172a;
+  --color-neutral-800: #1e293b;
+  --color-neutral-400: #94a3b8;
 
-  /* 7. Legacy Token Aliases (Deprecation Bridge) */
+  /* Legacy aliases */
   --bg-app: var(--color-background-default);
   --bg-sidebar: var(--color-surface-default);
   --bg-sidebar-hover: var(--color-background-subtle);
   --bg-header: var(--color-surface-default);
   --bg-card: var(--color-surface-default);
   --bg-input: var(--color-surface-default);
-
   --text-main: var(--color-text-primary);
   --text-muted: var(--color-text-muted);
   --text-sidebar: var(--color-text-secondary);
   --text-sidebar-active: var(--color-primary-default);
-
   --border-color: var(--color-border-default);
   --border-light: var(--color-border-default);
-
   --shadow-sm: var(--elevation-1);
   --shadow-md: var(--elevation-2);
   --shadow-lg: var(--elevation-3);
-
   --color-primary: var(--color-primary-default);
-  --color-primary-hover: var(--color-primary-hover);
   --color-success: var(--color-success-default);
   --color-danger: var(--color-danger-default);
   --color-warning: var(--color-warning-default);
 }
 
-  /* ============================================
-     DARK MODE — Unified Design System Dark Palette
-     Triggered by: [data-theme="dark"] on <html>
-     ============================================ */
+/* ===== DARK MODE ===== */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --color-background-default: #0F172A;
-  --color-background-subtle: #1E293B;
+  /* ===== COLOR TOKENS (Dark) ===== */
+  --color-paper: #1f1a17;
+  --color-surface: #2a2420;
+  --color-surface-hover: #332c27;
+  --color-foreground: #faf8f5;
+  --color-muted: #b8b0a8;
+  --color-dim: #8a837b;
+  --color-border: #3d3630;
+  --color-border-strong: #4a423b;
+  --color-border-light: #2a2420;
+  --color-accent: #FFF34D;
+  --color-accent-hover: #FBEF51;
+  --color-accent-ghost: rgba(255, 243, 77, 0.12);
+  --color-success: #5ec98a;
+  --color-success-bg: rgba(94, 201, 138, 0.12);
+  --color-warning: #f5b84e;
+  --color-warning-bg: rgba(245, 184, 78, 0.12);
+  --color-danger: #f47c7a;
+  --color-danger-bg: rgba(244, 124, 122, 0.10);
 
-  /* Surfaces */
-  --color-surface-default: #1E293B;
-  --color-surface-raised: #334155;
-  --color-surface-overlay: rgba(0, 0, 0, 0.6);
-
-  /* Primary — yellow/gold adjusted for dark */
-  --color-primary-default: #E8B84B;
-  --color-primary-hover: #F0C85C;
-  --color-primary-pressed: #D4941A;
-  --color-primary-subtle: #2D2610;
-  --color-primary-on: #1E293B;
-
-  /* Secondary — teal adjusted for dark */
-  --color-secondary-default: #14B8A6;
-  --color-secondary-hover: #0D9488;
-  --color-secondary-subtle: #0A1F1D;
-  --color-secondary-on: #FFFFFF;
-
-  /* Semantic — Success */
-  --color-success-default: #22C55E;
-  --color-success-dark: #16A34A;
-  --color-success-subtle: #0A2D15;
-  --color-success-on: #FFFFFF;
-
-  /* Semantic — Danger */
-  --color-danger-default: #EF4444;
-  --color-danger-dark: #F87171;
-  --color-danger-subtle: #2D0A0A;
-  --color-danger-on: #FFFFFF;
-
-  /* Semantic — Warning */
-  --color-warning-default: #FBBF24;
-  --color-warning-dark: #FCD34D;
-  --color-warning-subtle: #2D2000;
-  --color-warning-on: #1E293B;
-
-  /* Info */
-  --color-info-default: #60A5FA;
-  --color-info-subtle: #0A1D2D;
-  --color-info-on: #FFFFFF;
-
-  /* Borders */
-  --color-border-default: #334155;
-  --color-border-strong: #475569;
-
-  /* Text */
-  --color-text-primary: #F8FAFC;
-  --color-text-secondary: #CBD5E1;
-  --color-text-muted: #94A3B8;
-  --color-text-inverse: #0F172A;
-  --color-text-link: #93C5FD;
-
-  /* Legacy aliases (so legacy components get dark mode too) */
-  --bg-app: var(--color-background-default);
-  --bg-sidebar: var(--color-surface-default);
-  --bg-sidebar-hover: var(--color-background-subtle);
-  --bg-header: var(--color-surface-default);
-  --bg-card: var(--color-surface-default);
-  --bg-input: var(--color-surface-default);
-  --text-main: var(--color-text-primary);
-  --text-muted: var(--color-text-muted);
-  --text-sidebar: var(--color-text-secondary);
-  --text-sidebar-active: var(--color-primary-default);
-  --border-color: var(--color-border-default);
-
-  /* Elevations — stronger in dark */
-  --elevation-1: 0px 1px 4px 0px rgba(0, 0, 0, 0.3), 0px 1px 2px -1px rgba(0, 0, 0, 0.2);
-  --elevation-2: 0px 4px 12px -2px rgba(0, 0, 0, 0.35), 0px 2px 6px -2px rgba(0, 0, 0, 0.2);
-  --elevation-3: 0px 20px 48px -8px rgba(0, 0, 0, 0.5), 0px 8px 20px -4px rgba(0, 0, 0, 0.3);
+  /* Neutral colors in dark mode */
+  --color-neutral-900: #020617;
+  --color-neutral-800: #0f172a;
+  --color-neutral-400: #64748b;
 }
 
 /* Smooth theme transition */
 html {
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Ensure text and icon color on top of active accent backgrounds is black (due to light accent #FFF34D) */
+.bg-warm-accent,
+.bg-primary,
+.bg-warm-accent-light,
+.hover\:bg-warm-accent-light:hover,
+.hover\:bg-warm-accent\/90:hover,
+.hover\:bg-warm-accent\:90:hover {
+  color: #000000 !important;
+}
+
+.bg-warm-accent .text-white,
+.bg-primary .text-white,
+.bg-warm-accent.text-white,
+.bg-primary.text-white,
+.bg-warm-accent-light .text-white,
+.hover\:bg-warm-accent-light:hover .text-white,
+.hover\:bg-warm-accent\/90:hover .text-white {
+  color: #000000 !important;
 }
