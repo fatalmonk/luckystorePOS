@@ -39,8 +39,8 @@ export function usePosScanner(
           onError(`Item not found: ${value}`);
           setScanValue('');
         }
-      } catch (err: { message?: string }) {
-        onError(`Scan error: ${err.message}`);
+      } catch (err: unknown) {
+        onError(`Scan error: ${(err as Error).message}`);
         setScanValue('');
       }
     }
@@ -76,8 +76,8 @@ export function usePosScanner(
           } else {
             onError(`Item not found: ${value}`);
           }
-        } catch (err: { message?: string }) {
-          onError(`Scan error: ${err.message}`);
+        } catch (err: unknown) {
+          onError(`Scan error: ${(err as Error).message}`);
         }
         return;
       }

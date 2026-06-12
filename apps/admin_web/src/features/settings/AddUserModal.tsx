@@ -21,8 +21,15 @@ export function AddUserModal({ isOpen, storeId, tenantId, onClose }: AddUserModa
   });
   const [error, setError] = useState<string | null>(null);
 
-  const createMutation = useMutation({
-    mutationFn: (user: unknown) => api.settings.addUser(storeId, user),
+  const createMutation = useMutation<unknown, Error, {
+    email: string;
+    password: string;
+    fullName: string;
+    role: string;
+    pin: string;
+    tenantId: string;
+  }>({
+    mutationFn: (user) => api.settings.addUser(storeId, user),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings-users'] });
       setFormData({ fullName: '', email: '', password: '', role: 'cashier', pin: '' });

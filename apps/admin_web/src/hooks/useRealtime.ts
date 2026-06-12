@@ -32,30 +32,20 @@ export function useRealtimeSubscription({
   useEffect(() => {
     const channelName = `realtime-${table}-${event}-${filter ?? 'all'}`;
 
-    let channel = supabase.channel(channelName);
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: event as 'INSERT' | 'UPDATE' | 'DELETE' | '*', schema: 'public', table: table, filter: filter as string | undefined },
+        (payload: Record<string, unknown>) => {
+          onEventRef.current?.(payload);
 
-    const postgresChangesConfig: { event: string; schema: string; table: string; filter?: string } = {
-      event,
-      schema: 'public',
-      table,
-    };
-    if (filter) {
-      postgresChangesConfig.filter = filter;
-    }
-
-    channel = channel.on(
-      'postgres_changes',
-      postgresChangesConfig,
-      (payload: Record<string, unknown>) => {
-        onEventRef.current?.(payload);
-
-        for (const keys of invalidateKeys) {
-          queryClient.invalidateQueries({ queryKey: keys });
+          for (const keys of invalidateKeys) {
+            queryClient.invalidateQueries({ queryKey: keys });
+          }
         }
-      },
-    ) as unknown as typeof channel;
-
-    channel = channel.subscribe();
+      )
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);

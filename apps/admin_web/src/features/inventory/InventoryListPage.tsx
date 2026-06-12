@@ -519,7 +519,7 @@ export function InventoryListPage() {
       />
 
       <ProductUpdateDrawer
-        product={editingProduct}
+        product={editingProduct as any}
         storeId={storeId}
         onClose={() => setEditingProduct(null)}
       />

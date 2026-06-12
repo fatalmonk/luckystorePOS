@@ -96,7 +96,9 @@ export const PurchaseEntryPage: React.FC = () => {
         .select('id, name, sku, barcode, price')
         .or(`name.ilike.%${debouncedItemSearch}%,sku.ilike.%${debouncedItemSearch}%,barcode.ilike.%${debouncedItemSearch}%`)
         .limit(8);
-      if (!cancelled && !error && data) setItemResults(data as Item[]);
+      if (!cancelled && !error && data) {
+        setItemResults(data as unknown as Item[]);
+      }
     };
     fetchItems();
     return () => { cancelled = true; };

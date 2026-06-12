@@ -21,7 +21,7 @@ export const pos = {
     const { data, error } = await supabase.rpc('get_pos_categories', { p_store_id: storeId });
     if (error) throw error;
     debugLog('Raw categories response', data);
-    return mapCategories(data);
+    return mapCategories(data as any);
   },
   getProducts: async (storeId: string, search?: string, categoryId?: string): Promise<PosProduct[]> => {
     debugLog('Fetching products', { storeId, search, categoryId });

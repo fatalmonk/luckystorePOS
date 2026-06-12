@@ -19,6 +19,47 @@ const VISIBLE_ROWS = 15;
 
 type DateRange = 'today' | 'week' | 'month' | 'custom';
 
+interface SaleRecord {
+  id: string;
+  sale_number: string;
+  created_at: string;
+  cashier_name: string;
+  subtotal: number;
+  discount_amount: number;
+  total_amount: number;
+  status: string;
+}
+
+interface SaleDetailsData {
+  sale: {
+    sale_number: string;
+    status: string;
+    created_at: string;
+    cashier_name: string;
+    subtotal: number;
+    discount_amount: number;
+    total_amount: number;
+    void_reason?: string;
+    voided_by_name?: string;
+    voided_at?: string;
+  };
+  items: Array<{
+    item_name: string;
+    sku: string;
+    qty: number;
+    line_total: number;
+  }>;
+  payments: Array<{
+    method_name: string;
+    reference?: string;
+    amount: number;
+  }>;
+}
+
+interface VoidResponse {
+  is_duplicate?: boolean;
+}
+
 function getDateRange(range: DateRange, customStart?: string, customEnd?: string): { startDate: string; endDate: string } {
   const now = new Date();
   switch (range) {
@@ -36,14 +77,10 @@ function getDateRange(range: DateRange, customStart?: string, customEnd?: string
   }
 }
 
-function formatCurrency(amount: number): string {
-  return formatCurrency(amount);
-}
-
-function exportSalesToCSV(sales: { sale_number: string, created_at: string, cashier_name: string, subtotal: number, discount_amount: number, total_amount: number, status: string }[]) {
+function exportSalesToCSV(sales: SaleRecord[]) {
   if (!sales.length) return;
   const headers = ['Receipt #', 'Date & Time', 'Cashier', 'Subtotal', 'Discount', 'Total', 'Status'];
-  const rows = sales.map((s: { sale_number: string, created_at: string, cashier_name: string, subtotal: number, discount_amount: number, total_amount: number, status: string }) => [
+  const rows = sales.map((s) => [
     s.sale_number,
     format(new Date(s.created_at), 'dd/MM/yyyy HH:mm'),
     s.cashier_name,
@@ -78,9 +115,17 @@ export function SalesHistoryPage() {
 
   const { startDate, endDate } = getDateRange(dateRange, customStart, customEnd);
 
-  const { data: sales, isLoading, error, refetch } = useQuery({
+  const { data: sales, isLoading, error, refetch } = useQuery<SaleRecord[]>({
     queryKey: ['sales-history', storeId, debouncedSearch, startDate, endDate],
-    queryFn: () => api.sales.history(storeId, searchTerm || undefined, startDate, endDate),
+    queryFn: async () => {
+      const response = await api.sales.history(storeId, searchTerm || undefined, startDate, endDate);
+      // Transform API response to include missing fields with defaults
+      return (response as Omit<SaleRecord, 'subtotal' | 'discount_amount'>[]).map(sale => ({
+        ...sale,
+        subtotal: (sale as any).subtotal ?? sale.total_amount,
+        discount_amount: (sale as any).discount_amount ?? 0,
+      }));
+    },
   });
 
   const salesScrollRef = useRef<HTMLDivElement>(null);
@@ -385,7 +430,8 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
   const voidMutation = useMutation({
     mutationFn: (reason: string) => api.sales.void(saleId!, reason, idempotencyKey),
     onSuccess: (res) => {
-      if (res.is_duplicate) {
+      const response = res as unknown as VoidResponse;
+      if (response.is_duplicate) {
         notify('This sale was already voided.', 'info');
       } else {
         notify('Sale voided successfully. Stock has been restored.', 'success');
@@ -400,7 +446,7 @@ function SaleDetailsDrawer({ saleId, onClose }: { saleId: string | null, onClose
 
   if (!saleId) return null;
 
-  const { sale, items, payments } = data || {};
+  const { sale, items, payments } = (data as unknown as SaleDetailsData) || { sale: null, items: [], payments: [] };
 
   return (
     <div

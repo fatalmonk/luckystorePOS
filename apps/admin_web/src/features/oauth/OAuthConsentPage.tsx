@@ -29,16 +29,15 @@ export function OAuthConsentPage() {
       }
 
       try {
-        // @ts-expect-error -- OAuth window globals not typed - Supabase types might not be updated in the environment yet
         const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
 
         if (error) {
           setError(error.message);
         } else {
-          setAuthDetails(data);
+          setAuthDetails(data as AuthDetails);
         }
       } catch (err: unknown) {
-        setError(err.message || 'Failed to retrieve authorization details.');
+        setError((err as Error).message || 'Failed to retrieve authorization details.');
       } finally {
         setLoading(false);
       }
@@ -52,18 +51,16 @@ export function OAuthConsentPage() {
     setActionLoading(true);
 
     try {
-      // @ts-expect-error -- OAuth window globals not typed
       const { data, error } = await supabase.auth.oauth.approveAuthorization(authorizationId);
 
       if (error) {
         setError(error.message);
         setActionLoading(false);
       } else {
-        // @ts-expect-error -- OAuth window globals not typed - redirect_to property based on Supabase auth OAuth flow
-        window.location.href = data.redirect_to;
+        window.location.href = (data as unknown as { redirect_to: string }).redirect_to;
       }
     } catch (err: unknown) {
-      setError(err.message || 'An error occurred during approval.');
+      setError((err as Error).message || 'An error occurred during approval.');
       setActionLoading(false);
     }
   }
@@ -73,18 +70,16 @@ export function OAuthConsentPage() {
     setActionLoading(true);
 
     try {
-      // @ts-expect-error -- OAuth window globals not typed
       const { data, error } = await supabase.auth.oauth.denyAuthorization(authorizationId);
 
       if (error) {
         setError(error.message);
         setActionLoading(false);
       } else {
-        // @ts-expect-error -- OAuth window globals not typed - redirect_to property based on Supabase auth OAuth flow
-        window.location.href = data.redirect_to;
+        window.location.href = (data as unknown as { redirect_to: string }).redirect_to;
       }
     } catch (err: unknown) {
-      setError(err.message || 'An error occurred during denial.');
+      setError((err as Error).message || 'An error occurred during denial.');
       setActionLoading(false);
     }
   }

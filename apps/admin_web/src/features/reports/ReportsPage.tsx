@@ -319,7 +319,7 @@ function SalesReportContent({ data }: { data: SalesReportData }) {
 }
 
 // Inventory Report Content Component
-function InventoryReportContent({ data }: { data: SalesReportData }) {
+function InventoryReportContent({ data }: { data: InventoryReportData }) {
   return (
     <div className="p-6 space-y-6">
       {/* KPI Cards */}
@@ -394,7 +394,7 @@ function InventoryReportContent({ data }: { data: SalesReportData }) {
 }
 
 // Profit & Loss Report Content Component
-function ProfitReportContent({ data }: { data: SalesReportData }) {
+function ProfitReportContent({ data }: { data: ProfitReportData }) {
   const isProfit = data.netProfit >= 0;
 
   return (

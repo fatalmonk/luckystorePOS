@@ -90,7 +90,7 @@ export function RemindersPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.reminders.delete(id),
+    mutationFn: (id: string) => api.reminders.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reminders', storeId] });
       setDeleteConfirm(null);

@@ -39,7 +39,7 @@ export const settings = {
     if (!authId) throw new Error('Signup succeeded but no auth user ID returned');
     
     // 2. Create user record via RPC (bypasses RLS)
-    const { data, error } = await supabase.rpc('create_store_user', {
+    const { data, error } = await supabase.rpc('create_store_user' as any, {
       p_email: user.email,
       p_full_name: user.fullName,
       p_role: user.role,
@@ -93,7 +93,7 @@ export const settings = {
     return data;
   },
   updateUser: async (userId: string, updates: { name?: string; role?: string; pos_pin?: string }) => {
-    const { data, error } = await supabase.rpc('update_store_user', {
+    const { data, error } = await supabase.rpc('update_store_user' as any, {
       p_user_id: userId,
       p_updates: updates,
     });
@@ -101,7 +101,7 @@ export const settings = {
     return data;
   },
   deleteUser: async (userId: string) => {
-    const { data, error } = await supabase.rpc('delete_store_user', {
+    const { data, error } = await supabase.rpc('delete_store_user' as any, {
       p_user_id: userId,
     });
     if (error) throw error;
