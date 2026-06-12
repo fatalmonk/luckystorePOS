@@ -13,6 +13,7 @@ Smart Pricing inline editor with competitor insights + CI test fixes
 - Delivery Orders real-time notifications & widgets
 - Smart Pricing inline editor with competitor insights
 - RPC functions grants for CI tests
+- Added docs/ to .gitignore and untracked existing docs/ files
 
 ## Decisions
 - Vercel deploys use Root Directory natively (no --cwd flags)

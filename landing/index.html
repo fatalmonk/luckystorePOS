@@ -9,51 +9,56 @@
     <title>Lucky Store POS - Modern Point of Sale System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ===== Design Tokens (from tokens.css warm palette) ===== */
+        /* ===== Design Tokens (Unified Design System) ===== */
         :root {
-            --color-background-default: #f5f4ed;
-            --color-background-subtle: #faf9f5;
-            --color-surface-default: #faf9f5;
-            --color-surface-raised: #faf9f5;
-            --color-primary-default: #c96442;
-            --color-primary-hover: #d97757;
-            --color-primary-pressed: #b53333;
-            --color-primary-subtle: #f5f4ed;
-            --color-primary-on: #ffffff;
-            --color-secondary-default: #4a7c59;
-            --color-secondary-hover: #3d664a;
-            --color-secondary-subtle: #faf9f5;
-            --color-secondary-on: #ffffff;
-            --color-success-default: #4a7c59;
-            --color-success-dark: #3d664a;
-            --color-success-subtle: #f5f4ed;
-            --color-success-on: #ffffff;
-            --color-danger-default: #b53333;
-            --color-danger-dark: #9e2a2a;
-            --color-danger-subtle: #faf9f5;
-            --color-danger-on: #ffffff;
-            --color-warning-default: #c9a227;
-            --color-warning-dark: #ac861d;
-            --color-warning-subtle: #faf9f5;
-            --color-warning-on: #ffffff;
-            --color-border-default: #e8e6dc;
-            --color-border-strong: #b0aea5;
-            --color-text-primary: #141413;
-            --color-text-secondary: #5e5d59;
-            --color-text-muted: #87867f;
-            --color-text-inverse: #ffffff;
+            --color-background-default: #F8FAFC;
+            --color-background-subtle: #F1F5F9;
+            --color-surface-default: #FFFFFF;
+            --color-surface-raised: #FFFFFF;
+            --color-primary-default: #E8B84B;
+            --color-primary-hover: #D4941A;
+            --color-primary-pressed: #B0781A;
+            --color-primary-subtle: #FEF3C7;
+            --color-primary-on: #1E293B;
+            --color-secondary-default: #0D9488;
+            --color-secondary-hover: #0F766E;
+            --color-secondary-subtle: #F0FDFA;
+            --color-secondary-on: #FFFFFF;
+            --color-success-default: #22C55E;
+            --color-success-dark: #15803D;
+            --color-success-subtle: #F0FDF4;
+            --color-success-on: #FFFFFF;
+            --color-danger-default: #EF4444;
+            --color-danger-dark: #B91C1C;
+            --color-danger-subtle: #FFF1F2;
+            --color-danger-on: #FFFFFF;
+            --color-warning-default: #FBBF24;
+            --color-warning-dark: #D97706;
+            --color-warning-subtle: #FFFBEB;
+            --color-warning-on: #1E293B;
+            --color-info-default: #3B82F6;
+            --color-info-subtle: #EFF6FF;
+            --color-info-on: #FFFFFF;
+            --color-border-default: #E2E8F0;
+            --color-border-strong: #94A3B8;
+            --color-text-primary: #0F172A;
+            --color-text-secondary: #475569;
+            --color-text-muted: #94A3B8;
+            --color-text-inverse: #FFFFFF;
+            --color-text-link: #4F46E5;
             --radius-xs: 4px;
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 24px;
             --radius-full: 9999px;
-            --elevation-1: 0px 1px 3px 0px rgba(15, 23, 42, 0.08), 0px 1px 2px -1px rgba(15, 23, 42, 0.06);
-            --elevation-2: 0px 4px 8px -2px rgba(15, 23, 42, 0.10), 0px 2px 4px -2px rgba(15, 23, 42, 0.06);
-            --elevation-3: 0px 20px 40px -8px rgba(15, 23, 42, 0.14), 0px 8px 16px -4px rgba(15, 23, 42, 0.08);
-            --font-family-primary: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --elevation-1: 0px 1px 3px rgba(15,23,42,0.08), 0px 1px 2px -1px rgba(15,23,42,0.06);
+            --elevation-2: 0px 4px 8px rgba(15,23,42,0.10), 0px 2px 4px -2px rgba(15,23,42,0.06);
+            --elevation-3: 0px 20px 40px rgba(15,23,42,0.14), 0px 8px 16px -4px rgba(15,23,42,0.08);
+            --font-family-primary: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family-bengali: 'Hind Siliguri', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --motion-duration-fast: 120ms;
             --motion-duration-normal: 220ms;
             --motion-duration-slow: 350ms;
