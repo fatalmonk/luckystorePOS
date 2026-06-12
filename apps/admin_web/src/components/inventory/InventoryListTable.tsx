@@ -15,6 +15,8 @@ interface InventoryListTableProps {
   onToggleSelect: (id: string) => void;
   onSelectAll: (ids: string[], isAllSelected: boolean) => void;
   compact?: boolean;
+  scrollElement?: HTMLDivElement | null;
+  toolbarHeight?: number;
 }
 
 export function InventoryListTable({
@@ -29,6 +31,8 @@ export function InventoryListTable({
   onToggleSelect,
   onSelectAll,
   compact = false,
+  scrollElement,
+  toolbarHeight,
 }: InventoryListTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
@@ -36,7 +40,7 @@ export function InventoryListTable({
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => scrollElement || null,
     estimateSize: () => compact ? 32 : 72,
     overscan: 5,
   });
@@ -93,81 +97,81 @@ export function InventoryListTable({
   );
 
   return (
-    <div className="w-full rounded-xl border border-warm-border-warm bg-warm-surface overflow-hidden">
-      <div ref={parentRef} className="overflow-auto" style={{ height: 'calc(100vh - 350px)' }}>
-        <table className="w-full border-collapse">
-          {/* Sticky Header - Solid Background + Proper Z-Index */}
-          <thead className="sticky top-0 z-20">
-            <tr className="bg-warm-surface border-b border-warm-border-warm">
-              <th className="w-10 px-4 py-3 text-center bg-warm-surface">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={(e) => onSelectAll(items.map((item) => item.id), e.target.checked)}
-                  className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
-                />
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface w-full max-w-[400px]">Product</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Stock</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Selling</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Profit</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface">Status</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface whitespace-nowrap">Updated</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-warm-muted uppercase tracking-[0.12em] bg-warm-surface">Actions</th>
+    <div className="table-wrap w-full" style={{ '--table-sticky-top': `${toolbarHeight || 140}px` } as React.CSSProperties}>
+      <table className="inventory">
+        {/* Sticky Header - Solid Background + Proper Z-Index */}
+        <thead>
+          <tr className="border-b border-warm-border-warm">
+            <th className="w-10 px-4 py-3 text-center">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={(e) => onSelectAll(items.map((item) => item.id), e.target.checked)}
+                className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
+              />
+            </th>
+            <th className="px-4 py-3 text-left w-[250px] md:w-[300px]">Product</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap w-[90px]">Stock</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px]">Cost</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px]">MRP</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px]">Selling</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px]">Margin</th>
+            <th className="px-4 py-3 text-center w-[80px]">Status</th>
+            <th className="px-4 py-3 text-right whitespace-nowrap w-[100px]">Purchase</th>
+            <th className="px-4 py-3 text-right w-[80px]">Actions</th>
+          </tr>
+        </thead>
+
+        {/* Table Body */}
+        <tbody className="relative z-10">
+          {items.length === 0 ? (
+            <tr>
+              <td colSpan={10} className="px-4 py-12 text-center text-sm text-warm-dim">No inventory items found. Add products to start tracking stock levels.</td>
             </tr>
-          </thead>
+          ) : (
+            <>
+              {paddingTop > 0 && (
+                <tr>
+                  <td colSpan={10} style={{ height: `${paddingTop}px`, padding: 0 }} />
+                </tr>
+              )}
+              {virtualItems.map((virtualRow) => {
+                const item = items[virtualRow.index];
+                if (!item) return null;
+                const isSelected = selectedIds.has(item.id);
 
-          {/* Table Body */}
-          <tbody className="relative z-10">
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-sm text-warm-dim">No inventory items found. Add products to start tracking stock levels.</td>
-              </tr>
-            ) : (
-              <>
-                {paddingTop > 0 && (
-                  <tr>
-                    <td colSpan={8} style={{ height: `${paddingTop}px`, padding: 0 }} />
-                  </tr>
-                )}
-                {virtualItems.map((virtualRow) => {
-                  const item = items[virtualRow.index];
-                  if (!item) return null;
-                  const isSelected = selectedIds.has(item.id);
-
-                  return (
-                    <InventoryListTableRow
-                      key={item.id}
-                      index={virtualRow.index}
-                      item={item}
-                      virtualRowSize={virtualRow.size}
-                      isSelected={isSelected}
-                      isOpen={openMenuId === item.id}
-                      editingCell={editingCell}
-                      setEditingCell={setEditingCell}
-                      onToggleOpen={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
-                      onClick={() => onUpdateStock(item)}
-                      onViewHistory={() => onViewHistory?.(item)}
-                      onEditProduct={() => onEditProduct?.(item)}
-                      onDelete={() => onDelete?.(item)}
-                      onToggleSelect={() => onToggleSelect(item.id)}
-                      onInlineSave={onInlineSave}
-                      onTabNavigation={handleTabNavigation}
-                      storeId={storeId}
-                      compact={compact}
-                    />
-                  );
-                })}
-                {paddingBottom > 0 && (
-                  <tr>
-                    <td colSpan={8} style={{ height: `${paddingBottom}px`, padding: 0 }} />
-                  </tr>
-                )}
-              </>
-            )}
-          </tbody>
-        </table>
-      </div>
+                return (
+                  <InventoryListTableRow
+                    key={item.id}
+                    index={virtualRow.index}
+                    item={item}
+                    virtualRowSize={virtualRow.size}
+                    isSelected={isSelected}
+                    isOpen={openMenuId === item.id}
+                    editingCell={editingCell}
+                    setEditingCell={setEditingCell}
+                    onToggleOpen={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                    onClick={() => onUpdateStock(item)}
+                    onViewHistory={() => onViewHistory?.(item)}
+                    onEditProduct={() => onEditProduct?.(item)}
+                    onDelete={() => onDelete?.(item)}
+                    onToggleSelect={() => onToggleSelect(item.id)}
+                    onInlineSave={onInlineSave}
+                    onTabNavigation={handleTabNavigation}
+                    storeId={storeId}
+                    compact={compact}
+                  />
+                );
+              })}
+              {paddingBottom > 0 && (
+                <tr>
+                  <td colSpan={10} style={{ height: `${paddingBottom}px`, padding: 0 }} />
+                </tr>
+              )}
+            </>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

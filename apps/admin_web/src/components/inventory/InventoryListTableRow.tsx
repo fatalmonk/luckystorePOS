@@ -133,10 +133,8 @@ export function InventoryListTableRow({
   return (
     <tr
       className={clsx(
-        'relative border-b border-warm-border-warm/50 transition-colors',
-        index % 2 === 0 ? 'bg-warm-surface' : 'bg-warm-surface/60',
-        !isSelected && 'hover:bg-warm-surface-hover',
-        isSelected && 'bg-warm-accent/10 hover:bg-warm-accent/15'
+        'relative transition-colors',
+        isSelected && 'bg-warm-accent/10 hover:bg-warm-accent/15 [&>td]:!bg-transparent'
       )}
       style={{ height: `${virtualRowSize}px` }}
     >
@@ -215,7 +213,53 @@ export function InventoryListTableRow({
         )}
       </td>
 
-      {/* Selling - Price + MRP */}
+      {/* Cost - Editable */}
+      <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
+        {isEditing('cost') ? (
+          <EditableCell
+            value={item.cost || 0}
+            type="currency"
+            onSave={(val) => handleSave('cost', val)}
+            onCancel={() => setEditingCell(null)}
+            inputClassName="w-20 text-right font-mono text-sm"
+          />
+        ) : (
+          <span
+            className="text-sm text-warm-fg cursor-pointer hover:bg-warm-surface-hover rounded px-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              startEditing('cost');
+            }}
+          >
+            ৳{item.cost?.toLocaleString('en-IN') || '—'}
+          </span>
+        )}
+      </td>
+
+      {/* MRP - Editable */}
+      <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
+        {isEditing('mrp') ? (
+          <EditableCell
+            value={item.mrp || 0}
+            type="currency"
+            onSave={(val) => handleSave('mrp', val)}
+            onCancel={() => setEditingCell(null)}
+            inputClassName="w-20 text-right font-mono text-sm"
+          />
+        ) : (
+          <span
+            className="text-sm text-warm-fg cursor-pointer hover:bg-warm-surface-hover rounded px-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              startEditing('mrp');
+            }}
+          >
+            ৳{item.mrp?.toLocaleString('en-IN') || '—'}
+          </span>
+        )}
+      </td>
+
+      {/* Selling - Price */}
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {showSmartPricing ? (
           <SmartPricingEditor
@@ -229,28 +273,38 @@ export function InventoryListTableRow({
             }}
             onCancel={() => setShowSmartPricing(false)}
           />
-        ) : item.price ? (
-          <div className="flex flex-col items-end">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-warm-fg">৳{item.price.toLocaleString('en-IN')}</span>
-              <button
-                onClick={() => setShowSmartPricing(true)}
-                className="p-1 rounded hover:bg-warm-surface-hover text-warm-muted hover:text-warm-accent transition-colors"
-                title="Smart Pricing"
-              >
-                <TrendingUp size={14} />
-              </button>
-            </div>
-            {item.mrp && item.mrp > item.price && (
-              <span className="text-[11px] text-warm-dim line-through">MRP ৳{item.mrp.toLocaleString('en-IN')}</span>
-            )}
-          </div>
+        ) : isEditing('price') ? (
+          <EditableCell
+            value={item.price || 0}
+            type="currency"
+            onSave={(val) => handleSave('price', val)}
+            onCancel={() => setEditingCell(null)}
+            validate={validatePrice}
+            inputClassName="w-20 text-right font-mono text-sm"
+          />
         ) : (
-          <span className="text-warm-dim">—</span>
+          <div className="flex items-center justify-end gap-1 group/price">
+            <span
+              className="text-sm font-semibold text-warm-fg cursor-pointer hover:bg-warm-surface-hover rounded px-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                startEditing('price');
+              }}
+            >
+              ৳{item.price?.toLocaleString('en-IN') || '—'}
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowSmartPricing(true); }}
+              className="p-1 rounded hover:bg-warm-surface-hover text-warm-muted hover:text-warm-accent opacity-0 group-hover/price:opacity-100 transition-opacity"
+              title="Smart Pricing"
+            >
+              <TrendingUp size={12} />
+            </button>
+          </div>
         )}
       </td>
 
-      {/* Profit - Condensed View */}
+      {/* Margin / Profit */}
       <td className="px-4 py-3 text-right whitespace-nowrap font-mono">
         {item.cost && item.price ? (
           <div className="flex flex-col items-end">
@@ -267,7 +321,7 @@ export function InventoryListTableRow({
       </td>
 
       {/* Status */}
-      <td className="px-4 py-3 cursor-pointer" onClick={onClick}>
+      <td className="px-4 py-3 text-center cursor-pointer" onClick={onClick}>
         <span
           className={clsx(
             'text-[10px] font-bold px-2 py-0.5 rounded-full border',
@@ -280,14 +334,33 @@ export function InventoryListTableRow({
         </span>
       </td>
 
-      {/* Last Updated */}
-      <td className="px-4 py-3 text-right text-sm text-warm-dim">
-        {item.last_updated ? (
-          <div className="cursor-pointer hover:bg-warm-surface-hover rounded px-2 py-1 -mx-2 -my-1" onClick={() => startEditing('last_purchased_date')} title="Click to edit">
-            {new Date(item.last_updated).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-          </div>
+      {/* Last Purchase Date */}
+      <td className="px-4 py-3 text-right text-xs text-warm-muted whitespace-nowrap">
+        {isEditing('last_purchased_date') ? (
+          <EditableCell
+            value={item.last_purchased_date || ''}
+            type="date"
+            onSave={(val) => handleSave('last_purchased_date', val)}
+            onCancel={() => setEditingCell(null)}
+            inputClassName="w-28 text-xs font-mono"
+          />
         ) : (
-          <span className="text-warm-dim">—</span>
+          <div
+            className="cursor-pointer hover:bg-warm-surface-hover rounded px-1.5 py-0.5 -mx-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              startEditing('last_purchased_date');
+            }}
+            title="Click to edit last purchase date"
+          >
+            {item.last_purchased_date ? (
+              new Date(item.last_purchased_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+            ) : item.last_updated ? (
+              new Date(item.last_updated).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+            ) : (
+              <span className="text-warm-dim">—</span>
+            )}
+          </div>
         )}
       </td>
 
