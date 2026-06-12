@@ -1,16 +1,15 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface SocialCreator {
   id: string;
   handle: string;
-  avatar: string;
-  bgImage: string;
+  emoji: string;
+  bgGradient: string;
   productName: string;
   productPrice: number;
-  productImage: string;
+  productEmoji: string;
   productId: string;
 }
 
@@ -18,51 +17,51 @@ const defaultCreators: SocialCreator[] = [
   {
     id: '1',
     handle: 'foodie_alex',
-    avatar: '/avatars/alex.jpg',
-    bgImage: '/social/1.jpg',
+    emoji: '🍌',
+    bgGradient: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 100%)',
     productName: 'Organic Bananas',
     productPrice: 80,
-    productImage: '/products/bananas.jpg',
+    productEmoji: '🍌',
     productId: 'bananas-organic',
   },
   {
     id: '2',
     handle: 'chef_maria',
-    avatar: '/avatars/maria.jpg',
-    bgImage: '/social/2.jpg',
+    emoji: '🍞',
+    bgGradient: 'linear-gradient(135deg, #fed7aa 0%, #ea580c 100%)',
     productName: 'Artisan Bread',
     productPrice: 65,
-    productImage: '/products/bread.jpg',
+    productEmoji: '🍞',
     productId: 'bread-artisan',
   },
   {
     id: '3',
     handle: 'healthy_rahul',
-    avatar: '/avatars/rahul.jpg',
-    bgImage: '/social/3.jpg',
+    emoji: '🥛',
+    bgGradient: 'linear-gradient(135deg, #dbeafe 0%, #3b82f6 100%)',
     productName: 'Greek Yogurt',
     productPrice: 120,
-    productImage: '/products/yogurt.jpg',
+    productEmoji: '🥛',
     productId: 'yogurt-greek',
   },
   {
     id: '4',
     handle: 'snack_queen',
-    avatar: '/avatars/snack.jpg',
-    bgImage: '/social/4.jpg',
+    emoji: '🥜',
+    bgGradient: 'linear-gradient(135deg, #d9f99d 0%, #65a30d 100%)',
     productName: 'Mixed Nuts',
     productPrice: 250,
-    productImage: '/products/nuts.jpg',
+    productEmoji: '🥜',
     productId: 'nuts-mixed',
   },
   {
     id: '5',
     handle: 'baker_bob',
-    avatar: '/avatars/bob.jpg',
-    bgImage: '/social/5.jpg',
+    emoji: '🥐',
+    bgGradient: 'linear-gradient(135deg, #fecaca 0%, #dc2626 100%)',
     productName: 'Croissants',
     productPrice: 180,
-    productImage: '/products/croissants.jpg',
+    productEmoji: '🥐',
     productId: 'croissants',
   },
 ];
@@ -81,43 +80,33 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
           <Link
             key={creator.id}
             href={`/product/${creator.productId}`}
-            className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] bg-gray-200 cursor-pointer"
+            className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] cursor-pointer"
           >
-            {/* Background image */}
-            <Image
-              src={creator.bgImage}
-              alt={creator.handle}
-              fill
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 768px) 200px, 192px"
-              loading="lazy"
-              decoding="async"
+            {/* Background gradient */}
+            <div
+              className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+              style={{ background: creator.bgGradient }}
             />
+
+            {/* Large emoji decoration */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-20 text-8xl select-none pointer-events-none">
+              {creator.emoji}
+            </div>
 
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
             {/* Creator info */}
             <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 backdrop-blur-sm">
-              <Image
-                src={creator.avatar}
-                alt={creator.handle}
-                width={28}
-                height={28}
-                className="h-7 w-7 rounded-full border border-white/50 object-cover"
-              />
+              <span className="text-lg">{creator.emoji}</span>
               <span className="text-xs font-medium text-white truncate max-w-[120px]">@{creator.handle}</span>
             </div>
 
             {/* Floating product card */}
             <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3 rounded-[14px] bg-white p-2.5 shadow-lg transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-              <Image
-                src={creator.productImage}
-                alt={creator.productName}
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-[10px] bg-gray-100 object-cover flex-shrink-0"
-              />
+              <div className="h-10 w-10 rounded-[10px] bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
+                {creator.productEmoji}
+              </div>
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="line-clamp-1 text-sm font-medium text-gray-900 truncate">
                   {creator.productName}

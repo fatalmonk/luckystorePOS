@@ -1,0 +1,17 @@
+{
+  "buildCommand": "cd apps/admin_web && npm install && npm run build",
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/googledd38bcebed6ae845.html", "destination": "/landing/googledd38bcebed6ae845.html" },
+    { "source": "/", "destination": "/landing/index.html" },
+    { "source": "/privacy", "destination": "/landing/privacy-policy.html" },
+    { "source": "/terms", "destination": "/landing/terms-of-service.html" },
+    { "source": "/admin/assets/(.*)", "destination": "/apps/admin_web/dist/assets/$1" },
+    { "source": "/admin/sw.js", "destination": "/apps/admin_web/dist/sw.js" },
+    { "source": "/admin/manifest.json", "destination": "/apps/admin_web/dist/manifest.json" },
+    { "source": "/admin/pwa-192x192.png", "destination": "/apps/admin_web/dist/pwa-192x192.png" },
+    { "source": "/admin/pwa-512x512.png", "destination": "/apps/admin_web/dist/pwa-512x512.png" },
+    { "source": "/admin/(.*)", "destination": "/apps/admin_web/dist/index.html" },
+    { "source": "/admin", "destination": "/apps/admin_web/dist/index.html" }
+  ]
+}
