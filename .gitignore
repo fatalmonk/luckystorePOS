@@ -208,3 +208,5 @@ data/*.json
 # Vercel custom public output directory
 dist_public/
 
+# Documentation
+docs/
