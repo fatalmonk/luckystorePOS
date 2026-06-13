@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
@@ -9,12 +9,14 @@ import { Send, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
-type PostStatus = 'draft' | 'pending' | 'published' | 'failed';
+type PostStatus = 'pending' | 'published' | 'failed';
 
 interface SocialPost {
   id: string;
   tenant_id: string;
   store_id: string;
+  user_id: string | null;
+  platform: string;
   content: string;
   link: string | null;
   status: PostStatus;
@@ -54,7 +56,7 @@ export function SocialPostPage() {
       if (!storeId) return [];
       const { data, error } = await supabase
         .from('social_posts')
-        .select('id, tenant_id, store_id, content, link, status, post_id, created_at, updated_at')
+        .select('id, tenant_id, store_id, user_id, platform, content, link, status, post_id, created_at, updated_at')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -116,12 +118,11 @@ export function SocialPostPage() {
 
   const getStatusBadge = (status: PostStatus) => {
     const map: Record<PostStatus, { label: string; classes: string }> = {
-      draft: { label: 'Draft', classes: 'bg-warm-border-warm/40 text-warm-muted' },
       pending: { label: 'Pending', classes: 'bg-warm-accent/20 text-warm-accent' },
       published: { label: 'Published', classes: 'bg-warm-success/15 text-warm-success' },
       failed: { label: 'Failed', classes: 'bg-warm-danger/10 text-warm-danger' },
     };
-    const cfg = map[status] || map.draft;
+    const cfg = map[status] || map.pending;
     return (
       <span className={clsx('text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md', cfg.classes)}>
         {cfg.label}

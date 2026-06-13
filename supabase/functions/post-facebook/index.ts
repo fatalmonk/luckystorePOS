@@ -70,6 +70,15 @@ serve(async (req) => {
       )
     }
 
+    // Role gate: only owner/manager/admin may publish
+    const allowedRoles = new Set(['owner', 'manager', 'admin'])
+    if (!userProfile.role || !allowedRoles.has(userProfile.role)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Insufficient permissions to publish social posts' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      )
+    }
+
     // Parse and validate body
     let body: FacebookPostRequest
     try {
