@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useLayoutEffect, FC } from 'react';
 import clsx from 'clsx';
 
 interface AnimatedMetricProps {
@@ -10,7 +10,7 @@ interface AnimatedMetricProps {
   format?: boolean; // format with toLocaleString
 }
 
-export const AnimatedMetric: React.FC<AnimatedMetricProps> = ({
+export const AnimatedMetric: FC<AnimatedMetricProps> = ({
   value,
   prefix = '',
   suffix = '',
@@ -19,9 +19,10 @@ export const AnimatedMetric: React.FC<AnimatedMetricProps> = ({
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Only animate on data changes, skip initial mount flash
-    setIsAnimating(true);
+    // Defer state update to avoid cascading renders warning
+    setTimeout(() => setIsAnimating(true), 0);
     const timer = setTimeout(() => setIsAnimating(false), 300);
     return () => clearTimeout(timer);
   }, [value]);

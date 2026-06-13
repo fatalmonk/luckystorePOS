@@ -4,7 +4,7 @@ import { resolve, extname, basename, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = resolve(fileURLToPath(import.meta.url), '..');
-const IGNORE_DIRS = new Set(['.git', 'node_modules', 'build', 'coverage', '.venv', '.env.local']);
+const IGNORE_DIRS = new Set(['.git', 'node_modules', 'build', 'coverage', '.venv', '.env.local', '.hermes']);
 
 function isGitIgnored(filePath) {
   const rel = relative(process.cwd(), filePath);

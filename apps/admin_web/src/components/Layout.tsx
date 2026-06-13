@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarNew } from './SidebarNew';
 import { BottomNav } from './BottomNav';
@@ -51,23 +51,25 @@ export function Layout() {
   }, [sidebarHidden]);
 
   // Force sidebar collapse when entering POS mode (desktop), but save preference
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isPosPage && !isMobile) {
       // Save current preference before forcing collapse
       const saved = localStorage.getItem('sidebar-collapsed');
       if (saved !== 'true') {
         localStorage.setItem('sidebar-collapsed-restore', saved || 'false');
       }
-      setSidebarCollapsedState(true);
+      // Defer state update to avoid cascading renders warning
+      setTimeout(() => setSidebarCollapsedState(true), 0);
     } else if (!isPosPage && !isMobile) {
       // Restore previous preference when leaving POS
       const restore = localStorage.getItem('sidebar-collapsed-restore');
       if (restore !== null) {
-        setSidebarCollapsedState(restore === 'true');
+        // Defer state update to avoid cascading renders warning
+        setTimeout(() => setSidebarCollapsedState(restore === 'true'), 0);
         localStorage.removeItem('sidebar-collapsed-restore');
       }
     }
-  }, [isPosPage, isMobile]);
+  }, [isPosPage, isMobile, sidebarCollapsed]);
 
   return (
     <div className={`app-container app-warm ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''} ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>

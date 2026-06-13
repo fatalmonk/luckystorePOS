@@ -3593,6 +3593,73 @@ export type Database = {
         }
         Relationships: []
       }
+      social_posts: {
+        Row: {
+          content: string
+          created_at: string
+          error_message: string | null
+          id: string
+          link: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          post_id: string | null
+          status: string
+          store_id: string | null
+          tenant_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          link?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"]
+          post_id?: string | null
+          status: string
+          store_id?: string | null
+          tenant_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          link?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"]
+          post_id?: string | null
+          status?: string
+          store_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_posts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean
@@ -5817,6 +5884,7 @@ export type Database = {
       }
     }
     Enums: {
+      social_platform: "facebook" | "instagram"
       discount_type: "percentage" | "fixed"
       movement_type:
         | "sale"

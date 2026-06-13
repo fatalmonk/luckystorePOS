@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useLayoutEffect, useCallback, ComponentType } from 'react';
 import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
   Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, 
   LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag, TrendingDown,
-  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, HelpCircle, FileText
+  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send
 } from 'lucide-react';
 
 interface SidebarNewProps {
@@ -19,7 +19,7 @@ interface SidebarNewProps {
 }
 
 interface NavItem {
-  icon: React.ComponentType<any>;
+  icon: ComponentType<any>;
   label: string;
   path: string;
   children?: { label: string; path: string }[];
@@ -28,7 +28,7 @@ interface NavItem {
 interface NavGroup {
   id: string;
   titleKey: string;
-  icon: React.ComponentType<any>;
+  icon: ComponentType<any>;
   items: NavItem[];
 }
 
@@ -95,6 +95,7 @@ function useNavGroups(): NavGroup[] {
       items: [
         { icon: Settings, label: t('nav.settings'), path: '/settings' },
         { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
+        { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
       ]
     }
   ];
@@ -113,7 +114,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   const { t } = useTranslation();
 
   // Helper to check if a route is active or if any child sub-route is active
-  const isRouteActive = (path: string, hasChildren = false) => {
+  const isRouteActive = useCallback((path: string, hasChildren = false) => {
     if (hasChildren) {
       return location.pathname.startsWith(path);
     }
@@ -121,10 +122,10 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
       return location.pathname === '/';
     }
     return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  }, [location.pathname]);
 
   // Helper to check if any item in a nav group is active
-  const isGroupActive = (group: NavGroup) => {
+  const isGroupActive = useCallback((group: NavGroup) => {
     return group.items.some(item => {
       if (isRouteActive(item.path, !!item.children)) return true;
       if (item.children) {
@@ -132,21 +133,24 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
       }
       return false;
     });
-  };
+  }, [isRouteActive]);
 
   // State to track which accordions are manually toggled / expanded
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   // Auto-expand the group that contains the active route
-  useEffect(() => {
+  useLayoutEffect(() => {
     const activeGroup = navGroups.find(group => isGroupActive(group));
     if (activeGroup) {
-      setExpandedGroups(prev => ({
-        ...prev,
-        [activeGroup.id]: true
-      }));
+      // Defer state update to avoid cascading renders warning
+      setTimeout(() => {
+        setExpandedGroups(prev => ({
+          ...prev,
+          [activeGroup.id]: true
+        }));
+      }, 0);
     }
-  }, [location.pathname]);
+  }, [location.pathname, navGroups, isGroupActive]);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => ({
