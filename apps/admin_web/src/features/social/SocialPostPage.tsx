@@ -8,6 +8,9 @@ import { SkeletonCard, ErrorState } from '../../components/PageState';
 import { Send, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { formatDistanceToNow, parseISO } from 'date-fns';
+import { SocialPostHistoryItem } from './SocialPostHistoryItem';
+
+const ALLOWED_ROLES = new Set(['owner', 'manager', 'admin']);
 
 type PostStatus = 'draft' | 'pending' | 'published' | 'failed';
 
@@ -24,8 +27,6 @@ interface SocialPost {
   created_at: string;
   updated_at: string;
 }
-
-const ALLOWED_ROLES = new Set(['owner', 'manager', 'admin']);
 
 function useCanPost() {
   const { user } = useAuth();
@@ -44,7 +45,7 @@ export function SocialPostPage() {
 
   const maxChars = 5000;
 
-  // ── Fetch post history ──
+  // ─── Fetch post history ───
   const {
     data: history = [],
     isLoading,
@@ -67,7 +68,7 @@ export function SocialPostPage() {
     enabled: !!storeId,
   });
 
-  // ── Publish mutation ──
+  // ─── Publish mutation ───
   const publishMutation = useMutation({
     mutationFn: async ({ text, url }: { text: string; url?: string }) => {
       const {
@@ -115,21 +116,6 @@ export function SocialPostPage() {
   };
 
   const fbPageId = import.meta.env.VITE_FACEBOOK_PAGE_ID;
-
-  const getStatusBadge = (status: PostStatus) => {
-    const map: Record<PostStatus, { label: string; classes: string }> = {
-      draft: { label: 'Draft', classes: 'bg-warm-muted/20 text-warm-muted' },
-      pending: { label: 'Pending', classes: 'bg-warm-accent/20 text-warm-accent' },
-      published: { label: 'Published', classes: 'bg-warm-success/15 text-warm-success' },
-      failed: { label: 'Failed', classes: 'bg-warm-danger/10 text-warm-danger' },
-    };
-    const cfg = map[status] || map.pending;
-    return (
-      <span className={clsx('text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md', cfg.classes)}>
-        {cfg.label}
-      </span>
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -240,40 +226,16 @@ export function SocialPostPage() {
         {!isLoading &&
           !isError &&
           history.map((post) => (
-            <div
+            <SocialPostHistoryItem
               key={post.id}
-              className="bg-warm-surface border border-warm-border-warm rounded-xl p-4 shadow-sm space-y-2"
-            >
-              <div className="flex items-center justify-between">
-                {getStatusBadge(post.status)}
-                <span className="text-[11px] text-warm-muted">
-                  {formatDistanceToNow(parseISO(post.created_at), { addSuffix: true })}
-                </span>
-              </div>
-              <p className="text-sm text-warm-fg whitespace-pre-wrap">{post.content}</p>
-              {post.link && (
-                <a
-                  href={post.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-warm-accent hover:underline"
-                >
-                  <ExternalLink size={12} />
-                  {post.link}
-                </a>
-              )}
-              {post.status === 'published' && fbPageId && post.post_id && (
-                <a
-                  href={`https://facebook.com/${post.post_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-warm-accent hover:underline"
-                >
-                  <ExternalLink size={12} />
-                  View on Facebook
-                </a>
-              )}
-            </div>
+              id={post.id}
+              content={post.content}
+              link={post.link}
+              status={post.status}
+              post_id={post.post_id}
+              created_at={post.created_at}
+              fbPageId={fbPageId}
+            />
           ))}
       </div>
     </div>
