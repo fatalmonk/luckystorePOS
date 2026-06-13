@@ -36,7 +36,9 @@ export function registerServiceWorker(): void {
   if (!('serviceWorker' in navigator)) return;
 
   window.addEventListener('beforeinstallprompt', (e: Event) => {
-    e.preventDefault();
+    // Store the event for our custom InstallPrompt UI
+    // We DON'T call preventDefault() here - let the browser show its native banner
+    // Our custom UI will only show if the browser doesn't show its own banner
     deferredPrompt = e as BeforeInstallPromptEvent;
   });
 
