@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
@@ -9,7 +9,7 @@ import { Send, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
-type PostStatus = 'pending' | 'published' | 'failed';
+type PostStatus = 'draft' | 'pending' | 'published' | 'failed';
 
 interface SocialPost {
   id: string;
@@ -33,7 +33,7 @@ function useCanPost() {
 }
 
 export function SocialPostPage() {
-  const { user, storeId } = useAuth();
+  const { storeId } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const canPost = useCanPost();
@@ -118,6 +118,7 @@ export function SocialPostPage() {
 
   const getStatusBadge = (status: PostStatus) => {
     const map: Record<PostStatus, { label: string; classes: string }> = {
+      draft: { label: 'Draft', classes: 'bg-warm-muted/20 text-warm-muted' },
       pending: { label: 'Pending', classes: 'bg-warm-accent/20 text-warm-accent' },
       published: { label: 'Published', classes: 'bg-warm-success/15 text-warm-success' },
       failed: { label: 'Failed', classes: 'bg-warm-danger/10 text-warm-danger' },

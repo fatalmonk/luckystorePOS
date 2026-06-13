@@ -2,15 +2,15 @@
 
 Stack: React, Next.js 14 (App Router), Supabase, Tailwind, TypeScript, Flutter
 
-Current: social posting feature implemented on branch feat/social-posting
+Current: social posting fixes deployed on feat/social-media-agent branch — edge fn role gate, PostStatus aligned, migration applied
 
-Done: Header redesign, CategoryGrid, FilterSidebar, PromoGrid, SocialCarousel, shallow routing, performance, delivery orders, smart pricing, RPC grants, docs/.gitignore, brand assets, domain + Vercel fixes, Supabase CI envs, RPC DO blocks, secret_scan .css skip, Facebook posting module, social posting UI (composer, history, edge fn, audit table, RLS)
+Done: ... , social posting UI (composer, history, edge fn, audit table, RLS), role gate in edge fn, PostStatus DB alignment, updated_at trigger, migration applied
 
-Decisions: Vercel root deploys, SmartPricingEditor reusable, stock_movements.delta, luckystore1947.com, post-facebook edge function with userProfile lookup, social_platform enum (facebook, instagram)
+Decisions: ...
 
 Blockers: none
 
-Next: deploy edge function, set secrets, test end-to-end
-
+Next: test end-to-end publish from UI, verify Facebook page receives post
 ---
+ctx: social posting fixes deployed on feat/social-media-agent | done: 24 | next: end-to-end test
 ctx: social posting feature on feat/social-posting branch | done: 23 | next: deploy + test

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { X, ScanLine } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -12,11 +12,12 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
   const [barcode, setBarcode] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
-      setBarcode('');
+      // Defer state update to avoid cascading renders warning
+      setTimeout(() => setBarcode(''), 0);
     }
   }, [isOpen]);
 
