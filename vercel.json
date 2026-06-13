@@ -1,10 +1,16 @@
 {
-  "buildCommand": "mkdir -p dist_public && cp -r landing/* dist_public/ && cd apps/admin_web && npm install && npm run build && mkdir -p ../../dist_public/admin && cp -r dist/* ../../dist_public/admin/",
+  "buildCommand": "cd apps/admin_web && npm install && npm run build && mkdir -p ../../dist_public && cp -r dist/* ../../dist_public/",
   "outputDirectory": "dist_public",
   "rewrites": [
-    { "source": "/privacy", "destination": "/privacy-policy.html" },
-    { "source": "/terms", "destination": "/terms-of-service.html" },
-    { "source": "/admin/(.*)", "destination": "/admin/index.html" },
-    { "source": "/admin", "destination": "/admin/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    }
   ]
 }
