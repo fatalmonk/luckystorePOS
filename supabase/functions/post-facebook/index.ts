@@ -55,6 +55,21 @@ serve(async (req) => {
       )
     }
 
+    // Fetch internal user profile for tenant/store context
+    const { data: userProfile, error: profileError } = await adminClient
+      .from('users')
+      .select('id, tenant_id, store_id, role')
+      .eq('auth_id', user.id)
+      .single()
+
+    if (profileError || !userProfile) {
+      console.error('User profile not found:', profileError)
+      return new Response(
+        JSON.stringify({ success: false, error: 'User profile not found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      )
+    }
+
     // Parse and validate body
     let body: FacebookPostRequest
     try {
@@ -126,8 +141,11 @@ serve(async (req) => {
     const { data: insertedRow, error: insertError } = await adminClient
       .from('social_posts')
       .insert({
-        user_id: user.id,
-        message: normalizedMessage,
+        tenant_id: userProfile.tenant_id,
+        store_id: userProfile.store_id,
+        user_id: userProfile.id,
+        platform: 'facebook',
+        content: normalizedMessage,
         link: normalizedLink,
         status: 'pending',
       })

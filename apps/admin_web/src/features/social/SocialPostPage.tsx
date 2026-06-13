@@ -18,7 +18,7 @@ interface SocialPost {
   content: string;
   link: string | null;
   status: PostStatus;
-  external_id: string | null;
+  post_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -52,9 +52,9 @@ export function SocialPostPage() {
     queryKey: ['social-posts', storeId],
     queryFn: async () => {
       if (!storeId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('social_posts')
-        .select('id, tenant_id, store_id, content, link, status, external_id, created_at, updated_at')
+        .select('id, tenant_id, store_id, content, link, status, post_id, created_at, updated_at')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -260,9 +260,9 @@ export function SocialPostPage() {
                   {post.link}
                 </a>
               )}
-              {post.status === 'published' && fbPageId && post.external_id && (
+              {post.status === 'published' && fbPageId && post.post_id && (
                 <a
-                  href={`https://facebook.com/${post.external_id}`}
+                  href={`https://facebook.com/${post.post_id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-warm-accent hover:underline"

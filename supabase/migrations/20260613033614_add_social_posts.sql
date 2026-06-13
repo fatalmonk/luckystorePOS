@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.social_posts (
   user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
   platform public.social_platform NOT NULL DEFAULT 'facebook',
   content text NOT NULL,
+  link text,
   post_id text,
   status text NOT NULL CHECK (status IN ('pending', 'published', 'failed')),
   error_message text,
