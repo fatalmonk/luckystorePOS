@@ -9,11 +9,19 @@
     "import-competitor": "node scripts/ops/import-competitor-data.js",
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",
     "remove-duplicates:dry-run": "node scripts/ops/remove-duplicate-items.js --dry-run",
-    "scan:secrets": "node scripts/secret_scan.js"
+    "scan:secrets": "node scripts/secret_scan.js",
+    "facebook:post": "tsx src/facebook.ts",
+    "typecheck": "tsc --noEmit"
   },
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.3"
+    "@supabase/supabase-js": "^2.103.3",
+    "dotenv": "^17.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
   },
   "workspaces": [
     "apps/*"
