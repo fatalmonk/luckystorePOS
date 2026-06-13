@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
   Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, 
   LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag, TrendingDown,
-  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, HelpCircle, FileText
+  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, HelpCircle, FileText, Send
 } from 'lucide-react';
 
 interface SidebarNewProps {
@@ -95,6 +95,7 @@ function useNavGroups(): NavGroup[] {
       items: [
         { icon: Settings, label: t('nav.settings'), path: '/settings' },
         { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
+        { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
       ]
     }
   ];
