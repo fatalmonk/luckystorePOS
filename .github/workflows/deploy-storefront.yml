@@ -43,7 +43,6 @@ jobs:
         run: npm ci --legacy-peer-deps
       
       - name: Pull Vercel Environment
-        working-directory: apps/customer_storefront
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
@@ -51,7 +50,6 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
       - name: Build
-        working-directory: apps/customer_storefront
         run: vercel build --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
@@ -60,7 +58,6 @@ jobs:
       
       - name: Deploy to Preview
         if: github.event_name == 'pull_request'
-        working-directory: apps/customer_storefront
         run: vercel deploy --prebuilt
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
@@ -69,7 +66,6 @@ jobs:
       
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: apps/customer_storefront
         run: vercel deploy --prebuilt --prod
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
