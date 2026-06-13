@@ -76,7 +76,7 @@ function walk(dir) {
 
     const ext = extname(entry.name).toLowerCase();
     if (['.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.pdf',
-         '.zip', '.gz', '.tar', '.exe', '.dll', '.so', '.dylib', '.db', '.sqlite'].includes(ext)) {
+         '.zip', '.gz', '.tar', '.exe', '.dll', '.so', '.dylib', '.db', '.sqlite', '.css'].includes(ext)) {
       continue;
     }
 
