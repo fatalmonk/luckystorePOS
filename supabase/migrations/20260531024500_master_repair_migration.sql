@@ -234,7 +234,16 @@ END $$;
 
 -- POS Functions
 GRANT EXECUTE ON FUNCTION public.get_pos_categories(uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.search_items_pos(uuid,text,uuid,integer,integer) TO authenticated;
+DO $$
+BEGIN
+  GRANT EXECUTE ON FUNCTION public.search_items_pos(uuid,text,uuid,integer,integer) TO authenticated;
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
+DO $$
+BEGIN
+  GRANT EXECUTE ON FUNCTION public.search_items_pos(text,uuid) TO authenticated;
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
 GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text,uuid) TO authenticated;
 
 -- Inventory Functions (grant if exists, skip if not)
