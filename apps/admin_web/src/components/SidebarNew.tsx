@@ -118,7 +118,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
       return location.pathname.startsWith(path);
     }
     if (path === '/') {
-      return location.pathname === '/' || location.pathname === '/admin' || location.pathname === '/admin/';
+      return location.pathname === '/';
     }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
