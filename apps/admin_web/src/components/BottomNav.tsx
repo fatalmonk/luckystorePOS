@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, Wallet } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Wallet, Send } from 'lucide-react';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -7,6 +7,7 @@ const navItems = [
   { icon: ShoppingCart, label: 'POS', path: '/pos' },
   { icon: Users, label: 'Customers', path: '/finance/customers' },
   { icon: Wallet, label: 'Finance', path: '/expenses' },
+  { icon: Send, label: 'Social', path: '/social-post' },
 ];
 
 export function BottomNav() {
