@@ -453,7 +453,7 @@ export function DashboardPage() {
                     <ShoppingBag size={14} className="text-warm-accent" />
                     Recent Delivery Orders
                   </h3>
-                  <a href="/admin/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                  <a href="/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
                     View All
                   </a>
                 </div>
@@ -566,7 +566,7 @@ export function DashboardPage() {
                 ) : (
                   <div className="text-center text-warm-muted py-8">
                     {t('dashboard.noDailySales')}{' '}
-                    <a href="/admin/daily-sales" className="text-primary-default hover:underline">
+                    <a href="/daily-sales" className="text-primary-default hover:underline">
                       {t('dashboard.addDailySales')}
                     </a>
                   </div>
@@ -618,7 +618,7 @@ export function DashboardPage() {
                     <p className="text-white/80 text-sm mt-1">Start a quick sale</p>
                   </div>
                   <a 
-                    href="/admin/pos" 
+                    href="/pos" 
                     className="bg-surface-default text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-surface-default/90 transition-colors"
                   >
                     Launch
@@ -740,7 +740,7 @@ export function DashboardPage() {
                   <ShoppingBag size={18} className="text-warm-accent" />
                   Active Delivery Orders
                 </h3>
-                <a href="/admin/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                <a href="/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
                   Manage Orders
                 </a>
               </div>

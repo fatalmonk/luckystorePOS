@@ -62,7 +62,7 @@ export function App() {
     <QueryProvider>
       <NotificationProvider>
         <AuthProvider>
-          <BrowserRouter basename="/admin">
+          <BrowserRouter>
             <ErrorBoundary>
               <OfflineIndicator />
               <Routes>
@@ -71,7 +71,7 @@ export function App() {
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<DashboardPage />} />
                   <Route path="delivery-orders" element={<LazyRoute><LazyDeliveryOrdersPage /></LazyRoute>} />
-                  <Route path="products" element={<Navigate to="/admin/inventory" replace />} />
+                  <Route path="products" element={<Navigate to="/inventory" replace />} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
                   <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
                   <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
