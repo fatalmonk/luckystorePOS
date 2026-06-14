@@ -590,7 +590,6 @@ export function InventoryListPage() {
       {selectedIds.size > 0 && (
         <BulkEditBar
           selectedCount={selectedIds.size}
-          totalCount={inventory?.length || 0}
           onClear={() => setSelectedIds(new Set())}
           onUpdatePrices={() => setIsBulkPriceModalOpen(true)}
           onUpdateStock={() => setIsBulkStockModalOpen(true)}

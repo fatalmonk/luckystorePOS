@@ -142,7 +142,6 @@ export function InventoryListTable({
                 return (
                   <InventoryListTableRow
                     key={item.id}
-                    index={virtualRow.index}
                     item={item}
                     virtualRowSize={virtualRow.size}
                     isSelected={isSelected}
