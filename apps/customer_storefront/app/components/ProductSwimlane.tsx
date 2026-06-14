@@ -1,5 +1,3 @@
-'use client';
-
 import { ProductCard } from './ProductCard';
 import type { Product } from '../lib/types';
 
@@ -63,7 +61,7 @@ export function ProductSwimlane({
                 stock={product.stock}
                 image_url={product.image_url}
                 qtyInCart={getQtyInCart(product.id)}
-                priority={index < 4}
+                priority={index === 0}
                 onAdd={() => onAdd(product, addBtnRef)}
                 onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
                 onClick={() => onClick(product.id)}

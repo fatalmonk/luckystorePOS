@@ -3,7 +3,7 @@
  * contrast: pass
  */
 
-'use client';
+'use client'; // interactive card wrapper with optional onClick and hover effects
 
 import { ReactNode } from 'react';
 

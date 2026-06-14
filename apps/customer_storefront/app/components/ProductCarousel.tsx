@@ -1,4 +1,4 @@
-'use client';
+'use client'; // product carousel that receives cart callbacks and passes them to ProductCard
 
 import { ProductCard } from './ProductCard';
 import type { Product } from '../lib/types';

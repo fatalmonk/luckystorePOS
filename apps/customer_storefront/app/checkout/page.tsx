@@ -1,12 +1,13 @@
-'use client';
+'use client'; // checkout flow with form state, cart context, and router
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '../components/Header';
-import { ToastProvider, useToast } from '../components/Toast';
-import { CartProvider, useCartContext } from '../components/CartProvider';
+import { useToast } from '../components/Toast';
+import { useCartContext } from '../components/CartProvider';
 import { Button } from '../components/ui/Button';
 import { Input, TextArea } from '../components/ui/Input';
+import { formatBdt } from '../lib/formatPrice';
 
 const STEPS = [
   { id: 1, label: 'Review' },
@@ -82,7 +83,7 @@ function CheckoutContent() {
 
   return (
     <>
-      <Header cartCount={cart.length} />
+      <Header />
       <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="p-[18px]">
           <h2 className="text-lg font-bold tracking-tight mb-2">Checkout</h2>
@@ -92,7 +93,7 @@ function CheckoutContent() {
             {STEPS.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div
-                  className={`w-7 h-7 rounded-full grid place-items-center text-xs font-extrabold transition-colors ${
+                  className={`w-11 h-11 rounded-full grid place-items-center text-sm font-extrabold transition-colors ${
                     currentStep > step.id
                       ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
                       : currentStep === step.id
@@ -123,10 +124,10 @@ function CheckoutContent() {
                     <div className="flex-1">
                       <p className="font-semibold text-sm">{item.name}</p>
                       <p className="text-[13px] text-[#78716c]">
-                        ৳{item.price} × {item.qty}
+                        {formatBdt(item.price)} × {item.qty}
                       </p>
                     </div>
-                    <p className="font-bold">৳{item.price * item.qty}</p>
+                    <p className="font-bold">{formatBdt(item.price * item.qty)}</p>
                   </div>
                 ))}
               </div>
@@ -134,15 +135,15 @@ function CheckoutContent() {
               <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] mb-6">
                 <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
                   <span>Subtotal</span>
-                  <span>৳{subtotal}</span>
+                  <span>{formatBdt(subtotal)}</span>
                 </div>
                 <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
                   <span>Delivery</span>
-                  <span>{deliveryFee === 0 ? 'FREE' : `৳${deliveryFee}`}</span>
+                  <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between pt-3 border-t border-[#f5f5f4] text-lg font-extrabold text-[#1c1917]">
                   <span>Total</span>
-                  <span>৳{total}</span>
+                  <span>{formatBdt(total)}</span>
                 </div>
               </div>
 
@@ -215,11 +216,5 @@ function ConfirmingStep({ placeOrder, isPlacing }: { placeOrder: () => void; isP
 }
 
 export default function CheckoutPage() {
-  return (
-    <ToastProvider>
-      <CartProvider>
-        <CheckoutContent />
-      </CartProvider>
-    </ToastProvider>
-  );
+  return <CheckoutContent />;
 }

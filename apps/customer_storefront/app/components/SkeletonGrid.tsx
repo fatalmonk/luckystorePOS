@@ -1,4 +1,4 @@
-'use client';
+'use client'; // animated skeleton placeholders with random widths (avoids hydration mismatch)
 
 export function SkeletonCard() {
   return (

@@ -1,9 +1,10 @@
-'use client';
+'use client'; // cart modal dialog with useRef, useEffect, router, and cart context
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartContext } from './CartProvider';
 import { Button } from './ui/Button';
+import { formatBdt } from '../lib/formatPrice';
 
 interface CartSheetProps {
   open: boolean;
@@ -69,7 +70,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#f5f5f4] grid place-items-center text-[#78716c] hover:bg-[#e7e5e4] transition-colors text-sm"
+            className="w-11 h-11 rounded-full bg-[#f5f5f4] grid place-items-center text-[#78716c] hover:bg-[#e7e5e4] transition-colors text-sm"
             aria-label="Close cart"
           >
             ✕
@@ -94,24 +95,24 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
-                    <p className="text-xs text-[#a8a29e]">৳{item.price} / {item.unit}</p>
+                    <p className="text-xs text-[#a8a29e]">{formatBdt(item.price)} / {item.unit}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => updateQty(item.id, -1)}
-                      className="w-6 h-7 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
+                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
                     >
                       −
                     </button>
                     <span className="font-bold text-sm min-w-[20px] text-center">{item.qty}</span>
                     <button
                       onClick={() => updateQty(item.id, 1)}
-                      className="w-6 h-7 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
+                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
                     >
                       +
                     </button>
                   </div>
-                  <span className="font-bold text-sm min-w-[50px] text-right">৳{item.price * item.qty}</span>
+                  <span className="font-bold text-sm min-w-[50px] text-right">{formatBdt(item.price * item.qty)}</span>
                 </div>
               ))}
             </div>
@@ -125,7 +126,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
               <p className="text-[10px] text-[#a8a29e] uppercase tracking-widest font-semibold mb-0.5">
                 {totalItems} items {deliveryFee === 0 && '· Free delivery'}
               </p>
-              <p className="text-xl font-extrabold">৳{total}</p>
+              <p className="text-xl font-extrabold">{formatBdt(total)}</p>
             </div>
             <Button
               onClick={() => { onClose(); router.push('/checkout'); }}

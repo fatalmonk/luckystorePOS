@@ -1,6 +1,7 @@
-'use client';
+'use client'; // interactive footer with router navigation and accordion state
 
 import { useRouter } from 'next/navigation';
+import { formatBdt } from '../lib/formatPrice';
 
 interface CategoryFooterProps {
   categorySlug: string;
@@ -8,9 +9,9 @@ interface CategoryFooterProps {
 }
 
 const PRICE_BUCKETS = [
-  { label: '৳100 & under', max: 100 },
-  { label: '৳300 & under', max: 300 },
-  { label: '৳500 & under', max: 500 },
+  { label: `${formatBdt(100)} & under`, max: 100 },
+  { label: `${formatBdt(300)} & under`, max: 300 },
+  { label: `${formatBdt(500)} & under`, max: 500 },
 ];
 
 const TOP_BRANDS = ['Aarong', 'Pran', 'Ruchi', 'Square'];
@@ -32,7 +33,7 @@ export function CategoryFooter({ categorySlug, categoryName }: CategoryFooterPro
               onClick={() =>
                 router.push(`/category/${categorySlug}?sort=price_asc&max=${bucket.max}`)
               }
-              className="px-3 py-1.5 rounded-full bg-[#f5f5f4] text-sm font-medium text-[#44403c] hover:bg-[#e7e5e4] transition-colors"
+              className="px-3 py-1.5 min-h-[44px] rounded-full bg-[#f5f5f4] text-sm font-medium text-[#44403c] hover:bg-[#e7e5e4] transition-colors"
             >
               {bucket.label}
             </button>
@@ -48,7 +49,7 @@ export function CategoryFooter({ categorySlug, categoryName }: CategoryFooterPro
             <button
               key={brand}
               onClick={() => router.push(`/category/${categorySlug}?brand=${brand}`)}
-              className="px-3 py-1.5 rounded-full bg-[#f5f5f4] text-sm font-medium text-[#44403c] hover:bg-[#e7e5e4] transition-colors"
+              className="px-3 py-1.5 min-h-[44px] rounded-full bg-[#f5f5f4] text-sm font-medium text-[#44403c] hover:bg-[#e7e5e4] transition-colors"
             >
               {brand}
             </button>

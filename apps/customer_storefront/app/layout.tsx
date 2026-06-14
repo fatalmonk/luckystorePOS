@@ -23,13 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="antialiased" suppressHydrationWarning>
-        <ToastProvider>
-          <CartProvider>
+        <CartProvider>
+          <ToastProvider>
             <div className="app-container">
               {children}
             </div>
-          </CartProvider>
-        </ToastProvider>
+          </ToastProvider>
+        </CartProvider>
       </body>
     </html>
   );

@@ -1,5 +1,3 @@
-'use client';
-
 interface SponsoredBannerProps {
   title: string;
   subtitle?: string;

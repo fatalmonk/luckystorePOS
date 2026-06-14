@@ -1,6 +1,5 @@
-'use client';
-
 import Link from 'next/link';
+import { formatBdt } from '../lib/formatPrice';
 
 interface SocialCreator {
   id: string;
@@ -82,42 +81,31 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
             href={`/product/${creator.productId}`}
             className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] cursor-pointer"
           >
-            {/* Background gradient */}
             <div
               className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
               style={{ background: creator.bgGradient }}
             />
 
-            {/* Large emoji decoration */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-20 text-8xl select-none pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center opacity-20 text-8xl select-none pointer-events-none" aria-hidden="true">
               {creator.emoji}
             </div>
 
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-            {/* Creator info */}
             <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 backdrop-blur-sm">
-              <span className="text-lg">{creator.emoji}</span>
+              <span aria-hidden="true">{creator.emoji}</span>
               <span className="text-xs font-medium text-white truncate max-w-[120px]">@{creator.handle}</span>
             </div>
 
-            {/* Floating product card */}
             <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3 rounded-[14px] bg-white p-2.5 shadow-lg transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-              <div className="h-10 w-10 rounded-[10px] bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
+              <div className="h-10 w-10 rounded-[10px] bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0" aria-hidden="true">
                 {creator.productEmoji}
               </div>
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="line-clamp-1 text-sm font-medium text-gray-900 truncate">
-                  {creator.productName}
-                </span>
-                <span className="text-base font-bold text-green-700">
-                  ৳{creator.productPrice}
-                </span>
+                <span className="line-clamp-1 text-sm font-medium text-gray-900 truncate">{creator.productName}</span>
+                <span className="text-base font-bold text-green-700">{formatBdt(creator.productPrice)}</span>
               </div>
-              <span className="text-xl text-gray-300 group-hover:text-[#FFF34D] transition-colors">
-                →
-              </span>
+              <span className="text-xl text-gray-300 group-hover:text-[#FFF34D] transition-colors" aria-hidden="true">→</span>
             </div>
           </Link>
         ))}
@@ -126,7 +114,6 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
   );
 }
 
-// Skeleton for SocialCarousel
 export function SocialCarouselSkeleton({ count = 5 }: { count?: number }) {
   return (
     <section className="mb-8 px-4 sm:px-6 lg:px-8 xl:px-10">

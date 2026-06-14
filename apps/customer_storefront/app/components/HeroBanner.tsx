@@ -1,11 +1,9 @@
-'use client';
-
 interface HeroBannerProps {
   title: string;
   subtitle: string;
   badge?: string;
-  bgGradient?: string; // e.g. "from-[#FFED29] to-[#b94a28]" or "from-blue-50 to-blue-100"
-  bgImage?: string;    // URL
+  bgGradient?: string;
+  bgImage?: string;
 }
 
 export function HeroBanner({
@@ -22,13 +20,7 @@ export function HeroBanner({
       className={`mx-4 my-2 rounded-xl overflow-hidden relative h-32 sm:h-40 flex flex-col justify-center p-5 sm:p-6 lg:p-8 z-10 ${
         hasBgImage ? 'bg-cover bg-center' : `bg-gradient-to-r ${bgGradient}`
       }`}
-      style={
-        hasBgImage
-          ? {
-              backgroundImage: `url(${bgImage})`,
-            }
-          : {}
-      }
+      style={hasBgImage ? { backgroundImage: `url(${bgImage})` } : {}}
     >
       {hasBgImage && <div className="absolute inset-0 bg-black/20 z-0" />}
 
@@ -41,12 +33,8 @@ export function HeroBanner({
             {badge}
           </p>
         )}
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-extrabold mb-1 leading-tight">
-          {title}
-        </h2>
-        <p className="text-xs sm:text-sm opacity-90">
-          {subtitle}
-        </p>
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-extrabold mb-1 leading-tight">{title}</h2>
+        <p className="text-xs sm:text-sm opacity-90">{subtitle}</p>
       </div>
     </section>
   );

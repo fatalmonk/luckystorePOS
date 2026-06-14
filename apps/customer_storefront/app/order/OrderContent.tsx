@@ -1,4 +1,4 @@
-'use client';
+'use client'; // order status page with sessionStorage read and router
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';

@@ -1,4 +1,4 @@
-'use client';
+'use client'; // flying emoji animation using createPortal and window dimensions
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';

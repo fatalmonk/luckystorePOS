@@ -1,8 +1,10 @@
-'use client';
+'use client'; // interactive product card with image, badge, stock indicator, and cart actions
 
-import { ReactNode, useRef } from 'react';
-import { WishlistButton } from './WishlistButton';
+import { ReactNode } from 'react';
 import Image from 'next/image';
+import { WishlistButton } from './WishlistButton';
+import { PriceDisplay } from './PriceDisplay';
+import { formatUnitPrice } from '../lib/formatPrice';
 
 interface CardProps {
   children: ReactNode;
@@ -95,7 +97,7 @@ export function ProductCard({
 
         {/* Badge (top-left) */}
         {badge && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10">
+          <span className="absolute top-2 left-2 bg-red-500 text-gray-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10">
             {badge}
           </span>
         )}
@@ -126,33 +128,27 @@ export function ProductCard({
           {name}
         </h3>
 
-        {/* Price row — compact single line */}
+        {/* Price row */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-lg font-bold text-[#1c1917]">
-            ৳{price.toFixed(0)}
-          </span>
-          {onSale && (
-            <>
-              <span className="line-through text-xs text-gray-400">৳{originalPrice}</span>
-              <span className="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                -৳{savings.toFixed(0)}
-              </span>
-            </>
-          )}
+          <PriceDisplay
+            value={price}
+            original={onSale ? originalPrice : undefined}
+            savings={onSale ? savings : undefined}
+          />
         </div>
 
-        {/* Unit price — subtle */}
-        <p className="text-[11px] text-[#a8a29e]">
-          ৳{price.toFixed(2)} / {unit}
+        {/* Unit price */}
+        <p className="text-[11px] text-gray-500">
+          {formatUnitPrice(price, unit)}
         </p>
 
-        {/* CTA — compact */}
+        {/* CTA */}
         <div className="mt-auto pt-1">
           {qtyInCart > 0 ? (
             <div className="flex items-center justify-between gap-1">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-8 h-8 rounded-full border-2 border-[#0071DC] bg-white text-[#0071DC] flex items-center justify-center text-base font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all"
+                className="w-11 h-11 rounded-full border-2 border-[#0071DC] bg-white text-[#0071DC] flex items-center justify-center text-base font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all"
                 aria-label="Decrease quantity"
               >
                 −
@@ -160,7 +156,7 @@ export function ProductCard({
               <span className="font-bold text-sm min-w-[24px] text-center">{qtyInCart}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-8 h-8 rounded-full border-2 border-[#0071DC] bg-white text-[#0071DC] flex items-center justify-center text-base font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all"
+                className="w-11 h-11 rounded-full border-2 border-[#0071DC] bg-white text-[#0071DC] flex items-center justify-center text-base font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all"
                 aria-label="Increase quantity"
               >
                 +
@@ -175,7 +171,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-9 rounded-full border-2 border-[#0071DC] text-[#0071DC] text-sm font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all disabled:border-[#a8a29e] disabled:text-[#a8a29e] disabled:hover:bg-white"
+              className="w-full h-10 min-h-[44px] rounded-full border-2 border-[#0071DC] text-[#0071DC] text-sm font-bold hover:bg-[#0071DC] hover:text-white active:scale-95 transition-all disabled:border-[#a8a29e] disabled:text-[#a8a29e] disabled:hover:bg-white"
             >
               Add
             </button>
