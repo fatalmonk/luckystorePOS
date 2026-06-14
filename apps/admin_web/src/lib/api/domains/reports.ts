@@ -1,4 +1,23 @@
 import { supabase } from "@/lib/supabase";
+import type { Database } from '../../database.types';
+
+type SaleRow = Database['public']['Tables']['sales']['Row'];
+type SaleItemRow = Database['public']['Tables']['sale_items']['Row'];
+type ItemRow = Database['public']['Tables']['items']['Row'];
+type StockLevelRow = Database['public']['Tables']['stock_levels']['Row'];
+type ExpenseRow = Database['public']['Tables']['expenses']['Row'];
+
+interface DailySaleStat {
+  date: string;
+  revenue: number;
+  count: number;
+}
+
+interface TopProductStat {
+  name: string;
+  quantity: number;
+  revenue: number;
+}
 
 export const reports = {
   // Sales Report - get sales data with date range
@@ -13,51 +32,57 @@ export const reports = {
 
     if (salesError) throw salesError;
 
+    const typedSales = (sales ?? []) as SaleRow[];
+
     // Get top selling products
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
       .select('qty, price, item_id')
-      .in('sale_id', (sales as any[]).map((s) => s.id) || []);
+      .in('sale_id', typedSales.map((s) => s.id));
 
     if (itemsError) throw itemsError;
 
+    const typedSaleItems = (saleItems ?? []) as SaleItemRow[];
+
     // Resolve item names
-    const itemIds = [...new Set((saleItems as any[]).map((i) => i.item_id) || [])];
+    const itemIds = [...new Set(typedSaleItems.map((i) => i.item_id).filter(Boolean))] as string[];
     const { data: itemNames } = await supabase
       .from('items')
       .select('id, name')
-      .in('id', itemIds as string[]);
+      .in('id', itemIds);
 
-    const nameMap = new Map((itemNames as any[]).map((i) => [i.id, i.name]) || []);
+    const typedItemNames = (itemNames ?? []) as ItemRow[];
+    const nameMap = new Map(typedItemNames.map((i) => [i.id, i.name]));
 
     // Aggregate top products by quantity
-    const productMap = new Map();
-    (saleItems as any[]).forEach((item) => {
-      const name = nameMap.get(item.item_id) || 'Unknown';
+    const productMap = new Map<string, TopProductStat>();
+    typedSaleItems.forEach((item) => {
+      const name = (item.item_id && nameMap.get(item.item_id)) || 'Unknown';
       const existing = productMap.get(name) || { name, quantity: 0, revenue: 0 };
-      existing.quantity += (item.qty || 0) as number;
-      existing.revenue += ((item.qty || 0) as number) * ((item.price || 0) as number);
+      const qty = item.qty || 0;
+      existing.quantity += qty;
+      existing.revenue += qty * (item.price || 0);
       productMap.set(name, existing);
     });
 
     const topProducts = Array.from(productMap.values())
-      .sort((a: any, b: any) => b.quantity - a.quantity)
+      .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
 
     // Group sales by day
-    const dailyMap = new Map();
-    (sales as any[]).forEach((sale) => {
+    const dailyMap = new Map<string, DailySaleStat>();
+    typedSales.forEach((sale) => {
       const day = (sale.created_at as string).split('T')[0];
       const existing = dailyMap.get(day) || { date: day, revenue: 0, count: 0 };
-      existing.revenue += (sale.total_amount || 0) as number;
+      existing.revenue += sale.total_amount || 0;
       existing.count += 1;
       dailyMap.set(day, existing);
     });
 
-    const dailySales = Array.from(dailyMap.values()).sort((a: any, b: any) => a.date.localeCompare(b.date));
+    const dailySales = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
-    const totalRevenue = (sales as any[]).reduce((sum: number, s) => sum + ((s.total_amount || 0) as number), 0) || 0;
-    const transactionCount = sales?.length || 0;
+    const totalRevenue = typedSales.reduce((sum, s) => sum + (s.total_amount || 0), 0);
+    const transactionCount = typedSales.length;
     const avgTicket = transactionCount > 0 ? totalRevenue / transactionCount : 0;
 
     return { totalRevenue, transactionCount, avgTicket, topProducts, dailySales };
@@ -81,15 +106,17 @@ export const reports = {
 
     if (stockError) throw stockError;
 
-    const stockMap = new Map((stockLevels as any[]).map((s) => [s.item_id, s.qty]) || []);
+    const typedStockLevels = (stockLevels ?? []) as StockLevelRow[];
+    const stockMap = new Map(typedStockLevels.map((s) => [s.item_id, s.qty ?? 0]));
 
     let totalValue = 0;
     let lowStockCount = 0;
     let outOfStockCount = 0;
 
-    const inventory = (items as any[])?.map((item) => {
+    const typedItems = (items ?? []) as ItemRow[];
+    const inventory = typedItems.map((item) => {
       const qty = stockMap.get(item.id as string) || 0;
-      const value = ((item.cost || 0) as number) * (qty as number);
+      const value = (item.cost || 0) * qty;
       totalValue += value;
       if (qty === 0) outOfStockCount++;
       else if (qty <= 5) lowStockCount++;
@@ -101,12 +128,12 @@ export const reports = {
         cost: item.cost || 0,
         totalValue: value,
       };
-    }) || [];
+    });
 
     // Sort by total value descending
-    inventory.sort((a, b) => (b.totalValue as number) - (a.totalValue as number));
+    inventory.sort((a, b) => b.totalValue - a.totalValue);
 
-    return { totalValue, totalItems: (items as any[])?.length || 0, lowStockCount, outOfStockCount, inventory };
+    return { totalValue, totalItems: typedItems.length, lowStockCount, outOfStockCount, inventory };
   },
 
   // Profit & Loss Report
@@ -121,17 +148,19 @@ export const reports = {
 
     if (salesError) throw salesError;
 
-    const grossRevenue = (sales as any[])?.reduce((sum: number, s) => sum + ((s.total_amount || 0) as number), 0) || 0;
+    const typedSales = (sales ?? []) as SaleRow[];
+    const grossRevenue = typedSales.reduce((sum, s) => sum + (s.total_amount || 0), 0);
 
     // Get COGS from sale_items
     const { data: saleItems, error: itemsError } = await supabase
       .from('sale_items')
       .select('qty, cost')
-      .in('sale_id', (sales as any[])?.map((s) => s.id) || []);
+      .in('sale_id', typedSales.map((s) => s.id));
 
     if (itemsError) throw itemsError;
 
-    const cogs = (saleItems as any[])?.reduce((sum: number, item) => sum + (((item.qty || 0) as number) * ((item.cost || 0) as number)), 0) || 0;
+    const typedSaleItems = (saleItems ?? []) as SaleItemRow[];
+    const cogs = typedSaleItems.reduce((sum, item) => sum + ((item.qty || 0) * (item.cost || 0)), 0);
 
     // Get expenses
     const { data: expenses, error: expError } = await supabase
@@ -143,7 +172,8 @@ export const reports = {
 
     if (expError) throw expError;
 
-    const totalExpenses = (expenses as any[])?.reduce((sum: number, e) => sum + ((e.amount || 0) as number), 0) || 0;
+    const typedExpenses = (expenses ?? []) as ExpenseRow[];
+    const totalExpenses = typedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
     const grossProfit = grossRevenue - cogs;
     const netProfit = grossProfit - totalExpenses;
 

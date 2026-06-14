@@ -24,7 +24,7 @@ export function SocialPostHistoryItem({
   fbPageId,
 }: SocialPostHistoryItemProps) {
   return (
-    <div key={id} className="bg-warm-surface border border-warm-border-warm rounded-xl p-4 shadow-sm space-y-2">
+    <div key={id} className="bg-warm-surface border border-warm-border rounded-xl p-4 shadow-sm space-y-2">
       <div className="flex items-center justify-between">
         <SocialPostStatusBadge status={status} />
         <span className="text-[11px] text-warm-muted">
@@ -45,7 +45,7 @@ export function SocialPostHistoryItem({
       )}
       {status === 'published' && fbPageId && post_id && (
         <a
-          href={`https://facebook.com/${post_id}`}
+          href={`https://www.facebook.com/${fbPageId}/posts/${post_id.replace(`${fbPageId}_`, '')}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs text-warm-accent hover:underline"

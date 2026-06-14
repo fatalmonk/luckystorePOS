@@ -35,14 +35,7 @@ const LazySocialPostPage = React.lazy(() => import('../features/social/SocialPos
 
 function SuspenseFallback() {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '50vh',
-      color: 'var(--text-muted)',
-      fontSize: 'var(--font-size-sm)',
-    }}>
+    <div className="flex flex-col items-center justify-center min-h-[50vh] text-warm-muted text-sm animate-pulse">
       Loading...
     </div>
   );

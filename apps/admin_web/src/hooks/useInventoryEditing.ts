@@ -2,8 +2,7 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useNotify } from '../components/NotificationContext';
-import type { InventoryItem, InventoryEditableField } from '../types/inventory';
-import { INVENTORY_NUMERIC_FIELDS } from '../types/inventory';
+import type { InventoryItem } from '../types/inventory';
 
 export function useInventoryEditing(storeId: string | undefined) {
   const queryClient = useQueryClient();
@@ -26,9 +25,9 @@ export function useInventoryEditing(storeId: string | undefined) {
 
       try {
         // Optimistic update
-        queryClient.setQueryData(['inventory', storeId], (old: any) => {
+        queryClient.setQueryData(['inventory', storeId], (old: InventoryItem[] | undefined) => {
           if (!old) return old;
-          return old.map((item: any) => (item.id === itemId ? { ...item, [field]: processedValue } : item));
+          return old.map((item) => (item.id === itemId ? { ...item, [field]: processedValue } : item));
         });
 
         let result;

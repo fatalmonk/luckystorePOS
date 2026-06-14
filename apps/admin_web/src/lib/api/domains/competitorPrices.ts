@@ -5,8 +5,9 @@ import type {
   CompetitorPriceFormData,
   CompetitorPriceFilters,
 } from '../types';
+import type { Database } from '../../database.types';
 
-import type { Json } from "@/lib/database.types";
+type CompetitorPriceRow = Database['public']['Tables']['competitor_prices']['Row'];
 
 export async function fetchCompetitorPrices(
   storeId: string,
@@ -38,14 +39,14 @@ export async function fetchCompetitorPrices(
 
   if (error) throw error;
 
-  return (data || []).map((row: any) => ({
+  return ((data || []) as CompetitorPriceRow[]).map((row) => ({
     id: row.id,
-    item_id: row.item_id,
-    item_name: row.items?.name,
-    sku: row.items?.sku,
+    item_id: row.item_id ?? '',
+    item_name: row.product_name,
+    sku: row.product_sku,
     competitor_name: row.competitor_name,
     competitor_price: row.competitor_price,
-    competitor_url: row.competitor_url,
+    competitor_url: row.competitor_product_url,
     scraped_at: row.scraped_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -58,7 +59,7 @@ interface PriceAlertResponse {
   our_price: number;
   market_avg_price: number;
   price_gap_percent: number;
-  competitors: any;
+  competitors: unknown;
 }
 
 export async function fetchPriceAlerts(
@@ -87,7 +88,7 @@ export async function addCompetitorPrice(
   storeId: string,
   data: CompetitorPriceFormData
 ): Promise<void> {
-  const { error } = await supabase.from('competitor_prices').insert({
+  const insert: Database['public']['Tables']['competitor_prices']['Insert'] = {
     store_id: storeId,
     item_id: data.item_id,
     competitor_name: data.competitor_name,
@@ -95,7 +96,8 @@ export async function addCompetitorPrice(
     competitor_product_url: data.competitor_url || null,
     scraped_at: new Date().toISOString(),
     product_name: '', // Required field - will be populated from item lookup
-  } as any);
+  };
+  const { error } = await supabase.from('competitor_prices').insert(insert);
 
   if (error) throw error;
 }
@@ -104,13 +106,14 @@ export async function updateCompetitorPrice(
   id: string,
   data: Partial<CompetitorPriceFormData>
 ): Promise<void> {
+  const update: Database['public']['Tables']['competitor_prices']['Update'] = {
+    ...data,
+    competitor_product_url: data.competitor_url || null,
+    updated_at: new Date().toISOString(),
+  };
   const { error } = await supabase
     .from('competitor_prices')
-    .update({
-      ...data,
-      competitor_product_url: data.competitor_url || null,
-      updated_at: new Date().toISOString(),
-    } as any)
+    .update(update)
     .eq('id', id);
 
   if (error) throw error;
@@ -129,11 +132,12 @@ export async function fetchCompetitorNames(storeId: string): Promise<string[]> {
   const { data, error } = await supabase
     .from('competitor_prices')
     .select('competitor_name')
-    .eq('store_id', storeId as any)
-    .order('competitor_name' as any);
+    .eq('store_id', storeId)
+    .order('competitor_name');
 
   if (error) throw error;
 
-  const names = [...new Set((data || []).map((d: any) => d.competitor_name))] as string[];
+  const rows = (data || []) as Array<Pick<CompetitorPriceRow, 'competitor_name'>>;
+  const names = [...new Set(rows.map((d) => d.competitor_name))];
   return names;
 }

@@ -5,9 +5,8 @@ import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { SkeletonCard, ErrorState } from '../../components/PageState';
-import { Send, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { formatDistanceToNow, parseISO } from 'date-fns';
 import { SocialPostHistoryItem } from './SocialPostHistoryItem';
 
 const ALLOWED_ROLES = new Set(['owner', 'manager', 'admin']);
@@ -123,7 +122,7 @@ export function SocialPostPage() {
 
       {/* Permission gate */}
       {!canPost && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-warm-danger/10 text-warm-danger border border-warm-border-warm">
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-warm-danger/10 text-warm-danger border border-warm-border">
           <AlertCircle size={20} />
           <p className="text-sm font-semibold">
             You do not have permission to publish social posts. Only owners, managers, and admins can post.
@@ -133,7 +132,7 @@ export function SocialPostPage() {
 
       {/* Composer form */}
       {canPost && (
-        <form onSubmit={handleSubmit} className="bg-warm-surface border border-warm-border-warm rounded-xl p-4 space-y-4 shadow-sm">
+        <form onSubmit={handleSubmit} className="bg-warm-surface border border-warm-border rounded-xl p-4 space-y-4 shadow-sm">
           {result && (
             <div
               className={clsx(
@@ -159,7 +158,7 @@ export function SocialPostPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="What would you like to share?"
-              className="w-full rounded-lg bg-warm-bg border border-warm-border-warm p-3 text-sm text-warm-fg placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent resize-none"
+              className="w-full rounded-lg bg-warm-bg border border-warm-border p-3 text-sm text-warm-fg placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent resize-none"
             />
             <div className="flex justify-end">
               <span
@@ -183,7 +182,7 @@ export function SocialPostPage() {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="https://example.com"
-              className="w-full rounded-lg bg-warm-bg border border-warm-border-warm p-3 text-sm text-warm-fg placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent"
+              className="w-full rounded-lg bg-warm-bg border border-warm-border p-3 text-sm text-warm-fg placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent"
             />
           </div>
 
@@ -194,7 +193,7 @@ export function SocialPostPage() {
               className={clsx(
                 'inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-colors',
                 publishMutation.isPending || !content.trim()
-                  ? 'bg-warm-border-warm text-warm-muted cursor-not-allowed'
+                  ? 'bg-warm-border text-warm-muted cursor-not-allowed'
                   : 'bg-warm-accent text-white hover:bg-warm-accent-light shadow-sm'
               )}
             >

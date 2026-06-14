@@ -2,6 +2,8 @@ import { supabase } from "@/lib/supabase";
 import type { ReceiptConfigUpdateInput } from '../types';
 import type { Database } from '../../database.types';
 
+type PaymentMethodType = Database['public']['Enums']['payment_type'];
+
 export const settings = {
   getPaymentMethods: async (storeId: string) => {
     const { data, error } = await supabase.rpc('get_payment_methods', { p_store_id: storeId });
@@ -39,7 +41,7 @@ export const settings = {
     if (!authId) throw new Error('Signup succeeded but no auth user ID returned');
     
     // 2. Create user record via RPC (bypasses RLS)
-    const { data, error } = await supabase.rpc('create_store_user' as any, {
+    const { data, error } = await supabase.rpc('create_store_user', {
       p_email: user.email,
       p_full_name: user.fullName,
       p_role: user.role,
@@ -55,7 +57,7 @@ export const settings = {
     storeId: string,
     method: {
       name: string;
-      type: Database['public']['Enums']['payment_type'];
+      type: PaymentMethodType;
       isActive: boolean;
     }
   ) => {
@@ -93,7 +95,7 @@ export const settings = {
     return data;
   },
   updateUser: async (userId: string, updates: { name?: string; role?: string; pos_pin?: string }) => {
-    const { data, error } = await supabase.rpc('update_store_user' as any, {
+    const { data, error } = await supabase.rpc('update_store_user', {
       p_user_id: userId,
       p_updates: updates,
     });
@@ -101,7 +103,7 @@ export const settings = {
     return data;
   },
   deleteUser: async (userId: string) => {
-    const { data, error } = await supabase.rpc('delete_store_user' as any, {
+    const { data, error } = await supabase.rpc('delete_store_user', {
       p_user_id: userId,
     });
     if (error) throw error;

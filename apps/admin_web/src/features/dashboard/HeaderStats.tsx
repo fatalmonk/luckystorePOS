@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, BarChart3, Receipt, PackageOpen, Percent } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, BarChart3, Receipt, PackageOpen, Percent } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface StatCardProps {
@@ -11,13 +11,6 @@ interface StatCardProps {
 }
 
 function StatCard({ title, value, trend, trendValue, icon, accentColor }: StatCardProps) {
-  const accentColors = {
-    terracotta: 'bg-warm-accent/10 text-warm-accent border-warm-accent/20',
-    success: 'bg-warm-success/10 text-warm-success border-warm-success/20',
-    warning: 'bg-warm-warning/10 text-warm-warning border-warm-warning/20',
-    blue: 'bg-[#2563ab]/10 text-[#2563ab] border-[#2563ab]/20',
-  };
-
   const iconBgColors = {
     terracotta: 'bg-warm-accent text-white',
     success: 'bg-warm-success text-white',
@@ -79,6 +72,7 @@ export function HeaderStats({
   atvTrend = 'up'
 }: HeaderStatsProps) {
   const { t } = useTranslation();
+  void t;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">

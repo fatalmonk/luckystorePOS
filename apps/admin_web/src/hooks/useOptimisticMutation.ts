@@ -7,7 +7,7 @@ interface OptimisticMutationOptions<TData, TError, TVariables> {
   onError?: (error: TError, variables: TVariables) => void;
   onSuccess?: (data: TData, variables: TVariables) => void;
   /** Function to optimistically update the cache */
-  optimisticUpdater: (oldData: any, variables: TVariables) => any;
+  optimisticUpdater: (oldData: TData | undefined, variables: TVariables) => TData | undefined;
 }
 
 /**
@@ -33,7 +33,7 @@ export function useOptimisticMutation<TData = unknown, TError = Error, TVariable
       
       // Optimistically update
       queryClient.setQueryData(options.queryKey, (old) => {
-        return options.optimisticUpdater(old, variables);
+        return options.optimisticUpdater(old as TData | undefined, variables) as TData | undefined;
       });
       
       // Return context for rollback

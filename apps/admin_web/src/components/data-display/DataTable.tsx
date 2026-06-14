@@ -74,7 +74,7 @@ export function DataTable<T extends object>({
                   const value =
                     typeof col.accessor === 'function'
                       ? col.accessor(row)
-                      : (row as any)[col.accessor as string];
+                      : row[col.accessor];
                   const cellContent = col.render ? col.render(value, row) : (value as React.ReactNode);
                   return (
                     <td

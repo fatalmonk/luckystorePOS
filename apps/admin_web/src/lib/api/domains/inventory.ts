@@ -1,4 +1,8 @@
 import { supabase } from "@/lib/supabase";
+import type { Database } from '../../database.types';
+
+type ItemInsert = Database['public']['Tables']['items']['Insert'];
+type ItemUpdate = Database['public']['Tables']['items']['Update'];
 
 export const inventory = {
   list: async (storeId: string) => {
@@ -19,11 +23,12 @@ export const inventory = {
     brand?: string;
     group_tag?: string;
   }) => {
-    const { data, error } = await supabase.from('items').insert(product as any).select().single();
+    const insert: ItemInsert = product;
+    const { data, error } = await supabase.from('items').insert(insert).select().single();
     if (error) throw error;
     return data;
   },
-  update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string, _idempotencyKey?: string) => {
+  update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string) => {
     const { data, error } = await supabase.rpc('adjust_stock', {
       p_store_id: storeId,
       p_item_id: itemId,
@@ -56,17 +61,18 @@ export const inventory = {
   }) => {
     // Remove properties that are not columns in the items table
     if ('last_purchased_date' in updates) {
-      delete (updates as any).last_purchased_date;
+      delete (updates as { last_purchased_date?: unknown }).last_purchased_date;
     }
     console.log('[updateProduct] Updating item:', { storeId, itemId, updates });
     
     // RLS requires store_id check - filter by both id AND store_id
+    const update: ItemUpdate = {
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
     const { data, error } = await supabase
       .from('items')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(update)
       .eq('id', itemId)
       .select();
     if (error) {
@@ -127,7 +133,7 @@ export const inventory = {
     // Soft delete item by setting is_active = false
     const { data, error } = await supabase
       .from('items')
-      .update({ is_active: false } as any)
+      .update({ is_active: false })
       .eq('id', itemId);
       // Removed .eq('store_id', storeId) as items are tenant-scoped
     if (error) throw error;
@@ -143,7 +149,7 @@ export const inventory = {
     return data;
   },
   getPriceHistory: async (storeId: string, itemId: string, limit = 5) => {
-    const { data, error } = await supabase.rpc('get_price_history' as any, {
+    const { data, error } = await supabase.rpc('get_price_history', {
       p_store_id: storeId,
       p_item_id: itemId,
       p_limit: limit

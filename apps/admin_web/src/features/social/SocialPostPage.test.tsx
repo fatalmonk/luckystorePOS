@@ -68,7 +68,7 @@ beforeEach(() => {
     user: { role: 'owner', id: 'user-1' },
   });
 
-  mockUseNotify.mockReturnValue(mockNotify);
+  mockUseNotify.mockReturnValue({ notify: mockNotify });
 
   mockUseQueryClient.mockReturnValue({
     invalidateQueries: mockInvalidateQueries,

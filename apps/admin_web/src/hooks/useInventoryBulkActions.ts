@@ -39,7 +39,7 @@ export function useInventoryBulkActions(
         const item = inventory?.find((p) => p.id === id);
         if (!item) return;
 
-        const updates: any = {};
+        const updates: Partial<Record<'price' | 'mrp' | 'cost', number>> = {};
         if (data.sellingPrice) {
           updates.price = data.sellingPrice.isPercentage && item.price
             ? item.price * (1 + data.sellingPrice.value / 100)

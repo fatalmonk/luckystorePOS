@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import type { Database } from '../../database.types';
 
 export interface StaffMember {
   id: string;
@@ -22,12 +23,13 @@ export interface StaffPerformance {
 
 export const staff = {
   list: async (storeId: string): Promise<StaffMember[]> => {
-    const { data, error } = await (supabase as any).rpc('get_store_users', {
+    const { data, error } = await supabase.rpc('get_store_users', {
       p_store_id: storeId,
     });
     if (error) throw error;
     
-    return (data ?? []).map((row: any) => ({
+    const rows = (data ?? []) as Database['public']['Functions']['get_store_users']['Returns'];
+    return rows.map((row) => ({
       id: row.id,
       fullName: row.full_name,
       role: row.role,
@@ -37,7 +39,7 @@ export const staff = {
   },
 
   updatePin: async (userId: string, pin: string): Promise<boolean> => {
-    const { data, error } = await (supabase as any).rpc('update_staff_pin', {
+    const { data, error } = await supabase.rpc('update_staff_pin', {
       p_user_id: userId,
       p_pin: pin,
     });
@@ -46,13 +48,14 @@ export const staff = {
   },
 
   getPerformance: async (storeId: string, days: number = 30): Promise<StaffPerformance[]> => {
-    const { data, error } = await (supabase as any).rpc('get_staff_performance', {
+    const { data, error } = await supabase.rpc('get_staff_performance', {
       p_store_id: storeId,
       p_days: days,
     });
     if (error) throw error;
 
-    return (data ?? []).map((row: any) => ({
+    const rows = (data ?? []) as Database['public']['Functions']['get_staff_performance']['Returns'];
+    return rows.map((row) => ({
       userId: row.user_id,
       staffName: row.staff_name,
       role: row.role,

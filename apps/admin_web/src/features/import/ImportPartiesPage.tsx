@@ -44,13 +44,13 @@ export const ImportPartiesPage: React.FC = () => {
     },
   ];
 
-  const handleImportSubmit = async (data: any[]) => {
+  const handleImportSubmit = async (data: { name?: unknown; type?: unknown; phone?: unknown }[]) => {
     // Inject tenant_id into each record
     const payload = data.map((row) => ({
       tenant_id: tenantId,
-      name: row.name.trim(),
-      type: row.type,
-      phone: row.phone?.trim() || null,
+      name: typeof row.name === 'string' ? row.name.trim() : String(row.name ?? '').trim(),
+      type: row.type as 'customer' | 'supplier',
+      phone: typeof row.phone === 'string' ? row.phone.trim() : row.phone ? String(row.phone).trim() : null,
     }));
 
     const { error } = await supabase.from('parties').insert(payload);

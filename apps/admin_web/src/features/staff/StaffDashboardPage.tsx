@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  Users, Key, Shield, Loader2, CheckCircle2, 
-  TrendingUp, DollarSign, ShoppingBag, Calendar
+  Users, Key, Shield, Loader2, 
+  DollarSign, ShoppingBag, Calendar
 } from 'lucide-react';
 import { staff } from '../../lib/api/domains/staff';
 import { useAuth } from '../../lib/AuthContext';
@@ -48,7 +48,7 @@ export const StaffDashboardPage: React.FC = () => {
       setPinError(null);
       queryClient.invalidateQueries({ queryKey: ['staff', storeId] });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       notify(err.message || 'Failed to update PIN', 'error');
     },
   });

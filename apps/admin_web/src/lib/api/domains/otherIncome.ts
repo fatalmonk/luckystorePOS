@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import type { Database } from '../../database.types';
 
 export interface OtherIncome {
   id: string;
@@ -21,9 +22,26 @@ export interface OtherIncomeFormData {
   storeId?: string;
 }
 
+type OtherIncomeRow = Database['public']['Tables']['other_income']['Row'];
+type OtherIncomeInsert = Database['public']['Tables']['other_income']['Insert'];
+
+function mapRow(row: OtherIncomeRow): OtherIncome {
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    storeId: row.store_id ?? undefined,
+    date: row.date,
+    category: row.category as OtherIncome['category'],
+    amount: Number(row.amount),
+    paymentMethod: row.payment_method as OtherIncome['paymentMethod'],
+    notes: row.notes ?? undefined,
+    createdAt: row.created_at,
+  };
+}
+
 export const otherIncome = {
   list: async (tenantId: string, storeId?: string): Promise<OtherIncome[]> => {
-    let query = (supabase as any)
+    let query = supabase
       .from('other_income')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -36,51 +54,32 @@ export const otherIncome = {
     const { data, error } = await query;
     if (error) throw error;
 
-    return (data ?? []).map((row: any) => ({
-      id: row.id,
-      tenantId: row.tenant_id,
-      storeId: row.store_id,
-      date: row.date,
-      category: row.category,
-      amount: Number(row.amount),
-      paymentMethod: row.payment_method,
-      notes: row.notes,
-      createdAt: row.created_at,
-    }));
+    return ((data ?? []) as OtherIncomeRow[]).map(mapRow);
   },
 
   create: async (tenantId: string, form: OtherIncomeFormData): Promise<OtherIncome> => {
-    const { data, error } = await (supabase as any)
+    const insert: OtherIncomeInsert = {
+      tenant_id: tenantId,
+      store_id: form.storeId || null,
+      date: form.date,
+      category: form.category as Database['public']['Enums']['other_income_category'],
+      amount: form.amount,
+      payment_method: form.paymentMethod as Database['public']['Enums']['other_income_payment_method'],
+      notes: form.notes || null,
+    };
+    const { data, error } = await supabase
       .from('other_income')
-      .insert({
-        tenant_id: tenantId,
-        store_id: form.storeId || null,
-        date: form.date,
-        category: form.category,
-        amount: form.amount,
-        payment_method: form.paymentMethod,
-        notes: form.notes || null,
-      })
+      .insert(insert)
       .select()
       .single();
 
     if (error) throw error;
-    
-    return {
-      id: data.id,
-      tenantId: data.tenant_id,
-      storeId: data.store_id,
-      date: data.date,
-      category: data.category,
-      amount: Number(data.amount),
-      paymentMethod: data.payment_method,
-      notes: data.notes,
-      createdAt: data.created_at,
-    };
+
+    return mapRow(data as OtherIncomeRow);
   },
 
   remove: async (id: string): Promise<void> => {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('other_income')
       .delete()
       .eq('id', id);

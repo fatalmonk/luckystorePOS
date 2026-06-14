@@ -1,6 +1,5 @@
-import { ShoppingCart } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { PosProduct } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
 

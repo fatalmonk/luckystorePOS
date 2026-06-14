@@ -122,8 +122,8 @@ export function SalesHistoryPage() {
       // Transform API response to include missing fields with defaults
       return (response as Omit<SaleRecord, 'subtotal' | 'discount_amount'>[]).map(sale => ({
         ...sale,
-        subtotal: (sale as any).subtotal ?? sale.total_amount,
-        discount_amount: (sale as any).discount_amount ?? 0,
+        subtotal: (sale as unknown as { subtotal?: number }).subtotal ?? sale.total_amount,
+        discount_amount: (sale as unknown as { discount_amount?: number }).discount_amount ?? 0,
       }));
     },
   });

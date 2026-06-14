@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import type { Expense, ExpenseFormData, RecordExpenseResult, ExpenseCategory, ExpensePaymentType } from '../types';
+import type { Database } from '../../database.types';
+
+type ExpenseRow = Database['public']['Tables']['expenses']['Row'];
 
 export const expenses = {
   list: async (storeId: string, filters?: { startDate?: string; endDate?: string; category?: string; paymentType?: string }): Promise<Expense[]> => {
@@ -17,7 +20,7 @@ export const expenses = {
     const { data, error } = await query;
     if (error) throw error;
 
-    return (data ?? []).map((row: any) => ({
+    return ((data ?? []) as ExpenseRow[]).map((row) => ({
       id: row.id,
       storeId: row.store_id,
       expenseDate: row.expense_date,

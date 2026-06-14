@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { SkeletonBlock, SkeletonListItem } from '../../components/PageState';
+import { SkeletonListItem } from '../../components/PageState';
 import { useDebounce } from '../../hooks/useDebounce';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';

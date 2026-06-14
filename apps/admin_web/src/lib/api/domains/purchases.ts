@@ -43,7 +43,7 @@ export const purchases = {
 
     if (totalError) throw totalError;
 
-    const totalValue = totalData?.reduce((sum: number, r: any) => sum + (r.invoice_total || 0), 0) || 0;
+    const totalValue = totalData?.reduce((sum: number, r) => sum + ((r as { invoice_total: number | null }).invoice_total || 0), 0) || 0;
 
     const { count: draftCount, error: draftError } = await supabase
       .from('purchase_receipts')

@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { AlertCircle } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 interface CompetitorPrice {
   name: string;

@@ -21,7 +21,7 @@ export const pos = {
     const { data, error } = await supabase.rpc('get_pos_categories', { p_store_id: storeId });
     if (error) throw error;
     debugLog('Raw categories response', data);
-    return mapCategories(data as any);
+    return mapCategories(data);
   },
   getProducts: async (storeId: string, search?: string, categoryId?: string): Promise<PosProduct[]> => {
     debugLog('Fetching products', { storeId, search, categoryId });
@@ -37,7 +37,7 @@ export const pos = {
       throw error;
     }
     debugLog('Raw products response', data);
-    return mapSearchItems(data as any);
+    return mapSearchItems(data);
   },
   lookupByScan: async (scanValue: string, storeId: string): Promise<PosProduct | null> => {
     debugLog('Looking up item by scan', { scanValue, storeId });
@@ -48,7 +48,7 @@ export const pos = {
     if (error) throw error;
     debugLog('Raw scan lookup response', data);
     if (!data) return null;
-    return mapSearchItems(data as any)[0] || null;
+    return mapSearchItems(data)[0] || null;
   },
   createSale: async (saleData: {
     idempotencyKey: string;

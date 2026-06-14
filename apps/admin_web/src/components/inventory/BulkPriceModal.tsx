@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { X, Percent, Hash } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -25,7 +25,11 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
   const hasValue = sellingPrice || mrp || costPrice;
 
   const handleSubmit = () => {
-    const data: any = {};
+    const data: Partial<{
+      sellingPrice: { value: number; isPercentage: boolean };
+      mrp: { value: number; isPercentage: boolean };
+      costPrice: { value: number; isPercentage: boolean };
+    }> = {};
     if (sellingPrice) {
       data.sellingPrice = {
         value: parseFloat(sellingPrice),

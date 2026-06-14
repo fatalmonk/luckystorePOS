@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import type { ProductCreateInput, ProductUpdateInput } from '../types';
+import type { Database } from '../../database.types';
+
+type ItemInsert = Database['public']['Tables']['items']['Insert'];
+type ItemUpdate = Database['public']['Tables']['items']['Update'];
+type PriceHistoryReturn = Database['public']['Functions']['get_price_history']['Returns'];
+type UpdateItemPricesReturn = Database['public']['Functions']['update_item_prices']['Returns'];
 
 export const products = {
   list: async () => {
@@ -18,14 +24,16 @@ export const products = {
   },
   create: async (product: ProductCreateInput) => {
     const { stock: _stock, ...itemData } = product;
-    const { data, error } = await supabase.from('items').insert(itemData as any).select().single();
+    void _stock;
+    const insert: ItemInsert = itemData;
+    const { data, error } = await supabase.from('items').insert(insert).select().single();
     if (error) throw error;
     return data;
   },
   update: async (id: string, updates: ProductUpdateInput, tenantId?: string) => {
     // If updating price/mrp/cost, use the RPC for proper JSON return
     if (tenantId && (updates.price !== undefined || updates.mrp !== undefined || updates.cost !== undefined)) {
-      const { data, error } = await supabase.rpc('update_item_prices' as any, {
+      const { data, error } = await supabase.rpc('update_item_prices', {
         p_item_id: id,
         p_tenant_id: tenantId,
         p_price: updates.price ?? null,
@@ -35,7 +43,7 @@ export const products = {
       if (error) throw error;
       // Map RPC response (item_price) to expected interface (price)
       if (data && Array.isArray(data) && data.length > 0) {
-        const row = data[0];
+        const row = (data as UpdateItemPricesReturn)[0];
         return {
           id: row.item_id,
           name: row.item_name,
@@ -50,7 +58,9 @@ export const products = {
     }
     // Otherwise fall back to direct update
     const { stock: _stock, ...itemUpdates } = updates;
-    const { data, error } = await supabase.from('items').update(itemUpdates as any).eq('id', id).select().single();
+    void _stock;
+    const update: ItemUpdate = itemUpdates;
+    const { data, error } = await supabase.from('items').update(update).eq('id', id).select().single();
     if (error) throw error;
     return data;
   },
@@ -68,3 +78,5 @@ export const categories = {
     return data;
   },
 };
+
+export type { PriceHistoryReturn };
