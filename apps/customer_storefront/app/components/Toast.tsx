@@ -1,4 +1,4 @@
-'use client';
+'use client'; // toast context provider with useState, useCallback, and auto-dismiss timers
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 

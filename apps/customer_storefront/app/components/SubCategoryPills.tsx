@@ -1,4 +1,4 @@
-'use client';
+'use client'; // interactive category pills with router navigation
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -25,7 +25,7 @@ export function SubCategoryPills({ categories, active, subCategories }: SubCateg
   return (
     <section className="mb-6">
       <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 px-3 sm:px-4 lg:px-6 scrollbar-hide">
-        {displayCats.map((cat) => (
+        {displayCats.map((cat, index) => (
           <button
             key={cat.id}
             onClick={() => router.push(`/category/${cat.slug}`)}
@@ -47,6 +47,7 @@ export function SubCategoryPills({ categories, active, subCategories }: SubCateg
                   width={72}
                   height={72}
                   className="object-cover w-full h-full"
+                  priority={index < 6}
                 />
               ) : (
                 <span>{cat.emoji || CATEGORY_EMOJIS[cat.slug] || '📦'}</span>

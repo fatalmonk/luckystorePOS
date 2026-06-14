@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 
 interface PromoItem {
@@ -31,7 +29,6 @@ const defaultPromos: PromoItem[] = [
     ctaText: 'Shop now',
     ctaHref: '/category?theme=new',
     bgColor: '#fee2e2',
-    gradient: undefined,
   },
   {
     id: 'daily-deals',
@@ -40,7 +37,6 @@ const defaultPromos: PromoItem[] = [
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
     bgColor: '#dcfce7',
-    gradient: undefined,
   },
 ];
 
@@ -50,7 +46,6 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
 
   if (!largePromo) return null;
 
-  // Compute styles outside JSX
   const largePromoBgStyle = largePromo.gradient
     ? { background: largePromo.gradient }
     : largePromo.bgColor
@@ -60,29 +55,23 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
   return (
     <section className="mb-8 px-4 sm:px-6 lg:px-8 xl:px-10" aria-label="Promotions">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {/* Large Promo */}
         <Link
           href={largePromo.ctaHref}
           className="relative col-span-1 md:col-span-2 h-64 flex flex-col justify-end overflow-hidden rounded-[18px] p-5 group"
         >
           <div className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105" style={largePromoBgStyle} />
           <div className="relative z-20 w-full md:w-3/4">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {largePromo.title}
-            </h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{largePromo.title}</h2>
             {largePromo.subtitle && (
-              <p className="mb-4 text-lg font-bold text-white opacity-90">
-                {largePromo.subtitle}
-              </p>
+              <p className="mb-4 text-lg font-bold text-white opacity-90">{largePromo.subtitle}</p>
             )}
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-black hover:bg-gray-100 transition-colors">
               {largePromo.ctaText}
-              <span className="text-lg">→</span>
+              <span className="text-lg" aria-hidden="true">→</span>
             </span>
           </div>
         </Link>
 
-        {/* Two Stacked Small Promos */}
         <div className="col-span-1 flex flex-col gap-4">
           {smallPromos.map((promo) => (
             <Link
@@ -95,12 +84,8 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
                 <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ backgroundColor: promo.bgColor }} />
               )}
               <div className="relative z-10">
-                <h3 className="text-lg font-bold text-black mb-2">
-                  {promo.title}
-                </h3>
-                <span className="text-sm font-bold underline hover:no-underline transition-colors">
-                  {promo.ctaText}
-                </span>
+                <h3 className="text-lg font-bold text-black mb-2">{promo.title}</h3>
+                <span className="text-sm font-bold underline hover:no-underline transition-colors">{promo.ctaText}</span>
               </div>
             </Link>
           ))}
@@ -110,7 +95,6 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
   );
 }
 
-// Skeleton for PromoGrid
 export function PromoGridSkeleton() {
   return (
     <section className="mb-8 px-4 sm:px-6 lg:px-8 xl:px-10">

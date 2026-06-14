@@ -1,4 +1,4 @@
-'use client';
+'use client'; // wishlist form state, localStorage fingerprint, and API calls
 
 import { useState } from 'react';
 import { createWishlistItem } from '../lib/wishlist';
