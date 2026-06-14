@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useState, useLayoutEffect } from 'react';
 import { clsx } from "clsx";
 
 export interface CardProps {
@@ -23,9 +23,9 @@ export const Card: React.FC<CardProps> =
 }) => {
   const [isHighlighted, setIsHighlighted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (highlight) {
-      setIsHighlighted(true);
+      setTimeout(() => setIsHighlighted(true), 0);
       const timer = setTimeout(() => setIsHighlighted(false), 1000);
       return () => clearTimeout(timer);
     }

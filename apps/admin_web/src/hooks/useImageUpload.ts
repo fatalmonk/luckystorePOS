@@ -14,7 +14,7 @@ async function uploadProductImage(
   const fileName = `${storeId}/${itemId}_${Date.now()}.${fileExtension}`;
 
   // Upload to Supabase Storage
-  const { data, error: uploadError } = await supabase.storage
+  const { data: _data, error: uploadError } = await supabase.storage
     .from('product-images')
     .upload(fileName, file, {
       contentType: file.type,
@@ -83,18 +83,12 @@ export function useRemoveImage() {
   const { notify } = useNotify();
 
   return useMutation({
-    mutationFn: async ({
-      itemId,
-      storeId,
-    }: {
-      itemId: string;
-      storeId: string;
-    }) => {
+    mutationFn: async (vars: { itemId: string; storeId: string }) => {
       // Update product to remove image URL
       const { error } = await supabase
         .from('items')
         .update({ image_url: null, updated_at: new Date().toISOString() })
-        .eq('id', itemId);
+        .eq('id', vars.itemId);
 
       if (error) {
         throw new Error(error.message);

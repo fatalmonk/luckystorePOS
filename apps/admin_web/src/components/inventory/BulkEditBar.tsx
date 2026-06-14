@@ -1,9 +1,8 @@
-import { X, Package, DollarSign, Download } from 'lucide-react';
+import { Package, DollarSign, Download } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface BulkEditBarProps {
   selectedCount: number;
-  totalCount: number;
   onClear: () => void;
   onUpdatePrices: () => void;
   onUpdateStock: () => void;
@@ -12,7 +11,6 @@ interface BulkEditBarProps {
 
 export function BulkEditBar({
   selectedCount,
-  totalCount: _totalCount,
   onClear,
   onUpdatePrices,
   onUpdateStock,

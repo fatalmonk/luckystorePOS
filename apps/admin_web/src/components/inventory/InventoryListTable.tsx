@@ -1,5 +1,5 @@
 import type { InventoryItem } from '../../types/inventory';
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { InventoryListTableRow } from './InventoryListTableRow';
 
@@ -36,7 +36,6 @@ export function InventoryListTable({
 }: InventoryListTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
-  const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,

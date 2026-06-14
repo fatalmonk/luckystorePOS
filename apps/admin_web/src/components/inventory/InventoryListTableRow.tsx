@@ -1,13 +1,11 @@
 import type { InventoryItem } from '../../types/inventory';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { MoreVertical, History, Pencil, Trash2, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { EditableCell } from '../../components/ui/EditableCell';
 import { ImageUploadZone } from '../../components/inventory/ImageUploadZone';
 import { SmartPricingEditor } from './SmartPricingEditor';
 import { useImageUpload } from '../../hooks/useImageUpload';
-import { useNotify } from '../../components/NotificationContext';
-import { formatCurrency } from '../../lib/format';
 
 const calcMargin = (cost?: number, price?: number) => {
   if (typeof cost !== 'number' || typeof price !== 'number' || price <= 0 || cost <= 0) return null;
@@ -28,10 +26,9 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }
 };
 
 // TODO: Replace MOCK_COMPETITORS with real API call to fetch live competitor prices
-const MOCK_COMPETITORS: Record<string, { name: string; price: number; logo: string }[]> = {};
+// const MOCK_COMPETITORS: Record<string, { name: string; price: number; logo: string }[]> = {};
 
 interface InventoryListTableRowProps {
-  index: number;
   item: InventoryItem;
   virtualRowSize: number;
   isSelected: boolean;
@@ -51,7 +48,6 @@ interface InventoryListTableRowProps {
 }
 
 export function InventoryListTableRow({
-  index,
   item,
   virtualRowSize,
   isSelected,
@@ -68,7 +64,6 @@ export function InventoryListTableRow({
   onTabNavigation,
   storeId,
 }: InventoryListTableRowProps) {
-  const { notify } = useNotify();
   const { mutateAsync: uploadImage } = useImageUpload();
   const [showSmartPricing, setShowSmartPricing] = useState(false);
 
@@ -78,9 +73,9 @@ export function InventoryListTableRow({
     editingCell?.rowId === item.id && editingCell?.field === field;
 
   // Reset smart pricing when row changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!editingCell || editingCell.rowId !== item.id) {
-      setShowSmartPricing(false);
+      setTimeout(() => setShowSmartPricing(false), 0);
     }
   }, [editingCell, item.id]);
 
