@@ -55,6 +55,7 @@ export function registerServiceWorker(): void {
         const contentType = response.headers.get('content-type');
         if (contentType?.indexOf('javascript') === -1) {
           console.warn('[SW] Service worker not served with correct MIME type');
+          statusListener?.('error');
           return;
         }
         registerValidSW(swUrl);

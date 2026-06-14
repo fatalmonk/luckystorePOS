@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useCallback, ComponentType } from 'react';
+import { useState, useLayoutEffect, useCallback, useMemo, ComponentType } from 'react';
 import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,7 @@ interface SidebarNewProps {
 }
 
 interface NavItem {
-  icon: ComponentType<any>;
+  icon: ComponentType<{ className?: string; size?: number }>;
   label: string;
   path: string;
   children?: { label: string; path: string }[];
@@ -28,13 +28,13 @@ interface NavItem {
 interface NavGroup {
   id: string;
   titleKey: string;
-  icon: ComponentType<any>;
+  icon: ComponentType<{ className?: string; size?: number }>;
   items: NavItem[];
 }
 
 function useNavGroups(): NavGroup[] {
   const { t } = useTranslation();
-  return [
+  return useMemo(() => [
     {
       id: 'business',
       titleKey: 'nav.groupBusiness', // "Business" or fallback t('nav.business')
@@ -98,7 +98,7 @@ function useNavGroups(): NavGroup[] {
         { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
       ]
     }
-  ];
+  ], [t]);
 }
 
 export const SidebarNew: React.FC<SidebarNewProps> = ({ 

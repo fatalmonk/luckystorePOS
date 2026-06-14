@@ -704,7 +704,7 @@ export function DailySalesPage() {
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Payment Breakdown</h2>
           <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={paymentBreakdown}
@@ -747,7 +747,7 @@ export function DailySalesPage() {
         <h2 className="text-lg font-semibold text-text-primary mb-4">Monthly Sales Trend</h2>
         {monthlyTrend.length > 0 ? (
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthlyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
                 <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
@@ -773,7 +773,7 @@ export function DailySalesPage() {
         <h2 className="text-lg font-semibold text-text-primary mb-4">Daily Trend (Last 30 Days)</h2>
         {dailyTrend.length > 0 ? (
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dailyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
                 <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={10} interval="preserveStartEnd" angle={-45} textAnchor="end" height={60} />

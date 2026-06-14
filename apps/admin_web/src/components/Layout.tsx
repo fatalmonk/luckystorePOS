@@ -12,10 +12,11 @@ export function Layout() {
   const location = useLocation();
   const isPosPage = location.pathname.includes('/pos');
   
-  const [sidebarHidden, setSidebarHidden] = useState(() => window.innerWidth < 768);
+  const [sidebarHidden, setSidebarHidden] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   
   // Persist sidebar collapse preference
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
+    if (typeof window === 'undefined') return false;
     if (isPosPage) return true;
     // Check saved preference first
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -31,7 +32,7 @@ export function Layout() {
     setSidebarCollapsedState(newValue);
   };
 
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   useEffect(() => {
     const handleResize = () => {
@@ -69,7 +70,7 @@ export function Layout() {
         localStorage.removeItem('sidebar-collapsed-restore');
       }
     }
-  }, [isPosPage, isMobile, sidebarCollapsed]);
+  }, [isPosPage, isMobile]);
 
   return (
     <div className={`app-container app-warm ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''} ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
