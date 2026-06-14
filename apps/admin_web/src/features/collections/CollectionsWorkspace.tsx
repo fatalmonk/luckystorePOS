@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from "@/lib/supabase";
 import { useAuth } from '../../lib/AuthContext';
 import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign } from 'lucide-react';
@@ -33,9 +33,9 @@ export const CollectionsWorkspace: React.FC = () => {
   useEffect(() => {
     if (!storeId) {
       cashAccountIdRef.current = null;
-      setCashAccountId(null);
       return;
     }
+    let cancelled = false;
     supabase
       .from('ledger_accounts')
       .select('id')
@@ -43,8 +43,13 @@ export const CollectionsWorkspace: React.FC = () => {
       .eq('code', '1000_CASH')
       .maybeSingle()
       .then(({ data: acct }) => {
-        setCashAccountId((acct?.id as string) ?? null);
+        if (!cancelled) {
+          setCashAccountId((acct?.id as string) ?? null);
+        }
       });
+    return () => {
+      cancelled = true;
+    };
   }, [storeId]);
 
   // Modals
@@ -77,8 +82,8 @@ export const CollectionsWorkspace: React.FC = () => {
     setLoading(false);
   }, [tenantId, storeId, debouncedSearch]);
 
-  useEffect(() => {
-    fetchAging();
+  useLayoutEffect(() => {
+    setTimeout(() => fetchAging(), 0);
   }, [fetchAging]);
 
   const handleAddNote = async (e: React.FormEvent) => {

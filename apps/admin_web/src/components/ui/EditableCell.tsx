@@ -52,12 +52,41 @@ export function EditableCell({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const parseValue = useCallback((val: string): string | number => {
+    if (parser) return parser(val);
+    if (type === 'number' || type === 'currency') {
+      const num = parseFloat(val);
+      return isNaN(num) ? 0 : num;
+    }
+    return val;
+  }, [parser, type]);
+
+  const formatValue = (val: string | number | undefined): string => {
+    if (val === undefined || val === null || val === '') return placeholder;
+    if (formatter) return formatter(val);
+    return String(val);
+  };
+
+  const handleStartEdit = () => {
+    if (disabled) return;
+    setEditValue(String(value ?? ''));
+    setError(null);
+    setIsEditing(true);
+  };
+
+  const handleCancel = useCallback(() => {
+    setEditValue(String(value ?? ''));
+    setError(null);
+    setIsEditing(false);
+    onCancel?.();
+  }, [value, onCancel]);
+
   // Trigger onChange when editValue changes
   useEffect(() => {
     if (isEditing && onChange) {
       onChange(parseValue(editValue));
     }
-  }, [editValue, isEditing, onChange]);
+  }, [editValue, isEditing, onChange, parseValue]);
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -79,7 +108,7 @@ export function EditableCell({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isEditing, editValue]);
+  }, [isEditing, handleCancel]);
 
   const getInputType = (): string => {
     switch (type) {
@@ -93,33 +122,11 @@ export function EditableCell({
     }
   };
 
-  const formatValue = (val: string | number | undefined): string => {
-    if (val === undefined || val === null || val === '') return placeholder;
-    if (formatter) return formatter(val);
-    return String(val);
-  };
-
-  const parseValue = (val: string): string | number => {
-    if (parser) return parser(val);
-    if (type === 'number' || type === 'currency') {
-      const num = parseFloat(val);
-      return isNaN(num) ? 0 : num;
-    }
-    return val;
-  };
-
-  const handleStartEdit = () => {
-    if (disabled) return;
-    setEditValue(String(value ?? ''));
-    setError(null);
-    setIsEditing(true);
-  };
-
   const handleSave = async () => {
     if (isSaving) return;
 
     const parsedValue = parseValue(editValue);
-    
+
     // Validation
     if (validate) {
       const validationError = validate(parsedValue);
@@ -167,13 +174,6 @@ export function EditableCell({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleCancel = () => {
-    setEditValue(String(value ?? ''));
-    setError(null);
-    setIsEditing(false);
-    onCancel?.();
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
