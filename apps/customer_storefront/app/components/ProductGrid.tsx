@@ -1,4 +1,4 @@
-'use client';
+'use client'; // product grid that receives cart callbacks and passes them to ProductCard
 
 import { ProductCard } from './ProductCard';
 import type { Product } from '../lib/types';
@@ -32,7 +32,7 @@ export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: Pro
             stock={product.stock}
             image_url={product.image_url}
             qtyInCart={getQtyInCart(product.id)}
-            priority={index < 6}
+            priority={index === 0}
             onAdd={() => onAdd(product, addBtnRef)}
             onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
             onClick={() => onClick(product.id)}

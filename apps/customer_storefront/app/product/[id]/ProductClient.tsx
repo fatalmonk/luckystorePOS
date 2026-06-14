@@ -1,13 +1,15 @@
-'use client';
+'use client'; // product detail page with cart interactions, local quantity state, and toast
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Header } from '../../components/Header';
 import { BottomNav } from '../../components/BottomNav';
-import { ToastProvider, useToast } from '../../components/Toast';
-import { CartProvider, useCartContext } from '../../components/CartProvider';
+import { useToast } from '../../components/Toast';
+import { useCartContext } from '../../components/CartProvider';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { PriceDisplay } from '../../components/PriceDisplay';
+import { formatBdt } from '../../lib/formatPrice';
 import type { Product } from '../../lib/types';
 
 interface ProductClientProps {
@@ -15,9 +17,8 @@ interface ProductClientProps {
 }
 
 function ProductContent({ product }: ProductClientProps) {
-  const router = useRouter();
   const { showToast } = useToast();
-  const { cart, addToCart, updateQty, totalItems } = useCartContext();
+  const { cart, addToCart, updateQty } = useCartContext();
   const [localQty, setLocalQty] = useState(1);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
@@ -49,16 +50,28 @@ function ProductContent({ product }: ProductClientProps) {
 
   return (
     <>
-      <Header cartCount={totalItems} />
+      <Header />
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24">
         {/* Hero Section */}
         <div className="bg-white px-6 py-8 text-center">
-          <div className="w-[180px] h-[180px] mx-auto mb-5 text-[90px] grid place-items-center">
-            {product.emoji}
+          <div className="relative w-[180px] h-[180px] mx-auto mb-5 rounded-full bg-[#f5f3f0] overflow-hidden">
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                className="object-contain p-2"
+                sizes="180px"
+                priority
+                decoding="async"
+              />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-[90px]">{product.emoji}</div>
+            )}
           </div>
           <p className="text-[32px] font-extrabold tracking-tight mb-1">
-            ৳{product.price}
+            <PriceDisplay value={product.price} />
           </p>
           <p className="text-sm text-[#78716c] mb-3">{product.unit}</p>
           <Badge variant={stockStatus.variant}>{stockStatus.text}</Badge>
@@ -89,7 +102,7 @@ function ProductContent({ product }: ProductClientProps) {
             Total
           </p>
           <p className="text-xl font-extrabold">
-            ৳{product.price * (qtyInCart > 0 ? qtyInCart : localQty)}
+            {formatBdt(product.price * (qtyInCart > 0 ? qtyInCart : localQty))}
           </p>
         </div>
 
@@ -97,7 +110,7 @@ function ProductContent({ product }: ProductClientProps) {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => handleUpdateQty(-1)}
-              className="w-7 h-7 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
+              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
             >
               −
             </button>
@@ -107,7 +120,7 @@ function ProductContent({ product }: ProductClientProps) {
             <button
               onClick={() => handleUpdateQty(1)}
               disabled={qtyInCart >= product.stock}
-              className="w-7 h-7 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors disabled:opacity-50"
+              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors disabled:opacity-50"
             >
               +
             </button>
@@ -123,17 +136,11 @@ function ProductContent({ product }: ProductClientProps) {
         )}
       </div>
 
-      <BottomNav cartCount={totalItems} />
+      <BottomNav />
     </>
   );
 }
 
 export default function ProductClient({ product }: ProductClientProps) {
-  return (
-    <ToastProvider>
-      <CartProvider>
-        <ProductContent product={product} />
-      </CartProvider>
-    </ToastProvider>
-  );
+  return <ProductContent product={product} />;
 }

@@ -1,4 +1,4 @@
-'use client';
+'use client'; // filter sidebar with URL searchParams, router, and accordion state
 
 import { useState, useEffect, useRef } from 'react';
 import { CATEGORY_LABELS } from '../lib/types';
@@ -120,7 +120,7 @@ export function FilterSidebar({
       <div className="border-t border-[#e7e5e4] pt-4 first:border-0 first:pt-0">
         <button
           onClick={() => setAccordionOpen((prev) => ({ ...prev, [id]: !isOpen }))}
-          className="flex items-center justify-between w-full py-2 font-semibold text-[#1c1917]"
+          className="flex items-center justify-between w-full py-2 font-semibold text-[#1c1917] min-h-[44px]"
         >
           <span>{title}</span>
           <span className={`text-xl transition-transform ${isOpen ? 'rotate-180' : ''}`}>

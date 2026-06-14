@@ -1,4 +1,4 @@
-'use client';
+'use client'; // React context provider for cart state (useCart hook wraps localStorage)
 
 import { createContext, useContext, ReactNode } from 'react';
 import { useCart } from '../hooks/useCart';

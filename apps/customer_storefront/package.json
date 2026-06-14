@@ -27,5 +27,12 @@
   },
   "engines": {
     "node": "24.x"
-  }
+  },
+  "browserslist": [
+    "chrome 109",
+    "edge 109",
+    "firefox 109",
+    "safari 16.4",
+    "ios_saf 16.4"
+  ]
 }

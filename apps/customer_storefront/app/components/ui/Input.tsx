@@ -1,4 +1,4 @@
-'use client';
+'use client'; // controlled input/textarea with focus ring transitions and optional search handler
 
 import { InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 

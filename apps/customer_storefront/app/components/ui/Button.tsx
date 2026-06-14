@@ -1,4 +1,4 @@
-'use client';
+'use client'; // interactive button with variant/size styles and active scale
 
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 
@@ -32,9 +32,9 @@ export function Button({
   };
 
   const sizeStyles = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-4 text-sm',
-    lg: 'h-12 px-6 text-base',
+    sm: 'h-9 px-3 text-sm min-h-[44px]',
+    md: 'h-10 px-4 text-sm min-h-[44px]',
+    lg: 'h-12 px-6 text-base min-h-[44px]',
   };
 
   return (
