@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -429,11 +429,13 @@ function EditUserModal({ user, isOpen, onClose, onSave, isSaving }: { user: { id
   const [role, setRole] = useState(user?.role || 'cashier');
   const [pin, setPin] = useState('');
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (user) {
-      setName(user.full_name || user.name || '');
-      setRole(user.role || 'cashier');
-      setPin('');
+      setTimeout(() => {
+        setName(user.full_name || user.name || '');
+        setRole(user.role || 'cashier');
+        setPin('');
+      }, 0);
     }
   }, [user]);
 

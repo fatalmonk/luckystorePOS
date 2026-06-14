@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { X, TrendingUp, TrendingDown, Minus, History } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, History } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { formatCurrency } from '../../lib/format';
@@ -25,7 +24,7 @@ interface PriceChange {
 }
 
 export function PriceHistoryModal({ productId, storeId, productName, isOpen, onClose }: PriceHistoryModalProps) {
-  const { data: history, isLoading } = useQuery({
+  const { data: history, isLoading } = useQuery<PriceChange[]>({
     queryKey: ['price-history', productId],
     queryFn: () => api.inventory.getPriceHistory(storeId, productId),
     enabled: isOpen,
@@ -90,7 +89,7 @@ export function PriceHistoryModal({ productId, storeId, productName, isOpen, onC
 
               {/* Price Changes */}
               <div className="space-y-1">
-                {history.map((change: PriceChange, index: number) => {
+                {history.map((change, index) => {
                   const priceChange = calculateChange(change.old_price, change.new_price);
                   const hasChange = priceChange !== 0;
 

@@ -7,20 +7,22 @@ import {
 } from 'lucide-react';
 import { z } from 'zod';
 
+interface FieldMeta {
+  key: string;
+  label: string;
+  type: 'string' | 'number' | 'select';
+  options?: string[];
+  required?: boolean;
+  defaultValue?: string | number;
+}
+
 interface ImportWizardProps {
   title: string;
   sampleFileName: string;
-  sampleData: Record<string, any>[];
-  validationSchema: z.ZodObject<any>;
-  onImportSubmit: (data: any[]) => Promise<void>;
-  fieldMeta: {
-    key: string;
-    label: string;
-    type: 'string' | 'number' | 'select';
-    options?: string[];
-    required?: boolean;
-    defaultValue?: any;
-  }[];
+  sampleData: Record<string, string | number>[];
+  validationSchema: z.ZodObject<Record<string, z.ZodTypeAny>>;
+  onImportSubmit: (data: Record<string, string | number>[]) => Promise<void>;
+  fieldMeta: FieldMeta[];
 }
 
 export const ImportWizard: React.FC<ImportWizardProps> = ({
@@ -32,7 +34,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   fieldMeta,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [data, setData] = useState<Record<string, any>[]>([]);
+  const [data, setData] = useState<Record<string, string | number>[]>([]);
   const [errors, setErrors] = useState<Record<number, Record<string, string>>>({});
   const [isImporting, setIsImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -49,7 +51,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   };
 
   // Run Zod validation on data
-  const validateData = (rows: Record<string, any>[]) => {
+  const validateData = useCallback((rows: Record<string, string | number>[]) => {
     const newErrors: Record<number, Record<string, string>> = {};
     rows.forEach((row, index) => {
       const rowErrors: Record<string, string> = {};
@@ -71,7 +73,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
         if (fieldSchema) {
           const res = fieldSchema.safeParse(parsedVal === '' ? undefined : parsedVal);
           if (!res.success) {
-            rowErrors[field.key] = res.error.errors[0]?.message || 'Invalid value';
+            rowErrors[field.key] = res.error.issues[0]?.message || 'Invalid value';
           }
         }
       });
@@ -83,7 +85,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [fieldMeta, validationSchema]);
 
   // File Drop Handler
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -100,7 +102,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
       skipEmptyLines: true,
       complete: (results) => {
         try {
-          const json = results.data as Record<string, any>[];
+          const json = results.data as Record<string, string | number>[];
 
           if (json.length === 0) {
             setErrorMessage('The uploaded file is empty');
@@ -115,7 +117,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
           // Clean & normalize parsed data keys to match field meta keys
           const normalized = json.map((row) => {
-            const newRow: Record<string, any> = {};
+            const newRow: Record<string, string | number | undefined | null> = {};
             fieldMeta.forEach((field) => {
               // Match keys case-insensitively or via exact label
               const matchedKey = Object.keys(row).find(
@@ -130,22 +132,22 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                 newRow[field.key] = rawVal;
               }
             });
-            return newRow;
+            return newRow as Record<string, string | number | undefined | null>;
           });
 
-          setData(normalized);
-          validateData(normalized);
+          setData(normalized as Record<string, string | number>[]);
+          validateData(normalized as Record<string, string | number>[]);
           setErrorMessage(null);
           setStep(2);
-        } catch (err: any) {
-          setErrorMessage(`Error parsing file: ${err.message || 'Unknown error'}`);
+        } catch (err: unknown) {
+          setErrorMessage(`Error parsing file: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       },
       error: (err) => {
         setErrorMessage(`Error parsing file: ${err.message || 'Unknown error'}`);
       }
     });
-  }, [fieldMeta, validationSchema]);
+  }, [fieldMeta, validateData]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -156,9 +158,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   });
 
   // Handle cell edit
-  const handleCellChange = (index: number, key: string, value: any) => {
+  const handleCellChange = (index: number, key: string, value: string | number) => {
     const updated = [...data];
-    let finalVal = value;
+    let finalVal: string | number = value;
     const field = fieldMeta.find((f) => f.key === key);
     if (field?.type === 'number') {
       const num = Number(value);
@@ -171,7 +173,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
   // Add empty row
   const handleAddRow = () => {
-    const newRow: Record<string, any> = {};
+    const newRow: Record<string, string | number> = {};
     fieldMeta.forEach((f) => {
       newRow[f.key] = f.defaultValue !== undefined ? f.defaultValue : '';
     });
@@ -210,8 +212,8 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
     try {
       await onImportSubmit(data);
       setImportSuccess(true);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to import data');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to import data');
     } finally {
       setIsImporting(false);
     }
