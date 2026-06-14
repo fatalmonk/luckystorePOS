@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/screenshots/admin-dashboard.png" alt="Lucky Store POS" width="100%">
+<img src="./assets/screenshots/admin-dashboard.png" alt="Lucky Store POS" width="100%">
 
 </div>
 
@@ -80,12 +80,12 @@
 
 | Dashboard | Products | Inventory |
 |:---------:|:--------:|:---------:|
-| ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Products](docs/screenshots/admin-products.png) | ![Inventory](docs/screenshots/admin-inventory.png) |
+| ![Dashboard](assets/screenshots/admin-dashboard.png) | ![Products](assets/screenshots/admin-products.png) | ![Inventory](assets/screenshots/admin-inventory.png) |
 | *Sales analytics, revenue trends & key metrics* | *Category-based product grid with thumbnail images* | *Real-time stock with low-stock indicators* |
 
 | Supplier Ledger | Collections | POS Quick Sale |
 |:---------------:|:---------:|:----------------:|
-| ![Ledger](docs/screenshots/admin-ledger.png) | ![Collections](docs/screenshots/admin-collections.png) | ![POS](docs/screenshots/admin-pos.png) |
+| ![Ledger](assets/screenshots/admin-ledger.png) | ![Collections](assets/screenshots/admin-collections.png) | ![POS](assets/screenshots/admin-pos.png) |
 | *Supplier payables with aging breakdown* | *Overdue customer follow-ups & payment tracking* | *Fast counter checkout with barcode lookup* |
 
 ### 📱 Mobile App (Flutter) — Coming Soon
@@ -391,7 +391,7 @@ luckystorePOS/
 │   ├── views/               # Database views
 │   └── public/policies/     # RLS policy definitions
 ├── landing-page/            # Static HTML marketing page (Vercel)
-├── docs/                    # 50+ documentation files across 7 categories
+├── assets/                  # Screenshots & static assets
 │   └── screenshots/         # App screenshots
 ├── scripts/                 # Build, deploy, DB, seed, ops, and test scripts
 ├── data/                    # Inventory CSVs, competitor data, account data
