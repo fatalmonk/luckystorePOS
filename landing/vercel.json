@@ -12,6 +12,10 @@
     {
       "src": "/terms",
       "dest": "/terms-of-service.html"
+    },
+    {
+      "src": "/thumbnail.png",
+      "dest": "/thumbnail.png"
     }
   ]
 }
