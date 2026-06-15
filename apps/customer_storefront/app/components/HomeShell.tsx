@@ -22,7 +22,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
             title="Free Delivery on orders ৳500+"
             subtitle="Cash on delivery. No app download needed."
             badge="Week 1 Launch"
-            bgGradient="from-[#ffe721] to-[#C4C087]"
+            bgGradient="from-[#ffe302] to-[#fff8c0]"
           />
 
           <CategoryGrid categories={categories} />

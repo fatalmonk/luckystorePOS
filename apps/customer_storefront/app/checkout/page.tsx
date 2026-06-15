@@ -109,7 +109,7 @@ function CheckoutContent() {
                     currentStep > step.id
                       ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
                       : currentStep === step.id
-                      ? 'bg-[#ffe721] text-[#1c1917]'
+                      ? 'bg-[#ffe302] text-[#1c1917]'
                       : 'bg-[#f5f5f4] text-[#a8a29e]'
                   }`}
                 >

@@ -114,7 +114,7 @@ function ProductContent({ product }: ProductClientProps) {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => handleUpdateQty(-1)}
-              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe721] hover:text-[#1c1917] transition-colors"
+              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
             >
               −
             </button>
@@ -124,7 +124,7 @@ function ProductContent({ product }: ProductClientProps) {
             <button
               onClick={() => handleUpdateQty(1)}
               disabled={qtyInCart >= product.stock}
-              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe721] hover:text-[#1c1917] transition-colors disabled:opacity-50"
+              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors disabled:opacity-50"
             >
               +
             </button>

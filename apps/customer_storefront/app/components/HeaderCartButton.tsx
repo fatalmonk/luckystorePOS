@@ -35,7 +35,7 @@ export function HeaderCartButton() {
         <span className="hidden lg:block text-sm font-medium">Cart</span>
         {mounted && totalItems > 0 && (
           <span
-            className={`absolute -top-1 right-1 min-w-[20px] h-5 bg-[#1c1917] text-[#ffe721] text-xs font-bold rounded-full grid place-items-center px-1 ${bouncing ? 'cart-bounce' : ''}`}
+            className={`absolute -top-1 right-1 min-w-[20px] h-5 bg-[#1c1917] text-[#ffe302] text-xs font-bold rounded-full grid place-items-center px-1 ${bouncing ? 'cart-bounce' : ''}`}
             aria-label={`${totalItems} items in cart`}
           >
             {totalItems}
