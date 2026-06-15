@@ -58,7 +58,7 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
     : categories;
 
   const renderContent = () => (
-    <div className="flex gap-2 overflow-x-auto lg:flex-wrap lg:overflow-x-visible scrollbar-hide scroll-edge-mask lg:mask-none py-2">
+    <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask py-2">
       {showThematic && (
         <>
           <CategoryDropdown categories={categories} />
