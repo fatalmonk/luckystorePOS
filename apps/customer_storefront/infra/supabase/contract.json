@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "project": "Lucky Store — Customer Storefront",
+  "environment": "staging",
+  "baseUrl": "https://hvmyxyccfnkrbxqbhlnm.supabase.co",
+  "endpoints": {
+    "featuredProducts": {
+      "method": "GET",
+      "path": "/rest/v1/featured_products",
+      "params": { "limit": "number (default 20)" },
+      "returns": "Array<{id,sku,barcode,name,category_id,cost,price,mrp,image_url,is_active,created_at}>"
+    },
+    "categories": {
+      "method": "GET",
+      "path": "/rest/v1/homepage_categories",
+      "params": {},
+      "returns": "Array<{id,name,product_count}>"
+    },
+    "searchProducts": {
+      "method": "POST",
+      "path": "/rest/v1/rpc/search_products",
+      "body": { "search_query": "string", "result_limit": "number (default 20)" },
+      "returns": "Array<{id,sku,barcode,name,category_id,cost,price,mrp,image_url,is_active}>"
+    },
+    "promos": {
+      "method": "GET",
+      "path": "/rest/v1/promos",
+      "params": { "city_scope": "eq.Chittagong", "is_active": "eq.true" },
+      "returns": "Array<{id,title,subtitle,image_url,discount_pct,starts_at,ends_at}>"
+    },
+    "cartSession": {
+      "method": "GET | POST | PATCH | DELETE",
+      "path": "/rest/v1/cart_sessions",
+      "notes": "Anonymous cart tied to session_id cookie. RLS allows anon read/write.",
+      "returns": "{id,session_id,items,store_id,expires_at}"
+    }
+  },
+  "schemas": {
+    "promos": {
+      "id": "uuid PRIMARY KEY",
+      "title": "text NOT NULL",
+      "subtitle": "text",
+      "image_url": "text",
+      "city_scope": "text DEFAULT 'Chittagong'",
+      "discount_pct": "int CHECK(0..100)",
+      "starts_at": "timestamptz",
+      "ends_at": "timestamptz NOT NULL",
+      "is_active": "boolean DEFAULT true",
+      "created_at": "timestamptz DEFAULT now()"
+    },
+    "cart_sessions": {
+      "id": "uuid PRIMARY KEY",
+      "session_id": "text UNIQUE NOT NULL",
+      "items": "jsonb DEFAULT '[]'",
+      "store_id": "uuid",
+      "expires_at": "timestamptz DEFAULT now()+7days",
+      "created_at": "timestamptz DEFAULT now()",
+      "updated_at": "timestamptz DEFAULT now()"
+    }
+  }
+}

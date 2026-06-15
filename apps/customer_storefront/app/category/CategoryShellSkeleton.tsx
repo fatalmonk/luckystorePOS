@@ -6,26 +6,25 @@ export function CategoryShellSkeleton() {
     <>
       <SkeletonHeader />
       <main className="flex-1 overflow-y-auto overflow-x-hidden bg-[#faf8f5]">
-        <SkeletonHero />
-        <div className="mt-2">
-          <PromoGridSkeleton />
-        </div>
-
-        <div className="px-3 sm:px-4 lg:px-6 py-2">
-          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-3" />
-          <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide scroll-edge-mask">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-[44px] w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
-            ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6">
+          <div className="flex gap-6 lg:gap-8">
+            <div className="hidden lg:block w-60 flex-shrink-0">
+              <div className="h-7 w-24 bg-gray-200 rounded animate-pulse mb-6" />
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-5 w-28 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="h-7 w-40 bg-gray-200 rounded animate-pulse mb-5" />
+              <SkeletonGrid count={8} />
+            </div>
           </div>
-        </div>
-
-        <div className="px-3 sm:px-4 lg:px-6 py-2">
-          <div className="h-32 sm:h-40 rounded-xl bg-gray-200 animate-pulse mb-4" />
-        </div>
-
-        <div className="px-3 sm:px-4 lg:px-6 py-4">
-          <SkeletonGrid count={8} />
         </div>
       </main>
     </>

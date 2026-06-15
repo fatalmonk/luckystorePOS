@@ -40,7 +40,7 @@ test.describe('Checkout Flow', () => {
     // Fill checkout form (Step 2)
     await page.fill('input[placeholder*="name"]', 'Test User');
     await page.fill('input[placeholder*="1XXX"]', '+880 1712345678');
-    await page.fill('textarea[placeholder*="House"]', '123 Test Road, Chattogram');
+    await page.fill('textarea[placeholder*="House"]', '123 Test Road, Chittagong');
 
     // Place order
     await page.click('[data-testid="checkout-place-order-btn"]');

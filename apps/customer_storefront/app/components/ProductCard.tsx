@@ -3,8 +3,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { WishlistButton } from './WishlistButton';
-import { PriceDisplay } from './PriceDisplay';
-import { formatUnitPrice } from '../lib/formatPrice';
+import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import type { Category } from '../lib/types';
 import { getLocalWishlist, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
 import { getOrCreateFingerprint } from './WishlistButton';
@@ -156,6 +155,8 @@ export function ProductCard({
   const outOfStock = stock <= 0;
   const onSale = originalPrice !== undefined && originalPrice > price;
   const savings = onSale ? originalPrice! - price : 0;
+  const taka = Math.floor(price);
+  const paisa = ((price % 1) * 100).toFixed(0).padStart(2, '0');
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { showToast } = useToast();
@@ -195,20 +196,29 @@ export function ProductCard({
 
   return (
     <Card hover onClick={onClick} className="flex flex-col group relative card-reveal" data-testid="product-card">
-      {/* Wishlist Toggle Button (Top-Left) */}
-      <button
-        onClick={handleWishlistToggle}
-        className="absolute top-2 left-2 z-20 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.08)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-[#e7e5e4]"
-        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-      >
-        {isWishlisted ? (
-          <span className="text-red-500">❤️</span>
+      {/* Badges + wishlist */}
+      <div className="absolute top-2 left-2 right-2 z-20 flex justify-between items-start pointer-events-none">
+        {badge ? (
+          <span className="bg-[#dc2626] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider">
+            {badge}
+          </span>
         ) : (
-          <span className="text-[#a8a29e] hover:text-red-500 transition-colors">🤍</span>
+          <span />
         )}
-      </button>
+        <button
+          onClick={handleWishlistToggle}
+          className="pointer-events-auto w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.08)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-[#e7e5e4]"
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          {isWishlisted ? (
+            <span className="text-red-500">❤️</span>
+          ) : (
+            <span className="text-[#a8a29e] hover:text-red-500 transition-colors">🤍</span>
+          )}
+        </button>
+      </div>
 
-      {/* Image area — fixed height for proportionate sizing */}
+      {/* Image */}
       <div className="relative w-full h-36 sm:h-40 lg:h-44 bg-white overflow-hidden flex items-center justify-center border-b border-[#f5f5f4] shrink-0">
         {image_url ? (
           <Image
@@ -226,45 +236,32 @@ export function ProductCard({
             <CategoryPlaceholder category={category} />
           </div>
         )}
-
-        {/* Badge (bottom-left) to avoid top-left wishlist conflict */}
-        {badge && (
-          <span className="absolute bottom-2 left-2 bg-[#dc2626] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 uppercase tracking-wider">
-            {badge}
-          </span>
-        )}
-
-        {/* Stock indicator (top-right) */}
-        <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide z-10 ${
-          outOfStock
-        }`}>
-          {outOfStock ? 'Out of stock' : stockLow ? `${stock} left` : 'In stock'}
-        </span>
       </div>
 
-      {/* Content area — compact, fixed height sections for alignment */}
-      <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1 min-h-[164px]">
-        {/* Title first (most important after image) */}
-        <h3 className="text-sm font-semibold leading-tight line-clamp-2 text-[#1c1917] h-[2.5em]">
-          {name}
-        </h3>
-
-        {/* Price row */}
-        <div className="flex items-center gap-1.5 flex-wrap h-5">
-          <PriceDisplay
-            value={price}
-            original={onSale ? originalPrice : undefined}
-            savings={onSale ? savings : undefined}
-          />
+      {/* Content - price-first */}
+      <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1">
+        {/* Price block */}
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-extrabold text-[#1c1917]">৳{taka}</span>
+          <span className="text-sm font-extrabold text-[#1c1917]">{paisa}</span>
         </div>
 
-        {/* Unit price */}
-        <p className="text-[11px] text-gray-500 h-4">
+        {onSale && (
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="line-through text-[#a8a29e]">{formatBdt(originalPrice)}</span>
+            <span className="bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
+          </div>
+        )}
+
+        <p className="text-[11px] text-[#a8a29e]">
           {formatUnitPrice(price, unit)}
         </p>
 
-        {/* CTA */}
-        <div className="mt-auto pt-1 h-[52px] flex items-end">
+        <h3 className="text-sm font-semibold leading-tight line-clamp-2 text-[#1c1917] min-h-[2.5em]">
+          {name}
+        </h3>
+
+        <div className="mt-auto pt-2">
           {qtyInCart > 0 ? (
             <div className="flex items-center justify-between gap-1 w-full">
               <button

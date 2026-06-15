@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CategoryDropdown } from './CategoryDropdown';
 import type { Category } from '../lib/types';
 
 interface CategoryPillProps {
@@ -6,9 +7,10 @@ interface CategoryPillProps {
   label: string;
   emoji: string;
   isActive: boolean;
+  isThematic?: boolean;
 }
 
-function CategoryPill({ slug, label, emoji, isActive }: CategoryPillProps) {
+function CategoryPill({ slug, label, emoji, isActive, isThematic }: CategoryPillProps) {
   const href =
     slug === 'all'
       ? '/category'
@@ -16,7 +18,9 @@ function CategoryPill({ slug, label, emoji, isActive }: CategoryPillProps) {
       ? `/category?theme=${slug}`
       : `/category/${slug}`;
   const activeClass = 'bg-[#1c1917] text-[#ffe302] font-bold shadow-sm';
-  const inactiveClass = 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]';
+  const inactiveClass = isThematic
+    ? 'bg-[#1c1917]/5 text-[#1c1917] hover:bg-[#1c1917]/10'
+    : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]';
 
   return (
     <Link
@@ -31,6 +35,12 @@ function CategoryPill({ slug, label, emoji, isActive }: CategoryPillProps) {
   );
 }
 
+const thematicPills = [
+  { slug: 'deals', label: 'Deals', emoji: '🔥' },
+  { slug: 'new', label: 'New', emoji: '✨' },
+  { slug: 'bestsellers', label: 'Best Sellers', emoji: '⭐' },
+];
+
 interface CategoryGridProps {
   categories: { id: string; slug: string; name: string; emoji: string }[];
   active?: string;
@@ -38,15 +48,32 @@ interface CategoryGridProps {
   sticky?: boolean;
   /** Optional sub-categories to show. If omitted, shows all categories. */
   subCategories?: string[];
+  /** Show departments dropdown + thematic pills (used on homepage/global nav). */
+  showThematic?: boolean;
 }
 
-export function CategoryGrid({ categories, active, sticky = false, subCategories }: CategoryGridProps) {
+export function CategoryGrid({ categories, active, sticky = false, subCategories, showThematic = false }: CategoryGridProps) {
   const displayCats = subCategories && subCategories.length > 0
     ? categories.filter((c) => subCategories.includes(c.slug))
     : categories;
 
   const renderContent = () => (
     <div className="flex gap-2 overflow-x-auto lg:flex-wrap lg:overflow-x-visible scrollbar-hide scroll-edge-mask lg:mask-none py-2">
+      {showThematic && (
+        <>
+          <CategoryDropdown categories={categories} />
+          {thematicPills.map((pill) => (
+            <CategoryPill
+              key={`theme-${pill.slug}`}
+              slug={pill.slug}
+              label={pill.label}
+              emoji={pill.emoji}
+              isActive={active === pill.slug}
+              isThematic
+            />
+          ))}
+        </>
+      )}
       {!subCategories && (
         <CategoryPill slug="all" label="All" emoji="📦" isActive={!active || active === 'all'} />
       )}
@@ -65,7 +92,7 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
 
   if (sticky) {
     return (
-      <div className="sticky top-[68px] z-40 -mx-4 sm:-mx-6 lg:-mx-8 xl:-mx-10 px-4 sm:px-6 lg:px-8 xl:px-10 py-2 bg-white/95 backdrop-blur-sm border-b border-[#e7e5e4]">
+      <div className="sticky top-[108px] z-40 -mx-4 sm:-mx-6 lg:-mx-8 xl:-mx-10 px-4 sm:px-6 lg:px-8 xl:px-10 py-2 bg-white/95 backdrop-blur-sm border-b border-[#e7e5e4]">
         {renderContent()}
       </div>
     );
@@ -73,7 +100,10 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
 
   return (
     <section className="mb-6">
-      <h2 className="text-lg font-bold mb-3">Categories</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold">Categories</h2>
+        <span className="text-xs font-semibold text-[#78716c]">Shop by department</span>
+      </div>
       {renderContent()}
     </section>
   );

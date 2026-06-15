@@ -169,7 +169,7 @@ function CheckoutContent() {
               <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
                 <p className="text-xs text-[#a8a29e] uppercase tracking-widest mb-1">Store</p>
                 <p className="font-bold text-[15px] mb-0.5">Lucky Store — Emdad Park</p>
-                <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chattogram 4203</p>
+                <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chittagong 4203</p>
               </div>
 
               <Input
