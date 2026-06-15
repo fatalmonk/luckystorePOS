@@ -1,7 +1,6 @@
 'use client'; // filter sidebar with URL searchParams, router, and accordion state
 
 import { useState, useEffect, useRef } from 'react';
-import { CATEGORY_LABELS } from '../lib/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 interface FilterSidebarProps {
@@ -214,7 +213,7 @@ export function FilterSidebar({
             {categories.map((cat) => (
               <FilterOption
                 key={cat.id}
-                label={CATEGORY_LABELS[cat.slug as keyof typeof CATEGORY_LABELS] || cat.name}
+                label={cat.name}
                 checked={activeFilters.cat === cat.slug}
                 onChange={() => handleCategoryChange(cat.slug)}
               />
@@ -279,7 +278,7 @@ export function FilterSidebar({
             {categories.map((cat) => (
               <FilterOption
                 key={cat.id}
-                label={CATEGORY_LABELS[cat.slug as keyof typeof CATEGORY_LABELS] || cat.name}
+                label={cat.name}
                 checked={activeFilters.cat === cat.slug}
                 onChange={() => handleCategoryChange(cat.slug)}
               />

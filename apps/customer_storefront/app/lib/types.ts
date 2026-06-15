@@ -13,32 +13,7 @@ export interface Product {
   image_url?: string;
 }
 
-export type Category =
-  | 'dairy'
-  | 'grocery'
-  | 'beverages'
-  | 'snacks'
-  | 'household'
-  | 'produce'
-  | 'bakery'
-  | 'frozen'
-  | 'chips'
-  | 'biscuits-cookies'
-  | 'chocolates-candies'
-  | 'ice-cream'
-  | 'tea-coffee'
-  | 'cereals'
-  | 'oil'
-  | 'rice-grain'
-  | 'condiments'
-  | 'spices'
-  | 'eggs'
-  | 'personal-care'
-  | 'cleaning-supply'
-  | 'air-freshener'
-  | 'baby-care'
-  | 'electronics'
-  | 'baking-needs';
+export type Category = string;
 
 export interface CategoryGroup {
   slug: string;
@@ -131,58 +106,4 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled';
 
-export const CATEGORY_LABELS: Record<Category, string> = {
-  dairy: 'Dairy',
-  grocery: 'Grocery',
-  beverages: 'Beverages',
-  snacks: 'Snacks',
-  household: 'Household',
-  produce: 'Fresh',
-  bakery: 'Bakery',
-  frozen: 'Frozen',
-  chips: 'Chips',
-  'biscuits-cookies': 'Biscuits & Cookies',
-  'chocolates-candies': 'Chocolates & Candies',
-  'ice-cream': 'Ice Cream',
-  'tea-coffee': 'Tea & Coffee',
-  cereals: 'Cereals',
-  oil: 'Oil',
-  'rice-grain': 'Rice & Grain',
-  condiments: 'Condiments',
-  spices: 'Spices',
-  eggs: 'Eggs',
-  'personal-care': 'Personal Care',
-  'cleaning-supply': 'Cleaning Supply',
-  'air-freshener': 'Air Freshener',
-  'baby-care': 'Baby Care',
-  electronics: 'Electronics',
-  'baking-needs': 'Baking Needs',
-};
 
-export const CATEGORY_EMOJIS: Record<Category, string> = {
-  dairy: '🥛',
-  grocery: '🍚',
-  beverages: '🧃',
-  snacks: '🍪',
-  household: '🧼',
-  produce: '🥬',
-  bakery: '🍞',
-  frozen: '🧊',
-  chips: '🥔',
-  'biscuits-cookies': '🍘',
-  'chocolates-candies': '🍫',
-  'ice-cream': '🍦',
-  'tea-coffee': '☕',
-  cereals: '🥣',
-  oil: '🫒',
-  'rice-grain': '🌾',
-  condiments: '🥫',
-  spices: '🌶️',
-  eggs: '🥚',
-  'personal-care': '🧴',
-  'cleaning-supply': '🧽',
-  'air-freshener': '🌸',
-  'baby-care': '🍼',
-  electronics: '🔌',
-  'baking-needs': '🧁',
-};

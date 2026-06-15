@@ -38,16 +38,28 @@ function CheckoutContent() {
       showToast('Your cart is empty');
       return;
     }
+    if (step === 3) {
+      if (!formData.name || !formData.phone || !formData.address) {
+        showToast('Please fill all required fields');
+        return;
+      }
+      const cleanPhone = formData.phone.replace(/\s+/g, '');
+      if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
+        showToast('Enter valid BD phone (01XXXXXXXXX or +8801XXXXXXXXX)');
+        return;
+      }
+    }
     setCurrentStep(step);
   };
 
   const placeOrder = async () => {
+    const cleanPhone = formData.phone.replace(/\s+/g, '');
     if (!formData.name || !formData.phone || !formData.address) {
       showToast('Please fill all required fields');
       return;
     }
-    if (!formData.phone.match(/^(?:\+880|0)1\d{9}$/)) {
-      showToast('Enter valid phone (01XXXXXXXXX or +8801XXXXXXXXX)');
+    if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
+      showToast('Enter valid BD phone (01XXXXXXXXX or +8801XXXXXXXXX)');
       return;
     }
 
@@ -60,7 +72,7 @@ function CheckoutContent() {
         body: JSON.stringify({
           orderNumber: '',
           customerName: formData.name,
-          customerPhone: formData.phone,
+          customerPhone: cleanPhone,
           customerAddress: formData.address,
           notes: formData.notes || undefined,
           items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty, unit: c.unit })),
@@ -147,7 +159,7 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              <Button onClick={() => goToStep(2)} fullWidth>Continue →</Button>
+              <Button onClick={() => goToStep(2)} fullWidth data-testid="checkout-continue-btn">Continue →</Button>
             </div>
           )}
 
@@ -187,7 +199,7 @@ function CheckoutContent() {
 
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => goToStep(1)} className="flex-1">← Back</Button>
-                <Button onClick={() => goToStep(3)} className="flex-1">Place Order</Button>
+                <Button onClick={() => goToStep(3)} className="flex-1" data-testid="checkout-place-order-btn">Place Order</Button>
               </div>
             </div>
           )}

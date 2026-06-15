@@ -11,9 +11,9 @@ export function CategoryShellSkeleton() {
           <PromoGridSkeleton />
         </div>
 
-        <div className="flex gap-3 overflow-x-auto py-4 px-3">
+        <div className="flex gap-2 overflow-x-auto py-2 px-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="w-[72px] h-[72px] rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
+            <div key={i} className="h-[44px] w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
           ))}
         </div>
 

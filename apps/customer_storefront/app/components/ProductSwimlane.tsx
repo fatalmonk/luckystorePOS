@@ -59,6 +59,7 @@ export function ProductSwimlane({
                 badge={product.badge}
                 unit={product.unit}
                 stock={product.stock}
+                category={product.category}
                 image_url={product.image_url}
                 qtyInCart={getQtyInCart(product.id)}
                 priority={index === 0}

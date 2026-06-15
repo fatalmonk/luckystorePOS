@@ -21,7 +21,6 @@ export function HomeCarouselClient({ title, products }: HomeCarouselClientProps)
       <section className="mb-8">
         <h2 className="text-lg font-bold mb-3">{title}</h2>
         <ProductCarousel
-          title={title}
           products={products}
           cart={cart}
           onAdd={handleAddToCart}

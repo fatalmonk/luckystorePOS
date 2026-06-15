@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { NativeAdBanner } from './NativeAdBanner';
-import { CATEGORY_LABELS, getCategoryGroup } from '../lib/types';
+import { getCategoryGroup } from '../lib/types';
 import type { Product, Category } from '../lib/types';
 
 interface CategorySwimlanesProps {
@@ -12,6 +12,7 @@ interface CategorySwimlanesProps {
   currentCat: Category | 'all';
   group?: ReturnType<typeof getCategoryGroup>;
   products: Product[];
+  categories: { id: string; slug: string; name: string; emoji: string }[];
   theme: string;
   sort: string;
 }
@@ -23,6 +24,7 @@ export function CategorySwimlanes({
   products,
   theme,
   sort,
+  categories,
 }: CategorySwimlanesProps) {
   const searchParams = useSearchParams();
 
@@ -66,13 +68,16 @@ export function CategorySwimlanes({
   const subCategorySwimlanes = useMemo(() => {
     if (!group) return [];
     return group.subCategories
-      .map((subSlug) => ({
-        slug: subSlug,
-        label: CATEGORY_LABELS[subSlug] || subSlug,
-        products: filtered.filter((p) => p.category === subSlug).slice(0, 8),
-      }))
+      .map((subSlug) => {
+        const cat = categories.find((c) => c.slug === subSlug);
+        return {
+          slug: subSlug,
+          label: cat?.name || subSlug,
+          products: filtered.filter((p) => p.category === subSlug).slice(0, 8),
+        };
+      })
       .filter((s) => s.products.length > 0);
-  }, [filtered, group]);
+  }, [filtered, group, categories]);
 
   return (
     <>

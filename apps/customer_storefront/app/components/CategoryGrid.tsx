@@ -1,7 +1,5 @@
 import Link from 'next/link';
-import { CATEGORY_LABELS } from '../lib/types';
 import type { Category } from '../lib/types';
-import { CategoryDropdown } from './CategoryDropdown';
 
 interface CategoryPillProps {
   slug: string;
@@ -38,36 +36,26 @@ interface CategoryGridProps {
   active?: string;
   /** When true, renders as a compact sticky bar (used on category/browse pages) */
   sticky?: boolean;
+  /** Optional sub-categories to show. If omitted, shows all categories. */
+  subCategories?: string[];
 }
 
-const thematicPills = [
-  { id: 'deals', slug: 'deals', label: 'Rollbacks & Deals', emoji: '🔥' },
-  { id: 'new', slug: 'new', label: 'New Arrivals', emoji: '✨' },
-  { id: 'bestsellers', slug: 'bestsellers', label: 'Best Sellers', emoji: '⭐' },
-];
+export function CategoryGrid({ categories, active, sticky = false, subCategories }: CategoryGridProps) {
+  const displayCats = subCategories && subCategories.length > 0
+    ? categories.filter((c) => subCategories.includes(c.slug))
+    : categories;
 
-export function CategoryGrid({ categories, active, sticky = false }: CategoryGridProps) {
   const renderContent = () => (
-    <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask py-2">
-      <CategoryDropdown categories={categories} />
+    <div className="flex gap-2 overflow-x-auto lg:flex-wrap lg:overflow-x-visible scrollbar-hide scroll-edge-mask lg:mask-none py-2">
+      {!subCategories && (
+        <CategoryPill slug="all" label="All" emoji="📦" isActive={!active || active === 'all'} />
+      )}
 
-      {thematicPills.map((pill) => (
-        <CategoryPill
-          key={`theme-${pill.slug}`}
-          slug={pill.slug}
-          label={pill.label}
-          emoji={pill.emoji}
-          isActive={active === pill.slug}
-        />
-      ))}
-
-      <CategoryPill slug="all" label="All" emoji="📦" isActive={!active || active === 'all'} />
-
-      {categories.map((cat) => (
+      {displayCats.map((cat) => (
         <CategoryPill
           key={`cat-${cat.slug}`}
           slug={cat.slug}
-          label={CATEGORY_LABELS[cat.slug as keyof typeof CATEGORY_LABELS] || cat.name}
+          label={cat.name}
           emoji={cat.emoji}
           isActive={active === cat.slug}
         />

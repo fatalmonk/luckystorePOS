@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { CATEGORY_LABELS } from '../lib/types';
+
 
 interface CategoryDropdownProps {
   categories: { id: string; slug: string; name: string; emoji: string }[];
@@ -48,7 +48,7 @@ export function CategoryDropdown({ categories }: CategoryDropdownProps) {
             >
               <span className="flex items-center gap-2">
                 <span aria-hidden="true">{cat.emoji}</span>
-                <span>{CATEGORY_LABELS[cat.slug as keyof typeof CATEGORY_LABELS] || cat.name}</span>
+                <span>{cat.name}</span>
               </span>
             </Link>
           ))}

@@ -1,8 +1,7 @@
 import { Header } from '../components/Header';
 import { BottomNav } from '../components/BottomNav';
 import { HeroBanner } from '../components/HeroBanner';
-import { PromoGrid } from '../components/PromoGrid';
-import { SubCategoryPills } from '../components/SubCategoryPills';
+import { CategoryGrid } from '../components/CategoryGrid';
 import { SponsoredBanner } from '../components/SponsoredBanner';
 import { CategoryFooter } from '../components/CategoryFooter';
 import { CategorySwimlanes } from '../components/CategorySwimlanes';
@@ -41,15 +40,10 @@ export function CategoryShell({
             bgGradient="from-[#0071DC] to-[#005bb5]"
           />
 
-          <div className="mt-2">
-            <PromoGrid />
-          </div>
-
           <div className="mt-4">
-            <SubCategoryPills
+            <CategoryGrid
               categories={categories}
               active={currentCat !== 'all' ? currentCat : undefined}
-              subCategories={group ? group.subCategories : undefined}
             />
           </div>
 
@@ -65,6 +59,7 @@ export function CategoryShell({
             currentCat={currentCat}
             group={group}
             products={products}
+            categories={categories}
             theme={theme}
             sort={sort}
           />

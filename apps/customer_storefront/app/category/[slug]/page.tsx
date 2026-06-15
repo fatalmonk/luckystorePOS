@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { CategoryShell } from '../CategoryShell';
 import { CategoryShellSkeleton } from '../CategoryShellSkeleton';
 import { fetchProducts, fetchCategories } from '../../lib/products';
-import { getCategoryGroup, CATEGORY_LABELS, CATEGORY_GROUPS } from '../../lib/types';
+import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
 import type { Category } from '../../lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -24,15 +24,15 @@ export default async function CategorySlugPage({
 }) {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
+  const categories = await fetchCategories();
   const categorySlug = resolvedParams.slug;
-  const currentCat = ((CATEGORY_LABELS[categorySlug as Category] ? categorySlug : 'all') as Category | 'all') || 'all';
   const group = getCategoryGroup(categorySlug);
+  const isValidCat = categories.some((c) => c.slug === categorySlug);
+  const currentCat = isValidCat || group ? categorySlug : 'all';
 
   const searchTerm = String(resolvedSearch.q || '');
   const theme = String(resolvedSearch.theme || '');
   const sort = String(resolvedSearch.sort || 'best');
-
-  const categories = await fetchCategories();
 
   let products: Awaited<ReturnType<typeof fetchProducts>> = [];
   try {

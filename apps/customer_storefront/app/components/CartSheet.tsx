@@ -131,6 +131,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
             <Button
               onClick={() => { onClose(); router.push('/checkout'); }}
               className="flex-0 w-[140px]"
+              data-testid="sheet-checkout-btn"
             >
               Checkout →
             </Button>

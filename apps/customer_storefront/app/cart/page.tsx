@@ -108,7 +108,11 @@ function CartContent() {
             </p>
             <p className="text-xl font-extrabold">{formatBdt(total)}</p>
           </div>
-          <Button onClick={() => router.push('/checkout')} className="flex-0 w-[140px]">
+          <Button
+            onClick={() => router.push('/checkout')}
+            className="flex-0 w-[140px]"
+            data-testid="cart-checkout-btn"
+          >
             Checkout →
           </Button>
         </div>

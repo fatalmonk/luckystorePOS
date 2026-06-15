@@ -4,7 +4,6 @@ import { ProductCard } from './ProductCard';
 import type { Product } from '../lib/types';
 
 interface ProductCarouselProps {
-  title: string;
   products: Product[];
   cart: { id: string; qty: number }[];
   onAdd: (product: Product, buttonEl?: HTMLButtonElement | null) => void;
@@ -13,7 +12,6 @@ interface ProductCarouselProps {
 }
 
 export function ProductCarousel({
-  title,
   products,
   cart,
   onAdd,
@@ -26,9 +24,7 @@ export function ProductCarousel({
   };
 
   return (
-    <section className="mb-8">
-      <h2 className="text-lg font-bold mb-3">{title}</h2>
-      <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide scroll-edge-mask">
+    <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide scroll-edge-mask">
         {products.map((product) => {
           let addBtnRef: HTMLButtonElement | null = null;
           return (
@@ -42,6 +38,7 @@ export function ProductCarousel({
                 badge={product.badge}
                 unit={product.unit}
                 stock={product.stock}
+                category={product.category}
                 image_url={product.image_url}
                 qtyInCart={getQtyInCart(product.id)}
                 onAdd={() => onAdd(product, addBtnRef)}
@@ -53,6 +50,5 @@ export function ProductCarousel({
           );
         })}
       </div>
-    </section>
   );
 }
