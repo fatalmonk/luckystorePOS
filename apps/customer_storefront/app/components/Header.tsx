@@ -45,7 +45,7 @@ export function Header() {
       </div>
 
       {/* Sub-nav strip: yellow accent for thematic pills only */}
-      <nav className="bg-[#ffe302] flex flex-wrap md:flex-nowrap items-center px-3 sm:px-4 py-2 md:py-0 md:h-[44px] gap-2 z-40 relative">
+      <nav className="bg-[#ffe302] flex flex-nowrap items-center overflow-x-auto px-3 sm:px-4 py-2 md:py-0 h-[44px] gap-2 z-40 relative scrollbar-hide">
         <Link
           href="/category?theme=deals"
           className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[#1c1917] text-[#ffe302] text-xs font-bold hover:bg-[#292524] transition-colors"
@@ -64,7 +64,15 @@ export function Header() {
         >
           New
         </Link>
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-16 rounded-full bg-white/50 animate-pulse" />
+              <div className="h-6 w-20 rounded-full bg-white/50 animate-pulse" />
+              <div className="h-6 w-14 rounded-full bg-white/50 animate-pulse" />
+            </div>
+          }
+        >
           <HeaderFilters />
         </Suspense>
         <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 ml-auto whitespace-nowrap">
