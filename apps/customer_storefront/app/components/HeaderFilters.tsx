@@ -30,15 +30,24 @@ export function HeaderFilters() {
   const [openDropdown, setOpenDropdown] = useState<'price' | 'availability' | 'sort' | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
+  // Close dropdown on click outside + Escape key
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpenDropdown(null);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpenDropdown(null);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const isFilterPage = pathname.startsWith('/category') || pathname === '/search';
@@ -52,6 +61,8 @@ export function HeaderFilters() {
   const activeAvailabilities = activeAvailabilityParam ? activeAvailabilityParam.split(',') : [];
 
   const activeSort = searchParams.get('sort') || 'best';
+
+  const hasAnyFilter = activePrices.length > 0 || activeAvailabilities.length > 0 || activeSort !== 'best';
 
   const handlePriceToggle = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -98,6 +109,15 @@ export function HeaderFilters() {
     router.push(`${targetPath}?${params.toString()}`, { scroll: false });
   };
 
+  const clearAllFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('price');
+    params.delete('availability');
+    params.delete('sort');
+    router.push(`${targetPath}?${params.toString()}`, { scroll: false });
+    setOpenDropdown(null);
+  };
+
   return (
     <div ref={containerRef} className="flex items-center gap-2 z-30">
       {/* Divider */}
@@ -107,6 +127,10 @@ export function HeaderFilters() {
       <div className="relative">
         <button
           type="button"
+          id="price-toggle"
+          aria-expanded={openDropdown === 'price'}
+          aria-haspopup="menu"
+          aria-controls="price-menu"
           onClick={() => setOpenDropdown(openDropdown === 'price' ? null : 'price')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all min-h-[32px] ${
             activePrices.length > 0
@@ -120,16 +144,22 @@ export function HeaderFilters() {
               {activePrices.length}
             </span>
           )}
-          <span className="text-[10px]">▼</span>
+          <span className="text-[10px]" aria-hidden="true">▼</span>
         </button>
 
         {openDropdown === 'price' && (
-          <div className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div
+            id="price-menu"
+            role="menu"
+            aria-labelledby="price-toggle"
+            className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+          >
             <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#f5f5f4]">
               <span className="text-xs font-extrabold text-[#78716c]">Price Range</span>
               {activePrices.length > 0 && (
                 <button
                   type="button"
+                  role="menuitem"
                   onClick={() => clearFilter('price')}
                   className="text-[10px] font-bold text-red-500 hover:underline"
                 >
@@ -141,6 +171,7 @@ export function HeaderFilters() {
               {priceRanges.map((opt) => (
                 <label
                   key={opt.value}
+                  role="menuitem"
                   className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-[#f5f5f4] transition-colors"
                 >
                   <input
@@ -161,6 +192,10 @@ export function HeaderFilters() {
       <div className="relative">
         <button
           type="button"
+          id="availability-toggle"
+          aria-expanded={openDropdown === 'availability'}
+          aria-haspopup="menu"
+          aria-controls="availability-menu"
           onClick={() => setOpenDropdown(openDropdown === 'availability' ? null : 'availability')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all min-h-[32px] ${
             activeAvailabilities.length > 0
@@ -174,16 +209,22 @@ export function HeaderFilters() {
               {activeAvailabilities.length}
             </span>
           )}
-          <span className="text-[10px]">▼</span>
+          <span className="text-[10px]" aria-hidden="true">▼</span>
         </button>
 
         {openDropdown === 'availability' && (
-          <div className="absolute left-0 mt-1.5 w-52 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div
+            id="availability-menu"
+            role="menu"
+            aria-labelledby="availability-toggle"
+            className="absolute left-0 mt-1.5 w-52 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+          >
             <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#f5f5f4]">
               <span className="text-xs font-extrabold text-[#78716c]">Stock Status</span>
               {activeAvailabilities.length > 0 && (
                 <button
                   type="button"
+                  role="menuitem"
                   onClick={() => clearFilter('availability')}
                   className="text-[10px] font-bold text-red-500 hover:underline"
                 >
@@ -195,6 +236,7 @@ export function HeaderFilters() {
               {availabilityOptions.map((opt) => (
                 <label
                   key={opt.value}
+                  role="menuitem"
                   className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-[#f5f5f4] transition-colors"
                 >
                   <input
@@ -215,6 +257,10 @@ export function HeaderFilters() {
       <div className="relative">
         <button
           type="button"
+          id="sort-toggle"
+          aria-expanded={openDropdown === 'sort'}
+          aria-haspopup="menu"
+          aria-controls="sort-menu"
           onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all min-h-[32px] ${
             activeSort !== 'best'
@@ -228,16 +274,22 @@ export function HeaderFilters() {
               {sortOptions.find((o) => o.value === activeSort)?.label.split(':')[0] || 'Active'}
             </span>
           )}
-          <span className="text-[10px]">▼</span>
+          <span className="text-[10px]" aria-hidden="true">▼</span>
         </button>
 
         {openDropdown === 'sort' && (
-          <div className="absolute right-0 sm:left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div
+            id="sort-menu"
+            role="menu"
+            aria-labelledby="sort-toggle"
+            className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+          >
             <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#f5f5f4]">
               <span className="text-xs font-extrabold text-[#78716c]">Sort Options</span>
               {activeSort !== 'best' && (
                 <button
                   type="button"
+                  role="menuitem"
                   onClick={() => handleSortSelect('best')}
                   className="text-[10px] font-bold text-red-500 hover:underline"
                 >
@@ -250,6 +302,7 @@ export function HeaderFilters() {
                 <button
                   key={opt.value}
                   type="button"
+                  role="menuitem"
                   onClick={() => handleSortSelect(opt.value)}
                   className={`w-full text-left flex items-center justify-between py-1.5 px-2 rounded-lg transition-colors text-xs font-semibold ${
                     activeSort === opt.value
@@ -265,6 +318,17 @@ export function HeaderFilters() {
           </div>
         )}
       </div>
+
+      {/* Global Clear All */}
+      {hasAnyFilter && (
+        <button
+          type="button"
+          onClick={clearAllFilters}
+          className="flex-shrink-0 px-2 py-1 rounded-full bg-red-500/10 text-red-600 text-[10px] font-bold hover:bg-red-500/20 transition-colors min-h-[28px]"
+        >
+          Clear all
+        </button>
+      )}
     </div>
   );
 }
