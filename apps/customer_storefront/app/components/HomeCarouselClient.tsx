@@ -23,15 +23,17 @@ export function HomeCarouselClient({ title, products }: HomeCarouselClientProps)
 
   return (
     <>
-      <section className="mb-8">
-        <h2 className="text-lg font-bold mb-3">{title}</h2>
-        <ProductCarousel
-          products={products}
-          cart={cart}
-          onAdd={onAdd}
-          onUpdateQty={handleUpdateQty}
-          onClick={handleClick}
-        />
+      <section>
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e7e5e4]/60 shadow-sm">
+          <h2 className="text-lg font-bold mb-4">{title}</h2>
+          <ProductCarousel
+            products={products}
+            cart={cart}
+            onAdd={onAdd}
+            onUpdateQty={handleUpdateQty}
+            onClick={handleClick}
+          />
+        </div>
       </section>
       <CartSheet open={cartSheetOpen} onClose={() => setCartSheetOpen(false)} />
       <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />

@@ -1,11 +1,12 @@
-'use client'; // filter/sort state from URL + renders ProductSwimlaneClient islands
+'use client';
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
+import { ProductGridClient } from './ProductGridClient';
 import { NativeAdBanner } from './NativeAdBanner';
 import { getCategoryGroup } from '../lib/types';
-import type { Product, Category } from '../lib/types';
+import type { Product } from '../lib/types';
 
 interface CategorySwimlanesProps {
   categorySlug: string;
@@ -71,87 +72,96 @@ export function CategorySwimlanes({
     return list;
   }, [products, theme, availability, priceRanges, sort]);
 
-  const { deals, bestSellers, under300, under500 } = useMemo(() => {
+  const { deals, bestSellers } = useMemo(() => {
     const deals = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
     const bestSellers = filtered.filter((p) => p.stock > 10).slice(0, 8);
-    const under300 = filtered.filter((p) => p.price <= 300).slice(0, 8);
-    const under500 = filtered.filter((p) => p.price <= 500).slice(0, 8);
-    return { deals, bestSellers, under300, under500 };
+    return { deals, bestSellers };
   }, [filtered]);
 
-  const subCategorySwimlanes = useMemo(() => {
+  const subCategoryGrids = useMemo(() => {
     if (!group) return [];
     return group.subCategories
       .map((subSlug) => {
         const cat = categories.find((c) => c.slug === subSlug);
+        const catProducts = filtered.filter((p) => p.category === subSlug);
         return {
           slug: subSlug,
           label: cat?.name || subSlug,
-          products: filtered.filter((p) => p.category === subSlug).slice(0, 8),
+          emoji: cat?.emoji || '📦',
+          products: catProducts,
+          count: catProducts.length,
         };
       })
       .filter((s) => s.products.length > 0);
   }, [filtered, group, categories]);
 
+  if (filtered.length === 0) {
+    return (
+      <div className="text-center py-16 px-3">
+        <p className="text-gray-500">No products found</p>
+      </div>
+    );
+  }
+
+  if (group) {
+    return (
+      <>
+        {deals.length > 0 && (
+          <ProductSwimlaneClient
+            title="🔥 Rollbacks &amp; Deals"
+            products={deals}
+          />
+        )}
+        {subCategoryGrids.map((grid) => (
+          <section key={grid.slug} className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{grid.emoji}</span>
+                <h2 className="text-lg font-bold tracking-tight">{grid.label}</h2>
+              </div>
+              <a
+                href={`/category/${grid.slug}`}
+                className="text-sm font-semibold text-[#78716c] hover:text-[#1c1917] transition-colors"
+              >
+                See all {grid.count}
+              </a>
+            </div>
+            <ProductGridClient products={grid.products} />
+          </section>
+        ))}
+      </>
+    );
+  }
+
   return (
     <>
-      {filtered.length === 0 ? (
-        <div className="text-center py-16 px-3">
-          <p className="text-gray-500">No products found</p>
-        </div>
-      ) : group ? (
-        <>
-          {subCategorySwimlanes.map((swimlane) => (
-            <ProductSwimlaneClient
-              key={swimlane.slug}
-              title={swimlane.label}
-              products={swimlane.products}
-              action={{ label: 'See all', href: `/category/${swimlane.slug}` }}
-            />
-          ))}
-          {deals.length > 0 && (
-            <ProductSwimlaneClient
-              title="Rollbacks & Deals"
-              products={deals}
-            />
-          )}
-        </>
-      ) : (
-        <>
-          {deals.length > 0 && (
-            <ProductSwimlaneClient
-              title="Rollbacks & Deals"
-              products={deals}
-              action={{ label: 'See all', href: `/category/${categorySlug}?theme=deals` }}
-            />
-          )}
-          {bestSellers.length > 0 && (
-            <ProductSwimlaneClient
-              title="Best Sellers"
-              products={bestSellers}
-              action={{ label: 'See all', href: `/category/${categorySlug}?theme=bestsellers` }}
-            />
-          )}
-          <NativeAdBanner
-            title="Your fireside fave is back"
-            subtitle="More s'mores please!"
-            ctaText="Shop now"
-            bgColor="#1c1917"
-          />
-          {under300.length > 0 && (
-            <ProductSwimlaneClient
-              title="Best sellers under ৳300"
-              products={under300}
-            />
-          )}
-          {under500.length > 0 && (
-            <ProductSwimlaneClient
-              title="Under ৳500"
-              products={under500}
-            />
-          )}
-        </>
+      {deals.length > 0 && (
+        <ProductSwimlaneClient
+          title="🔥 Rollbacks &amp; Deals"
+          products={deals}
+          action={{ label: 'See all', href: `/category/${categorySlug}?theme=deals` }}
+        />
       )}
+      {bestSellers.length > 0 && (
+        <ProductSwimlaneClient
+          title="⭐ Best Sellers"
+          products={bestSellers}
+          action={{ label: 'See all', href: `/category/${categorySlug}?theme=bestsellers` }}
+        />
+      )}
+      <NativeAdBanner
+        title="Your fireside fave is back"
+        subtitle="More s'mores please!"
+        ctaText="Shop now"
+        bgColor="#1c1917"
+      />
+      <section className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold tracking-tight">All Products</h2>
+          <span className="text-sm text-[#78716c]">{filtered.length} items</span>
+        </div>
+        <ProductGridClient products={filtered} />
+      </section>
     </>
   );
 }
