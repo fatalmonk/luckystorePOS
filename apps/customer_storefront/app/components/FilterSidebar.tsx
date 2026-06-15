@@ -126,6 +126,31 @@ export function FilterSidebar({
     (v) => v && (Array.isArray(v) ? v.length > 0 : v !== '')
   );
 
+  const currentCatSlug = pathname.startsWith('/category/') ? pathname.split('/')[2] : undefined;
+
+  const CategoryCarouselChip = ({
+    cat,
+  }: {
+    cat: { id: string; slug: string; name: string; emoji: string };
+  }) => {
+    const isActive = currentCatSlug === cat.slug || activeFilters.cat === cat.slug;
+    return (
+      <button
+        key={cat.id}
+        onClick={() => handleCategoryChange(cat.slug)}
+        className={`flex flex-col items-center justify-center flex-shrink-0 w-[72px] min-h-[68px] rounded-xl text-[11px] font-semibold transition-all press-feedback ${
+          isActive
+            ? 'bg-[#1c1917] text-[#ffe302] shadow-sm'
+            : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]'
+        }`}
+        aria-pressed={isActive}
+      >
+        <span className="text-lg mb-0.5" aria-hidden="true">{cat.emoji}</span>
+        <span className="leading-tight text-center px-1 line-clamp-2">{cat.name}</span>
+      </button>
+    );
+  };
+
   const AccordionSection = ({
     id,
     title,
@@ -198,41 +223,14 @@ export function FilterSidebar({
     </label>
   );
 
-  const CategoryItem = ({
-    label,
-    emoji,
-    checked,
-    onChange,
-  }: {
-    label: string;
-    emoji?: string;
-    checked: boolean;
-    onChange: () => void;
-  }) => (
-    <button
-      type="button"
-      onClick={onChange}
-      className={`w-full flex items-center gap-2.5 min-h-[40px] py-2 px-2.5 -mx-2.5 rounded-lg text-left text-sm transition-colors ${
-        checked ? 'bg-[#fff8c0] text-[#1c1917] font-bold' : 'text-[#44403c] hover:bg-[#f5f5f4]'
-      }`}
-    >
-      <span className="text-base" aria-hidden="true">{emoji || '📦'}</span>
-      <span>{label}</span>
-    </button>
-  );
-
   const filterContent = (
     <>
       <AccordionSection id="category" title="Category">
-        {categories.map((cat) => (
-          <CategoryItem
-            key={cat.id}
-            label={cat.name}
-            emoji={cat.emoji}
-            checked={activeFilters.cat === cat.slug}
-            onChange={() => handleCategoryChange(cat.slug)}
-          />
-        ))}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask py-1">
+          {categories.map((cat) => (
+            <CategoryCarouselChip key={cat.id} cat={cat} />
+          ))}
+        </div>
       </AccordionSection>
 
       <AccordionSection id="price" title="Price Range">
