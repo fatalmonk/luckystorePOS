@@ -25,5 +25,13 @@
   },
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "overrides": {
+    "serialize-javascript": "^7.0.3",
+    "terser": "^5.14.2",
+    "uuid": "^11.1.1",
+    "postcss": "^8.5.10",
+    "tar-fs": "^3.1.1",
+    "ws": "^8.17.1"
+  }
 }
