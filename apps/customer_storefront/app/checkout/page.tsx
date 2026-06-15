@@ -215,7 +215,10 @@ function CheckoutContent() {
 }
 
 function ConfirmingStep({ placeOrder, isPlacing }: { placeOrder: () => void; isPlacing: boolean }) {
-  useEffect(() => { placeOrder(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => placeOrder(), 300);
+    return () => clearTimeout(timer);
+  }, [placeOrder]);
 
   return (
     <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
