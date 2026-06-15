@@ -20,7 +20,7 @@ test.describe('Wishlist Flow', () => {
     const addToCartButton = page.locator('button:has-text("Add")');
 
     if (await addToCartButton.isVisible().catch(() => false)) {
-      test.skip('Product in stock, skipping wishlist test');
+      test.skip(true, 'Product in stock, skipping wishlist test');
       return;
     }
 
@@ -57,7 +57,7 @@ test.describe('Wishlist Flow', () => {
       await page.locator('button:has-text("On wishlist")').click();
       // Should show already on wishlist toast
     } else {
-      test.skip('Product in stock or not found');
+      test.skip(true, 'Product in stock or not found');
     }
   });
 });

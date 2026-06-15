@@ -103,7 +103,7 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
               </div>
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="line-clamp-1 text-xs font-semibold text-gray-900 truncate">{creator.productName}</span>
-                <span className="text-sm font-bold text-warm-primary">{formatBdt(creator.productPrice)}</span>
+                <span className="text-sm font-bold text-warm-accent">{formatBdt(creator.productPrice)}</span>
               </div>
             </div>
           </Link>

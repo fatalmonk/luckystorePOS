@@ -94,7 +94,7 @@ export function ProductCard({
                 }}
                 className="w-7 h-8 rounded-md border border-[#e7e5e4] bg-[#faf8f5]
                   flex items-center justify-center text-sm font-semibold
-                  hover:border-[#ffe721] hover:text-[#1c1917] transition-colors
+                  hover:border-[#ffe302] hover:text-[#1c1917] transition-colors
                   active:scale-95"
                 aria-label="Decrease quantity"
               >
@@ -108,7 +108,7 @@ export function ProductCard({
                 }}
                 className="w-7 h-8 rounded-md border border-[#e7e5e4] bg-[#faf8f5]
                   flex items-center justify-center text-sm font-semibold
-                  hover:border-[#ffe721] hover:text-[#1c1917] transition-colors
+                  hover:border-[#ffe302] hover:text-[#1c1917] transition-colors
                   active:scale-95"
                 aria-label="Increase quantity"
               >
@@ -122,7 +122,7 @@ export function ProductCard({
                 onAdd();
               }}
               disabled={stock <= 0}
-              className="w-9 h-9 rounded-lg bg-[#ffe721] text-[#1c1917]\n                flex items-center justify-center text-lg font-medium\n                hover:bg-[#FBEF51] disabled:bg-[#a8a29e]\n                transition-colors active:scale-95"
+              className="w-9 h-9 rounded-lg bg-[#ffe302] text-[#1c1917]\n                flex items-center justify-center text-lg font-medium\n                hover:bg-[#ffec50] disabled:bg-[#a8a29e]\n                transition-colors active:scale-95"
               aria-label={stock > 0 ? 'Add to cart' : 'Out of stock'}
             >
               +

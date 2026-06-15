@@ -41,7 +41,7 @@
 
 **Changes:**
 - 68px height, yellow bg (`#FFF34D`), sticky top
-- Left: Logo + Location pill ("Delivery to Chattogram ▼")
+- Left: Logo + Location pill ("Delivery to Chittagong ▼")
 - Center: Dominant pill-shaped search with blue search button inside
 - Right: Account icon + Cart with dark badge + yellow text
 
@@ -55,7 +55,7 @@
     </Link>
     <button className="hidden md:flex flex-col items-start text-xs text-[#5c5200] hover:bg-yellow-400 px-2 py-1 rounded-lg transition-colors">
       <span className="font-medium">Delivery to</span>
-      <span className="font-bold">Chattogram ▼</span>
+      <span className="font-bold">Chittagong ▼</span>
     </button>
   </div>
 
