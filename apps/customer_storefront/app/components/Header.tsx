@@ -33,6 +33,7 @@ export function Header() {
           <button
             type="button"
             className="flex items-center gap-2 min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-[#f5f5f4] transition-colors"
+            aria-label="Sign In"
           >
             <span aria-hidden="true" className="text-lg">👤</span>
             <span className="hidden lg:block text-sm font-medium">Sign In</span>
