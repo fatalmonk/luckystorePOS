@@ -1,10 +1,10 @@
-import { Header } from './Header';
+import { Header } from './updated/Header';
+import { CategoryGrid } from './updated/CategoryGrid';
+import { HeroBanner } from './updated/HeroBanner';
+import { PromoGrid } from './updated/PromoGrid';
+import { DeliveryProgress } from './DeliveryProgress';
+import { HomeSectionsClient } from './HomeSectionsClient';
 import { BottomNav } from './BottomNav';
-import { HeroBanner } from './HeroBanner';
-import { CategoryGrid } from './CategoryGrid';
-import { PromoGrid } from './PromoGrid';
-import { SocialCarousel } from './SocialCarousel';
-import { HomeCarouselClient } from './HomeCarouselClient';
 import type { Product } from '../lib/types';
 
 interface HomeShellProps {
@@ -15,31 +15,61 @@ interface HomeShellProps {
 export function HomeShell({ products, categories }: HomeShellProps) {
   const popular = products.slice(0, 20);
   const deals = products.filter((p) => (p.originalPrice ?? 0) > p.price).slice(0, 20);
-  const under100 = products.filter((p) => p.price < 100).slice(0, 20);
-  const under300 = products.filter((p) => p.price < 300).slice(0, 20);
   const bestSellers = products.filter((p) => p.stock > 20).slice(0, 20);
-  const newArrivals = [...products].reverse().slice(0, 20);
+
+  const sections = [
+    { title: 'Popular Now', href: '/category?sort=popular', products: popular },
+    ...(deals.length > 0 ? [{ title: '🔥 Hot Deals', href: '/category?theme=deals', products: deals }] : []),
+    ...(bestSellers.length > 0 ? [{ title: '⭐ Best Sellers', href: '/category?theme=bestsellers', products: bestSellers }] : []),
+  ];
 
   return (
     <>
       <Header />
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="p-4 sm:p-6 lg:p-8 xl:px-10 space-y-8">
-          <CategoryGrid categories={categories} showThematic />
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
+        <div className="p-4 sm:p-6 space-y-8">
+          <DeliveryProgress />
+          <CategoryGrid categories={categories} />
           <HeroBanner
             title="Free Delivery on orders ৳500+"
             subtitle="Cash on delivery. No app download needed."
-            badge="Week 1 Launch"
-            bgGradient="from-[#ffe302] to-[#fff8c0]"
+            badge="LIMITED TIME"
+            bgGradient="from-[#ffe302] via-[#ffd524] to-[#f4b61a]"
           />
           <PromoGrid />
-          <HomeCarouselClient title="Popular Now" products={popular} />
-          {deals.length > 0 && <HomeCarouselClient title="Deals & Rollbacks" products={deals} />}
-          {newArrivals.length > 0 && <HomeCarouselClient title="New Arrivals" products={newArrivals} />}
-          {bestSellers.length > 0 && <HomeCarouselClient title="Best Sellers" products={bestSellers} />}
-          {under100.length > 0 && <HomeCarouselClient title="Under ৳100" products={under100} />}
-          {under300.length > 0 && <HomeCarouselClient title="Under ৳300" products={under300} />}
-          <SocialCarousel />
+          <HomeSectionsClient sections={sections} />
+
+          {/* Trust reassurance */}
+          <div className="grid grid-cols-2 gap-3 pt-4">
+            <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
+              <span className="text-2xl" aria-hidden="true">🚚</span>
+              <div>
+                <p className="text-xs font-bold text-[#1c1917]">Free Delivery</p>
+                <p className="text-[10px] text-[#78716c]">On orders ৳500+</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
+              <span className="text-2xl" aria-hidden="true">💳</span>
+              <div>
+                <p className="text-xs font-bold text-[#1c1917]">Cash on Delivery</p>
+                <p className="text-[10px] text-[#78716c]">Pay when you receive</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
+              <span className="text-2xl" aria-hidden="true">↩️</span>
+              <div>
+                <p className="text-xs font-bold text-[#1c1917]">Easy Returns</p>
+                <p className="text-[10px] text-[#78716c]">7-day return policy</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
+              <span className="text-2xl" aria-hidden="true">🔒</span>
+              <div>
+                <p className="text-xs font-bold text-[#1c1917]">100% Secure</p>
+                <p className="text-[10px] text-[#78716c]">Protected payments</p>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
       <BottomNav />
