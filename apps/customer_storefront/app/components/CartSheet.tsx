@@ -101,6 +101,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <button
                       onClick={() => updateQty(item.id, -1)}
                       className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                      aria-label="Decrease quantity"
                     >
                       −
                     </button>
@@ -108,6 +109,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <button
                       onClick={() => updateQty(item.id, 1)}
                       className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                      aria-label="Increase quantity"
                     >
                       +
                     </button>

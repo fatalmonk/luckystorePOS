@@ -219,14 +219,14 @@ export function ProductCard({
       </div>
 
       {/* Image */}
-      <div className="relative w-full h-36 sm:h-40 lg:h-44 bg-white overflow-hidden flex items-center justify-center border-b border-[#f5f5f4] shrink-0">
+      <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-white overflow-hidden flex items-center justify-center border-b border-[#f5f5f4] shrink-0">
         {image_url ? (
           <Image
             src={image_url}
             alt={name}
             fill
             className="object-contain transition-transform duration-300 group-hover:scale-105 p-2"
-            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             loading={priority ? undefined : 'lazy'}
             priority={priority}
             decoding="async"
@@ -239,42 +239,42 @@ export function ProductCard({
       </div>
 
       {/* Content - price-first */}
-      <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1">
+      <div className="p-2 sm:p-2.5 flex flex-col flex-1 gap-0.5">
         {/* Price block */}
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-extrabold text-[#1c1917]">৳{taka}</span>
-          <span className="text-sm font-extrabold text-[#1c1917]">{paisa}</span>
+          <span className="text-xl font-extrabold text-[#1c1917]">৳{taka}</span>
+          <span className="text-xs font-extrabold text-[#1c1917]">{paisa}</span>
         </div>
 
         {onSale && (
-          <div className="flex items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1 text-xs">
             <span className="line-through text-[#a8a29e]">{formatBdt(originalPrice)}</span>
-            <span className="bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
+            <span className="bg-green-100 text-green-800 font-bold px-1 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
           </div>
         )}
 
-        <p className="text-[11px] text-[#a8a29e]">
+        <p className="text-[10px] text-[#a8a29e]">
           {formatUnitPrice(price, unit)}
         </p>
 
-        <h3 className="text-sm font-semibold leading-tight line-clamp-2 text-[#1c1917] min-h-[2.5em]">
+        <h3 className="text-xs font-semibold leading-tight line-clamp-2 text-[#1c1917] min-h-[2.2em]">
           {name}
         </h3>
 
-        <div className="mt-auto pt-2">
+        <div className="mt-auto pt-1">
           {qtyInCart > 0 ? (
             <div className="flex items-center justify-between gap-1 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                 aria-label="Decrease quantity"
               >
                 −
               </button>
-              <span className="font-bold text-sm min-w-[24px] text-center">{qtyInCart}</span>
+              <span className="font-bold text-sm min-w-[20px] text-center">{qtyInCart}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                 aria-label="Increase quantity"
               >
                 +
@@ -289,7 +289,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-11 min-h-[44px] rounded-full border-2 border-warm-accent text-warm-accent text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
+              className="w-full h-9 min-h-[36px] rounded-full border-2 border-warm-accent text-warm-accent text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
             >
               Add
             </button>

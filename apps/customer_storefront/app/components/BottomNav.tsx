@@ -13,7 +13,7 @@ export function BottomNav() {
   return (
     <BottomNavShell>
       <BottomNavCartPill />
-      <nav className="h-[68px] glass border-t flex items-center justify-around flex-shrink-0 z-50" aria-label="Primary navigation">
+      <nav className="h-[64px] glass border-t flex items-center justify-around flex-shrink-0 z-50" aria-label="Primary navigation">
         {navItems.map((item) => (
           <ActiveLink
             key={item.href}
