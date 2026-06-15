@@ -24,7 +24,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
     <>
       <Header />
       <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="p-4 sm:p-6 lg:p-8 xl:px-10 space-y-6">
+        <div className="p-4 sm:p-6 lg:p-8 xl:px-10 space-y-8">
           <CategoryGrid categories={categories} showThematic />
           <HeroBanner
             title="Free Delivery on orders ৳500+"
