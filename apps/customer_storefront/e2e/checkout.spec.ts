@@ -19,7 +19,7 @@ test.describe('Checkout Flow', () => {
     const wishlistButton = page.locator('button:has-text("Notify when available")');
 
     if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip('Product out of stock, skipping checkout test');
+      test.skip(true, 'Product out of stock, skipping checkout test');
       return;
     }
 
@@ -61,7 +61,7 @@ test.describe('Checkout Flow', () => {
     const addButton = page.locator('button:has-text("Add")');
     const wishlistButton = page.locator('button:has-text("Notify when available")');
     if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip('Product out of stock, skipping validation test');
+      test.skip(true, 'Product out of stock, skipping validation test');
       return;
     }
     await addButton.click();
