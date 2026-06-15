@@ -9,7 +9,7 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
       supabase.rpc('search_items_pos', {
         p_store_id: STORE_ID,
         p_query: q ?? '',
-        p_category_id: categoryId ?? null,
+        p_category_id: categoryId && !categoryIds?.length ? categoryId : null,
         p_limit: 200,
         p_offset: 0,
       }),
@@ -22,12 +22,7 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
     const emojiMap = new Map(cats.map(c => [c.slug, c.emoji]));
     const emojiById = new Map(cats.map(c => [c.id, c.emoji]));
 
-    // Client-side category filter
-    if (categoryId) {
-      items = items.filter((item: any) => item.category_id === categoryId || item.category === categoryId);
-    }
-
-    // Multi-category filter (for group pages)
+    // Client-side category filter (only needed for multi-category groups)
     if (categoryIds && categoryIds.length > 0) {
       items = items.filter((item: any) =>
         categoryIds.includes(item.category_id) || categoryIds.includes(item.category)

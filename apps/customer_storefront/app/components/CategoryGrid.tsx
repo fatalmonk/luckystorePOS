@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CategoryDropdown } from './CategoryDropdown';
 import type { Category } from '../lib/types';
+import { CATEGORY_GROUPS } from '../lib/types';
 
 interface CategoryPillProps {
   slug: string;
@@ -11,10 +12,14 @@ interface CategoryPillProps {
 }
 
 function CategoryPill({ slug, label, emoji, isActive, isThematic }: CategoryPillProps) {
+  const isGroupSlug = CATEGORY_GROUPS.some((g) => g.slug === slug);
+  const isLegacyThematic = ['deals', 'new', 'bestsellers'].includes(slug);
+  const isThematicSlug = isGroupSlug || isLegacyThematic;
+
   const href =
     slug === 'all'
       ? '/category'
-      : ['deals', 'new', 'bestsellers'].includes(slug)
+      : isThematicSlug
       ? `/category?theme=${slug}`
       : `/category/${slug}`;
   const activeClass = 'bg-[#1c1917] text-[#ffe302] font-bold shadow-sm';
