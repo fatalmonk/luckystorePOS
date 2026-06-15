@@ -19,7 +19,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      {children as any}
       {import.meta.env.DEV && (
         <Suspense fallback={null}>
           <ReactQueryDevtools initialIsOpen={false} />
