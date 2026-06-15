@@ -5,7 +5,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
   output: 'standalone',
-  outputFileTracingRoot: __dirname,
   devIndicators: false,
   images: {
     formats: ['image/webp'],
