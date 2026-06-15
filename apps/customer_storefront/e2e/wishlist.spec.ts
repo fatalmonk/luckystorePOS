@@ -4,7 +4,7 @@ test.describe('Wishlist Flow', () => {
   test('adds out-of-stock product to wishlist', async ({ page }) => {
     // Navigate to a product page
     await page.goto('/');
-    await page.waitForSelector('[data-testid="product-grid"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
 
     // Find and click an out-of-stock product (or any product)
     const productCards = page.locator('[data-testid="product-card"]');
@@ -17,7 +17,7 @@ test.describe('Wishlist Flow', () => {
 
     // Check if wishlist button is visible (out of stock)
     const wishlistButton = page.locator('button:has-text("Notify when available")');
-    const addToCartButton = page.locator('button:has-text("Add to Cart")');
+    const addToCartButton = page.locator('button:has-text("Add")');
 
     if (await addToCartButton.isVisible().catch(() => false)) {
       test.skip('Product in stock, skipping wishlist test');

@@ -1,0 +1,32 @@
+INSERT INTO public.stores (id, tenant_id, name, type) 
+VALUES ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Lucky Store', 'retail') 
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.categories (id, category, store_id, active, slug, emoji, display_order, name)
+VALUES
+  (gen_random_uuid(), 'Dairy', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'dairy', '🥛', 1, 'Dairy'),
+  (gen_random_uuid(), 'Grocery', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'grocery', '🍚', 2, 'Grocery'),
+  (gen_random_uuid(), 'Beverages', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'beverages', '🧃', 3, 'Beverages'),
+  (gen_random_uuid(), 'Snacks', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'snacks', '🍪', 4, 'Snacks'),
+  (gen_random_uuid(), 'Household', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'household', '🧼', 5, 'Household'),
+  (gen_random_uuid(), 'Produce', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'produce', '🥬', 6, 'Produce'),
+  (gen_random_uuid(), 'Bakery', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'bakery', '🍞', 7, 'Bakery'),
+  (gen_random_uuid(), 'Frozen', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'frozen', '🧊', 8, 'Frozen'),
+  (gen_random_uuid(), 'Chips', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'chips', '🥔', 9, 'Chips'),
+  (gen_random_uuid(), 'Biscuits & Cookies', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'biscuits-cookies', '🍘', 10, 'Biscuits & Cookies'),
+  (gen_random_uuid(), 'Chocolates & Candies', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'chocolates-candies', '🍫', 11, 'Chocolates & Candies'),
+  (gen_random_uuid(), 'Ice Cream', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'ice-cream', '🍦', 12, 'Ice Cream'),
+  (gen_random_uuid(), 'Tea & Coffee', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'tea-coffee', '☕', 13, 'Tea & Coffee'),
+  (gen_random_uuid(), 'Cereals', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'cereals', '🥣', 14, 'Cereals'),
+  (gen_random_uuid(), 'Oil', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'oil', '🫒', 15, 'Oil'),
+  (gen_random_uuid(), 'Rice & Grain', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'rice-grain', '🌾', 16, 'Rice & Grain'),
+  (gen_random_uuid(), 'Condiments', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'condiments', '🥫', 17, 'Condiments'),
+  (gen_random_uuid(), 'Spices', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'spices', '🌶️', 18, 'Spices'),
+  (gen_random_uuid(), 'Eggs', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'eggs', '🥚', 19, 'Eggs'),
+  (gen_random_uuid(), 'Personal Care', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'personal-care', '🧴', 20, 'Personal Care'),
+  (gen_random_uuid(), 'Cleaning Supply', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'cleaning-supply', '🧽', 21, 'Cleaning Supply'),
+  (gen_random_uuid(), 'Air Freshener', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'air-freshener', '🌸', 22, 'Air Freshener'),
+  (gen_random_uuid(), 'Baby Care', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'baby-care', '🍼', 23, 'Baby Care'),
+  (gen_random_uuid(), 'Electronics', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'electronics', '🔌', 24, 'Electronics'),
+  (gen_random_uuid(), 'Baking Needs', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', true, 'baking-needs', '🧁', 25, 'Baking Needs')
+ON CONFLICT DO NOTHING;

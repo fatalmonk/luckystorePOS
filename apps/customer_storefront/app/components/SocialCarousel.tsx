@@ -17,7 +17,7 @@ const defaultCreators: SocialCreator[] = [
     id: '1',
     handle: 'foodie_alex',
     emoji: '🍌',
-    bgGradient: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 100%)',
+    bgGradient: 'linear-gradient(135deg, #faf8f5 0%, #fef3c7 100%)',
     productName: 'Organic Bananas',
     productPrice: 80,
     productEmoji: '🍌',
@@ -27,7 +27,7 @@ const defaultCreators: SocialCreator[] = [
     id: '2',
     handle: 'chef_maria',
     emoji: '🍞',
-    bgGradient: 'linear-gradient(135deg, #fed7aa 0%, #ea580c 100%)',
+    bgGradient: 'linear-gradient(135deg, #faf8f5 0%, #ffedd5 100%)',
     productName: 'Artisan Bread',
     productPrice: 65,
     productEmoji: '🍞',
@@ -37,7 +37,7 @@ const defaultCreators: SocialCreator[] = [
     id: '3',
     handle: 'healthy_rahul',
     emoji: '🥛',
-    bgGradient: 'linear-gradient(135deg, #dbeafe 0%, #3b82f6 100%)',
+    bgGradient: 'linear-gradient(135deg, #faf8f5 0%, #dbeafe 100%)',
     productName: 'Greek Yogurt',
     productPrice: 120,
     productEmoji: '🥛',
@@ -47,7 +47,7 @@ const defaultCreators: SocialCreator[] = [
     id: '4',
     handle: 'snack_queen',
     emoji: '🥜',
-    bgGradient: 'linear-gradient(135deg, #d9f99d 0%, #65a30d 100%)',
+    bgGradient: 'linear-gradient(135deg, #faf8f5 0%, #f1f5f9 100%)',
     productName: 'Mixed Nuts',
     productPrice: 250,
     productEmoji: '🥜',
@@ -57,7 +57,7 @@ const defaultCreators: SocialCreator[] = [
     id: '5',
     handle: 'baker_bob',
     emoji: '🥐',
-    bgGradient: 'linear-gradient(135deg, #fecaca 0%, #dc2626 100%)',
+    bgGradient: 'linear-gradient(135deg, #faf8f5 0%, #fee2e2 100%)',
     productName: 'Croissants',
     productPrice: 180,
     productEmoji: '🥐',
@@ -79,33 +79,32 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
           <Link
             key={creator.id}
             href={`/product/${creator.productId}`}
-            className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] cursor-pointer"
+            className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] cursor-pointer border border-[#e7e5e4] shadow-sm hover:shadow-md transition-shadow"
           >
             <div
               className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
               style={{ background: creator.bgGradient }}
             />
 
-            <div className="absolute inset-0 flex items-center justify-center opacity-20 text-8xl select-none pointer-events-none" aria-hidden="true">
+            <div className="absolute inset-0 flex items-center justify-center opacity-10 text-8xl select-none pointer-events-none" aria-hidden="true">
               {creator.emoji}
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-            <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 backdrop-blur-sm">
-              <span aria-hidden="true">{creator.emoji}</span>
-              <span className="text-xs font-medium text-white truncate max-w-[120px]">@{creator.handle}</span>
+            <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 border border-[#e7e5e4] px-2.5 py-1 backdrop-blur-sm shadow-sm">
+              <span className="text-xs" aria-hidden="true">{creator.emoji}</span>
+              <span className="text-[10px] font-bold text-gray-800 truncate max-w-[100px]">@{creator.handle}</span>
             </div>
 
-            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3 rounded-[14px] bg-white p-2.5 shadow-lg transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-              <div className="h-10 w-10 rounded-[10px] bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0" aria-hidden="true">
+            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2.5 rounded-[14px] bg-white p-2.5 shadow-[0_4px_12px_rgba(28,25,23,0.05)] border border-[#e7e5e4]/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md">
+              <div className="h-10 w-10 rounded-[10px] bg-gray-50 flex items-center justify-center text-2xl flex-shrink-0 border border-[#e7e5e4]/30" aria-hidden="true">
                 {creator.productEmoji}
               </div>
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="line-clamp-1 text-sm font-medium text-gray-900 truncate">{creator.productName}</span>
-                <span className="text-base font-bold text-green-700">{formatBdt(creator.productPrice)}</span>
+                <span className="line-clamp-1 text-xs font-semibold text-gray-900 truncate">{creator.productName}</span>
+                <span className="text-sm font-bold text-warm-primary">{formatBdt(creator.productPrice)}</span>
               </div>
-              <span className="text-xl text-gray-300 group-hover:text-[#FFF34D] transition-colors" aria-hidden="true">→</span>
             </div>
           </Link>
         ))}

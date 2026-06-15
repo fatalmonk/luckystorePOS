@@ -26,15 +26,15 @@ export function Button({
   `;
 
   const variantStyles = {
-    primary: 'bg-[#FFF34D] text-[#5c5200] hover:bg-[#FBEF51]',
+    primary: 'bg-[#ffe721] text-[#1c1917] hover:bg-[#FBEF51]',
     secondary: 'bg-[#faf8f5] text-[#1c1917] border border-[#e7e5e4] hover:bg-[#f5f5f4]',
     ghost: 'bg-transparent text-[#1c1917] hover:bg-[#faf8f5]',
   };
 
   const sizeStyles = {
-    sm: 'h-9 px-3 text-sm min-h-[44px]',
-    md: 'h-10 px-4 text-sm min-h-[44px]',
-    lg: 'h-12 px-6 text-base min-h-[44px]',
+    sm: 'px-3 text-sm min-h-[44px]',
+    md: 'px-4 text-sm min-h-[44px]',
+    lg: 'px-6 text-base min-h-[44px]',
   };
 
   return (

@@ -35,7 +35,7 @@ export function ProductSwimlane({
         {action && (
           <a
             href={action.href}
-            className="text-sm font-medium text-[#0071DC] hover:underline"
+            className="text-sm font-medium text-[#0b4fd9] hover:underline"
           >
             {action.label}
           </a>
@@ -59,6 +59,7 @@ export function ProductSwimlane({
                 badge={product.badge}
                 unit={product.unit}
                 stock={product.stock}
+                category={product.category}
                 image_url={product.image_url}
                 qtyInCart={getQtyInCart(product.id)}
                 priority={index === 0}

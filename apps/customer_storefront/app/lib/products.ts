@@ -4,17 +4,22 @@ import type { Product, Category } from './types';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 export async function fetchProducts(q?: string, categoryId?: string, categoryIds?: string[]): Promise<Product[]> {
-  const { data, error } = await supabase.rpc('search_items_pos', {
-    p_store_id: STORE_ID,
-    p_query: q ?? '',
-    p_category_id: categoryId ?? null,
-    p_limit: 200,
-    p_offset: 0,
-  });
+  const [itemsRes, cats] = await Promise.all([
+    supabase.rpc('search_items_pos', {
+      p_store_id: STORE_ID,
+      p_query: q ?? '',
+      p_category_id: categoryId ?? null,
+      p_limit: 200,
+      p_offset: 0,
+    }),
+    fetchCategories()
+  ]);
 
-  if (error) throw error;
+  if (itemsRes.error) throw itemsRes.error;
 
-  let items = data ?? [];
+  let items = itemsRes.data ?? [];
+  const emojiMap = new Map(cats.map(c => [c.slug, c.emoji]));
+  const emojiById = new Map(cats.map(c => [c.id, c.emoji]));
 
   // Client-side category filter
   if (categoryId) {
@@ -34,7 +39,7 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
     return {
       id: item.id ?? item.item_id,
       name: item.name,
-      emoji: CATEGORY_EMOJIS[item.category as Category] ?? '📦',
+      emoji: emojiMap.get(item.category) ?? emojiById.get(item.category_id) ?? '📦',
       price,
       originalPrice: originalPrice > price ? originalPrice : undefined,
       badge: originalPrice > price ? 'On Sale' : undefined,
@@ -43,8 +48,37 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
       stock: Number(item.stock ?? item.qty_on_hand ?? 0),
       description: item.description ?? '',
       image_url: item.image_url,
+      created_at: item.created_at,
     };
   });
+}
+
+/** Admin-web compatible deterministic emoji fallback from category name */
+function getCategoryEmoji(name: string, dbEmoji?: string | null): string {
+  if (dbEmoji && dbEmoji.trim() && dbEmoji !== '📦') return dbEmoji;
+  const words = name.toLowerCase().trim().split(/\s+/);
+  const iconMap: Record<string, string> = {
+    fruit: '🍎', apple: '🍎', veg: '🥦', vegetable: '🥦', produce: '🥦',
+    bakery: '🥐', bread: '🥐', cake: '🎂', baking: '🧁',
+    dairy: '🥛', milk: '🥛', cheese: '🧀', egg: '🥚', eggs: '🥚',
+    drink: '🥤', beverage: '🥤', juice: '🧃', water: '💧', beverages: '🥤',
+    clean: '🧹', cleaning: '🧼', household: '🏠',
+    pharma: '💊', medicine: '💊', health: '❤️', personal: '🧴', care: '🧴',
+    pet: '🐶', animal: '🐱', pest: '🐀',
+    toy: '🧸', game: '🎮', baby: '👶',
+    snack: '🍿', chip: '🍪', biscuit: '🍪', cookies: '🍪', chocolates: '🍫', candies: '🍬', ice: '🍦', cream: '🍦',
+    packaged: '🥡', food: '🍽️',
+    rice: '🍚', grain: '🌾', flour: '🌾',
+    oil: '🛢️', spice: '🌶️', masala: '🌶️', condiment: '🥫', cooking: '🍳',
+    meat: '🍗', chicken: '🐔', fish: '🐟', beef: '🥩',
+    frozen: '🧊',
+    electronics: '🔌', mobile: '📱',
+    tea: '☕', coffee: '☕', cereal: '🥣', breakfast: '🍳',
+  };
+  for (const word of words) {
+    if (iconMap[word]) return iconMap[word];
+  }
+  return '📦';
 }
 
 export async function fetchCategories(): Promise<{ id: string; slug: Category; name: string; emoji: string }[]> {
@@ -60,34 +94,8 @@ export async function fetchCategories(): Promise<{ id: string; slug: Category; n
     id: c.id,
     slug: (c.slug ?? c.category) as Category,
     name: c.category,
-    emoji: c.emoji ?? '📦',
+    emoji: getCategoryEmoji(c.category, c.emoji),
   }));
 }
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  dairy: '🥛',
-  grocery: '🍚',
-  beverages: '🧃',
-  snacks: '🍪',
-  household: '🧼',
-  produce: '🥬',
-  bakery: '🍞',
-  frozen: '🧊',
-  chips: '🥔',
-  'biscuits-cookies': '🍘',
-  'chocolates-candies': '🍫',
-  'ice-cream': '🍦',
-  'tea-coffee': '☕',
-  cereals: '🥣',
-  oil: '🫒',
-  'rice-grain': '🌾',
-  condiments: '🥫',
-  spices: '🌶️',
-  eggs: '🥚',
-  'personal-care': '🧴',
-  'cleaning-supply': '🧽',
-  'air-freshener': '🌸',
-  'baby-care': '🍼',
-  electronics: '🔌',
-  'baking-needs': '🧁',
-};
+

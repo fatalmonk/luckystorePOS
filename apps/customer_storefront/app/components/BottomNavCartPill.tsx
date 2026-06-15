@@ -29,7 +29,7 @@ export function BottomNavCartPill() {
           {totalItems} {totalItems === 1 ? 'item' : 'items'}
         </span>
         <span className="w-px h-4 bg-[#e7e5e4]" />
-        <span className="text-sm font-extrabold text-[#FFF34D]">{formatBdt(total)}</span>
+        <span className="text-sm font-extrabold text-[#1c1917]">{formatBdt(total)}</span>
       </button>
       <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} />
     </>

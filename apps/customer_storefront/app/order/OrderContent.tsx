@@ -56,7 +56,7 @@ export default function OrderContent() {
           </div>
           <h1 className="text-[22px] font-extrabold tracking-tight mb-1.5">Order Placed!</h1>
           <p className="text-sm text-[#78716c] mb-1">Order number</p>
-          <p className="font-mono text-lg font-extrabold text-[#FFF34D]">{order.orderNumber}</p>
+          <p className="font-mono text-lg font-extrabold text-[#ffe721]">{order.orderNumber}</p>
         </div>
 
         {/* Summary */}
@@ -104,9 +104,9 @@ export default function OrderContent() {
                 <div
                   className={`absolute -left-[19px] w-[18px] h-[18px] rounded-full border-2 transition-colors ${
                     step.done
-                      ? 'bg-[#FFF34D] border-[#FFF34D]'
+                      ? 'bg-[#ffe721] border-[#ffe721]'
                       : step.active
-                      ? 'bg-white border-[#FFF34D]'
+                      ? 'bg-white border-[#ffe721]'
                       : 'bg-[#f5f5f4] border-[#e7e5e4]'
                   }`}
                 />

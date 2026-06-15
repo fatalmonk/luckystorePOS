@@ -87,7 +87,7 @@ export function CategoryFooter({ categorySlug, categoryName }: CategoryFooterPro
       {/* Related links */}
       <div className="mb-4">
         <h3 className="text-sm font-bold text-[#1c1917] mb-3">Related categories</h3>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#0071DC]">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#0b4fd9]">
           <button onClick={() => router.push('/category/snacks')} className="hover:underline">
             Snacks
           </button>

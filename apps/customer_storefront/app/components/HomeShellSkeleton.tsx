@@ -11,7 +11,7 @@ export function HomeShellSkeleton() {
           <SkeletonHero />
           <div className="mb-6">
             <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-3" />
-            <div className="flex gap-2 overflow-x-auto py-2">
+            <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide scroll-edge-mask">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex-shrink-0 px-6 py-2 rounded-full bg-gray-200 animate-pulse min-h-[44px]" />
               ))}

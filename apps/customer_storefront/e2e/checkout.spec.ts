@@ -4,7 +4,7 @@ test.describe('Checkout Flow', () => {
   test('completes a full checkout', async ({ page }) => {
     // Navigate to home and add a product to cart
     await page.goto('/');
-    await page.waitForSelector('[data-testid="product-grid"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
 
     // Click first product
     const firstProduct = page.locator('[data-testid="product-card"]').first();
@@ -15,7 +15,7 @@ test.describe('Checkout Flow', () => {
     await expect(page.locator('h1')).toBeVisible();
 
     // Add to cart if in stock
-    const addButton = page.locator('button:has-text("Add to Cart")');
+    const addButton = page.locator('button:has-text("Add")');
     const wishlistButton = page.locator('button:has-text("Notify when available")');
 
     if (await wishlistButton.isVisible().catch(() => false)) {
@@ -24,22 +24,26 @@ test.describe('Checkout Flow', () => {
     }
 
     await addButton.click();
+    await expect(page.locator('text=Added')).toBeVisible();
 
     // Go to cart
     await page.goto('/cart');
-    await expect(page.locator('text=Cart')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cart', exact: true })).toBeVisible();
 
     // Proceed to checkout
-    await page.click('text=Checkout');
+    await page.click('[data-testid="cart-checkout-btn"]');
     await page.waitForURL('/checkout');
 
+    // Go to Step 2
+    await page.click('[data-testid="checkout-continue-btn"]');
+
     // Fill checkout form (Step 2)
-    await page.fill('input[placeholder*="full name"]', 'Test User');
-    await page.fill('input[placeholder*="WhatsApp"]', '+880 1712345678');
-    await page.fill('textarea[placeholder*="Address"]', '123 Test Road, Chattogram');
+    await page.fill('input[placeholder*="name"]', 'Test User');
+    await page.fill('input[placeholder*="1XXX"]', '+880 1712345678');
+    await page.fill('textarea[placeholder*="House"]', '123 Test Road, Chattogram');
 
     // Place order
-    await page.click('text=Place Order');
+    await page.click('[data-testid="checkout-place-order-btn"]');
 
     // Should reach confirming step then order page
     await page.waitForURL(/\/order/);
@@ -47,18 +51,37 @@ test.describe('Checkout Flow', () => {
   });
 
   test('shows validation errors for invalid phone', async ({ page }) => {
+    // Add a product to cart first
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
+    const firstProduct = page.locator('[data-testid="product-card"]').first();
+    await firstProduct.click();
+    await page.waitForURL(/\/product\//);
+
+    const addButton = page.locator('button:has-text("Add")');
+    const wishlistButton = page.locator('button:has-text("Notify when available")');
+    if (await wishlistButton.isVisible().catch(() => false)) {
+      test.skip('Product out of stock, skipping validation test');
+      return;
+    }
+    await addButton.click();
+    await expect(page.locator('text=Added')).toBeVisible();
+
     await page.goto('/checkout');
 
+    // Go to Step 2
+    await page.click('[data-testid="checkout-continue-btn"]');
+
     // Try to proceed without filling required fields
-    await page.click('text=Place Order');
+    await page.click('[data-testid="checkout-place-order-btn"]');
     await expect(page.locator('text=Please fill all required fields')).toBeVisible();
 
     // Fill with invalid phone
-    await page.fill('input[placeholder*="full name"]', 'Test User');
-    await page.fill('input[placeholder*="WhatsApp"]', '12345');
-    await page.fill('textarea[placeholder*="Address"]', '123 Test Road');
+    await page.fill('input[placeholder*="name"]', 'Test User');
+    await page.fill('input[placeholder*="1XXX"]', '12345');
+    await page.fill('textarea[placeholder*="House"]', '123 Test Road');
 
-    await page.click('text=Place Order');
+    await page.click('[data-testid="checkout-place-order-btn"]');
     await expect(page.locator('text=Enter valid BD phone')).toBeVisible();
   });
 });

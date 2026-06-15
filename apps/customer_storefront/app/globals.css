@@ -11,7 +11,7 @@
 
 @layer base {
   body {
-    @apply bg-[#ece9e4] text-[#1c1917];
+    @apply bg-[#ece9e4] text-[#1c1917] pb-[68px];
   }
 }
 
@@ -62,5 +62,20 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Micro-interactions: @starting-style reveal transitions */
+  @media (prefers-reduced-motion: no-preference) {
+    .card-reveal {
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    @starting-style {
+      .card-reveal {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+      }
+    }
   }
 }
