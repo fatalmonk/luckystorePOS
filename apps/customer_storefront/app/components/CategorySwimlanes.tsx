@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
+import { ProductGridClient } from './ProductGridClient';
 import { NativeAdBanner } from './NativeAdBanner';
 import { getCategoryGroup } from '../lib/types';
 import type { Product, Category } from '../lib/types';
@@ -109,12 +110,13 @@ export function CategorySwimlanes({
               action={{ label: 'See all', href: `/category/${swimlane.slug}` }}
             />
           ))}
-          {deals.length > 0 && (
-            <ProductSwimlaneClient
-              title="Rollbacks & Deals"
-              products={deals}
-            />
-          )}
+          <section className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold tracking-tight">All {group.label}</h2>
+              <span className="text-sm text-[#78716c]">{filtered.length} items</span>
+            </div>
+            <ProductGridClient products={filtered} />
+          </section>
         </>
       ) : (
         <>
@@ -138,18 +140,13 @@ export function CategorySwimlanes({
             ctaText="Shop now"
             bgColor="#1c1917"
           />
-          {under300.length > 0 && (
-            <ProductSwimlaneClient
-              title="Best sellers under ৳300"
-              products={under300}
-            />
-          )}
-          {under500.length > 0 && (
-            <ProductSwimlaneClient
-              title="Under ৳500"
-              products={under500}
-            />
-          )}
+          <section className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold tracking-tight">All Products</h2>
+              <span className="text-sm text-[#78716c]">{filtered.length} items</span>
+            </div>
+            <ProductGridClient products={filtered} />
+          </section>
         </>
       )}
     </>
