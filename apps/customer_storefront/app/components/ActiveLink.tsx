@@ -14,7 +14,8 @@ interface ActiveLinkProps {
 export function ActiveLink({ href, icon, label, showBadge }: ActiveLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== '/' && pathname?.startsWith(`${href}/`));
-  const badgeCount = showBadge ? useCartContext().totalItems : 0;
+  const { totalItems } = useCartContext();
+  const badgeCount = showBadge ? totalItems : 0;
 
   return (
     <Link
