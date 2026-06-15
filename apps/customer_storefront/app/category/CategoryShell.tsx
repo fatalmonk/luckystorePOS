@@ -1,8 +1,7 @@
 import { Header } from '../components/Header';
 import { BottomNav } from '../components/BottomNav';
 import { HeroBanner } from '../components/HeroBanner';
-import { PromoGrid } from '../components/PromoGrid';
-import { SubCategoryPills } from '../components/SubCategoryPills';
+import { CategoryGrid } from '../components/CategoryGrid';
 import { SponsoredBanner } from '../components/SponsoredBanner';
 import { CategoryFooter } from '../components/CategoryFooter';
 import { CategorySwimlanes } from '../components/CategorySwimlanes';
@@ -38,18 +37,13 @@ export function CategoryShell({
             title="⚡ Express Delivery"
             subtitle="Delivery in as soon as 1 hour. Shop your faves."
             badge="New"
-            bgGradient="from-[#0071DC] to-[#005bb5]"
+            bgGradient="from-[#0b4fd9] to-[#005bb5]"
           />
 
-          <div className="mt-2">
-            <PromoGrid />
-          </div>
-
           <div className="mt-4">
-            <SubCategoryPills
+            <CategoryGrid
               categories={categories}
               active={currentCat !== 'all' ? currentCat : undefined}
-              subCategories={group ? group.subCategories : undefined}
             />
           </div>
 
@@ -57,14 +51,14 @@ export function CategoryShell({
             title="Your go-tos, elevated"
             subtitle="bettergoods snack stars"
             ctaText="Shop now"
-            bgColor="#f0fdf4"
+            bgColor="#faf8f5"
           />
 
           <CategorySwimlanes
             categorySlug={categorySlug}
-            currentCat={currentCat}
             group={group}
             products={products}
+            categories={categories}
             theme={theme}
             sort={sort}
           />

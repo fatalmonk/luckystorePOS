@@ -36,6 +36,11 @@ export function throttle<T extends (...args: Parameters<T>) => void>(
 /**
  * Memoized selector for expensive computations
  */
+export function getSingleParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? '';
+  return value ?? '';
+}
+
 export function createSelector<T, R>(
   selector: (state: T) => R,
   equalityFn: (a: R, b: R) => boolean = Object.is

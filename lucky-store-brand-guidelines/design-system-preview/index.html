@@ -72,13 +72,19 @@
       --color-border: #e7e5e4;
       --color-border-strong: #d6d3d1;
       --color-border-light: #f5f5f4;
-      --color-accent: #FFF34D;
-      --color-accent-hover: #FBEF51;
-      --color-accent-ghost: rgba(255, 243, 77, 0.12);
-      --color-accent-strong: rgba(255, 243, 77, 0.18);
-      --color-success: #1e5c3a;
-      --color-success-bg: rgba(30,92,58,0.08);
-      --color-success-strong: rgba(30,92,58,0.12);
+      --color-accent: #ffe721;
+      --color-accent-hover: #e6d01d;
+      --color-accent-ghost: rgba(255, 231, 33, 0.12);
+      --color-accent-strong: rgba(255, 231, 33, 0.18);
+      --color-primary: #0b4fd9;
+      --color-primary-hover: #0943b8;
+      --color-primary-ghost: rgba(11, 79, 217, 0.12);
+      --color-primary-text: #ffffff;
+      --color-primary-muted: #6b9af0;
+      --color-primary-light: #e8f0fe;
+      --color-success: #0b4fd9;
+      --color-success-bg: rgba(11,79,217,0.08);
+      --color-success-strong: rgba(11,79,217,0.12);
       --color-warning: #8c4200;
       --color-warning-bg: rgba(140,66,0,0.08);
       --color-warning-strong: rgba(140,66,0,0.12);
@@ -102,11 +108,17 @@
       --color-border-dark: #3d3630;
       --color-border-strong-dark: #4a423b;
       --color-border-light-dark: #2a2420;
-      --color-accent-dark: #FFF34D;
-      --color-accent-hover-dark: #FBEF51;
-      --color-accent-ghost-dark: rgba(255, 243, 77, 0.12);
-      --color-success-dark: #5ec98a;
-      --color-success-bg-dark: rgba(94,201,138,0.12);
+      --color-accent-dark: #ffe721;
+      --color-accent-hover-dark: #e6d01d;
+      --color-accent-ghost-dark: rgba(255, 231, 33, 0.12);
+      --color-primary-dark: #4a8eff;
+      --color-primary-hover-dark: #6ba3ff;
+      --color-primary-ghost-dark: rgba(74, 142, 255, 0.12);
+      --color-primary-text-dark: #ffffff;
+      --color-primary-muted-dark: #8ab4f8;
+      --color-primary-light-dark: #1a3c6e;
+      --color-success-dark: #4a8eff;
+      --color-success-bg-dark: rgba(74,142,255,0.12);
       --color-warning-dark: #f5b84e;
       --color-warning-bg-dark: rgba(245,184,78,0.12);
       --color-danger-dark: #f47c7a;
@@ -193,6 +205,12 @@
       --color-accent: var(--color-accent-dark);
       --color-accent-hover: var(--color-accent-hover-dark);
       --color-accent-ghost: var(--color-accent-ghost-dark);
+      --color-primary: var(--color-primary-dark);
+      --color-primary-hover: var(--color-primary-hover-dark);
+      --color-primary-ghost: var(--color-primary-ghost-dark);
+      --color-primary-text: var(--color-primary-text-dark);
+      --color-primary-muted: var(--color-primary-muted-dark);
+      --color-primary-light: var(--color-primary-light-dark);
       --color-success: var(--color-success-dark);
       --color-success-bg: var(--color-success-bg-dark);
       --color-warning: var(--color-warning-dark);
@@ -656,6 +674,7 @@
     .visual-radius{width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:var(--color-paper);border:1px solid var(--color-border);font-family:var(--font-mono);font-size:var(--text-xxs);color:var(--color-dim)}
     .visual-shadow{flex:1;max-width:200px;height:100px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)}
   </style>
+<base target="_blank">
 </head>
 <body>
   <div class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
@@ -682,15 +701,19 @@
         <div class="swatch"><div class="chip" style="background:var(--color-dim)"></div><div class="meta"><span class="name">Dim</span><span class="hex">#a8a29e</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-border)"></div><div class="meta"><span class="name">Border</span><span class="hex">#e7e5e4</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-border-light)"></div><div class="meta"><span class="name">Border Light</span><span class="hex">#f5f5f4</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent)"></div><div class="meta"><span class="name">Accent</span><span class="hex">#FFF34D</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent-hover)"></div><div class="meta"><span class="name">Accent Hover</span><span class="hex">#FBEF51</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent-ghost)"></div><div class="meta"><span class="name">Accent Ghost</span><span class="hex">rgba(255, 243, 77, 0.12)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-success)"></div><div class="meta"><span class="name">Success</span><span class="hex">#1e5c3a</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-success-bg)"></div><div class="meta"><span class="name">Success BG</span><span class="hex">rgba(30,92,58,0.08)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent)"></div><div class="meta"><span class="name">Accent</span><span class="hex">#ffe721</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-hover)"></div><div class="meta"><span class="name">Accent Hover</span><span class="hex">#e6d01d</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-ghost)"></div><div class="meta"><span class="name">Accent Ghost</span><span class="hex">rgba(255, 231, 33, 0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-success)"></div><div class="meta"><span class="name">Success</span><span class="hex">#0b4fd9</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-success-bg)"></div><div class="meta"><span class="name">Success BG</span><span class="hex">rgba(11,79,217,0.08)</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-warning)"></div><div class="meta"><span class="name">Warning</span><span class="hex">#8c4200</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-warning-bg)"></div><div class="meta"><span class="name">Warning BG</span><span class="hex">rgba(140,66,0,0.08)</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-danger)"></div><div class="meta"><span class="name">Danger</span><span class="hex">#a32624</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-danger-bg)"></div><div class="meta"><span class="name">Danger BG</span><span class="hex">rgba(163,38,36,0.07)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary Blue</span><span class="hex">#0b4fd9</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#0943b8</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11,79,217,0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-light)"></div><div class="meta"><span class="name">Primary Light</span><span class="hex">#e8f0fe</span></div></div>
       </div>
     </section>
 
@@ -806,11 +829,15 @@
       <div class="palette">
         <div class="swatch"><div class="chip" style="background:var(--color-border-strong)"></div><div class="meta"><span class="name">Border Strong</span><span class="hex">#d6d3d1</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-surface-hover)"></div><div class="meta"><span class="name">Surface Hover</span><span class="hex">#f5f3f0</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent-strong)"></div><div class="meta"><span class="name">Accent Strong</span><span class="hex">rgba(191,78,45,0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-strong)"></div><div class="meta"><span class="name">Accent Strong</span><span class="hex">rgba(255, 231, 33, 0.12)</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-cash)"></div><div class="meta"><span class="name">Cash</span><span class="hex">#2b7a3b</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-bkash)"></div><div class="meta"><span class="name">bKash</span><span class="hex">#e61e2a</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-nagad)"></div><div class="meta"><span class="name">Nagad</span><span class="hex">#d92b7f</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-card)"></div><div class="meta"><span class="name">Card</span><span class="hex">#1a3c6e</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary Blue</span><span class="hex">#0b4fd9</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#0943b8</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11,79,217,0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-light)"></div><div class="meta"><span class="name">Primary Light</span><span class="hex">#e8f0fe</span></div></div>
       </div>
     </section>
 
@@ -1230,8 +1257,9 @@
               <tr><td><code>--color-foreground</code></td><td>#1c1917</td><td>#faf8f5</td></tr>
               <tr><td><code>--color-muted</code></td><td>#78716c</td><td>#b8b0a8</td></tr>
               <tr><td><code>--color-border</code></td><td>#e7e5e4</td><td>#3d3630</td></tr>
-              <tr><td><code>--color-accent</code></td><td>#FFF34D</td><td>#FFF34D</td></tr>
-              <tr><td><code>--color-success</code></td><td>#1e5c3a</td><td>#5ec98a</td></tr>
+              <tr><td><code>--color-accent</code></td><td>#ffe721</td><td>#ffe721</td></tr>
+              <tr><td><code>--color-primary</code></td><td>#0b4fd9</td><td>#4a8eff</td></tr>
+              <tr><td><code>--color-success</code></td><td>#0b4fd9</td><td>#4a8eff</td></tr>
               <tr><td><code>--color-warning</code></td><td>#8c4200</td><td>#f5b84e</td></tr>
               <tr><td><code>--color-danger</code></td><td>#a32624</td><td>#f47c7a</td></tr>
             </tbody>
@@ -1340,7 +1368,7 @@
       <p>This separation prevents the classic mistake of forcing catalog UI patterns onto high-frequency POS workflows.</p>
 
       <h2>Color System</h2>
-      <p>Warm minimal palette: ivory paper (<code>#faf8f5</code>), white surfaces, yellow accent (<code>#FFF34D</code>). No cold blue-greys. Semantic pairs (text + bg) for Success/Warning/Danger. Bangladesh payment method colors: Cash (green), bKash (red), Nagad (magenta), Card (blue).</p>
+      <p>Warm minimal palette: ivory paper (<code>#faf8f5</code>), white surfaces, vivid yellow accent (<code>#ffe721</code>), vivid blue primary (<code>#0b4fd9</code>). Semantic pairs (text + bg) for Success/Warning/Danger. Success uses vivid blue. Bangladesh payment method colors: Cash (green), bKash (red), Nagad (magenta), Card (blue).</p>
       <p><strong>Dark mode tokens defined</strong> but not yet activated — toggle in top-right to preview.</p>
 
       <h2>Typography</h2>

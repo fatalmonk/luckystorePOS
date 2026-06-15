@@ -30,3 +30,33 @@ export async function createWishlistItem(
   }
   return data as WishlistItem;
 }
+
+export async function deleteWishlistItem(
+  productId: string,
+  fingerprint: string
+): Promise<void> {
+  if (!productId) throw new Error('productId required');
+  if (!fingerprint) throw new Error('fingerprint required');
+
+  const { error } = await supabase
+    .from('wishlist')
+    .delete()
+    .eq('product_id', productId)
+    .eq('customer_fingerprint', fingerprint);
+
+  if (error) throw error;
+}
+
+export async function fetchWishlistItems(
+  fingerprint: string
+): Promise<string[]> {
+  if (!fingerprint) return [];
+
+  const { data, error } = await supabase
+    .from('wishlist')
+    .select('product_id')
+    .eq('customer_fingerprint', fingerprint);
+
+  if (error) throw error;
+  return (data || []).map((item) => item.product_id);
+}

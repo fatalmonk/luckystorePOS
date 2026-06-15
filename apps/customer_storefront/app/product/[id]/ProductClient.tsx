@@ -8,6 +8,7 @@ import { useToast } from '../../components/Toast';
 import { useCartContext } from '../../components/CartProvider';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { WishlistButton } from '../../components/WishlistButton';
 import { PriceDisplay } from '../../components/PriceDisplay';
 import { formatBdt } from '../../lib/formatPrice';
 import type { Product } from '../../lib/types';
@@ -70,6 +71,9 @@ function ProductContent({ product }: ProductClientProps) {
               <div className="w-full h-full grid place-items-center text-[90px]">{product.emoji}</div>
             )}
           </div>
+          <h1 className="text-xl font-bold tracking-tight mb-2 text-[#1c1917]">
+            {product.name}
+          </h1>
           <p className="text-[32px] font-extrabold tracking-tight mb-1">
             <PriceDisplay value={product.price} />
           </p>
@@ -110,7 +114,7 @@ function ProductContent({ product }: ProductClientProps) {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => handleUpdateQty(-1)}
-              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors"
+              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe721] hover:text-[#1c1917] transition-colors"
             >
               −
             </button>
@@ -120,15 +124,18 @@ function ProductContent({ product }: ProductClientProps) {
             <button
               onClick={() => handleUpdateQty(1)}
               disabled={qtyInCart >= product.stock}
-              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#FFF34D] hover:text-[#5c5200] transition-colors disabled:opacity-50"
+              className="w-11 h-11 rounded-lg border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe721] hover:text-[#1c1917] transition-colors disabled:opacity-50"
             >
               +
             </button>
           </div>
+        ) : product.stock <= 0 ? (
+          <div className="flex-1">
+            <WishlistButton productId={product.id} productName={product.name} />
+          </div>
         ) : (
           <Button
             onClick={handleAdd}
-            disabled={product.stock <= 0}
             className="flex-0 w-[120px]"
           >
             Add

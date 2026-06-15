@@ -2,17 +2,22 @@ import { Suspense } from 'react';
 import { CategoryShell } from '../CategoryShell';
 import { CategoryShellSkeleton } from '../CategoryShellSkeleton';
 import { fetchProducts, fetchCategories } from '../../lib/products';
-import { getCategoryGroup, CATEGORY_LABELS, CATEGORY_GROUPS } from '../../lib/types';
+import { getSingleParam } from '../../lib/utils';
+import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
 import type { Category } from '../../lib/types';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const categories = await fetchCategories();
-  const catSlugs = categories.map((cat) => ({ slug: cat.slug }));
-  const groupSlugs = CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
-  return [...catSlugs, ...groupSlugs];
+  try {
+    const categories = await fetchCategories();
+    const catSlugs = categories.map((cat) => ({ slug: cat.slug }));
+    const groupSlugs = CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
+    return [...catSlugs, ...groupSlugs];
+  } catch {
+    return CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
+  }
 }
 
 export default async function CategorySlugPage({
@@ -24,15 +29,15 @@ export default async function CategorySlugPage({
 }) {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
-  const categorySlug = resolvedParams.slug;
-  const currentCat = ((CATEGORY_LABELS[categorySlug as Category] ? categorySlug : 'all') as Category | 'all') || 'all';
-  const group = getCategoryGroup(categorySlug);
-
-  const searchTerm = String(resolvedSearch.q || '');
-  const theme = String(resolvedSearch.theme || '');
-  const sort = String(resolvedSearch.sort || 'best');
-
   const categories = await fetchCategories();
+  const categorySlug = resolvedParams.slug;
+  const group = getCategoryGroup(categorySlug);
+  const isValidCat = categories.some((c) => c.slug === categorySlug);
+  const currentCat = isValidCat || group ? categorySlug : 'all';
+
+  const searchTerm = getSingleParam(resolvedSearch.q);
+  const theme = getSingleParam(resolvedSearch.theme);
+  const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
   let products: Awaited<ReturnType<typeof fetchProducts>> = [];
   try {

@@ -10,7 +10,7 @@ export function HeroBanner({
   title,
   subtitle,
   badge,
-  bgGradient = 'from-[#FFF34D] to-[#FBEF51]',
+  bgGradient = 'from-[#ffe721] via-[#ffd524] to-[#f4b61a]',
   bgImage,
 }: HeroBannerProps) {
   const hasBgImage = !!bgImage;

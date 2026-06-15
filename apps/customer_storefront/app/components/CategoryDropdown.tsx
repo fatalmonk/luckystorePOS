@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { CATEGORY_LABELS } from '../lib/types';
+
 
 interface CategoryDropdownProps {
   categories: { id: string; slug: string; name: string; emoji: string }[];
@@ -28,7 +28,7 @@ export function CategoryDropdown({ categories }: CategoryDropdownProps) {
         type="button"
         onClick={() => setOpen(!open)}
         className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 press-feedback min-h-[44px] ${
-          open ? 'bg-[#1c1917] text-[#FFF34D] font-bold shadow-sm' : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]'
+          open ? 'bg-[#1c1917] text-[#ffe721] font-bold shadow-sm' : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]'
         }`}
         aria-expanded={open}
       >
@@ -48,7 +48,7 @@ export function CategoryDropdown({ categories }: CategoryDropdownProps) {
             >
               <span className="flex items-center gap-2">
                 <span aria-hidden="true">{cat.emoji}</span>
-                <span>{CATEGORY_LABELS[cat.slug as keyof typeof CATEGORY_LABELS] || cat.name}</span>
+                <span>{cat.name}</span>
               </span>
             </Link>
           ))}
