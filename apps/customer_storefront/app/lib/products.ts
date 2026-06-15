@@ -48,6 +48,7 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
       stock: Number(item.stock ?? item.qty_on_hand ?? 0),
       description: item.description ?? '',
       image_url: item.image_url,
+      created_at: item.created_at,
     };
   });
 }

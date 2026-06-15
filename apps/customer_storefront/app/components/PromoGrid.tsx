@@ -50,7 +50,7 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
     ? { background: largePromo.gradient }
     : largePromo.bgColor
     ? { background: `linear-gradient(to bottom right, ${largePromo.bgColor}, ${largePromo.bgColor})` }
-    : { background: 'linear-gradient(to bottom right, #FFF34D, #FBEF51)' };
+    : { background: 'linear-gradient(to bottom right, #ffe721, #FBEF51)' };
 
   return (
     <section className="mb-8" aria-label="Promotions">

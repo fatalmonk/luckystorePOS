@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { CategoryShell } from '../CategoryShell';
 import { CategoryShellSkeleton } from '../CategoryShellSkeleton';
 import { fetchProducts, fetchCategories } from '../../lib/products';
+import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
 import type { Category } from '../../lib/types';
 
@@ -9,10 +10,14 @@ export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const categories = await fetchCategories();
-  const catSlugs = categories.map((cat) => ({ slug: cat.slug }));
-  const groupSlugs = CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
-  return [...catSlugs, ...groupSlugs];
+  try {
+    const categories = await fetchCategories();
+    const catSlugs = categories.map((cat) => ({ slug: cat.slug }));
+    const groupSlugs = CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
+    return [...catSlugs, ...groupSlugs];
+  } catch {
+    return CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
+  }
 }
 
 export default async function CategorySlugPage({
@@ -30,9 +35,9 @@ export default async function CategorySlugPage({
   const isValidCat = categories.some((c) => c.slug === categorySlug);
   const currentCat = isValidCat || group ? categorySlug : 'all';
 
-  const searchTerm = String(resolvedSearch.q || '');
-  const theme = String(resolvedSearch.theme || '');
-  const sort = String(resolvedSearch.sort || 'best');
+  const searchTerm = getSingleParam(resolvedSearch.q);
+  const theme = getSingleParam(resolvedSearch.theme);
+  const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
   let products: Awaited<ReturnType<typeof fetchProducts>> = [];
   try {

@@ -11,6 +11,7 @@ export interface Product {
   description: string;
   nutrition?: string;
   image_url?: string;
+  created_at?: string;
 }
 
 export type Category = string;

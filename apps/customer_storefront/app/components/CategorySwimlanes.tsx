@@ -9,7 +9,6 @@ import type { Product, Category } from '../lib/types';
 
 interface CategorySwimlanesProps {
   categorySlug: string;
-  currentCat: Category | 'all';
   group?: ReturnType<typeof getCategoryGroup>;
   products: Product[];
   categories: { id: string; slug: string; name: string; emoji: string }[];
@@ -19,7 +18,6 @@ interface CategorySwimlanesProps {
 
 export function CategorySwimlanes({
   categorySlug,
-  currentCat,
   group,
   products,
   theme,
@@ -53,6 +51,7 @@ export function CategorySwimlanes({
 
     if (sort === 'price_asc') list.sort((a, b) => a.price - b.price);
     else if (sort === 'price_desc') list.sort((a, b) => b.price - a.price);
+    else if (sort === 'newest') list.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''));
 
     return list;
   }, [products, theme, availability, sort]);

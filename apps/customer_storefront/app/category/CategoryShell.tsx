@@ -37,7 +37,7 @@ export function CategoryShell({
             title="⚡ Express Delivery"
             subtitle="Delivery in as soon as 1 hour. Shop your faves."
             badge="New"
-            bgGradient="from-[#0071DC] to-[#005bb5]"
+            bgGradient="from-[#0b4fd9] to-[#005bb5]"
           />
 
           <div className="mt-4">
@@ -51,12 +51,11 @@ export function CategoryShell({
             title="Your go-tos, elevated"
             subtitle="bettergoods snack stars"
             ctaText="Shop now"
-            bgColor="#f0fdf4"
+            bgColor="#faf8f5"
           />
 
           <CategorySwimlanes
             categorySlug={categorySlug}
-            currentCat={currentCat}
             group={group}
             products={products}
             categories={categories}

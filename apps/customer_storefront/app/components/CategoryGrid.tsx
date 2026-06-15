@@ -15,7 +15,7 @@ function CategoryPill({ slug, label, emoji, isActive }: CategoryPillProps) {
       : ['deals', 'new', 'bestsellers'].includes(slug)
       ? `/category?theme=${slug}`
       : `/category/${slug}`;
-  const activeClass = 'bg-[#1c1917] text-[#FFF34D] font-bold shadow-sm';
+  const activeClass = 'bg-[#1c1917] text-[#ffe721] font-bold shadow-sm';
   const inactiveClass = 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]';
 
   return (
