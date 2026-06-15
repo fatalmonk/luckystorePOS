@@ -61,24 +61,31 @@ export function CategoryFooter({ categorySlug, categoryName }: CategoryFooterPro
       <div className="mb-6">
         <h3 className="text-sm font-bold text-[#1c1917] mb-3">Frequently asked questions</h3>
         <div className="space-y-2">
-          <details className="group rounded-lg border border-[#e7e5e4] bg-white">
-            <summary className="flex cursor-pointer items-center justify-between p-3 text-sm font-medium text-[#44403c]">
-              How do I pick snacks for a party?
+          <details className="group rounded-xl border border-[#e7e5e4] bg-white overflow-hidden">
+            <summary className="flex cursor-pointer items-center justify-between p-3 text-sm font-medium text-[#44403c] list-none">
+              How fast is delivery?
               <span className="text-lg transition-transform group-open:rotate-180">▼</span>
             </summary>
-            <p className="px-3 pb-3 text-xs text-[#78716c]">
-              Consider a mix of sweet and savory options. Chips, cookies, and fruit snacks are crowd
-              pleasers. Order 2-3 varieties per 10 guests.
+            <p className="px-3 pb-3 text-xs text-[#78716c] leading-relaxed">
+              We deliver in as soon as 1 hour across Chittagong. Same-day delivery is available for orders placed before 6 PM.
             </p>
           </details>
-          <details className="group rounded-lg border border-[#e7e5e4] bg-white">
-            <summary className="flex cursor-pointer items-center justify-between p-3 text-sm font-medium text-[#44403c]">
-              How should I store opened chips?
+          <details className="group rounded-xl border border-[#e7e5e4] bg-white overflow-hidden">
+            <summary className="flex cursor-pointer items-center justify-between p-3 text-sm font-medium text-[#44403c] list-none">
+              What is your return policy?
               <span className="text-lg transition-transform group-open:rotate-180">▼</span>
             </summary>
-            <p className="px-3 pb-3 text-xs text-[#78716c]">
-              Seal tightly in the original bag with a clip, or transfer to an airtight container.
-              Store in a cool, dry place away from sunlight.
+            <p className="px-3 pb-3 text-xs text-[#78716c] leading-relaxed">
+              Report damaged or incorrect items within 24 hours of delivery. We’ll replace the item or refund you promptly.
+            </p>
+          </details>
+          <details className="group rounded-xl border border-[#e7e5e4] bg-white overflow-hidden">
+            <summary className="flex cursor-pointer items-center justify-between p-3 text-sm font-medium text-[#44403c] list-none">
+              How do I pay?
+              <span className="text-lg transition-transform group-open:rotate-180">▼</span>
+            </summary>
+            <p className="px-3 pb-3 text-xs text-[#78716c] leading-relaxed">
+              Cash on delivery is available for all orders. Digital payment options are coming soon.
             </p>
           </details>
         </div>
@@ -87,17 +94,17 @@ export function CategoryFooter({ categorySlug, categoryName }: CategoryFooterPro
       {/* Related links */}
       <div className="mb-4">
         <h3 className="text-sm font-bold text-[#1c1917] mb-3">Related categories</h3>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#ffe302]">
-          <button onClick={() => router.push('/category/snacks')} className="hover:underline">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#44403c]">
+          <button onClick={() => router.push('/category/snacks')} className="hover:text-[#1c1917] hover:underline">
             Snacks
           </button>
-          <button onClick={() => router.push('/category/beverages')} className="hover:underline">
+          <button onClick={() => router.push('/category/beverages')} className="hover:text-[#1c1917] hover:underline">
             Beverages
           </button>
-          <button onClick={() => router.push('/category/grocery')} className="hover:underline">
+          <button onClick={() => router.push('/category/grocery')} className="hover:text-[#1c1917] hover:underline">
             Grocery
           </button>
-          <button onClick={() => router.push('/category/produce')} className="hover:underline">
+          <button onClick={() => router.push('/category/produce')} className="hover:text-[#1c1917] hover:underline">
             Fresh Produce
           </button>
         </div>
@@ -105,10 +112,10 @@ export function CategoryFooter({ categorySlug, categoryName }: CategoryFooterPro
 
       {/* Corporate links */}
       <div className="pt-4 border-t border-[#e7e5e4] text-[10px] text-[#a8a29e] flex flex-wrap gap-x-3 gap-y-1">
-        <span>© Lucky Store</span>
-        <a href="#" className="hover:underline">Terms of Use</a>
-        <a href="#" className="hover:underline">Privacy</a>
-        <a href="#" className="hover:underline">Contact</a>
+        <span>© {new Date().getFullYear()} Lucky Store</span>
+        <a href="#" className="hover:text-[#78716c] transition-colors">Terms of Use</a>
+        <a href="#" className="hover:text-[#78716c] transition-colors">Privacy</a>
+        <a href="#" className="hover:text-[#78716c] transition-colors">Contact</a>
       </div>
     </footer>
   );

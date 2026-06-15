@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig = {
+  output: 'standalone',
+  outputFileTracingRoot: __dirname,
   devIndicators: false,
   images: {
+    formats: ['image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -15,4 +22,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

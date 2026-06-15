@@ -5,43 +5,66 @@ import { HeaderSearch } from './HeaderSearch';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 h-[68px] bg-[#ffe302] border-b border-yellow-300 flex items-center px-4 gap-3 flex-shrink-0">
-      {/* Left: Logo + Location */}
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <Link href="/" className="flex items-center gap-2 min-h-[44px]">
+    <header className="sticky top-0 z-50 flex-shrink-0">
+      {/* Top strip: logo + search + actions on warm neutral to reduce yellow fatigue */}
+      <div className="h-[64px] bg-[#fffdf5] border-b border-[#e7e5e4] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 min-h-[44px] flex-shrink-0">
           <Image
             src="/logo-mark.svg"
             alt="Lucky Store"
-            width={36}
-            height={36}
-            className="rounded-full bg-white"
+            width={34}
+            height={34}
+            className="rounded-full bg-[#ffe302]"
             priority
           />
-          <span className="font-extrabold text-base text-[#1c1917] hidden sm:block">Lucky Store</span>
+          <span className="font-extrabold text-[15px] text-[#1c1917] hidden sm:block tracking-tight">
+            Lucky Store
+          </span>
         </Link>
-        <button
-          type="button"
-          className="hidden md:flex flex-col items-start text-xs text-[#1c1917] hover:bg-yellow-400/60 px-2 py-1 rounded-lg transition-colors min-h-[44px] justify-center"
-        >
-          <span className="text-[9px] uppercase tracking-wider text-[#1c1917]/70 font-semibold">Delivery to</span>
-          <span className="font-semibold text-[#1c1917]/90 flex items-center gap-0.5">Chattogram <span className="text-[10px] opacity-70">▼</span></span>
-        </button>
+
+        {/* Search */}
+        <div className="flex-1 min-w-0">
+          <HeaderSearch />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-0.5 flex-shrink-0">
+          <button
+            type="button"
+            className="flex items-center gap-2 min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-[#f5f5f4] transition-colors"
+          >
+            <span aria-hidden="true" className="text-lg">👤</span>
+            <span className="hidden lg:block text-sm font-medium">Sign In</span>
+          </button>
+          <HeaderCartButton />
+        </div>
       </div>
 
-      {/* Center: Search form (real <form> + client enhancements) */}
-      <HeaderSearch />
-
-      {/* Right: Account + Cart */}
-      <div className="flex items-center gap-1 flex-shrink-0">
-        <button
-          type="button"
-          className="flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-lg hover:bg-yellow-400 transition-colors"
+      {/* Sub-nav strip: yellow accent for thematic pills only */}
+      <nav className="h-[44px] bg-[#ffe302] flex items-center px-3 sm:px-4 gap-2 overflow-x-auto scrollbar-hide">
+        <Link
+          href="/category?theme=deals"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[#1c1917] text-[#ffe302] text-xs font-bold hover:bg-[#292524] transition-colors"
         >
-          <span aria-hidden="true" className="text-xl">👤</span>
-          <span className="hidden lg:block text-sm font-medium">Sign In</span>
-        </button>
-        <HeaderCartButton />
-      </div>
+          Deals
+        </Link>
+        <Link
+          href="/category?theme=bestsellers"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-[#1c1917] text-xs font-bold hover:bg-white transition-colors"
+        >
+          Best Sellers
+        </Link>
+        <Link
+          href="/category?theme=new"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-[#1c1917] text-xs font-bold hover:bg-white transition-colors"
+        >
+          New
+        </Link>
+        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 ml-auto whitespace-nowrap">
+          Delivery in as soon as 1 hour
+        </span>
+      </nav>
     </header>
   );
 }
