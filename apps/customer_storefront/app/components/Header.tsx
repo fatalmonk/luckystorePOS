@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderCartButton } from './HeaderCartButton';
 import { HeaderSearch } from './HeaderSearch';
+import { HeaderFilters } from './HeaderFilters';
 
 export function Header() {
   return (
@@ -43,7 +45,7 @@ export function Header() {
       </div>
 
       {/* Sub-nav strip: yellow accent for thematic pills only */}
-      <nav className="h-[44px] bg-[#ffe302] flex items-center px-3 sm:px-4 gap-2 overflow-x-auto scrollbar-hide">
+      <nav className="bg-[#ffe302] flex flex-wrap md:flex-nowrap items-center px-3 sm:px-4 py-2 md:py-0 md:h-[44px] gap-2 z-40 relative">
         <Link
           href="/category?theme=deals"
           className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[#1c1917] text-[#ffe302] text-xs font-bold hover:bg-[#292524] transition-colors"
@@ -62,6 +64,9 @@ export function Header() {
         >
           New
         </Link>
+        <Suspense fallback={null}>
+          <HeaderFilters />
+        </Suspense>
         <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 ml-auto whitespace-nowrap">
           Delivery in as soon as 1 hour
         </span>
