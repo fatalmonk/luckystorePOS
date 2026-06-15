@@ -269,7 +269,7 @@ export function ProductCard({
             <div className="flex items-center justify-between gap-1 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-11 h-11 rounded-full border-2 border-warm-primary bg-white text-warm-primary flex items-center justify-center text-base font-bold hover:bg-warm-primary hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                 aria-label="Decrease quantity"
               >
                 −
@@ -277,7 +277,7 @@ export function ProductCard({
               <span className="font-bold text-sm min-w-[24px] text-center">{qtyInCart}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-11 h-11 rounded-full border-2 border-warm-primary bg-white text-warm-primary flex items-center justify-center text-base font-bold hover:bg-warm-primary hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                 aria-label="Increase quantity"
               >
                 +
@@ -292,7 +292,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-11 min-h-[44px] rounded-full border-2 border-warm-primary text-warm-primary text-sm font-bold hover:bg-warm-primary hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
+              className="w-full h-11 min-h-[44px] rounded-full border-2 border-warm-accent text-warm-accent text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
             >
               Add
             </button>

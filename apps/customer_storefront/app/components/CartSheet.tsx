@@ -100,14 +100,14 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => updateQty(item.id, -1)}
-                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe721] hover:text-[#1c1917] transition-colors"
+                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
                     >
                       −
                     </button>
                     <span className="font-bold text-sm min-w-[20px] text-center">{item.qty}</span>
                     <button
                       onClick={() => updateQty(item.id, 1)}
-                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe721] hover:text-[#1c1917] transition-colors"
+                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
                     >
                       +
                     </button>

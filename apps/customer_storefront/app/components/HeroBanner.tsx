@@ -10,7 +10,7 @@ export function HeroBanner({
   title,
   subtitle,
   badge,
-  bgGradient = 'from-[#ffe721] via-[#ffd524] to-[#f4b61a]',
+  bgGradient = 'from-[#ffe302] via-[#ffd524] to-[#f4b61a]',
   bgImage,
 }: HeroBannerProps) {
   const hasBgImage = !!bgImage;
@@ -27,7 +27,7 @@ export function HeroBanner({
       <div className="absolute -top-5 -right-5 w-[100px] h-[100px] bg-white/5 rounded-full z-0" />
       <div className="absolute bottom-0 right-0 w-[140px] h-[140px] bg-white/[0.03] rounded-full translate-x-1/3 translate-y-1/3 z-0" />
 
-      <div className={`relative z-10 max-w-3xl ${hasBgImage || !bgGradient.includes('blue-50') ? 'text-white' : 'text-gray-900'}`}>
+      <div className={`relative z-10 max-w-3xl ${hasBgImage || !bgGradient.includes('#fff8c0') ? 'text-white' : 'text-gray-900'}`}>
         {badge && (
           <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest opacity-85 mb-1.5">
             {badge}

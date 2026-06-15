@@ -5,7 +5,7 @@ import { HeaderSearch } from './HeaderSearch';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 h-[68px] bg-[#ffe721] border-b border-yellow-300 flex items-center px-4 gap-3 flex-shrink-0">
+    <header className="sticky top-0 z-50 h-[68px] bg-[#ffe302] border-b border-yellow-300 flex items-center px-4 gap-3 flex-shrink-0">
       {/* Left: Logo + Location */}
       <div className="flex items-center gap-3 flex-shrink-0">
         <Link href="/" className="flex items-center gap-2 min-h-[44px]">

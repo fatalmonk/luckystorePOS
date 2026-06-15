@@ -20,7 +20,7 @@ export function Input({ label, className = '', ...props }: InputProps) {
           border border-[#e7e5e4] rounded-[14px]
           bg-white text-[#1c1917] text-base
           outline-none
-          focus:border-[#ffe721] focus:shadow-[0_0_0_3px_rgba(255,243,77,0.15)]
+          focus:border-[#ffe302] focus:shadow-[0_0_0_3px_rgba(255,243,77,0.15)]
           transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
           placeholder:text-[#a8a29e]
           ${className}
@@ -49,7 +49,7 @@ export function TextArea({ label, className = '', ...props }: TextAreaProps) {
           border border-[#e7e5e4] rounded-[14px]
           bg-white text-[#1c1917] text-base
           outline-none
-          focus:border-[#ffe721] focus:shadow-[0_0_0_3px_rgba(255,243,77,0.15)]
+          focus:border-[#ffe302] focus:shadow-[0_0_0_3px_rgba(255,243,77,0.15)]
           transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
           placeholder:text-[#a8a29e]
           ${className}
@@ -78,7 +78,7 @@ export function SearchInput({ onSearch, ...props }: SearchInputProps) {
           bg-[#faf8f5] border border-[#e7e5e4] rounded-full
           text-sm text-[#1c1917]
           outline-none
-          focus:border-[#ffe721] focus:bg-white focus:shadow-[0_0_0_3px_rgba(220,95,59,0.07)]
+          focus:border-[#ffe302] focus:bg-white focus:shadow-[0_0_0_3px_rgba(220,95,59,0.07)]
           transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
           placeholder:text-[#a8a29e]
         "

@@ -37,7 +37,7 @@ export function CategoryShell({
             title="⚡ Express Delivery"
             subtitle="Delivery in as soon as 1 hour. Shop your faves."
             badge="New"
-            bgGradient="from-[#0b4fd9] to-[#005bb5]"
+            bgGradient="from-[#ffe302] to-[#fff287]"
           />
 
           <div className="mt-4">

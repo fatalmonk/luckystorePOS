@@ -147,7 +147,7 @@ export function FilterSidebar({
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="w-5 h-5 rounded border-2 border-[#e7e5e4] text-[#ffe721] focus:ring-2 focus:ring-[#ffe721] focus:ring-offset-2 accent-[#ffe721]"
+        className="w-5 h-5 rounded border-2 border-[#e7e5e4] text-[#ffe302] focus:ring-2 focus:ring-[#ffe302] focus:ring-offset-2 accent-[#ffe302]"
       />
       <span className="text-sm text-[#44403c]">{label}</span>
       {count !== undefined && (
@@ -171,7 +171,7 @@ export function FilterSidebar({
         name={`filter-${label}`}
         checked={checked}
         onChange={onChange}
-        className="w-5 h-5 text-[#ffe721] border-2 border-[#e7e5e4] focus:ring-2 focus:ring-[#ffe721] focus:ring-offset-2"
+        className="w-5 h-5 text-[#ffe302] border-2 border-[#e7e5e4] focus:ring-2 focus:ring-[#ffe302] focus:ring-offset-2"
       />
       <span className="text-sm text-[#44403c]">{label}</span>
     </label>
@@ -200,7 +200,7 @@ export function FilterSidebar({
           {hasActiveFilters && (
             <button
               onClick={handleClearAll}
-              className="text-sm font-medium text-[#0b4fd9] hover:underline"
+              className="text-sm font-medium text-[#ffe302] hover:underline"
             >
               Clear all
             </button>
@@ -249,7 +249,7 @@ export function FilterSidebar({
         <div className="border-t border-[#f5f5f4] p-4">
           <button
             onClick={() => onMobileClose?.()}
-            className="w-full h-[50px] bg-[#ffe721] text-[#1c1917] rounded-full font-bold text-base hover:bg-[#FBEF51] transition-colors press-feedback"
+            className="w-full h-[50px] bg-[#ffe302] text-[#1c1917] rounded-full font-bold text-base hover:bg-[#ffec50] transition-colors press-feedback"
           >
             Show Results
           </button>
@@ -267,7 +267,7 @@ export function FilterSidebar({
           {hasActiveFilters && (
             <button
               onClick={handleClearAll}
-              className="text-sm font-medium text-[#0b4fd9] hover:underline"
+              className="text-sm font-medium text-[#ffe302] hover:underline"
             >
               Clear all
             </button>
