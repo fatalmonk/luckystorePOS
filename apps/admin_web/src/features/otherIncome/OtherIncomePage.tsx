@@ -68,7 +68,7 @@ export const OtherIncomePage: React.FC = () => {
       const payload: OtherIncomeFormData = {
         ...values,
         storeId: storeId || undefined,
-      };
+      } as OtherIncomeFormData;
       await otherIncome.create(tenantId, payload);
       notify('Other income recorded successfully', 'success');
       setIsDrawerOpen(false);
