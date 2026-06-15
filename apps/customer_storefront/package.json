@@ -19,9 +19,13 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.19",
     "@playwright/test": "^1.45.0",
     "@types/node": "^20.19.43",
-    "cross-env": "^7.0.3"
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18",
+    "cross-env": "^7.0.3",
+    "next": "^15.5.19"
   },
   "engines": {
     "node": "24.x"
