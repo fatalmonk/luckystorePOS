@@ -8,6 +8,15 @@ import { NativeAdBanner } from './NativeAdBanner';
 import { getCategoryGroup } from '../lib/types';
 import type { Product } from '../lib/types';
 
+interface NativeAdBannerProps {
+  title: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  bgImage?: string;
+  bgColor?: string;
+}
+
 interface CategorySwimlanesProps {
   categorySlug: string;
   group?: ReturnType<typeof getCategoryGroup>;
@@ -15,6 +24,7 @@ interface CategorySwimlanesProps {
   categories: { id: string; slug: string; name: string; emoji: string }[];
   theme: string;
   sort: string;
+  ad?: NativeAdBannerProps;
 }
 
 export function CategorySwimlanes({
@@ -24,6 +34,7 @@ export function CategorySwimlanes({
   theme,
   sort,
   categories,
+  ad,
 }: CategorySwimlanesProps) {
   const searchParams = useSearchParams();
 
@@ -47,7 +58,12 @@ export function CategorySwimlanes({
 
     if (theme === 'deals') {
       list = list.filter((p) => p.originalPrice && p.originalPrice > p.price);
-    } else if (theme === 'new' || theme === 'bestsellers') {
+    } else if (theme === 'new') {
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      list = list
+        .filter((p) => p.created_at && new Date(p.created_at).getTime() > thirtyDaysAgo)
+        .sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
+    } else if (theme === 'bestsellers') {
       list = list.filter((p) => p.stock > 10);
     }
 
@@ -67,16 +83,19 @@ export function CategorySwimlanes({
 
     if (sort === 'price_asc') list.sort((a, b) => a.price - b.price);
     else if (sort === 'price_desc') list.sort((a, b) => b.price - a.price);
-    else if (sort === 'newest') list.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''));
+    else if (sort === 'newest')
+      list.sort((a, b) =>
+        new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime()
+      );
 
     return list;
   }, [products, theme, availability, priceRanges, sort]);
 
   const { deals, bestSellers } = useMemo(() => {
-    const deals = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
-    const bestSellers = filtered.filter((p) => p.stock > 10).slice(0, 8);
+    const deals = products.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
+    const bestSellers = products.filter((p) => p.stock > 10).slice(0, 8);
     return { deals, bestSellers };
-  }, [filtered]);
+  }, [products]);
 
   const subCategoryGrids = useMemo(() => {
     if (!group) return [];
@@ -149,12 +168,7 @@ export function CategorySwimlanes({
           action={{ label: 'See all', href: `/category/${categorySlug}?theme=bestsellers` }}
         />
       )}
-      <NativeAdBanner
-        title="Your fireside fave is back"
-        subtitle="More s'mores please!"
-        ctaText="Shop now"
-        bgColor="#1c1917"
-      />
+      {ad && <NativeAdBanner {...ad} />}
       <section className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold tracking-tight">All Products</h2>
