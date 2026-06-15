@@ -25,7 +25,7 @@ export function ProductCarousel({
 
   return (
     <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide scroll-edge-mask">
-        {products.map((product) => {
+        {products.map((product, index) => {
           let addBtnRef: HTMLButtonElement | null = null;
           return (
             <div key={product.id} className="w-40 sm:w-48 flex-shrink-0 snap-start">
@@ -41,6 +41,7 @@ export function ProductCarousel({
                 category={product.category}
                 image_url={product.image_url}
                 qtyInCart={getQtyInCart(product.id)}
+                priority={index === 0}
                 onAdd={() => onAdd(product, addBtnRef)}
                 onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
                 onClick={() => onClick(product.id)}

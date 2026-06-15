@@ -15,12 +15,16 @@ concurrency:
 jobs:
   lhci:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/customer_storefront
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npm run build
       - name: Run Lighthouse CI
@@ -29,4 +33,3 @@ jobs:
           lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-        working-directory: apps/customer_storefront
