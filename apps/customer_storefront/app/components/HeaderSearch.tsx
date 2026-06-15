@@ -20,20 +20,20 @@ export function HeaderSearch() {
       action="/category"
       method="GET"
       onSubmit={handleSubmit}
-      className="relative flex-1 max-w-2xl mx-2"
+      className="relative w-full max-w-xl"
     >
       <input
         name="q"
         type="text"
         placeholder="Search everything..."
-        className="w-full h-11 pl-4 pr-12 rounded-full bg-white border-2 border-transparent focus:border-[#0b4fd9] outline-none text-sm shadow-sm"
+        className="w-full h-10 pl-4 pr-11 rounded-full bg-[#f5f5f4] border border-transparent focus:border-[#ffe302] focus:bg-white outline-none text-sm transition-all shadow-sm"
       />
       <button
         type="submit"
-        className="absolute right-1 top-1 min-h-[44px] min-w-[44px] bg-[#0b4fd9] rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+        className="absolute right-1 top-1 h-8 w-8 bg-[#ffe302] rounded-full flex items-center justify-center text-[#1c1917] hover:bg-[#ffec50] transition-colors"
         aria-label="Search"
       >
-        <span aria-hidden="true">🔍</span>
+        <span aria-hidden="true" className="text-base">🔍</span>
       </button>
     </form>
   );

@@ -109,7 +109,7 @@ function CheckoutContent() {
                     currentStep > step.id
                       ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
                       : currentStep === step.id
-                      ? 'bg-[#ffe721] text-[#1c1917]'
+                      ? 'bg-[#ffe302] text-[#1c1917]'
                       : 'bg-[#f5f5f4] text-[#a8a29e]'
                   }`}
                 >
@@ -169,7 +169,7 @@ function CheckoutContent() {
               <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
                 <p className="text-xs text-[#a8a29e] uppercase tracking-widest mb-1">Store</p>
                 <p className="font-bold text-[15px] mb-0.5">Lucky Store — Emdad Park</p>
-                <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chattogram 4203</p>
+                <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chittagong 4203</p>
               </div>
 
               <Input

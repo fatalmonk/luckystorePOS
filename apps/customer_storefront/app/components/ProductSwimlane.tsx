@@ -35,7 +35,7 @@ export function ProductSwimlane({
         {action && (
           <a
             href={action.href}
-            className="text-sm font-medium text-[#0b4fd9] hover:underline"
+            className="text-sm font-medium text-[#ffe302] hover:underline"
           >
             {action.label}
           </a>

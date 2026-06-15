@@ -14,12 +14,12 @@
   --color-border-light: #f5f5f4;
 
   /* Accent - Lucky Store yellow palette */
-  --color-accent: #FFF34D;
-  --color-accent-hover: #FBEF51;
-  --color-accent-ghost: rgba(255, 243, 77, 0.12);
-  --color-accent-text: #5c5200;
-  --color-accent-muted: #E2DA6A;
-  --color-accent-olive: #C4C087;
+  --color-accent: #ffe302;
+  --color-accent-hover: #ffec50;
+  --color-accent-ghost: rgba(255, 227, 2, 0.12);
+  --color-accent-text: #1c1917;
+  --color-accent-muted: #fff287;
+  --color-accent-olive: #fff8c0;
 
   /* Semantic - status colors */
   --color-success: #2d6a4f;
@@ -50,7 +50,7 @@
   --glass-border: rgba(231, 229, 228, 0.5);
 
   /* Dimensions */
-  --header-h: 60px;
+  --header-h: 108px;
   --bottom-h: 68px;
 
   /* Animation */

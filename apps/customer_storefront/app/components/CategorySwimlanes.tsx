@@ -32,6 +32,15 @@ export function CategorySwimlanes({
     [availabilityParam]
   );
 
+  const priceParam = searchParams.get('price') || '';
+  const priceRanges = useMemo(() => {
+    if (!priceParam) return [];
+    return priceParam.split(',').map((range) => {
+      const [min, max] = range.split('-').map(Number);
+      return { min, max };
+    });
+  }, [priceParam]);
+
   const filtered = useMemo(() => {
     let list = [...products];
 
@@ -49,12 +58,18 @@ export function CategorySwimlanes({
       });
     }
 
+    if (priceRanges.length) {
+      list = list.filter((p) =>
+        priceRanges.some((range) => p.price >= range.min && p.price <= range.max)
+      );
+    }
+
     if (sort === 'price_asc') list.sort((a, b) => a.price - b.price);
     else if (sort === 'price_desc') list.sort((a, b) => b.price - a.price);
     else if (sort === 'newest') list.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''));
 
     return list;
-  }, [products, theme, availability, sort]);
+  }, [products, theme, availability, priceRanges, sort]);
 
   const { deals, bestSellers, under300, under500 } = useMemo(() => {
     const deals = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);

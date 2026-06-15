@@ -19,7 +19,7 @@ test.describe('Checkout Flow', () => {
     const wishlistButton = page.locator('button:has-text("Notify when available")');
 
     if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip('Product out of stock, skipping checkout test');
+      test.skip(true, 'Product out of stock, skipping checkout test');
       return;
     }
 
@@ -40,7 +40,7 @@ test.describe('Checkout Flow', () => {
     // Fill checkout form (Step 2)
     await page.fill('input[placeholder*="name"]', 'Test User');
     await page.fill('input[placeholder*="1XXX"]', '+880 1712345678');
-    await page.fill('textarea[placeholder*="House"]', '123 Test Road, Chattogram');
+    await page.fill('textarea[placeholder*="House"]', '123 Test Road, Chittagong');
 
     // Place order
     await page.click('[data-testid="checkout-place-order-btn"]');
@@ -61,7 +61,7 @@ test.describe('Checkout Flow', () => {
     const addButton = page.locator('button:has-text("Add")');
     const wishlistButton = page.locator('button:has-text("Notify when available")');
     if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip('Product out of stock, skipping validation test');
+      test.skip(true, 'Product out of stock, skipping validation test');
       return;
     }
     await addButton.click();
