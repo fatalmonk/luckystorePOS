@@ -64,18 +64,20 @@ export function Header() {
         >
           New
         </Link>
-        <Suspense
-          fallback={
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-16 rounded-full bg-white/50 animate-pulse" />
-              <div className="h-6 w-20 rounded-full bg-white/50 animate-pulse" />
-              <div className="h-6 w-14 rounded-full bg-white/50 animate-pulse" />
-            </div>
-          }
-        >
-          <HeaderFilters />
-        </Suspense>
-        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 ml-auto whitespace-nowrap">
+        <div className="flex-1 min-w-0 flex items-center">
+          <Suspense
+            fallback={
+              <div className="flex items-center gap-2">
+                <div className="h-[28px] w-16 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
+                <div className="h-[28px] w-20 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
+                <div className="h-[28px] w-14 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
+              </div>
+            }
+          >
+            <HeaderFilters />
+          </Suspense>
+        </div>
+        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 whitespace-nowrap flex-shrink-0">
           Delivery in as soon as 1 hour
         </span>
       </nav>

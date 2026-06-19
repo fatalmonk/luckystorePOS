@@ -13,7 +13,7 @@ interface CartSheetProps {
 
 export function CartSheet({ open, onClose }: CartSheetProps) {
   const router = useRouter();
-  const { cart, updateQty, totalItems, subtotal, deliveryFee, total } = useCartContext();
+  const { cart, updateQty, removeFromCart, totalItems, subtotal, deliveryFee, total } = useCartContext();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -96,6 +96,13 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
                     <p className="text-xs text-[#a8a29e]">{formatBdt(item.price)} / {item.unit}</p>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-[10px] text-red-500 mt-0.5 hover:text-red-600 transition-colors"
+                      aria-label={`Remove ${item.name}`}
+                    >
+                      Remove
+                    </button>
                   </div>
                   <div className="flex items-center gap-2">
                     <button

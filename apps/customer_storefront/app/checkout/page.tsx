@@ -1,6 +1,6 @@
 'use client'; // checkout flow with form state, cart context, and router
 
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '../components/Header';
 import { useToast } from '../components/Toast';
@@ -21,16 +21,33 @@ function CheckoutContent() {
   const { cart, subtotal, deliveryFee, total, clearCart } = useCartContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isPlacing, setIsPlacing] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     address: '',
     notes: '',
+    deliverySlot: 'morning' as 'morning' | 'evening',
   });
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validateDetails = (): boolean => {
+    if (!formData.name || !formData.phone || !formData.address) {
+      showToast('Please fill all required fields');
+      return false;
+    }
+    const cleanPhone = formData.phone.replace(/\s+/g, '');
+    if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
+      showToast('Enter valid BD phone (01XXXXXXXXX or +8801XXXXXXXXX)');
+      phoneRef.current?.focus();
+      phoneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+    return true;
   };
 
   const goToStep = (step: number) => {
@@ -38,34 +55,20 @@ function CheckoutContent() {
       showToast('Your cart is empty');
       return;
     }
-    if (step === 3) {
-      if (!formData.name || !formData.phone || !formData.address) {
-        showToast('Please fill all required fields');
-        return;
-      }
-      const cleanPhone = formData.phone.replace(/\s+/g, '');
-      if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
-        showToast('Enter valid BD phone (01XXXXXXXXX or +8801XXXXXXXXX)');
-        return;
-      }
+    if (step === 3 && !validateDetails()) {
+      return;
     }
     setCurrentStep(step);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const placeOrder = async () => {
-    const cleanPhone = formData.phone.replace(/\s+/g, '');
-    if (!formData.name || !formData.phone || !formData.address) {
-      showToast('Please fill all required fields');
-      return;
-    }
-    if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
-      showToast('Enter valid BD phone (01XXXXXXXXX or +8801XXXXXXXXX)');
-      return;
-    }
+    if (!validateDetails()) return;
 
     setIsPlacing(true);
 
     try {
+      const cleanPhone = formData.phone.replace(/\s+/g, '');
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,6 +78,7 @@ function CheckoutContent() {
           customerPhone: cleanPhone,
           customerAddress: formData.address,
           notes: formData.notes || undefined,
+          deliverySlot: formData.deliverySlot,
           items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty, unit: c.unit })),
           subtotal,
           deliveryFee,
@@ -90,6 +94,7 @@ function CheckoutContent() {
     } catch (e: any) {
       showToast(e?.message || 'Could not place order');
       setIsPlacing(false);
+      setCurrentStep(2);
     }
   };
 
@@ -179,6 +184,7 @@ function CheckoutContent() {
                 placeholder="Your full name"
               />
               <Input
+                ref={phoneRef}
                 label="WhatsApp Number *"
                 value={formData.phone}
                 onChange={(e) => updateField('phone', e.target.value)}
@@ -197,36 +203,115 @@ function CheckoutContent() {
                 placeholder="e.g. Ring bell twice"
               />
 
+              <div className="mb-5">
+                <p className="block text-[13px] font-bold mb-2 text-[#1c1917]">Delivery Slot</p>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'morning', label: 'Morning', time: '9AM–1PM' },
+                    { id: 'evening', label: 'Evening', time: '4PM–8PM' },
+                  ].map((slot) => (
+                    <button
+                      key={slot.id}
+                      type="button"
+                      onClick={() => updateField('deliverySlot', slot.id)}
+                      className={`flex-1 py-2.5 px-3 rounded-[14px] border-2 text-sm font-bold transition-all ${
+                        formData.deliverySlot === slot.id
+                          ? 'border-warm-accent bg-warm-accent/10 text-[#1c1917]'
+                          : 'border-[#e7e5e4] bg-white text-[#78716c] hover:border-[#d6d3d1]'
+                      }`}
+                    >
+                      {slot.label}
+                      <span className="block text-[10px] font-medium mt-0.5 opacity-70">{slot.time}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => goToStep(1)} className="flex-1">← Back</Button>
-                <Button onClick={() => goToStep(3)} className="flex-1" data-testid="checkout-place-order-btn">Place Order</Button>
+                <Button onClick={() => goToStep(3)} className="flex-1" data-testid="checkout-review-btn">Review Order →</Button>
               </div>
             </div>
           )}
 
-          {/* Step 3: Confirming */}
+          {/* Step 3: Confirm — review summary + explicit Place Order */}
           {currentStep === 3 && (
-            <ConfirmingStep placeOrder={placeOrder} isPlacing={isPlacing} />
+            <div className="animate-[fadeUp_0.25s_ease]">
+              {!isPlacing ? (
+                <>
+                  <h3 className="text-sm font-bold text-[#78716c] uppercase tracking-widest mb-4">Order Summary</h3>
+
+                  <div className="space-y-3 mb-5">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 py-2 border-b border-[#f5f5f4]">
+                        <div className="text-[22px]">{item.emoji}</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm">{item.name}</p>
+                          <p className="text-[13px] text-[#78716c]">
+                            {formatBdt(item.price)} × {item.qty}
+                          </p>
+                        </div>
+                        <p className="font-bold">{formatBdt(item.price * item.qty)}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
+                    <h4 className="text-xs font-bold text-[#a8a29e] uppercase tracking-widest mb-3">Delivery Details</h4>
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex">
+                        <span className="text-[#a8a29e] w-20">Name</span>
+                        <span className="font-semibold">{formData.name}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="text-[#a8a29e] w-20">Phone</span>
+                        <span>{formData.phone}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="text-[#a8a29e] w-20">Address</span>
+                        <span>{formData.address}</span>
+                      </div>
+                      {formData.notes && (
+                        <div className="flex">
+                          <span className="text-[#a8a29e] w-20">Notes</span>
+                          <span>{formData.notes}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] mb-6">
+                    <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
+                      <span>Subtotal</span>
+                      <span>{formatBdt(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
+                      <span>Delivery</span>
+                      <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
+                    </div>
+                    <div className="flex justify-between pt-3 border-t border-[#f5f5f4] text-lg font-extrabold text-[#1c1917]">
+                      <span>Total</span>
+                      <span>{formatBdt(total)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button variant="secondary" onClick={() => goToStep(2)} className="flex-1">← Edit Details</Button>
+                    <Button onClick={placeOrder} className="flex-1" data-testid="checkout-place-order-btn">Place Order</Button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
+                  <div className="text-6xl mb-4">⏳</div>
+                  <h3 className="text-lg font-bold mb-2">Placing your order…</h3>
+                  <p className="text-[#78716c]">Please wait a moment</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </main>
     </>
-  );
-}
-
-function ConfirmingStep({ placeOrder, isPlacing }: { placeOrder: () => void; isPlacing: boolean }) {
-  useEffect(() => {
-    const timer = setTimeout(() => placeOrder(), 300);
-    return () => clearTimeout(timer);
-  }, [placeOrder]);
-
-  return (
-    <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
-      <div className="text-6xl mb-4">⏳</div>
-      <h3 className="text-lg font-bold mb-2">Confirming…</h3>
-      <p className="text-[#78716c]">Checking stock availability</p>
-      {isPlacing && <p className="text-sm text-[#a8a29e] mt-2">Please wait...</p>}
-    </div>
   );
 }
 

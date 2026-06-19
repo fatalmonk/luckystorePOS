@@ -1,12 +1,12 @@
 'use client'; // controlled input/textarea with focus ring transitions and optional search handler
 
-import { InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { InputHTMLAttributes, TextareaHTMLAttributes, forwardRef } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
 }
 
-export function Input({ label, className = '', ...props }: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, className = '', ...props }, ref) => {
   return (
     <div className="mb-4">
       {label && (
@@ -15,6 +15,7 @@ export function Input({ label, className = '', ...props }: InputProps) {
         </label>
       )}
       <input
+        ref={ref}
         className={`
           w-full h-12 px-4
           border border-[#e7e5e4] rounded-[14px]
@@ -29,7 +30,8 @@ export function Input({ label, className = '', ...props }: InputProps) {
       />
     </div>
   );
-}
+});
+Input.displayName = 'Input';
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
