@@ -7,6 +7,7 @@ import { BottomNav } from '../components/BottomNav';
 import { useCartContext } from '../components/CartProvider';
 import { Button } from '../components/ui/Button';
 import { PriceDisplay } from '../components/PriceDisplay';
+import { EmptyCartIcon } from '../components/icons';
 import { formatBdt } from '../lib/formatPrice';
 
 function CartContent() {
@@ -25,7 +26,9 @@ function CartContent() {
 
           {isEmpty ? (
             <div className="text-center py-16">
-              <div className="text-6xl mb-4 opacity-50">🛒</div>
+              <div className="flex items-center justify-center mb-4">
+                <EmptyCartIcon size={64} className="text-[#d6d3d1]" />
+              </div>
               <h3 className="text-lg font-bold mb-2">Your cart is empty</h3>
               <p className="text-sm text-gray-500 mb-6">Add items from the store to get started</p>
               <Button onClick={() => router.push('/')} className="max-w-[220px] mx-auto">

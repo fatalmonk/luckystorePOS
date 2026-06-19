@@ -1,12 +1,13 @@
 import { BottomNavShell } from './BottomNavShell';
 import { ActiveLink } from './ActiveLink';
 import { BottomNavCartPill } from './BottomNavCartPill';
+import { HomeIcon, BrowseIcon, CartIcon, OrdersIcon } from './icons';
 
 const navItems = [
-  { icon: '🏠', label: 'Home', href: '/' },
-  { icon: '📂', label: 'Browse', href: '/category' },
-  { icon: '🛒', label: 'Cart', href: '/cart', showBadge: true },
-  { icon: '📋', label: 'Orders', href: '/order' },
+  { icon: <HomeIcon size={22} />, label: 'Home', href: '/' },
+  { icon: <BrowseIcon size={22} />, label: 'Browse', href: '/category' },
+  { icon: <CartIcon size={22} />, label: 'Cart', href: '/cart', showBadge: true },
+  { icon: <OrdersIcon size={22} />, label: 'Orders', href: '/order' },
 ];
 
 export function BottomNav() {

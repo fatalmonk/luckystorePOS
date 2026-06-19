@@ -10,6 +10,7 @@ export interface OrderInput {
   customerPhone: string;
   customerAddress: string;
   notes?: string;
+  deliverySlot?: string;
   items: { id: string; name: string; price: number; qty: number; unit?: string }[];
   subtotal: number;
   deliveryFee: number;
@@ -32,6 +33,7 @@ export async function createOrder(input: OrderInput) {
     p_subtotal: input.subtotal,
     p_delivery_fee: input.deliveryFee,
     p_total: input.total,
+    p_delivery_slot: input.deliverySlot ?? null,
   });
 
   if (error) throw error;

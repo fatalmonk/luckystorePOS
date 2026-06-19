@@ -5,6 +5,7 @@ import { PromoGrid } from './updated/PromoGrid';
 import { DeliveryProgress } from './DeliveryProgress';
 import { HomeSectionsClient } from './HomeSectionsClient';
 import { BottomNav } from './BottomNav';
+import { TruckIcon, CashIcon, ReturnIcon, LockIcon } from './icons';
 import type { Product } from '../lib/types';
 
 interface HomeShellProps {
@@ -42,28 +43,28 @@ export function HomeShell({ products, categories }: HomeShellProps) {
           {/* Trust reassurance */}
           <div className="grid grid-cols-2 gap-3 pt-4">
             <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">🚚</span>
+              <span className="inline-flex" aria-hidden="true"><TruckIcon size={24} className="text-[#1c1917]" /></span>
               <div>
                 <p className="text-xs font-bold text-[#1c1917]">Free Delivery</p>
                 <p className="text-[10px] text-[#78716c]">On orders ৳500+</p>
               </div>
             </div>
             <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">💳</span>
+              <span className="inline-flex" aria-hidden="true"><CashIcon size={24} className="text-[#1c1917]" /></span>
               <div>
                 <p className="text-xs font-bold text-[#1c1917]">Cash on Delivery</p>
                 <p className="text-[10px] text-[#78716c]">Pay when you receive</p>
               </div>
             </div>
             <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">↩️</span>
+              <span className="inline-flex" aria-hidden="true"><ReturnIcon size={24} className="text-[#1c1917]" /></span>
               <div>
                 <p className="text-xs font-bold text-[#1c1917]">Easy Returns</p>
                 <p className="text-[10px] text-[#78716c]">7-day return policy</p>
               </div>
             </div>
             <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">🔒</span>
+              <span className="inline-flex" aria-hidden="true"><LockIcon size={24} className="text-[#1c1917]" /></span>
               <div>
                 <p className="text-xs font-bold text-[#1c1917]">100% Secure</p>
                 <p className="text-[10px] text-[#78716c]">Protected payments</p>

@@ -8,6 +8,7 @@ export const checkoutSchema = z.object({
   customerPhone: z.string().regex(/^(?:\+880|0)1\d{9}$/, 'Invalid phone number format'),
   customerAddress: z.string().min(10).max(300),
   notes: z.string().max(300).optional(),
+  deliverySlot: z.string().max(20).optional(),
   items: z.array(z.object({
     id: z.string().uuid(),
     name: z.string(),
