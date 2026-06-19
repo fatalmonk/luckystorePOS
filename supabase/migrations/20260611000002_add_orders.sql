@@ -15,6 +15,7 @@ create table if not exists public.orders (
   total numeric not null,
   status text not null default 'pending' check (status in ('pending','confirmed','preparing','out_for_delivery','delivered','cancelled')),
   payment_method text not null default 'cod',
+  delivery_slot text,
   created_at timestamptz not null default now()
 );
 
@@ -50,7 +51,8 @@ create or replace function public.create_order_with_stock(
   p_subtotal numeric,
   p_delivery_fee numeric,
   p_total numeric,
-  p_notes text default null
+  p_notes text default null,
+  p_delivery_slot text default null
 ) returns jsonb
 language plpgsql
 security definer
@@ -91,11 +93,11 @@ begin
   -- Insert order and capture result
   insert into public.orders (
     order_number, tenant_id, store_id, customer_name, customer_phone, customer_address, notes,
-    items, subtotal, delivery_fee, total, payment_method
+    items, subtotal, delivery_fee, total, payment_method, delivery_slot
   ) values (
     p_order_number, p_tenant_id, p_store_id,
     p_customer_name, p_customer_phone, p_customer_address, p_notes,
-    p_items, p_subtotal, p_delivery_fee, p_total, 'cod'
+    p_items, p_subtotal, p_delivery_fee, p_total, 'cod', p_delivery_slot
   ) returning jsonb_build_object('id', id, 'order_number', order_number)
   into v_result;
 
@@ -104,4 +106,4 @@ end;
 $$;
 
 -- Grant anon execute on the RPC
-grant execute on function public.create_order_with_stock(text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text) to anon;
+grant execute on function public.create_order_with_stock(text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text) to anon;
