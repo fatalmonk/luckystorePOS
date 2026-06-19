@@ -30,12 +30,18 @@ export default function OrderContent() {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<OrderData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const saved = sessionStorage.getItem('lastOrder');
     if (saved) {
-      setOrder(JSON.parse(saved));
+      try {
+        setOrder(JSON.parse(saved));
+      } catch {
+        // Invalid sessionStorage — leave as null
+      }
     }
+    setLoading(false);
   }, []);
 
   const handleShare = async () => {
@@ -55,6 +61,16 @@ export default function OrderContent() {
       // User cancelled share or permission denied — silent fail
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center p-6 bg-[#faf8f5]">
+        <div className="w-16 h-16 rounded-full bg-gray-200 animate-pulse mb-4" />
+        <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+      </div>
+    );
+  }
 
   if (!order) {
     return (

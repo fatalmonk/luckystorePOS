@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { Header } from '../components/Header';
 import { BottomNav } from '../components/BottomNav';
 import { useCartContext } from '../components/CartProvider';
+import { useToast } from '../components/Toast';
 import { Button } from '../components/ui/Button';
+import { QtyNumber } from '../components/ui/QtyNumber';
 import { PriceDisplay } from '../components/PriceDisplay';
 import { EmptyCartIcon } from '../components/icons';
 import { formatBdt } from '../lib/formatPrice';
@@ -16,9 +18,48 @@ const PROMO_CODES: Record<string, { label: string; amount: number; minSubtotal: 
 
 function CartContent() {
   const router = useRouter();
-  const { cart, updateQty, removeFromCart, totalItems, subtotal, deliveryFee, discount, total } = useCartContext();
+  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, discount, total, isLoaded } = useCartContext();
+  const { showToast } = useToast();
 
-  const isEmpty = cart.length === 0;
+  const handleRemove = (itemId: string, itemName: string) => {
+    removeFromCart(itemId);
+    showToast(`Removed ${itemName}`, { label: 'Undo', onClick: undoRemove }, 4000);
+  };
+
+  const isEmpty = isLoaded && cart.length === 0;
+
+  // Skeleton during hydration to prevent flash of "empty cart"
+  if (!isLoaded) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-4">
+          <div className="p-[18px]">
+            <div className="h-7 w-16 bg-gray-200 rounded animate-pulse mb-4" />
+            <div className="space-y-3 mb-5">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-white border border-[#e7e5e4] rounded-[14px] p-3.5 flex items-center gap-3.5">
+                  <div className="w-[60px] h-[60px] bg-gray-200 rounded-[10px] animate-pulse flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 bg-gray-200 rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-200 rounded animate-pulse" />
+                    <div className="w-9 h-9 bg-gray-200 rounded-md animate-pulse" />
+                  </div>
+                  <div className="w-16 h-5 bg-gray-200 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+            <div className="h-32 bg-white border border-[#e7e5e4] rounded-[14px] animate-pulse" />
+          </div>
+        </main>
+        <BottomNav />
+      </>
+    );
+  }
 
   return (
     <>
@@ -57,7 +98,7 @@ function CartContent() {
                         <PriceDisplay value={item.price} unit={item.unit} />
                       </p>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => handleRemove(item.id, item.name)}
                         className="text-xs text-red-500 mt-1 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[28px]"
                         aria-label={`Remove ${item.name}`}
                       >
@@ -75,7 +116,7 @@ function CartContent() {
                       >
                         −
                       </button>
-                      <span className="font-bold text-sm min-w-[24px] text-center">{item.qty}</span>
+                    <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[24px] text-center" />
                       <button
                         onClick={() => updateQty(item.id, 1)}
                         className="w-9 h-9 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"

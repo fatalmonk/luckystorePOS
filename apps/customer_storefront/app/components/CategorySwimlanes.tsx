@@ -102,7 +102,9 @@ export function CategorySwimlanes({
     return group.subCategories
       .map((subSlug) => {
         const cat = categories.find((c) => c.slug === subSlug);
-        const catProducts = filtered.filter((p) => p.category === subSlug);
+        // Items store category as the name (e.g. "Biscuits & Cookies"), not the slug
+        const catName = cat?.name ?? subSlug;
+        const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug);
         return {
           slug: subSlug,
           label: cat?.name || subSlug,

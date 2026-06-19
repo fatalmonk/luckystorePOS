@@ -3,6 +3,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { WishlistButton } from './WishlistButton';
+import { QtyNumber } from './ui/QtyNumber';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import type { Category } from '../lib/types';
 import { getLocalWishlist, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
@@ -59,8 +60,8 @@ function CategoryPlaceholder({ category }: { category: Category }) {
   const baseClasses = "w-12 h-12 text-warm-dim opacity-40 transition-transform duration-300 group-hover:scale-110";
   
   switch (category) {
-    case 'beverages':
-    case 'tea-coffee':
+    case 'Beverages':
+    case 'Tea & Coffee':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
@@ -70,28 +71,18 @@ function CategoryPlaceholder({ category }: { category: Category }) {
           <line x1="14" y1="2" x2="14" y2="4" />
         </svg>
       );
-    case 'produce':
-      return (
-        <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2Z" />
-          <path d="M12 2c1.5 3 0 6-2 8" />
-          <path d="M14 6c1 1.5 1 3.5 0 5" />
-        </svg>
-      );
-    case 'bakery':
-    case 'snacks':
-    case 'chips':
-    case 'biscuits-cookies':
-    case 'chocolates-candies':
-    case 'ice-cream':
+    case 'Snacks':
+    case 'Biscuits & Cookies':
+    case 'Chocolates & Candies':
+    case 'Ice Cream':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
           <path d="M8 10h.01M16 10h.01M12 14h.01M9 16h.01M15 16h.01" strokeWidth="2" strokeLinecap="round" />
         </svg>
       );
-    case 'dairy':
-    case 'eggs':
+    case 'Dairy':
+    case 'Dairy & Eggs':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 18h12M6 22h12" />
@@ -100,27 +91,36 @@ function CategoryPlaceholder({ category }: { category: Category }) {
           <circle cx="12" cy="13" r="2" />
         </svg>
       );
-    case 'personal-care':
-    case 'cleaning-supply':
-    case 'air-freshener':
-    case 'baby-care':
-    case 'household':
+    case 'Personal Care':
+    case 'Cleaning Supply':
+    case 'Air Freshner':
+    case 'Baby Care':
+    case 'Pest Control':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 22h6M9 6h6M12 2v4M7 10h10v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2Z" />
         </svg>
       );
-    case 'oil':
-    case 'rice-grain':
-    case 'condiments':
-    case 'spices':
-    case 'grocery':
-    case 'cereals':
-    case 'baking-needs':
+    case 'Oil':
+    case 'Rice & Grain':
+    case 'Condiments':
+    case 'Spices':
+    case 'Cereals':
+    case 'Baking Needs':
+    case 'Cooking Needs':
+    case 'Packaged Food':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 2L2 7l10 5 10-5-10-5Z" />
           <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      );
+    case 'Electronics':
+      return (
+        <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       );
     default:
@@ -271,7 +271,7 @@ export function ProductCard({
               >
                 −
               </button>
-              <span className="font-bold text-sm min-w-[20px] text-center">{qtyInCart}</span>
+              <QtyNumber qty={qtyInCart} className="font-bold text-sm min-w-[20px] text-center" />
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
                 className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
