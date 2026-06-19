@@ -4,8 +4,43 @@ import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 
 export const metadata: Metadata = {
-  title: 'Lucky Store',
-  description: 'Your neighborhood grocery store. Fresh products, same-day delivery.',
+  title: { default: 'Lucky Store', template: '%s | Lucky Store' },
+  description: 'Your neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
+  keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
+  authors: [{ name: 'Lucky Store' }],
+  creator: 'Lucky Store',
+  metadataBase: new URL('https://lucky-store-six.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: '/favicon-32x32.png',
+    apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_BD',
+    url: '/',
+    siteName: 'Lucky Store',
+    title: 'Lucky Store — Your Neighborhood Grocery',
+    description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Lucky Store — Neighborhood Grocery in Chittagong',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@luckystore1947',
+    creator: '@luckystore1947',
+    title: 'Lucky Store — Your Neighborhood Grocery',
+    description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
+    images: ['/twitter-image.png'],
+  },
 };
 
 export const viewport: Viewport = {
