@@ -1,3 +1,6 @@
+'use client';
+
+import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CategoryDropdown } from './CategoryDropdown';
 import type { Category } from '../lib/types';
@@ -30,7 +33,7 @@ function CategoryPill({ slug, label, emoji, isActive, isThematic }: CategoryPill
   return (
     <Link
       href={href}
-      className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 press-feedback min-h-[44px] ${
+      className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 press-feedback min-h-[44px] snap-start ${
         isActive ? activeClass : inactiveClass
       }`}
     >
@@ -49,21 +52,45 @@ const thematicPills = [
 interface CategoryGridProps {
   categories: { id: string; slug: string; name: string; emoji: string }[];
   active?: string;
-  /** When true, renders as a compact sticky bar (used on category/browse pages) */
   sticky?: boolean;
-  /** Optional sub-categories to show. If omitted, shows all categories. */
   subCategories?: string[];
-  /** Show departments dropdown + thematic pills (used on homepage/global nav). */
   showThematic?: boolean;
 }
 
 export function CategoryGrid({ categories, active, sticky = false, subCategories, showThematic = false }: CategoryGridProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const check = () => {
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+    };
+    check();
+    el.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    return () => {
+      el.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+    };
+  }, [categories.length, showThematic, subCategories?.length]);
+
   const displayCats = subCategories && subCategories.length > 0
     ? categories.filter((c) => subCategories.includes(c.slug))
     : categories;
 
+  const handleScroll = () => {
+    if (!hasInteracted) setHasInteracted(true);
+  };
+
   const renderContent = () => (
-    <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask py-2">
+    <div
+      ref={scrollRef}
+      onScroll={handleScroll}
+      className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask snap-x snap-mandatory py-2 relative"
+    >
       {showThematic && (
         <>
           <CategoryDropdown categories={categories} />
@@ -92,6 +119,13 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
           isActive={active === cat.slug}
         />
       ))}
+
+      {/* Overflow indicator */}
+      {canScrollRight && !hasInteracted && (
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-12 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none flex items-center justify-end pr-2 z-10">
+          <span className="text-lg text-[#a8a29e] animate-pulse">→</span>
+        </div>
+      )}
     </div>
   );
 

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '../components/ui/Button';
+import { useToast } from '../components/Toast';
+import { formatBdt } from '../lib/formatPrice';
 
 interface OrderData {
   orderNumber: string;
@@ -16,15 +18,16 @@ interface OrderData {
 }
 
 const TIMELINE_STEPS = [
-  { id: 'placed', label: 'Order Placed', time: 'Just now', done: true, active: false },
-  { id: 'confirmed', label: 'Order Confirmed', time: 'Cashier will confirm shortly', done: false, active: true },
-  { id: 'preparing', label: 'Preparing', time: 'Packing your items', done: false, active: false },
-  { id: 'delivery', label: 'Out for Delivery', time: 'Est. 45–60 min', done: false, active: false },
-  { id: 'delivered', label: 'Delivered', time: null, done: false, active: false },
+  { id: 'placed', label: 'Order Placed', time: 'Just now', state: 'done' as const },
+  { id: 'confirmed', label: 'Pending Confirmation', time: 'Cashier will review and confirm', state: 'active' as const },
+  { id: 'preparing', label: 'Preparing', time: 'Packing your items', state: 'upcoming' as const },
+  { id: 'delivery', label: 'Out for Delivery', time: 'Est. 45–60 min', state: 'upcoming' as const },
+  { id: 'delivered', label: 'Delivered', time: null, state: 'upcoming' as const },
 ];
 
 export default function OrderContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<OrderData | null>(null);
 
@@ -34,6 +37,24 @@ export default function OrderContent() {
       setOrder(JSON.parse(saved));
     }
   }, []);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Order #${order?.orderNumber} — Lucky Store`,
+          text: `Track my order at Lucky Store`,
+          url,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      showToast('Order link copied to clipboard');
+    } catch (err) {
+      // User cancelled share or permission denied — silent fail
+    }
+  };
 
   if (!order) {
     return (
@@ -67,7 +88,7 @@ export default function OrderContent() {
           </div>
           <div className="flex justify-between mb-2 text-sm">
             <span className="text-[#78716c]">Total</span>
-            <span className="font-semibold">৳{order.total}</span>
+            <span className="font-semibold">{formatBdt(order.total)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-[#78716c]">Payment</span>
@@ -75,23 +96,15 @@ export default function OrderContent() {
           </div>
         </div>
 
-        {/* Delivery Details */}
+        {/* Cash Preparation */}
         <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-6">
-          <h3 className="text-sm font-bold mb-3">Delivery Details</h3>
-          <div className="space-y-1.5 text-sm">
-            <div className="flex">
-              <span className="text-[#a8a29e] w-16">To</span>
-              <span className="font-semibold">{order.name}</span>
-            </div>
-            <div className="flex">
-              <span className="text-[#a8a29e] w-16">Phone</span>
-              <span>{order.phone}</span>
-            </div>
-            <div className="flex">
-              <span className="text-[#a8a29e] w-16">Address</span>
-              <span>{order.address}</span>
-            </div>
-          </div>
+          <h3 className="text-sm font-bold mb-2">💵 Have Cash Ready</h3>
+          <p className="text-sm text-[#78716c] mb-2">
+            Please prepare <strong className="text-[#1c1917]">{formatBdt(order.total)}</strong> in cash for the delivery rider.
+          </p>
+          <p className="text-xs text-[#a8a29e]">
+            Tip: Having exact change helps speed up delivery.
+          </p>
         </div>
 
         {/* Timeline */}
@@ -103,16 +116,25 @@ export default function OrderContent() {
               <div key={step.id} className="relative">
                 <div
                   className={`absolute -left-[19px] w-[18px] h-[18px] rounded-full border-2 transition-colors ${
-                    step.done
-                      ? 'bg-[#ffe302] border-[#ffe302]'
-                      : step.active
+                    step.state === 'done'
+                      ? 'bg-[#2d6a4f] border-[#2d6a4f]'
+                      : step.state === 'active'
                       ? 'bg-white border-[#ffe302]'
                       : 'bg-[#f5f5f4] border-[#e7e5e4]'
                   }`}
-                />
-                <p className="font-bold text-sm">{step.label}</p>
+                >
+                  {step.state === 'done' && (
+                    <span className="block text-center text-[10px] text-white leading-[16px]">✓</span>
+                  )}
+                  {step.state === 'active' && (
+                    <span className="block text-center text-[10px] text-[#ffe302] leading-[16px]">●</span>
+                  )}
+                </div>
+                <p className={`font-bold text-sm ${step.state === 'upcoming' ? 'text-[#a8a29e]' : 'text-[#1c1917]'}`}>
+                  {step.label}
+                </p>
                 <p className="text-[13px] text-[#78716c]">
-                  {step.time || `Pay ৳${order.total} to rider`}
+                  {step.time || `Pay ${formatBdt(order.total)} to rider`}
                 </p>
               </div>
             ))}
@@ -126,10 +148,7 @@ export default function OrderContent() {
         <Button
           variant="secondary"
           fullWidth
-          onClick={() => {
-            navigator.clipboard.writeText(window.location.href);
-            alert('Order link copied');
-          }}
+          onClick={handleShare}
         >
           Share Order
         </Button>

@@ -31,7 +31,7 @@ export function SkeletonGrid({ count = 6, compact = false }: { count?: number; c
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
       {Array.from({ length: count }).map((_, i) => (
-        <SkeletonCard key={i} />
+        compact ? <SkeletonCardCompact key={i} /> : <SkeletonCard key={i} />
       ))}
     </div>
   );
@@ -75,13 +75,14 @@ export function SkeletonHeader() {
 }
 
 export function SkeletonCategoryGrid() {
+  const widths = [56, 68, 44, 72, 52, 80, 48, 64]; // deterministic widths — avoids hydration mismatch
   return (
     <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask py-2">
-      {Array.from({ length: 8 }).map((_, i) => (
+      {widths.map((w, i) => (
         <div
           key={i}
-          className="flex-shrink-0 px-4 py-2 rounded-full bg-gray-200 animate-pulse"
-          style={{ width: `${60 + Math.random() * 40}px` }}
+          className="flex-shrink-0 py-2 rounded-full bg-gray-200 animate-pulse"
+          style={{ width: `${w}px` }}
         />
       ))}
     </div>

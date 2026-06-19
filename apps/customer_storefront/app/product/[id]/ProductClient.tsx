@@ -1,7 +1,7 @@
-'use client'; // product detail page with cart interactions, local quantity state, and toast
+'use client'; // product detail page with cart interactions and toast
 
-import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Header } from '../../components/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
@@ -17,7 +17,6 @@ interface ProductClientProps {
 function ProductContent({ product }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
-  const [localQty, setLocalQty] = useState(1);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
 
@@ -35,7 +34,6 @@ function ProductContent({ product }: ProductClientProps) {
     }
     addToCart(product);
     showToast(`Added ${product.name}`);
-    setLocalQty(1);
   };
 
   const handleUpdateQty = (delta: number) => {
@@ -53,7 +51,7 @@ function ProductContent({ product }: ProductClientProps) {
     <>
       <Header />
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24">
         <div className="max-w-3xl mx-auto bg-white min-h-full">
           {/* Hero Section */}
           <div className="px-4 pt-6 pb-5 sm:px-6 lg:px-8">
@@ -89,6 +87,52 @@ function ProductContent({ product }: ProductClientProps) {
               <span className="text-4xl font-extrabold tracking-tight text-[#1c1917]">৳{taka}</span>
               <span className="text-lg font-extrabold text-[#1c1917]">{paisa}</span>
             </div>
+
+            {/* Action Area — inline below price, no fixed bar collision */}
+            <div className="mt-5">
+              {qtyInCart > 0 ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleUpdateQty(-1)}
+                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                    aria-label="Decrease quantity"
+                  >
+                    −
+                  </button>
+                  <span className="font-bold text-sm min-w-[28px] text-center">{qtyInCart}</span>
+                  <button
+                    onClick={() => handleUpdateQty(1)}
+                    disabled={qtyInCart >= product.stock}
+                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                  <span className="ml-2 text-sm font-semibold text-[#78716c]">
+                    {formatBdt(product.price * qtyInCart)} total
+                  </span>
+                </div>
+              ) : product.stock <= 0 ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <WishlistButton productId={product.id} productName={product.name} />
+                  </div>
+                  <Link
+                    href={`/category/${product.category}`}
+                    className="h-12 px-5 rounded-full bg-[#f5f5f4] text-[#1c1917] text-sm font-bold hover:bg-[#e7e5e4] active:scale-[0.98] transition-all flex items-center justify-center"
+                  >
+                    Browse Similar →
+                  </Link>
+                </div>
+              ) : (
+                <button
+                  onClick={handleAdd}
+                  className="h-12 px-8 rounded-full bg-warm-accent text-warm-accent-text text-sm font-bold hover:bg-warm-accent-hover active:scale-[0.98] transition-all press-feedback"
+                >
+                  Add to Cart
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -107,52 +151,6 @@ function ProductContent({ product }: ProductClientProps) {
           )}
         </div>
       </main>
-
-      {/* Bottom Action Bar */}
-      <div className="fixed bottom-[68px] left-0 right-0 bg-white border-t border-[#e7e5e4] p-4 z-40">
-        <div className="max-w-3xl mx-auto flex items-center gap-3.5">
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] text-[#a8a29e] uppercase tracking-widest font-semibold mb-0.5">
-              Total
-            </p>
-            <p className="text-xl font-extrabold truncate">
-              {formatBdt(product.price * (qtyInCart > 0 ? qtyInCart : localQty))}
-            </p>
-          </div>
-
-          {qtyInCart > 0 ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleUpdateQty(-1)}
-                className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <span className="font-bold text-sm min-w-[28px] text-center">{qtyInCart}</span>
-              <button
-                onClick={() => handleUpdateQty(1)}
-                disabled={qtyInCart >= product.stock}
-                className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
-          ) : product.stock <= 0 ? (
-            <div className="flex-shrink-0 w-[140px]">
-              <WishlistButton productId={product.id} productName={product.name} />
-            </div>
-          ) : (
-            <button
-              onClick={handleAdd}
-              className="flex-shrink-0 h-12 px-7 rounded-full bg-warm-accent text-warm-accent-text text-sm font-bold hover:bg-warm-accent-hover active:scale-[0.98] transition-all press-feedback"
-            >
-              Add to Cart
-            </button>
-          )}
-        </div>
-      </div>
 
       <BottomNav />
     </>

@@ -11,7 +11,7 @@ import { formatBdt } from '../lib/formatPrice';
 
 function CartContent() {
   const router = useRouter();
-  const { cart, updateQty, totalItems, subtotal, deliveryFee, discount, total } = useCartContext();
+  const { cart, updateQty, removeFromCart, totalItems, subtotal, deliveryFee, discount, total } = useCartContext();
 
   const isEmpty = cart.length === 0;
 
@@ -19,7 +19,7 @@ function CartContent() {
     <>
       <Header />
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-4">
         <div className="p-[18px]">
           <h2 className="text-lg font-bold tracking-tight mb-3">Cart</h2>
 
@@ -49,18 +49,27 @@ function CartContent() {
                       <p className="text-[13px] text-gray-500">
                         <PriceDisplay value={item.price} unit={item.unit} />
                       </p>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-xs text-red-500 mt-0.5 hover:text-red-600 transition-colors"
+                        aria-label={`Remove ${item.name}`}
+                      >
+                        Remove
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQty(item.id, -1)}
-                        className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                        className="w-9 h-9 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                        aria-label="Decrease quantity"
                       >
                         −
                       </button>
                       <span className="font-bold text-sm min-w-[24px] text-center">{item.qty}</span>
                       <button
                         onClick={() => updateQty(item.id, 1)}
-                        className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                        className="w-9 h-9 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                        aria-label="Increase quantity"
                       >
                         +
                       </button>
@@ -94,29 +103,27 @@ function CartContent() {
                 </div>
                 <p className="text-xs text-gray-500 mt-2">Cash on Delivery · Pay when you receive</p>
               </div>
+
+              {/* Checkout CTA — inline, not fixed, avoids bottom-bar collision */}
+              <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] flex items-center gap-3.5 mb-5">
+                <div className="flex-1">
+                  <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-0.5">
+                    {totalItems} items
+                  </p>
+                  <p className="text-xl font-extrabold">{formatBdt(total)}</p>
+                </div>
+                <Button
+                  onClick={() => router.push('/checkout')}
+                  className="flex-0 w-[140px]"
+                  data-testid="cart-checkout-btn"
+                >
+                  Checkout →
+                </Button>
+              </div>
             </>
           )}
         </div>
       </main>
-
-      {/* Bottom Bar */}
-      {!isEmpty && (
-        <div className="fixed bottom-[68px] left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-[#e7e5e4] p-4 flex items-center gap-3.5 z-40">
-          <div className="flex-1">
-            <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-0.5">
-              {totalItems} items
-            </p>
-            <p className="text-xl font-extrabold">{formatBdt(total)}</p>
-          </div>
-          <Button
-            onClick={() => router.push('/checkout')}
-            className="flex-0 w-[140px]"
-            data-testid="cart-checkout-btn"
-          >
-            Checkout →
-          </Button>
-        </div>
-      )}
 
       <BottomNav />
     </>
