@@ -4,14 +4,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { CartItem, Product } from '../lib/types';
 
 const CART_KEY = 'lucky-cart';
+const FREE_DELIVERY_THRESHOLD = 500;
+const FREE_DELIVERY_FEE = 40;
 
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  // Single hydration guard — replaces the previous dual isLoaded + mounted pattern
+  const [hydrated, setHydrated] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    if (typeof window === 'undefined') return;
     try {
       const saved = localStorage.getItem(CART_KEY);
       if (saved) {
@@ -20,18 +22,18 @@ export function useCart() {
     } catch (e) {
       console.error('Failed to load cart:', e);
     }
-    setIsLoaded(true);
+    setHydrated(true);
   }, []);
 
-  // Save cart to localStorage when it changes
+  // Save cart to localStorage when it changes (only after hydration)
   useEffect(() => {
-    if (!isLoaded || typeof window === 'undefined') return;
+    if (!hydrated) return;
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(cart));
     } catch (e) {
       console.error('Failed to save cart:', e);
     }
-  }, [cart, isLoaded]);
+  }, [cart, hydrated]);
 
   const addToCart = useCallback((product: Product) => {
     if (product.stock <= 0) return;
@@ -39,7 +41,6 @@ export function useCart() {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
-        // Check stock limit
         if (existing.qty >= product.stock) return prev;
         return prev.map((item) =>
           item.id === product.id ? { ...item, qty: item.qty + 1 } : item
@@ -71,27 +72,25 @@ export function useCart() {
     setCart([]);
   }, []);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const displayCart = mounted ? cart : [];
-  const displayTotalItems = mounted ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
-  const displaySubtotal = mounted ? cart.reduce((sum, item) => sum + item.price * item.qty, 0) : 0;
-  const displayDeliveryFee = displaySubtotal >= 500 ? 0 : (mounted ? 40 : 0);
-  const displayDiscount = displaySubtotal >= 500 ? 40 : 0;
-  const displayTotal = displaySubtotal + displayDeliveryFee - displayDiscount;
+  // Before hydration, show empty cart to avoid SSR/client mismatch
+  const safeCart = hydrated ? cart : [];
+  const totalItems = hydrated ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
+  const subtotal = hydrated ? cart.reduce((sum, item) => sum + item.price * item.qty, 0) : 0;
+  const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : (hydrated ? FREE_DELIVERY_FEE : 0);
+  const discount = subtotal >= FREE_DELIVERY_THRESHOLD ? FREE_DELIVERY_FEE : 0;
+  const total = subtotal + deliveryFee - discount;
 
   return {
-    cart: displayCart,
-    isLoaded,
+    cart: safeCart,
+    isLoaded: hydrated,
     addToCart,
     updateQty,
     removeFromCart,
     clearCart,
-    totalItems: displayTotalItems,
-    subtotal: displaySubtotal,
-    deliveryFee: displayDeliveryFee,
-    discount: displayDiscount,
-    total: displayTotal,
+    totalItems,
+    subtotal,
+    deliveryFee,
+    discount,
+    total,
   };
 }

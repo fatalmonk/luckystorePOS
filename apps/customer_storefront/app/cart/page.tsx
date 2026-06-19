@@ -1,4 +1,4 @@
-'use client'; // needs useRouter and cart state/quantity controls
+'use client';
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -9,6 +9,10 @@ import { Button } from '../components/ui/Button';
 import { PriceDisplay } from '../components/PriceDisplay';
 import { EmptyCartIcon } from '../components/icons';
 import { formatBdt } from '../lib/formatPrice';
+
+const PROMO_CODES: Record<string, { label: string; amount: number; minSubtotal: number }> = {
+  FREE500: { label: 'FREE500', amount: 40, minSubtotal: 500 },
+};
 
 function CartContent() {
   const router = useRouter();
@@ -54,9 +58,12 @@ function CartContent() {
                       </p>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="text-xs text-red-500 mt-0.5 hover:text-red-600 transition-colors"
+                        className="text-xs text-red-500 mt-1 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[28px]"
                         aria-label={`Remove ${item.name}`}
                       >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                        </svg>
                         Remove
                       </button>
                     </div>
@@ -122,6 +129,16 @@ function CartContent() {
                 >
                   Checkout →
                 </Button>
+              </div>
+
+              {/* Continue shopping link */}
+              <div className="text-center mb-4">
+                <Link
+                  href="/category"
+                  className="text-sm text-[#78716c] hover:text-[#1c1917] font-medium underline underline-offset-2"
+                >
+                  ← Continue Shopping
+                </Link>
               </div>
             </>
           )}

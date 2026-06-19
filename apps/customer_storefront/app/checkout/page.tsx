@@ -1,4 +1,4 @@
-'use client'; // checkout flow with form state, cart context, and router
+'use client';
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,10 +10,15 @@ import { Input, TextArea } from '../components/ui/Input';
 import { formatBdt } from '../lib/formatPrice';
 
 const STEPS = [
-  { id: 1, label: 'Review' },
-  { id: 2, label: 'Details' },
-  { id: 3, label: 'Confirm' },
+  { id: 1, label: 'Details' },
+  { id: 2, label: 'Review' },
 ];
+
+interface FormErrors {
+  name?: string;
+  phone?: string;
+  address?: string;
+}
 
 function CheckoutContent() {
   const router = useRouter();
@@ -21,6 +26,7 @@ function CheckoutContent() {
   const { cart, subtotal, deliveryFee, total, clearCart } = useCartContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isPlacing, setIsPlacing] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -31,23 +37,52 @@ function CheckoutContent() {
     deliverySlot: 'morning' as 'morning' | 'evening',
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
+
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear field error on edit
+    if (errors[field as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   };
 
-  const validateDetails = (): boolean => {
-    if (!formData.name || !formData.phone || !formData.address) {
-      showToast('Please fill all required fields');
-      return false;
+  const validateField = (field: keyof FormErrors, value: string): string | undefined => {
+    if (field === 'name') {
+      if (!value.trim()) return 'Name is required';
+      if (value.trim().length < 2) return 'Enter your full name';
     }
-    const cleanPhone = formData.phone.replace(/\s+/g, '');
-    if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
-      showToast('Enter valid BD phone (01XXXXXXXXX or +8801XXXXXXXXX)');
-      phoneRef.current?.focus();
-      phoneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return false;
+    if (field === 'phone') {
+      if (!value.trim()) return 'Phone number is required';
+      const cleanPhone = value.replace(/[\s-]/g, '');
+      if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
+        return 'Format: 01XXXXXXXXX or +8801XXXXXXXXX';
+      }
     }
-    return true;
+    if (field === 'address') {
+      if (!value.trim()) return 'Delivery address is required';
+      if (value.trim().length < 8) return 'Please enter a complete address';
+    }
+    return undefined;
+  };
+
+  const validateAll = (): boolean => {
+    const newErrors: FormErrors = {
+      name: validateField('name', formData.name),
+      phone: validateField('phone', formData.phone),
+      address: validateField('address', formData.address),
+    };
+    setErrors(newErrors);
+    const hasErrors = Object.values(newErrors).some(Boolean);
+    if (hasErrors) {
+      showToast('Please fix the errors below');
+      // Focus first error field
+      if (newErrors.phone) {
+        phoneRef.current?.focus();
+        phoneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    return !hasErrors;
   };
 
   const goToStep = (step: number) => {
@@ -55,20 +90,22 @@ function CheckoutContent() {
       showToast('Your cart is empty');
       return;
     }
-    if (step === 3 && !validateDetails()) {
+    if (step === 2 && !validateAll()) {
       return;
     }
+    setSubmitError(null);
     setCurrentStep(step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const placeOrder = async () => {
-    if (!validateDetails()) return;
+    if (!validateAll()) return;
 
     setIsPlacing(true);
+    setSubmitError(null);
 
     try {
-      const cleanPhone = formData.phone.replace(/\s+/g, '');
+      const cleanPhone = formData.phone.replace(/[\s-]/g, '');
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,9 +129,10 @@ function CheckoutContent() {
       clearCart();
       router.push(`/order?num=${order.order_number}`);
     } catch (e: any) {
+      setSubmitError(e?.message || 'Could not place order. Please try again.');
       showToast(e?.message || 'Could not place order');
       setIsPlacing(false);
-      setCurrentStep(2);
+      // Stay on current step (step 2) — don't reset to step 1
     }
   };
 
@@ -131,45 +169,8 @@ function CheckoutContent() {
             ))}
           </div>
 
-          {/* Step 1: Review */}
+          {/* Step 1: Details */}
           {currentStep === 1 && (
-            <div className="animate-[fadeUp_0.25s_ease]">
-              <div className="space-y-3 mb-6">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 py-3 border-b border-[#e7e5e4]">
-                    <div className="text-[22px]">{item.emoji}</div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{item.name}</p>
-                      <p className="text-[13px] text-[#78716c]">
-                        {formatBdt(item.price)} × {item.qty}
-                      </p>
-                    </div>
-                    <p className="font-bold">{formatBdt(item.price * item.qty)}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] mb-6">
-                <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
-                  <span>Subtotal</span>
-                  <span>{formatBdt(subtotal)}</span>
-                </div>
-                <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
-                  <span>Delivery</span>
-                  <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
-                </div>
-                <div className="flex justify-between pt-3 border-t border-[#f5f5f4] text-lg font-extrabold text-[#1c1917]">
-                  <span>Total</span>
-                  <span>{formatBdt(total)}</span>
-                </div>
-              </div>
-
-              <Button onClick={() => goToStep(2)} fullWidth data-testid="checkout-continue-btn">Continue →</Button>
-            </div>
-          )}
-
-          {/* Step 2: Details */}
-          {currentStep === 2 && (
             <div className="animate-[fadeUp_0.25s_ease]">
               <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
                 <p className="text-xs text-[#a8a29e] uppercase tracking-widest mb-1">Store</p>
@@ -181,21 +182,37 @@ function CheckoutContent() {
                 label="Full Name *"
                 value={formData.name}
                 onChange={(e) => updateField('name', e.target.value)}
+                onBlur={() => setErrors((p) => ({ ...p, name: validateField('name', formData.name) }))}
                 placeholder="Your full name"
+                aria-invalid={!!errors.name}
               />
+              {errors.name && <p className="text-xs text-red-500 -mt-2 mb-3">{errors.name}</p>}
+
               <Input
                 ref={phoneRef}
                 label="WhatsApp Number *"
                 value={formData.phone}
                 onChange={(e) => updateField('phone', e.target.value)}
-                placeholder="+880 1XXX-XXXXXX"
+                onBlur={() => setErrors((p) => ({ ...p, phone: validateField('phone', formData.phone) }))}
+                placeholder="01XXXXXXXXX"
+                aria-invalid={!!errors.phone}
               />
+              {errors.phone ? (
+                <p className="text-xs text-red-500 -mt-2 mb-3">{errors.phone}</p>
+              ) : (
+                <p className="text-[11px] text-[#a8a29e] -mt-2 mb-3">Format: 01XXXXXXXXX or +8801XXXXXXXXX</p>
+              )}
+
               <TextArea
                 label="Delivery Address *"
                 value={formData.address}
                 onChange={(e) => updateField('address', e.target.value)}
+                onBlur={() => setErrors((p) => ({ ...p, address: validateField('address', formData.address) }))}
                 placeholder="House, road, area…"
+                aria-invalid={!!errors.address}
               />
+              {errors.address && <p className="text-xs text-red-500 -mt-2 mb-3">{errors.address}</p>}
+
               <Input
                 label="Instructions (optional)"
                 value={formData.notes}
@@ -227,18 +244,28 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => goToStep(1)} className="flex-1">← Back</Button>
-                <Button onClick={() => goToStep(3)} className="flex-1" data-testid="checkout-review-btn">Review Order →</Button>
-              </div>
+              <Button onClick={() => goToStep(2)} fullWidth data-testid="checkout-review-btn">
+                Review Order →
+              </Button>
             </div>
           )}
 
-          {/* Step 3: Confirm — review summary + explicit Place Order */}
-          {currentStep === 3 && (
+          {/* Step 2: Review & Place Order */}
+          {currentStep === 2 && (
             <div className="animate-[fadeUp_0.25s_ease]">
               {!isPlacing ? (
                 <>
+                  {/* Submit error banner */}
+                  {submitError && (
+                    <div className="bg-red-50 border border-red-200 rounded-[14px] p-4 mb-4 flex items-start gap-3">
+                      <span className="text-red-500 text-lg flex-shrink-0" aria-hidden="true">⚠️</span>
+                      <div>
+                        <p className="text-sm font-bold text-red-700">Order could not be placed</p>
+                        <p className="text-xs text-red-600 mt-0.5">{submitError}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <h3 className="text-sm font-bold text-[#78716c] uppercase tracking-widest mb-4">Order Summary</h3>
 
                   <div className="space-y-3 mb-5">
@@ -271,6 +298,12 @@ function CheckoutContent() {
                         <span className="text-[#a8a29e] w-20">Address</span>
                         <span>{formData.address}</span>
                       </div>
+                      <div className="flex">
+                        <span className="text-[#a8a29e] w-20">Slot</span>
+                        <span className="font-semibold">
+                          {formData.deliverySlot === 'morning' ? 'Morning (9AM–1PM)' : 'Evening (4PM–8PM)'}
+                        </span>
+                      </div>
                       {formData.notes && (
                         <div className="flex">
                           <span className="text-[#a8a29e] w-20">Notes</span>
@@ -293,10 +326,13 @@ function CheckoutContent() {
                       <span>Total</span>
                       <span>{formatBdt(total)}</span>
                     </div>
+                    <p className="text-xs text-[#78716c] mt-2 flex items-center gap-1">
+                      <span aria-hidden="true">💵</span> Cash on Delivery — pay when you receive
+                    </p>
                   </div>
 
                   <div className="flex gap-3">
-                    <Button variant="secondary" onClick={() => goToStep(2)} className="flex-1">← Edit Details</Button>
+                    <Button variant="secondary" onClick={() => goToStep(1)} className="flex-1">← Edit Details</Button>
                     <Button onClick={placeOrder} className="flex-1" data-testid="checkout-place-order-btn">Place Order</Button>
                   </div>
                 </>

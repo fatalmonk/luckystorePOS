@@ -98,9 +98,12 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <p className="text-xs text-[#a8a29e]">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => removeFromCart(item.id)}
-                      className="text-[10px] text-red-500 mt-0.5 hover:text-red-600 transition-colors"
+                      className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[24px]"
                       aria-label={`Remove ${item.name}`}
                     >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                      </svg>
                       Remove
                     </button>
                   </div>
