@@ -38,6 +38,12 @@ export function HeaderCartButton() {
             {totalItems}
           </span>
         )}
+        {!isLoaded && (
+          <span
+            className="absolute -top-0.5 right-1 min-w-[18px] h-[18px] bg-gray-200 rounded-full animate-pulse"
+            aria-hidden="true"
+          />
+        )}
       </button>
       <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} />
     </>

@@ -29,25 +29,25 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     slug: 'snacks',
     label: 'Snacks',
     emoji: '🍪',
-    subCategories: ['snacks', 'chips', 'biscuits-cookies', 'chocolates-candies', 'ice-cream', 'tea-coffee', 'beverages', 'cereals'],
+    subCategories: ['snacks', 'biscuits-&-cookies', 'chocolates-&-candies', 'ice-cream', 'tea-&-coffee', 'beverages', 'cereals'],
   },
   {
     slug: 'cooking-needs',
     label: 'Cooking Needs',
     emoji: '🍳',
-    subCategories: ['oil', 'rice-grain', 'condiments', 'spices'],
+    subCategories: ['oil', 'rice-&-grain', 'condiments', 'spices', 'cooking-needs'],
   },
   {
-    slug: 'dairy-eggs',
+    slug: 'dairy-&-eggs',
     label: 'Dairy & Eggs',
     emoji: '🥛',
-    subCategories: ['dairy', 'eggs'],
+    subCategories: ['dairy', 'dairy-&-eggs'],
   },
   {
     slug: 'personal-care',
     label: 'Personal Care',
     emoji: '🧴',
-    subCategories: ['personal-care', 'cleaning-supply', 'air-freshener'],
+    subCategories: ['personal-care', 'cleaning-supply', 'air-freshner', 'pest-control'],
   },
   {
     slug: 'baby-care',
@@ -66,6 +66,12 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     label: 'Baking Needs',
     emoji: '🧁',
     subCategories: ['baking-needs'],
+  },
+  {
+    slug: 'packaged-food',
+    label: 'Packaged Food',
+    emoji: '🥡',
+    subCategories: ['packaged-food'],
   },
 ];
 

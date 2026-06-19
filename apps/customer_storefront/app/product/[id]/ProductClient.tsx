@@ -7,6 +7,7 @@ import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
 import { useCartContext } from '../../components/CartProvider';
 import { WishlistButton } from '../../components/WishlistButton';
+import { QtyNumber } from '../../components/ui/QtyNumber';
 import { formatBdt } from '../../lib/formatPrice';
 import type { Product } from '../../lib/types';
 
@@ -99,7 +100,7 @@ function ProductContent({ product }: ProductClientProps) {
                   >
                     −
                   </button>
-                  <span className="font-bold text-sm min-w-[28px] text-center">{qtyInCart}</span>
+                  <QtyNumber qty={qtyInCart} className="font-bold text-sm min-w-[28px] text-center" />
                   <button
                     onClick={() => handleUpdateQty(1)}
                     disabled={qtyInCart >= product.stock}

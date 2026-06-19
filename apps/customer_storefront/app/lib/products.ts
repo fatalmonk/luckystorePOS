@@ -10,7 +10,7 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
         p_store_id: STORE_ID,
         p_query: q ?? '',
         p_category_id: categoryId && !categoryIds?.length ? categoryId : null,
-        p_limit: 200,
+        p_limit: 1000,
         p_offset: 0,
       }),
       fetchCategories()

@@ -64,9 +64,29 @@ export function useCart() {
     });
   }, []);
 
+  const [lastRemoved, setLastRemoved] = useState<CartItem | null>(null);
+
   const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== productId));
+    setCart((prev) => {
+      const removed = prev.find((item) => item.id === productId);
+      if (removed) setLastRemoved(removed);
+      return prev.filter((item) => item.id !== productId);
+    });
   }, []);
+
+  const undoRemove = useCallback(() => {
+    setCart((prev) => {
+      if (!lastRemoved) return prev;
+      const existing = prev.find((item) => item.id === lastRemoved.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === lastRemoved.id ? { ...item, qty: item.qty + lastRemoved.qty } : item
+        );
+      }
+      return [...prev, lastRemoved];
+    });
+    setLastRemoved(null);
+  }, [lastRemoved]);
 
   const clearCart = useCallback(() => {
     setCart([]);
@@ -86,6 +106,7 @@ export function useCart() {
     addToCart,
     updateQty,
     removeFromCart,
+    undoRemove,
     clearCart,
     totalItems,
     subtotal,

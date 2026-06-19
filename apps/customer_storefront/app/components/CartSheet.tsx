@@ -3,7 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartContext } from './CartProvider';
+import { useToast } from './Toast';
 import { Button } from './ui/Button';
+import { QtyNumber } from './ui/QtyNumber';
 import { formatBdt } from '../lib/formatPrice';
 
 interface CartSheetProps {
@@ -13,8 +15,14 @@ interface CartSheetProps {
 
 export function CartSheet({ open, onClose }: CartSheetProps) {
   const router = useRouter();
-  const { cart, updateQty, removeFromCart, totalItems, subtotal, deliveryFee, total } = useCartContext();
+  const { showToast } = useToast();
+  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, total } = useCartContext();
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const handleRemove = (itemId: string, itemName: string) => {
+    removeFromCart(itemId);
+    showToast(`Removed ${itemName}`, { label: 'Undo', onClick: undoRemove }, 4000);
+  };
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -97,7 +105,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <p className="font-semibold text-sm truncate">{item.name}</p>
                     <p className="text-xs text-[#a8a29e]">{formatBdt(item.price)} / {item.unit}</p>
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => handleRemove(item.id, item.name)}
                       className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[24px]"
                       aria-label={`Remove ${item.name}`}
                     >
@@ -115,7 +123,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     >
                       −
                     </button>
-                    <span className="font-bold text-sm min-w-[20px] text-center">{item.qty}</span>
+                    <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[20px] text-center" />
                     <button
                       onClick={() => updateQty(item.id, 1)}
                       className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"

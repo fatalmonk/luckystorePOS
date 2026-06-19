@@ -5,10 +5,11 @@ import { useCartContext } from './CartProvider';
 const FREE_DELIVERY_THRESHOLD = 500;
 
 export function DeliveryProgress() {
-  const { subtotal } = useCartContext();
-  const progress = Math.min(100, (subtotal / FREE_DELIVERY_THRESHOLD) * 100);
-  const remaining = Math.max(0, FREE_DELIVERY_THRESHOLD - subtotal);
-  const unlocked = subtotal >= FREE_DELIVERY_THRESHOLD;
+  const { subtotal, isLoaded } = useCartContext();
+  const safeSubtotal = isLoaded ? subtotal : 0;
+  const progress = Math.min(100, (safeSubtotal / FREE_DELIVERY_THRESHOLD) * 100);
+  const remaining = Math.max(0, FREE_DELIVERY_THRESHOLD - safeSubtotal);
+  const unlocked = safeSubtotal >= FREE_DELIVERY_THRESHOLD;
 
   return (
     <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm">

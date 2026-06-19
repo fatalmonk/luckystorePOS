@@ -38,7 +38,7 @@
   /* Tactile press feedback */
   .press-feedback:active {
     transform: scale(var(--press-scale));
-    transition: transform 0.1s ease;
+    transition: transform 0.1s var(--ease-out, ease);
   }
 
   /* Scroll edge fade masks */

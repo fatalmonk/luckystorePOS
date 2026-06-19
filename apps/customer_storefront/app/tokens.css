@@ -191,7 +191,7 @@ body {
 }
 
 .animate-fade-up {
-  animation: fadeUp 0.25s ease forwards;
+  animation: fadeUp 0.25s var(--ease-out, ease) forwards;
 }
 
 /* Card spatial hover — 3-level shadow system */
@@ -276,6 +276,17 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* Quantity pulse — fires when qty value changes */
+@keyframes qtyPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.qty-pulse {
+  animation: qtyPulse 0.3s var(--ease-out);
 }
 
 /* Reduced motion */
