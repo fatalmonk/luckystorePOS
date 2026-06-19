@@ -114,31 +114,30 @@ function CartContent() {
                 <p className="text-xs text-gray-500 mt-2">Cash on Delivery · Pay when you receive</p>
               </div>
 
-              {/* Checkout CTA — inline, not fixed, avoids bottom-bar collision */}
-              <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] flex items-center gap-3.5 mb-5">
+              {/* Checkout CTA */}
+              <div className="bg-[#1c1917] text-white rounded-[14px] p-[18px] flex items-center gap-3.5 mb-5 shadow-sm">
                 <div className="flex-1">
-                  <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-0.5">
+                  <p className="text-[11px] text-white/70 uppercase tracking-widest font-semibold mb-0.5">
                     {totalItems} items
                   </p>
                   <p className="text-xl font-extrabold">{formatBdt(total)}</p>
                 </div>
                 <Button
                   onClick={() => router.push('/checkout')}
-                  className="flex-0 w-[140px]"
+                  className="flex-0 w-[140px] bg-white text-[#1c1917] hover:bg-gray-100"
                   data-testid="cart-checkout-btn"
                 >
                   Checkout →
                 </Button>
               </div>
 
-              {/* Continue shopping link */}
               <div className="text-center mb-4">
-                <Link
-                  href="/category"
+                <button
+                  onClick={() => router.push('/category')}
                   className="text-sm text-[#78716c] hover:text-[#1c1917] font-medium underline underline-offset-2"
                 >
                   ← Continue Shopping
-                </Link>
+                </button>
               </div>
             </>
           )}

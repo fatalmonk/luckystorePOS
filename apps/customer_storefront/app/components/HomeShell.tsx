@@ -1,8 +1,5 @@
 import { Header } from './updated/Header';
 import { CategoryGrid } from './updated/CategoryGrid';
-import { HeroBanner } from './updated/HeroBanner';
-import { PromoGrid } from './updated/PromoGrid';
-import { DeliveryProgress } from './DeliveryProgress';
 import { HomeSectionsClient } from './HomeSectionsClient';
 import { BottomNav } from './BottomNav';
 import { TruckIcon, CashIcon, ReturnIcon, LockIcon } from './icons';
@@ -29,15 +26,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
       <Header />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
         <div className="p-4 sm:p-6 space-y-8">
-          <DeliveryProgress />
           <CategoryGrid categories={categories} />
-          <HeroBanner
-            title="Free Delivery on orders ৳500+"
-            subtitle="Cash on delivery. No app download needed."
-            badge="LIMITED TIME"
-            bgGradient="from-[#ffe302] via-[#ffd524] to-[#f4b61a]"
-          />
-          <PromoGrid />
           <HomeSectionsClient sections={sections} />
 
           {/* Trust reassurance */}

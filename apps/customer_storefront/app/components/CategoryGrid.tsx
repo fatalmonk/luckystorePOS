@@ -139,9 +139,8 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
 
   return (
     <section className="mb-6">
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3">
         <h2 className="text-lg font-bold">Categories</h2>
-        <span className="text-xs font-semibold text-[#78716c]">Shop by department</span>
       </div>
       {renderContent()}
     </section>
