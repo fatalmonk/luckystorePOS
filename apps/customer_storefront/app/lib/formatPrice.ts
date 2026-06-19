@@ -7,11 +7,12 @@
 export function formatBdt(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return '৳—';
 
-  const isFractional = !Number.isInteger(value) && Math.abs(value - Math.round(value)) > 0.001;
+  const rounded = Math.round(value);
+  const isFractional = Math.abs(value - rounded) > 0.005;
 
   const formatted = isFractional
     ? value.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : Math.round(value).toLocaleString('en-BD');
+    : rounded.toLocaleString('en-BD');
 
   return `৳${formatted}`;
 }

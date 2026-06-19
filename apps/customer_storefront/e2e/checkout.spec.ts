@@ -34,18 +34,18 @@ test.describe('Checkout Flow', () => {
     await page.click('[data-testid="cart-checkout-btn"]');
     await page.waitForURL('/checkout');
 
-    // Go to Step 2
-    await page.click('[data-testid="checkout-continue-btn"]');
-
-    // Fill checkout form (Step 2)
+    // Step 1: Fill delivery details
     await page.fill('input[placeholder*="name"]', 'Test User');
-    await page.fill('input[placeholder*="1XXX"]', '+880 1712345678');
+    await page.fill('input[placeholder="01XXXXXXXXX"]', '01712345678');
     await page.fill('textarea[placeholder*="House"]', '123 Test Road, Chittagong');
+
+    // Go to Step 2: Review
+    await page.click('[data-testid="checkout-review-btn"]');
 
     // Place order
     await page.click('[data-testid="checkout-place-order-btn"]');
 
-    // Should reach confirming step then order page
+    // Should reach order page
     await page.waitForURL(/\/order/);
     await expect(page.locator('text=Order Confirmed')).toBeVisible();
   });
@@ -69,19 +69,16 @@ test.describe('Checkout Flow', () => {
 
     await page.goto('/checkout');
 
-    // Go to Step 2
-    await page.click('[data-testid="checkout-continue-btn"]');
-
-    // Try to proceed without filling required fields
-    await page.click('[data-testid="checkout-place-order-btn"]');
-    await expect(page.locator('text=Please fill all required fields')).toBeVisible();
+    // Try to proceed to review without filling required fields
+    await page.click('[data-testid="checkout-review-btn"]');
+    await expect(page.locator('text=Please fix the errors below')).toBeVisible();
 
     // Fill with invalid phone
     await page.fill('input[placeholder*="name"]', 'Test User');
-    await page.fill('input[placeholder*="1XXX"]', '12345');
+    await page.fill('input[placeholder="01XXXXXXXXX"]', '12345');
     await page.fill('textarea[placeholder*="House"]', '123 Test Road');
 
-    await page.click('[data-testid="checkout-place-order-btn"]');
-    await expect(page.locator('text=Enter valid BD phone')).toBeVisible();
+    await page.click('[data-testid="checkout-review-btn"]');
+    await expect(page.locator('text=Format: 01XXXXXXXXX')).toBeVisible();
   });
 });

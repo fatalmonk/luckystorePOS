@@ -5,23 +5,20 @@ import { useCartContext } from './CartProvider';
 import { CartSheet } from './CartSheet';
 
 export function HeaderCartButton() {
-  const { totalItems } = useCartContext();
-  const [mounted, setMounted] = useState(false);
+  const { totalItems, isLoaded } = useCartContext();
   const [bouncing, setBouncing] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const prevCount = useRef(totalItems);
 
-  useEffect(() => setMounted(true), []);
-
   useEffect(() => {
-    if (mounted && totalItems > prevCount.current) {
+    if (isLoaded && totalItems > prevCount.current) {
       setBouncing(true);
       const t = setTimeout(() => setBouncing(false), 500);
       prevCount.current = totalItems;
       return () => clearTimeout(t);
     }
     prevCount.current = totalItems;
-  }, [totalItems, mounted]);
+  }, [totalItems, isLoaded]);
 
   return (
     <>
@@ -33,7 +30,7 @@ export function HeaderCartButton() {
       >
         <span className="text-lg" aria-hidden="true">🛒</span>
         <span className="hidden lg:block text-sm font-medium">Cart</span>
-        {mounted && totalItems > 0 && (
+        {isLoaded && totalItems > 0 && (
           <span
             className={`absolute -top-0.5 right-1 min-w-[18px] h-[18px] bg-[#dc2626] text-white text-[10px] font-bold rounded-full grid place-items-center px-1 ${bouncing ? 'cart-bounce' : ''}`}
             aria-label={`${totalItems} items in cart`}

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderCartButton } from '../HeaderCartButton';
 import { SearchSuggestions } from './SearchSuggestions';
 
 export function Header() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -25,10 +27,11 @@ export function Header() {
     }
   }, []);
 
-  // Save recent searches to localStorage
+  // Save recent searches only when query changes and is non-empty
   useEffect(() => {
-    if (searchQuery.trim() && !recentSearches.includes(searchQuery)) {
-      const updated = [searchQuery, ...recentSearches.slice(0, 4)];
+    const trimmed = searchQuery.trim();
+    if (trimmed && !recentSearches.includes(trimmed)) {
+      const updated = [trimmed, ...recentSearches.slice(0, 4)];
       setRecentSearches(updated);
       localStorage.setItem('lucky_recent_searches', JSON.stringify(updated));
     }
@@ -48,16 +51,14 @@ export function Header() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      // Save to recent searches
-      if (!recentSearches.includes(searchQuery)) {
-        const updated = [searchQuery, ...recentSearches.slice(0, 4)];
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      if (!recentSearches.includes(trimmed)) {
+        const updated = [trimmed, ...recentSearches.slice(0, 4)];
         setRecentSearches(updated);
         localStorage.setItem('lucky_recent_searches', JSON.stringify(updated));
       }
-      
-      // Navigate to search results
-      window.location.href = `/category?q=${encodeURIComponent(searchQuery)}`;
+      router.push(`/category?q=${encodeURIComponent(trimmed)}`);
     }
   };
 
@@ -110,7 +111,7 @@ export function Header() {
               onSelect={(term) => {
                 setSearchQuery(term);
                 setShowSuggestions(false);
-                window.location.href = `/category?q=${encodeURIComponent(term)}`;
+                router.push(`/category?q=${encodeURIComponent(term)}`);
               }}
               onClose={() => setShowSuggestions(false)}
             />
