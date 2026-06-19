@@ -17,7 +17,7 @@
   &nbsp;
   <img src="https://img.shields.io/badge/React-19-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React">
   &nbsp;
-  <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
   &nbsp;
   <img src="https://img.shields.io/badge/Supabase-Production-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
   &nbsp;
@@ -28,7 +28,7 @@
 
 <p align="center">
   <strong>A free, open-source Point of Sale system built for retail shops in Bangladesh</strong><br>
-  <em>bKash Payments | Offline-First | Bangla Interface | Bluetooth Label Printing | Real-Time Inventory | AI Price Monitoring</em>
+  <em>bKash Payments | Offline-First | Bangla Interface | Bluetooth Label Printing | Real-Time Inventory | AI Price Monitoring | E-commerce</em>
 </p>
 
 <p align="center">
@@ -45,6 +45,7 @@
 
 [Why Lucky Store?](#-why-lucky-store-pos) ·
 [Screenshots](#-screenshots) ·
+[Customer Storefront](#-customer-storefront) ·
 [Features](#-features) ·
 [Tech Stack](#-tech-stack) ·
 [Quick Start](#-quick-start) ·
@@ -232,6 +233,22 @@
 
 ---
 
+### 🛒 Customer Storefront (Next.js 15 + E-commerce)
+
+| Browse | Product Details | Cart & Checkout |
+|:------:|:---------------:|:---------------:|
+| Department dropdown, category swimlanes, thematic pills, price filter | Variant selector, quantity stepper, MRP/strikethrough pricing | Cart sidebar, persistent state, stock-aware |
+
+| Responsive Design | URL-Based Filters | Performance |
+|:----------------:|:---------------:|:-----------:|
+| Two-column desktop layout, mobile-optimized top nav | URL params for availability, sort, price ranges | SSR with Supabase, skeleton loading states |
+
+| Accessibility | Internationalization | Testing |
+|:-------------:|:--------------------:|:-------:|
+| WCAG 2.1 AA compliant, semantic landmarks, focus management | English + Bangla (HindSiliguri font) | Playwright E2E (4 passed, 4 skipped), Lighthouse-ready |
+
+---
+
 ### 🔐 Backend & Security (Supabase)
 
 | Dimension | Count |
@@ -316,8 +333,11 @@
 ### Mobile App
 **Flutter 3.29.3** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · esc_pos_utils_plus · pdf · printing · csv · excel · webview_flutter
 
+### Customer Storefront
+**Next.js 15** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Zod 3 · PostCSS · Autoprefixer
+
 ### Admin Web
-**React 19** · Vite 8 · TypeScript 6.0 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 4 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns · clsx
+**React 19** · Vite 8 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 4 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns · clsx
 
 ### Backend
 **Supabase** · PostgreSQL 17 · Deno Edge Functions · Row-Level Security · Realtime Subscriptions · Storage
@@ -383,6 +403,7 @@ luckystorePOS/
 ├── apps/
 │   ├── mobile_app/          # Flutter POS app (95+ Dart files, 8 feature modules)
 │   ├── admin_web/           # React + Vite admin dashboard (12+ pages, 15 routes)
+│   ├── customer_storefront/   # Next.js 15 e-commerce storefront (SSR, Playwright E2E)
 │   └── scraper/             # Puppeteer competitor price scraper
 ├── supabase/
 │   ├── migrations/          # 86 SQL migration files
