@@ -95,7 +95,7 @@ function ProductContent({ product }: ProductClientProps) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleUpdateQty(-1)}
-                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -104,7 +104,7 @@ function ProductContent({ product }: ProductClientProps) {
                   <button
                     onClick={() => handleUpdateQty(1)}
                     disabled={qtyInCart >= product.stock}
-                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
+                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
                     aria-label="Increase quantity"
                   >
                     +

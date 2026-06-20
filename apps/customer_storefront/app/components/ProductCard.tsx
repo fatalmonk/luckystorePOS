@@ -266,7 +266,7 @@ export function ProductCard({
             <div className="flex items-center justify-between gap-1 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                 aria-label="Remove one"
               >
                 −
@@ -274,7 +274,7 @@ export function ProductCard({
               <QtyNumber qty={qtyInCart} className="font-bold text-sm min-w-[20px] text-center" />
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                 aria-label="Add one"
               >
                 +
@@ -289,7 +289,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-9 min-h-[36px] rounded-full border-2 border-warm-accent text-warm-accent text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
+              className="w-full h-9 min-h-[36px] rounded-full border-2 border-warm-accent text-[#1c1917] text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
             >
               Add to Cart
             </button>
