@@ -33,7 +33,7 @@ export function CategoryDropdown({ categories }: CategoryDropdownProps) {
         aria-expanded={open}
       >
         <span aria-hidden="true" className="text-base leading-none">📂</span>
-        <span>Departments</span>
+        <span>Categories</span>
         <span className="text-xs" aria-hidden="true">▼</span>
       </button>
 

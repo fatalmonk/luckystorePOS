@@ -23,7 +23,7 @@ function CartContent() {
 
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);
-    showToast(`Removed ${itemName}`, { label: 'Undo', onClick: undoRemove }, 4000);
+    showToast(`Removed ${itemName} from cart`, { label: 'Undo', onClick: undoRemove }, 4000);
   };
 
   const isEmpty = isLoaded && cart.length === 0;
@@ -77,7 +77,7 @@ function CartContent() {
               <h3 className="text-lg font-bold mb-2">Your cart is empty</h3>
               <p className="text-sm text-gray-500 mb-6">Add items from the store to get started</p>
               <Button onClick={() => router.push('/')} className="max-w-[220px] mx-auto">
-                Browse Products
+                Start Shopping
               </Button>
             </div>
           ) : (

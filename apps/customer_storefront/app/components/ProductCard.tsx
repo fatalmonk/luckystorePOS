@@ -190,7 +190,7 @@ export function ProductCard({
         ? [...updatedList, id]
         : updatedList.filter((x) => x !== id);
       saveLocalWishlist(rollbackList);
-      showToast('Could not update wishlist on server');
+      showToast(`Couldn't sync wishlist — saved locally`);
     }
   };
 
@@ -208,7 +208,7 @@ export function ProductCard({
         <button
           onClick={handleWishlistToggle}
           className="pointer-events-auto w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.08)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-[#e7e5e4]"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
             <span className="text-red-500">❤️</span>
@@ -267,7 +267,7 @@ export function ProductCard({
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
                 className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
-                aria-label="Decrease quantity"
+                aria-label="Remove one"
               >
                 −
               </button>
@@ -275,7 +275,7 @@ export function ProductCard({
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
                 className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-warm-accent flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
-                aria-label="Increase quantity"
+                aria-label="Add one"
               >
                 +
               </button>
@@ -291,7 +291,7 @@ export function ProductCard({
               disabled={stock <= 0}
               className="w-full h-9 min-h-[36px] rounded-full border-2 border-warm-accent text-warm-accent text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
             >
-              Add
+              Add to Cart
             </button>
           )}
         </div>

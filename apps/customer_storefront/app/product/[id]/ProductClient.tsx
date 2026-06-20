@@ -30,11 +30,11 @@ function ProductContent({ product }: ProductClientProps) {
 
   const handleAdd = () => {
     if (product.stock <= 0) {
-      showToast('Sorry, out of stock');
+      showToast('Sorry, this item is out of stock');
       return;
     }
     addToCart(product);
-    showToast(`Added ${product.name}`);
+    showToast(`Added ${product.name} to cart`);
   };
 
   const handleUpdateQty = (delta: number) => {
@@ -122,7 +122,7 @@ function ProductContent({ product }: ProductClientProps) {
                     href={`/category/${product.category}`}
                     className="h-12 px-5 rounded-full bg-[#f5f5f4] text-[#1c1917] text-sm font-bold hover:bg-[#e7e5e4] active:scale-[0.98] transition-all flex items-center justify-center"
                   >
-                    Browse Similar →
+                    See Similar Items →
                   </Link>
                 </div>
               ) : (
