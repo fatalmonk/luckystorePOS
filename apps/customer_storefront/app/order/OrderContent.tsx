@@ -93,7 +93,7 @@ export default function OrderContent() {
           </div>
           <h1 className="text-[22px] font-extrabold tracking-tight mb-1.5">Order Placed!</h1>
           <p className="text-sm text-[#78716c] mb-1">Order number</p>
-          <p className="font-mono text-lg font-extrabold text-[#ffe302]">{order.orderNumber}</p>
+          <p className="font-mono text-lg font-extrabold text-[#1c1917] bg-[#ffe302] px-3 py-1 rounded-full inline-block">{order.orderNumber}</p>
         </div>
 
         {/* Summary */}
@@ -118,7 +118,7 @@ export default function OrderContent() {
           <p className="text-sm text-[#78716c] mb-2">
             Have <strong className="text-[#1c1917]">{formatBdt(order.total)}</strong> ready in cash for the rider.
           </p>
-          <p className="text-xs text-[#a8a29e]">
+          <p className="text-xs text-[#78716c]">
             Having exact change speeds up delivery.
           </p>
         </div>
@@ -143,10 +143,10 @@ export default function OrderContent() {
                     <span className="block text-center text-[10px] text-white leading-[16px]">✓</span>
                   )}
                   {step.state === 'active' && (
-                    <span className="block text-center text-[10px] text-[#ffe302] leading-[16px]">●</span>
+                    <span className="block text-center text-[10px] text-[#1c1917] leading-[16px]">●</span>
                   )}
                 </div>
-                <p className={`font-bold text-sm ${step.state === 'upcoming' ? 'text-[#a8a29e]' : 'text-[#1c1917]'}`}>
+                <p className={`font-bold text-sm ${step.state === 'upcoming' ? 'text-[#78716c]' : 'text-[#1c1917]'}`}>
                   {step.label}
                 </p>
                 <p className="text-[13px] text-[#78716c]">

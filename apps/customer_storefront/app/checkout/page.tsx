@@ -153,7 +153,7 @@ function CheckoutContent() {
                       ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
                       : currentStep === step.id
                       ? 'bg-[#ffe302] text-[#1c1917]'
-                      : 'bg-[#f5f5f4] text-[#a8a29e]'
+                      : 'bg-[#f5f5f4] text-[#78716c]'
                   }`}
                 >
                   {currentStep > step.id ? '✓' : step.id}
@@ -173,7 +173,7 @@ function CheckoutContent() {
           {currentStep === 1 && (
             <div className="animate-[fadeUp_0.25s_ease]">
               <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
-                <p className="text-xs text-[#a8a29e] uppercase tracking-widest mb-1">Store</p>
+                <p className="text-xs text-[#78716c] uppercase tracking-widest mb-1">Store</p>
                 <p className="font-bold text-[15px] mb-0.5">Lucky Store — Emdad Park</p>
                 <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chittagong 4203</p>
               </div>
@@ -200,7 +200,7 @@ function CheckoutContent() {
               {errors.phone ? (
                 <p className="text-xs text-red-500 -mt-2 mb-3">{errors.phone}</p>
               ) : (
-                <p className="text-[11px] text-[#a8a29e] -mt-2 mb-3">Use 01XXXXXXXXX or +8801XXXXXXXXX</p>
+                <p className="text-[11px] text-[#78716c] -mt-2 mb-3">Use 01XXXXXXXXX or +8801XXXXXXXXX</p>
               )}
 
               <TextArea
@@ -284,29 +284,29 @@ function CheckoutContent() {
                   </div>
 
                   <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
-                    <h4 className="text-xs font-bold text-[#a8a29e] uppercase tracking-widest mb-3">Delivery Details</h4>
+                    <h4 className="text-xs font-bold text-[#78716c] uppercase tracking-widest mb-3">Delivery Details</h4>
                     <div className="space-y-1.5 text-sm">
                       <div className="flex">
-                        <span className="text-[#a8a29e] w-20">Name</span>
+                        <span className="text-[#78716c] w-20">Name</span>
                         <span className="font-semibold">{formData.name}</span>
                       </div>
                       <div className="flex">
-                        <span className="text-[#a8a29e] w-20">Phone</span>
+                        <span className="text-[#78716c] w-20">Phone</span>
                         <span>{formData.phone}</span>
                       </div>
                       <div className="flex">
-                        <span className="text-[#a8a29e] w-20">Address</span>
+                        <span className="text-[#78716c] w-20">Address</span>
                         <span>{formData.address}</span>
                       </div>
                       <div className="flex">
-                        <span className="text-[#a8a29e] w-20">Slot</span>
+                        <span className="text-[#78716c] w-20">Slot</span>
                         <span className="font-semibold">
                           {formData.deliverySlot === 'morning' ? 'Morning (9AM–1PM)' : 'Evening (4PM–8PM)'}
                         </span>
                       </div>
                       {formData.notes && (
                         <div className="flex">
-                          <span className="text-[#a8a29e] w-20">Notes</span>
+                          <span className="text-[#78716c] w-20">Notes</span>
                           <span>{formData.notes}</span>
                         </div>
                       )}
