@@ -29,7 +29,8 @@
         "legacy-javascript-insight": ["warn", { "minScore": 0.5 }],
         "unused-javascript": ["warn", { "maxLength": 2 }],
         "network-dependency-tree-insight": ["warn", { "minScore": 0 }],
-        "speed-index": ["warn", { "minScore": 0 }]
+        "speed-index": ["warn", { "minScore": 0 }],
+        "bf-cache": ["warn", { "minScore": 0 }]
       }
     },
     "upload": {
