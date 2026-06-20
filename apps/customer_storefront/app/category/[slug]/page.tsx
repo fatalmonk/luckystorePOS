@@ -1,6 +1,4 @@
-import { Suspense } from 'react';
 import { CategoryShell } from '../CategoryShell';
-import { CategoryShellSkeleton } from '../CategoryShellSkeleton';
 import { fetchProducts, fetchCategories } from '../../lib/products';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
@@ -64,17 +62,15 @@ export default async function CategorySlugPage({
   }
 
   return (
-    <Suspense fallback={<CategoryShellSkeleton />}>
-      <CategoryShell
-        categorySlug={categorySlug}
-        currentCat={currentCat}
-        group={group}
-        categories={categories}
-        products={products}
-        searchTerm={searchTerm}
-        theme={theme}
-        sort={sort}
-      />
-    </Suspense>
+    <CategoryShell
+      categorySlug={categorySlug}
+      currentCat={currentCat}
+      group={group}
+      categories={categories}
+      products={products}
+      searchTerm={searchTerm}
+      theme={theme}
+      sort={sort}
+    />
   );
 }
