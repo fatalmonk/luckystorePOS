@@ -56,7 +56,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
   if (status === 'loading') {
     return (
-      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold">
+      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold animate-[fadeUp_0.2s_ease]">
         Saving...
       </button>
     );
@@ -64,7 +64,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
   if (status === 'phone') {
     return (
-      <div className="flex gap-2">
+      <div className="flex gap-2 animate-[fadeUp_0.2s_ease]">
         <input
           type="tel"
           value={phone}
@@ -85,7 +85,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
   if (status === 'saved') {
     return (
-      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold">
+      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold animate-[fadeUp_0.2s_ease]">
         ✓ On Wishlist
       </button>
     );
@@ -94,7 +94,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
   return (
     <button
       onClick={() => setStatus('phone')}
-      className="w-full h-10 bg-white border border-[#e7e5e4] rounded-md text-[#1c1917] text-sm font-semibold hover:border-[#ffe302] transition-colors"
+      className="w-full h-10 bg-white border border-[#e7e5e4] rounded-md text-[#1c1917] text-sm font-semibold hover:border-[#ffe302] transition-colors animate-[fadeUp_0.2s_ease]"
     >
       Notify Me When Back
     </button>
