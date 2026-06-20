@@ -1,8 +1,6 @@
-import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { CategoryShell } from './CategoryShell';
-import { CategoryShellSkeleton } from './CategoryShellSkeleton';
 import { fetchProducts, fetchCategories } from '../lib/products';
 import { getSingleParam } from '../lib/utils';
 import type { Category } from '../lib/types';
@@ -37,16 +35,14 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
   const products = await fetchProducts(searchTerm || undefined);
 
   return (
-    <Suspense fallback={<CategoryShellSkeleton />}>
-      <CategoryShell
-        categorySlug="all"
-        currentCat="all"
-        categories={categories}
-        products={products}
-        searchTerm={searchTerm}
-        theme={theme}
-        sort={sort}
-      />
-    </Suspense>
+    <CategoryShell
+      categorySlug="all"
+      currentCat="all"
+      categories={categories}
+      products={products}
+      searchTerm={searchTerm}
+      theme={theme}
+      sort={sort}
+    />
   );
 }
