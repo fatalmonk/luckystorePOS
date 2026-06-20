@@ -27,6 +27,7 @@ function isGitIgnored(filePath) {
   if (rel.startsWith('lucky-store-brand-guidelines/')) return true;
   if (rel.startsWith('scripts/data/')) return true;
   if (rel.startsWith('scripts/deploy/')) return true;
+  if (rel.startsWith('_plans/')) return true;
   if (rel.startsWith('supabase/tests/.env.test')) return true;
   if (rel.startsWith('.github/workflows/ci.yml')) return true;
   if (rel.startsWith('apps/mobile_app/assets/address_selection.html')) return true;
