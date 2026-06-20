@@ -40,7 +40,7 @@ export function CategoryGrid({ categories, active }: CategoryGridProps) {
   return (
     <section className="mb-6">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold">Shop by Department</h2>
+        <h2 className="text-lg font-bold">Browse Categories</h2>
       </div>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide scroll-edge-mask py-1">
         <CategoryChip slug="all" label="All" emoji="📦" isActive={!active || active === 'all'} />

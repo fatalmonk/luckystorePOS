@@ -10,7 +10,7 @@ import { Input, TextArea } from '../components/ui/Input';
 import { formatBdt } from '../lib/formatPrice';
 
 const STEPS = [
-  { id: 1, label: 'Details' },
+  { id: 1, label: 'Your Info' },
   { id: 2, label: 'Review' },
 ];
 
@@ -49,19 +49,19 @@ function CheckoutContent() {
 
   const validateField = (field: keyof FormErrors, value: string): string | undefined => {
     if (field === 'name') {
-      if (!value.trim()) return 'Name is required';
+      if (!value.trim()) return 'Enter your full name';
       if (value.trim().length < 2) return 'Enter your full name';
     }
     if (field === 'phone') {
-      if (!value.trim()) return 'Phone number is required';
+      if (!value.trim()) return 'Enter your WhatsApp number';
       const cleanPhone = value.replace(/[\s-]/g, '');
       if (!cleanPhone.match(/^(?:\+880|0)1\d{9}$/)) {
         return 'Format: 01XXXXXXXXX or +8801XXXXXXXXX';
       }
     }
     if (field === 'address') {
-      if (!value.trim()) return 'Delivery address is required';
-      if (value.trim().length < 8) return 'Please enter a complete address';
+      if (!value.trim()) return 'Enter your delivery address';
+      if (value.trim().length < 8) return 'Add your house, road, and area';
     }
     return undefined;
   };
@@ -75,7 +75,7 @@ function CheckoutContent() {
     setErrors(newErrors);
     const hasErrors = Object.values(newErrors).some(Boolean);
     if (hasErrors) {
-      showToast('Please fix the errors below');
+      showToast('Please check the highlighted fields');
       // Focus first error field
       if (newErrors.phone) {
         phoneRef.current?.focus();
@@ -129,8 +129,8 @@ function CheckoutContent() {
       clearCart();
       router.push(`/order?num=${order.order_number}`);
     } catch (e: any) {
-      setSubmitError(e?.message || 'Could not place order. Please try again.');
-      showToast(e?.message || 'Could not place order');
+      setSubmitError(e?.message || 'Something went wrong. Please try again.');
+      showToast(e?.message || `Couldn't place order — please try again`);
       setIsPlacing(false);
       // Stay on current step (step 2) — don't reset to step 1
     }
@@ -183,7 +183,7 @@ function CheckoutContent() {
                 value={formData.name}
                 onChange={(e) => updateField('name', e.target.value)}
                 onBlur={() => setErrors((p) => ({ ...p, name: validateField('name', formData.name) }))}
-                placeholder="Your full name"
+                placeholder="e.g. Karim Ahmed"
                 aria-invalid={!!errors.name}
               />
               {errors.name && <p className="text-xs text-red-500 -mt-2 mb-3">{errors.name}</p>}
@@ -200,7 +200,7 @@ function CheckoutContent() {
               {errors.phone ? (
                 <p className="text-xs text-red-500 -mt-2 mb-3">{errors.phone}</p>
               ) : (
-                <p className="text-[11px] text-[#a8a29e] -mt-2 mb-3">Format: 01XXXXXXXXX or +8801XXXXXXXXX</p>
+                <p className="text-[11px] text-[#a8a29e] -mt-2 mb-3">Use 01XXXXXXXXX or +8801XXXXXXXXX</p>
               )}
 
               <TextArea
@@ -217,7 +217,7 @@ function CheckoutContent() {
                 label="Instructions (optional)"
                 value={formData.notes}
                 onChange={(e) => updateField('notes', e.target.value)}
-                placeholder="e.g. Ring bell twice"
+                placeholder="e.g. Ring bell twice, call before arriving"
               />
 
               <div className="mb-5">
@@ -245,7 +245,7 @@ function CheckoutContent() {
               </div>
 
               <Button onClick={() => goToStep(2)} fullWidth data-testid="checkout-review-btn">
-                Review Order →
+                Review Your Order →
               </Button>
             </div>
           )}
@@ -260,7 +260,7 @@ function CheckoutContent() {
                     <div className="bg-red-50 border border-red-200 rounded-[14px] p-4 mb-4 flex items-start gap-3">
                       <span className="text-red-500 text-lg flex-shrink-0" aria-hidden="true">⚠️</span>
                       <div>
-                        <p className="text-sm font-bold text-red-700">Order could not be placed</p>
+                        <p className="text-sm font-bold text-red-700">Order couldn&apos;t be placed</p>
                         <p className="text-xs text-red-600 mt-0.5">{submitError}</p>
                       </div>
                     </div>
@@ -340,7 +340,7 @@ function CheckoutContent() {
                 <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
                   <div className="text-6xl mb-4">⏳</div>
                   <h3 className="text-lg font-bold mb-2">Placing your order…</h3>
-                  <p className="text-[#78716c]">Please wait a moment</p>
+                  <p className="text-[#78716c]">This usually takes a few seconds</p>
                 </div>
               )}
             </div>

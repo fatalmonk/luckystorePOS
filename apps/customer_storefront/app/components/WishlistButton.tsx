@@ -29,7 +29,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
     if (status === 'phone') {
       if (phone && !phone.match(/^\+880\s?1\d{9}$/)) {
-        showToast('Enter valid BD phone (+880 1XXXXXXXXX)');
+        showToast('Enter a valid number: +880 1XXXXXXXXX');
         return;
       }
       setStatus('loading');
@@ -42,13 +42,13 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
       const fp = getOrCreateFingerprint();
       await createWishlistItem(productId, fp, productName, phone || undefined);
       setStatus('saved');
-      showToast(`We'll notify you when ${productName} is back`);
+      showToast(`We'll notify you when ${productName} is back in stock`);
     } catch (e: any) {
       if (String(e).includes('Already on wishlist')) {
         showToast('Already on your wishlist');
         setStatus('saved');
       } else {
-        showToast('Could not save wishlist item');
+        showToast(`Couldn't save — please try again`);
         setStatus('idle');
       }
     }
@@ -86,7 +86,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
   if (status === 'saved') {
     return (
       <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold">
-        On wishlist
+        ✓ On Wishlist
       </button>
     );
   }
@@ -96,7 +96,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
       onClick={() => setStatus('phone')}
       className="w-full h-10 bg-white border border-[#e7e5e4] rounded-md text-[#1c1917] text-sm font-semibold hover:border-[#ffe302] transition-colors"
     >
-      Notify when available
+      Notify Me When Back
     </button>
   );
 }

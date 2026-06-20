@@ -19,7 +19,7 @@ interface OrderData {
 
 const TIMELINE_STEPS = [
   { id: 'placed', label: 'Order Placed', time: 'Just now', state: 'done' as const },
-  { id: 'confirmed', label: 'Pending Confirmation', time: 'Cashier will review and confirm', state: 'active' as const },
+  { id: 'confirmed', label: 'Awaiting Confirmation', time: 'Store will review and confirm', state: 'active' as const },
   { id: 'preparing', label: 'Preparing', time: 'Packing your items', state: 'upcoming' as const },
   { id: 'delivery', label: 'Out for Delivery', time: 'Est. 45–60 min', state: 'upcoming' as const },
   { id: 'delivered', label: 'Delivered', time: null, state: 'upcoming' as const },
@@ -56,7 +56,7 @@ export default function OrderContent() {
         return;
       }
       await navigator.clipboard.writeText(url);
-      showToast('Order link copied to clipboard');
+      showToast('Order link copied');
     } catch (err) {
       // User cancelled share or permission denied — silent fail
     }
@@ -75,9 +75,9 @@ export default function OrderContent() {
   if (!order) {
     return (
       <div className="flex flex-col h-full items-center justify-center p-6 bg-[#faf8f5]">
-        <p className="text-[#78716c] mb-4">No order found</p>
+        <p className="text-[#78716c] mb-4">We couldn&apos;t find your order</p>
         <Link href="/">
-          <Button>Go Home</Button>
+          <Button>Back to Home</Button>
         </Link>
       </div>
     );
@@ -116,10 +116,10 @@ export default function OrderContent() {
         <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-6">
           <h3 className="text-sm font-bold mb-2">💵 Have Cash Ready</h3>
           <p className="text-sm text-[#78716c] mb-2">
-            Please prepare <strong className="text-[#1c1917]">{formatBdt(order.total)}</strong> in cash for the delivery rider.
+            Have <strong className="text-[#1c1917]">{formatBdt(order.total)}</strong> ready in cash for the rider.
           </p>
           <p className="text-xs text-[#a8a29e]">
-            Tip: Having exact change helps speed up delivery.
+            Having exact change speeds up delivery.
           </p>
         </div>
 

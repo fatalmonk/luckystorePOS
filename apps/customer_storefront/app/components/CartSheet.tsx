@@ -21,7 +21,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
 
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);
-    showToast(`Removed ${itemName}`, { label: 'Undo', onClick: undoRemove }, 4000);
+    showToast(`Removed ${itemName} from cart`, { label: 'Undo', onClick: undoRemove }, 4000);
   };
 
   useEffect(() => {

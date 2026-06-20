@@ -19,7 +19,7 @@ export default function RootError({
       <div className="flex gap-3">
         <Button onClick={reset}>Try Again</Button>
         <Link href="/">
-          <Button variant="secondary">Go Home</Button>
+          <Button variant="secondary">Back to Home</Button>
         </Link>
       </div>
     </div>
