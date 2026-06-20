@@ -33,7 +33,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
+          flutter-version: '3.41.0'
           channel: stable
 
       - name: Cache Flutter dependencies
@@ -47,18 +47,13 @@ jobs:
             flutter-${{ runner.os }}-${{ hashFiles('apps/mobile_app/pubspec.lock') }}
             flutter-${{ runner.os }}-
 
-      - name: Clean stale packages
-        run: rm -rf ~/.pub-cache/hosted/pub.dev/speech_to_text-*
-
       - name: Install dependencies
-        run: |
-          rm -rf ~/.pub-cache/hosted/pub.dev/speech_to_text-*
-          flutter pub get
+        run: flutter pub get
 
       - name: Create .env for analysis
         run: |
           cp .env.example .env
-          sed -i.bak 's|your-anon-key-here|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpLWRlbW8iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0ODk4NzQwMCwiZXhwIjoxOTY0NTYzNjAwfQ.dummy-key-for-ci|g' .env
+          sed -i.bak 's|your-anon-key-here|eyJhbG...r-ci|g' .env
           rm .env.bak
 
       - name: Verify Flutter installation
@@ -86,7 +81,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
+          flutter-version: '3.41.0'
           channel: stable
 
       - name: Install dependencies
@@ -95,25 +90,41 @@ jobs:
       - name: Create .env for build
         run: |
           cp .env.example .env
-          sed -i.bak 's|your-anon-key-here|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJfQ0lfREVNTyJ9.ci-dummy|g' .env
+          sed -i.bak 's|your-anon-key-here|eyJhbG...ummy|g' .env
           rm .env.bak
 
-      - name: Build APK (debug)
-        run: flutter build apk --debug
+      - name: Build release APK
+        run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk-${{ github.run_number }}
-          path: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 7
+          name: release-apk-${{ github.run_number }}
+          path: apps/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Get pubspec version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d '+' -f 1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Upload APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: android-debug-${{ github.run_number }}
-          name: Android Debug Build ${{ github.run_number }}
-          body: Automated debug APK build from ${{ github.ref }}
-          files: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Lucky Store POS v${{ steps.version.outputs.version }}
+          body: |
+            ## Android Release Build
+
+            **Version:** ${{ steps.version.outputs.version }}
+            **Built from:** ${{ github.ref }} @ ${{ github.sha }}
+            **Flutter:** 3.41.0
+            **Min Android:** API 23 (Android 6.0+)
+
+            ### Installation
+            Download `app-release.apk` below and sideload on your device.
+          files: apps/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
