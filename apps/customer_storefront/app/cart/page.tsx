@@ -72,7 +72,7 @@ function CartContent() {
           {isEmpty ? (
             <div className="text-center py-16">
               <div className="flex items-center justify-center mb-4">
-                <EmptyCartIcon size={64} className="text-[#d6d3d1]" />
+                <EmptyCartIcon size={64} className="text-[#a8a29e]" />
               </div>
               <h3 className="text-lg font-bold mb-2">Your cart is empty</h3>
               <p className="text-sm text-gray-500 mb-6">Add items from the store to get started</p>

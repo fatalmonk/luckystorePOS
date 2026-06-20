@@ -56,7 +56,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
   if (status === 'loading') {
     return (
-      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold animate-[fadeUp_0.2s_ease]">
+      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#78716c] text-sm font-semibold animate-[fadeUp_0.2s_ease]">
         Saving...
       </button>
     );
@@ -85,7 +85,7 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
   if (status === 'saved') {
     return (
-      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#a8a29e] text-sm font-semibold animate-[fadeUp_0.2s_ease]">
+      <button disabled className="w-full h-10 bg-[#faf8f5] border border-[#e7e5e4] rounded-md text-[#78716c] text-sm font-semibold animate-[fadeUp_0.2s_ease]">
         ✓ On Wishlist
       </button>
     );

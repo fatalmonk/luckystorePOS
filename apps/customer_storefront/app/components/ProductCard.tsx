@@ -213,7 +213,7 @@ export function ProductCard({
           {isWishlisted ? (
             <span className="text-red-500">❤️</span>
           ) : (
-            <span className="text-[#a8a29e] hover:text-red-500 transition-colors">🤍</span>
+            <span className="text-[#78716c] hover:text-red-500 transition-colors">🤍</span>
           )}
         </button>
       </div>
@@ -248,12 +248,12 @@ export function ProductCard({
 
         {onSale && (
           <div className="flex items-center gap-1 text-xs">
-            <span className="line-through text-[#a8a29e]">{formatBdt(originalPrice)}</span>
+            <span className="line-through text-[#78716c]">{formatBdt(originalPrice)}</span>
             <span className="bg-green-100 text-green-800 font-bold px-1 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
           </div>
         )}
 
-        <p className="text-[10px] text-[#a8a29e]">
+        <p className="text-[10px] text-[#78716c]">
           {formatUnitPrice(price, unit)}
         </p>
 

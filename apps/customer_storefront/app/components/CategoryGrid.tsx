@@ -123,7 +123,7 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
       {/* Overflow indicator */}
       {canScrollRight && !hasInteracted && (
         <div className="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-12 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none flex items-center justify-end pr-2 z-10">
-          <span className="text-lg text-[#a8a29e] animate-pulse">→</span>
+          <span className="text-lg text-[#78716c] animate-pulse">→</span>
         </div>
       )}
     </div>

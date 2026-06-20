@@ -22,6 +22,9 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    optimizePackageImports: ['@supabase/supabase-js'],
+  },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

@@ -22,7 +22,7 @@ export function ActiveLink({ href, icon, label, showBadge }: ActiveLinkProps) {
     <Link
       href={href}
       className={`flex flex-col items-center justify-center gap-1 min-h-[44px] px-5 relative transition-all duration-200 ${
-        isActive ? 'text-[#ffe302]' : 'text-gray-600 hover:text-gray-800'
+        isActive ? 'text-[#1c1917]' : 'text-[#78716c] hover:text-[#1c1917]'
       }`}
       aria-current={isActive ? 'page' : undefined}
     >

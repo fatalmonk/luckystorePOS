@@ -3,7 +3,7 @@
     "collect": {
       "url": [
         "http://localhost:3000/",
-        "http://localhost:3000/search?q=test"
+        "http://localhost:3000/category?q=test"
       ],
       "startServerCommand": "npm run start",
       "startServerReadyPattern": "Ready in",
@@ -22,7 +22,13 @@
         "interactive": ["warn", { "maxNumericValue": 3500 }],
         "resource-summary:document:size": ["warn", { "maxNumericValue": 50000 }],
         "resource-summary:script:size": ["warn", { "maxNumericValue": 300000 }],
-        "resource-summary:image:size": ["warn", { "maxNumericValue": 500000 }]
+        "resource-summary:image:size": ["warn", { "maxNumericValue": 500000 }],
+        "render-blocking-resources": ["warn", { "maxLength": 1 }],
+        "render-blocking-insight": ["warn", { "maxLength": 1 }],
+        "legacy-javascript": ["warn", { "maxLength": 1 }],
+        "legacy-javascript-insight": ["warn", { "minScore": 0.5 }],
+        "unused-javascript": ["warn", { "maxLength": 2 }],
+        "network-dependency-tree-insight": ["warn", { "minScore": 0 }]
       }
     },
     "upload": {

@@ -5,10 +5,16 @@ import { fetchProducts, fetchCategories } from '../../lib/products';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
 import type { Category } from '../../lib/types';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 export const dynamicParams = true;
+
+export const metadata: Metadata = {
+  title: 'Category',
+  description: 'Browse products by category at Lucky Store — fresh groceries, household items, and more. Same-day delivery in Chittagong.',
+};
 
 export async function generateStaticParams() {
   try {

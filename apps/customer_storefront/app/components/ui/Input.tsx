@@ -23,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, classNam
           outline-none
           focus:border-[#ffe302] focus:shadow-[0_0_0_3px_rgba(255,243,77,0.15)]
           transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
-          placeholder:text-[#a8a29e]
+          placeholder:text-[#78716c]
           ${className}
         `}
         {...props}
@@ -53,7 +53,7 @@ export function TextArea({ label, className = '', ...props }: TextAreaProps) {
           outline-none
           focus:border-[#ffe302] focus:shadow-[0_0_0_3px_rgba(255,243,77,0.15)]
           transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
-          placeholder:text-[#a8a29e]
+          placeholder:text-[#78716c]
           ${className}
         `}
         {...props}
@@ -69,7 +69,7 @@ interface SearchInputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function SearchInput({ onSearch, ...props }: SearchInputProps) {
   return (
     <div className="relative flex-1">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a8a29e] text-sm">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#78716c] text-sm">
         ⌕
       </span>
       <input
@@ -82,7 +82,7 @@ export function SearchInput({ onSearch, ...props }: SearchInputProps) {
           outline-none
           focus:border-[#ffe302] focus:bg-white focus:shadow-[0_0_0_3px_rgba(220,95,59,0.07)]
           transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
-          placeholder:text-[#a8a29e]
+          placeholder:text-[#78716c]
         "
         onKeyDown={(e) => {
           if (e.key === 'Enter') {

@@ -80,7 +80,7 @@ export function ProductCard({
       {/* Content area */}
       <div className="p-3 sm:p-4 flex flex-col flex-1">
         <h3 className="text-sm sm:text-base font-semibold leading-snug line-clamp-2 mb-1">{name}</h3>
-        <p className="text-xs text-[#a8a29e] mb-3">{unit}</p>
+        <p className="text-xs text-[#78716c] mb-3">{unit}</p>
 
         <div className="flex items-center justify-between mt-auto gap-2">
           <span className="font-bold text-base sm:text-lg tracking-tight whitespace-nowrap">৳{price}</span>

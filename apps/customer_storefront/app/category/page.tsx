@@ -1,10 +1,21 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { CategoryShell } from './CategoryShell';
 import { CategoryShellSkeleton } from './CategoryShellSkeleton';
 import { fetchProducts, fetchCategories } from '../lib/products';
 import { getSingleParam } from '../lib/utils';
 import type { Category } from '../lib/types';
+
+export const metadata: Metadata = {
+  title: 'Browse Products',
+  description: 'Browse all products at Lucky Store — fresh groceries, household items, and more. Search by category, price, and availability. Same-day delivery in Chittagong.',
+  alternates: {
+    canonical: '/category',
+  },
+};
+
+export const revalidate = 3600;
 
 export default async function CategoryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const resolvedParams = await searchParams;
