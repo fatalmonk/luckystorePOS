@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SUPABASE_URL: "${{ secrets.SUPABASE_URL }}" 
+      SUPABASE_URL: "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
+      # Service role key used to write scraped data to the database
       SUPABASE_SERVICE_KEY: "${{ secrets.SUPABASE_SERVICE_KEY }}"
       STORE_ID: "${{ secrets.STORE_ID }}"
       CHROME_BIN: /usr/bin/google-chrome
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
 
     steps:
       - uses: actions/checkout@v4

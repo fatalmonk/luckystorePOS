@@ -1,8 +1,8 @@
 # Lucky Store POS
 Stack: Next.js 15 App Router, TS 5.9, Tailwind v3, Supabase, Node 24, Playwright
-Current: main synced, repo cleanup (91 files: dead tooling, stale plans, junk removed)
-Done: Storefront redesign + polish (departments, filters, cards, loading, microcopy, favicon/OG/metadata), CI/CD fixes, Lighthouse CI, repo-wide cleanup (archived 24 plan docs to _plans/, removed .gemini + .taskmaster + junk files)
+Current: align daily scraper workflow environment variables with repo standard
+Done: storefront redesign + polish, repo-wide cleanup, aligned SUPABASE_URL in scraper-daily.yml with NEXT_PUBLIC_SUPABASE_URL secret, fixed root tsconfig.json error
 Blocker: none
-Next: commit staged cleanup
+Next: commit changes
 ---
-ctx: repo cleanup staged, ready to commit | done: 91 files cleaned, 24 plans archived | next: commit
+ctx: aligned scraper secret & fixed tsconfig | done: updated scraper-daily.yml with comments & tsconfig.json | next: commit

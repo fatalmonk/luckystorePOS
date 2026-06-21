@@ -9,9 +9,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "allowJs": true,
+    "noEmit": true
   },
-  "include": ["src/**/*"],
+  "include": ["scripts/**/*.js", "scripts/**/*.cjs", "scripts/**/*.mjs"],
   "exclude": ["node_modules"]
 }
