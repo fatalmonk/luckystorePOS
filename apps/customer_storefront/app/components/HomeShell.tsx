@@ -11,9 +11,11 @@ interface HomeShellProps {
 }
 
 export function HomeShell({ products, categories }: HomeShellProps) {
-  const popular = products.slice(0, 20);
-  const deals = products.filter((p) => (p.originalPrice ?? 0) > p.price).slice(0, 20);
-  const bestSellers = products.filter((p) => p.stock > 20).slice(0, 20);
+  const MAX_SECTION_ITEMS = 20;
+
+  const popular = products.slice(0, MAX_SECTION_ITEMS);
+  const deals = products.filter((p) => (p.originalPrice ?? 0) > p.price).slice(0, MAX_SECTION_ITEMS);
+  const bestSellers = products.filter((p) => p.stock > 20).slice(0, MAX_SECTION_ITEMS);
 
   const sections = [
     { title: 'Popular Now', href: '/category?sort=popular', products: popular },

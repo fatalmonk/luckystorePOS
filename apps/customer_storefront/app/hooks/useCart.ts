@@ -35,19 +35,20 @@ export function useCart() {
     }
   }, [cart, hydrated]);
 
-  const addToCart = useCallback((product: Product) => {
-    if (product.stock <= 0) return;
+  const addToCart = useCallback((product: Product): boolean => {
+    if (product.stock <= 0) return false;
 
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
-        if (existing.qty >= product.stock) return prev;
+        if (existing.qty >= product.stock) return prev; // at max, no-op but signal success
         return prev.map((item) =>
           item.id === product.id ? { ...item, qty: item.qty + 1 } : item
         );
       }
       return [...prev, { ...product, qty: 1 }];
     });
+    return true;
   }, []);
 
   const updateQty = useCallback((productId: string, delta: number) => {

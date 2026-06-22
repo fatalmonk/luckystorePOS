@@ -13,6 +13,7 @@ const priceRanges = [
 const availabilityOptions = [
   { value: 'in_stock', label: 'In Stock' },
   { value: 'low_stock', label: 'Low Stock (≤5)' },
+  { value: 'out_of_stock', label: 'Out of Stock' },
 ];
 
 const sortOptions = [
@@ -50,7 +51,7 @@ export function HeaderFilters() {
     };
   }, []);
 
-  const isFilterPage = pathname.startsWith('/category') || pathname === '/search';
+  const isFilterPage = pathname.startsWith('/category');
   const targetPath = isFilterPage ? pathname : '/category';
 
   // Active filters extraction
