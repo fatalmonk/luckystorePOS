@@ -35,7 +35,7 @@ export default async function CategorySlugPage({
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
   const categories = await fetchCategories();
-  const categorySlug = resolvedParams.slug;
+  const categorySlug = decodeURIComponent(resolvedParams.slug);
   const group = getCategoryGroup(categorySlug);
   const isValidCat = categories.some((c) => c.slug === categorySlug);
   const currentCat = isValidCat || group ? categorySlug : 'all';
