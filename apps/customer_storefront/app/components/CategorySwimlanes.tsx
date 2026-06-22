@@ -71,6 +71,7 @@ export function CategorySwimlanes({
       list = list.filter((p) => {
         if (availability.includes('in_stock') && p.stock > 5) return true;
         if (availability.includes('low_stock') && p.stock > 0 && p.stock <= 5) return true;
+        if (availability.includes('out_of_stock') && p.stock === 0) return true;
         return false;
       });
     }
