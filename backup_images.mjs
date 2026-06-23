@@ -4,12 +4,29 @@ import https from 'https';
 
 const LOCAL_DIR = "/Users/mac.alvi/Desktop/item-images";
 const URLS_FILE = "./urls_to_download.txt";
+const ENV_FILE = "./.env";
 
 if (!fs.existsSync(LOCAL_DIR)) {
   fs.mkdirSync(LOCAL_DIR, { recursive: true });
 }
 
+function getServiceRoleKey() {
+  if (!fs.existsSync(ENV_FILE)) {
+    console.error(`.env file not found`);
+    return null;
+  }
+  const envContent = fs.readFileSync(ENV_FILE, 'utf-8');
+  const match = envContent.match(/SUPABASE_SERVICE_ROLE_KEY=["']?([^"'\s]+)["']?/);
+  return match ? match[1] : null;
+}
+
 async function run() {
+  const serviceKey = getServiceRoleKey();
+  if (!serviceKey) {
+    console.error("SUPABASE_SERVICE_ROLE_KEY not found in .env");
+    process.exit(1);
+  }
+
   if (!fs.existsSync(URLS_FILE)) {
     console.error(`Error: ${URLS_FILE} not found.`);
     process.exit(1);
@@ -21,7 +38,7 @@ async function run() {
     .map(line => line.trim())
     .filter(line => line.startsWith('http'));
 
-  console.log(`Found ${urls.length} URLs in ${URLS_FILE}`);
+  console.log(`Found ${urls.length} URLs in ${URLS_FILE}. Downloading using service role key...`);
 
   let success = 0;
   let failed = 0;
@@ -30,7 +47,6 @@ async function run() {
     try {
       const urlObj = new URL(url);
       
-      // Get the path after '/public/'
       const publicIndex = urlObj.pathname.indexOf('/public/');
       if (publicIndex === -1) {
         console.log(`Skipping invalid URL path: ${url}`);
@@ -40,7 +56,6 @@ async function run() {
       const relativePath = urlObj.pathname.substring(publicIndex + '/public/'.length);
       const filePath = path.join(LOCAL_DIR, relativePath);
       
-      // Ensure target directory exists
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
       if (fs.existsSync(filePath)) {
@@ -50,7 +65,13 @@ async function run() {
       }
 
       await new Promise((resolve, reject) => {
-        https.get(url, (res) => {
+        const options = {
+          headers: {
+            'Authorization': `Bearer ${serviceKey}`
+          }
+        };
+
+        https.get(url, options, (res) => {
           if (res.statusCode === 200) {
             const file = fs.createWriteStream(filePath);
             res.pipe(file);
@@ -59,7 +80,7 @@ async function run() {
               resolve();
             });
             file.on('error', (err) => {
-              fs.unlink(filePath, () => {}); // clean up partial file
+              fs.unlink(filePath, () => {});
               reject(err);
             });
           } else {
