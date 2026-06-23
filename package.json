@@ -5,8 +5,15 @@
   "type": "module",
   "description": "Lucky Store monorepo — POS frontend, Supabase backend, scrapers, and ops scripts",
   "supportedArchitectures": {
-    "os": ["darwin", "linux", "win32"],
-    "cpu": ["x64", "arm64"]
+    "os": [
+      "darwin",
+      "linux",
+      "win32"
+    ],
+    "cpu": [
+      "x64",
+      "arm64"
+    ]
   },
   "scripts": {
     "scrape": "node apps/scraper/scrape-shwapno.js",
@@ -14,6 +21,10 @@
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",
     "remove-duplicates:dry-run": "node scripts/ops/remove-duplicate-items.js --dry-run",
     "scan:secrets": "node scripts/secret_scan.js",
+    "sync:neon": "node scripts/sync-supabase-to-neon.mjs",
+    "migrate:images": "node scripts/migrate-images-to-r2.mjs",
+    "migrate:images:dry-run": "node scripts/migrate-images-to-r2.mjs --dry-run",
+    "deploy:worker": "cd cloudflare/workers/images && npx wrangler deploy",
     "facebook:post": "tsx src/facebook.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -25,6 +36,7 @@
     "sharp": "^0.35.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260623.1",
     "@types/node": "^24.5.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"

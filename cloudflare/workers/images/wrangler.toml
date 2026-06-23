@@ -1,0 +1,16 @@
+name = "lucky-store-images"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+account_id = "8e457654e12c3b75d2094bbd8914030b"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "lucky-store-images"
+
+[vars]
+ALLOWED_ORIGINS = "https://adminweb-blond.vercel.app,https://lucky-store.vercel.app,http://localhost:5173,http://localhost:3000"
+
+# Rate limiting: 30 uploads/min per IP, 600 reads/min per IP
+[limits]
+uploads_per_minute = 30
+reads_per_minute = 600

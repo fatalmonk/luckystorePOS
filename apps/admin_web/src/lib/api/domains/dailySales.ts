@@ -1,21 +1,43 @@
 import { supabase } from "@/lib/supabase";
+import { sql } from "@/lib/neon";
 import type { DailySale, DailySaleFormData } from '../types';
 
 export const dailySales = {
   list: async (storeId: string, filters?: { startDate?: string; endDate?: string }): Promise<DailySale[]> => {
-    let query = supabase
-      .from('daily_sales')
-      .select('*')
-      .eq('store_id', storeId)
-      .order('sale_date', { ascending: false });
+    // Neon read replica
+    let rows: any[];
 
-    if (filters?.startDate) query = query.gte('sale_date', filters.startDate);
-    if (filters?.endDate) query = query.lte('sale_date', filters.endDate);
+    if (filters?.startDate && filters?.endDate) {
+      rows = await sql`
+        SELECT * FROM daily_sales
+        WHERE store_id = ${storeId}
+          AND sale_date >= ${filters.startDate}
+          AND sale_date <= ${filters.endDate}
+        ORDER BY sale_date DESC
+      `;
+    } else if (filters?.startDate) {
+      rows = await sql`
+        SELECT * FROM daily_sales
+        WHERE store_id = ${storeId}
+          AND sale_date >= ${filters.startDate}
+        ORDER BY sale_date DESC
+      `;
+    } else if (filters?.endDate) {
+      rows = await sql`
+        SELECT * FROM daily_sales
+        WHERE store_id = ${storeId}
+          AND sale_date <= ${filters.endDate}
+        ORDER BY sale_date DESC
+      `;
+    } else {
+      rows = await sql`
+        SELECT * FROM daily_sales
+        WHERE store_id = ${storeId}
+        ORDER BY sale_date DESC
+      `;
+    }
 
-    const { data, error } = await query;
-    if (error) throw error;
-
-    return (data ?? []).map((row) => ({
+    return (rows ?? []).map((row) => ({
       id: row.id,
       storeId: row.store_id ?? '',
       saleDate: row.sale_date ?? '',

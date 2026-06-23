@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { uploadToR2, deleteFromR2, isR2Configured } from '../lib/r2';
 import { useNotify } from '../components/NotificationContext';
 
 /**
- * Upload image to Supabase Storage and return the public URL
+ * Upload image to R2 (primary) or Supabase Storage (fallback).
+ * Returns the public URL.
  */
 async function uploadProductImage(
   file: File,
@@ -13,7 +15,16 @@ async function uploadProductImage(
   const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const fileName = `${storeId}/${itemId}_${Date.now()}.${fileExtension}`;
 
-  // Upload to Supabase Storage
+  // Primary: R2
+  if (isR2Configured()) {
+    try {
+      return await uploadToR2(file, fileName);
+    } catch (err) {
+      console.warn('R2 upload failed, falling back to Supabase:', err);
+    }
+  }
+
+  // Fallback: Supabase Storage
   const { data: _data, error: uploadError } = await supabase.storage
     .from('product-images')
     .upload(fileName, file, {
@@ -25,7 +36,6 @@ async function uploadProductImage(
     throw new Error(uploadError.message);
   }
 
-  // Get public URL
   const { data: publicUrlData } = supabase.storage
     .from('product-images')
     .getPublicUrl(fileName);
