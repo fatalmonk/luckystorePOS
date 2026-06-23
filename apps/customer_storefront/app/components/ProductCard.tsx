@@ -224,18 +224,20 @@ export function ProductCard({
 
       {/* Image */}
       <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-white overflow-hidden flex items-center justify-center border-b border-[#f5f5f4] shrink-0">
-        {image_url ? (
+        <div className="absolute inset-0 bg-gray-50/50 flex items-center justify-center">
+          <CategoryPlaceholder category={category} />
+        </div>
+        {image_url && (
           <img
             src={image_url}
             alt={name}
-            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 p-2"
+            className="relative w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 p-2"
             loading={priority ? undefined : 'lazy'}
             decoding="async"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
           />
-        ) : (
-          <div className="w-full h-full bg-gray-50/50 flex items-center justify-center">
-            <CategoryPlaceholder category={category} />
-          </div>
         )}
       </div>
 
