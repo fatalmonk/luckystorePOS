@@ -22,6 +22,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'images.luckystore1947.com',
+      },
+      {
+        protocol: 'https',
         hostname: '*.workers.dev',
       },
     ],
