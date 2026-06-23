@@ -33,6 +33,27 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js'],
   },
+  async headers() {
+    const linkHeaders = [
+      '</.well-known/api-catalog>; rel="api-catalog"',
+      '</.well-known/oauth-authorization-server>; rel="service-doc"',
+      '</.well-known/oauth-protected-resource>; rel="service-doc"',
+      '</.well-known/openid-configuration>; rel="service-doc"',
+      '</.well-known/mcp/server-card.json>; rel="service-meta"',
+      '</.well-known/agent-skills/index.json>; rel="service-doc"',
+      '</auth.md>; rel="service-doc"',
+      '</robots.txt>; rel="service-doc"',
+      '</sitemap.xml>; rel="sitemap"',
+    ];
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Link', value: linkHeaders.join(', ') },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

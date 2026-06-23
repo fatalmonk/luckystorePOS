@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/agent-skills-discovery-rfc/main/schema.json",
+  "skills": [
+    {
+      "name": "browse-products",
+      "type": "capability",
+      "description": "Browse the Lucky Store product catalog with categories, search, and filtering",
+      "url": "https://lucky-store-six.vercel.app/.well-known/agent-skills/browse-products.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "checkout",
+      "type": "capability",
+      "description": "Submit a grocery order with cart items, customer details, and delivery information",
+      "url": "https://lucky-store-six.vercel.app/.well-known/agent-skills/checkout.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "search-products",
+      "type": "capability",
+      "description": "Search products by name, category, or price range in the Lucky Store catalog",
+      "url": "https://lucky-store-six.vercel.app/.well-known/agent-skills/search-products.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "track-order",
+      "type": "capability",
+      "description": "Track the status of a placed order by order number",
+      "url": "https://lucky-store-six.vercel.app/.well-known/agent-skills/track-order.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "robots-txt",
+      "type": "discovery",
+      "description": "Crawl rules for AI agents — defines allowed and disallowed paths",
+      "url": "https://lucky-store-six.vercel.app/.well-known/agent-skills/robots-txt/SKILL.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "sitemap",
+      "type": "discovery",
+      "description": "XML sitemap listing all canonical product and category URLs",
+      "url": "https://lucky-store-six.vercel.app/.well-known/agent-skills/sitemap/SKILL.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

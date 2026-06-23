@@ -1,0 +1,94 @@
+{
+  "serverInfo": {
+    "name": "lucky-store-storefront",
+    "version": "1.0.0",
+    "description": "Lucky Store customer storefront — grocery ordering and product catalog API"
+  },
+  "transport": {
+    "type": "http",
+    "endpoint": "https://lucky-store-six.vercel.app/api/mcp",
+    "security": {
+      "type": "oauth2",
+      "authorizationUrl": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/authorize",
+      "tokenUrl": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/token",
+      "scopes": ["read:products", "read:orders", "write:orders", "read:profile"]
+    }
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "listChanged": false,
+      "subscribe": false
+    },
+    "prompts": {
+      "listChanged": false
+    }
+  },
+  "tools": [
+    {
+      "name": "search_products",
+      "description": "Search the Lucky Store product catalog by keyword, category, or price range",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query for product name" },
+          "category": { "type": "string", "description": "Category slug to filter by" },
+          "limit": { "type": "number", "description": "Max results (default 20)", "default": 20 }
+        }
+      }
+    },
+    {
+      "name": "get_product",
+      "description": "Get detailed information about a specific product by ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Product UUID" }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "list_categories",
+      "description": "List all product categories available at Lucky Store",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_order",
+      "description": "Submit a grocery order with items, customer details, and delivery info",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "qty": { "type": "number" }
+              },
+              "required": ["id", "qty"]
+            }
+          },
+          "customerName": { "type": "string" },
+          "customerPhone": { "type": "string" },
+          "customerAddress": { "type": "string" }
+        },
+        "required": ["items", "customerName", "customerPhone", "customerAddress"]
+      }
+    },
+    {
+      "name": "check_health",
+      "description": "Check the health status of the Lucky Store API",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -2,6 +2,12 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
+import { initWebMCP } from './lib/webmcp';
+
+// Initialize WebMCP on client side
+if (typeof window !== 'undefined') {
+  initWebMCP();
+}
 
 export const metadata: Metadata = {
   title: { default: 'Lucky Store', template: '%s | Lucky Store' },

@@ -1,0 +1,102 @@
+# Lucky Store — robots.txt
+# https://www.rfc-editor.org/rfc/rfc9309
+
+# --- Default rules for all crawlers ---
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+# --- AI Crawlers: allowed (search indexing) ---
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: Applebot
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /order/
+Disallow: /checkout/
+Disallow: /cart/
+
+# --- AI Crawlers: blocked (training-only bots) ---
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+User-agent: omgili
+Disallow: /
+
+User-agent: omgilibot
+Disallow: /
+
+# --- Content Signals (https://contentsignals.org/) ---
+# Allow search engine usage, deny AI training and AI input
+Content-Signal: ai-train=no, search=yes, ai-input=no
+
+# --- Sitemap ---
+Sitemap: https://lucky-store-six.vercel.app/sitemap.xml
