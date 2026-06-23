@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Lucky Store monorepo — POS frontend, Supabase backend, scrapers, and ops scripts",
+  "supportedArchitectures": {
+    "os": ["darwin", "linux", "win32"],
+    "cpu": ["x64", "arm64"]
+  },
   "scripts": {
     "scrape": "node apps/scraper/scrape-shwapno.js",
     "import-competitor": "node scripts/ops/import-competitor-data.js",
