@@ -125,7 +125,17 @@ function CheckoutContent() {
       const { ok, order, error } = await res.json();
       if (!ok) throw new Error(error || 'Order failed');
 
-      sessionStorage.setItem('lastOrder', JSON.stringify(order));
+      // Transform API response (snake_case) to OrderData (camelCase) for the confirmation page
+      const orderData = {
+        orderNumber: order.order_number,
+        name: formData.name,
+        phone: cleanPhone,
+        address: formData.address,
+        items: cart.length,
+        total: total,
+        time: new Date().toISOString(),
+      };
+      sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
       clearCart();
       router.push(`/order?num=${order.order_number}`);
     } catch (e: any) {
@@ -185,6 +195,7 @@ function CheckoutContent() {
                 onBlur={() => setErrors((p) => ({ ...p, name: validateField('name', formData.name) }))}
                 placeholder="e.g. Karim Ahmed"
                 aria-invalid={!!errors.name}
+                data-testid="checkout-name-input"
               />
               {errors.name && <p className="text-xs text-red-500 -mt-2 mb-3">{errors.name}</p>}
 
@@ -196,6 +207,7 @@ function CheckoutContent() {
                 onBlur={() => setErrors((p) => ({ ...p, phone: validateField('phone', formData.phone) }))}
                 placeholder="01XXXXXXXXX"
                 aria-invalid={!!errors.phone}
+                data-testid="checkout-phone-input"
               />
               {errors.phone ? (
                 <p className="text-xs text-red-500 -mt-2 mb-3">{errors.phone}</p>
@@ -210,6 +222,7 @@ function CheckoutContent() {
                 onBlur={() => setErrors((p) => ({ ...p, address: validateField('address', formData.address) }))}
                 placeholder="House, road, area…"
                 aria-invalid={!!errors.address}
+                data-testid="checkout-address-input"
               />
               {errors.address && <p className="text-xs text-red-500 -mt-2 mb-3">{errors.address}</p>}
 

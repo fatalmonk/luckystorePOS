@@ -46,7 +46,7 @@ function ProductContent({ product }: ProductClientProps) {
   };
 
   const taka = Math.floor(product.price);
-  const paisa = ((product.price % 1) * 100).toFixed(0).padStart(2, '0');
+  const paisa = Math.round((product.price % 1) * 100).toString().padStart(2, '0');
 
   return (
     <>

@@ -156,16 +156,20 @@ export function ProductCard({
   const onSale = originalPrice !== undefined && originalPrice > price;
   const savings = onSale ? originalPrice! - price : 0;
   const taka = Math.floor(price);
-  const paisa = ((price % 1) * 100).toFixed(0).padStart(2, '0');
+  const paisa = Math.round((price % 1) * 100).toString().padStart(2, '0');
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { showToast } = useToast();
 
+  // Load wishlist state from local cache on mount
   useEffect(() => {
     const list = getLocalWishlist();
     setIsWishlisted(list.includes(id));
   }, [id]);
 
+  // Heart toggle: quick add/remove for IN-STOCK items (no phone capture).
+  // The WishlistButton component below handles OUT-OF-STOCK items with phone input.
+  // Both write to the same `wishlist` table via toggleWishlistItemServer — phone is optional.
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const fp = getOrCreateFingerprint();

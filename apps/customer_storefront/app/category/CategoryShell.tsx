@@ -12,7 +12,6 @@ interface CategoryShellProps {
   group?: CategoryGroup;
   categories: { id: string; slug: Category; name: string; emoji: string }[];
   products: Product[];
-  searchTerm: string;
   theme: string;
   sort: string;
 }
