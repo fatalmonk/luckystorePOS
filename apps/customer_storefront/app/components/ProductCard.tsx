@@ -225,14 +225,11 @@ export function ProductCard({
       {/* Image */}
       <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-white overflow-hidden flex items-center justify-center border-b border-[#f5f5f4] shrink-0">
         {image_url ? (
-          <Image
+          <img
             src={image_url}
             alt={name}
-            fill
-            className="object-contain transition-transform duration-300 group-hover:scale-105 p-2"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 p-2"
             loading={priority ? undefined : 'lazy'}
-            priority={priority}
             decoding="async"
           />
         ) : (

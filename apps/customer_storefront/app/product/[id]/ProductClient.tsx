@@ -1,6 +1,5 @@
 'use client'; // product detail page with cart interactions and toast
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '../../components/Header';
 import { BottomNav } from '../../components/BottomNav';
@@ -58,13 +57,11 @@ function ProductContent({ product }: ProductClientProps) {
           <div className="px-4 pt-6 pb-5 sm:px-6 lg:px-8">
             <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-[#f5f3f0] overflow-hidden mb-5">
               {product.image_url ? (
-                <Image
+                <img
                   src={product.image_url}
                   alt={product.name}
-                  fill
-                  className="object-contain p-4 sm:p-6"
-                  sizes="(max-width: 768px) 100vw, 360px"
-                  priority
+                  className="w-full h-full object-contain p-4 sm:p-6"
+                  loading="eager"
                   decoding="async"
                 />
               ) : (
