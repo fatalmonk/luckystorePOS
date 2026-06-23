@@ -3,6 +3,12 @@ main = "src/index.ts"
 compatibility_date = "2024-09-23"
 account_id = "8e457654e12c3b75d2094bbd8914030b"
 
+workers_dev = true
+
+[[routes]]
+pattern = "images.luckystore1947.com"
+custom_domain = true
+
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "lucky-store-images"
