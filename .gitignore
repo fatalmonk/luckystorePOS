@@ -210,3 +210,6 @@ dist_public/
 
 # Documentation
 docs/
+
+# Neon sync artifacts (contain data, not just schema)
+_plans/neon_data.sql

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { sql } from "@/lib/neon";
 import type {
   CompetitorPrice,
   PriceAlert,
@@ -6,46 +7,60 @@ import type {
   CompetitorPriceFilters,
 } from '../types';
 
-import type { Json } from "@/lib/database.types";
-
 export async function fetchCompetitorPrices(
   storeId: string,
   filters?: CompetitorPriceFilters
 ): Promise<CompetitorPrice[]> {
-  let query = supabase
-    .from('competitor_prices')
-    .select(`
-      *,
-      items:item_id (name, sku)
-    `)
-    .eq('store_id', storeId)
-    .order('scraped_at', { ascending: false });
+  // Neon read replica — fetch with joined item names
+  let query = sql`
+    SELECT cp.*, i.name as item_name, i.sku
+    FROM competitor_prices cp
+    LEFT JOIN items i ON cp.item_id = i.id
+    WHERE cp.store_id = ${storeId}
+  `;
 
+  // Build dynamic filters via separate queries since tagged templates don't support conditional SQL
   if (filters?.itemId) {
-    query = query.eq('item_id', filters.itemId);
+    query = sql`
+      SELECT cp.*, i.name as item_name, i.sku
+      FROM competitor_prices cp
+      LEFT JOIN items i ON cp.item_id = i.id
+      WHERE cp.store_id = ${storeId}
+        AND cp.item_id = ${filters.itemId}
+    `;
   }
+
+  const rows = await query;
+
+  // Apply remaining filters in JS (simpler than dynamic SQL building)
+  let filtered = rows as any[];
+
   if (filters?.competitorName) {
-    query = query.ilike('competitor_name', `%${filters.competitorName}%`);
+    const lower = filters.competitorName.toLowerCase();
+    filtered = filtered.filter(r => r.competitor_name?.toLowerCase().includes(lower));
   }
   if (filters?.dateFrom) {
-    query = query.gte('scraped_at', filters.dateFrom);
+    filtered = filtered.filter(r => r.scraped_at >= filters.dateFrom!);
   }
   if (filters?.dateTo) {
-    query = query.lte('scraped_at', filters.dateTo);
+    filtered = filtered.filter(r => r.scraped_at <= filters.dateTo!);
   }
 
-  const { data, error } = await query;
+  // Sort by scraped_at desc
+  filtered.sort((a, b) => {
+    const aTime = new Date(a.scraped_at).getTime();
+    const bTime = new Date(b.scraped_at).getTime();
+    return bTime - aTime;
+  });
 
-  if (error) throw error;
-
-  return (data || []).map((row: any) => ({
+  return filtered.map((row) => ({
     id: row.id,
     item_id: row.item_id,
-    item_name: row.items?.name,
-    sku: row.items?.sku,
+    item_name: row.item_name,
+    sku: row.sku,
     competitor_name: row.competitor_name,
     competitor_price: row.competitor_price,
-    competitor_url: row.competitor_url,
+    competitor_url: row.competitor_url || row.competitor_product_url,
     scraped_at: row.scraped_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -126,14 +141,11 @@ export async function deleteCompetitorPrice(id: string): Promise<void> {
 }
 
 export async function fetchCompetitorNames(storeId: string): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('competitor_prices')
-    .select('competitor_name')
-    .eq('store_id', storeId as any)
-    .order('competitor_name' as any);
-
-  if (error) throw error;
-
-  const names = [...new Set((data || []).map((d: any) => d.competitor_name))] as string[];
-  return names;
+  const rows = await sql`
+    SELECT DISTINCT competitor_name
+    FROM competitor_prices
+    WHERE store_id = ${storeId}
+    ORDER BY competitor_name
+  `;
+  return rows.map((r: any) => r.competitor_name);
 }
