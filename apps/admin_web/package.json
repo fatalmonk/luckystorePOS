@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "supportedArchitectures": {
+    "os": ["darwin", "linux", "win32"],
+    "cpu": ["x64", "arm64"]
+  },
   "scripts": {
     "dev": "vite",
     "build": "npx tsc -p tsconfig.app.json --noEmit && vite build && node scripts/build-sw.mjs",
