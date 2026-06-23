@@ -56,16 +56,18 @@ function ProductContent({ product }: ProductClientProps) {
           {/* Hero Section */}
           <div className="px-4 pt-6 pb-5 sm:px-6 lg:px-8">
             <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-[#f5f3f0] overflow-hidden mb-5">
-              {product.image_url ? (
+              <div className="absolute inset-0 grid place-items-center text-[100px]">{product.emoji}</div>
+              {product.image_url && (
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-contain p-4 sm:p-6"
+                  className="relative w-full h-full object-contain p-4 sm:p-6"
                   loading="eager"
                   decoding="async"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
-              ) : (
-                <div className="w-full h-full grid place-items-center text-[100px]">{product.emoji}</div>
               )}
             </div>
 

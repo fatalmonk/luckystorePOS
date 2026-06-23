@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useCallback, useMemo, ComponentType } from 'react';
+import { useState, useLayoutEffect, useCallback, useMemo } from 'react';
 import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,8 @@ import {
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
   Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, 
   LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag, TrendingDown,
-  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send
+  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send,
+  type LucideIcon
 } from 'lucide-react';
 
 interface SidebarNewProps {
@@ -19,7 +20,7 @@ interface SidebarNewProps {
 }
 
 interface NavItem {
-  icon: ComponentType<{ className?: string; size?: number }>;
+  icon: LucideIcon;
   label: string;
   path: string;
   children?: { label: string; path: string }[];
@@ -28,7 +29,7 @@ interface NavItem {
 interface NavGroup {
   id: string;
   titleKey: string;
-  icon: ComponentType<{ className?: string; size?: number }>;
+  icon: LucideIcon;
   items: NavItem[];
 }
 
