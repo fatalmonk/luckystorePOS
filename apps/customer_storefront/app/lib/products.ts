@@ -3,33 +3,95 @@ import type { Product, Category } from './types';
 
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
-export async function fetchProducts(q?: string, categoryId?: string, categoryIds?: string[]): Promise<Product[]> {
+/**
+ * Fetch a single product by ID.
+ * TODO: Replace with a dedicated `get_item_by_id` RPC to avoid loading the full catalog.
+ * Currently uses search_items_pos (SECURITY DEFINER) because items table RLS blocks anon direct queries.
+ */
+export async function fetchProductById(id: string): Promise<Product | null> {
+  try {
+    const [itemsRes, cats] = await Promise.all([
+      supabase.rpc('search_items_pos', {
+        p_store_id: STORE_ID,
+        p_query: '',
+        p_category_id: null,
+        p_limit: 1000,
+        p_offset: 0,
+      }),
+      fetchCategories(),
+    ]);
+
+    if (itemsRes.error) throw itemsRes.error;
+
+    const item = (itemsRes.data ?? []).find((i: any) => (i.id ?? i.item_id) === id);
+    if (!item) return null;
+
+    const emojiMap = new Map(cats.map(c => [c.slug, c.emoji]));
+    const emojiById = new Map(cats.map(c => [c.id, c.emoji]));
+    const price = Number(item.price);
+    const originalPrice = Number(item.mrp || item.price);
+
+    return {
+      id: item.id ?? item.item_id,
+      name: item.name,
+      emoji: emojiMap.get(item.category) ?? emojiById.get(item.category_id) ?? '📦',
+      price,
+      originalPrice: originalPrice > price ? originalPrice : undefined,
+      badge: originalPrice > price ? 'On Sale' : undefined,
+      unit: 'pc',
+      category: item.category as Category,
+      stock: Number(item.stock ?? item.qty_on_hand ?? 0),
+      description: item.description ?? '',
+      image_url: item.image_url,
+      created_at: item.created_at,
+    };
+  } catch (error) {
+    console.error('Error in fetchProductById:', error);
+    return null;
+  }
+}
+
+export interface FetchProductsResult {
+  products: Product[];
+  hasMore: boolean;
+}
+
+export async function fetchProducts(
+  q?: string,
+  categoryId?: string,
+  categoryIds?: string[],
+  page: number = 0,
+  limit: number = 60
+): Promise<FetchProductsResult> {
   try {
     const [itemsRes, cats] = await Promise.all([
       supabase.rpc('search_items_pos', {
         p_store_id: STORE_ID,
         p_query: q ?? '',
         p_category_id: categoryId && !categoryIds?.length ? categoryId : null,
-        p_limit: 1000,
-        p_offset: 0,
+        p_limit: limit + 1, // Fetch one extra to determine hasMore
+        p_offset: page * limit,
       }),
       fetchCategories()
     ]);
 
     if (itemsRes.error) throw itemsRes.error;
 
-    let items = itemsRes.data ?? [];
+    let items = (itemsRes.data ?? []) as any[];
+    const hasMore = items.length > limit;
+    if (hasMore) items = items.slice(0, limit); // Remove the extra item
+
     const emojiMap = new Map(cats.map(c => [c.slug, c.emoji]));
     const emojiById = new Map(cats.map(c => [c.id, c.emoji]));
 
     // Client-side category filter (only needed for multi-category groups)
     if (categoryIds && categoryIds.length > 0) {
       items = items.filter((item: any) =>
-        categoryIds.includes(item.category_id) || categoryIds.includes(item.category)
+        categoryIds.includes(item.category_id)
       );
     }
 
-    return items.map((item: any) => {
+    const products = items.map((item: any) => {
       const price = Number(item.price);
       const originalPrice = Number(item.mrp || item.price);
       return {
@@ -47,9 +109,11 @@ export async function fetchProducts(q?: string, categoryId?: string, categoryIds
         created_at: item.created_at,
       };
     });
+
+    return { products, hasMore };
   } catch (error) {
     console.error('Error in fetchProducts:', error);
-    return [];
+    return { products: [], hasMore: false };
   }
 }
 

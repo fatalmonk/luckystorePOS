@@ -91,7 +91,7 @@ export default function OrderContent() {
           <div className="w-[72px] h-[72px] bg-[rgba(45,106,79,0.08)] rounded-full grid place-items-center mx-auto mb-4">
             <span className="text-[32px] text-[#2d6a4f]">✓</span>
           </div>
-          <h1 className="text-[22px] font-extrabold tracking-tight mb-1.5">Order Placed!</h1>
+          <h1 className="text-[22px] font-extrabold tracking-tight mb-1.5" data-testid="order-confirmed-heading">Order Placed!</h1>
           <p className="text-sm text-[#78716c] mb-1">Order number</p>
           <p className="font-mono text-lg font-extrabold text-[#1c1917] bg-[#ffe302] px-3 py-1 rounded-full inline-block">{order.orderNumber}</p>
         </div>

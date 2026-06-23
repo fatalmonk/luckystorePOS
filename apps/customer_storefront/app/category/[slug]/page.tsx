@@ -2,7 +2,7 @@ import { CategoryShell } from '../CategoryShell';
 import { fetchProducts, fetchCategories } from '../../lib/products';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
-import type { Category } from '../../lib/types';
+import type { Category, Product } from '../../lib/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -44,18 +44,21 @@ export default async function CategorySlugPage({
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
-  let products: Awaited<ReturnType<typeof fetchProducts>> = [];
+  let products: Product[] = [];
   try {
     if (group) {
       const subCatIds = categories
         .filter((c) => group.subCategories.includes(c.slug))
         .map((c) => c.id);
-      products = await fetchProducts(searchTerm || undefined, undefined, subCatIds.length > 0 ? subCatIds : undefined);
+      const result = await fetchProducts(searchTerm || undefined, undefined, subCatIds.length > 0 ? subCatIds : undefined);
+      products = result.products;
     } else if (currentCat !== 'all') {
       const catId = categories.find((c) => c.slug === currentCat)?.id;
-      products = await fetchProducts(searchTerm || undefined, catId);
+      const result = await fetchProducts(searchTerm || undefined, catId);
+      products = result.products;
     } else {
-      products = await fetchProducts(searchTerm || undefined);
+      const result = await fetchProducts(searchTerm || undefined);
+      products = result.products;
     }
   } catch (err) {
     console.error('Failed to fetch category products:', err);
@@ -68,7 +71,6 @@ export default async function CategorySlugPage({
       group={group}
       categories={categories}
       products={products}
-      searchTerm={searchTerm}
       theme={theme}
       sort={sort}
     />

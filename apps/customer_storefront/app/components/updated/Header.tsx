@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderCartButton } from '../HeaderCartButton';
+import { HeaderFilters } from '../HeaderFilters';
 import { SearchSuggestions } from './SearchSuggestions';
 
 export function Header() {
@@ -26,16 +27,6 @@ export function Header() {
       }
     }
   }, []);
-
-  // Save recent searches only when query changes and is non-empty
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed && !recentSearches.includes(trimmed)) {
-      const updated = [trimmed, ...recentSearches.slice(0, 4)];
-      setRecentSearches(updated);
-      localStorage.setItem('lucky_recent_searches', JSON.stringify(updated));
-    }
-  }, [searchQuery, recentSearches]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -146,6 +137,19 @@ export function Header() {
         >
           Best Sellers
         </Link>
+        <div className="flex-1 min-w-0 flex items-center">
+          <Suspense
+            fallback={
+              <div className="flex items-center gap-2">
+                <div className="h-[28px] w-16 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
+                <div className="h-[28px] w-20 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
+                <div className="h-[28px] w-14 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
+              </div>
+            }
+          >
+            <HeaderFilters />
+          </Suspense>
+        </div>
         <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 ml-auto whitespace-nowrap">
           Delivery in as soon as 1 hour
         </span>

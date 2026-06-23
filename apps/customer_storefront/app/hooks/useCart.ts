@@ -57,7 +57,10 @@ export function useCart() {
         .map((item) => {
           if (item.id === productId) {
             const newQty = item.qty + delta;
-            return newQty <= 0 ? null : { ...item, qty: newQty };
+            if (newQty <= 0) return null;
+            // Clamp to available stock — item carries stock from original Product
+            const clampedQty = Math.min(newQty, item.stock);
+            return { ...item, qty: clampedQty };
           }
           return item;
         })

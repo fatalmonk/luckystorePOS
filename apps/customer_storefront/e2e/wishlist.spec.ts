@@ -16,8 +16,8 @@ test.describe('Wishlist Flow', () => {
     await page.waitForURL(/\/product\//);
 
     // Check if wishlist button is visible (out of stock)
-    const wishlistButton = page.locator('button:has-text("Notify when available")');
-    const addToCartButton = page.locator('button:has-text("Add")');
+    const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
+    const addToCartButton = page.locator('button:has-text("Add to Cart")');
 
     if (await addToCartButton.isVisible().catch(() => false)) {
       test.skip(true, 'Product in stock, skipping wishlist test');
@@ -44,7 +44,7 @@ test.describe('Wishlist Flow', () => {
     // This test assumes the product is out of stock
     await page.goto('/product/test-product-id');
 
-    const wishlistButton = page.locator('button:has-text("Notify when available")');
+    const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
     if (await wishlistButton.isVisible().catch(() => false)) {
       await wishlistButton.click();
       const phoneInput = page.locator('input[type="tel"]');

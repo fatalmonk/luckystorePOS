@@ -34,7 +34,7 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
   const theme = getSingleParam(resolvedParams.theme);
   const sort = getSingleParam(resolvedParams.sort) || 'best';
   const categories = await fetchCategories();
-  const products = await fetchProducts(searchTerm || undefined);
+  const { products } = await fetchProducts(searchTerm || undefined);
 
   return (
     <CategoryShell
@@ -42,7 +42,6 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
       currentCat="all"
       categories={categories}
       products={products}
-      searchTerm={searchTerm}
       theme={theme}
       sort={sort}
     />
