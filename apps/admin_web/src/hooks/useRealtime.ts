@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useLayoutEffect } from 'react';
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -27,9 +27,15 @@ export function useRealtimeSubscription({
   const queryClient = useQueryClient();
   const onEventRef = useRef(onEvent);
 
-  onEventRef.current = onEvent;
+  useLayoutEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   useEffect(() => {
+    if (import.meta.env.VITE_DISABLE_REALTIME === 'true') {
+      return;
+    }
+
     const channelName = `realtime-${table}-${event}-${filter ?? 'all'}`;
 
     const channel = supabase

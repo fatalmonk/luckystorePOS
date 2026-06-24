@@ -127,6 +127,7 @@ export function DashboardPage() {
   // Realtime order subscription (Broadcast Channel)
   React.useEffect(() => {
     if (!storeId) return;
+    if (import.meta.env.VITE_DISABLE_REALTIME === 'true') return;
     const channel = supabase.channel(`store-notifications:${storeId}`);
     channel.on('broadcast', { event: 'new-delivery-order' }, (payload: any) => {
       const order = payload.payload;

@@ -200,13 +200,17 @@ function AnimatedAmount({ value, className }: { value: number; className?: strin
   const [displayValue, setDisplayValue] = useState(value);
   const [isFlashing, setIsFlashing] = useState(false);
 
+  if (value !== displayValue) {
+    setDisplayValue(value);
+    setIsFlashing(true);
+  }
+
   useEffect(() => {
-    if (value !== displayValue) {
-      setIsFlashing(true);
-      setDisplayValue(value);
-      setTimeout(() => setIsFlashing(false), 300);
+    if (isFlashing) {
+      const timer = setTimeout(() => setIsFlashing(false), 300);
+      return () => clearTimeout(timer);
     }
-  }, [value, displayValue]);
+  }, [isFlashing]);
 
   return (
     <span

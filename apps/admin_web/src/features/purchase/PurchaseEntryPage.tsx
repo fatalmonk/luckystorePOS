@@ -86,7 +86,6 @@ export const PurchaseEntryPage: React.FC = () => {
   // ── Item search ─────────────────────────────────────────────────
   useEffect(() => {
     if (debouncedItemSearch.length < 2) {
-      setItemResults([]);
       return;
     }
     let cancelled = false;
@@ -286,9 +285,9 @@ export const PurchaseEntryPage: React.FC = () => {
                   className="input w-full pl-10"
                 />
               </div>
-              {showItemDropdown && itemResults.length > 0 && (
+              {showItemDropdown && (debouncedItemSearch.length < 2 ? [] : itemResults).length > 0 && (
                 <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-card border border-border-color rounded-xl max-h-48 overflow-y-auto shadow-lg">
-                  {itemResults.map(item => (
+                  {(debouncedItemSearch.length < 2 ? [] : itemResults).map(item => (
                     <button
                       key={item.id}
                       onClick={() => addItem(item)}

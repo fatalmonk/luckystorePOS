@@ -89,32 +89,22 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     onError: (err: Error) => notify(err.message || 'Failed to update threshold.', 'error'),
   });
 
-  // Dirty tracking
-  const [stockDirty, setStockDirty] = useState(false);
-  const [pricingDirty, setPricingDirty] = useState(false);
+  // Derived Dirty tracking
+  const pricingDirty = product ? (
+    sellingPrice !== (product.price || 0) ||
+    (mrp ?? 0) !== (product.mrp || 0) ||
+    (costPrice ?? 0) !== (product.cost || 0)
+  ) : false;
 
-  // Initialize values from product
-  useEffect(() => {
-    if (product) {
-      setSellingPrice(product.price || 0);
-      setMrp(product.mrp ?? undefined);
-      setCostPrice(product.cost ?? undefined);
-    }
-  }, [product?.id]);
+  const stockDirty = quantity > 0 || notes !== '';
 
-  // Track dirtiness
-  useEffect(() => {
-    if (!product) return;
-    setPricingDirty(
-      sellingPrice !== (product.price || 0) ||
-      (mrp ?? 0) !== (product.mrp || 0) ||
-      (costPrice ?? 0) !== (product.cost || 0)
-    );
-  }, [sellingPrice, mrp, costPrice, product]);
-
-  useEffect(() => {
-    setStockDirty(quantity > 0 || notes !== '');
-  }, [quantity, notes]);
+  const [prevProductId, setPrevProductId] = useState(product?.id);
+  if (product?.id !== prevProductId) {
+    setPrevProductId(product?.id);
+    setSellingPrice(product?.price || 0);
+    setMrp(product?.mrp ?? undefined);
+    setCostPrice(product?.cost ?? undefined);
+  }
 
   // Focus the close button when drawer opens
   useEffect(() => {

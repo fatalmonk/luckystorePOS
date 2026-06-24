@@ -266,7 +266,7 @@ export function InventoryListPage() {
   useEffect(() => {
     if (!toolbarRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         setToolbarHeight(entry.target.clientHeight);
       }
     });

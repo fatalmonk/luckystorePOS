@@ -85,7 +85,7 @@ export function DailySalesPage() {
 
   const TEMP_ROW_PREFIX = 'temp-';
 
-  const createNewRow = () => {
+  const createNewRow = useCallback(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const tempId = `${TEMP_ROW_PREFIX}${Date.now()}`;
     const now = new Date().toISOString();
@@ -106,7 +106,7 @@ export function DailySalesPage() {
     };
     setTempRows(prev => [newRow, ...prev]);
     setEditingCell({ rowId: tempId, field: 'saleDate' });
-  };
+  }, [storeId]);
 
   const isTempRow = (id: string) => id.startsWith(TEMP_ROW_PREFIX);
 

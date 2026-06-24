@@ -140,7 +140,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           )}
           onClick={(e) => {
             e.stopPropagation();
-            isEditing && handleStartEdit('name');
+            if (isEditing) handleStartEdit('name');
           }}
         >
           {editingField === 'name' ? (
@@ -174,7 +174,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             <span
               onClick={(e) => {
                 e.stopPropagation();
-                isEditing && handleStartEdit('current_qty');
+                if (isEditing) handleStartEdit('current_qty');
               }}
               className={cn(
                 "font-bold tabular-nums px-2 py-0.5 rounded border text-[10px]",
@@ -209,7 +209,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 <span
                   onClick={(e) => {
                     e.stopPropagation();
-                    isEditing && handleStartEdit('cost');
+                    if (isEditing) handleStartEdit('cost');
                   }}
                   className={cn(
                     "font-semibold tabular-nums text-warm-fg",
@@ -240,7 +240,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 <span
                   onClick={(e) => {
                     e.stopPropagation();
-                    isEditing && handleStartEdit('price');
+                    if (isEditing) handleStartEdit('price');
                   }}
                   className={cn(
                     "font-bold tabular-nums text-warm-fg",
