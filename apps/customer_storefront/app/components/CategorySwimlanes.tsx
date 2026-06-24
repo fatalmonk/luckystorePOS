@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
@@ -37,6 +37,7 @@ export function CategorySwimlanes({
   ad,
 }: CategorySwimlanesProps) {
   const searchParams = useSearchParams();
+  const [thirtyDaysAgo] = useState(() => Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   const availabilityParam = searchParams.get('availability') || '';
   const availability = useMemo(
@@ -59,7 +60,6 @@ export function CategorySwimlanes({
     if (theme === 'deals') {
       list = list.filter((p) => p.originalPrice && p.originalPrice > p.price);
     } else if (theme === 'new') {
-      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
       list = list
         .filter((p) => p.created_at && new Date(p.created_at).getTime() > thirtyDaysAgo)
         .sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
@@ -90,7 +90,7 @@ export function CategorySwimlanes({
       );
 
     return list;
-  }, [products, theme, availability, priceRanges, sort]);
+  }, [products, theme, availability, priceRanges, sort, thirtyDaysAgo]);
 
   const { deals, bestSellers } = useMemo(() => {
     const deals = products.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);

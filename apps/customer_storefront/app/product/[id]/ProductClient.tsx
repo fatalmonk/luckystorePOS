@@ -1,6 +1,7 @@
 'use client'; // product detail page with cart interactions and toast
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Header } from '../../components/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
@@ -58,12 +59,13 @@ function ProductContent({ product }: ProductClientProps) {
             <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-[#f5f3f0] overflow-hidden mb-5">
               <div className="absolute inset-0 grid place-items-center text-[100px]">{product.emoji}</div>
               {product.image_url && (
-                <img
+                <Image
                   src={product.image_url}
                   alt={product.name}
-                  className="relative w-full h-full object-contain p-4 sm:p-6"
-                  loading="eager"
-                  decoding="async"
+                  fill
+                  sizes="(max-width: 640px) 360px, 480px"
+                  className="object-contain p-4 sm:p-6"
+                  priority
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}

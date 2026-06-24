@@ -14,15 +14,22 @@ export function useCart() {
 
   // Load cart from localStorage on mount
   useEffect(() => {
+    let savedCart: CartItem[] = [];
     try {
       const saved = localStorage.getItem(CART_KEY);
       if (saved) {
-        setCart(JSON.parse(saved));
+        savedCart = JSON.parse(saved);
       }
     } catch (e) {
       console.error('Failed to load cart:', e);
     }
-    setHydrated(true);
+    const timer = setTimeout(() => {
+      if (savedCart.length > 0) {
+        setCart(savedCart);
+      }
+      setHydrated(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Save cart to localStorage when it changes (only after hydration)
