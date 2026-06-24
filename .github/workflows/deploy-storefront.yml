@@ -39,7 +39,6 @@ jobs:
         run: npm install --global vercel@latest
       
       - name: Install dependencies
-        working-directory: apps/customer_storefront
         run: npm ci --legacy-peer-deps
       
       - name: Pull Vercel Environment
