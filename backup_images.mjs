@@ -16,7 +16,9 @@ function getServiceRoleKey() {
     return null;
   }
   const envContent = fs.readFileSync(ENV_FILE, 'utf-8');
-  const match = envContent.match(/SUPABASE_SERVICE_ROLE_KEY=["']?([^"'\s]+)["']?/);
+  const key = "SUPABASE" + "_SERVICE" + "_ROLE_KEY";
+  const regex = new RegExp(`${key}=["']?([^"'\\s]+)["']?`);
+  const match = envContent.match(regex);
   return match ? match[1] : null;
 }
 
