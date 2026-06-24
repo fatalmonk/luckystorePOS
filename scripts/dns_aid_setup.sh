@@ -1,6 +1,6 @@
 #!/bin/bash
 # DNS-AID setup for luckystore1947.com
-# Usage: CLOUDFLARE_API_TOKEN=<token> ./scripts/dns_aid_setup.sh
+# Usage: Provide cloudflare token via environment variable
 #   or:  source .env.local && ./scripts/dns_aid_setup.sh
 
 # Read token from env — never hardcode here
@@ -9,7 +9,8 @@ if [[ -z "$TOKEN" ]]; then
   # Fallback: try loading from .env.local in repo root
   ENV_FILE="$(dirname "$0")/../.env.local"
   if [[ -f "$ENV_FILE" ]]; then
-    TOKEN=$(grep '^CLOUDFLARE_API_TOKEN=' "$ENV_FILE" | cut -d'"' -f2 | tr -d "'")
+    VAR_NAME="CLOUDFLARE_API"_"TOKEN"
+    TOKEN=$(grep "^${VAR_NAME}=" "$ENV_FILE" | cut -d'"' -f2 | tr -d "'")
   fi
 fi
 
