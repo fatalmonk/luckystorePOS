@@ -11,3 +11,7 @@ ALLOWED_ORIGINS = "https://adminweb-blond.vercel.app,https://lucky-store.vercel.
 # Secrets (set via `wrangler secret put`):
 # NEON_DATABASE_URL — Neon postgres connection string
 # API_KEY — shared secret for admin_web to authenticate requests
+
+[observability.logs]
+enabled = true
+invocation_logs = true

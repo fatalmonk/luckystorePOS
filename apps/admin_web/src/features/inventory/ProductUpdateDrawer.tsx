@@ -6,6 +6,7 @@ import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
+import { useAuth } from '../../lib/AuthContext';
 import type { Database } from '../../lib/database.types';
 import { PriceHistoryMini } from './PriceHistoryMini';
 
@@ -52,6 +53,7 @@ const stockReasons = [
 
 export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: ProductUpdateDrawerProps) {
   const { notify } = useNotify();
+  const { tenantId } = useAuth();
   const queryClient = useQueryClient();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -217,12 +219,13 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
   const priceMutation = useMutation({
     mutationFn: async () => {
+      if (!product) throw new Error('No product selected');
       const updates: Partial<Database['public']['Tables']['items']['Update']> = {
         price: sellingPrice,
       };
       if (typeof mrp === 'number') updates.mrp = mrp;
       if (typeof costPrice === 'number') updates.cost = costPrice;
-      return api.products.update(product.id, updates, storeId);
+      return api.products.update(product.id, updates, product.tenant_id || tenantId);
     },
     onSuccess: () => {
       notify(`Prices updated for ${product.name}`, 'success');
