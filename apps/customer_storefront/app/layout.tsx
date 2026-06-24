@@ -2,12 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
-import { initWebMCP } from './lib/webmcp';
-
-// Initialize WebMCP on client side
-if (typeof window !== 'undefined') {
-  initWebMCP();
-}
+import { WebMCPInit } from './components/WebMCPInit';
 
 export const metadata: Metadata = {
   title: { default: 'Lucky Store', template: '%s | Lucky Store' },
@@ -15,7 +10,7 @@ export const metadata: Metadata = {
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
-  metadataBase: new URL('https://lucky-store-six.vercel.app'),
+  metadataBase: new URL('https://luckystore1947.com'),
   alternates: {
     canonical: '/',
   },
@@ -62,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="antialiased" suppressHydrationWarning>
+        <WebMCPInit />
         <CartProvider>
           <ToastProvider>
             <div className="app-container">

@@ -1,40 +1,44 @@
 import { supabase } from "@/lib/supabase";
-import { sql } from "@/lib/neon";
+import { query } from "@/lib/neon";
 import type { DailySale, DailySaleFormData } from '../types';
 
 export const dailySales = {
   list: async (storeId: string, filters?: { startDate?: string; endDate?: string }): Promise<DailySale[]> => {
-    // Neon read replica
+    // Neon read replica via Worker proxy
     let rows: any[];
 
     if (filters?.startDate && filters?.endDate) {
-      rows = await sql`
-        SELECT * FROM daily_sales
-        WHERE store_id = ${storeId}
-          AND sale_date >= ${filters.startDate}
-          AND sale_date <= ${filters.endDate}
-        ORDER BY sale_date DESC
-      `;
+      rows = await query<any>(
+        `SELECT * FROM daily_sales
+         WHERE store_id = $1
+           AND sale_date >= $2
+           AND sale_date <= $3
+         ORDER BY sale_date DESC`,
+        [storeId, filters.startDate, filters.endDate]
+      );
     } else if (filters?.startDate) {
-      rows = await sql`
-        SELECT * FROM daily_sales
-        WHERE store_id = ${storeId}
-          AND sale_date >= ${filters.startDate}
-        ORDER BY sale_date DESC
-      `;
+      rows = await query<any>(
+        `SELECT * FROM daily_sales
+         WHERE store_id = $1
+           AND sale_date >= $2
+         ORDER BY sale_date DESC`,
+        [storeId, filters.startDate]
+      );
     } else if (filters?.endDate) {
-      rows = await sql`
-        SELECT * FROM daily_sales
-        WHERE store_id = ${storeId}
-          AND sale_date <= ${filters.endDate}
-        ORDER BY sale_date DESC
-      `;
+      rows = await query<any>(
+        `SELECT * FROM daily_sales
+         WHERE store_id = $1
+           AND sale_date <= $2
+         ORDER BY sale_date DESC`,
+        [storeId, filters.endDate]
+      );
     } else {
-      rows = await sql`
-        SELECT * FROM daily_sales
-        WHERE store_id = ${storeId}
-        ORDER BY sale_date DESC
-      `;
+      rows = await query<any>(
+        `SELECT * FROM daily_sales
+         WHERE store_id = $1
+         ORDER BY sale_date DESC`,
+        [storeId]
+      );
     }
 
     return (rows ?? []).map((row) => ({

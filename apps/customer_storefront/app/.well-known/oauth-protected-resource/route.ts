@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
-const STOREFRONT_URL = 'https://lucky-store-six.vercel.app';
+const STOREFRONT_URL = 'https://luckystore1947.com';
 const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 
 /**
@@ -19,9 +19,9 @@ export async function GET() {
       'read:orders',
       'write:orders',
       'read:profile',
-      'write:profile'
+      'write:profile',
     ],
-    resource_documentation: `${STOREFRONT_URL}/.well-known/agent-skills/index.json`
+    resource_documentation: `${STOREFRONT_URL}/.well-known/agent-skills/index.json`,
   };
 
   return new NextResponse(JSON.stringify(metadata, null, 2), {
@@ -29,6 +29,7 @@ export async function GET() {
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'public, max-age=3600',
+      'Access-Control-Allow-Origin': '*',
     },
   });
 }

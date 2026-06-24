@@ -1,17 +1,18 @@
 import { supabase } from "@/lib/supabase";
-import { sql } from "@/lib/neon";
+import { query } from "@/lib/neon";
 
 export const reports = {
   // Sales Report - get sales data with date range (Neon read replica)
   getSalesReport: async (storeId: string, startDate: string, endDate: string) => {
-    const sales = await sql`
-      SELECT id, total_amount, created_at
-      FROM sales
-      WHERE store_id = ${storeId}
-        AND status = 'completed'
-        AND created_at >= ${startDate}
-        AND created_at <= ${endDate + 'T23:59:59'}
-    `;
+    const sales = await query<any>(
+      `SELECT id, total_amount, created_at
+       FROM sales
+       WHERE store_id = $1
+         AND status = 'completed'
+         AND created_at >= $2
+         AND created_at <= $3`,
+      [storeId, startDate, endDate + 'T23:59:59']
+    );
 
     if (sales.length === 0) {
       return { totalRevenue: 0, transactionCount: 0, avgTicket: 0, topProducts: [], dailySales: [] };
@@ -20,16 +21,17 @@ export const reports = {
     const saleIds = sales.map((s: any) => s.id);
 
     // Get top selling products
-    const saleItems = await sql`
-      SELECT qty, price, item_id
-      FROM sale_items
-      WHERE sale_id = ANY(${saleIds}::uuid[])
-    `;
+    const saleItems = await query<any>(
+      `SELECT qty, price, item_id
+       FROM sale_items
+       WHERE sale_id = ANY($1::uuid[])`,
+      [saleIds]
+    );
 
     // Resolve item names
     const itemIds = [...new Set(saleItems.map((i: any) => i.item_id))];
     const itemNames = itemIds.length > 0
-      ? await sql`SELECT id, name FROM items WHERE id = ANY(${itemIds}::uuid[])`
+      ? await query<any>(`SELECT id, name FROM items WHERE id = ANY($1::uuid[])`, [itemIds])
       : [];
 
     const nameMap = new Map(itemNames.map((i: any) => [i.id, i.name]));
@@ -69,17 +71,18 @@ export const reports = {
 
   // Inventory Value Report (Neon read replica)
   getInventoryValue: async (storeId: string) => {
-    const items = await sql`
-      SELECT id, name, sku, cost, price, is_active
-      FROM items
-      WHERE is_active = true
-    `;
+    const items = await query<any>(
+      `SELECT id, name, sku, cost, price, is_active
+       FROM items
+       WHERE is_active = true`
+    );
 
-    const stockLevels = await sql`
-      SELECT item_id, qty
-      FROM stock_levels
-      WHERE store_id = ${storeId}
-    `;
+    const stockLevels = await query<any>(
+      `SELECT item_id, qty
+       FROM stock_levels
+       WHERE store_id = $1`,
+      [storeId]
+    );
 
     const stockMap = new Map(stockLevels.map((s: any) => [s.item_id, s.qty]));
 
@@ -110,31 +113,33 @@ export const reports = {
 
   // Profit & Loss Report (Neon read replica)
   getProfitLoss: async (storeId: string, startDate: string, endDate: string) => {
-    const sales = await sql`
-      SELECT id, total_amount
-      FROM sales
-      WHERE store_id = ${storeId}
-        AND status = 'completed'
-        AND created_at >= ${startDate}
-        AND created_at <= ${endDate + 'T23:59:59'}
-    `;
+    const sales = await query<any>(
+      `SELECT id, total_amount
+       FROM sales
+       WHERE store_id = $1
+         AND status = 'completed'
+         AND created_at >= $2
+         AND created_at <= $3`,
+      [storeId, startDate, endDate + 'T23:59:59']
+    );
 
     const grossRevenue = sales.reduce((sum: number, s: any) => sum + (s.total_amount || 0), 0);
 
     const saleIds = sales.map((s: any) => s.id);
     const saleItems = saleIds.length > 0
-      ? await sql`SELECT qty, cost FROM sale_items WHERE sale_id = ANY(${saleIds}::uuid[])`
+      ? await query<any>(`SELECT qty, cost FROM sale_items WHERE sale_id = ANY($1::uuid[])`, [saleIds])
       : [];
 
     const cogs = saleItems.reduce((sum: number, item: any) => sum + ((item.qty || 0) * (item.cost || 0)), 0);
 
-    const expenses = await sql`
-      SELECT amount
-      FROM expenses
-      WHERE store_id = ${storeId}
-        AND expense_date >= ${startDate}
-        AND expense_date <= ${endDate}
-    `;
+    const expenses = await query<any>(
+      `SELECT amount
+       FROM expenses
+       WHERE store_id = $1
+         AND expense_date >= $2
+         AND expense_date <= $3`,
+      [storeId, startDate, endDate]
+    );
 
     const totalExpenses = expenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
     const grossProfit = grossRevenue - cogs;

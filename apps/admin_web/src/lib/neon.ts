@@ -1,45 +1,64 @@
 /**
- * Neon serverless client — read-only analytics replica.
- * 
- * Uses @neondatabase/serverless HTTP driver for edge-compatible connections.
- * All queries here are READ-ONLY — writes go through Supabase.
- * 
+ * Neon analytics read replica client — routes through Cloudflare Worker proxy.
+ *
+ * The Worker (neon-proxy) executes parameterized SELECT queries server-side.
+ * No database connection string is exposed to the browser.
+ *
  * Env vars (admin_web):
- *   VITE_NEON_DATABASE_URL — Neon connection string (postgresql://...)
+ *   VITE_NEON_PROXY_URL — Worker endpoint URL (e.g. https://neon-proxy.xxx.workers.dev)
+ *   VITE_NEON_API_KEY  — shared secret for Worker authentication
  */
 
-import { neon } from '@neondatabase/serverless';
+const NEON_PROXY_URL = import.meta.env.VITE_NEON_PROXY_URL || '';
+const NEON_API_KEY = import.meta.env.VITE_NEON_API_KEY || '';
 
-const neonUrl = import.meta.env.VITE_NEON_DATABASE_URL;
-
-if (!neonUrl) {
-  throw new Error('Missing VITE_NEON_DATABASE_URL — set it in .env.local');
+if (!NEON_PROXY_URL) {
+  throw new Error('Missing VITE_NEON_PROXY_URL — set it in .env.local');
 }
 
 /**
- * Tagged template literal for type-safe SQL queries.
- * Returns rows as plain objects.
- * 
+ * Execute a parameterized SQL query against Neon via the Worker proxy.
+ *
+ * The sql string uses $1, $2, ... placeholders (PostgreSQL pg-style).
+ * The params array provides values in order.
+ *
  * @example
- * const rows = await sql`SELECT id, name FROM items WHERE store_id = ${storeId}`;
+ * const rows = await query('SELECT * FROM items WHERE store_id = $1', [storeId]);
  */
-export const sql = neon(neonUrl);
+export async function query<T = any>(sqlString: string, params: any[] = []): Promise<T[]> {
+  const response = await fetch(`${NEON_PROXY_URL}/query`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': NEON_API_KEY,
+    },
+    body: JSON.stringify({ sql: sqlString, params }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(`Neon proxy error: ${(errorData as any).error || response.status}`);
+  }
+
+  const data = await response.json() as { rows: T[] };
+  return data.rows;
+}
 
 /**
  * Execute a query and return the first row, or null.
  */
-export async function sqlOne<T = any>(strings: TemplateStringsArray, ...values: any[]): Promise<T | null> {
-  const rows = await sql(strings, ...values);
-  return (rows[0] as T) ?? null;
+export async function queryOne<T = any>(sqlString: string, params: any[] = []): Promise<T | null> {
+  const rows = await query<T>(sqlString, params);
+  return rows[0] ?? null;
 }
 
 /**
- * Check if Neon is reachable (health check).
+ * Check if Neon proxy is reachable (health check).
  */
 export async function neonHealthCheck(): Promise<boolean> {
   try {
-    await sql`SELECT 1`;
-    return true;
+    const response = await fetch(`${NEON_PROXY_URL}/health`);
+    return response.ok;
   } catch {
     return false;
   }

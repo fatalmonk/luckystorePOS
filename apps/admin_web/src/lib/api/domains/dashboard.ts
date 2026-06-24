@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { sql } from "@/lib/neon";
+import { query } from "@/lib/neon";
 import type { Json } from "@/lib/database.types";
 
 interface DashboardStats {
@@ -35,41 +35,47 @@ export interface CashflowData {
 }
 
 export const dashboard = {
-  // Neon read replica — all dashboard reads go through Neon
+  // Neon read replica — all dashboard reads go through Worker proxy
   getStats: async (storeId: string): Promise<DashboardStats> => {
-    const rows = await sql`
-      SELECT * FROM get_manager_dashboard_stats(${storeId}::uuid)
-    `;
+    const rows = await query<any>(
+      `SELECT * FROM get_manager_dashboard_stats($1::uuid)`,
+      [storeId]
+    );
     return rows[0] as DashboardStats;
   },
   getMissingMetrics: async (storeId: string): Promise<MissingMetrics> => {
-    const rows = await sql`
-      SELECT * FROM get_dashboard_missing_metrics(${storeId}::uuid)
-    `;
+    const rows = await query<any>(
+      `SELECT * FROM get_dashboard_missing_metrics($1::uuid)`,
+      [storeId]
+    );
     return rows[0] as unknown as MissingMetrics;
   },
   getMonthlyTrend: async (storeId: string): Promise<MonthlyTrend> => {
-    const rows = await sql`
-      SELECT * FROM get_monthly_trend_metrics(${storeId}::uuid)
-    `;
+    const rows = await query<any>(
+      `SELECT * FROM get_monthly_trend_metrics($1::uuid)`,
+      [storeId]
+    );
     return rows[0] as unknown as MonthlyTrend;
   },
   getRetailKpis: async (storeId: string, days = 30): Promise<RetailKpis> => {
-    const rows = await sql`
-      SELECT * FROM get_retail_kpis(${storeId}::uuid, ${days}::int)
-    `;
+    const rows = await query<any>(
+      `SELECT * FROM get_retail_kpis($1::uuid, $2::int)`,
+      [storeId, days]
+    );
     return rows[0] as RetailKpis;
   },
   getCashflowData: async (storeId: string, days = 7): Promise<CashflowData[]> => {
-    const rows = await sql`
-      SELECT * FROM get_cashflow_data(${storeId}::uuid, ${days}::int)
-    `;
+    const rows = await query<any>(
+      `SELECT * FROM get_cashflow_data($1::uuid, $2::int)`,
+      [storeId, days]
+    );
     return (rows as unknown as CashflowData[]) || [];
   },
   getLowStock: async (storeId: string) => {
-    const rows = await sql`
-      SELECT * FROM get_low_stock_items(${storeId}::uuid)
-    `;
+    const rows = await query<any>(
+      `SELECT * FROM get_low_stock_items($1::uuid)`,
+      [storeId]
+    );
     return rows;
   },
 };

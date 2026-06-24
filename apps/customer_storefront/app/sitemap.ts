@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { fetchProducts, fetchCategories } from './lib/products';
 import { CATEGORY_GROUPS } from './lib/types';
 
-const BASE_URL = 'https://lucky-store-six.vercel.app';
+const BASE_URL = 'https://luckystore1947.com';
 
 export const revalidate = 3600; // Regenerate every hour
 
