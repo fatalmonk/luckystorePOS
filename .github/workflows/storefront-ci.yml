@@ -13,54 +13,45 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/customer_storefront
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm run lint
+      - run: npm run lint --workspace=customer_storefront
 
   typecheck:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/customer_storefront
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit
+      - run: cd apps/customer_storefront && npx tsc --noEmit
 
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/customer_storefront
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm run build
+      - run: npm run build --workspace=customer_storefront
       - name: Verify standalone output
-        run: test -d .next/standalone || true
+        run: test -d apps/customer_storefront/.next/standalone || true
 
   e2e:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    defaults:
-      run:
-        working-directory: apps/customer_storefront
     env:
       CI: true
     steps:
@@ -69,7 +60,8 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps
-      - run: npm run build
-      - run: npx playwright test --project=chromium
+      - run: npm run build --workspace=customer_storefront
+      - run: cd apps/customer_storefront && npx playwright test --project=chromium
