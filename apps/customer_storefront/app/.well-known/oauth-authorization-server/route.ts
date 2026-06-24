@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 const SUPABASE_AUTH = `${SUPABASE_URL}/auth/v1`;
-const STOREFRONT_URL = 'https://lucky-store-six.vercel.app';
+const STOREFRONT_URL = 'https://luckystore1947.com';
 
 /**
  * RFC 8414 — OAuth 2.0 Authorization Server Metadata
@@ -43,12 +43,24 @@ export async function GET() {
     ],
     code_challenge_methods_supported: ['S256', 'plain'],
     // auth.md agent registration extension
+    // https://workos.com/auth.md
     agent_auth: {
+      skill: `${STOREFRONT_URL}/.well-known/agent-skills/index.json`,
       register_uri: `${STOREFRONT_URL}/auth/register`,
-      supported_identity_types: ['user', 'service', 'agent'],
-      supported_credential_types: ['api_key', 'oauth_client'],
-      claims_endpoint: `${SUPABASE_AUTH}/userinfo`,
-      revocation_uri: `${SUPABASE_AUTH}/logout`
+      identity_types_supported: ['identity_assertion', 'anonymous'],
+      identity_assertion: {
+        assertion_types_supported: [
+          'urn:ietf:params:oauth:token-type:id-jag',
+          'verified_email',
+        ],
+        credential_types_supported: ['api_key', 'oauth_client'],
+      },
+      anonymous: {
+        credential_types_supported: ['api_key'],
+      },
+      claim_uri: `${SUPABASE_AUTH}/userinfo`,
+      revocation_uri: `${SUPABASE_AUTH}/logout`,
+      events_supported: ['revocation'],
     }
   };
 

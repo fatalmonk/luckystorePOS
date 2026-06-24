@@ -11,9 +11,9 @@ All protected API endpoints require a Bearer access token issued by
 our OAuth authorization server.
 
 **Authorization Server:** `https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1`
-**Discovery URL:** `https://lucky-store-six.vercel.app/.well-known/oauth-authorization-server`
-**OIDC Discovery:** `https://lucky-store-six.vercel.app/.well-known/openid-configuration`
-**Protected Resource Metadata:** `https://lucky-store-six.vercel.app/.well-known/oauth-protected-resource`
+**Discovery URL:** `https://luckystore1947.com/.well-known/oauth-authorization-server`
+**OIDC Discovery:** `https://luckystore1947.com/.well-known/openid-configuration`
+**Protected Resource Metadata:** `https://luckystore1947.com/.well-known/oauth-protected-resource`
 
 ## Supported Grant Types
 
@@ -33,27 +33,41 @@ our OAuth authorization server.
 
 ## Agent Registration
 
-To register a new AI agent:
+Agents can register using the following methods:
 
-1. Send a POST request to the registration endpoint with your agent metadata
-2. Include the following claims:
-   - `agent_name`: Human-readable name
-   - `agent_type`: One of `assistant`, `crawler`, `automation`
-   - `redirect_uris`: Array of callback URLs (for interactive agents)
-   - `credential_type`: `api_key` or `oauth_client`
+### Identity Assertion
 
-**Registration URL:** `https://lucky-store-six.vercel.app/auth/register`
+Agents with an existing identity (e.g., verified email or ID-JAG token)
+can register at:
 
-## Identity Types Supported
+**Registration URL:** `https://luckystore1947.com/auth/register`
 
-- `user`: End-user (customer) identity
-- `service`: Server-to-service identity (API key / service role)
-- `agent`: AI agent identity (with scoped permissions)
+Supported assertion types:
+- `urn:ietf:params:oauth:token-type:id-jag` — ID-JAG identity assertion
+- `verified_email` — Verified email assertion
+
+Supported credential types:
+- `api_key` — API key credential
+- `oauth_client` — OAuth client credentials
+
+### Anonymous Access
+
+Agents without an identity can obtain a limited `api_key` credential
+for read-only access to the product catalog.
+
+**Registration URL:** `https://luckystore1947.com/auth/register`
+
+## Claims
+
+Claims can be retrieved from:
+`https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/userinfo`
 
 ## Token Revocation
 
 Tokens can be revoked at:
 `https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/logout`
+
+Revocation events supported: `revocation`
 
 ## Contact
 

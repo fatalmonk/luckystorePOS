@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { sql } from "@/lib/neon";
+import { query } from "@/lib/neon";
 import type {
   CompetitorPrice,
   PriceAlert,
@@ -11,26 +11,27 @@ export async function fetchCompetitorPrices(
   storeId: string,
   filters?: CompetitorPriceFilters
 ): Promise<CompetitorPrice[]> {
-  // Neon read replica — fetch with joined item names
-  let query = sql`
-    SELECT cp.*, i.name as item_name, i.sku
-    FROM competitor_prices cp
-    LEFT JOIN items i ON cp.item_id = i.id
-    WHERE cp.store_id = ${storeId}
-  `;
+  // Neon read replica via Worker proxy — fetch with joined item names
+  let rows: any[];
 
-  // Build dynamic filters via separate queries since tagged templates don't support conditional SQL
   if (filters?.itemId) {
-    query = sql`
-      SELECT cp.*, i.name as item_name, i.sku
-      FROM competitor_prices cp
-      LEFT JOIN items i ON cp.item_id = i.id
-      WHERE cp.store_id = ${storeId}
-        AND cp.item_id = ${filters.itemId}
-    `;
+    rows = await query<any>(
+      `SELECT cp.*, i.name as item_name, i.sku
+       FROM competitor_prices cp
+       LEFT JOIN items i ON cp.item_id = i.id
+       WHERE cp.store_id = $1
+         AND cp.item_id = $2`,
+      [storeId, filters.itemId]
+    );
+  } else {
+    rows = await query<any>(
+      `SELECT cp.*, i.name as item_name, i.sku
+       FROM competitor_prices cp
+       LEFT JOIN items i ON cp.item_id = i.id
+       WHERE cp.store_id = $1`,
+      [storeId]
+    );
   }
-
-  const rows = await query;
 
   // Apply remaining filters in JS (simpler than dynamic SQL building)
   let filtered = rows as any[];
@@ -86,7 +87,7 @@ export async function fetchPriceAlerts(
   });
 
   if (error) throw error;
-  
+
   // Transform Json competitors to string[]
   return ((data || []) as PriceAlertResponse[]).map((row) => ({
     product_id: row.product_id,
@@ -141,11 +142,12 @@ export async function deleteCompetitorPrice(id: string): Promise<void> {
 }
 
 export async function fetchCompetitorNames(storeId: string): Promise<string[]> {
-  const rows = await sql`
-    SELECT DISTINCT competitor_name
-    FROM competitor_prices
-    WHERE store_id = ${storeId}
-    ORDER BY competitor_name
-  `;
+  const rows = await query<any>(
+    `SELECT DISTINCT competitor_name
+     FROM competitor_prices
+     WHERE store_id = $1
+     ORDER BY competitor_name`,
+    [storeId]
+  );
   return rows.map((r: any) => r.competitor_name);
 }

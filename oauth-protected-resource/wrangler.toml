@@ -1,0 +1,8 @@
+name = "oauth-protected-resource"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# Custom domain on luckystore1947.com zone
+[[routes]]
+pattern = "api.luckystore1947.com"
+custom_domain = true

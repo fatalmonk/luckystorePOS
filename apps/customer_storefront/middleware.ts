@@ -3,43 +3,49 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Middleware for Markdown-for-Agents content negotiation.
  *
- * When an AI agent sends Accept: text/markdown, we set a request header
- * (x-requested-markdown) so downstream routes can optionally serve markdown.
- * We also set Vary: Accept on responses to enable proper caching.
+ * When an AI agent sends Accept: text/markdown, we rewrite the request
+ * to /api/markdown?path=<original-path> which renders a markdown
+ * representation of the page with Content-Type: text/markdown.
  *
- * Link headers for agent discovery are added in next.config.js headers().
+ * HTML remains the default for requests without the markdown accept header.
+ *
+ * https://llmstxt.org/
+ * https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
  */
 
 export function middleware(request: NextRequest) {
   const accept = request.headers.get('accept') || '';
-  const wantsMarkdown = accept.includes('text/markdown');
 
-  // Clone request headers and add a flag for downstream routes
-  const requestHeaders = new Headers(request.headers);
+  // Check if the client explicitly wants markdown
+  // Browsers send text/html,...*/*  — agents send text/markdown
+  const wantsMarkdown =
+    accept.includes('text/markdown') &&
+    !accept.includes('text/html');
+
   if (wantsMarkdown) {
-    requestHeaders.set('x-requested-markdown', 'true');
+    const originalPath = request.nextUrl.pathname;
+    const search = request.nextUrl.search;
+
+    // Rewrite to the markdown API route with the original path as query param
+    const url = request.nextUrl.clone();
+    url.pathname = '/api/markdown';
+    url.search = `?path=${encodeURIComponent(originalPath)}${search ? `&${search.slice(1)}` : ''}`;
+
+    return NextResponse.rewrite(url);
   }
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
-
-  // Tell caches that response varies by Accept header
-  if (wantsMarkdown) {
-    response.headers.set('Vary', 'Accept');
-  }
-
+  // Normal request — pass through, but always set Vary: Accept
+  const response = NextResponse.next();
+  response.headers.set('Vary', 'Accept');
   return response;
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all paths except static assets and well-known JSON/MD files
-     * (which have their own content types).
+     * Match all paths except static assets, API routes, and well-known
+     * files (which have their own content types).
      */
-    '/((?!_next/static|_next/image|favicon|icon|opengraph|twitter|logo|apple|robots\\.txt|sitemap|\\.well-known|auth\\.md).*)',
+    '/((?!_next/static|_next/image|api|favicon|icon|opengraph|twitter|logo|apple|robots\\.txt|sitemap|\\.well-known|auth\\.md).*)',
   ],
 };
