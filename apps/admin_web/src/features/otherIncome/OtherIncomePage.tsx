@@ -58,6 +58,7 @@ export const OtherIncomePage: React.FC = () => {
 
   useEffect(() => {
     if (tenantId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchRecords();
     }
   }, [tenantId, storeId]);

@@ -53,6 +53,10 @@ export function registerServiceWorker(): void {
     fetch(swUrl, { headers: { 'Service-Worker': 'script' } })
       .then((response) => {
         const contentType = response.headers.get('content-type');
+        if (response.status === 404 || contentType?.indexOf('html') !== -1) {
+          console.log('[SW] No service worker found in localhost — running in dev mode');
+          return;
+        }
         if (contentType?.indexOf('javascript') === -1) {
           console.warn('[SW] Service worker not served with correct MIME type');
           statusListener?.('error');

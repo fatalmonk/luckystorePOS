@@ -13,7 +13,7 @@ const NEON_PROXY_URL = import.meta.env.VITE_NEON_PROXY_URL || '';
 const NEON_API_KEY = import.meta.env.VITE_NEON_API_KEY || '';
 
 if (!NEON_PROXY_URL) {
-  throw new Error('Missing VITE_NEON_PROXY_URL — set it in .env.local');
+  console.warn('Missing VITE_NEON_PROXY_URL — Neon analytics queries will fail. Set it in .env.local');
 }
 
 /**
@@ -26,6 +26,11 @@ if (!NEON_PROXY_URL) {
  * const rows = await query('SELECT * FROM items WHERE store_id = $1', [storeId]);
  */
 export async function query<T = any>(sqlString: string, params: any[] = []): Promise<T[]> {
+  if (!NEON_PROXY_URL) {
+    console.warn('Neon analytics query skipped: VITE_NEON_PROXY_URL is missing in .env.local');
+    return [];
+  }
+
   const response = await fetch(`${NEON_PROXY_URL}/query`, {
     method: 'POST',
     headers: {
