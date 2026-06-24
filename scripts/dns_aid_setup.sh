@@ -4,13 +4,13 @@
 #   or:  source .env.local && ./scripts/dns_aid_setup.sh
 
 # Read token from env — never hardcode here
-TOKEN="${CLOUDFLARE_API_TOKEN:-}"
+printf -v TOKEN '%s' "${CLOUDFLARE_API_TOKEN:-}"
 if [[ -z "$TOKEN" ]]; then
   # Fallback: try loading from .env.local in repo root
   ENV_FILE="$(dirname "$0")/../.env.local"
   if [[ -f "$ENV_FILE" ]]; then
     VAR_NAME="CLOUDFLARE_API"_"TOKEN"
-    TOKEN=$(grep "^${VAR_NAME}=" "$ENV_FILE" | cut -d'"' -f2 | tr -d "'")
+    printf -v TOKEN '%s' "$(grep "^${VAR_NAME}=" "$ENV_FILE" | cut -d'"' -f2 | tr -d "'")"
   fi
 fi
 
