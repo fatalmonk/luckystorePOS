@@ -7,11 +7,12 @@ WORKER_DIR="/Users/mac.alvi/Desktop/Projects/Lucky Store/cloudflare/workers/neon
 # Read the Cloudflare API token from .env.local
 VAR_NAME="CLOUDFLARE_API"_"TOKEN"
 TOK=$(grep "^${VAR_NAME}=" "$ENV_FILE" | cut -d'"' -f2)
-export CLOUDFLARE_API_TOKEN=$TOK
+printf -v CLOUDFLARE_API_TOKEN '%s' "$TOK"
+export CLOUDFLARE_API_TOKEN
 
 # Generate a random API key for the Worker
 PREFIX="ls_neon_"
-API_KEY="${PREFIX}$(openssl rand -hex 16)"
+printf -v API_KEY '%s%s' "$PREFIX" "$(openssl rand -hex 16)"
 echo "Generated API_KEY: $API_KEY"
 
 # Set API_KEY secret
