@@ -21,7 +21,10 @@ interface CartFlyAnimationProps {
  */
 export function CartFlyAnimation({ items, onComplete }: CartFlyAnimationProps) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!mounted) return null;
 

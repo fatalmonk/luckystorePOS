@@ -164,7 +164,9 @@ export function ProductCard({
   // Load wishlist state from local cache on mount
   useEffect(() => {
     const list = getLocalWishlist();
-    setIsWishlisted(list.includes(id));
+    const isPresent = list.includes(id);
+    const timer = setTimeout(() => setIsWishlisted(isPresent), 0);
+    return () => clearTimeout(timer);
   }, [id]);
 
   // Heart toggle: quick add/remove for IN-STOCK items (no phone capture).
@@ -228,12 +230,13 @@ export function ProductCard({
           <CategoryPlaceholder category={category} />
         </div>
         {image_url && (
-          <img
+          <Image
             src={image_url}
             alt={name}
-            className="relative w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 p-2"
-            loading={priority ? undefined : 'lazy'}
-            decoding="async"
+            fill
+            sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 180px"
+            className="object-contain transition-transform duration-300 group-hover:scale-105 p-2"
+            priority={priority}
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}

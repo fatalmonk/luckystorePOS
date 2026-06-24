@@ -34,14 +34,19 @@ export default function OrderContent() {
 
   useEffect(() => {
     const saved = sessionStorage.getItem('lastOrder');
+    let orderData: OrderData | null = null;
     if (saved) {
       try {
-        setOrder(JSON.parse(saved));
+        orderData = JSON.parse(saved);
       } catch {
         // Invalid sessionStorage — leave as null
       }
     }
-    setLoading(false);
+    const timer = setTimeout(() => {
+      setOrder(orderData);
+      setLoading(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleShare = async () => {

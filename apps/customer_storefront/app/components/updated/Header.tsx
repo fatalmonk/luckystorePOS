@@ -21,7 +21,9 @@ export function Header() {
     const saved = localStorage.getItem('lucky_recent_searches');
     if (saved) {
       try {
-        setRecentSearches(JSON.parse(saved));
+        const searches = JSON.parse(saved);
+        const timer = setTimeout(() => setRecentSearches(searches), 0);
+        return () => clearTimeout(timer);
       } catch (e) {
         console.error('Failed to parse recent searches', e);
       }
