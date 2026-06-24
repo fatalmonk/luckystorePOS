@@ -20,3 +20,7 @@ ALLOWED_ORIGINS = "https://adminweb-blond.vercel.app,https://lucky-store.vercel.
 [limits]
 uploads_per_minute = 30
 reads_per_minute = 600
+
+[observability.logs]
+enabled = true
+invocation_logs = true

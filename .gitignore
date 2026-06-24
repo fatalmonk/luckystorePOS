@@ -213,3 +213,6 @@ docs/
 
 # Neon sync artifacts (contain data, not just schema)
 _plans/neon_data.sql
+
+# Local image catalog backup folder
+catalog-images/
