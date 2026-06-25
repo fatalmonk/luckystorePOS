@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ProductCarousel } from './ProductCarousel';
-import { CartSheet } from './CartSheet';
-import { CartFlyAnimation } from './CartFlyAnimation';
 import { useCartActions } from '../hooks/useCartActions';
 import type { Product } from '../lib/types';
+
+// Lazy-loaded — these are overlay UIs never needed on first paint
+const CartSheet = dynamic(() => import('./CartSheet').then((m) => ({ default: m.CartSheet })), { ssr: false });
+const CartFlyAnimation = dynamic(() => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })), { ssr: false });
 
 interface Section {
   title: string;
