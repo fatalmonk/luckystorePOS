@@ -6,24 +6,11 @@ import type { Category, Product } from '../../lib/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600;
-export const dynamicParams = true;
 
 export const metadata: Metadata = {
   title: 'Category',
   description: 'Browse products by category at Lucky Store — fresh groceries, household items, and more. Same-day delivery in Chittagong.',
 };
-
-export async function generateStaticParams() {
-  try {
-    const categories = await fetchCategories();
-    const catSlugs = categories.map((cat) => ({ slug: cat.slug }));
-    const groupSlugs = CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
-    return [...catSlugs, ...groupSlugs];
-  } catch {
-    return CATEGORY_GROUPS.map((g) => ({ slug: g.slug }));
-  }
-}
 
 export default async function CategorySlugPage({
   params,
