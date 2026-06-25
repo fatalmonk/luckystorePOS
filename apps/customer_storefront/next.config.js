@@ -38,6 +38,7 @@ const nextConfig = {
       '</.well-known/api-catalog>; rel="api-catalog"',
       '</.well-known/oauth-authorization-server>; rel="service-doc"',
       '</.well-known/oauth-protected-resource>; rel="service-doc"',
+      '<https://agent.luckystore1947.com/.well-known/oauth-protected-resource>; rel="oauth-protected-resource"',
       '</.well-known/openid-configuration>; rel="service-doc"',
       '</.well-known/mcp/server-card.json>; rel="service-meta"',
       '</.well-known/agent-skills/index.json>; rel="service-doc"',
