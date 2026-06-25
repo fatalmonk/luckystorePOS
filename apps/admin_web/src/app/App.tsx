@@ -13,6 +13,7 @@ import { AuthProvider } from '../lib/AuthContext';
 
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
+const LazyMissingImagesPage = React.lazy(() => import('../features/inventory/MissingImagesPage').then(m => ({ default: m.MissingImagesPage })));
 const LazySalesHistoryPage = React.lazy(() => import('../features/sales/SalesHistoryPage').then(m => ({ default: m.SalesHistoryPage })));
 const LazySupplierLedgerPage = React.lazy(() => import('../features/finance/SupplierLedgerPage').then(m => ({ default: m.SupplierLedgerPage })));
 const LazyCustomerLedgerPage = React.lazy(() => import('../features/finance/CustomerLedgerPage').then(m => ({ default: m.CustomerLedgerPage })));
@@ -76,6 +77,7 @@ export function App() {
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
                   <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
                   <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
+                  <Route path="inventory/missing-images" element={<LazyRoute><LazyMissingImagesPage /></LazyRoute>} />
                   <Route path="inventory/history" element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />
                   <Route path="finance/suppliers" element={<LazyRoute><LazySupplierLedgerPage /></LazyRoute>} />
                   <Route path="finance/customers" element={<LazyRoute><LazyCustomerLedgerPage /></LazyRoute>} />

@@ -56,7 +56,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-3 pb-1 bg-warm-bg/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-3 pb-1 bg-warm-bg">
       <div className="max-w-5xl mx-auto h-[64px] bg-white border border-warm-border rounded-full flex items-center px-4 sm:px-6 justify-between gap-2 sm:gap-4 shadow-sm hover:shadow-md transition-all duration-300">
         {/* Logo */}
         <Logo />
