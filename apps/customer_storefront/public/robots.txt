@@ -99,4 +99,4 @@ Disallow: /
 Content-Signal: ai-train=no, search=yes, ai-input=no
 
 # --- Sitemap ---
-Sitemap: https://lucky-store-six.vercel.app/sitemap.xml
+Sitemap: https://luckystore1947.com/sitemap.xml

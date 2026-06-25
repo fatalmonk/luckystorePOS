@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Geist, Geist_Mono, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
@@ -57,6 +58,22 @@ export const metadata: Metadata = {
   classification: 'Business',
   referrer: 'origin-when-cross-origin',
   generator: 'Next.js',
+  manifest: '/site.webmanifest',
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lucky Store — Your Neighborhood Grocery',
+    description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
+    images: ['/twitter-image.png'],
+    creator: '@luckystore1947',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Lucky Store',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   other: {
     'fb:app_id': '842610775238413',
   },
@@ -65,6 +82,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#ffffff',
 };
 
 export default function RootLayout({
@@ -75,18 +93,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-K5JLJNSW6D');
-            `,
-          }}
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -127,6 +133,19 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-body pb-[68px]" suppressHydrationWarning>
+        {/* Google Analytics — deferred, never blocks LCP */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-K5JLJNSW6D');
+          `}
+        </Script>
         <WebMCPInit />
         <CartProvider>
           <ToastProvider>
