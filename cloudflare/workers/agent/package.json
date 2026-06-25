@@ -1,0 +1,29 @@
+{
+  "name": "lucky-store-agent-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "lint": "eslint src/",
+    "lint:fix": "eslint --fix src/",
+    "scan:secrets": "node ../../../scripts/secret_scan.js"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20240923.0",
+    "jose": "^6.2.3"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.16.19",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.62.0",
+    "vitest": "^4.1.9",
+    "wrangler": "^4.104.0"
+  }
+}
