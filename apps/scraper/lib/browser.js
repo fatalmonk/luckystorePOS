@@ -4,7 +4,7 @@ import { CHROME_PATH, USER_AGENT, SCROLL_MAX_HEIGHT, SCROLL_INTERVAL_MS, SCROLL_
 
 export async function launchBrowser(options = {}) {
   const browser = await puppeteer.launch({
-    headless: options.headless ?? 'new',
+    headless: options.headless ?? true,
     executablePath: CHROME_PATH,
     ...(options.headless === false ? { args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'] } : {}),
   });
