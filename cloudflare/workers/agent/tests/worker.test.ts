@@ -16,18 +16,21 @@ describe('Lucky Store Agent Worker', () => {
   };
 
   describe('Discovery', () => {
-    it('GET /.well-known/oauth-authorization-server → 200, has .issuer', async () => {
+    it('GET /.well-known/oauth-authorization-server → 200, has .issuer and .agent_auth', async () => {
       const request = new IncomingRequest('http://localhost/.well-known/oauth-authorization-server');
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, MOCK_ENV as any, ctx);
       await waitOnExecutionContext(ctx);
       
       expect(response.status).toBe(200);
-      const data = await response.json();
-      expect((data as any).issuer).toBe('https://agent.luckystore1947.com');
+      const data = await response.json() as any;
+      expect(data.issuer).toBe('https://agent.luckystore1947.com');
+      expect(data.agent_auth).toBeDefined();
+      expect(data.agent_auth.register_uri).toBe('https://luckystore1947.com/auth/register');
+      expect(data.agent_auth.identity_types_supported).toContain('identity_assertion');
     });
 
-    it('GET /auth.md → 200, Cache-Control: public,max-age=300', async () => {
+    it('GET /auth.md → 200, Cache-Control: public,max-age=300, and contains # auth.md', async () => {
       const request = new IncomingRequest('http://localhost/auth.md');
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, MOCK_ENV as any, ctx);
@@ -35,6 +38,8 @@ describe('Lucky Store Agent Worker', () => {
       
       expect(response.status).toBe(200);
       expect(response.headers.get('Cache-Control')).toContain('public, max-age=300');
+      const text = await response.text();
+      expect(text).toContain('# auth.md');
     });
 
     it('GET /robots.txt → 200, Disallow: /api/', async () => {

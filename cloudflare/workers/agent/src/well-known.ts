@@ -2,22 +2,76 @@ import { publicCorsHeaders } from './cors.js';
 import type { Env } from './index.js';
 
 export function handleAuthMd(): Response {
-  const content = `# Authentication
+  const content = `# auth.md — Lucky Store Agent Worker Authentication
 
-Bearer token (Supabase JWT) required on all /api/* routes.
-Role: app_metadata.role = "worker_agent"
+## Overview
 
-## Access Control
+Lucky Store provides AI agents with access to our agent API via
+OAuth 2.0 / OpenID Connect, backed by Supabase Auth.
 
-- Customer storefront (lucky-store-bd.vercel.app): read-only via /api/neon/select
-- Admin portal (lucky-store-pos-six.vercel.app): full CRUD via /api/neon/rpc
-1 customer-facing store (Lucky Store id 4acf0fb2). All other stores are test/demo data.
+## Authentication
 
-## Token Validation
+All protected API endpoints require a Bearer access token issued by
+our OAuth authorization server.
 
-JWKS cache: 5-minute TTL with exponential backoff retry (max 3 attempts).
-Rate limiting: 100 requests per minute per IP.
-Audit logging: auth_fail, role_fail, rate_limit events captured in observability.logs.`;
+**Authorization Server:** \`https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1\`
+**Discovery URL:** \`https://agent.luckystore1947.com/.well-known/oauth-authorization-server\`
+**Protected Resource Metadata:** \`https://agent.luckystore1947.com/.well-known/oauth-protected-resource\`
+
+## Supported Grant Types
+
+- **Authorization Code** (with PKCE) — for interactive agents
+- **Client Credentials** — for server-to-server agents (service role)
+- **Refresh Token** — for maintaining long-lived sessions
+
+## Scopes
+
+| Scope | Description |
+|-------|-------------|
+| \`openid\` | OpenID Connect scope |
+| \`email\` | User email scope |
+| \`worker_agent\` | Access to the worker API |
+
+## Agent Registration
+
+Agents can register using the following methods:
+
+### Identity Assertion
+
+Agents with an existing identity (e.g., verified email or ID-JAG token)
+can register at:
+
+**Registration URL:** \`https://luckystore1947.com/auth/register\`
+
+Supported assertion types:
+- \`urn:ietf:params:oauth:token-type:id-jag\` — ID-JAG identity assertion
+- \`verified_email\` — Verified email assertion
+
+Supported credential types:
+- \`api_key\` — API key credential
+- \`oauth_client\` — OAuth client credentials
+
+### Anonymous Access
+
+Agents without an identity can obtain a limited \`api_key\` credential.
+
+**Registration URL:** \`https://luckystore1947.com/auth/register\`
+
+## Claims
+
+Claims can be retrieved from:
+\`https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/userinfo\`
+
+## Token Revocation
+
+Tokens can be revoked at:
+\`https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/logout\`
+
+Revocation events supported: \`revocation\`
+
+## Contact
+
+For agent integration support: \`hello@luckystore1947.com\``;
 
   return new Response(content, {
     headers: {
@@ -127,6 +181,24 @@ export function handleOAuthAuthorizationServer(supabaseUrl: string): Response {
     response_types_supported: ['code'],
     grant_types_supported: ['authorization_code', 'refresh_token'],
     scopes_supported: ['openid', 'email', 'worker_agent'],
+    agent_auth: {
+      skill: 'https://luckystore1947.com/.well-known/agent-skills/index.json',
+      register_uri: 'https://luckystore1947.com/auth/register',
+      identity_types_supported: ['identity_assertion', 'anonymous'],
+      identity_assertion: {
+        assertion_types_supported: [
+          'urn:ietf:params:oauth:token-type:id-jag',
+          'verified_email',
+        ],
+        credential_types_supported: ['api_key', 'oauth_client'],
+      },
+      anonymous: {
+        credential_types_supported: ['api_key'],
+      },
+      claim_uri: `${supabaseUrl}/auth/v1/userinfo`,
+      revocation_uri: `${supabaseUrl}/auth/v1/logout`,
+      events_supported: ['revocation'],
+    }
   };
   return new Response(JSON.stringify(meta, null, 2), {
     headers: {

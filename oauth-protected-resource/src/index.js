@@ -10,6 +10,7 @@
 const RESOURCE = "https://api.luckystore1947.com";
 const AUTH_SERVERS = [
   "https://hvmyxyccfnkrbxqbhlnm.supabase.co",
+  "https://agent.luckystore1947.com",
 ];
 
 const METADATA = {
