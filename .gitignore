@@ -15,7 +15,7 @@ apps/*/.env
 apps/*/.env.*
 # But allow .env.example template files (they contain only placeholders, no real secrets)
 !apps/*/.env.example
-apps/mobile_app/env/
+apps/mobile_app/env/*
 !apps/mobile_app/env/.env.example
 # Cloudflare wrangler dev vars (secrets)
 **/.dev.vars

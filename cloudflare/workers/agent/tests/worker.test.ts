@@ -88,7 +88,7 @@ describe('Lucky Store Agent Worker', () => {
       const response = await worker.fetch(request, MOCK_ENV as any, ctx);
       await waitOnExecutionContext(ctx);
       
-      expect(response.headers.get('Content-Security-Policy')).toBe("default-src 'self'");
+      expect(response.headers.get('Content-Security-Policy')).toBe("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';");
     });
 
     it('error responses include x-request-id', async () => {

@@ -169,7 +169,7 @@ async function getJwks(url: string): Promise<any[]> {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`);
-      const { keys } = await res.json<{ keys: any[] }>();
+      const { keys } = await res.json() as { keys: any[] };
       JWKS_CACHE.keys = keys;
       JWKS_CACHE.fetched = Date.now();
       return keys;
