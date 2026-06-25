@@ -1,4 +1,4 @@
-'use client';
+
 
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
@@ -15,6 +15,7 @@ interface CategoryShellProps {
   products: Product[];
   theme: string;
   sort: string;
+  searchParams: Record<string, string | string[] | undefined>;
 }
 
 const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: string }> = {
@@ -131,6 +132,7 @@ export function CategoryShell({
   products,
   theme,
   sort,
+  searchParams,
 }: CategoryShellProps) {
   // Resolve banner config: first match categorySlug, then fall back to group slug, then default
   const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || DEFAULT_BANNER;
@@ -157,6 +159,7 @@ export function CategoryShell({
             categories={categories}
             theme={theme}
             sort={sort}
+            searchParams={searchParams}
           />
         </div>
       </main>
