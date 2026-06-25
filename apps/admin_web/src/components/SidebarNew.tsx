@@ -56,6 +56,7 @@ function useNavGroups(): NavGroup[] {
         { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
           { label: t('nav.list'), path: '/inventory' },
           { label: t('nav.stockHistory'), path: '/inventory/history' },
+          { label: t('nav.missingImages', 'Missing Images'), path: '/inventory/missing-images' },
         ] },
         { icon: PlusCircle, label: t('nav.purchase'), path: '/purchase', children: [
           { label: t('nav.newEntry'), path: '/purchase' },

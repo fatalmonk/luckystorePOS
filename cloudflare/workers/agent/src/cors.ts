@@ -16,6 +16,7 @@ const PROD_ALLOWED_ORIGINS = [
   'https://lucky-store-bd.vercel.app',       // customer storefront (Vercel)
   'https://luckystore1947.com',              // customer storefront (custom domain)
   'https://lucky-store-pos-six.vercel.app',  // admin web portal
+  'https://admin.luckystore1947.com',        // admin custom domain
 ];
 
 const DEV_ALLOWED_ORIGINS = [
