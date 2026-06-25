@@ -24,10 +24,10 @@ export function Card({ children, className = '', hover = false, onClick, 'data-t
       onClick={onClick}
       data-testid={testId}
       className={`
-        bg-white border border-[#e7e5e4] rounded-[18px]
+        bg-white border border-stone-200/60 rounded-[20px]
         overflow-hidden
-        transition-all duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)]
-        ${hover ? 'card-hover hover:border-[#d6d3d1] cursor-pointer hover:shadow-[inset_0_0_0_1px_rgba(11,79,217,0.12)]' : ''}
+        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+        ${hover ? 'card-hover hover:border-stone-300 cursor-pointer shadow-sm hover:shadow-md' : ''}
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
@@ -57,7 +57,7 @@ interface ProductCardProps {
 }
 
 function CategoryPlaceholder({ category }: { category: Category }) {
-  const baseClasses = "w-12 h-12 text-warm-dim opacity-40 transition-transform duration-300 group-hover:scale-110";
+  const baseClasses = "w-12 h-12 text-stone-400/70 transition-transform duration-500 group-hover:scale-110";
   
   switch (category) {
     case 'Beverages':
@@ -169,9 +169,6 @@ export function ProductCard({
     return () => clearTimeout(timer);
   }, [id]);
 
-  // Heart toggle: quick add/remove for IN-STOCK items (no phone capture).
-  // The WishlistButton component below handles OUT-OF-STOCK items with phone input.
-  // Both write to the same `wishlist` table via toggleWishlistItemServer — phone is optional.
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const fp = getOrCreateFingerprint();
@@ -203,9 +200,9 @@ export function ProductCard({
   return (
     <Card hover onClick={onClick} className="flex flex-col group relative card-reveal" data-testid="product-card">
       {/* Badges + wishlist */}
-      <div className="absolute top-2 left-2 right-2 z-20 flex justify-between items-start pointer-events-none">
+      <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex justify-between items-start pointer-events-none">
         {badge ? (
-          <span className="bg-[#dc2626] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider">
+          <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider font-display">
             {badge}
           </span>
         ) : (
@@ -213,20 +210,24 @@ export function ProductCard({
         )}
         <button
           onClick={handleWishlistToggle}
-          className="pointer-events-auto w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.08)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-[#e7e5e4]"
+          className="pointer-events-auto w-8.5 h-8.5 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.06)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-stone-200"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
-            <span className="text-red-500">❤️</span>
+            <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
           ) : (
-            <span className="text-[#78716c] hover:text-red-500 transition-colors">🤍</span>
+            <svg className="w-4 h-4 text-stone-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
           )}
         </button>
       </div>
 
-      {/* Image */}
-      <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-white overflow-hidden flex items-center justify-center border-b border-[#f5f5f4] shrink-0">
-        <div className="absolute inset-0 bg-gray-50/50 flex items-center justify-center">
+      {/* Image Container with Soft background */}
+      <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0">
+        <div className="absolute inset-0 flex items-center justify-center opacity-40">
           <CategoryPlaceholder category={category} />
         </div>
         {image_url && (
@@ -235,7 +236,7 @@ export function ProductCard({
             alt={name}
             fill
             sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 180px"
-            className="object-contain transition-transform duration-300 group-hover:scale-[1.08] p-2"
+            className="object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06] p-3"
             priority={priority}
             onError={(e) => {
               e.currentTarget.style.display = 'none';
@@ -244,43 +245,43 @@ export function ProductCard({
         )}
       </div>
 
-      {/* Content - price-first */}
-      <div className="p-2 sm:p-2.5 flex flex-col flex-1 gap-0.5">
+      {/* Content - calibrated and clean */}
+      <div className="p-3 flex flex-col flex-1 gap-1">
         {/* Price block */}
-        <div className="flex items-baseline gap-1">
-          <span className="text-xl font-extrabold text-[#1c1917]">৳{taka}</span>
-          <span className="text-xs font-extrabold text-[#1c1917]">{paisa}</span>
+        <div className="flex items-baseline gap-0.5">
+          <span className="text-xl font-black text-stone-900 font-display">৳{taka}</span>
+          <span className="text-xs font-black text-stone-900 font-display">{paisa}</span>
         </div>
 
         {onSale && (
-          <div className="flex items-center gap-1 text-xs">
-            <span className="line-through text-[#78716c]">{formatBdt(originalPrice)}</span>
-            <span className="bg-green-100 text-green-800 font-bold px-1 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
+          <div className="flex items-center gap-1 text-[10px]">
+            <span className="line-through text-stone-400 font-mono">{formatBdt(originalPrice)}</span>
+            <span className="bg-green-50 text-green-700 font-bold px-1.5 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
           </div>
         )}
 
-        <p className="text-[10px] text-[#78716c]">
+        <p className="text-[10px] font-medium text-stone-400 leading-none">
           {formatUnitPrice(price, unit)}
         </p>
 
-        <h3 className="text-xs font-semibold leading-tight line-clamp-2 text-[#1c1917] min-h-[2.2em]">
+        <h3 className="text-xs font-semibold leading-tight line-clamp-2 text-stone-800 font-body min-h-[2.2em]">
           {name}
         </h3>
 
-        <div className="mt-auto pt-1">
+        <div className="mt-auto pt-2">
           {qtyInCart > 0 ? (
-            <div className="flex items-center justify-between gap-1 w-full">
+            <div className="flex items-center justify-between gap-1.5 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-8.5 h-8.5 rounded-full border-2 border-[#ffe302] bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-[#ffe302] active:scale-95 transition-all"
                 aria-label="Remove one"
               >
                 −
               </button>
-              <QtyNumber qty={qtyInCart} className="font-bold text-sm min-w-[20px] text-center" />
+              <QtyNumber qty={qtyInCart} className="font-black text-sm min-w-[20px] text-center text-stone-900 font-mono" />
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                className="w-8.5 h-8.5 rounded-full border-2 border-[#ffe302] bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-[#ffe302] active:scale-95 transition-all"
                 aria-label="Add one"
               >
                 +
@@ -295,7 +296,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-9 min-h-[36px] rounded-full border-2 border-warm-accent text-[#1c1917] text-sm font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all disabled:border-warm-dim disabled:text-warm-dim disabled:hover:bg-white press-feedback"
+              className="w-full h-8.5 rounded-full border-2 border-[#ffe302] text-stone-900 text-xs font-black hover:bg-[#ffe302] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-stone-200 disabled:text-stone-300 disabled:hover:bg-white"
             >
               Add to Cart
             </button>

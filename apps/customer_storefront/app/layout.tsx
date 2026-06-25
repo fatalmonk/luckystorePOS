@@ -1,8 +1,21 @@
 import type { Metadata, Viewport } from 'next';
+import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { WebMCPInit } from './components/WebMCPInit';
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: { default: 'Lucky Store', template: '%s | Lucky Store' },
@@ -55,8 +68,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className="antialiased" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${outfit.variable} ${plusJakartaSans.variable}`}>
+      <body className="antialiased font-body pb-[68px]" suppressHydrationWarning>
         <WebMCPInit />
         <CartProvider>
           <ToastProvider>
