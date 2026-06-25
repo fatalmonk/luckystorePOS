@@ -54,6 +54,7 @@ app.*.map.json
 inspections/
 # Env files
 env/
+!env/.env.example
 # Docs
 docs/
 # Scripts

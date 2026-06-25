@@ -1,0 +1,40 @@
+name: Deploy Agent Worker
+
+on:
+  push:
+    branches: [feat/agent.luckystore1947, main]
+    paths:
+      - 'cloudflare/workers/agent/**'
+      - '.github/workflows/deploy-agent.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cloudflare/workers/agent
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Secret scan
+        run: npm run scan:secrets
+
+      - name: Tests
+        run: npm test
+
+      - name: Deploy
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_WORKER_API_TOKEN }}

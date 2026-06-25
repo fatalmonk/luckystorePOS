@@ -1,0 +1,25 @@
+name = "agent-luckystore1947"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+account_id = "8e457654e12c3b75d2094bbd8914030b"
+workers_dev = false
+
+[vars]
+NEON_PROXY_URL = "https://lucky-store-neon-proxy.luckystore-1947.workers.dev"
+IMAGES_WORKER_URL = "https://images.luckystore1947.com"
+OAUTH_METADATA_URL = "https://api.luckystore1947.com/.well-known/oauth-protected-resource"
+
+# NOTE: No KV namespace — using in-memory rate limiting (free tier, acceptable for POS traffic)
+# V8 isolate caveat: cache is per-isolate, not shared. Cache miss = one Supabase round-trip.
+# If traffic grows significantly, upgrade to Cloudflare zone-level Rate Limiting rules.
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+
+[[routes]]
+pattern = "agent.luckystore1947.com/*"
+zone_id = "cadbf71f2c3aee47e0c299319cba570d"
