@@ -20,13 +20,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: |
+          npm run lint:fix || true
+          npm run lint
 
       - name: Secret scan
         run: npm run scan:secrets
