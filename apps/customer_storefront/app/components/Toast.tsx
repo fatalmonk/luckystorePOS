@@ -50,7 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="bg-[#1c1917] text-white px-4 py-3.5 rounded-[14px] text-sm font-semibold text-center shadow-lg animate-[toastIn_0.3s_var(--ease-out,ease)] pointer-events-auto flex items-center justify-between gap-3"
+            className="bg-warm-fg text-white px-4 py-3.5 rounded-[14px] text-sm font-semibold text-center shadow-lg animate-[toastIn_0.3s_var(--ease-out,ease)] pointer-events-auto flex items-center justify-between gap-3"
             style={{
               animation: 'toastIn 0.3s var(--ease-out, ease)',
             }}
@@ -62,7 +62,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   toast.action!.onClick();
                   dismiss(toast.id);
                 }}
-                className="text-[#ffe302] font-bold text-sm whitespace-nowrap hover:text-[#ffec50] transition-colors"
+                className="text-warm-accent font-bold text-sm whitespace-nowrap hover:text-[#ffec50] transition-colors"
               >
                 {toast.action.label}
               </button>

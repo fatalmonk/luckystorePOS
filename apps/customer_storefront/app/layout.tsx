@@ -1,19 +1,25 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import { Geist, Geist_Mono, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { WebMCPInit } from './components/WebMCPInit';
 
-const outfit = Outfit({
+const geistSans = Geist({
   subsets: ['latin'],
-  variable: '--font-outfit',
+  variable: '--font-geist-sans',
   display: 'swap',
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const geistMono = Geist_Mono({
   subsets: ['latin'],
-  variable: '--font-plus-jakarta',
+  variable: '--font-geist-mono',
+  display: 'swap',
+});
+
+const notoBengali = Noto_Sans_Bengali({
+  subsets: ['bengali'],
+  variable: '--font-bengali',
   display: 'swap',
 });
 
@@ -68,7 +74,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${outfit.variable} ${plusJakartaSans.variable}`}>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <body className="antialiased font-body pb-[68px]" suppressHydrationWarning>
         <WebMCPInit />
         <CartProvider>

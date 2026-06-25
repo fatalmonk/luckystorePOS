@@ -58,7 +58,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 flex-shrink-0">
       {/* Top strip: logo + search + actions on warm neutral to reduce yellow fatigue */}
-      <div className="h-[64px] bg-[#fffdf5] border-b border-[#e7e5e4] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
+      <div className="h-[64px] bg-warm-bg border-b border-warm-border flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 min-h-[44px] flex-shrink-0">
           <Image
@@ -66,10 +66,10 @@ export function Header() {
             alt="Lucky Store"
             width={34}
             height={34}
-            className="rounded-full bg-[#ffe302]"
+            className="rounded-full bg-warm-accent"
             priority
           />
-          <span className="font-extrabold text-[15px] text-[#1c1917] hidden sm:block tracking-tight">
+          <span className="font-extrabold text-[15px] text-warm-fg hidden sm:block tracking-tight">
             Lucky Store
           </span>
         </Link>
@@ -84,12 +84,12 @@ export function Header() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               placeholder="Search products, brands..."
-              className="w-full h-10 pl-4 pr-11 rounded-full bg-[#f5f5f4] border border-transparent focus:border-[#ffe302] focus:bg-white outline-none text-sm transition-all shadow-sm"
+              className="w-full h-10 pl-4 pr-11 rounded-full bg-warm-border-light border border-transparent focus:border-warm-accent focus:bg-white outline-none text-sm transition-all shadow-sm"
               aria-label="Search products"
             />
             <button
               type="submit"
-              className="absolute right-1 top-1 h-8 w-8 bg-[#ffe302] rounded-full flex items-center justify-center text-[#1c1917] hover:bg-[#ffec50] transition-colors"
+              className="absolute right-1 top-1 h-8 w-8 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
               aria-label="Search"
             >
               <span aria-hidden="true" className="text-base">🔍</span>
@@ -115,7 +115,7 @@ export function Header() {
         <div className="flex items-center gap-0.5 flex-shrink-0">
           <button
             type="button"
-            className="flex items-center gap-2 min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-[#f5f5f4] transition-colors"
+            className="flex items-center gap-2 min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-warm-border-light transition-colors"
             aria-label="Sign In"
           >
             <span aria-hidden="true" className="text-lg">👤</span>
@@ -126,16 +126,16 @@ export function Header() {
       </div>
 
       {/* Department Chips - Simplified for better performance */}
-      <nav className="bg-[#ffe302] flex flex-nowrap items-center overflow-x-auto px-3 sm:px-4 py-2 md:py-0 h-[44px] gap-2 z-40 relative scrollbar-hide">
+      <nav className="bg-warm-accent flex flex-nowrap items-center overflow-x-auto px-3 sm:px-4 py-2 md:py-0 h-[44px] gap-2 z-40 relative scrollbar-hide">
         <Link
           href="/category?theme=deals"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[#1c1917] text-[#ffe302] text-xs font-bold hover:bg-[#292524] transition-colors"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
         >
           Deals
         </Link>
         <Link
           href="/category?theme=bestsellers"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-[#1c1917] text-xs font-bold hover:bg-white transition-colors"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-warm-fg text-xs font-bold hover:bg-white transition-colors"
         >
           Best Sellers
         </Link>
@@ -152,7 +152,7 @@ export function Header() {
             <HeaderFilters />
           </Suspense>
         </div>
-        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 ml-auto whitespace-nowrap">
+        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-warm-fg/80 ml-auto whitespace-nowrap">
           Delivery in as soon as 1 hour
         </span>
       </nav>

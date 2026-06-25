@@ -68,17 +68,17 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-[#d6d3d1] rounded-full" />
+          <div className="w-10 h-1 bg-warm-muted rounded-full" />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3">
           <h3 className="text-lg font-extrabold tracking-tight">
-            Cart <span className="text-[#78716c] font-semibold text-sm ml-1">({totalItems})</span>
+            Cart <span className="text-warm-muted font-semibold text-sm ml-1">({totalItems})</span>
           </h3>
           <button
             onClick={onClose}
-            className="w-11 h-11 rounded-full bg-[#f5f5f4] grid place-items-center text-[#78716c] hover:bg-[#e7e5e4] transition-colors text-sm"
+            className="w-11 h-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm"
             aria-label="Close cart"
           >
             ✕
@@ -89,7 +89,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           {cart.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-[#78716c] text-sm">Your cart is empty</p>
+              <p className="text-warm-muted text-sm">Your cart is empty</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -98,12 +98,12 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   key={item.id}
                   className="flex items-center gap-3 py-2"
                 >
-                  <div className="w-11 h-11 bg-[#f5f3f0] rounded-[10px] grid place-items-center text-xl flex-shrink-0">
+                  <div className="w-11 h-11 bg-warm-border-light rounded-[10px] grid place-items-center text-xl flex-shrink-0">
                     {item.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
-                    <p className="text-xs text-[#78716c]">{formatBdt(item.price)} / {item.unit}</p>
+                    <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
                       className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[24px]"
@@ -118,7 +118,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => updateQty(item.id, -1)}
-                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                      className="w-11 h-11 rounded-md border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
                       aria-label="Decrease quantity"
                     >
                       −
@@ -126,7 +126,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[20px] text-center" />
                     <button
                       onClick={() => updateQty(item.id, 1)}
-                      className="w-11 h-11 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                      className="w-11 h-11 rounded-md border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
                       aria-label="Increase quantity"
                     >
                       +
@@ -141,9 +141,9 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
 
         {/* Footer */}
         {cart.length > 0 && (
-          <div className="border-t border-[#f5f5f4] px-5 py-4 flex items-center gap-4">
+          <div className="border-t border-warm-border-light px-5 py-4 flex items-center gap-4">
             <div className="flex-1">
-              <p className="text-[10px] text-[#78716c] uppercase tracking-widest font-semibold mb-0.5">
+              <p className="text-[10px] text-warm-muted uppercase tracking-widest font-semibold mb-0.5">
                 {totalItems} items {deliveryFee === 0 && '· Free delivery'}
               </p>
               <p className="text-xl font-extrabold">{formatBdt(total)}</p>

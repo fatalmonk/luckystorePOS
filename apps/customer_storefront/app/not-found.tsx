@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
       <div className="text-5xl mb-4" aria-hidden="true">🔍</div>
       <h1 className="text-xl font-extrabold mb-2">Page not found</h1>
-      <p className="text-sm text-[#78716c] mb-6 max-w-sm">
+      <p className="text-sm text-warm-muted mb-6 max-w-sm">
         The page you&apos;re looking for doesn&apos;t exist or may have moved.
       </p>
       <Link href="/">

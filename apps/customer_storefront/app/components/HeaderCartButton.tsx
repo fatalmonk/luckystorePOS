@@ -25,14 +25,14 @@ export function HeaderCartButton() {
       <button
         type="button"
         onClick={() => setCartOpen(true)}
-        className="relative flex items-center justify-center min-h-[44px] min-w-[44px] gap-2 px-2.5 py-2 rounded-xl hover:bg-[#f5f5f4] transition-colors"
+        className="relative flex items-center justify-center min-h-[44px] min-w-[44px] gap-2 px-2.5 py-2 rounded-xl hover:bg-warm-border-light transition-colors"
         aria-label="Cart"
       >
         <span className="text-lg" aria-hidden="true">🛒</span>
         <span className="hidden lg:block text-sm font-medium">Cart</span>
         {isLoaded && totalItems > 0 && (
           <span
-            className={`absolute -top-0.5 right-1 min-w-[18px] h-[18px] bg-[#dc2626] text-white text-[10px] font-bold rounded-full grid place-items-center px-1 ${bouncing ? 'cart-bounce' : ''}`}
+            className={`absolute -top-0.5 right-1 min-w-[18px] h-[18px] bg-warm-danger text-white text-[10px] font-bold rounded-full grid place-items-center px-1 ${bouncing ? 'cart-bounce' : ''}`}
             aria-label={`${totalItems} items in cart`}
           >
             {totalItems}

@@ -25,10 +25,10 @@ function CategoryPill({ slug, label, emoji, isActive, isThematic }: CategoryPill
       : isThematicSlug
       ? `/category?theme=${slug}`
       : `/category/${slug}`;
-  const activeClass = 'bg-[#1c1917] text-[#ffe302] font-bold shadow-sm';
+  const activeClass = 'bg-warm-fg text-warm-accent font-bold shadow-sm';
   const inactiveClass = isThematic
-    ? 'bg-[#1c1917]/5 text-[#1c1917] hover:bg-[#1c1917]/10'
-    : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]';
+    ? 'bg-warm-fg/5 text-warm-fg hover:bg-warm-fg/10'
+    : 'bg-warm-border-light text-[#44403c] hover:bg-warm-border-light';
 
   return (
     <Link
@@ -123,7 +123,7 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
       {/* Overflow indicator */}
       {canScrollRight && !hasInteracted && (
         <div className="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-12 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none flex items-center justify-end pr-2 z-10">
-          <span className="text-lg text-[#78716c] animate-pulse">→</span>
+          <span className="text-lg text-warm-muted animate-pulse">→</span>
         </div>
       )}
     </div>
@@ -131,7 +131,7 @@ export function CategoryGrid({ categories, active, sticky = false, subCategories
 
   if (sticky) {
     return (
-      <div className="sticky top-[108px] z-40 -mx-4 sm:-mx-6 lg:-mx-8 xl:-mx-10 px-4 sm:px-6 lg:px-8 xl:px-10 py-2 bg-white/95 backdrop-blur-sm border-b border-[#e7e5e4]">
+      <div className="sticky top-[108px] z-40 -mx-4 sm:-mx-6 lg:-mx-8 xl:-mx-10 px-4 sm:px-6 lg:px-8 xl:px-10 py-2 bg-white/95 backdrop-blur-sm border-b border-warm-border">
         {renderContent()}
       </div>
     );
