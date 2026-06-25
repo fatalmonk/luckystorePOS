@@ -24,7 +24,7 @@ export function HomeCarouselClient({ title, products }: HomeCarouselClientProps)
   return (
     <>
       <section>
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e7e5e4]/60 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-warm-border/60 shadow-sm">
           <h2 className="text-lg font-bold mb-4">{title}</h2>
           <ProductCarousel
             products={products}

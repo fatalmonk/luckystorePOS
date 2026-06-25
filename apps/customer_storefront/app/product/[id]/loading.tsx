@@ -29,7 +29,7 @@ export default function ProductDetailLoading() {
           </div>
 
           {/* Description */}
-          <div className="border-t border-[#f5f5f4] px-4 py-5 sm:px-6 lg:px-8">
+          <div className="border-t border-warm-border-light px-4 py-5 sm:px-6 lg:px-8">
             <div className="h-5 w-28 bg-gray-200 rounded animate-pulse mb-3" />
             <div className="space-y-2">
               <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />

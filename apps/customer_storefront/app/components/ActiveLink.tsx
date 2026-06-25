@@ -22,17 +22,17 @@ export function ActiveLink({ href, icon, label, showBadge }: ActiveLinkProps) {
     <Link
       href={href}
       className={`flex flex-col items-center justify-center gap-1 min-h-[44px] px-5 relative transition-all duration-200 ${
-        isActive ? 'text-[#1c1917]' : 'text-[#78716c] hover:text-[#1c1917]'
+        isActive ? 'text-warm-fg' : 'text-warm-muted hover:text-warm-fg'
       }`}
       aria-current={isActive ? 'page' : undefined}
     >
       {isActive && (
-        <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] bg-[#ffe302] rounded-full" />
+        <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] bg-warm-accent rounded-full" />
       )}
       <span className="inline-flex items-center justify-center" aria-hidden="true">{icon}</span>
       <span className="text-[10px] font-semibold">{label}</span>
       {badgeCount > 0 && (
-        <span className="absolute top-1 right-3 min-w-[16px] h-4 bg-[#ffe302] text-[#1c1917] text-[10px] font-bold rounded-full grid place-items-center px-1">
+        <span className="absolute top-1 right-3 min-w-[16px] h-4 bg-warm-accent text-warm-fg text-[10px] font-bold rounded-full grid place-items-center px-1">
           {badgeCount}
         </span>
       )}

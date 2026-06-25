@@ -122,7 +122,7 @@ export function HeaderFilters() {
   return (
     <div ref={containerRef} className="flex items-center gap-2 z-30">
       {/* Divider */}
-      <div className="h-5 w-[1px] bg-[#1c1917]/20 mx-1 hidden sm:block" />
+      <div className="h-5 w-[1px] bg-warm-fg/20 mx-1 hidden sm:block" />
 
       {/* Price Filter Dropdown */}
       <div className="relative">
@@ -135,13 +135,13 @@ export function HeaderFilters() {
           onClick={() => setOpenDropdown(openDropdown === 'price' ? null : 'price')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all min-h-[32px] ${
             activePrices.length > 0
-              ? 'bg-[#1c1917] text-[#ffe302]'
-              : 'bg-white/70 text-[#1c1917] hover:bg-white'
+              ? 'bg-warm-fg text-warm-accent'
+              : 'bg-white/70 text-warm-fg hover:bg-white'
           }`}
         >
           <span>Price</span>
           {activePrices.length > 0 && (
-            <span className="bg-[#ffe302] text-[#1c1917] w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black">
+            <span className="bg-warm-accent text-warm-fg w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black">
               {activePrices.length}
             </span>
           )}
@@ -153,10 +153,10 @@ export function HeaderFilters() {
             id="price-menu"
             role="menu"
             aria-labelledby="price-toggle"
-            className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+            className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-warm-border shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
           >
-            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#f5f5f4]">
-              <span className="text-xs font-extrabold text-[#78716c]">Price Range</span>
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-warm-border-light">
+              <span className="text-xs font-extrabold text-warm-muted">Price Range</span>
               {activePrices.length > 0 && (
                 <button
                   type="button"
@@ -173,13 +173,13 @@ export function HeaderFilters() {
                 <label
                   key={opt.value}
                   role="menuitem"
-                  className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-[#f5f5f4] transition-colors"
+                  className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-warm-border-light transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={activePrices.includes(opt.value)}
                     onChange={() => handlePriceToggle(opt.value)}
-                    className="w-4 h-4 rounded border-2 border-[#d6d3d1] text-[#1c1917] accent-[#1c1917] focus:ring-1 focus:ring-[#ffe302]"
+                    className="w-4 h-4 rounded border-2 border-[#d6d3d1] text-warm-fg accent-[#1c1917] focus:ring-1 focus:ring-[#ffe302]"
                   />
                   <span className="text-xs font-semibold text-[#44403c]">{opt.label}</span>
                 </label>
@@ -200,13 +200,13 @@ export function HeaderFilters() {
           onClick={() => setOpenDropdown(openDropdown === 'availability' ? null : 'availability')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all min-h-[32px] ${
             activeAvailabilities.length > 0
-              ? 'bg-[#1c1917] text-[#ffe302]'
-              : 'bg-white/70 text-[#1c1917] hover:bg-white'
+              ? 'bg-warm-fg text-warm-accent'
+              : 'bg-white/70 text-warm-fg hover:bg-white'
           }`}
         >
           <span>Availability</span>
           {activeAvailabilities.length > 0 && (
-            <span className="bg-[#ffe302] text-[#1c1917] w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black">
+            <span className="bg-warm-accent text-warm-fg w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black">
               {activeAvailabilities.length}
             </span>
           )}
@@ -218,10 +218,10 @@ export function HeaderFilters() {
             id="availability-menu"
             role="menu"
             aria-labelledby="availability-toggle"
-            className="absolute left-0 mt-1.5 w-52 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+            className="absolute left-0 mt-1.5 w-52 rounded-2xl bg-white border border-warm-border shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
           >
-            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#f5f5f4]">
-              <span className="text-xs font-extrabold text-[#78716c]">Stock Status</span>
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-warm-border-light">
+              <span className="text-xs font-extrabold text-warm-muted">Stock Status</span>
               {activeAvailabilities.length > 0 && (
                 <button
                   type="button"
@@ -238,13 +238,13 @@ export function HeaderFilters() {
                 <label
                   key={opt.value}
                   role="menuitem"
-                  className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-[#f5f5f4] transition-colors"
+                  className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-warm-border-light transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={activeAvailabilities.includes(opt.value)}
                     onChange={() => handleAvailabilityToggle(opt.value)}
-                    className="w-4 h-4 rounded border-2 border-[#d6d3d1] text-[#1c1917] accent-[#1c1917] focus:ring-1 focus:ring-[#ffe302]"
+                    className="w-4 h-4 rounded border-2 border-[#d6d3d1] text-warm-fg accent-[#1c1917] focus:ring-1 focus:ring-[#ffe302]"
                   />
                   <span className="text-xs font-semibold text-[#44403c]">{opt.label}</span>
                 </label>
@@ -265,13 +265,13 @@ export function HeaderFilters() {
           onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all min-h-[32px] ${
             activeSort !== 'best'
-              ? 'bg-[#1c1917] text-[#ffe302]'
-              : 'bg-white/70 text-[#1c1917] hover:bg-white'
+              ? 'bg-warm-fg text-warm-accent'
+              : 'bg-white/70 text-warm-fg hover:bg-white'
           }`}
         >
           <span>Sort By</span>
           {activeSort !== 'best' && (
-            <span className="bg-[#ffe302] text-[#1c1917] px-1.5 py-0.5 rounded-full text-[9px] font-extrabold">
+            <span className="bg-warm-accent text-warm-fg px-1.5 py-0.5 rounded-full text-[9px] font-extrabold">
               {sortOptions.find((o) => o.value === activeSort)?.label.split(':')[0] || 'Active'}
             </span>
           )}
@@ -283,10 +283,10 @@ export function HeaderFilters() {
             id="sort-menu"
             role="menu"
             aria-labelledby="sort-toggle"
-            className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#e7e5e4] shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+            className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-warm-border shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
           >
-            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#f5f5f4]">
-              <span className="text-xs font-extrabold text-[#78716c]">Sort Options</span>
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-warm-border-light">
+              <span className="text-xs font-extrabold text-warm-muted">Sort Options</span>
               {activeSort !== 'best' && (
                 <button
                   type="button"
@@ -307,8 +307,8 @@ export function HeaderFilters() {
                   onClick={() => handleSortSelect(opt.value)}
                   className={`w-full text-left flex items-center justify-between py-1.5 px-2 rounded-lg transition-colors text-xs font-semibold ${
                     activeSort === opt.value
-                      ? 'bg-[#ffe302]/20 text-[#1c1917]'
-                      : 'text-[#44403c] hover:bg-[#f5f5f4]'
+                      ? 'bg-warm-accent/20 text-warm-fg'
+                      : 'text-[#44403c] hover:bg-warm-border-light'
                   }`}
                 >
                   <span>{opt.label}</span>

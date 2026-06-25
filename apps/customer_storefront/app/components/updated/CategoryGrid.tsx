@@ -17,8 +17,8 @@ function CategoryChip({ slug, label, emoji, isActive }: CategoryChipProps) {
       href={href}
       className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-2xl text-sm font-medium transition-all duration-200 ${
         isActive
-          ? 'bg-[#1c1917] text-[#ffe302]'
-          : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]'
+          ? 'bg-warm-fg text-warm-accent'
+          : 'bg-warm-border-light text-[#44403c] hover:bg-warm-border-light'
       }`}
     >
       <span className="text-xl mb-1" aria-hidden="true">{emoji}</span>

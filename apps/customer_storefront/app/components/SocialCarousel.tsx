@@ -79,7 +79,7 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
           <Link
             key={creator.id}
             href={`/product/${creator.productId}`}
-            className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] cursor-pointer border border-[#e7e5e4] shadow-sm hover:shadow-md transition-shadow"
+            className="group relative h-80 w-48 flex-shrink-0 snap-start overflow-hidden rounded-[18px] cursor-pointer border border-warm-border shadow-sm hover:shadow-md transition-shadow"
           >
             <div
               className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
@@ -92,18 +92,18 @@ export function SocialCarousel({ title = 'From Our Community', creators = defaul
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-            <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 border border-[#e7e5e4] px-2.5 py-1 backdrop-blur-sm shadow-sm">
+            <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 border border-warm-border px-2.5 py-1 backdrop-blur-sm shadow-sm">
               <span className="text-xs" aria-hidden="true">{creator.emoji}</span>
               <span className="text-[10px] font-bold text-gray-800 truncate max-w-[100px]">@{creator.handle}</span>
             </div>
 
-            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2.5 rounded-[14px] bg-white p-2.5 shadow-[0_4px_12px_rgba(28,25,23,0.05)] border border-[#e7e5e4]/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md">
-              <div className="h-10 w-10 rounded-[10px] bg-gray-50 flex items-center justify-center text-2xl flex-shrink-0 border border-[#e7e5e4]/30" aria-hidden="true">
+            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2.5 rounded-[14px] bg-white p-2.5 shadow-[0_4px_12px_rgba(28,25,23,0.05)] border border-warm-border/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md">
+              <div className="h-10 w-10 rounded-[10px] bg-gray-50 flex items-center justify-center text-2xl flex-shrink-0 border border-warm-border/30" aria-hidden="true">
                 {creator.productEmoji}
               </div>
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="line-clamp-1 text-xs font-semibold text-gray-900 truncate">{creator.productName}</span>
-                <span className="text-sm font-bold text-[#1c1917]">{formatBdt(creator.productPrice)}</span>
+                <span className="text-sm font-bold text-warm-fg">{formatBdt(creator.productPrice)}</span>
               </div>
             </div>
           </Link>

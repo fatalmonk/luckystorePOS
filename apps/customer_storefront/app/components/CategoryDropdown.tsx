@@ -28,7 +28,7 @@ export function CategoryDropdown({ categories }: CategoryDropdownProps) {
         type="button"
         onClick={() => setOpen(!open)}
         className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 press-feedback min-h-[44px] ${
-          open ? 'bg-[#1c1917] text-[#ffe302] font-bold shadow-sm' : 'bg-[#f5f5f4] text-[#44403c] hover:bg-[#e7e5e4]'
+          open ? 'bg-warm-fg text-warm-accent font-bold shadow-sm' : 'bg-warm-border-light text-[#44403c] hover:bg-warm-border-light'
         }`}
         aria-expanded={open}
       >
@@ -38,13 +38,13 @@ export function CategoryDropdown({ categories }: CategoryDropdownProps) {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-[#e7e5e4] py-2 z-50 animate-fade-up">
+        <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-warm-border py-2 z-50 animate-fade-up">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/category/${cat.slug}`}
               onClick={() => setOpen(false)}
-              className="block w-full text-left px-4 py-2 text-sm text-[#44403c] hover:bg-[#f5f5f4] transition-colors"
+              className="block w-full text-left px-4 py-2 text-sm text-[#44403c] hover:bg-warm-border-light transition-colors"
             >
               <span className="flex items-center gap-2">
                 <span aria-hidden="true">{cat.emoji}</span>

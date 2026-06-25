@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Store 1947 — Neighborhood Grocer</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bone: '#FDFBF7',
+            brand: '#F5C518',
+            'brand-hover': '#E2B40D',
+            'brand-dark': '#C79400',
+            'brand-light': '#FFF8E1',
+            charcoal: '#1A1A1A',
+            'warm-grey': '#6B6B6B',
+            'warm-border': '#E8E4DC',
+          },
+          fontFamily: {
+            sans: ['Geist', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['Geist Mono', 'monospace'],
+          },
+          boxShadow: {
+            'warm-rest': '0 4px 24px rgba(245, 197, 24, 0.03), 0 1px 2px rgba(26, 26, 26, 0.02)',
+            'warm-hover': '0 12px 32px rgba(245, 197, 24, 0.08), 0 4px 8px rgba(26, 26, 26, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700;800;900&display=swap">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    body {
+      font-family: 'Geist', sans-serif;
+      background-color: #FDFBF7;
+      color: #1A1A1A;
+    }
+    .double-bezel {
+      border: 1px solid #E8E4DC;
+      padding: 6px;
+      border-radius: 20px;
+      background: #FFFFFF;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .double-bezel-inner {
+      border-radius: 14px;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+      padding: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="antialiased pb-24">
+
+  <!-- 1. Fluid Island Navigation -->
+  <div class="fixed top-4 left-0 right-0 z-50 px-4">
+    <nav class="max-w-4xl mx-auto h-16 rounded-full bg-white/80 backdrop-blur-xl border border-yellow-100/50 shadow-md flex items-center justify-between px-6 transition-all duration-300">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-1.5 group">
+        <span class="font-black tracking-tighter text-lg font-sans">LUCKY STORE</span>
+        <span class="w-2 h-2 rounded-full bg-brand group-hover:scale-125 transition-transform duration-300"></span>
+        <span class="text-xs font-mono text-warm-grey mt-0.5 font-medium">1947</span>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-warm-grey">
+        <a href="#" class="text-charcoal border-b-2 border-brand pb-0.5">Home</a>
+        <a href="#" class="hover:text-charcoal transition-colors">Staples</a>
+        <a href="#" class="hover:text-charcoal transition-colors">Dairy</a>
+        <a href="#" class="hover:text-charcoal transition-colors">Snacks</a>
+        <a href="#" class="hover:text-charcoal transition-colors">Household</a>
+      </div>
+
+      <!-- Action Items -->
+      <div class="flex items-center gap-4">
+        <button class="text-charcoal hover:scale-105 active:scale-95 transition-transform p-2 rounded-full hover:bg-stone-50" aria-label="Search">
+          <i class="ph-bold ph-magnifying-glass text-xl"></i>
+        </button>
+        <button class="relative bg-brand text-charcoal font-black text-xs px-4 py-2.5 rounded-full shadow-sm hover:bg-brand-hover active:scale-95 transition-all flex items-center gap-2">
+          <i class="ph-bold ph-shopping-bag text-base"></i>
+          <span>Cart</span>
+          <span class="bg-charcoal text-white text-[10px] font-mono px-1.5 py-0.5 rounded-full">3</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Main Layout Container -->
+  <main class="max-w-5xl mx-auto px-4 pt-28 space-y-12">
+
+    <!-- 2. Asymmetric Hero Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
+      <!-- Left Editorial Story block -->
+      <div class="lg:col-span-3 bg-[#FCF6E5] rounded-[32px] p-8 lg:p-12 flex flex-col justify-between border border-yellow-200/40 relative overflow-hidden min-h-[360px]">
+        <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-brand/10 rounded-full blur-3xl"></div>
+        <div class="space-y-6 relative z-10">
+          <span class="inline-flex items-center bg-white border border-yellow-200 text-[10px] font-mono font-bold tracking-widest text-brand-dark px-3 py-1 rounded-full uppercase">
+            Est. 1947 — Neighborhood Institution
+          </span>
+          <h1 class="text-4xl lg:text-5xl font-black tracking-tighter leading-[1.05] text-charcoal">
+            Fresh essentials,<br>delivered fast.
+          </h1>
+          <p class="text-sm lg:text-base text-warm-grey max-w-md leading-relaxed font-normal">
+            Your neighborhood grocer serving Dhaka families since 1947. Instantly shipping fresh produce, daily pantry staples, and local household products.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 pt-6 relative z-10">
+          <a href="#products" class="bg-brand text-charcoal font-black text-sm px-6 py-3.5 rounded-xl hover:bg-brand-hover active:scale-95 transition-all shadow-sm">
+            Shop Now
+          </a>
+          <a href="#categories" class="bg-white border border-warm-border text-charcoal font-bold text-sm px-6 py-3.5 rounded-xl hover:bg-stone-50 active:scale-95 transition-all">
+            Browse Categories
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Promo spotlight block -->
+      <div class="lg:col-span-2 bg-charcoal text-white rounded-[32px] p-8 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -left-12 -top-12 w-48 h-48 bg-brand/10 rounded-full blur-2xl"></div>
+        <div class="space-y-4 relative z-10">
+          <span class="inline-flex items-center bg-brand text-charcoal text-[9px] font-mono font-black tracking-wider px-2 py-0.5 rounded-full uppercase">
+            Flash Sale
+          </span>
+          <h2 class="text-2xl font-extrabold tracking-tight text-white leading-tight">
+            Traditional Premium Kalijira Rice
+          </h2>
+          <div class="flex items-baseline gap-2">
+            <span class="text-3xl font-black text-brand font-mono">৳145</span>
+            <span class="text-sm text-stone-400 line-through font-mono">৳180</span>
+          </div>
+          <p class="text-xs text-stone-400 font-mono">5kg Bag · Limit 1 per customer</p>
+        </div>
+        <div class="pt-6 relative z-10">
+          <button class="w-full bg-white text-charcoal font-black text-xs py-3.5 rounded-xl hover:bg-brand active:scale-95 transition-all flex items-center justify-center gap-2">
+            Add to Order
+            <i class="ph-bold ph-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Snap Scroll Categories -->
+    <section id="categories" class="space-y-4">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-xl font-extrabold tracking-tight text-charcoal">Browse Categories</h2>
+        <span class="text-xs font-mono text-warm-grey">Swipe to explore</span>
+      </div>
+      <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory py-1">
+        <!-- Active Pill -->
+        <button class="snap-start shrink-0 bg-brand text-charcoal font-bold text-xs px-5 py-3 rounded-full flex items-center gap-2 shadow-sm border border-brand">
+          <i class="ph-bold ph-egg text-base"></i>
+          <span>Dairy & Eggs</span>
+        </button>
+        <!-- Inactive Pills -->
+        <button class="snap-start shrink-0 bg-white hover:bg-stone-50 text-warm-grey hover:text-charcoal font-medium text-xs px-5 py-3 rounded-full flex items-center gap-2 border border-warm-border transition-colors">
+          <i class="ph-bold ph-bowl-food text-base"></i>
+          <span>Rice & Grains</span>
+        </button>
+        <button class="snap-start shrink-0 bg-white hover:bg-stone-50 text-warm-grey hover:text-charcoal font-medium text-xs px-5 py-3 rounded-full flex items-center gap-2 border border-warm-border transition-colors">
+          <i class="ph-bold ph-cookie text-base"></i>
+          <span>Snacks & Biscuits</span>
+        </button>
+        <button class="snap-start shrink-0 bg-white hover:bg-stone-50 text-warm-grey hover:text-charcoal font-medium text-xs px-5 py-3 rounded-full flex items-center gap-2 border border-warm-border transition-colors">
+          <i class="ph-bold ph-coffee text-base"></i>
+          <span>Beverages</span>
+        </button>
+        <button class="snap-start shrink-0 bg-white hover:bg-stone-50 text-warm-grey hover:text-charcoal font-medium text-xs px-5 py-3 rounded-full flex items-center gap-2 border border-warm-border transition-colors">
+          <i class="ph-bold ph-sparkles text-base"></i>
+          <span>Personal Care</span>
+        </button>
+        <button class="snap-start shrink-0 bg-white hover:bg-stone-50 text-warm-grey hover:text-charcoal font-medium text-xs px-5 py-3 rounded-full flex items-center gap-2 border border-warm-border transition-colors">
+          <i class="ph-bold ph-baby text-base"></i>
+          <span>Baby Care</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 4. Asymmetrical Bento Product Grid -->
+    <section id="products" class="space-y-6">
+      <h2 class="text-xl font-extrabold tracking-tight text-charcoal">Featured Staples</h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        
+        <!-- LARGE Featured Cell (Aarong Milk) -->
+        <div class="sm:col-span-2 sm:row-span-2 double-bezel hover:shadow-warm-hover group">
+          <div class="double-bezel-inner justify-between relative overflow-hidden min-h-[380px]">
+            <!-- Badge -->
+            <span class="absolute top-4 left-4 z-10 bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+              Most Popular
+            </span>
+            
+            <!-- Big Image Container -->
+            <div class="w-full h-56 bg-brand-light/20 rounded-lg overflow-hidden flex items-center justify-center p-6 mt-4">
+              <!-- Inline Premium Vector Mockup for Aarong Milk -->
+              <svg class="w-32 h-32 text-brand-dark transition-transform duration-500 group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <rect x="6" y="7" width="12" height="15" rx="2" fill="#FFFFFF" />
+                <path d="M6 7L12 3L18 7" fill="#FDFBF7" />
+                <circle cx="12" cy="14" r="3" fill="#F5C518" opacity="0.3" />
+                <path d="M9 13.5C9.5 13 11 13 12 14.5C13 16 14.5 14 15 13.5" stroke="#F5C518" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-2 mt-4">
+              <div class="flex items-baseline gap-1">
+                <span class="text-3xl font-black tracking-tight text-charcoal font-mono">৳90</span>
+                <span class="text-sm font-mono text-warm-grey">/ 1 Litre</span>
+              </div>
+              <h3 class="text-base font-bold tracking-tight text-charcoal leading-snug">
+                Aarong Dairy Pure Pasteurized Milk
+              </h3>
+              <p class="text-xs text-warm-grey leading-relaxed">
+                Directly sourced from cooperative local farms. Standardized, pasteurized, and packed fresh daily.
+              </p>
+            </div>
+
+            <!-- Action -->
+            <div class="pt-4 flex items-center justify-between">
+              <span class="text-[10px] font-mono font-semibold text-brand-dark bg-brand-light px-2.5 py-1 rounded-full">
+                Same-Day Fresh Delivery
+              </span>
+              <button class="bg-brand text-charcoal font-black text-xs px-5 py-3 rounded-full hover:bg-brand-hover active:scale-95 transition-all flex items-center gap-1">
+                Add to Cart
+                <i class="ph-bold ph-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard Cell 1: Eggs -->
+        <div class="double-bezel hover:shadow-warm-hover group">
+          <div class="double-bezel-inner justify-between">
+            <div class="relative w-full h-32 bg-stone-50/50 rounded-lg overflow-hidden flex items-center justify-center">
+              <i class="ph-bold ph-egg text-stone-300 text-5xl transition-transform duration-500 group-hover:scale-105"></i>
+            </div>
+            <div class="space-y-1 mt-4">
+              <div class="flex items-baseline gap-0.5">
+                <span class="text-xl font-black text-charcoal font-mono">৳150</span>
+              </div>
+              <p class="text-[10px] text-warm-grey font-mono">1 Dozen (12 pcs)</p>
+              <h3 class="text-xs font-bold text-charcoal leading-snug line-clamp-2 min-h-[2.5rem]">
+                Fresh Farm Brown Eggs
+              </h3>
+            </div>
+            <div class="pt-4">
+              <button class="w-full border-2 border-brand text-charcoal font-black text-xs py-2.5 rounded-full hover:bg-brand active:scale-95 transition-all">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard Cell 2: Ghee (On Sale) -->
+        <div class="double-bezel hover:shadow-warm-hover group relative">
+          <div class="double-bezel-inner justify-between">
+            <span class="absolute top-4 left-4 z-10 bg-brand text-charcoal text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+              Save ৳60
+            </span>
+            <div class="relative w-full h-32 bg-stone-50/50 rounded-lg overflow-hidden flex items-center justify-center">
+              <i class="ph-bold ph-jar text-stone-300 text-5xl transition-transform duration-500 group-hover:scale-105"></i>
+            </div>
+            <div class="space-y-1 mt-4">
+              <div class="flex items-baseline gap-1">
+                <span class="text-xl font-black text-charcoal font-mono">৳320</span>
+                <span class="text-xs text-stone-400 line-through font-mono">৳380</span>
+              </div>
+              <p class="text-[10px] text-warm-grey font-mono">400g glass jar</p>
+              <h3 class="text-xs font-bold text-charcoal leading-snug line-clamp-2 min-h-[2.5rem]">
+                Pran Premium Pure Cow Ghee
+              </h3>
+            </div>
+            <div class="pt-4">
+              <button class="w-full border-2 border-brand text-charcoal font-black text-xs py-2.5 rounded-full hover:bg-brand active:scale-95 transition-all">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard Cell 3: Tea -->
+        <div class="double-bezel hover:shadow-warm-hover group">
+          <div class="double-bezel-inner justify-between">
+            <div class="relative w-full h-32 bg-stone-50/50 rounded-lg overflow-hidden flex items-center justify-center">
+              <i class="ph-bold ph-coffee text-stone-300 text-5xl transition-transform duration-500 group-hover:scale-105"></i>
+            </div>
+            <div class="space-y-1 mt-4">
+              <div class="flex items-baseline gap-0.5">
+                <span class="text-xl font-black text-charcoal font-mono">৳240</span>
+              </div>
+              <p class="text-[10px] text-warm-grey font-mono">400g Pack</p>
+              <h3 class="text-xs font-bold text-charcoal leading-snug line-clamp-2 min-h-[2.5rem]">
+                Ispahani Mirzapore Best Leaf Tea
+              </h3>
+            </div>
+            <div class="pt-4">
+              <button class="w-full border-2 border-brand text-charcoal font-black text-xs py-2.5 rounded-full hover:bg-brand active:scale-95 transition-all">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard Cell 4: Biscuits -->
+        <div class="double-bezel hover:shadow-warm-hover group">
+          <div class="double-bezel-inner justify-between">
+            <div class="relative w-full h-32 bg-stone-50/50 rounded-lg overflow-hidden flex items-center justify-center">
+              <i class="ph-bold ph-cookie text-stone-300 text-5xl transition-transform duration-500 group-hover:scale-105"></i>
+            </div>
+            <div class="space-y-1 mt-4">
+              <div class="flex items-baseline gap-0.5">
+                <span class="text-xl font-black text-charcoal font-mono">৳65</span>
+              </div>
+              <p class="text-[10px] text-warm-grey font-mono">300g Pack</p>
+              <h3 class="text-xs font-bold text-charcoal leading-snug line-clamp-2 min-h-[2.5rem]">
+                Olympic Energy Biscuits Pack
+              </h3>
+            </div>
+            <div class="pt-4">
+              <button class="w-full border-2 border-brand text-charcoal font-black text-xs py-2.5 rounded-full hover:bg-brand active:scale-95 transition-all">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 5. Bento Trust Section (Service Promises) -->
+    <section class="space-y-6">
+      <h2 class="text-xl font-extrabold tracking-tight text-charcoal">Why Dhaka Trusts Lucky Store</h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1 -->
+        <div class="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center shrink-0">
+            <i class="ph-bold ph-truck text-brand-dark text-xl"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-charcoal">Free Same-Day Delivery</h3>
+            <p class="text-xs text-warm-grey leading-relaxed">On orders ৳500+. Dispatched immediately from our hub.</p>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center shrink-0">
+            <i class="ph-bold ph-wallet text-brand-dark text-xl"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-charcoal">Cash on Delivery</h3>
+            <p class="text-xs text-warm-grey leading-relaxed">No digital payments required. Inspect goods before paying.</p>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center shrink-0">
+            <i class="ph-bold ph-shield-check text-brand-dark text-xl"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-charcoal">Fresh Guarantee</h3>
+            <p class="text-xs text-warm-grey leading-relaxed">7-day hassle-free return. No questions asked return policy.</p>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center shrink-0">
+            <i class="ph-bold ph-calendar-check text-brand-dark text-xl"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-charcoal">Since 1947</h3>
+            <p class="text-xs text-warm-grey leading-relaxed">Serving families across generations with absolute trust.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-warm-border mt-20 py-12">
+    <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div class="space-y-4 col-span-1 md:col-span-2">
+        <div class="flex items-center gap-1.5">
+          <span class="font-black tracking-tighter text-lg">LUCKY STORE</span>
+          <span class="w-2 h-2 rounded-full bg-brand"></span>
+        </div>
+        <p class="text-xs text-warm-grey max-w-sm leading-relaxed">
+          Dhaka's premier neighborhood grocer since 1947. Delivering high-quality essentials, fresh vegetables, and pantry staples directly to your doorstep.
+        </p>
+      </div>
+      <div>
+        <h4 class="text-xs font-black text-charcoal uppercase tracking-widest mb-4">Quick Links</h4>
+        <ul class="space-y-2 text-xs text-warm-grey">
+          <li><a href="#" class="hover:text-charcoal transition-colors">Staples & Grains</a></li>
+          <li><a href="#" class="hover:text-charcoal transition-colors">Dairy & Eggs</a></li>
+          <li><a href="#" class="hover:text-charcoal transition-colors">Snacks & Biscuits</a></li>
+          <li><a href="#" class="hover:text-charcoal transition-colors">Personal Care</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-xs font-black text-charcoal uppercase tracking-widest mb-4">Legal</h4>
+        <ul class="space-y-2 text-xs text-warm-grey">
+          <li><a href="#" class="hover:text-charcoal transition-colors">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-charcoal transition-colors">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-charcoal transition-colors">Return & Refund Policy</a></li>
+          <li><a href="#" class="hover:text-charcoal transition-colors">Support Center</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-5xl mx-auto px-4 mt-8 pt-8 border-t border-warm-border flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-[10px] font-mono text-warm-grey">© 2026 Lucky Store 1947. All rights reserved.</p>
+      <p class="text-[10px] font-mono text-warm-grey">Crafted for premium neighborhood shopping.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
