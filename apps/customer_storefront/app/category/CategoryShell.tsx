@@ -96,6 +96,24 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     badge: 'Sweet Treats',
     bgImage: 'https://images.luckystore1947.com/banners/promo_ice_cream.webp',
   },
+  'chocolates-&-candies': {
+    title: 'Chocolates & Candies',
+    subtitle: 'Sweeten your day with premium dark chocolates, rich truffles, and colorful candies.',
+    badge: 'Sweet Treats',
+    bgImage: 'https://images.luckystore1947.com/banners/promo_chocolates.webp',
+  },
+  'spices': {
+    title: 'Aromatic Spices',
+    subtitle: 'Vibrant, high-quality spices and masalas to bring authentic flavor to your dishes.',
+    badge: 'Pure & Flavorful',
+    bgImage: 'https://images.luckystore1947.com/banners/promo_spices.webp',
+  },
+  'cereals': {
+    title: 'Breakfast Cereals',
+    subtitle: 'Crunchy flakes, wholesome muesli, and healthy oats to kickstart your morning.',
+    badge: 'Morning Fuel',
+    bgImage: 'https://images.luckystore1947.com/banners/promo_cereals.webp',
+  },
 };
 
 const DEFAULT_BANNER = {
