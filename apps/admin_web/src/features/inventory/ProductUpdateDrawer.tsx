@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
+import { uploadToR2 } from '../../lib/r2';
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 import { useAuth } from '../../lib/AuthContext';
@@ -173,20 +174,12 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   // Mutations
   const imageMutation = useMutation({
     mutationFn: async (file: File) => {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${product.id}/${crypto.randomUUID()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, { upsert: true });
-      if (uploadError) throw new Error(uploadError.message);
-      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath);
-      const publicUrl = urlData?.publicUrl;
-      if (!publicUrl) throw new Error('Failed to get public URL');
-      const { error: updateError } = await supabase
-        .from('items')
-        .update({ image_url: publicUrl })
-        .eq('id', product.id);
-      if (updateError) throw new Error(updateError.message);
+      // Upload to R2 CDN via Worker (not Supabase Storage)
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const r2Key = `products/${product.id}/${crypto.randomUUID()}.${fileExt}`;
+      const publicUrl = await uploadToR2(file, r2Key);
+      // Persist the new image_url in the items table
+      await api.inventory.updateProduct(storeId, product.id, { image_url: publicUrl });
       return { image_url: publicUrl };
     },
     onSuccess: () => {
@@ -402,6 +395,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                         min={0}
                         value={editingMinQty ?? ''}
                         onChange={(e) => setEditingMinQty(parseInt(e.target.value) || 0)}
+                        aria-label="Low stock alert threshold (min_qty)"
                         className="w-20 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-warm-accent"
                         autoFocus
                       />
@@ -457,7 +451,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.add.bg} ${stockColors.add.text} border-${stockColors.add.border} focus:ring-success-default`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'add'}
+                  aria-pressed={stockMode === 'add' ? 'true' : 'false'}
                 >
                   <Plus size={20} /><span className="font-semibold text-sm">Add</span>
                 </button>
@@ -470,7 +464,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.remove.bg} ${stockColors.remove.text} border-${stockColors.remove.border} focus:ring-danger-default`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'remove'}
+                  aria-pressed={stockMode === 'remove' ? 'true' : 'false'}
                 >
                   <Minus size={20} /><span className="font-semibold text-sm">Remove</span>
                 </button>
@@ -483,7 +477,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.set.bg} ${stockColors.set.text} border-${stockColors.set.border} focus:ring-warm-accent`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'set'}
+                  aria-pressed={stockMode === 'set' ? 'true' : 'false'}
                 >
                   <RotateCcw size={20} /><span className="font-semibold text-sm">Set</span>
                 </button>
@@ -514,6 +508,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       onChange={handleFileChange}
                       className="hidden"
                       id="image-upload"
+                      aria-label="Upload product image"
                     />
                     <button
                       type="button"
@@ -707,7 +702,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
               type="submit"
               disabled={isButtonDisabled}
               className="w-full py-3 px-4 bg-warm-accent text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-warm-accent-light active:scale-[0.98] transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
-              aria-busy={stockMutation.isPending || priceMutation.isPending}
+              aria-busy={stockMutation.isPending || priceMutation.isPending ? 'true' : 'false'}
             >
               <Save size={18} />
               {getButtonLabel()}

@@ -60,6 +60,7 @@ export default async function CategorySlugPage({
       products={products}
       theme={theme}
       sort={sort}
+      searchParams={resolvedSearch}
     />
   );
 }

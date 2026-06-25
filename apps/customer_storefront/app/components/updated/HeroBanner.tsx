@@ -1,4 +1,4 @@
-'use client';
+import Link from 'next/link';
 
 interface HeroBannerProps {
   title: string;
@@ -50,13 +50,13 @@ export function HeroBanner({
         }`}>
           {subtitle}
         </p>
-        <button 
-          onClick={() => window.location.href = '/category?theme=deals'}
+        <Link 
+          href="/category?theme=deals"
           className="inline-flex items-center gap-1.5 rounded-full bg-stone-950 px-4.5 py-1.5 text-xs font-bold text-white hover:bg-stone-900 active:scale-[0.97] hover:-translate-y-0.5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-sm hover:shadow"
         >
           Shop Now
           <span aria-hidden="true" className="text-sm transition-transform duration-300 group-hover:translate-x-0.5">→</span>
-        </button>
+        </Link>
       </div>
     </section>
   );

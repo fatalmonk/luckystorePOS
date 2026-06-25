@@ -1,7 +1,3 @@
-'use client';
-
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
 import { NativeAdBanner } from './NativeAdBanner';
@@ -25,6 +21,7 @@ interface CategorySwimlanesProps {
   theme: string;
   sort: string;
   ad?: NativeAdBannerProps;
+  searchParams: Record<string, string | string[] | undefined>;
 }
 
 export function CategorySwimlanes({
@@ -35,87 +32,75 @@ export function CategorySwimlanes({
   sort,
   categories,
   ad,
+  searchParams,
 }: CategorySwimlanesProps) {
-  const searchParams = useSearchParams();
-  const [thirtyDaysAgo] = useState(() => Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-  const availabilityParam = searchParams.get('availability') || '';
-  const availability = useMemo(
-    () => (availabilityParam ? availabilityParam.split(',') : []),
-    [availabilityParam]
-  );
+  const availabilityParam = Array.isArray(searchParams?.availability) 
+    ? searchParams.availability[0] 
+    : searchParams?.availability || '';
+  const availability = availabilityParam ? availabilityParam.split(',') : [];
 
-  const priceParam = searchParams.get('price') || '';
-  const priceRanges = useMemo(() => {
-    if (!priceParam) return [];
-    return priceParam.split(',').map((range) => {
-      const [min, max] = range.split('-').map(Number);
-      return { min, max };
+  const priceParam = Array.isArray(searchParams?.price) 
+    ? searchParams.price[0] 
+    : searchParams?.price || '';
+  const priceRanges = priceParam ? priceParam.split(',').map((range) => {
+    const [min, max] = range.split('-').map(Number);
+    return { min, max };
+  }) : [];
+
+  let filtered = [...products];
+
+  if (theme === 'deals') {
+    filtered = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price);
+  } else if (theme === 'new') {
+    filtered = filtered
+      .filter((p) => p.created_at && new Date(p.created_at).getTime() > thirtyDaysAgo)
+      .sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
+  } else if (theme === 'bestsellers') {
+    filtered = filtered.filter((p) => p.stock > 10);
+  }
+
+  if (availability.length) {
+    filtered = filtered.filter((p) => {
+      if (availability.includes('in_stock') && p.stock > 5) return true;
+      if (availability.includes('low_stock') && p.stock > 0 && p.stock <= 5) return true;
+      if (availability.includes('out_of_stock') && p.stock === 0) return true;
+      return false;
     });
-  }, [priceParam]);
+  }
 
-  const filtered = useMemo(() => {
-    let list = [...products];
+  if (priceRanges.length) {
+    filtered = filtered.filter((p) =>
+      priceRanges.some((range) => p.price >= range.min && p.price <= range.max)
+    );
+  }
 
-    if (theme === 'deals') {
-      list = list.filter((p) => p.originalPrice && p.originalPrice > p.price);
-    } else if (theme === 'new') {
-      list = list
-        .filter((p) => p.created_at && new Date(p.created_at).getTime() > thirtyDaysAgo)
-        .sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
-    } else if (theme === 'bestsellers') {
-      list = list.filter((p) => p.stock > 10);
-    }
+  if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
+  else if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
+  else if (sort === 'newest')
+    filtered.sort((a, b) =>
+      new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime()
+    );
 
-    if (availability.length) {
-      list = list.filter((p) => {
-        if (availability.includes('in_stock') && p.stock > 5) return true;
-        if (availability.includes('low_stock') && p.stock > 0 && p.stock <= 5) return true;
-        if (availability.includes('out_of_stock') && p.stock === 0) return true;
-        return false;
-      });
-    }
+  const deals = products.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
+  const bestSellers = products.filter((p) => p.stock > 10).slice(0, 8);
 
-    if (priceRanges.length) {
-      list = list.filter((p) =>
-        priceRanges.some((range) => p.price >= range.min && p.price <= range.max)
-      );
-    }
-
-    if (sort === 'price_asc') list.sort((a, b) => a.price - b.price);
-    else if (sort === 'price_desc') list.sort((a, b) => b.price - a.price);
-    else if (sort === 'newest')
-      list.sort((a, b) =>
-        new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime()
-      );
-
-    return list;
-  }, [products, theme, availability, priceRanges, sort, thirtyDaysAgo]);
-
-  const { deals, bestSellers } = useMemo(() => {
-    const deals = products.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
-    const bestSellers = products.filter((p) => p.stock > 10).slice(0, 8);
-    return { deals, bestSellers };
-  }, [products]);
-
-  const subCategoryGrids = useMemo(() => {
-    if (!group) return [];
-    return group.subCategories
-      .map((subSlug) => {
-        const cat = categories.find((c) => c.slug === subSlug);
-        // Items store category as the name (e.g. "Biscuits & Cookies"), not the slug
-        const catName = cat?.name ?? subSlug;
-        const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug);
-        return {
-          slug: subSlug,
-          label: cat?.name || subSlug,
-          emoji: cat?.emoji || '📦',
-          products: catProducts,
-          count: catProducts.length,
-        };
-      })
-      .filter((s) => s.products.length > 0);
-  }, [filtered, group, categories]);
+  const subCategoryGrids = !group ? [] : group.subCategories
+    .map((subSlug) => {
+      const cat = categories.find((c) => c.slug === subSlug);
+      // Items store category as the name (e.g. "Biscuits & Cookies"), not the slug
+      const catName = cat?.name ?? subSlug;
+      const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug);
+      return {
+        slug: subSlug,
+        label: cat?.name || subSlug,
+        emoji: cat?.emoji || '📦',
+        products: catProducts,
+        count: catProducts.length,
+      };
+    })
+    .filter((s) => s.products.length > 0);
 
   if (filtered.length === 0) {
     return (
