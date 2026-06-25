@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
+import '../../../../shared/widgets/lucky_store_logo.dart';
 
 /// Unified PIN-based login screen for all staff (Cashiers, Managers, Admins).
 ///
@@ -125,18 +125,8 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                    _BrandedLogo(),
-                    const SizedBox(height: 32),
-
-                    Text(
-                      'Lucky Store',
-                      style: AppTextStyles.headingXl.copyWith(
-                        color: AppColors.primitiveNeutral0,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    const LuckyStoreLogo(isDark: true, fontSize: 32),
+                    const SizedBox(height: 16),
                     Text(
                       'Enter your access PIN to continue',
                       style: AppTextStyles.bodyMd.copyWith(
@@ -192,35 +182,7 @@ class _StaffPinLoginScreenState extends State<StaffPinLoginScreen>
   }
 }
 
-class _BrandedLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 88,
-      height: 88,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primaryDefault, AppColors.primaryHover],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: AppRadius.borderLg,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDefault.withValues(alpha: 0.3),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Icon(
-        Icons.store_rounded,
-        color: AppColors.primaryOn,
-        size: 48,
-      ),
-    );
-  }
-}
+
 
 class _PinDots extends StatelessWidget {
   final int length;

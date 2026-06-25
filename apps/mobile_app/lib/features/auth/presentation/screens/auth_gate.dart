@@ -7,6 +7,7 @@ import '../../../../shared/controllers/app_access_controller.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/providers/pos_provider.dart';
 import '../../../../shared/services/startup_guard_service.dart';
+import '../../../../shared/widgets/lucky_store_logo.dart';
 import './staff_pin_login_screen.dart';
 import '../../../pos/presentation/screens/manager_shell.dart';
 import '../../../pos/presentation/screens/pos_main_screen.dart';
@@ -162,7 +163,7 @@ class _SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _StoreLogo(),
+            const LuckyStoreLogo(isDark: true, fontSize: 32),
             const SizedBox(height: 32),
             CircularProgressIndicator(
               color: AppColors.primaryDefault,
@@ -175,30 +176,4 @@ class _SplashScreen extends StatelessWidget {
   }
 }
 
-class _StoreLogo extends StatelessWidget {
-  const _StoreLogo();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primaryDefault, AppColors.primaryHover],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: AppRadius.borderLg,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDefault.withValues(alpha: 0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Icon(Icons.store_rounded, color: AppColors.primaryOn, size: 42),
-    );
-  }
-}

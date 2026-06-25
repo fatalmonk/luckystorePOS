@@ -34,7 +34,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
             title="Lucky Store"
             subtitle="Your everyday essentials delivered instantly"
             badge="Super Fast Delivery"
-            bgImage="/images/hero_grocery_banner.png"
+            bgImage="https://images.luckystore1947.com/banners/hero_grocery_banner.webp"
           />
           <CategoryGrid categories={categories} />
           <PromoGrid />
