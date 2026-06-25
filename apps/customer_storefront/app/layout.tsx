@@ -6,7 +6,7 @@ import { WebMCPInit } from './components/WebMCPInit';
 
 export const metadata: Metadata = {
   title: { default: 'Lucky Store', template: '%s | Lucky Store' },
-  description: 'Your neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
+  description: 'Your friendly neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
