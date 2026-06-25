@@ -22,7 +22,7 @@ const defaultPromos: PromoItem[] = [
     subtitle: 'Up to 50% off essentials',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: '/images/promo_savings_banner.png',
+    bgImage: 'https://images.luckystore1947.com/banners/promo_savings_banner.webp',
   },
   {
     id: 'fresh-arrivals',
@@ -30,7 +30,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Fresh Arrivals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=new',
-    bgImage: '/images/promo_fresh_banner.png',
+    bgImage: 'https://images.luckystore1947.com/banners/promo_fresh_banner.webp',
   },
   {
     id: 'daily-deals',
@@ -38,7 +38,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Daily Deals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: '/images/promo_deals_banner.png',
+    bgImage: 'https://images.luckystore1947.com/banners/promo_deals_banner.webp',
   },
 ];
 

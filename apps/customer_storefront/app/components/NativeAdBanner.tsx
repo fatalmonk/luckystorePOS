@@ -14,7 +14,7 @@ export function NativeAdBanner({
   subtitle,
   ctaText = 'Shop now',
   ctaHref = '#',
-  bgImage = '/images/native_ad_banner.png',
+  bgImage = 'https://images.luckystore1947.com/banners/native_ad_banner.webp',
   bgColor = '#1c1917',
 }: NativeAdBannerProps) {
   return (

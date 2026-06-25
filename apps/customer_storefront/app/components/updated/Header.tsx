@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { HeaderCartButton } from '../HeaderCartButton';
 import { HeaderFilters } from '../HeaderFilters';
 import { SearchSuggestions } from './SearchSuggestions';
+import { Logo } from '../ui/Logo';
 
 export function Header() {
   const router = useRouter();
@@ -56,26 +56,13 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex-shrink-0">
-      {/* Top strip: logo + search + actions on warm neutral to reduce yellow fatigue */}
-      <div className="h-[64px] bg-warm-bg border-b border-warm-border flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
+    <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-3 pb-1 bg-warm-bg/95 backdrop-blur-md">
+      <div className="max-w-5xl mx-auto h-[64px] bg-white border border-warm-border rounded-full flex items-center px-4 sm:px-6 justify-between gap-2 sm:gap-4 shadow-sm hover:shadow-md transition-all duration-300">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 min-h-[44px] flex-shrink-0">
-          <Image
-            src="/logo-mark.svg"
-            alt="Lucky Store"
-            width={34}
-            height={34}
-            className="rounded-full bg-warm-accent"
-            priority
-          />
-          <span className="font-extrabold text-[15px] text-warm-fg hidden sm:block tracking-tight">
-            Lucky Store
-          </span>
-        </Link>
+        <Logo />
 
         {/* Search */}
-        <div className="flex-1 min-w-0 relative" ref={searchRef}>
+        <div className="flex-1 max-w-md relative hidden md:block" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <input
               name="q"
@@ -84,7 +71,7 @@ export function Header() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               placeholder="Search products, brands..."
-              className="w-full h-10 pl-4 pr-11 rounded-full bg-warm-border-light border border-transparent focus:border-warm-accent focus:bg-white outline-none text-sm transition-all shadow-sm"
+              className="w-full h-10 pl-4 pr-11 rounded-full bg-warm-bg border border-warm-border focus:border-warm-accent focus:bg-white outline-none text-sm transition-all"
               aria-label="Search products"
             />
             <button
@@ -92,7 +79,7 @@ export function Header() {
               className="absolute right-1 top-1 h-8 w-8 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
               aria-label="Search"
             >
-              <span aria-hidden="true" className="text-base">🔍</span>
+              <span aria-hidden="true" className="text-sm">🔍</span>
             </button>
           </form>
           
@@ -112,50 +99,61 @@ export function Header() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Mobile search icon button */}
           <button
             type="button"
-            className="flex items-center gap-2 min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-warm-border-light transition-colors"
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-full hover:bg-warm-bg text-warm-fg transition-colors"
+            onClick={() => router.push('/search')}
+            aria-label="Search page"
+          >
+            <span aria-hidden="true" className="text-lg">🔍</span>
+          </button>
+
+          <button
+            type="button"
+            className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
             aria-label="Sign In"
           >
-            <span aria-hidden="true" className="text-lg">👤</span>
-            <span className="hidden lg:block text-sm font-medium">Sign In</span>
+            <span aria-hidden="true" className="text-base">👤</span>
+            <span className="hidden sm:block text-xs font-bold">Sign In</span>
           </button>
           <HeaderCartButton />
         </div>
       </div>
 
-      {/* Department Chips - Simplified for better performance */}
-      <nav className="bg-warm-accent flex flex-nowrap items-center overflow-x-auto px-3 sm:px-4 py-2 md:py-0 h-[44px] gap-2 z-40 relative scrollbar-hide">
-        <Link
-          href="/category?theme=deals"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
-        >
-          Deals
-        </Link>
-        <Link
-          href="/category?theme=bestsellers"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-warm-fg text-xs font-bold hover:bg-white transition-colors"
-        >
-          Best Sellers
-        </Link>
-        <div className="flex-1 min-w-0 flex items-center">
-          <Suspense
-            fallback={
-              <div className="flex items-center gap-2">
-                <div className="h-[28px] w-16 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
-                <div className="h-[28px] w-20 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
-                <div className="h-[28px] w-14 rounded-full bg-white/50 animate-pulse flex-shrink-0" />
-              </div>
-            }
+      {/* Category Pills Strip - Floating below the main nav bar */}
+      <div className="max-w-5xl mx-auto mt-2 px-2">
+        <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5">
+          <Link
+            href="/category?theme=deals"
+            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
           >
-            <HeaderFilters />
-          </Suspense>
-        </div>
-        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-warm-fg/80 ml-auto whitespace-nowrap">
-          Delivery in as soon as 1 hour
-        </span>
-      </nav>
+            Deals
+          </Link>
+          <Link
+            href="/category?theme=bestsellers"
+            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white text-warm-fg border border-warm-border text-xs font-bold hover:bg-stone-50 transition-colors"
+          >
+            Best Sellers
+          </Link>
+          <div className="flex-1 min-w-0 flex items-center">
+            <Suspense
+              fallback={
+                <div className="flex items-center gap-1.5">
+                  <div className="h-[26px] w-14 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
+                  <div className="h-[26px] w-16 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
+                </div>
+              }
+            >
+              <HeaderFilters />
+            </Suspense>
+          </div>
+          <span className="hidden md:inline-flex items-center text-[10px] font-semibold text-warm-muted ml-auto whitespace-nowrap">
+            Delivery in as soon as 1 hour
+          </span>
+        </nav>
+      </div>
     </header>
   );
 }

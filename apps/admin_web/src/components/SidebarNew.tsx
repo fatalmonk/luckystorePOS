@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/AuthContext';
+import { Logo } from './ui/Logo';
 import { 
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
   Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, 
@@ -186,13 +187,10 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
         {/* Sidebar Header */}
         <div className={clsx('p-4 border-b border-warm-border-warm flex items-center justify-between gap-3', collapsed && 'flex-col justify-center')}>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-warm-accent shadow-level-2 transform -rotate-6 flex-shrink-0">
-              <ShoppingBag className="text-white" size={18} />
-            </div>
+            <Logo collapsed={collapsed} />
             {!collapsed && (
               <div className="flex flex-col min-w-0">
-                <h2 className="text-sm font-display font-black text-warm-fg tracking-tight leading-tight truncate">Lucky Store</h2>
-                <p className="text-[9px] text-warm-muted font-bold uppercase tracking-widest opacity-75 truncate">Admin Portal</p>
+                <p className="text-[9px] text-warm-muted font-bold uppercase tracking-widest opacity-75 truncate mt-0.5">Admin Portal</p>
               </div>
             )}
           </div>
