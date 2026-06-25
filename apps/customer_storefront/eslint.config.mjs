@@ -13,9 +13,8 @@ const eslintConfig = [
   ...compat.extends('next'),
   {
     rules: {
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/purity': 'warn',
-      'react-hooks/refs': 'warn',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
   {
