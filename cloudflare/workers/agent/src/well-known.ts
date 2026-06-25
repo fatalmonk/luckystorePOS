@@ -93,16 +93,28 @@ export function handleHealth(): Response {
 }
 
 export async function handleOAuthProtectedResource(env: Env): Promise<Response> {
-  const upstream = await fetch(env.OAUTH_METADATA_URL);
-  const body = await upstream.text();
-  return new Response(body, {
-    status: upstream.status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-      ...publicCorsHeaders(),
-    },
-  });
+  try {
+    const upstream = await fetch(env.OAUTH_METADATA_URL, {
+      signal: AbortSignal.timeout(5000),
+    });
+    const body = await upstream.text();
+    return new Response(body, {
+      status: upstream.status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+        ...publicCorsHeaders(),
+      },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: 'OAuth metadata unavailable' }), {
+      status: 502,
+      headers: {
+        'Content-Type': 'application/json',
+        ...publicCorsHeaders(),
+      },
+    });
+  }
 }
 
 export function handleOAuthAuthorizationServer(supabaseUrl: string): Response {
@@ -129,9 +141,14 @@ export async function handleHealthz(env: Env): Promise<Response> {
   const checks = await Promise.allSettled([
     fetch(`${env.SUPABASE_URL}/auth/v1/health`, {
       headers: { 'apikey': env.SUPABASE_ANON_KEY },
+      signal: AbortSignal.timeout(5000),
     }),
-    fetch(`${env.NEON_PROXY_URL}/health`),
-    fetch(`${env.IMAGES_WORKER_URL}/health`),
+    fetch(`${env.NEON_PROXY_URL}/health`, {
+      signal: AbortSignal.timeout(5000),
+    }),
+    fetch(`${env.IMAGES_WORKER_URL}/health`, {
+      signal: AbortSignal.timeout(5000),
+    }),
   ]);
 
   const result = {

@@ -21,20 +21,34 @@ interface JwtPayload {
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
+// Globally cache JWKS resolver instances to ensure in-memory caching is not defeated per request
+const jwkSets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+
+function getJWKSet(baseUrl: string) {
+  const normalized = baseUrl.replace(/\/+$/, '');
+  const jwksUrl = `${normalized}/auth/v1/.well-known/jwks.json`;
+  if (!jwkSets.has(jwksUrl)) {
+    jwkSets.set(
+      jwksUrl,
+      createRemoteJWKSet(new URL(jwksUrl), {
+        cacheMaxAge: CACHE_TTL_MS,
+      })
+    );
+  }
+  return jwkSets.get(jwksUrl)!;
+}
+
 // Verify a JWT using Supabase JWKS
 // createRemoteJWKSet handles its own key-caching internally
 export async function validateJwt(token: string, env: Env): Promise<JwtPayload> {
-  const jwksUrl = env.SUPABASE_URL + '/auth/v1/.well-known/jwks.json';
-
-  const JWKS = createRemoteJWKSet(new URL(jwksUrl), {
-    cacheMaxAge: CACHE_TTL_MS,
-  });
+  const normalizedUrl = env.SUPABASE_URL.replace(/\/+$/, '');
+  const JWKS = getJWKSet(normalizedUrl);
 
   let payload: JwtPayload;
 
   try {
     const { payload: p } = await jwtVerify(token, JWKS, {
-      issuer: env.SUPABASE_URL + '/auth/v1',
+      issuer: normalizedUrl + '/auth/v1',
     });
     payload = p as JwtPayload;
   } catch (err) {

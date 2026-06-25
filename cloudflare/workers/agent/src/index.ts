@@ -22,9 +22,13 @@ export default {
     const pathname = url.pathname;
     const origin = request.headers.get('Origin') || '';
     const requestId = crypto.randomUUID();
+    const isProd = url.hostname === 'agent.luckystore1947.com';
 
     if (!env.NEON_PROXY_URL.startsWith('https://')) {
       return new Response('NEON_PROXY_URL must use HTTPS', { status: 500 });
+    }
+    if (!env.IMAGES_WORKER_URL.startsWith('https://')) {
+      return new Response('IMAGES_WORKER_URL must use HTTPS', { status: 500 });
     }
 
     const applyHeaders = (response: Response): Response => {
@@ -63,7 +67,7 @@ export default {
     }
 
     if (request.method === 'OPTIONS' && pathname.startsWith('/api/')) {
-      const corsHeaders = getDataCorsHeaders(origin);
+      const corsHeaders = getDataCorsHeaders(origin, isProd);
       return new Response(null, { headers: corsHeaders });
     }
 
@@ -72,7 +76,7 @@ export default {
       const rateLimit = checkRateLimit(ip);
       if (!rateLimit.allowed) {
         auditLog('rate_limit', { requestId, ip, path: pathname });
-        const corsHeaders = getDataCorsHeaders(origin);
+        const corsHeaders = getDataCorsHeaders(origin, isProd);
         return applyHeaders(new Response('Too Many Requests', {
           status: 429,
           headers: { ...corsHeaders, 'Retry-After': '60', 'x-request-id': requestId },
@@ -82,7 +86,7 @@ export default {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader?.startsWith('Bearer ')) {
         auditLog('auth_fail', { requestId, ip, path: pathname, reason: 'missing token' });
-        const corsHeaders = getDataCorsHeaders(origin);
+        const corsHeaders = getDataCorsHeaders(origin, isProd);
         return applyHeaders(new Response('Unauthorized', {
           status: 401,
           headers: { ...corsHeaders, 'x-request-id': requestId },
@@ -95,7 +99,7 @@ export default {
         payload = await validateJwt(token, env);
       } catch (err) {
         auditLog('auth_fail', { requestId, ip, path: pathname, reason: 'invalid JWT' });
-        const corsHeaders = getDataCorsHeaders(origin);
+        const corsHeaders = getDataCorsHeaders(origin, isProd);
         return applyHeaders(new Response('Unauthorized', {
           status: 401,
           headers: { ...corsHeaders, 'x-request-id': requestId },
@@ -104,7 +108,7 @@ export default {
 
       if (!validateRole(payload, 'worker_agent')) {
         auditLog('role_fail', { requestId, ip, path: pathname, reason: 'missing worker_agent role' });
-        const corsHeaders = getDataCorsHeaders(origin);
+        const corsHeaders = getDataCorsHeaders(origin, isProd);
         return applyHeaders(new Response('Forbidden', {
           status: 403,
           headers: { ...corsHeaders, 'x-request-id': requestId },
@@ -113,19 +117,29 @@ export default {
 
       let upstreamUrl;
       if (pathname.startsWith('/api/neon/')) {
-        upstreamUrl = env.NEON_PROXY_URL + pathname.slice('/api/neon'.length);
+        upstreamUrl = env.NEON_PROXY_URL + pathname.slice('/api/neon'.length) + url.search;
       } else if (pathname.startsWith('/api/images/')) {
-        upstreamUrl = env.IMAGES_WORKER_URL + pathname.slice('/api/images'.length);
+        upstreamUrl = env.IMAGES_WORKER_URL + pathname.slice('/api/images'.length) + url.search;
       } else {
-        const corsHeaders = getDataCorsHeaders(origin);
+        const corsHeaders = getDataCorsHeaders(origin, isProd);
         return applyHeaders(new Response('Not Found', {
           status: 404,
           headers: { ...corsHeaders, 'x-request-id': requestId },
         }));
       }
 
-      const response = await proxyRequest(upstreamUrl, request, env.NEON_PROXY_API_KEY, requestId);
-      auditLog('proxy_ok', { requestId, ip, path: pathname });
+      let response;
+      try {
+        response = await proxyRequest(upstreamUrl, request, env.NEON_PROXY_API_KEY, requestId);
+        auditLog('proxy_ok', { requestId, ip, path: pathname });
+      } catch (err) {
+        auditLog('proxy_fail', { requestId, ip, path: pathname, reason: err instanceof Error ? err.message : String(err) });
+        const corsHeaders = getDataCorsHeaders(origin, isProd);
+        return applyHeaders(new Response('Bad Gateway', {
+          status: 502,
+          headers: { ...corsHeaders, 'x-request-id': requestId },
+        }));
+      }
       return applyHeaders(response);
     }
 

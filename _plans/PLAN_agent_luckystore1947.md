@@ -68,7 +68,7 @@ Data Layer (unchanged)
 ### 3.1 In Scope (this plan)
 
 - [ ] New Worker: `cloudflare/workers/agent-orchestrator/`
-- [ ] DNS record: `agent.luckystore1947.com` → Worker (orange cloud, WAF)
+- [x] DNS record: `agent.luckystore1947.com` → Worker (automatically created on deploy via `custom_domain = true` in wrangler.toml)
 - [ ] `.well-known/oauth-authorization-server` (proxied from Supabase + agent_auth extension)
 - [ ] `.well-known/oauth-protected-resource` (**proxied from `api.luckystore1947.com`** — not duplicated)
 - [ ] `.well-known/openid-configuration` (proxied from Supabase)
@@ -189,8 +189,7 @@ wrangler whoami  # returns account 8e457654e12c3b75d2094bbd8914030b
   - `GET /.well-known/mcp/server-card.json`
   - `GET /auth.md`
   - `OPTIONS /*` (CORS preflight)
-- [ ] Deploy: `npx wrangler deploy`
-- [ ] Create DNS record `agent.luckystore1947.com` → Worker (orange cloud)
+- [ ] Deploy: `npx wrangler deploy` (automatically configures the custom domain and DNS records in Cloudflare via `custom_domain = true` in wrangler.toml)
 
 **Acceptance:**
 ```bash

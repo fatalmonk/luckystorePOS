@@ -9,7 +9,8 @@ const IGNORE_DIRS = new Set(['.git', 'node_modules', 'build', 'coverage', '.venv
 function isGitIgnored(filePath) {
   const rel = relative(process.cwd(), filePath);
   
-  // Skip all .env files EXCEPT .env.example
+  // Skip wrangler local dev secrets and all .env files EXCEPT .env.example
+  if (rel.endsWith('.dev.vars') || rel.includes('/.dev.vars')) return true;
   if (rel.startsWith('.env')) return rel !== '.env.example';
   if (rel.startsWith('apps/admin_web/.env')) return true;
   if (rel.startsWith('apps/customer_storefront/.env')) return true;
