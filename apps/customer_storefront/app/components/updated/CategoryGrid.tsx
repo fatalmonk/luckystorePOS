@@ -34,7 +34,7 @@ interface CategoryGridProps {
 
 export function CategoryGrid({ categories, active }: CategoryGridProps) {
   return (
-    <section className="mb-6">
+    <section>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold">Browse Categories</h2>
       </div>

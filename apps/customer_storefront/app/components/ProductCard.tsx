@@ -24,7 +24,7 @@ export function Card({ children, className = '', hover = false, onClick, 'data-t
       onClick={onClick}
       data-testid={testId}
       className={`
-        bg-white border border-[#e7e5e4] rounded-[14px]
+        bg-white border border-[#e7e5e4] rounded-[18px]
         overflow-hidden
         transition-all duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)]
         ${hover ? 'card-hover hover:border-[#d6d3d1] cursor-pointer hover:shadow-[inset_0_0_0_1px_rgba(11,79,217,0.12)]' : ''}
@@ -235,7 +235,7 @@ export function ProductCard({
             alt={name}
             fill
             sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 180px"
-            className="object-contain transition-transform duration-300 group-hover:scale-105 p-2"
+            className="object-contain transition-transform duration-300 group-hover:scale-[1.08] p-2"
             priority={priority}
             onError={(e) => {
               e.currentTarget.style.display = 'none';
