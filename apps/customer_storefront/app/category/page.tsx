@@ -5,7 +5,7 @@ import { fetchProducts, fetchCategories } from '../lib/products';
 import { getSingleParam } from '../lib/utils';
 import type { Category } from '../lib/types';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export function generateMetadata(): Metadata {
   return {
