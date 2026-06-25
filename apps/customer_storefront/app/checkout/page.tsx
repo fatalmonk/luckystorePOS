@@ -160,10 +160,10 @@ function CheckoutContent() {
                 <div
                   className={`w-11 h-11 rounded-full grid place-items-center text-sm font-extrabold transition-colors ${
                     currentStep > step.id
-                      ? 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]'
+                      ? 'bg-[rgba(45,106,79,0.08)] text-warm-success'
                       : currentStep === step.id
-                      ? 'bg-[#ffe302] text-[#1c1917]'
-                      : 'bg-[#f5f5f4] text-[#78716c]'
+                      ? 'bg-warm-accent text-warm-fg'
+                      : 'bg-warm-border-light text-warm-muted'
                   }`}
                 >
                   {currentStep > step.id ? '✓' : step.id}
@@ -171,7 +171,7 @@ function CheckoutContent() {
                 {index < STEPS.length - 1 && (
                   <div
                     className={`w-8 h-0.5 mx-1 transition-colors ${
-                      currentStep > step.id ? 'bg-[#2d6a4f]' : 'bg-[#f5f5f4]'
+                      currentStep > step.id ? 'bg-warm-success' : 'bg-warm-border-light'
                     }`}
                   />
                 )}
@@ -182,10 +182,10 @@ function CheckoutContent() {
           {/* Step 1: Details */}
           {currentStep === 1 && (
             <div className="animate-[fadeUp_0.25s_ease]">
-              <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
-                <p className="text-xs text-[#78716c] uppercase tracking-widest mb-1">Store</p>
+              <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+                <p className="text-xs text-warm-muted uppercase tracking-widest mb-1">Store</p>
                 <p className="font-bold text-[15px] mb-0.5">Lucky Store — Emdad Park</p>
-                <p className="text-[13px] text-[#78716c]">665 Percival Hill Rd, Chittagong 4203</p>
+                <p className="text-[13px] text-warm-muted">665 Percival Hill Rd, Chittagong 4203</p>
               </div>
 
               <Input
@@ -212,7 +212,7 @@ function CheckoutContent() {
               {errors.phone ? (
                 <p className="text-xs text-red-500 -mt-2 mb-3">{errors.phone}</p>
               ) : (
-                <p className="text-[11px] text-[#78716c] -mt-2 mb-3">Use 01XXXXXXXXX or +8801XXXXXXXXX</p>
+                <p className="text-[11px] text-warm-muted -mt-2 mb-3">Use 01XXXXXXXXX or +8801XXXXXXXXX</p>
               )}
 
               <TextArea
@@ -234,7 +234,7 @@ function CheckoutContent() {
               />
 
               <div className="mb-5">
-                <p className="block text-[13px] font-bold mb-2 text-[#1c1917]">Delivery Slot</p>
+                <p className="block text-[13px] font-bold mb-2 text-warm-fg">Delivery Slot</p>
                 <div className="flex gap-2">
                   {[
                     { id: 'morning', label: 'Morning', time: '9AM–1PM' },
@@ -246,8 +246,8 @@ function CheckoutContent() {
                       onClick={() => updateField('deliverySlot', slot.id)}
                       className={`flex-1 py-2.5 px-3 rounded-[14px] border-2 text-sm font-bold transition-all ${
                         formData.deliverySlot === slot.id
-                          ? 'border-warm-accent bg-warm-accent/10 text-[#1c1917]'
-                          : 'border-[#e7e5e4] bg-white text-[#78716c] hover:border-[#d6d3d1]'
+                          ? 'border-warm-accent bg-warm-accent/10 text-warm-fg'
+                          : 'border-warm-border bg-white text-warm-muted hover:border-[#d6d3d1]'
                       }`}
                     >
                       {slot.label}
@@ -279,15 +279,15 @@ function CheckoutContent() {
                     </div>
                   )}
 
-                  <h3 className="text-sm font-bold text-[#78716c] uppercase tracking-widest mb-4">Order Summary</h3>
+                  <h3 className="text-sm font-bold text-warm-muted uppercase tracking-widest mb-4">Order Summary</h3>
 
                   <div className="space-y-3 mb-5">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 py-2 border-b border-[#f5f5f4]">
+                      <div key={item.id} className="flex items-center gap-3 py-2 border-b border-warm-border-light">
                         <div className="text-[22px]">{item.emoji}</div>
                         <div className="flex-1">
                           <p className="font-semibold text-sm">{item.name}</p>
-                          <p className="text-[13px] text-[#78716c]">
+                          <p className="text-[13px] text-warm-muted">
                             {formatBdt(item.price)} × {item.qty}
                           </p>
                         </div>
@@ -296,50 +296,50 @@ function CheckoutContent() {
                     ))}
                   </div>
 
-                  <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
-                    <h4 className="text-xs font-bold text-[#78716c] uppercase tracking-widest mb-3">Delivery Details</h4>
+                  <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+                    <h4 className="text-xs font-bold text-warm-muted uppercase tracking-widest mb-3">Delivery Details</h4>
                     <div className="space-y-1.5 text-sm">
                       <div className="flex">
-                        <span className="text-[#78716c] w-20">Name</span>
+                        <span className="text-warm-muted w-20">Name</span>
                         <span className="font-semibold">{formData.name}</span>
                       </div>
                       <div className="flex">
-                        <span className="text-[#78716c] w-20">Phone</span>
+                        <span className="text-warm-muted w-20">Phone</span>
                         <span>{formData.phone}</span>
                       </div>
                       <div className="flex">
-                        <span className="text-[#78716c] w-20">Address</span>
+                        <span className="text-warm-muted w-20">Address</span>
                         <span>{formData.address}</span>
                       </div>
                       <div className="flex">
-                        <span className="text-[#78716c] w-20">Slot</span>
+                        <span className="text-warm-muted w-20">Slot</span>
                         <span className="font-semibold">
                           {formData.deliverySlot === 'morning' ? 'Morning (9AM–1PM)' : 'Evening (4PM–8PM)'}
                         </span>
                       </div>
                       {formData.notes && (
                         <div className="flex">
-                          <span className="text-[#78716c] w-20">Notes</span>
+                          <span className="text-warm-muted w-20">Notes</span>
                           <span>{formData.notes}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] mb-6">
-                    <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
+                  <div className="bg-white border border-warm-border rounded-[14px] p-[18px] mb-6">
+                    <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
                       <span>Subtotal</span>
                       <span>{formatBdt(subtotal)}</span>
                     </div>
-                    <div className="flex justify-between mb-2.5 text-sm text-[#78716c]">
+                    <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
                       <span>Delivery</span>
                       <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
                     </div>
-                    <div className="flex justify-between pt-3 border-t border-[#f5f5f4] text-lg font-extrabold text-[#1c1917]">
+                    <div className="flex justify-between pt-3 border-t border-warm-border-light text-lg font-extrabold text-warm-fg">
                       <span>Total</span>
                       <span>{formatBdt(total)}</span>
                     </div>
-                    <p className="text-xs text-[#78716c] mt-2 flex items-center gap-1">
+                    <p className="text-xs text-warm-muted mt-2 flex items-center gap-1">
                       <span aria-hidden="true">💵</span> Cash on Delivery — pay when you receive
                     </p>
                   </div>
@@ -353,7 +353,7 @@ function CheckoutContent() {
                 <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
                   <div className="text-6xl mb-4">⏳</div>
                   <h3 className="text-lg font-bold mb-2">Placing your order…</h3>
-                  <p className="text-[#78716c]">This usually takes a few seconds</p>
+                  <p className="text-warm-muted">This usually takes a few seconds</p>
                 </div>
               )}
             </div>

@@ -26,11 +26,11 @@ export function HeaderSearch() {
         name="q"
         type="text"
         placeholder="Search for products..."
-        className="w-full h-10 pl-4 pr-11 rounded-full bg-[#f5f5f4] border border-transparent focus:border-[#ffe302] focus:bg-white outline-none text-sm transition-all shadow-sm"
+        className="w-full h-10 pl-4 pr-11 rounded-full bg-warm-border-light border border-transparent focus:border-warm-accent focus:bg-white outline-none text-sm transition-all shadow-sm"
       />
       <button
         type="submit"
-        className="absolute right-1 top-1 h-8 w-8 bg-[#ffe302] rounded-full flex items-center justify-center text-[#1c1917] hover:bg-[#ffec50] transition-colors"
+        className="absolute right-1 top-1 h-8 w-8 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
         aria-label="Search products"
       >
         <span aria-hidden="true" className="text-base">🔍</span>

@@ -38,7 +38,7 @@ function CartContent() {
             <div className="h-7 w-16 bg-gray-200 rounded animate-pulse mb-4" />
             <div className="space-y-3 mb-5">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-white border border-[#e7e5e4] rounded-[14px] p-3.5 flex items-center gap-3.5">
+                <div key={i} className="bg-white border border-warm-border rounded-[14px] p-3.5 flex items-center gap-3.5">
                   <div className="w-[60px] h-[60px] bg-gray-200 rounded-[10px] animate-pulse flex-shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
@@ -53,7 +53,7 @@ function CartContent() {
                 </div>
               ))}
             </div>
-            <div className="h-32 bg-white border border-[#e7e5e4] rounded-[14px] animate-pulse" />
+            <div className="h-32 bg-white border border-warm-border rounded-[14px] animate-pulse" />
           </div>
         </main>
         <BottomNav />
@@ -72,7 +72,7 @@ function CartContent() {
           {isEmpty ? (
             <div className="text-center py-16">
               <div className="flex items-center justify-center mb-4">
-                <EmptyCartIcon size={64} className="text-[#a8a29e]" />
+                <EmptyCartIcon size={64} className="text-warm-muted" />
               </div>
               <h3 className="text-lg font-bold mb-2">Your cart is empty</h3>
               <p className="text-sm text-gray-500 mb-6">Add items from the store to get started</p>
@@ -87,9 +87,9 @@ function CartContent() {
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white border border-[#e7e5e4] rounded-[14px] p-3.5 flex items-center gap-3.5"
+                    className="bg-white border border-warm-border rounded-[14px] p-3.5 flex items-center gap-3.5"
                   >
-                    <div className="w-[60px] h-[60px] bg-[#f5f3f0] rounded-[10px] grid place-items-center text-[30px] flex-shrink-0">
+                    <div className="w-[60px] h-[60px] bg-warm-border-light rounded-[10px] grid place-items-center text-[30px] flex-shrink-0">
                       {item.emoji}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -111,7 +111,7 @@ function CartContent() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQty(item.id, -1)}
-                        className="w-9 h-9 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                        className="w-9 h-9 rounded-md border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
                         aria-label="Decrease quantity"
                       >
                         −
@@ -119,7 +119,7 @@ function CartContent() {
                     <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[24px] text-center" />
                       <button
                         onClick={() => updateQty(item.id, 1)}
-                        className="w-9 h-9 rounded-md border border-[#e7e5e4] bg-[#faf8f5] flex items-center justify-center text-sm font-semibold hover:border-[#ffe302] hover:text-[#1c1917] transition-colors"
+                        className="w-9 h-9 rounded-md border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
                         aria-label="Increase quantity"
                       >
                         +
@@ -133,7 +133,7 @@ function CartContent() {
               </div>
 
               {/* Summary */}
-              <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-[18px] mb-5">
+              <div className="bg-white border border-warm-border rounded-[14px] p-[18px] mb-5">
                 <div className="flex justify-between mb-2.5 text-sm text-gray-500">
                   <span>Subtotal</span>
                   <span>{formatBdt(subtotal)}</span>
@@ -143,12 +143,12 @@ function CartContent() {
                   <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between mb-2.5 text-sm text-[#1c1917]">
+                  <div className="flex justify-between mb-2.5 text-sm text-warm-fg">
                     <span>Discount (FREE500)</span>
                     <span>−{formatBdt(discount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-3 border-t border-[#f5f5f4] text-lg font-extrabold text-[#1c1917]">
+                <div className="flex justify-between pt-3 border-t border-warm-border-light text-lg font-extrabold text-warm-fg">
                   <span>Total</span>
                   <span>{formatBdt(total)}</span>
                 </div>
@@ -156,7 +156,7 @@ function CartContent() {
               </div>
 
               {/* Checkout CTA */}
-              <div className="bg-[#1c1917] text-white rounded-[14px] p-[18px] flex items-center gap-3.5 mb-5 shadow-sm">
+              <div className="bg-warm-fg text-white rounded-[14px] p-[18px] flex items-center gap-3.5 mb-5 shadow-sm">
                 <div className="flex-1">
                   <p className="text-[11px] text-white/70 uppercase tracking-widest font-semibold mb-0.5">
                     {totalItems} items
@@ -165,7 +165,7 @@ function CartContent() {
                 </div>
                 <Button
                   onClick={() => router.push('/checkout')}
-                  className="flex-0 w-[140px] bg-white text-[#1c1917] hover:bg-gray-100"
+                  className="flex-0 w-[140px] bg-white text-warm-fg hover:bg-gray-100"
                   data-testid="cart-checkout-btn"
                 >
                   Checkout →
@@ -175,7 +175,7 @@ function CartContent() {
               <div className="text-center mb-4">
                 <button
                   onClick={() => router.push('/category')}
-                  className="text-sm text-[#78716c] hover:text-[#1c1917] font-medium underline underline-offset-2"
+                  className="text-sm text-warm-muted hover:text-warm-fg font-medium underline underline-offset-2"
                 >
                   ← Continue Shopping
                 </button>

@@ -20,7 +20,7 @@ export function BottomNavCartPill() {
         aria-hidden="true"
       >
         <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-        <div className="w-px h-4 bg-[#e7e5e4]" />
+        <div className="w-px h-4 bg-warm-border-light" />
         <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
       </div>
     );
@@ -42,11 +42,11 @@ export function BottomNavCartPill() {
           press-feedback"
         aria-label="View cart summary"
       >
-        <span className="text-sm font-bold text-[#1c1917]">
+        <span className="text-sm font-bold text-warm-fg">
           {totalItems} {totalItems === 1 ? 'item' : 'items'}
         </span>
-        <span className="w-px h-4 bg-[#e7e5e4]" />
-        <span className="text-sm font-extrabold text-[#1c1917]">{formatBdt(total)}</span>
+        <span className="w-px h-4 bg-warm-border-light" />
+        <span className="text-sm font-extrabold text-warm-fg">{formatBdt(total)}</span>
       </button>
       <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} />
     </>

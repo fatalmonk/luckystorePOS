@@ -12,18 +12,18 @@ export function DeliveryProgress() {
   const unlocked = safeSubtotal >= FREE_DELIVERY_THRESHOLD;
 
   return (
-    <div className="bg-white rounded-xl p-4 border border-[#e7e5e4] shadow-sm">
+    <div className="bg-white rounded-xl p-4 border border-warm-border shadow-sm">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-[#1c1917]">
+        <h3 className="text-sm font-bold text-warm-fg">
           {unlocked ? '🎉 Free Delivery Unlocked!' : `Add ৳${remaining.toFixed(0)} more for free delivery`}
         </h3>
-        <span className="text-xs font-bold text-[#78716c]">
+        <span className="text-xs font-bold text-warm-muted">
           {unlocked ? 'Free' : `${Math.round(progress)}%`}
         </span>
       </div>
-      <div className="w-full bg-[#f5f5f4] rounded-full h-2">
+      <div className="w-full bg-warm-border-light rounded-full h-2">
         <div
-          className="bg-[#ffe302] h-2 rounded-full transition-all duration-500 ease-out"
+          className="bg-warm-accent h-2 rounded-full transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>

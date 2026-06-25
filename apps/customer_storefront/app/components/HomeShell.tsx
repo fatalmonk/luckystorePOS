@@ -40,37 +40,56 @@ export function HomeShell({ products, categories }: HomeShellProps) {
           <PromoGrid />
           <HomeSectionsClient sections={sections} />
 
-          {/* Trust reassurance */}
-          <div className="grid grid-cols-2 gap-3 pt-4">
-            <div className="bg-[#fafaf9] rounded-[18px] p-4 border border-[#e7e5e4]/50 shadow-sm flex items-center gap-3 hover:shadow-md transition-all duration-300">
-              <span className="inline-flex" aria-hidden="true"><TruckIcon size={24} className="text-[#1c1917]" /></span>
-              <div>
-                <p className="text-xs font-bold text-[#1c1917]">Free Delivery</p>
-                <p className="text-[10px] text-[#78716c]">On orders ৳500+</p>
+          {/* Bento Trust Section (Service Promises) */}
+          <section className="space-y-6 pt-4">
+            <h2 className="text-xl font-extrabold tracking-tight text-charcoal">Why Dhaka Trusts Lucky Store</h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Card 1 */}
+              <div className="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow duration-300">
+                <div className="w-12 h-12 rounded-full bg-warm-accent-muted flex items-center justify-center shrink-0 text-warm-accent-dark">
+                  <TruckIcon size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-charcoal">Free Same-Day Delivery</h3>
+                  <p className="text-xs text-warm-grey leading-relaxed">On orders ৳500+. Dispatched immediately from our hub.</p>
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div className="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow duration-300">
+                <div className="w-12 h-12 rounded-full bg-warm-accent-muted flex items-center justify-center shrink-0 text-warm-accent-dark">
+                  <CashIcon size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-charcoal">Cash on Delivery</h3>
+                  <p className="text-xs text-warm-grey leading-relaxed">No digital payments required. Inspect goods before paying.</p>
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow duration-300">
+                <div className="w-12 h-12 rounded-full bg-warm-accent-muted flex items-center justify-center shrink-0 text-warm-accent-dark">
+                  <ReturnIcon size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-charcoal">Fresh Guarantee</h3>
+                  <p className="text-xs text-warm-grey leading-relaxed">7-day hassle-free return. No questions asked return policy.</p>
+                </div>
+              </div>
+
+              {/* Card 4 */}
+              <div className="bg-white rounded-[24px] p-6 border border-warm-border/60 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow duration-300">
+                <div className="w-12 h-12 rounded-full bg-warm-accent-muted flex items-center justify-center shrink-0 text-warm-accent-dark">
+                  <LockIcon size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-charcoal">Since 1947</h3>
+                  <p className="text-xs text-warm-grey leading-relaxed">Serving families across generations with absolute trust.</p>
+                </div>
               </div>
             </div>
-            <div className="bg-[#fafaf9] rounded-[18px] p-4 border border-[#e7e5e4]/50 shadow-sm flex items-center gap-3 hover:shadow-md transition-all duration-300">
-              <span className="inline-flex" aria-hidden="true"><CashIcon size={24} className="text-[#1c1917]" /></span>
-              <div>
-                <p className="text-xs font-bold text-[#1c1917]">Cash on Delivery</p>
-                <p className="text-[10px] text-[#78716c]">Pay when you receive</p>
-              </div>
-            </div>
-            <div className="bg-[#fafaf9] rounded-[18px] p-4 border border-[#e7e5e4]/50 shadow-sm flex items-center gap-3 hover:shadow-md transition-all duration-300">
-              <span className="inline-flex" aria-hidden="true"><ReturnIcon size={24} className="text-[#1c1917]" /></span>
-              <div>
-                <p className="text-xs font-bold text-[#1c1917]">Easy Returns</p>
-                <p className="text-[10px] text-[#78716c]">7-day return policy</p>
-              </div>
-            </div>
-            <div className="bg-[#fafaf9] rounded-[18px] p-4 border border-[#e7e5e4]/50 shadow-sm flex items-center gap-3 hover:shadow-md transition-all duration-300">
-              <span className="inline-flex" aria-hidden="true"><LockIcon size={24} className="text-[#1c1917]" /></span>
-              <div>
-                <p className="text-xs font-bold text-[#1c1917]">100% Secure</p>
-                <p className="text-[10px] text-[#78716c]">Protected payments</p>
-              </div>
-            </div>
-          </div>
+          </section>
         </div>
       </main>
       <BottomNav />
