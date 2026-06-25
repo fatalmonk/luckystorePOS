@@ -11,6 +11,7 @@ interface PromoItem {
   ctaHref: string;
   bgColor?: string;
   gradient?: string;
+  bgImage?: string;
 }
 
 const defaultPromos: PromoItem[] = [
@@ -21,8 +22,7 @@ const defaultPromos: PromoItem[] = [
     subtitle: 'Up to 50% off essentials',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgColor: '#1e293b',
-    gradient: 'linear-gradient(135deg, #E8B84B 0%, #D4941A 40%, #1e293b 100%)',
+    bgImage: '/images/promo_savings_banner.png',
   },
   {
     id: 'fresh-arrivals',
@@ -30,7 +30,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Fresh Arrivals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=new',
-    gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    bgImage: '/images/promo_fresh_banner.png',
   },
   {
     id: 'daily-deals',
@@ -38,7 +38,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Daily Deals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    gradient: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+    bgImage: '/images/promo_deals_banner.png',
   },
 ];
 
@@ -48,20 +48,23 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
 
   if (!largePromo) return null;
 
-  const largePromoBgStyle = largePromo.gradient
+  const largePromoBgStyle = largePromo.bgImage
+    ? { backgroundImage: `url(${largePromo.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : largePromo.gradient
     ? { background: largePromo.gradient }
     : largePromo.bgColor
     ? { background: `linear-gradient(to bottom right, ${largePromo.bgColor}, ${largePromo.bgColor})` }
     : { background: 'linear-gradient(to bottom right, #ffe302, #ffec50)' };
 
   return (
-    <section className="mb-8" aria-label="Promotions">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide scroll-edge-mask px-4 pb-1">
+    <section aria-label="Promotions">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide scroll-edge-mask pb-1">
         <Link
           href={largePromo.ctaHref}
-          className="relative flex-shrink-0 snap-start w-[85vw] max-w-[360px] md:w-auto md:max-w-none md:col-span-5 h-48 md:h-56 flex flex-col justify-end overflow-hidden rounded-[18px] p-5 group shadow-sm hover:shadow-md transition-shadow"
+          className="relative flex-shrink-0 snap-start w-[85vw] max-w-[360px] md:w-auto md:max-w-none md:col-span-5 h-48 md:h-56 flex flex-col justify-end overflow-hidden rounded-[18px] p-5 group shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-150"
         >
           <div className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105" style={largePromoBgStyle} />
+          {largePromo.bgImage && <div className="absolute inset-0 bg-black/25 z-10" />}
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/10 blur-xl z-10" />
           <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-yellow-400/20 blur-xl z-10" />
           
@@ -80,7 +83,9 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
         <div className="md:col-span-7 flex flex-col gap-4">
           {smallPromos.map((promo) => {
             const isFresh = promo.id === 'fresh-arrivals';
-            const bgStyle = promo.gradient
+            const bgStyle = promo.bgImage
+              ? { backgroundImage: `url(${promo.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+              : promo.gradient
               ? { background: promo.gradient }
               : promo.bgColor
               ? { backgroundColor: promo.bgColor }
@@ -90,12 +95,13 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
               <Link
                 key={promo.id}
                 href={promo.ctaHref}
-                className="relative flex-shrink-0 snap-start w-[85vw] max-w-[360px] md:w-auto md:max-w-none flex flex-col justify-end overflow-hidden rounded-[18px] p-4 group shadow-sm hover:shadow-md transition-shadow min-h-[110px]"
+                className="relative flex-shrink-0 snap-start w-[85vw] max-w-[360px] md:w-auto md:max-w-none flex flex-col justify-end overflow-hidden rounded-[18px] p-4 group shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-150 min-h-[110px]"
               >
                 <div 
                   className="absolute inset-0 transition-transform duration-500 group-hover:scale-105 z-0" 
                   style={bgStyle} 
                 />
+                {promo.bgImage && <div className="absolute inset-0 bg-black/25 z-10" />}
                 
                 {isFresh ? (
                   <svg className="absolute -bottom-3 -right-3 w-20 h-20 text-orange-900/10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="currentColor" viewBox="0 0 24 24">
@@ -108,8 +114,8 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
                 )}
                 
                 <div className="relative z-20">
-                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1">{promo.title}</h3>
-                  <span className="text-xs md:text-sm font-bold text-gray-800 underline hover:no-underline transition-colors">{promo.ctaText} →</span>
+                  <h3 className={`text-base md:text-lg font-bold mb-1 ${promo.bgImage ? 'text-white' : 'text-gray-900'}`}>{promo.title}</h3>
+                  <span className={`text-xs md:text-sm font-bold underline hover:no-underline transition-colors ${promo.bgImage ? 'text-white' : 'text-gray-800'}`}>{promo.ctaText} →</span>
                 </div>
               </Link>
             );

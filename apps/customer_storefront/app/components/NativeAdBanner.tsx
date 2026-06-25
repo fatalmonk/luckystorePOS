@@ -14,7 +14,7 @@ export function NativeAdBanner({
   subtitle,
   ctaText = 'Shop now',
   ctaHref = '#',
-  bgImage,
+  bgImage = '/images/native_ad_banner.png',
   bgColor = '#1c1917',
 }: NativeAdBannerProps) {
   return (

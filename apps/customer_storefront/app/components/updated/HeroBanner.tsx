@@ -19,7 +19,7 @@ export function HeroBanner({
 
   return (
     <section
-      className={`mx-4 my-2 rounded-xl overflow-hidden relative h-40 flex flex-col justify-center p-5 z-10 ${
+      className={`w-full mb-6 rounded-[18px] overflow-hidden relative h-40 flex flex-col justify-center p-5 z-10 ${
         hasBgImage ? 'bg-cover bg-center' : `bg-gradient-to-r ${bgGradient}`
       }`}
       style={hasBgImage ? { backgroundImage: `url(${bgImage})` } : {}}
@@ -39,7 +39,7 @@ export function HeroBanner({
         <p className="text-sm opacity-90 mb-3">{subtitle}</p>
         <button 
           onClick={() => window.location.href = '/category?theme=deals'}
-          className="inline-flex items-center gap-2 rounded-full bg-[#1c1917] px-4 py-2 text-sm font-bold text-[#ffe302] hover:bg-[#292524] transition-colors"
+          className="inline-flex items-center gap-2 rounded-full bg-[#1c1917] px-4 py-2 text-sm font-bold text-[#ffe302] hover:bg-[#292524] active:scale-[0.97] active:translate-y-[0.5px] transition-all duration-100"
         >
           Shop Now
           <span aria-hidden="true" className="text-base">→</span>
