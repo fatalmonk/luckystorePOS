@@ -143,7 +143,7 @@ export function CategorySwimlanes({
               </div>
               <a
                 href={`/category/${grid.slug}`}
-                className="text-sm font-semibold text-[#78716c] hover:text-[#1c1917] transition-colors"
+                className="text-sm font-semibold text-warm-muted hover:text-warm-fg transition-colors"
               >
                 See all {grid.count}
               </a>
@@ -175,7 +175,7 @@ export function CategorySwimlanes({
       <section className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold tracking-tight">All Products</h2>
-          <span className="text-sm text-[#78716c]">{filtered.length} items</span>
+          <span className="text-sm text-warm-muted">{filtered.length} items</span>
         </div>
         <ProductGridClient products={filtered} />
       </section>

@@ -26,9 +26,9 @@ export function Button({
   `;
 
   const variantStyles = {
-    primary: 'bg-[#ffe302] text-[#1c1917] hover:bg-[#ffec50]',
-    secondary: 'bg-[#faf8f5] text-[#1c1917] border border-[#e7e5e4] hover:bg-[#f5f5f4]',
-    ghost: 'bg-transparent text-[#1c1917] hover:bg-[#faf8f5]',
+    primary: 'bg-warm-accent text-warm-fg hover:bg-warm-accent-hover',
+    secondary: 'bg-warm-bg text-warm-fg border border-warm-border hover:bg-warm-border-light',
+    ghost: 'bg-transparent text-warm-fg hover:bg-warm-bg',
   };
 
   const sizeStyles = {

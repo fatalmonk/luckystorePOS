@@ -14,7 +14,7 @@ export function NativeAdBanner({
   subtitle,
   ctaText = 'Shop now',
   ctaHref = '#',
-  bgImage = '/images/native_ad_banner.png',
+  bgImage = 'https://images.luckystore1947.com/banners/native_ad_banner.webp',
   bgColor = '#1c1917',
 }: NativeAdBannerProps) {
   return (
@@ -41,7 +41,7 @@ export function NativeAdBanner({
           {subtitle && (
             <p className="text-sm sm:text-base text-white/90 mb-3">{subtitle}</p>
           )}
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-[#1c1917] w-fit hover:bg-gray-100 transition-colors">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-warm-fg w-fit hover:bg-gray-100 transition-colors">
             {ctaText}
             <span>→</span>
           </span>

@@ -56,7 +56,7 @@ function ProductContent({ product }: ProductClientProps) {
         <div className="max-w-3xl mx-auto bg-white min-h-full">
           {/* Hero Section */}
           <div className="px-4 pt-6 pb-5 sm:px-6 lg:px-8">
-            <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-[#f5f3f0] overflow-hidden mb-5">
+            <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-border-light overflow-hidden mb-5">
               <div className="absolute inset-0 grid place-items-center text-[100px]">{product.emoji}</div>
               {product.image_url && (
                 <Image
@@ -75,10 +75,10 @@ function ProductContent({ product }: ProductClientProps) {
 
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1c1917] mb-1">
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-warm-fg mb-1">
                   {product.name}
                 </h1>
-                <p className="text-sm text-[#78716c]">{product.unit}</p>
+                <p className="text-sm text-warm-muted">{product.unit}</p>
               </div>
               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${stockStatus.bg} ${stockStatus.color}`}>
                 {stockStatus.text}
@@ -86,8 +86,8 @@ function ProductContent({ product }: ProductClientProps) {
             </div>
 
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold tracking-tight text-[#1c1917]">৳{taka}</span>
-              <span className="text-lg font-extrabold text-[#1c1917]">{paisa}</span>
+              <span className="text-4xl font-extrabold tracking-tight text-warm-fg">৳{taka}</span>
+              <span className="text-lg font-extrabold text-warm-fg">{paisa}</span>
             </div>
 
             {/* Action Area — inline below price, no fixed bar collision */}
@@ -96,7 +96,7 @@ function ProductContent({ product }: ProductClientProps) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleUpdateQty(-1)}
-                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -105,12 +105,12 @@ function ProductContent({ product }: ProductClientProps) {
                   <button
                     onClick={() => handleUpdateQty(1)}
                     disabled={qtyInCart >= product.stock}
-                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-[#1c1917] flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
+                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
                     aria-label="Increase quantity"
                   >
                     +
                   </button>
-                  <span className="ml-2 text-sm font-semibold text-[#78716c]">
+                  <span className="ml-2 text-sm font-semibold text-warm-muted">
                     {formatBdt(product.price * qtyInCart)} total
                   </span>
                 </div>
@@ -121,7 +121,7 @@ function ProductContent({ product }: ProductClientProps) {
                   </div>
                   <Link
                     href={`/category/${product.category}`}
-                    className="h-12 px-5 rounded-full bg-[#f5f5f4] text-[#1c1917] text-sm font-bold hover:bg-[#e7e5e4] active:scale-[0.98] transition-all flex items-center justify-center"
+                    className="h-12 px-5 rounded-full bg-warm-border-light text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
                   >
                     See Similar Items →
                   </Link>
@@ -138,17 +138,17 @@ function ProductContent({ product }: ProductClientProps) {
           </div>
 
           {/* Description */}
-          <div className="border-t border-[#f5f5f4] px-4 py-5 sm:px-6 lg:px-8">
+          <div className="border-t border-warm-border-light px-4 py-5 sm:px-6 lg:px-8">
             <h2 className="text-[15px] font-bold mb-2">Description</h2>
-            <p className="text-sm text-[#78716c] leading-relaxed">
+            <p className="text-sm text-warm-muted leading-relaxed">
               {product.description || `Fresh ${product.name} delivered to your door.`}
             </p>
           </div>
 
           {product.nutrition && (
-            <div className="border-t border-[#f5f5f4] px-4 py-5 sm:px-6 lg:px-8">
+            <div className="border-t border-warm-border-light px-4 py-5 sm:px-6 lg:px-8">
               <h2 className="text-[15px] font-bold mb-2">Nutrition per 100ml</h2>
-              <p className="text-sm text-[#78716c] leading-relaxed">{product.nutrition}</p>
+              <p className="text-sm text-warm-muted leading-relaxed">{product.nutrition}</p>
             </div>
           )}
         </div>

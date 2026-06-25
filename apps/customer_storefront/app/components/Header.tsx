@@ -1,71 +1,69 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { HeaderCartButton } from './HeaderCartButton';
 import { HeaderSearch } from './HeaderSearch';
+import { Logo } from './ui/Logo';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 flex-shrink-0">
-      {/* Top strip: logo + search + actions on warm neutral to reduce yellow fatigue */}
-      <div className="h-[64px] bg-[#fffdf5] border-b border-[#e7e5e4] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
+    <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-3 pb-1 bg-warm-bg/95 backdrop-blur-md">
+      <div className="max-w-5xl mx-auto h-[64px] bg-white border border-warm-border rounded-full flex items-center px-4 sm:px-6 justify-between gap-2 sm:gap-4 shadow-sm hover:shadow-md transition-all duration-300">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 min-h-[44px] flex-shrink-0">
-          <Image
-            src="/logo-mark.svg"
-            alt="Lucky Store"
-            width={34}
-            height={34}
-            className="rounded-full bg-[#ffe302]"
-            priority
-          />
-          <span className="font-extrabold text-[15px] text-[#1c1917] hidden sm:block tracking-tight">
-            Lucky Store
-          </span>
-        </Link>
+        <Logo />
 
         {/* Search */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 max-w-md relative hidden md:block">
           <HeaderSearch />
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Mobile search button */}
+          <Link
+            href="/search"
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-full hover:bg-warm-bg text-warm-fg transition-colors"
+            aria-label="Search page"
+          >
+            <span aria-hidden="true" className="text-lg">🔍</span>
+          </Link>
+
           <button
             type="button"
-            className="flex items-center gap-2 min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-[#f5f5f4] transition-colors"
+            className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
             aria-label="Sign In"
           >
-            <span aria-hidden="true" className="text-lg">👤</span>
-            <span className="hidden lg:block text-sm font-medium">Sign In</span>
+            <span aria-hidden="true" className="text-base">👤</span>
+            <span className="hidden sm:block text-xs font-bold">Sign In</span>
           </button>
           <HeaderCartButton />
         </div>
       </div>
 
-      {/* Sub-nav strip: yellow accent for thematic pills only */}
-      <nav className="bg-[#ffe302] flex flex-nowrap items-center overflow-x-auto px-3 sm:px-4 py-2 md:py-0 h-[44px] gap-2 z-40 relative scrollbar-hide">
-        <Link
-          href="/category?theme=deals"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[#1c1917] text-[#ffe302] text-xs font-bold hover:bg-[#292524] transition-colors"
-        >
-          Deals
-        </Link>
-        <Link
-          href="/category?theme=bestsellers"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-[#1c1917] text-xs font-bold hover:bg-white transition-colors"
-        >
-          Best Sellers
-        </Link>
-        <Link
-          href="/category?theme=new"
-          className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white/70 text-[#1c1917] text-xs font-bold hover:bg-white transition-colors"
-        >
-          New
-        </Link>
-        <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs font-semibold text-[#1c1917]/80 whitespace-nowrap flex-shrink-0">
-          Delivery in as soon as 1 hour
-        </span>
-      </nav>
+      {/* Category Pills Strip - Floating below the main nav bar */}
+      <div className="max-w-5xl mx-auto mt-2 px-2">
+        <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5">
+          <Link
+            href="/category?theme=deals"
+            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
+          >
+            Deals
+          </Link>
+          <Link
+            href="/category?theme=bestsellers"
+            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white text-warm-fg border border-warm-border text-xs font-bold hover:bg-stone-50 transition-colors"
+          >
+            Best Sellers
+          </Link>
+          <Link
+            href="/category?theme=new"
+            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white text-warm-fg border border-warm-border text-xs font-bold hover:bg-stone-50 transition-colors"
+          >
+            New
+          </Link>
+          <span className="hidden sm:inline-flex items-center text-[10px] font-semibold text-warm-muted ml-auto whitespace-nowrap">
+            Delivery in as soon as 1 hour
+          </span>
+        </nav>
+      </div>
     </header>
   );
 }

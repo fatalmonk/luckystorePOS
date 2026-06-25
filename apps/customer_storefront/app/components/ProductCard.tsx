@@ -84,11 +84,11 @@ function CategoryPlaceholder({ category }: { category: Category }) {
     case 'Dairy':
     case 'Dairy & Eggs':
       return (
-        <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 18h12M6 22h12" />
-          <rect x="6" y="6" width="12" height="16" rx="2" />
-          <path d="M6 6l6-4 6 4" />
-          <circle cx="12" cy="13" r="2" />
+        <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <rect x="6" y="7" width="12" height="15" rx="2" fill="#FFFFFF" />
+          <path d="M6 7L12 3L18 7" fill="var(--color-paper)" />
+          <circle cx="12" cy="14" r="3" fill="var(--color-accent)" opacity="0.3" />
+          <path d="M9 13.5C9.5 13 11 13 12 14.5C13 16 14.5 14 15 13.5" stroke="var(--color-accent)" strokeWidth="1.5" />
         </svg>
       );
     case 'Personal Care':
@@ -273,7 +273,7 @@ export function ProductCard({
             <div className="flex items-center justify-between gap-1.5 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-8.5 h-8.5 rounded-full border-2 border-[#ffe302] bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-[#ffe302] active:scale-95 transition-all"
+                className="w-8.5 h-8.5 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
                 aria-label="Remove one"
               >
                 −
@@ -281,7 +281,7 @@ export function ProductCard({
               <QtyNumber qty={qtyInCart} className="font-black text-sm min-w-[20px] text-center text-stone-900 font-mono" />
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-8.5 h-8.5 rounded-full border-2 border-[#ffe302] bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-[#ffe302] active:scale-95 transition-all"
+                className="w-8.5 h-8.5 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
                 aria-label="Add one"
               >
                 +
@@ -296,7 +296,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-8.5 rounded-full border-2 border-[#ffe302] text-stone-900 text-xs font-black hover:bg-[#ffe302] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-stone-200 disabled:text-stone-300 disabled:hover:bg-white"
+              className="w-full h-8.5 rounded-full border-2 border-warm-accent text-stone-900 text-xs font-black hover:bg-warm-accent active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-stone-200 disabled:text-stone-300 disabled:hover:bg-white"
             >
               Add to Cart
             </button>

@@ -52,9 +52,9 @@ export function SkeletonCarousel({ count = 4 }: { count?: number }) {
 export function SkeletonHeader() {
   return (
     <header className="sticky top-0 z-50 flex-shrink-0">
-      <div className="h-[64px] bg-[#fffdf5] border-b border-[#e7e5e4] flex items-center px-4 gap-3">
+      <div className="h-[64px] bg-warm-bg border-b border-warm-border flex items-center px-4 gap-3">
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-9 h-9 rounded-full bg-[#ffe302]/50 animate-pulse" />
+          <div className="w-9 h-9 rounded-full bg-warm-accent/50 animate-pulse" />
           <div className="w-28 h-5 bg-gray-200 rounded animate-pulse hidden sm:block" />
         </div>
         <div className="flex-1 max-w-xl">
@@ -65,7 +65,7 @@ export function SkeletonHeader() {
           <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
         </div>
       </div>
-      <div className="h-[44px] bg-[#ffe302] flex items-center px-4 gap-2">
+      <div className="h-[44px] bg-warm-accent flex items-center px-4 gap-2">
         <div className="w-16 h-6 rounded-full bg-white/50 animate-pulse" />
         <div className="w-20 h-6 rounded-full bg-white/50 animate-pulse" />
         <div className="w-14 h-6 rounded-full bg-white/50 animate-pulse" />

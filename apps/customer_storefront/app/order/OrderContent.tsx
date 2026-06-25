@@ -69,7 +69,7 @@ export default function OrderContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full items-center justify-center p-6 bg-[#faf8f5]">
+      <div className="flex flex-col h-full items-center justify-center p-6 bg-warm-bg">
         <div className="w-16 h-16 rounded-full bg-gray-200 animate-pulse mb-4" />
         <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2" />
         <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
@@ -79,8 +79,8 @@ export default function OrderContent() {
 
   if (!order) {
     return (
-      <div className="flex flex-col h-full items-center justify-center p-6 bg-[#faf8f5]">
-        <p className="text-[#78716c] mb-4">We couldn&apos;t find your order</p>
+      <div className="flex flex-col h-full items-center justify-center p-6 bg-warm-bg">
+        <p className="text-warm-muted mb-4">We couldn&apos;t find your order</p>
         <Link href="/">
           <Button>Back to Home</Button>
         </Link>
@@ -89,41 +89,41 @@ export default function OrderContent() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#faf8f5]">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden bg-warm-bg">
       <div className="p-[18px] pt-9">
         {/* Success Header */}
         <div className="text-center mb-8">
           <div className="w-[72px] h-[72px] bg-[rgba(45,106,79,0.08)] rounded-full grid place-items-center mx-auto mb-4">
-            <span className="text-[32px] text-[#2d6a4f]">✓</span>
+            <span className="text-[32px] text-warm-success">✓</span>
           </div>
           <h1 className="text-[22px] font-extrabold tracking-tight mb-1.5" data-testid="order-confirmed-heading">Order Placed!</h1>
-          <p className="text-sm text-[#78716c] mb-1">Order number</p>
-          <p className="font-mono text-lg font-extrabold text-[#1c1917] bg-[#ffe302] px-3 py-1 rounded-full inline-block">{order.orderNumber}</p>
+          <p className="text-sm text-warm-muted mb-1">Order number</p>
+          <p className="font-mono text-lg font-extrabold text-warm-fg bg-warm-accent px-3 py-1 rounded-full inline-block">{order.orderNumber}</p>
         </div>
 
         {/* Summary */}
-        <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-5">
+        <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
           <div className="flex justify-between mb-2 text-sm">
-            <span className="text-[#78716c]">Items</span>
+            <span className="text-warm-muted">Items</span>
             <span>{order.items} items</span>
           </div>
           <div className="flex justify-between mb-2 text-sm">
-            <span className="text-[#78716c]">Total</span>
+            <span className="text-warm-muted">Total</span>
             <span className="font-semibold">{formatBdt(order.total)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#78716c]">Payment</span>
-            <span className="text-[#2d6a4f] font-bold">Cash on Delivery</span>
+            <span className="text-warm-muted">Payment</span>
+            <span className="text-warm-success font-bold">Cash on Delivery</span>
           </div>
         </div>
 
         {/* Cash Preparation */}
-        <div className="bg-white border border-[#e7e5e4] rounded-[14px] p-4 mb-6">
+        <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-6">
           <h3 className="text-sm font-bold mb-2">💵 Have Cash Ready</h3>
-          <p className="text-sm text-[#78716c] mb-2">
-            Have <strong className="text-[#1c1917]">{formatBdt(order.total)}</strong> ready in cash for the rider.
+          <p className="text-sm text-warm-muted mb-2">
+            Have <strong className="text-warm-fg">{formatBdt(order.total)}</strong> ready in cash for the rider.
           </p>
-          <p className="text-xs text-[#78716c]">
+          <p className="text-xs text-warm-muted">
             Having exact change speeds up delivery.
           </p>
         </div>
@@ -131,30 +131,30 @@ export default function OrderContent() {
         {/* Timeline */}
         <h3 className="text-sm font-bold mb-4">Order Status</h3>
         <div className="relative pl-7 mb-8">
-          <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-[#f5f5f4]" />
+          <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-warm-border-light" />
           <div className="space-y-6">
             {TIMELINE_STEPS.map((step) => (
               <div key={step.id} className="relative">
                 <div
                   className={`absolute -left-[19px] w-[18px] h-[18px] rounded-full border-2 transition-colors ${
                     step.state === 'done'
-                      ? 'bg-[#2d6a4f] border-[#2d6a4f]'
+                      ? 'bg-warm-success border-warm-success'
                       : step.state === 'active'
-                      ? 'bg-white border-[#ffe302]'
-                      : 'bg-[#f5f5f4] border-[#e7e5e4]'
+                      ? 'bg-white border-warm-accent'
+                      : 'bg-warm-border-light border-warm-border'
                   }`}
                 >
                   {step.state === 'done' && (
                     <span className="block text-center text-[10px] text-white leading-[16px]">✓</span>
                   )}
                   {step.state === 'active' && (
-                    <span className="block text-center text-[10px] text-[#1c1917] leading-[16px]">●</span>
+                    <span className="block text-center text-[10px] text-warm-fg leading-[16px]">●</span>
                   )}
                 </div>
-                <p className={`font-bold text-sm ${step.state === 'upcoming' ? 'text-[#78716c]' : 'text-[#1c1917]'}`}>
+                <p className={`font-bold text-sm ${step.state === 'upcoming' ? 'text-warm-muted' : 'text-warm-fg'}`}>
                   {step.label}
                 </p>
-                <p className="text-[13px] text-[#78716c]">
+                <p className="text-[13px] text-warm-muted">
                   {step.time || `Pay ${formatBdt(order.total)} to rider`}
                 </p>
               </div>

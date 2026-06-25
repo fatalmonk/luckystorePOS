@@ -31,12 +31,12 @@ export function HomeSectionsClient({ sections }: HomeSectionsClientProps) {
     <>
       {sections.map(({ title, href, products }) => (
         <section key={title}>
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e7e5e4]/60 shadow-sm">
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-warm-border/60 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">{title}</h2>
               <Link
                 href={href}
-                className="text-xs font-bold text-[#78716c] hover:text-[#1c1917] transition-colors"
+                className="text-xs font-bold text-warm-muted hover:text-warm-fg transition-colors"
               >
                 View All
               </Link>

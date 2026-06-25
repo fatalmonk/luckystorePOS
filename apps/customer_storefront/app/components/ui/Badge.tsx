@@ -8,10 +8,10 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'success', className = '' }: BadgeProps) {
   const variantStyles = {
-    success: 'bg-[rgba(45,106,79,0.08)] text-[#2d6a4f]',
+    success: 'bg-[rgba(45,106,79,0.08)] text-warm-success',
     warning: 'bg-[rgba(180,83,9,0.08)] text-[#b45309]',
     danger: 'bg-[rgba(195,49,47,0.07)] text-[#c3312f]',
-    accent: 'bg-[#ffe302] text-[#1c1917]',
+    accent: 'bg-warm-accent text-warm-fg',
   };
 
   return (
