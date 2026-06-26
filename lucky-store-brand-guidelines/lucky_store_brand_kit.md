@@ -4,11 +4,13 @@ This document presents the definitive visual identity system for **Lucky Store 1
 
 The design system is purely **Sans-Serif**, conveying approachability, clarity, and modern trust as a friendly neighborhood institution. All Serif elements are banned.
 
+> **PRIMARY LOGO:** The bold, stacked, all-caps wordmark `LUCKY STORE` — Deep Night `#0B0B0D` letterforms with the `O` in STORE replaced by a solid Saffron `#f0c444` circle dot — and the year `1947` set in Geist Mono below. This is the one and only approved primary logo. All other variations are secondary or inverse-only.
+
 ---
 
 ## Brand Strategy & Design System
 
-*   **Logo Style:** A bold, geometric sans-serif wordmark "LUCKY STORE" paired with a solid Brand Yellow dot (`#F5C518`) and a small, delicate monospace year "1947" below.
+*   **Primary Logo (Panel 1):** Bold, stacked, all-caps wordmark `LUCKY STORE` in Geist Black (`#0B0B0D`). The `O` in `STORE` is a solid Saffron circle (`#f0c444`). Below the wordmark, the founding year `1947` in Geist Mono Warm Grey (`#6B6B6B`). — **This is the only approved primary logo.**
 *   **Aesthetic Vibe:** Warm-minimalist, clean, tactile, and highly structural.
 *   **Design Anchors:** Double-bezel cards (6px padding) and floating fluid-island navigation.
 
@@ -22,19 +24,19 @@ The design system is purely **Sans-Serif**, conveying approachability, clarity, 
 
 ## Brand Specifications
 
-### 1. Color Palette (Yellow-Locked)
+### 1. Color Palette (Saffron/Deep Night)
 
 | Role | Token | Hex | Usage |
 | :--- | :--- | :--- | :--- |
 | Canvas / Background | `var(--color-paper)` | `#FDFBF7` | Warm bone white — softer than pure white |
 | Primary Surface | `var(--color-surface)` | `#FFFFFF` | Clean, tactile product cards |
-| Text Primary | `var(--color-foreground)` | `#1A1A1A` | Near-black for readability |
+| Text Primary | `var(--color-foreground)` | `#0B0B0D` | Deep Night for readability |
 | Text Secondary | `var(--color-muted)` | `#6B6B6B` | Warm grey for metadata and secondary info |
-| **Brand Yellow** | `var(--color-accent)` | **#F5C518** | **Primary accent — CTAs, badges, highlights, hover states** |
+| **Brand Yellow** | `var(--color-accent)` | **#f0c444** | **Primary accent (Saffron) — CTAs, badges, highlights, hover states** |
 | Yellow Light | `var(--color-accent-muted)` | `#FFF8E1` | Soft yellow background tints, tags, highlights |
 | Yellow Dark | `var(--color-accent-dark)` | `#C79400` | Deep yellow for high-contrast text on yellow tags |
 | Structural Borders | `var(--color-border)` | `#E8E4DC` | Warm grey dividers — never cold `#E5E7EB` |
-| Error / Alert | `var(--color-danger)` | `#DC2626` | Red for out-of-stock and system alerts |
+| Error / Alert | `var(--color-danger)` | `#E34234` | Red for out-of-stock and system alerts |
 | Success | `var(--color-success)` | `#16A34A` | Green for success checkmarks and delivery states |
 
 ### 2. Typography

@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lucky Store 1947 — Social Media Kit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:    #FDFBF7;
+      --surface:  #FFFFFF;
+      --fg:       #0B0B0D;
+      --muted:    #6B6B6B;
+      --dim:      #9C958C;
+      --border:   #E8E4DC;
+      --yellow:   #f0c444;
+      --yellow-d: #e0b434;
+      --yellow-g: rgba(240,196,68,.12);
+      --radius:   16px;
+      --radius-sm:10px;
+      --shadow:   0 4px 16px rgba(11,11,13,.07), 0 1px 3px rgba(11,11,13,.04);
+      --shadow-lg:0 16px 40px rgba(11,11,13,.10), 0 4px 12px rgba(11,11,13,.06);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px;scroll-behavior:smooth}
+    body{
+      background:var(--paper);
+      color:var(--fg);
+      font-family:'Geist',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      min-height:100vh;
+      line-height:1.6;
+    }
+
+    /* ─── NAV ─── */
+    nav{
+      position:sticky;top:0;z-index:100;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 40px;
+      background:rgba(253,251,247,.85);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+    }
+    .logo{
+      font-size:1.1rem;font-weight:800;letter-spacing:-0.03em;
+      display:flex;flex-direction:column;line-height:.88;
+    }
+    .logo .dot{
+      display:inline-block;width:.72em;height:.72em;
+      background:var(--yellow);border-radius:50%;
+      vertical-align:middle;margin:0 .02em;
+    }
+    .nav-meta{font-family:'Geist Mono',monospace;font-size:.65rem;
+      letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 14px;border-radius:999px;
+      background:var(--yellow);color:var(--fg);
+      font-size:.75rem;font-weight:700;letter-spacing:.02em;
+      text-decoration:none;
+    }
+    .pill:hover{background:var(--yellow-d)}
+
+    /* ─── HERO ─── */
+    .hero{
+      max-width:1200px;margin:0 auto;
+      padding:80px 40px 60px;
+      display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+    }
+    @media(max-width:768px){.hero{grid-template-columns:1fr;padding:48px 20px 40px;gap:36px}}
+    .hero-eyebrow{
+      font-family:'Geist Mono',monospace;font-size:.65rem;
+      letter-spacing:.15em;text-transform:uppercase;
+      color:var(--yellow);font-weight:700;
+      background:var(--yellow-g);padding:4px 12px;border-radius:999px;
+      display:inline-block;margin-bottom:20px;
+    }
+    .hero h1{
+      font-size:clamp(2rem,4vw,3.2rem);font-weight:800;
+      letter-spacing:-0.04em;line-height:.95;
+      color:var(--fg);margin-bottom:16px;
+    }
+    .hero p{font-size:1rem;color:var(--muted);max-width:42ch;line-height:1.7}
+    .stat-row{
+      display:flex;gap:32px;margin-top:36px;
+      flex-wrap:wrap;
+    }
+    .stat{display:flex;flex-direction:column;gap:2px}
+    .stat-n{
+      font-size:1.75rem;font-weight:800;letter-spacing:-0.04em;
+      color:var(--fg);
+    }
+    .stat-n span{color:var(--yellow)}
+    .stat-l{font-family:'Geist Mono',monospace;font-size:.65rem;
+      text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+
+    /* logo hero right side */
+    .hero-logo-card{
+      border:1.5px solid var(--yellow);border-radius:20px;padding:6px;
+      background:var(--surface);box-shadow:var(--shadow-lg);
+    }
+    .hero-logo-inner{
+      background:var(--paper);border-radius:14px;
+      padding:40px 48px;
+      display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+    }
+    .hero-wordmark{
+      font-size:clamp(3rem,7vw,5rem);font-weight:800;
+      letter-spacing:-0.04em;line-height:.88;color:var(--fg);
+      display:flex;flex-direction:column;
+    }
+    .hero-wordmark .row{display:inline-flex;align-items:center;gap:0}
+    .hero-wordmark .ydot{
+      display:inline-block;width:.72em;height:.72em;
+      background:var(--yellow);border-radius:50%;
+      margin:0 .02em;flex-shrink:0;
+    }
+    .hero-year{
+      font-family:'Geist Mono',monospace;font-size:.9rem;
+      letter-spacing:.2em;color:var(--muted);margin-top:10px;font-weight:500;
+    }
+
+    /* ─── SECTION WRAPPER ─── */
+    .wrap{max-width:1200px;margin:0 auto;padding:0 40px 100px}
+    @media(max-width:768px){.wrap{padding:0 20px 60px}}
+
+    .section-head{margin-bottom:36px}
+    .kicker{
+      font-family:'Geist Mono',monospace;font-size:.62rem;
+      letter-spacing:.15em;text-transform:uppercase;
+      color:var(--yellow);font-weight:700;display:block;margin-bottom:8px;
+    }
+    .section-head h2{
+      font-size:clamp(1.4rem,2.5vw,2rem);font-weight:700;
+      letter-spacing:-0.03em;color:var(--fg);
+    }
+    .section-head p{color:var(--muted);font-size:.9rem;margin-top:6px;max-width:55ch}
+    .divider{border:none;border-top:1px solid var(--border);margin:64px 0}
+
+    /* ─── GRID ─── */
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    @media(max-width:900px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:580px){.grid-3,.grid-4,.grid-2{grid-template-columns:1fr}}
+
+    /* ─── POST CARD ─── */
+    .post-card{
+      border:1px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;background:var(--surface);
+      transition:transform .25s cubic-bezier(.32,.72,0,1),
+                 box-shadow .25s cubic-bezier(.32,.72,0,1),
+                 border-color .2s;
+    }
+    .post-card:hover{
+      transform:translateY(-4px);
+      box-shadow:var(--shadow-lg);
+      border-color:var(--yellow);
+    }
+    .post-card img{width:100%;height:auto;display:block}
+    .post-meta{padding:14px 16px 16px;border-top:1px solid var(--border)}
+    .post-format{
+      font-family:'Geist Mono',monospace;font-size:.6rem;
+      letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);
+      font-weight:700;margin-bottom:4px;
+    }
+    .post-name{font-size:.9rem;font-weight:600;color:var(--fg)}
+    .post-spec{font-family:'Geist Mono',monospace;font-size:.62rem;
+      color:var(--dim);margin-top:2px}
+
+    /* ─── COLOR SWATCHES ─── */
+    .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:24px}
+    .swatch{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface)}
+    .swatch .chip{height:72px}
+    .swatch .smeta{padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+    .swatch .sname{font-size:.8rem;font-weight:600}
+    .swatch .shex{font-family:'Geist Mono',monospace;font-size:.62rem;color:var(--muted)}
+
+    /* ─── CAPTION CARDS ─── */
+    .caption-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:20px 24px;
+    }
+    .caption-label{
+      font-family:'Geist Mono',monospace;font-size:.6rem;
+      letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);
+      font-weight:700;margin-bottom:10px;display:block;
+    }
+    .caption-card pre{
+      font-family:'Geist Mono',monospace;font-size:.78rem;
+      color:var(--fg);white-space:pre-wrap;line-height:1.6;
+      background:var(--paper);border:1px solid var(--border);
+      border-radius:8px;padding:12px 14px;
+    }
+
+    /* ─── TIMING TABLE ─── */
+    .timing-table{width:100%;border-collapse:collapse;font-size:.85rem}
+    .timing-table th,.timing-table td{
+      padding:10px 14px;text-align:left;
+      border-bottom:1px solid var(--border);
+    }
+    .timing-table th{
+      font-family:'Geist Mono',monospace;font-size:.6rem;
+      letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+      background:var(--paper);font-weight:600;
+    }
+    .timing-table tr:last-child td{border-bottom:none}
+    .timing-table td:first-child{font-weight:600}
+    .badge-ok{
+      display:inline-block;padding:2px 8px;border-radius:999px;
+      background:rgba(22,163,74,.1);color:#16A34A;
+      font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    }
+    .badge-no{
+      display:inline-block;padding:2px 8px;border-radius:999px;
+      background:rgba(227,66,52,.08);color:#E34234;
+      font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    }
+
+    /* ─── FACEBOOK COVER WIDE ─── */
+    .fb-cover-wrap{
+      border:1px solid var(--border);border-radius:var(--radius);
+      padding:6px;background:var(--surface);box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .fb-cover-wrap img{
+      width:100%;height:auto;display:block;border-radius:var(--radius-sm);
+    }
+
+    /* ─── FOOTER ─── */
+    footer{
+      border-top:1px solid var(--border);
+      padding:32px 40px;
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:.8rem;color:var(--muted);flex-wrap:wrap;gap:12px;
+    }
+    footer a{color:var(--yellow);text-decoration:none;border-bottom:1px solid transparent}
+    footer a:hover{border-bottom-color:var(--yellow)}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <span>LUCKY</span>
+    <span>ST<span class="dot"></span>RE</span>
+  </div>
+  <span class="nav-meta">Social Media Kit · v2.1</span>
+  <a class="pill" href="./design-system-preview/index.html">Design System ↗</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <span class="hero-eyebrow">⭐ Brand-Approved Templates</span>
+    <h1>Social Media<br>Kit 2026</h1>
+    <p>7 ready-to-post templates for Instagram, Facebook, and WhatsApp — all Deep Night &amp; Saffron, true to the Lucky Store 1947 brand identity.</p>
+    <div class="stat-row">
+      <div class="stat"><span class="stat-n">7<span>+</span></span><span class="stat-l">Templates</span></div>
+      <div class="stat"><span class="stat-n">3<span>+</span></span><span class="stat-l">Platforms</span></div>
+      <div class="stat"><span class="stat-n"><span>#</span>f0c444</span><span class="stat-l">Saffron</span></div>
+    </div>
+  </div>
+  <div class="hero-logo-card">
+    <div class="hero-logo-inner">
+      <div class="hero-wordmark">
+        <span>LUCKY</span>
+        <span class="row">ST<span class="ydot"></span>RE</span>
+      </div>
+      <div class="hero-year">1947</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- FACEBOOK COVER WIDE -->
+  <div class="section-head">
+    <span class="kicker">Facebook Cover · 820×312px · 16:9</span>
+    <h2>Cover Photo</h2>
+    <p>Logo left, seasonal produce right, warm bone gradient fade between.</p>
+  </div>
+  <div class="fb-cover-wrap">
+    <img src="./assets/social-posts/lucky_store_facebook_cover.png" alt="Lucky Store Facebook Cover">
+  </div>
+
+  <hr class="divider">
+
+  <!-- INSTAGRAM FEED POSTS -->
+  <div class="section-head">
+    <span class="kicker">Instagram Feed · 1080×1350px (4:5) &amp; 1080×1080px (1:1)</span>
+    <h2>Feed Posts</h2>
+    <p>Warm lifestyle photography, clean card panel, yellow CTA pill — all on Warm Bone #FDFBF7.</p>
+  </div>
+  <div class="grid-3">
+    <div class="post-card">
+      <img src="./assets/social-posts/lucky_store_instagram_feed_post.png" alt="Restock Feed Post">
+      <div class="post-meta">
+        <div class="post-format">Feed · 4:5</div>
+        <div class="post-name">Restock / Hero Post</div>
+        <div class="post-spec">1080 × 1350px · Bone BG</div>
+      </div>
+    </div>
+    <div class="post-card">
+      <img src="./assets/social-posts/lucky_store_promo_post_yellow.png" alt="Promo Post">
+      <div class="post-meta">
+        <div class="post-format">Feed · 1:1</div>
+        <div class="post-name">Promotional / Offer</div>
+        <div class="post-spec">1080 × 1080px · Yellow BG</div>
+      </div>
+    </div>
+    <div class="post-card">
+      <img src="./assets/social-posts/lucky_store_testimonial_post.png" alt="Testimonial Post">
+      <div class="post-meta">
+        <div class="post-format">Feed · 1:1</div>
+        <div class="post-name">Testimonial / Social Proof</div>
+        <div class="post-spec">1080 × 1080px · Bone BG</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STORIES + WHATSAPP -->
+  <div class="section-head">
+    <span class="kicker">Stories &amp; Status · 1080×1920px · 9:16</span>
+    <h2>Stories &amp; WhatsApp Status</h2>
+    <p>Full-bleed vertical format. Dark story edition and warm light WhatsApp edition.</p>
+  </div>
+  <div class="grid-2" style="max-width:640px">
+    <div class="post-card">
+      <img src="./assets/social-posts/lucky_store_instagram_story.png" alt="Instagram Story Dark">
+      <div class="post-meta">
+        <div class="post-format">Story · Dark</div>
+        <div class="post-name">Instagram Story</div>
+        <div class="post-spec">1080 × 1920px · Charcoal BG</div>
+      </div>
+    </div>
+    <div class="post-card">
+      <img src="./assets/social-posts/lucky_store_whatsapp_status.png" alt="WhatsApp Status">
+      <div class="post-meta">
+        <div class="post-format">Status · Light</div>
+        <div class="post-name">WhatsApp Status</div>
+        <div class="post-spec">1080 × 1920px · Bone BG</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PRODUCT SPOTLIGHT -->
+  <div class="section-head">
+    <span class="kicker">Product Spotlight · 4:5</span>
+    <h2>Product Posts</h2>
+    <p>Editorial product photography with card panel and CTA. Use for merch, seasonal items, and loyalty rewards.</p>
+  </div>
+  <div style="max-width:360px">
+    <div class="post-card">
+      <img src="./assets/social-posts/lucky_store_product_spotlight.png" alt="Product Spotlight">
+      <div class="post-meta">
+        <div class="post-format">Feed · 4:5</div>
+        <div class="post-name">Product Spotlight</div>
+        <div class="post-spec">1080 × 1350px · Bone BG</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- COLOR PALETTE -->
+  <div class="section-head">
+    <span class="kicker">Color Palette · Deep Night &amp; Saffron v2.1</span>
+    <h2>Brand Colors</h2>
+    <p>Use only these values in all social graphics. Deprecated: #E8B84B, all Slate tokens.</p>
+  </div>
+  <div class="palette">
+    <div class="swatch"><div class="chip" style="background:#FDFBF7;border-bottom:1px solid #E8E4DC"></div><div class="smeta"><span class="sname">Warm Bone</span><span class="shex">#FDFBF7</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#f0c444"></div><div class="smeta"><span class="sname">Saffron ⭐</span><span class="shex">#f0c444</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#e0b434"></div><div class="smeta"><span class="sname">Saffron Hover</span><span class="shex">#e0b434</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#FFF8E1;border-bottom:1px solid #E8E4DC"></div><div class="smeta"><span class="sname">Yellow Muted</span><span class="shex">#FFF8E1</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#C79400"></div><div class="smeta"><span class="sname">Yellow Dark</span><span class="shex">#C79400</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#0B0B0D"></div><div class="smeta"><span class="sname">Deep Night</span><span class="shex">#0B0B0D</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#6B6B6B"></div><div class="smeta"><span class="sname">Warm Grey</span><span class="shex">#6B6B6B</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#E8E4DC"></div><div class="smeta"><span class="sname">Warm Border</span><span class="shex">#E8E4DC</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#16A34A"></div><div class="smeta"><span class="sname">Success Green</span><span class="shex">#16A34A</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#E34234"></div><div class="smeta"><span class="sname">Error Red</span><span class="shex">#E34234</span></div></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CAPTION LIBRARY -->
+  <div class="section-head">
+    <span class="kicker">Copy-Paste Captions</span>
+    <h2>Caption Templates</h2>
+    <p>Bangla-first, code-switched. Ready to post.</p>
+  </div>
+  <div class="grid-2">
+    <div class="caption-card">
+      <span class="caption-label">Restock Alert</span>
+      <pre>🥬 এই সপ্তাহের তাজা —
+
+পালং শাক • ৳২৫/আটি
+বরবটি • ৳৩৫/কেজি
+লাল শাক • ৳২০/আটি
+
+Straight from our farmers.
+অর্ডার করতে রিপ্লাই করুন 💬
+
+#LuckyStoreBD #FreshChattogram</pre>
+    </div>
+    <div class="caption-card">
+      <span class="caption-label">Weekend Promo</span>
+      <pre>🎉 ফ্রি ডেলিভারি উইকেন্ড!
+
+৳৫০০+ অর্ডারে ডেলিভারি ফ্রি।
+Free delivery on ৳500+ orders.
+
+Friday – Sunday
+Auto-applied. No code needed.
+
+Order: luckystorebd.com 💬</pre>
+    </div>
+    <div class="caption-card">
+      <span class="caption-label">Behind the Scenes</span>
+      <pre>🌅 ভোর ৫টা।
+
+মার্কেটে পৌঁছে গেছি —
+আপনার সবজি বাছাই করতে।
+
+This fresh, this real — just for you.
+
+📍 Emdad Park, Chattogram
+🛵 Same-day delivery</pre>
+    </div>
+    <div class="caption-card">
+      <span class="caption-label">Testimonial</span>
+      <pre>⭐ "এখন আর মার্কেটে যাই না।"
+
+— Rafiq, Dhanmondi
+
+His first order was skeptical.
+Now he hasn't been to the
+market in months.
+
+Join him: luckystorebd.com</pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- POSTING SCHEDULE -->
+  <div class="section-head">
+    <span class="kicker">Broadcast Schedule</span>
+    <h2>Best Posting Times</h2>
+    <p>Optimized for Chattogram audience timezone (BST, UTC+6).</p>
+  </div>
+  <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface)">
+    <table class="timing-table">
+      <thead><tr><th>Time</th><th>Platform</th><th>Content Type</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>9:00–10:00 AM</td><td>WhatsApp Broadcast</td><td>Morning restock alert</td><td><span class="badge-ok">Best</span></td></tr>
+        <tr><td>9:00–11:00 AM</td><td>Instagram / Facebook</td><td>Feed post — fresh produce</td><td><span class="badge-ok">Best</span></td></tr>
+        <tr><td>2:00–3:00 PM</td><td>WhatsApp Status</td><td>Lunch restock / promo</td><td><span class="badge-ok">Good</span></td></tr>
+        <tr><td>6:00–7:00 PM</td><td>Instagram Story</td><td>Evening deals, BTS content</td><td><span class="badge-ok">Good</span></td></tr>
+        <tr><td>After 9:00 PM</td><td>Any</td><td>Any broadcast</td><td><span class="badge-no">Avoid</span></td></tr>
+        <tr><td>Before 7:00 AM</td><td>Any</td><td>Any broadcast</td><td><span class="badge-no">Avoid</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <div>
+    <strong>Lucky Store 1947</strong> — Social Media Kit v2.1 · June 2026
+  </div>
+  <div>
+    Questions? <a href="mailto:hello@luckystorebd.com">hello@luckystorebd.com</a>
+    &nbsp;·&nbsp;
+    <a href="./design-system-preview/index.html">Design System</a>
+    &nbsp;·&nbsp;
+    <a href="./lucky_store_brand_kit.md">Brand Kit Docs</a>
+  </div>
+</footer>
+
+</body>
+</html>

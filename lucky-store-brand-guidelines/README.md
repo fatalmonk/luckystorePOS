@@ -1,7 +1,7 @@
-# Lucky Store — Social Media Marketing Kit
-> **Handoff Date:** June 2026  
-> **Prepared for:** Social Media Marketing Team  
-> **Brand System:** v1.0  
+# Lucky Store 1947 — Social Media & Marketing Kit
+> **Handoff Date:** June 2026
+> **Prepared for:** Social Media Marketing Team
+> **Brand System:** v2.0 — Premium Sans-Serif Edition
 > **Files Location:** `brand/assets/`
 
 ---
@@ -10,42 +10,42 @@
 
 | Folder | Contents | For |
 |--------|----------|-----|
-| `brand/assets/logo/svg/` | Primary, Mark-only, Inverse logos | Web, print, apps, signage |
+| `brand/assets/logo/svg/` | Primary wordmark, mark-only, inverse logos | Web, print, apps, signage |
 | `brand/assets/logo/pngs/` | Raster exports @1x, @2x, @3x | Social avatars, Instagram, Facebook |
-| `brand/assets/templates/` | Canva/Photoshop-ready templates | Stories, feed posts, flyers |
-| `brand/assets/fonts/` | Inter + Hind Siliguri | Social graphics |
+| `brand/assets/templates/` | Canva/Figma-ready templates | Stories, feed posts, flyers |
+| `brand/assets/fonts/` | Geist + Geist Mono | All digital touchpoints |
 | `docs/BRAND_GUIDELINES.md` | Full brand bible | Reference |
 | `docs/DESIGN_SYSTEM.md` | Code tokens, Tailwind colors | Dev team |
 
 ---
 
-## 🎨 Logo Package — Option A (Approved Direction)
+## 🎨 Logo System — v2.0 (Approved Direction)
 
-### "Leaf Bag Mark" — Shopping bag with bold L + growing leaf
+### ⭐ Primary Logo — Bold Stacked Wordmark (Panel 1)
 
-> **Symbolism:** Freshness, growth, neighborhood delivery, warmth.  
-> **Why it works:** Readable at 48×48px. No detail lost on small screens. Memorable shape.
+> **This is the official primary logo.** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#1A1A1A`). The `O` in STORE is replaced by a solid Brand Yellow circle (`#F5C518`). Founding year `1947` set beneath in Geist Mono Warm Grey (`#6B6B6B`).
+> **Why it works:** Maximum legibility at any size. Zero decorative noise. Conveys neighborhood trust and premium clarity in a single glance.
 
 ### Files
 
 | File | Use Case | Spec |
 |------|----------|------|
-| `lucky-store-primary.svg` | Website header, merch, signage | Full wordmark + tagline |
-| `lucky-store-mark.svg` | App icon, favicon, social avatar | Icon only, 200×200 viewBox |
-| `lucky-store-inverse.svg` | Dark backgrounds, terracotta surfaces | White bag + wordmark |
-| `lucky-store-primary@2x.png` | Instagram profile pic, website retina | 400×480px |
+| `lucky-store-primary.svg` | Website header, signage, print | Full wordmark + year |
+| `lucky-store-mark.svg` | App icon, favicon, social avatar | Yellow dot + `LS` initials |
+| `lucky-store-inverse.svg` | Dark backgrounds, Brand Yellow surfaces | White wordmark |
+| `lucky-store-primary@2x.png` | Website retina, Instagram | 400×480px |
 | `lucky-store-mark@2x.png` | App store icon, social avatar | 400×400px |
 | `lucky-store-mark@3x.png` | iOS app icon, splash screen | 600×600px |
 | `lucky-store-inverse@2x.png` | Instagram story overlays, dark posts | 400×480px |
 
 ### Clear Space Rule
-> Never crowd the logo. Maintain clear space = height of the **L** in all directions.
+> Maintain clear space = cap height of the `L` on all four sides. Never crowd the wordmark.
 
 ```
         ←—— L ——→
       ┌──────────┐
-   ↑  │   LOGO   │  ↑
-   L  │          │  L
+   ↑  │  LUCKY   │  ↑
+   L  │  STORE   │  L
    ↓  └──────────┘  ↓
         ←—— L ——→
 ```
@@ -61,22 +61,72 @@
 | Delivery bag | 20mm |
 | Flyer | 30mm |
 
-### Colors (Always Use These Hex Values)
+### Logo Color Rules
 
-| Element | Light BG | Dark BG |
-|---------|----------|---------|
-| Bag | `#E8B84B` | `#FFFFFF` |
-| L letter | `#FFFFFF` | `#E8B84B` |
-| Leaf | `#15803D` | `#22C55E` |
-| Wordmark | `#0F172A` | `#F8FAFC` |
-| Tagline | `#475569` | `#94A3B8` |
+| Element | Light BG | Dark / Saffron BG |
+|---------|----------|-----------------|
+| Wordmark `LUCKY STORE` | `#0B0B0D` Deep Night | `#FFFFFF` White |
+| Saffron Dot | `#f0c444` | `#f0c444` |
+| Year `1947` (mono) | `#6B6B6B` Warm Grey | `#FFFFFF` White |
 
 ### ❌ Never Do
-- Stretch, rotate, or warp the logo
-- Change the bag color arbitrarily
-- Add outlines, glows, or shadows not in the file
-- Place on busy photos without a safe zone circle
-- Recreate from memory — always use approved SVG
+- Stretch, rotate, or warp the wordmark
+- Replace the Brand Yellow dot with any other color
+- Use Inter, Roboto, Arial, or any non-Geist typeface in brand materials
+- Add drop shadows, outlines, or glows not in the approved files
+- Place on busy photos without a clear background safe zone
+- Recreate from memory — always use approved SVG files
+
+---
+
+## 🎨 Color Palette (v2.1 — Deep Night & Saffron)
+
+Use these exact hex values in all design tools.
+
+| Name | Hex | Role | Usage |
+|------|-----|------|-------|
+| Warm Bone | `#FDFBF7` | Canvas / Background | Main body background; feels like premium paper |
+| White Surface | `#FFFFFF` | Primary Surface | Clean product cards and UI panels |
+| **Saffron** | **`#f0c444`** | **Primary Accent** | **CTAs, badges, active states, brand dot** |
+| Yellow Muted | `#FFF8E1` | Accent Background | Soft yellow tints, tags, chip backgrounds |
+| Yellow Dark | `#C79400` | Accent Pressed | High-contrast text on yellow, hover states |
+| Deep Night | `#0B0B0D` | Text Primary | Headlines, body, high-contrast containers |
+| Warm Grey | `#6B6B6B` | Text Secondary | Supporting text, secondary actions, metadata |
+| Warm Border | `#E8E4DC` | Structural Border | Thin dividers, outer bezel lines |
+| Error Red | `#E34234` | Danger | Out-of-stock, system alerts |
+| Success Green | `#16A34A` | Success | Confirmed, in-stock, delivery states |
+
+> ⚠️ **Deprecated:** `#F5C518`, `#1A1A1A`, `#E8B84B`, `#D4941A`, `#0F172A`, `#F8FAFC`, `#15803D` and all Slate/Teal tokens are **removed** as of v2.1.
+
+---
+
+## ✍️ Typography
+
+All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospace) exclusively.
+
+| Role | Font | Weight | Size | Tracking | Line-Height |
+|------|------|--------|------|----------|-------------|
+| Display / Hero | Geist | 800 | `clamp(3rem, 8vw, 6rem)` | `-0.03em` | `0.95` |
+| Section Heading (H1) | Geist | 700 | `clamp(2rem, 5vw, 3.5rem)` | `-0.02em` | `1.1` |
+| Card Title (H2) | Geist | 600 | `1.25rem` | `-0.01em` | `1.3` |
+| Body Copy | Geist | 400 | `1rem` | `0` | `1.6` |
+| Price / Code | Geist Mono | 500 | `1.125rem` | `+0.02em` | `1.2` |
+| Tags / Badges | Geist | 500 | `0.75rem` | `+0.05em` | `1.4` |
+| Bengali Fallback | Noto Sans Bengali | 400–700 | Matching | `0` | `1.6` |
+
+> **Banned:** Inter, Roboto, Arial, Open Sans, Helvetica — do NOT use in any brand asset.
+
+---
+
+## 🖼️ Iconography
+
+| Attribute | Spec |
+|-----------|------|
+| Style | Ultra-lightweight line icons — minimal stroke weight |
+| Library | `@phosphor-icons/web` (Light variant) or equivalent thin-line set |
+| Core Set | Shopping bag, egg carton, jar, loaf, delivery bag, grocery basket, storefront |
+| Color | Charcoal `#1A1A1A` on light BG; White `#FFFFFF` on dark/yellow BG |
+| Avoid | Thick-stroked Lucide, FontAwesome solid fill, Material Icons filled |
 
 ---
 
@@ -87,59 +137,58 @@
 **Layout:**
 ```
 ┌─────────────────────────┐
-│  [Lifestyle photo, warm  │
-│   kitchen setting]        │
-│                           │
+│  [Warm lifestyle photo   │
+│   on bone/cream surface] │
+│                          │
 │  ──────────────────────  │
 │  "ভোরের তাজা সবজি"        │
-│  "Morning-fresh produce"  │
-│                           │
-│  💰 ৳25/kg    🛵 Same Day  │
-│                           │
-│  ┌─────────────────┐     │
-│  │  👉 Order Now   │     │
-│  └─────────────────┘     │
-│       luckystorebd.com    │
+│  "Morning-fresh produce" │
+│                          │
+│  💰 ৳25/kg    🛵 Same Day │
+│                          │
+│  ┌───────────────────┐   │
+│  │  Order Now  ↗     │   │  ← Brand Yellow pill
+│  └───────────────────┘   │
+│       luckystorebd.com   │
 └─────────────────────────┘
 ```
 
 **Specs:**
 - Canvas: `1080×1350px` (4:5) or `1080×1080px` (1:1)
-- Photo area: Top 65%
-- Gradient overlay bottom: `#0F172A` → transparent
-- Price CTA: Gold `#E8B84B` pill
-- Font: Inter Bold (English), Hind Siliguri Bold (Bangla)
+- Photo area: Top 65%, warm natural light
+- Background: Warm Bone `#FDFBF7`
+- Price CTA pill: Brand Yellow `#F5C518`, text Charcoal `#1A1A1A`
+- Font: **Geist Bold** (English), **Noto Sans Bengali Bold** (Bangla)
 
 ### Instagram Story (9:16)
 
 **Layout:**
 ```
 ┌────────────────┐
-│ 🍅 Fresh Tomatoes│  ← Top sticker, white bold
+│ 🍅 Fresh Tomatoes│  ← Top badge, Geist bold white
 │    ৳45/kg      │
 │                │
 │  [Full bleed   │
-│   photo]       │
+│   warm photo]  │
 │                │
 │  ┌──────────┐  │
-│  │ Swipe Up │  │  ← Gold pill, bottom
-│  │ to Order │  │
+│  │  Order ↗ │  │  ← Brand Yellow pill, bottom
 │  └──────────┘  │
 └────────────────┘
 ```
 
 **Specs:**
 - Canvas: `1080×1920px`
-- Full-bleed photo
-- Stickers: Inter Bold, white with `rgba(0,0,0,0.5)` backdrop
-- "Swipe Up" pill: `#E8B84B`, rounded `9999px`
+- Full-bleed photo with warm tones
+- Badge: Geist Bold, white, `rgba(26, 26, 26, 0.5)` backdrop
+- CTA pill: `#F5C518`, text `#1A1A1A`, `border-radius: 9999px`
 
 ### Facebook Cover (16:9)
 
 - Canvas: `820×312px`
-- Left third: Logo + tagline
-- Right two-thirds: Seasonal hero photo
-- Overlay gradient left-to-right: opaque `#F8FAFC` → transparent
+- Left third: Wordmark + tagline on Warm Bone `#FDFBF7`
+- Right two-thirds: Seasonal hero photo (warm, natural light)
+- Overlay gradient: left-to-right `#FDFBF7` → transparent
 - Update seasonally per campaign calendar
 
 ### WhatsApp Status (9:16)
@@ -218,55 +267,29 @@ Join him: luckystorebd.com
 
 ---
 
-## 🎨 Color Palette (For Any Graphics Tool)
-
-Add these to your swatches:
-
-| Name | Hex | Usage |
-|------|-----|-------|
-| Gold | `#E8B84B` | CTAs, logo accent, active states |
-| Gold Dark | `#D4941A` | Hover, pressed |
-| Gold Deeper | `#B0781A` | Active/pressed |
-| Gold Subtle | `#FEF3C7` | Backgrounds, badges |
-| Gold On | `#1E293B` | Text on gold |
-| Slate 50 | `#F8FAFC` | Backgrounds |
-| Slate 100 | `#F1F5F9` | Subtle backgrounds |
-| White | `#FFFFFF` | Surfaces |
-| Slate 950 | `#0F172A` | Headlines, body text |
-| Slate 600 | `#475569` | Captions, meta text |
-| Slate 400 | `#94A3B8` | Disabled, placeholders |
-| Slate 200 | `#E2E8F0` | Dividers, card outlines |
-| Teal | `#0D9488` | Secondary actions |
-| Success Green | `#22C55E` | In stock, confirmed |
-| Warning Amber | `#FBBF24` | Low stock, limited |
-| Danger Red | `#EF4444` | Sold out, cancelled |
-| Leaf Green | `#15803D` | Logo leaf, fresh accents |
-
----
-
 ## 📸 Photography Direction
 
-**Aesthetic: Warm Bangladeshi Kitchen Lifestyle**
+**Aesthetic: Warm Neighborhood Grocery — Clean & Tactile**
 
 ### Do's
-- Shoot in natural golden-hour light
-- Use warm wood, terracotta, concrete textures
-- Include real props: betel leaf, clay bowls, steel glasses, checkered towels
-- Show imperfect produce: curved gourds, soil on roots
-- Capture steam, water droplets, flour dust
-- Mix close-ups with wider kitchen compositions
+- Shoot in natural golden-hour or soft studio light on bone/cream surfaces
+- Use warm wood, linen, kraft paper, terracotta as props and textures
+- Show real produce: natural imperfections, soil on roots, dew on leaves
+- Capture tactile moments: flour dust, cracked eggs, steam over bread
+- Mix close-up macro shots with wider warm-kitchen compositions
+- Keep backgrounds consistent with Warm Bone `#FDFBF7` tones
 
 ### Don'ts
-- White studio seamless shots (too sterile)
-- Over-styled Pinterest aesthetics (unreachable)
-- Cold fluorescent lighting
-- Plastic packaging as hero
+- Cold fluorescent lighting or clinical white seamless backgrounds
+- Over-styled or overly Pinterest-perfect aesthetics
+- Plastic packaging as the hero element
+- Heavy post-processing filters that shift away from warm tones
 
 ### Filters/Vibe
-- Slight warmth boost (+5 to +10)
-- Lift shadows slightly
-- Keep saturation natural — slightly boost greens and oranges
-- Prefer authentic over polished
+- Warmth boost: +5 to +10
+- Lift shadows slightly for a soft, tactile feel
+- Saturation: Natural — slight boost on yellows and warm oranges
+- Preferred: Authentic, community-oriented, not corporate
 
 ---
 
@@ -325,9 +348,9 @@ Add these to your swatches:
 Before going live:
 
 - [ ] Logo pack downloaded and organized (SVG + PNG)
-- [ ] Brand colors added to your design tool
-- [ ] Inter + Hind Siliguri fonts installed
-- [ ] Canva templates created (feed, story, flyer)
+- [ ] Brand Yellow `#F5C518` + Charcoal `#1A1A1A` + Warm Bone `#FDFBF7` added to your design tool
+- [ ] **Geist** + **Geist Mono** + Noto Sans Bengali fonts installed
+- [ ] Canva/Figma templates created (feed, story, flyer)
 - [ ] Instagram Business account connected to `hello@luckystorebd.com`
 - [ ] Facebook page linked to Instagram
 - [ ] WhatsApp Business profile completed (catalog, hours, address)
@@ -348,4 +371,4 @@ Before going live:
 
 ---
 
-*These materials are proprietary to Lucky Store. Share only with authorized team members.*
+*These materials are proprietary to Lucky Store 1947. Share only with authorized team members.*

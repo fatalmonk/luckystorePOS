@@ -1,66 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store — Mark Only (Icon / App Icon / Favicon) - Gold Variant -->
+<!-- Lucky Store 1947 — Mark Only (Favicon / App Icon / Avatar) -->
+<!-- Brand Yellow dot with LS initials — compact mark -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <defs>
-    <solidColor id="gold" solid-color="#E8B84B"/>
-    <solidColor id="gold-dark" solid-color="#B0781A"/>
-    <solidColor id="leaf" solid-color="#15803D"/>
-    <solidColor id="leaf-light" solid-color="#22C55E"/>
-  </defs>
 
-  <!-- Background circle for icon visibility -->
-  <circle cx="200" cy="200" r="190" fill="#F8FAFC"/>
+  <!-- ===== BACKGROUND CIRCLE ===== -->
+  <circle cx="200" cy="200" r="190" fill="#FDFBF7" id="bg-circle"/>
 
-  <!-- Leaf -->
-  <g id="leaf">
-    <path d="M 200 145
-             C 200 120, 205 100, 215 85" 
-          stroke="#0F5A26" stroke-width="5" fill="none" stroke-linecap="round"/>
-   
-    <path d="M 215 85
-             C 195 70, 195 45, 215 30
-             C 255 40, 275 70, 255 95
-             C 245 105, 225 100, 215 85
-             Z" 
-          fill="#15803D"/>
-   
-    <path d="M 215 85
-             C 225 75, 235 60, 245 50" 
-          stroke="#22C55E" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </g>
+  <!-- ===== BRAND YELLOW DOT (large, centered) ===== -->
+  <circle cx="200" cy="180" r="100" fill="#F5C518" id="brand-dot"/>
 
-  <!-- Bag -->
-  <g id="bag">
-    <path d="M 120 160
-             L 280 160
-             L 310 340
-             L 90 340
-             Z" 
-          fill="#E8B84B"/>
+  <!-- ===== LS INITIALS on dot ===== -->
+  <text x="200" y="210"
+        font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
+        font-size="80"
+        font-weight="800"
+        fill="#1A1A1A"
+        text-anchor="middle"
+        letter-spacing="-2"
+        id="initials">LS</text>
 
-    <path d="M 155 160
-             C 155 110, 170 95, 200 95
-             C 230 95, 245 110, 245 160" 
-          stroke="#E8B84B" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- ===== YEAR: 1947 below dot ===== -->
+  <text x="200" y="340"
+        font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
+        font-size="28"
+        font-weight="500"
+        fill="#6B6B6B"
+        text-anchor="middle"
+        letter-spacing="6"
+        id="year">1947</text>
 
-    <circle cx="155" cy="160" r="6" fill="#B0781A"/>
-    <circle cx="245" cy="160" r="6" fill="#B0781A"/>
-  </g>
-
-  <!-- Serif L -->
-  <g id="letter-l" fill="#FFFFFF">
-    <path d="M 175 195
-             L 195 195
-             L 195 295
-             L 235 295
-             L 235 315
-             L 175 315
-             Z" />
-   
-    <path d="M 165 175
-             L 205 175
-             L 205 195
-             L 165 195
-             Z" />
-  </g>
 </svg>
