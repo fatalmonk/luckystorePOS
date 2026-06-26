@@ -12,7 +12,7 @@ import { downloadCSV } from '../../lib/format';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
 import { ProductUpdateDrawer } from './ProductUpdateDrawer';
 import { ProductAddModal } from './AddProductModal';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useInventoryEditing } from '../../hooks/useInventoryEditing';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -40,7 +40,21 @@ export function InventoryListPage() {
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => window.innerWidth >= 1024 ? 'list' : 'grid');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [viewMode, setViewModeState] = useState<'grid' | 'list'>(() => {
+    const mode = searchParams.get('view');
+    if (mode === 'grid' || mode === 'list') return mode;
+    return window.innerWidth >= 1024 ? 'list' : 'grid';
+  });
+
+  const setViewMode = (mode: 'grid' | 'list') => {
+    setViewModeState(mode);
+    setSearchParams(prev => {
+      prev.set('view', mode);
+      return prev;
+    }, { replace: true });
+  };
+  
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
   
   // Advanced Sorting
@@ -317,73 +331,52 @@ export function InventoryListPage() {
 
   return (
     <div className="inventory-container flex flex-col pt-6">
-      <PageHeader
-        title="Stock Inventory"
-        subtitle={
-          <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
-            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <Package size={12} className="text-primary" />
-              <AnimatedMetric value={stats.total} /> SKUs
+        {/* Cinematic Page Header (gpt-taste) */}
+      <div className="relative w-full max-w-6xl mx-auto py-16 md:py-24 flex flex-col items-center justify-center text-center">
+        {/* Ambient background wash */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0)_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(255,243,77,0.05)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
+        
+        <h1 
+          className="relative z-10 font-display font-bold text-warm-fg leading-tight tracking-tight mb-8"
+          style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', maxWidth: '1000px' }}
+        >
+          Master your inventory flow <span className="inline-block w-24 h-[1em] rounded-full align-middle bg-cover bg-center mx-2 overflow-hidden shadow-lg" style={{backgroundImage: 'url(https://picsum.photos/seed/inventoryflow/400/200)', filter: 'grayscale(30%) contrast(120%)'}}></span> with precision.
+        </h1>
+        
+        <div className="relative z-10 flex flex-wrap justify-center gap-4 mb-12">
+           <button
+             className="px-8 py-4 bg-warm-accent text-black font-bold rounded-full shadow-xl hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2"
+             onClick={() => setIsAddModalOpen(true)}
+           >
+             <Plus size={20} />
+             Add New Product
+           </button>
+           <Link to="/inventory/history" className="px-8 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
+             <History size={20} />
+             View Audit Log
+           </Link>
+        </div>
+
+        {/* Ambient stats bar */}
+        <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold max-w-4xl mx-auto">
+            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
+              <Package size={14} className="text-warm-fg" />
+              <AnimatedMetric value={stats.total} /> Total SKUs
             </span>
-            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <AlertTriangle size={12} className="text-warning-dark" />
-              <AnimatedMetric value={stats.lowStock} /> Low
+            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
+              <AlertTriangle size={14} className="text-warm-warning" />
+              <AnimatedMetric value={stats.lowStock} /> Low Stock
             </span>
-            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <TrendingDown size={12} className="text-danger" />
-              <AnimatedMetric value={stats.outOfStock} /> Out
+            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
+              <TrendingDown size={14} className="text-warm-danger" />
+              <AnimatedMetric value={stats.outOfStock} /> Stockouts
             </span>
-            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <Wallet size={12} className="text-success-dark" />
+            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
+              <Wallet size={14} className="text-warm-success" />
               <AnimatedMetric value={stats.totalValue} format prefix="৳" /> Value
             </span>
-            <span className="flex items-center gap-1 text-text-secondary px-2 py-0.5 rounded-md bg-surface border border-border-subtle shadow-sm">
-              <TrendingUp size={12} className="text-success-dark" />
-              <AnimatedMetric value={stats.potentialGP} format prefix="৳" /> GP
-            </span>
-          </div>
-        }
-        actions={
-          <div className="flex gap-2">
-            <Button
-              variant="primary"
-              icon={<Plus size={18} />}
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              Add Product
-            </Button>
-            <Button
-              variant="secondary"
-              icon={<Download size={18} />}
-              onClick={() => {
-                const sanitizeCSVCell = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
-                const rows = (inventory ?? []).map((item: InventoryItem) => ({
-                  name: sanitizeCSVCell(item.name),
-                  sku: sanitizeCSVCell(item.sku || ''),
-                  currentStock: item.current_qty,
-                  status: item.reorder_status,
-                  price: item.price || 0,
-                  value: (item.price || 0) * item.current_qty,
-                  lastUpdated: item.last_updated || '',
-                }));
-                downloadCSV(rows, `inventory-${new Date().toISOString().split('T')[0]}.csv`);
-              }}
-              className="hidden sm:flex"
-            >
-              Export
-            </Button>
-            <Link to="/inventory/history">
-              <Button variant="secondary" icon={<History size={18} />}>
-                <span className="hidden sm:inline">History</span>
-              </Button>
-            </Link>
-            <Button variant="secondary" onClick={() => refetch()} loading={isLoading}>
-              <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
-            </Button>
-          </div>
-        }
-        className="mb-2"
-      />
+        </div>
+      </div>
 
       {/* Collapsible Analytics Widgets */}
       <div className="-mx-6 px-6 mb-1">
@@ -489,7 +482,7 @@ export function InventoryListPage() {
               return (
                 <div
                   key={virtualRow.index}
-                  className="absolute top-0 left-0 w-full grid gap-4"
+                  className="absolute top-0 left-0 w-full grid gap-4 grid-flow-dense"
                   style={{
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
