@@ -96,28 +96,35 @@ export function InventoryListTable({
   );
 
   return (
-    <div className="table-wrap w-full" style={{ '--table-sticky-top': `${toolbarHeight || 140}px` } as React.CSSProperties}>
-      <table className="inventory">
-        {/* Sticky Header - Solid Background + Proper Z-Index */}
-        <thead>
-          <tr className="border-b border-warm-border-warm">
-            <th className="w-10 px-4 py-3 text-center bg-warm-bg">
-              <input
-                type="checkbox"
-                checked={isAllSelected}
-                onChange={(e) => onSelectAll(items.map((item) => item.id), e.target.checked)}
-                className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
-              />
-            </th>
-            <th className="px-4 py-3 text-left w-[250px] md:w-[300px] bg-warm-bg">Product</th>
-            <th className="px-4 py-3 text-center whitespace-nowrap w-[90px] bg-warm-bg">Stock</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px] bg-warm-bg">Cost</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[90px] bg-warm-bg">MRP</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px] bg-warm-bg">Selling</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[110px] bg-warm-bg">Margin</th>
-            <th className="px-4 py-3 text-center w-[80px] bg-warm-bg">Status</th>
-            <th className="px-4 py-3 text-right whitespace-nowrap w-[100px] bg-warm-bg">Purchase</th>
-            <th className="px-4 py-3 text-right w-[80px] bg-warm-bg">Actions</th>
+    <div className="w-full py-12 md:py-24 px-4 md:px-8">
+      {/* Outer Shell */}
+      <div className="bg-black/5 dark:bg-white/5 p-2 rounded-[2rem] ring-1 ring-black/5 dark:ring-white/10 w-full overflow-hidden">
+        {/* Inner Core */}
+        <div 
+          className="table-wrap w-full bg-warm-surface rounded-[calc(2rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-x-auto" 
+          style={{ '--table-sticky-top': `${toolbarHeight || 140}px` } as React.CSSProperties}
+        >
+          <table className="inventory w-full min-w-[1000px]">
+            {/* Sticky Header - Solid Background + Proper Z-Index */}
+            <thead>
+              <tr className="border-b border-warm-border-warm shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                <th className="w-10 px-4 py-4 text-center bg-warm-surface/80 backdrop-blur-md rounded-tl-[calc(2rem-0.5rem)]">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={(e) => onSelectAll(items.map((item) => item.id), e.target.checked)}
+                    className="rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent w-4 h-4 cursor-pointer"
+                  />
+                </th>
+                <th className="px-4 py-4 text-left w-[250px] md:w-[300px] bg-warm-surface/80 backdrop-blur-md">Product</th>
+                <th className="px-4 py-4 text-center whitespace-nowrap w-[140px] bg-warm-surface/80 backdrop-blur-md tracking-wider text-[10px] uppercase font-bold text-warm-dim">Avail / Rsvd</th>
+            <th className="px-4 py-4 text-right whitespace-nowrap w-[90px] bg-warm-surface/80 backdrop-blur-md text-[10px] uppercase font-bold text-warm-dim tracking-wider">Cost</th>
+            <th className="px-4 py-4 text-right whitespace-nowrap w-[90px] bg-warm-surface/80 backdrop-blur-md text-[10px] uppercase font-bold text-warm-dim tracking-wider">MRP</th>
+            <th className="px-4 py-4 text-right whitespace-nowrap w-[110px] bg-warm-surface/80 backdrop-blur-md text-[10px] uppercase font-bold text-warm-dim tracking-wider">Selling</th>
+            <th className="px-4 py-4 text-right whitespace-nowrap w-[110px] bg-warm-surface/80 backdrop-blur-md text-[10px] uppercase font-bold text-warm-dim tracking-wider">Margin</th>
+            <th className="px-4 py-4 text-center w-[80px] bg-warm-surface/80 backdrop-blur-md text-[10px] uppercase font-bold text-warm-dim tracking-wider">Status</th>
+            <th className="px-4 py-4 text-right whitespace-nowrap w-[100px] bg-warm-surface/80 backdrop-blur-md text-[10px] uppercase font-bold text-warm-dim tracking-wider">Purchase</th>
+            <th className="px-4 py-4 text-right w-[80px] bg-warm-surface/80 backdrop-blur-md rounded-tr-[calc(2rem-0.5rem)] text-[10px] uppercase font-bold text-warm-dim tracking-wider">Actions</th>
           </tr>
         </thead>
 
@@ -170,6 +177,8 @@ export function InventoryListTable({
           )}
         </tbody>
       </table>
+        </div>
+      </div>
     </div>
   );
 }

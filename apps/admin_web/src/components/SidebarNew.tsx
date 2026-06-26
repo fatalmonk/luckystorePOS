@@ -1,8 +1,10 @@
-import { useState, useLayoutEffect, useCallback, useMemo } from 'react';
+import { useState, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/AuthContext';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { Logo } from './ui/Logo';
 import { 
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
@@ -115,6 +117,26 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   const navGroups = useNavGroups();
   const location = useLocation();
   const { t } = useTranslation();
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    if (isMobile && !hidden && sidebarRef.current) {
+      // Staggered reveal of nav items when mobile sidebar opens
+      gsap.fromTo(
+        gsap.utils.toArray('.nav-reveal-item'),
+        { y: 30, opacity: 0, scale: 0.95 },
+        { 
+          y: 0, 
+          opacity: 1, 
+          scale: 1,
+          duration: 0.6, 
+          stagger: 0.05, 
+          ease: 'power3.out',
+          clearProps: 'all' // prevents sticking on transform
+        }
+      );
+    }
+  }, [hidden, isMobile]);
 
   // Helper to check if a route is active or if any child sub-route is active
   const isRouteActive = useCallback((path: string, hasChildren = false) => {
@@ -178,6 +200,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
         />
       )}
       <aside
+        ref={sidebarRef}
         className={clsx(
           'sidebar',
           hidden ? 'sidebar--hidden' : '',
@@ -186,7 +209,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
         )}
       >
         {/* Sidebar Header */}
-        <div className={clsx('p-4 border-b border-warm-border-warm flex items-center justify-between gap-3', collapsed && 'flex-col justify-center')}>
+        <div className={clsx('p-4 border-b border-warm-border-warm flex items-center justify-between gap-3 nav-reveal-item', collapsed && 'flex-col justify-center')}>
           <div className="flex items-center gap-3 min-w-0">
             <Logo collapsed={collapsed} />
             {!collapsed && (
@@ -216,7 +239,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
             const isAnyActive = isGroupActive(group);
 
             return (
-              <div key={group.id} className="flex flex-col gap-1 border-b border-warm-border-warm/20 pb-2 last:border-0 last:pb-0">
+              <div key={group.id} className="flex flex-col gap-1 border-b border-warm-border-warm/20 pb-2 last:border-0 last:pb-0 nav-reveal-item">
                 {collapsed ? (
                   // Collapsed Mode: Just render icon triggers or flat items
                   <div className="flex flex-col gap-1 items-center">

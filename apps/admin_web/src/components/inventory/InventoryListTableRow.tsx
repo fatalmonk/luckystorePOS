@@ -1,11 +1,14 @@
 import type { InventoryItem } from '../../types/inventory';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { MoreVertical, History, Pencil, Trash2, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { EditableCell } from '../../components/ui/EditableCell';
 import { ImageUploadZone } from '../../components/inventory/ImageUploadZone';
 import { SmartPricingEditor } from './SmartPricingEditor';
 import { useImageUpload } from '../../hooks/useImageUpload';
+import { useMagneticHover } from '../../hooks/useMagneticHover';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const calcMargin = (cost?: number, price?: number) => {
   if (typeof cost !== 'number' || typeof price !== 'number' || price <= 0 || cost <= 0) return null;
@@ -125,10 +128,25 @@ export function InventoryListTableRow({
     return () => document.removeEventListener('editablecell:tab', handleTab as EventListener);
   }, [editingCell, item.id, onTabNavigation]);
 
+  const rowRef = React.useRef<HTMLTableRowElement>(null);
+  const actionBtnRef = useMagneticHover<HTMLButtonElement>({ strength: 20 });
+  const smartPricingBtnRef = useMagneticHover<HTMLButtonElement>({ strength: 10 });
+  
+  useGSAP(() => {
+    if (rowRef.current) {
+      gsap.fromTo(
+        rowRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', clearProps: 'all' }
+      );
+    }
+  }, []);
+
   return (
     <tr
+      ref={rowRef}
       className={clsx(
-        'relative transition-colors',
+        'relative transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] group',
         isSelected && 'bg-warm-accent/10 hover:bg-warm-accent/15 [&>td]:!bg-transparent'
       )}
       style={{ height: `${virtualRowSize}px` }}
@@ -182,30 +200,46 @@ export function InventoryListTableRow({
         </div>
       </td>
 
-      {/* Stock - Editable */}
+      {/* Avail / Rsvd - Domain Driven */}
       <td className="px-4 py-3 text-center whitespace-nowrap">
-        {isEditing('current_qty') ? (
-          <EditableCell
-            value={item.current_qty}
-            type="number"
-            onSave={(val) => handleSave('current_qty', val)}
-            onCancel={() => setEditingCell(null)}
-            validate={validateStock}
-            min={0}
-            step={1}
-          />
-        ) : (
-          <span
-            className={clsx(
-              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold font-mono tabular-nums',
-              item.reorder_status === 'OUT' ? 'bg-warm-danger/10 text-warm-danger' :
-              item.reorder_status === 'LOW' ? 'bg-warm-warning/10 text-warm-warning' :
-              'bg-warm-success/10 text-warm-success'
-            )}
-          >
-            {item.current_qty.toLocaleString('en-IN')} pcs
-          </span>
-        )}
+        <div className="flex items-center justify-center gap-2">
+          {isEditing('current_qty') ? (
+            <EditableCell
+              value={item.current_qty}
+              type="number"
+              onSave={(val) => handleSave('current_qty', val)}
+              onCancel={() => setEditingCell(null)}
+              validate={validateStock}
+              min={0}
+              step={1}
+            />
+          ) : (
+            <div 
+              className="flex items-center gap-2 bg-warm-surface-hover/50 rounded-full p-1 cursor-pointer hover:bg-warm-surface-hover transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                startEditing('current_qty');
+              }}
+              title="Click to adjust total stock"
+            >
+              <div className="flex items-center gap-1.5 pl-2 pr-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-warm-success shadow-[0_0_8px_rgba(var(--color-warm-success),0.5)]" />
+                <span className="font-mono text-xs font-bold text-warm-fg">
+                  {(item.available_qty ?? item.current_qty).toLocaleString('en-IN')}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider text-warm-dim font-bold">Avail</span>
+              </div>
+              <div className="w-px h-3 bg-warm-border" />
+              <div className="flex items-center gap-1.5 pr-2 pl-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-warm-warning shadow-[0_0_8px_rgba(var(--color-warm-warning),0.5)]" />
+                <span className="font-mono text-xs font-bold text-warm-fg">
+                  {(item.reserved_qty ?? 0).toLocaleString('en-IN')}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider text-warm-dim font-bold">Rsvd</span>
+              </div>
+            </div>
+          )}
+        </div>
       </td>
 
       {/* Cost - Editable */}
@@ -289,8 +323,9 @@ export function InventoryListTableRow({
               ৳{item.price?.toLocaleString('en-IN') || '—'}
             </span>
             <button
+              ref={smartPricingBtnRef}
               onClick={(e) => { e.stopPropagation(); setShowSmartPricing(true); }}
-              className="p-1 rounded hover:bg-warm-surface-hover text-warm-muted hover:text-warm-accent opacity-0 group-hover/price:opacity-100 transition-opacity"
+              className="w-6 h-6 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-warm-muted hover:text-warm-accent opacity-0 group-hover/price:opacity-100 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-110"
               title="Smart Pricing"
             >
               <TrendingUp size={12} />
@@ -363,8 +398,9 @@ export function InventoryListTableRow({
       <td className="px-4 py-3 text-right">
         <div className="relative inline-block">
           <button
+            ref={actionBtnRef}
             onClick={onToggleOpen}
-            className="p-1.5 rounded-md hover:bg-warm-surface-hover transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-105"
           >
             <MoreVertical size={16} className="text-warm-muted" />
           </button>
