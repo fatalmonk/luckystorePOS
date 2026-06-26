@@ -73,7 +73,7 @@ export function Layout() {
   }, [isPosPage, isMobile]);
 
   return (
-    <div className={`app-container app-warm ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''} ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`app-container overflow-x-hidden w-full max-w-full app-warm ${sidebarHidden ? 'sidebar-hidden' : ''} ${isMobile ? 'mobile-layout' : ''} ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <SidebarNew 
         isMobile={isMobile} 
         collapsed={sidebarCollapsed} 
