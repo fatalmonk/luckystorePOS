@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Primary Logo (v2.0 Sans-Serif Yellow-Locked) -->
-<!-- Bold stacked wordmark LUCKY / ST●RE with Brand Yellow dot-O and 1947 -->
+<!-- Lucky Store 1947 — On Dark (White wordmark on Charcoal background) -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+
+  <!-- Dark background -->
+  <rect width="400" height="480" fill="#1A1A1A" rx="0" id="bg"/>
 
   <!-- ===== WORDMARK: LUCKY ===== -->
   <text x="200" y="175"
         font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
         font-size="140"
         font-weight="800"
-        fill="#1A1A1A"
+        fill="#FDFBF7"
         text-anchor="middle"
         letter-spacing="-4"
         id="line-lucky">LUCKY</text>
@@ -18,12 +20,12 @@
         font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
         font-size="140"
         font-weight="800"
-        fill="#1A1A1A"
+        fill="#FDFBF7"
         text-anchor="middle"
         letter-spacing="-4"
         id="line-store">ST    RE</text>
 
-  <!-- ===== BRAND YELLOW DOT (replaces O) ===== -->
+  <!-- ===== BRAND YELLOW DOT ===== -->
   <circle cx="200" cy="278" r="36" fill="#F5C518" id="dot-o"/>
 
   <!-- ===== YEAR: 1947 ===== -->
@@ -31,7 +33,7 @@
         font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
         font-size="32"
         font-weight="500"
-        fill="#6B6B6B"
+        fill="rgba(253,251,247,0.4)"
         text-anchor="middle"
         letter-spacing="8"
         id="year">1947</text>

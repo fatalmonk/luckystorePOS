@@ -488,7 +488,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.add.bg} ${stockColors.add.text} border-${stockColors.add.border} focus:ring-success-default`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'add'}
+                  aria-pressed={stockMode === 'add' ? true : false}
                 >
                   <Plus size={20} /><span className="font-semibold text-sm">Add</span>
                 </button>
@@ -501,7 +501,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.remove.bg} ${stockColors.remove.text} border-${stockColors.remove.border} focus:ring-danger-default`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'remove'}
+                  aria-pressed={stockMode === 'remove' ? true : false}
                 >
                   <Minus size={20} /><span className="font-semibold text-sm">Remove</span>
                 </button>
@@ -514,7 +514,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.set.bg} ${stockColors.set.text} border-${stockColors.set.border} focus:ring-warm-accent`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'set'}
+                  aria-pressed={stockMode === 'set' ? true : false}
                 >
                   <RotateCcw size={20} /><span className="font-semibold text-sm">Set</span>
                 </button>
@@ -682,7 +682,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
               type="submit"
               disabled={isButtonDisabled}
               className="w-full py-3 px-4 bg-warm-accent text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-warm-accent-light active:scale-[0.98] transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
-              aria-busy={stockMutation.isPending || priceMutation.isPending}
+              aria-busy={stockMutation.isPending || priceMutation.isPending ? true : false}
             >
               <Save size={18} />
               {getButtonLabel()}
