@@ -44,6 +44,7 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
       products={products}
       theme={theme}
       sort={sort}
+      searchParams={resolvedParams}
     />
   );
 }

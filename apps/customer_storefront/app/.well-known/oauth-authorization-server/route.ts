@@ -45,7 +45,7 @@ export async function GET() {
     // auth.md agent registration extension
     // https://workos.com/auth.md
     agent_auth: {
-      skill: `${STOREFRONT_URL}/.well-known/agent-skills/index.json`,
+      skill: `${STOREFRONT_URL}/auth.md`,
       register_uri: `${STOREFRONT_URL}/auth/register`,
       identity_types_supported: ['identity_assertion', 'anonymous'],
       identity_assertion: {

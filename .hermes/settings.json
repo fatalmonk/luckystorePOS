@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "createdAt": 1781128030413,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": "",
+    "buildCommand": "",
+    "outputDirectory": "",
+    "rootDirectory": "apps/customer_storefront",
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

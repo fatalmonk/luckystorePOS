@@ -505,6 +505,7 @@ export function InventoryListPage() {
                       isSelected={selectedIds.has(item.id)}
                       onToggleSelect={toggleSelect}
                       onUpdateStock={handleViewProduct}
+                      onEditProduct={handleEditProduct}
                       tenantId={tenantId}
                       priority={virtualRow.index === 0}
                       onInlineSave={handleInlineSave}
