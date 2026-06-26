@@ -59,38 +59,41 @@
 })();</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lucky Store POS Design System v2 — Operational Design Language for Retail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=Noto+Sans+Bengali:wght@100..900&display=swap" rel="stylesheet">
+  <title>Lucky Store Design System — Sans-Serif Deep Night & Saffron</title>
   <style>
     :root {
       /* ===== COLOR TOKENS (Light) ===== */
-      --color-paper: #faf8f5;
+      --color-paper: #FDFBF7;
       --color-surface: #ffffff;
-      --color-surface-hover: #f5f3f0;
-      --color-foreground: #1c1917;
-      --color-muted: #78716c;
-      --color-dim: #a8a29e;
-      --color-border: #e7e5e4;
-      --color-border-strong: #d6d3d1;
-      --color-border-light: #f5f5f4;
-      --color-accent: #ffe721;
-      --color-accent-hover: #e6d01d;
-      --color-accent-ghost: rgba(255, 231, 33, 0.12);
-      --color-accent-strong: rgba(255, 231, 33, 0.18);
-      --color-primary: #0b4fd9;
-      --color-primary-hover: #0943b8;
-      --color-primary-ghost: rgba(11, 79, 217, 0.12);
+      --color-surface-hover: #f5f2eb;
+      --color-foreground: #0B0B0D;
+      --color-muted: #6B6B6B;
+      --color-dim: #9C958C;
+      --color-border: #E8E4DC;
+      --color-border-strong: #CDC8BC;
+      --color-border-light: #F7F5F0;
+      --color-accent: #f0c444;
+      --color-accent-hover: #e0b434;
+      --color-accent-ghost: rgba(240, 196, 68, 0.12);
+      --color-accent-strong: rgba(240, 196, 68, 0.18);
+      --color-primary: #0B0B0D;
+      --color-primary-hover: #1a1a1a;
+      --color-primary-ghost: rgba(11, 11, 13, 0.12);
       --color-primary-text: #ffffff;
-      --color-primary-muted: #6b9af0;
-      --color-primary-light: #e8f0fe;
-      --color-success: #0b4fd9;
-      --color-success-bg: rgba(11,79,217,0.08);
-      --color-success-strong: rgba(11,79,217,0.12);
-      --color-warning: #8c4200;
-      --color-warning-bg: rgba(140,66,0,0.08);
-      --color-warning-strong: rgba(140,66,0,0.12);
-      --color-danger: #a32624;
-      --color-danger-bg: rgba(163,38,36,0.07);
-      --color-danger-strong: rgba(163,38,36,0.12);
+      --color-primary-muted: #6B6B6B;
+      --color-primary-light: hsl(40, 60%, 98%);
+      --color-success: #16A34A;
+      --color-success-bg: rgba(22, 163, 74, 0.08);
+      --color-success-strong: rgba(22, 163, 74, 0.12);
+      --color-warning: #C79400;
+      --color-warning-bg: rgba(199, 148, 0, 0.08);
+      --color-warning-strong: rgba(199, 148, 0, 0.12);
+      --color-danger: #E34234;
+      --color-danger-bg: rgba(227, 66, 52, 0.07);
+      --color-danger-strong: rgba(227, 66, 52, 0.12);
 
       /* Payment method colors */
       --color-cash: #2b7a3b;
@@ -108,27 +111,27 @@
       --color-border-dark: #3d3630;
       --color-border-strong-dark: #4a423b;
       --color-border-light-dark: #2a2420;
-      --color-accent-dark: #ffe721;
-      --color-accent-hover-dark: #e6d01d;
-      --color-accent-ghost-dark: rgba(255, 231, 33, 0.12);
-      --color-primary-dark: #4a8eff;
-      --color-primary-hover-dark: #6ba3ff;
-      --color-primary-ghost-dark: rgba(74, 142, 255, 0.12);
-      --color-primary-text-dark: #ffffff;
-      --color-primary-muted-dark: #8ab4f8;
-      --color-primary-light-dark: #1a3c6e;
-      --color-success-dark: #4a8eff;
-      --color-success-bg-dark: rgba(74,142,255,0.12);
-      --color-warning-dark: #f5b84e;
-      --color-warning-bg-dark: rgba(245,184,78,0.12);
-      --color-danger-dark: #f47c7a;
-      --color-danger-bg-dark: rgba(244,124,122,0.10);
+      --color-accent-dark: #f0c444;
+      --color-accent-hover-dark: #e0b434;
+      --color-accent-ghost-dark: rgba(240, 196, 68, 0.12);
+      --color-primary-dark: #faf8f5;
+      --color-primary-hover-dark: #ffffff;
+      --color-primary-ghost-dark: rgba(250, 248, 245, 0.12);
+      --color-primary-text-dark: #1f1a17;
+      --color-primary-muted-dark: #b8b0a8;
+      --color-primary-light-dark: #2a2420;
+      --color-success-dark: #16A34A;
+      --color-success-bg-dark: rgba(22, 163, 74, 0.12);
+      --color-warning-dark: #C79400;
+      --color-warning-bg-dark: rgba(199, 148, 0, 0.12);
+      --color-danger-dark: #E34234;
+      --color-danger-bg-dark: rgba(227, 66, 52, 0.10);
 
       /* ===== TYPOGRAPHY ===== */
-      --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      --font-bengali: 'Hind Siliguri', system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --font-display: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+      --font-body: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+      --font-bengali: 'Noto Sans Bengali', 'Hind Siliguri', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
 
       --text-h1: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
       --text-h2: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
@@ -222,7 +225,7 @@
     *,*::before,*::after{box-sizing:border-box}
     @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
 
-    html{font-size:16px;-webkit-text-size-adjust:100%}
+    html{font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
     body{
       margin:0;
       background:var(--color-paper);
@@ -683,8 +686,60 @@
   </div>
 
   <main class="wrap">
-    <span class="badge">Design System v2 · Operational Design Language for Retail</span>
-    <h1>Lucky Store POS</h1>
+    <span class="badge">Design System v2.1 · Deep Night &amp; Saffron</span>
+
+    <!-- PRIMARY LOGO HERO -->
+    <div style="margin: var(--space-6) 0 var(--space-10); display: flex; flex-direction: column; gap: var(--space-4);">
+
+      <!-- ⭐ Live Logo Render — Panel 1 Primary -->
+      <div style="display: flex; align-items: center; gap: var(--space-8); flex-wrap: wrap; border: 1.5px solid var(--color-accent); border-radius: 20px; padding: 6px; background: var(--color-paper); box-shadow: var(--shadow-lg);">
+        <div style="flex: 1; min-width: 240px; padding: var(--space-8) var(--space-10); display: flex; flex-direction: column; align-items: flex-start; gap: 4px; background: var(--color-paper); border-radius: 14px;">
+          <!-- Wordmark -->
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 0.9; letter-spacing: -0.04em; color: var(--color-foreground); display: flex; flex-direction: column; gap: 0;">
+            <span>LUCKY</span>
+            <span style="display: inline-flex; align-items: center; gap: 0;">ST<span style="display: inline-block; width: 0.72em; height: 0.72em; background: #f0c444; border-radius: 50%; margin: 0 0.02em; vertical-align: middle; flex-shrink: 0;"></span>RE</span>
+          </div>
+          <!-- Year -->
+          <div style="font-family: var(--font-mono); font-size: clamp(0.6rem, 1.2vw, 0.9rem); letter-spacing: 0.18em; color: var(--color-muted); margin-top: 6px; font-weight: 500;">1947</div>
+        </div>
+        <div style="flex: 0 0 auto; padding: var(--space-4) var(--space-6); display: flex; flex-direction: column; gap: var(--space-2);">
+          <span style="font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #f0c444; font-weight: 700;">⭐ Primary Logo</span>
+          <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-muted); letter-spacing: 0.04em;">Panel 1 — Approved v2.1</span>
+          <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-muted);">Geist 800 · #0B0B0D Deep Night</span>
+          <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-muted);">Dot-O · #f0c444 Saffron</span>
+          <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-muted);">Year · Geist Mono 500</span>
+        </div>
+        <!-- Inverse variant on yellow -->
+        <div style="flex: 0 0 auto; background: #f0c444; border-radius: 14px; padding: var(--space-8) var(--space-10); display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 3.5vw, 2.6rem); line-height: 0.9; letter-spacing: -0.04em; color: #0B0B0D; display: flex; flex-direction: column; gap: 0;">
+            <span>LUCKY</span>
+            <span style="display: inline-flex; align-items: center; gap: 0;">ST<span style="display: inline-block; width: 0.72em; height: 0.72em; background: #0B0B0D; border-radius: 50%; margin: 0 0.02em; vertical-align: middle; flex-shrink: 0;"></span>RE</span>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.18em; color: rgba(11,11,13,0.5); margin-top: 6px; font-weight: 500;">1947</div>
+          <span style="font-family: var(--font-mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(11,11,13,0.45); margin-top: var(--space-2);">On Saffron Variant</span>
+        </div>
+        <!-- Inverse on dark -->
+        <div style="flex: 0 0 auto; background: #0B0B0D; border-radius: 14px; padding: var(--space-8) var(--space-10); display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 3.5vw, 2.6rem); line-height: 0.9; letter-spacing: -0.04em; color: #FDFBF7; display: flex; flex-direction: column; gap: 0;">
+            <span>LUCKY</span>
+            <span style="display: inline-flex; align-items: center; gap: 0;">ST<span style="display: inline-block; width: 0.72em; height: 0.72em; background: #f0c444; border-radius: 50%; margin: 0 0.02em; vertical-align: middle; flex-shrink: 0;"></span>RE</span>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.18em; color: rgba(253,251,247,0.4); margin-top: 6px; font-weight: 500;">1947</div>
+          <span style="font-family: var(--font-mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(253,251,247,0.3); margin-top: var(--space-2);">Dark Inverse</span>
+        </div>
+      </div>
+
+      <!-- Brand Kit Reference Image -->
+      <div style="border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 6px; background: var(--color-surface); box-shadow: var(--shadow-md);">
+        <div style="padding: var(--space-2) var(--space-4) 0; display: flex; align-items: center; gap: var(--space-2);">
+          <span style="font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #f0c444; font-weight: 700;">⭐ Primary Brand Kit</span>
+          <span style="font-family: var(--font-mono); font-size: 0.6rem; color: var(--color-muted);">v2.1 — Deep Night &amp; Saffron</span>
+        </div>
+        <img src="../lucky_store_sans_brandkit_1782395179572.png" alt="Lucky Store 1947 Sans-Serif Brand Kit — Primary" style="width: 100%; height: auto; display: block; border-radius: var(--radius-md); margin-top: var(--space-2);">
+      </div>
+    </div>
+
+    <h1>Lucky Store 1947 — Design System</h1>
     <p class="subtitle">Built for Bangladeshi retail operations: cashiers, inventory staff, supervisors, and customers. From countertop POS to customer storefront — one coherent system.</p>
 
     <!-- SECTION A: CUSTOMER STOREFRONT -->
@@ -694,26 +749,26 @@
     <section>
       <h2 class="section-title">Palette — Storefront</h2>
       <div class="palette">
-        <div class="swatch"><div class="chip" style="background:var(--color-paper)"></div><div class="meta"><span class="name">Paper</span><span class="hex">#faf8f5</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-paper)"></div><div class="meta"><span class="name">Paper</span><span class="hex">#FDFBF7</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-surface)"></div><div class="meta"><span class="name">Surface</span><span class="hex">#ffffff</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-foreground)"></div><div class="meta"><span class="name">Foreground</span><span class="hex">#1c1917</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-muted)"></div><div class="meta"><span class="name">Muted</span><span class="hex">#78716c</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-dim)"></div><div class="meta"><span class="name">Dim</span><span class="hex">#a8a29e</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-border)"></div><div class="meta"><span class="name">Border</span><span class="hex">#e7e5e4</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-border-light)"></div><div class="meta"><span class="name">Border Light</span><span class="hex">#f5f5f4</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent)"></div><div class="meta"><span class="name">Accent</span><span class="hex">#ffe721</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent-hover)"></div><div class="meta"><span class="name">Accent Hover</span><span class="hex">#e6d01d</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent-ghost)"></div><div class="meta"><span class="name">Accent Ghost</span><span class="hex">rgba(255, 231, 33, 0.12)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-success)"></div><div class="meta"><span class="name">Success</span><span class="hex">#0b4fd9</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-success-bg)"></div><div class="meta"><span class="name">Success BG</span><span class="hex">rgba(11,79,217,0.08)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-warning)"></div><div class="meta"><span class="name">Warning</span><span class="hex">#8c4200</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-warning-bg)"></div><div class="meta"><span class="name">Warning BG</span><span class="hex">rgba(140,66,0,0.08)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-danger)"></div><div class="meta"><span class="name">Danger</span><span class="hex">#a32624</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-danger-bg)"></div><div class="meta"><span class="name">Danger BG</span><span class="hex">rgba(163,38,36,0.07)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary Blue</span><span class="hex">#0b4fd9</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#0943b8</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11,79,217,0.12)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary-light)"></div><div class="meta"><span class="name">Primary Light</span><span class="hex">#e8f0fe</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-foreground)"></div><div class="meta"><span class="name">Deep Night</span><span class="hex">#0B0B0D</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-muted)"></div><div class="meta"><span class="name">Muted</span><span class="hex">#6B6B6B</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-dim)"></div><div class="meta"><span class="name">Dim</span><span class="hex">#9C958C</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-border)"></div><div class="meta"><span class="name">Border</span><span class="hex">#E8E4DC</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-border-light)"></div><div class="meta"><span class="name">Border Light</span><span class="hex">#F7F5F0</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent)"></div><div class="meta"><span class="name">Saffron</span><span class="hex">#f0c444</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-hover)"></div><div class="meta"><span class="name">Saffron Hover</span><span class="hex">#e0b434</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-ghost)"></div><div class="meta"><span class="name">Saffron Ghost</span><span class="hex">rgba(240, 196, 68, 0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-success)"></div><div class="meta"><span class="name">Success</span><span class="hex">#16A34A</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-success-bg)"></div><div class="meta"><span class="name">Success BG</span><span class="hex">rgba(22, 163, 74, 0.08)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-warning)"></div><div class="meta"><span class="name">Warning</span><span class="hex">#C79400</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-warning-bg)"></div><div class="meta"><span class="name">Warning BG</span><span class="hex">rgba(199, 148, 0, 0.08)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-danger)"></div><div class="meta"><span class="name">Danger</span><span class="hex">#E34234</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-danger-bg)"></div><div class="meta"><span class="name">Danger BG</span><span class="hex">rgba(220, 38, 38, 0.07)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary Dark</span><span class="hex">#0B0B0D</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#1a1a1a</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11, 11, 13, 0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-light)"></div><div class="meta"><span class="name">Primary Light</span><span class="hex">#FDFBF7</span></div></div>
       </div>
     </section>
 
@@ -722,15 +777,13 @@
       <table class="typo-table">
         <thead><tr><th>Role</th><th>Font</th><th>Size (clamp)</th><th>Weight</th><th>Sample</th></tr></thead>
         <tbody>
-          <tr><td>Display H1</td><td>Inter</td><td><code>clamp(1.5rem, 3vw+0.5rem, 2.25rem)</code></td><td>700</td><td class="typo-sample">The grid carries warmth</td></tr>
-          <tr><td>Display H2</td><td>Inter</td><td><code>clamp(1.25rem, 2vw+0.5rem, 1.75rem)</code></td><td>600</td><td class="typo-sample">The grid carries warmth</td></tr>
-          <tr><td>Heading 3</td><td>Inter</td><td><code>clamp(1.125rem, 1.5vw+0.4rem, 1.5rem)</code></td><td>600</td><td class="typo-sample">The grid carries warmth</td></tr>
-          <tr><td>Body</td><td>Inter</td><td><code>clamp(0.875rem, 0.5vw+0.5rem, 1rem)</code></td><td>400</td><td class="typo-sample body">Body copy reads at sixteen pixels with generous leading.</td></tr>
-          <tr><td>Small</td><td>Inter</td><td><code>clamp(0.8125rem, 0.3vw+0.5rem, 0.9375rem)</code></td><td>400</td><td class="typo-sample body" style="font-size:var(--text-small)">Fine print and metadata, still legible on mobile.</td></tr>
-          <tr><td>XS</td><td>Inter</td><td><code>clamp(0.75rem, 0.2vw+0.5rem, 0.8125rem)</code></td><td>400</td><td class="typo-sample body" style="font-size:var(--text-xs)">Captions and timestamps.</td></tr>
-          <tr><td>Bengali</td><td>Hind Siliguri</td><td>Matches body scale</td><td>400/500</td><td class="typo-sample bengali">লাকি স্টোর — বাংলা ফন্ট</td></tr>
-          <tr><td>Price</td><td>Inter</td><td>H2 scale</td><td>700</td><td class="typo-sample price">৳1,249.00</td></tr>
-          <tr><td>Mono</td><td>JetBrains Mono</td><td>0.8125rem fixed</td><td>400</td><td class="typo-sample mono">/* monospace */</td></tr>
+          <tr><td>Display H1</td><td>Geist</td><td><code>clamp(2rem, 5vw, 3.5rem)</code></td><td>700</td><td class="typo-sample">LUCKY STORE 1947</td></tr>
+          <tr><td>Display H2</td><td>Geist</td><td><code>1.25rem</code></td><td>600</td><td class="typo-sample">Modern Neighborhood Grocery</td></tr>
+          <tr><td>Heading 3</td><td>Geist</td><td><code>1.125rem</code></td><td>600</td><td class="typo-sample">Fresh Vegetables &amp; Essentials</td></tr>
+          <tr><td>Body</td><td>Geist</td><td><code>1rem</code></td><td>400</td><td class="typo-sample body">Tactile storefront layouts with haptic depth and zero serif elements.</td></tr>
+          <tr><td>Micro / Tags</td><td>Geist</td><td><code>0.75rem</code></td><td>500</td><td class="typo-sample body" style="font-size:0.75rem">SAME DAY DELIVERY</td></tr>
+          <tr><td>Bengali Fallback</td><td>Noto Sans Bengali</td><td>Matches body scale</td><td>400/700</td><td class="typo-sample bengali">লাকি স্টোর — ভোরের তাজা সবজি</td></tr>
+          <tr><td>Price / Mono</td><td>Geist Mono</td><td><code>1.125rem</code></td><td>500</td><td class="typo-sample mono">৳250.00</td></tr>
         </tbody>
       </table>
     </section>
@@ -1428,40 +1481,40 @@
 
       <h2>Quick Reference</h2>
       <pre><code>// Backgrounds
-<div class="bg-warm-bg"></div>        // page
-<div class="bg-warm-surface"></div>   // card
+&lt;div class="bg-warm-bg"&gt;&lt;/div&gt;        // page
+&lt;div class="bg-warm-surface"&gt;&lt;/div&gt;   // card
 
 // Text
-<p class="text-warm-fg"></p>        // primary
-<p class="text-warm-muted"></p>    // secondary
+&lt;p class="text-warm-fg"&gt;&lt;/p&gt;        // primary
+&lt;p class="text-warm-muted"&gt;&lt;/p&gt;    // secondary
 
 // Borders &amp; Radius
-<div class="border border-warm-border rounded-warm-md"></div>
+&lt;div class="border border-warm-border rounded-warm-md"&gt;&lt;/div&gt;
 
 // Shadow
-<div class="shadow-warm-md"></div>
+&lt;div class="shadow-warm-md"&gt;&lt;/div&gt;
 
 // Accent
-<button class="bg-warm-accent hover:bg-warm-accent-hover text-white"></button>
+&lt;button class="bg-warm-accent hover:bg-warm-accent-hover text-white"&gt;&lt;/button&gt;
 
 // POS Product Card
-<div class="pos-product-card">...</div>
+&lt;div class="pos-product-card"&gt;...&lt;/div&gt;
 
 // Checkout Panel
-<div class="checkout-panel">...</div>
+&lt;div class="checkout-panel"&gt;...&lt;/div>
 
 // Payment State
-<span class="payment-state paid">Paid</span>
+&lt;span class="payment-state paid"&gt;Paid&lt;/span&gt;
 
 // Inventory Table
-<table class="inventory">...</table>
+&lt;table class="inventory"&gt;...&lt;/table&gt;
 
 // Thermal Receipt
-<div class="receipt receipt-58mm">...</div></code></pre>
+&lt;div class="receipt receipt-58mm"&gt;...&lt;/div&gt;</code></pre>
     </section>
 
     <div class="footer">
-      Lucky Store POS Design System v2 · Operational Design Language for Retail · Chattogram, Bangladesh · <a href="https://github.com/fatalmonk/luckystorePOS" target="_blank">GitHub</a>
+      Lucky Store POS Design System v2 · Operational Design Language for Retail · Chattogram, Bangladesh · <a href="https://github.com/fatalmonk/luckystorePOS" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
   </main>
 </body>

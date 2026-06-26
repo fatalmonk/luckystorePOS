@@ -8,6 +8,7 @@ interface InventoryProductCardProps {
   item: InventoryItem;
   isHighlighted?: boolean;
   onUpdateStock: (item: InventoryItem) => void;
+  onEditProduct?: (item: InventoryItem) => void;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
   priority?: boolean;
@@ -26,6 +27,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
   item,
   isHighlighted,
   onUpdateStock,
+  onEditProduct,
   isSelected,
   onToggleSelect,
   priority,
@@ -82,6 +84,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
               type="checkbox"
               checked={isSelected}
               onChange={() => onToggleSelect(item.id)}
+              aria-label={`Select ${item.name}`}
               className="w-4 h-4 rounded border-warm-border-warm text-warm-accent focus:ring-warm-accent cursor-pointer"
             />
           </div>
@@ -92,10 +95,16 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setIsEditing(true);
+              if (onEditProduct) {
+                // Open full edit drawer
+                onEditProduct(item);
+              } else {
+                // Fallback: inline edit mode
+                setIsEditing(true);
+              }
             }}
             className="absolute top-1.5 right-1.5 z-10 p-1 rounded bg-warm-accent text-black opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Edit"
+            title="Edit product"
           >
             <Pencil size={12} />
           </button>

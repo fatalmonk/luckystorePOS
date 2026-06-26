@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
+import { uploadToR2 } from '../../lib/r2';
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 import { useAuth } from '../../lib/AuthContext';
@@ -173,20 +174,12 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   // Mutations
   const imageMutation = useMutation({
     mutationFn: async (file: File) => {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${product.id}/${crypto.randomUUID()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, { upsert: true });
-      if (uploadError) throw new Error(uploadError.message);
-      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath);
-      const publicUrl = urlData?.publicUrl;
-      if (!publicUrl) throw new Error('Failed to get public URL');
-      const { error: updateError } = await supabase
-        .from('items')
-        .update({ image_url: publicUrl })
-        .eq('id', product.id);
-      if (updateError) throw new Error(updateError.message);
+      // Upload to R2 CDN via Worker (not Supabase Storage)
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const r2Key = `products/${product.id}/${crypto.randomUUID()}.${fileExt}`;
+      const publicUrl = await uploadToR2(file, r2Key);
+      // Persist the new image_url in the items table
+      await api.inventory.updateProduct(storeId, product.id, { image_url: publicUrl });
       return { image_url: publicUrl };
     },
     onSuccess: () => {
@@ -247,6 +240,9 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+    
+    // Auto-upload immediately for better UX
+    imageMutation.mutate(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -297,9 +293,43 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
         {/* Header */}
         <header className="flex justify-between items-start p-6 border-b border-warm-border-warm bg-warm-surface sticky top-0 z-10">
-          <div>
-            <h2 id="drawer-title" className="text-xl font-bold text-warm-fg font-display">Update Product</h2>
-            <p className="text-sm text-warm-muted mt-1">{product.name}</p>
+          <div className="flex gap-4 items-center">
+            {/* Quick Image Upload */}
+            <div 
+              className="relative group cursor-pointer w-14 h-14 rounded-md border border-warm-border-warm bg-warm-surface overflow-hidden flex-shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              title="Click to change image"
+            >
+              {imagePreview ? (
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+              ) : product.image_url ? (
+                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-warm-dim"><ImageIcon size={24} /></div>
+              )}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                {imageMutation.isPending ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Upload size={16} className="text-white" />
+                )}
+              </div>
+            </div>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              id="header-image-upload"
+              aria-label="Upload product image"
+            />
+
+            <div className="min-w-0">
+              <h2 id="drawer-title" className="text-xl font-bold text-warm-fg font-display truncate pr-4">Update Product</h2>
+              <p className="text-sm text-warm-muted mt-1 truncate pr-4" title={product.name}>{product.name}</p>
+            </div>
           </div>
           <button
             ref={closeButtonRef}
@@ -402,6 +432,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                         min={0}
                         value={editingMinQty ?? ''}
                         onChange={(e) => setEditingMinQty(parseInt(e.target.value) || 0)}
+                        aria-label="Low stock alert threshold (min_qty)"
                         className="w-20 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-warm-accent"
                         autoFocus
                       />
@@ -457,7 +488,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.add.bg} ${stockColors.add.text} border-${stockColors.add.border} focus:ring-success-default`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'add'}
+                  aria-pressed={stockMode === 'add' ? true : false}
                 >
                   <Plus size={20} /><span className="font-semibold text-sm">Add</span>
                 </button>
@@ -470,7 +501,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.remove.bg} ${stockColors.remove.text} border-${stockColors.remove.border} focus:ring-danger-default`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'remove'}
+                  aria-pressed={stockMode === 'remove' ? true : false}
                 >
                   <Minus size={20} /><span className="font-semibold text-sm">Remove</span>
                 </button>
@@ -483,66 +514,10 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                       ? `${stockColors.set.bg} ${stockColors.set.text} border-${stockColors.set.border} focus:ring-warm-accent`
                       : 'bg-transparent text-warm-muted border-warm-border-warm hover:bg-background-subtle focus:ring-warm-accent'
                   )}
-                  aria-pressed={stockMode === 'set'}
+                  aria-pressed={stockMode === 'set' ? true : false}
                 >
                   <RotateCcw size={20} /><span className="font-semibold text-sm">Set</span>
                 </button>
-              </div>
-
-              {/* Product Image */}
-              <div className="form-group">
-                <label className="block text-sm font-medium text-warm-muted mb-2">Product Image</label>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-[72px] h-[72px] rounded-md overflow-hidden border border-warm-border-warm bg-warm-surface flex-shrink-0"
-                    role="img"
-                    aria-label={product.image_url || imagePreview ? `Product image of ${product.name}` : 'No product image'}
-                  >
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    ) : product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-warm-dim"><ImageIcon size={28} /></div>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2 flex-1">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-3 py-2 rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg text-sm font-medium hover:bg-background-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
-                    >
-                      <Upload size={16} />
-                      {imageFile ? 'Change Image' : 'Upload Image'}
-                    </button>
-                    {imageFile && (
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => imageMutation.mutate(imageFile)}
-                          disabled={imageMutation.isPending}
-                          className="flex-1 px-3 py-2 rounded-md border-none bg-warm-accent text-white text-sm font-semibold cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed hover:bg-warm-accent-light transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
-                        >
-                          {imageMutation.isPending ? 'Uploading...' : 'Save Image'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setImageFile(null); setImagePreview(null); }}
-                          className="px-2 py-2 rounded-md border border-warm-border-warm bg-warm-surface text-warm-muted hover:text-warm-fg hover:bg-background-subtle transition-colors"
-                          aria-label="Remove selected image"
-                        ><X size={16} /></button>
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
 
               {/* Quantity Input */}
@@ -707,7 +682,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
               type="submit"
               disabled={isButtonDisabled}
               className="w-full py-3 px-4 bg-warm-accent text-white rounded-md font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-warm-accent-light active:scale-[0.98] transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2"
-              aria-busy={stockMutation.isPending || priceMutation.isPending}
+              aria-busy={stockMutation.isPending || priceMutation.isPending ? true : false}
             >
               <Save size={18} />
               {getButtonLabel()}
