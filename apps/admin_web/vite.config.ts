@@ -32,4 +32,10 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@supabase/supabase-js', 'recharts', 'date-fns', 'react-i18next', 'i18next'],
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./vitest.setup.ts'],
+    css: true,
+  },
 })
