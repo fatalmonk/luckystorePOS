@@ -507,7 +507,7 @@ export function InventoryListPage() {
           <div
             ref={gridRef}
             style={{
-              height: `${gridVirtualizer.getTotalSize()}px`,
+              height: `${Math.max(0, gridVirtualizer.getTotalSize() - gridScrollMargin)}px`,
               width: '100%',
               position: 'relative',
             }}
@@ -521,7 +521,7 @@ export function InventoryListPage() {
                   className="absolute top-0 left-0 w-full grid gap-4 grid-flow-dense"
                   style={{
                     height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start}px)`,
+                    transform: `translateY(${Math.max(0, virtualRow.start - gridScrollMargin)}px)`,
                     gridTemplateColumns: `repeat(${columnsCount}, minmax(0, 1fr))`,
                     paddingBottom: '16px',
                   }}
