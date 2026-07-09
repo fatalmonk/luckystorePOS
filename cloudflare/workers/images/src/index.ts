@@ -41,9 +41,10 @@ function checkRate(ip: string, type: 'uploads' | 'reads', limit: number): boolea
 }
 
 function corsHeaders(origin: string, allowed: string): Record<string, string> {
-  const isAllowed = allowed.split(',').map(o => o.trim()).includes(origin);
+  const allowedOrigins = allowed.split(',').map(o => o.trim());
+  const isAllowed = allowedOrigins.includes(origin) || /^https?:\/\/localhost(:\d+)?$/.test(origin);
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : allowed.split(',')[0].trim(),
+    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0] || '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Store-Id',
     'Access-Control-Max-Age': '86400',
@@ -171,6 +172,11 @@ export default {
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       headers.set('ETag', object.httpEtag);
       object.writeHttpMetadata(headers);
+
+      // Add CORS headers so client apps can query/fetch image files programmatically
+      for (const [k, v] of Object.entries(cors)) {
+        headers.set(k, v);
+      }
 
       return new Response(object.body, { headers });
     }
