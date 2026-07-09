@@ -222,3 +222,4 @@ _plans/neon_data.sql
 
 # Local image catalog backup folder
 catalog-images/
+.env*
