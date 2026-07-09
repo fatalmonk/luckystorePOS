@@ -100,7 +100,7 @@ table.inventory {
 
 table.inventory thead th {
   position: sticky;
-  top: var(--table-sticky-top, 0px);
+  top: 0;
   z-index: 30;
   background-color: var(--color-paper) !important;
   border-bottom: 2px solid var(--color-border);
