@@ -308,11 +308,46 @@ export function InventoryListPage() {
     return chunks;
   }, [filteredItems, columnsCount]);
 
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridScrollMargin, setGridScrollMargin] = useState(0);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    const parent = (document.querySelector('.main-content') as HTMLDivElement) || null;
+    if (!el || !parent) return;
+
+    const measure = () => {
+      const elRect = el.getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      const offset = elRect.top - parentRect.top + parent.scrollTop;
+      setGridScrollMargin(offset);
+    };
+
+    measure();
+
+    const resizeObserver = new ResizeObserver(() => {
+      measure();
+    });
+
+    resizeObserver.observe(parent);
+    if (el.parentElement) {
+      resizeObserver.observe(el.parentElement);
+    }
+
+    parent.addEventListener('scroll', measure, { passive: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      parent.removeEventListener('scroll', measure);
+    };
+  }, [chunkedItems]);
+
   const gridVirtualizer = useVirtualizer({
     count: chunkedItems.length,
     getScrollElement: () => (document.querySelector('.main-content') as HTMLDivElement) || null,
     estimateSize: () => 380,
     overscan: 1,
+    scrollMargin: gridScrollMargin,
   });
 
   if (error) {
@@ -470,6 +505,7 @@ export function InventoryListPage() {
           </Card>
         ) : viewMode === 'grid' ? (
           <div
+            ref={gridRef}
             style={{
               height: `${gridVirtualizer.getTotalSize()}px`,
               width: '100%',
