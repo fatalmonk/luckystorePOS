@@ -42,12 +42,35 @@ export function InventoryListTable({
   useEffect(() => {
     const el = tableRef.current;
     const parent = scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null;
-    if (el && parent) {
+    if (!el || !parent) return;
+
+    const measure = () => {
       const elRect = el.getBoundingClientRect();
       const parentRect = parent.getBoundingClientRect();
       const offset = elRect.top - parentRect.top + parent.scrollTop;
       setScrollMargin(offset);
+    };
+
+    // Initial measurement
+    measure();
+
+    // Re-measure whenever the parent container or the table container resizes/relayouts
+    const resizeObserver = new ResizeObserver(() => {
+      measure();
+    });
+
+    resizeObserver.observe(parent);
+    if (el.parentElement) {
+      resizeObserver.observe(el.parentElement);
     }
+
+    // Also listen to scroll events on the parent to ensure coordinates stay in sync
+    parent.addEventListener('scroll', measure, { passive: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      parent.removeEventListener('scroll', measure);
+    };
   }, [scrollElement, items]);
 
   const rowVirtualizer = useVirtualizer({
