@@ -39,7 +39,7 @@ export function InventoryListTable({
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
-    getScrollElement: () => scrollElement || null,
+    getScrollElement: () => scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null,
     estimateSize: () => compact ? 32 : 72,
     overscan: 5,
   });
