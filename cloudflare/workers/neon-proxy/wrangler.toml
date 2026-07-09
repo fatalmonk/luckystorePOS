@@ -6,7 +6,7 @@ account_id = "8e457654e12c3b75d2094bbd8914030b"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://lucky-store.vercel.app,https://lucky-store-pos.vercel.app,https://lucky-store-pos-six.vercel.app,https://admin.luckystore.com,https://luckystore1947.com,https://admin.luckystore1947.com,http://localhost:5173,http://localhost:3000"
+ALLOWED_ORIGINS = "https://luckystore1947.com,https://admin.luckystore1947.com,https://lucky-store-pos-six.vercel.app,http://localhost:5173,http://localhost:3000"
 
 # Secrets (set via `wrangler secret put`):
 # NEON_DATABASE_URL — Neon postgres connection string
