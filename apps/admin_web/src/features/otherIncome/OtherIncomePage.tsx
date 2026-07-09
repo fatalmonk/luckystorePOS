@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,7 +44,7 @@ export const OtherIncomePage: React.FC = () => {
     },
   });
 
-  const fetchRecords = async () => {
+  const fetchRecords = useCallback(async () => {
     setLoading(true);
     try {
       const data = await otherIncome.list(tenantId, storeId || undefined);
@@ -54,14 +54,14 @@ export const OtherIncomePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, storeId, notify]);
 
   useEffect(() => {
     if (tenantId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchRecords();
     }
-  }, [tenantId, storeId]);
+  }, [fetchRecords]);
 
   const onSubmit = async (values: IncomeFormValues) => {
     setSubmitting(true);

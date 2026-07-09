@@ -231,7 +231,7 @@ export function DailySalesPage() {
     }
 
     try {
-      await api.dailySales.update(sale.id, updates);
+      await api.dailySales.update(sale.id, updates, storeId);
       notify('Daily sale updated successfully.', 'success');
       queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
       setSavedRows(prev => new Set(prev).add(sale.id));
@@ -439,7 +439,7 @@ export function DailySalesPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<DailySaleFormData> }) => 
-      api.dailySales.update(id, updates),
+      api.dailySales.update(id, updates, storeId),
     onSuccess: () => {
       notify('Daily sale updated successfully.', 'success');
       queryClient.invalidateQueries({ queryKey: ['dailySales', storeId] });
