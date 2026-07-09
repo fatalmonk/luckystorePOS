@@ -18,16 +18,6 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1000,
     modulePreload: { polyfill: false },
-    rollupOptions: {
-      output: {
-        manualChunks(id: string) {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor-react';
-          if (id.includes('node_modules/lucide-react') || id.includes('node_modules/clsx') || id.includes('node_modules/date-fns')) return 'vendor-ui';
-          if (id.includes('node_modules/@tanstack/react-query') || id.includes('node_modules/recharts') || id.includes('node_modules/@supabase/supabase-js')) return 'vendor-data';
-          if (id.includes('node_modules/react-hook-form') || id.includes('node_modules/@hookform') || id.includes('node_modules/zod')) return 'vendor-forms';
-        },
-      },
-    },
   },
   optimizeDeps: {
     include: ['@supabase/supabase-js', 'recharts', 'date-fns', 'react-i18next', 'i18next'],
