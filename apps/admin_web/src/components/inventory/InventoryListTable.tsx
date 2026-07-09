@@ -1,5 +1,5 @@
 import type { InventoryItem } from '../../types/inventory';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { InventoryListTableRow } from './InventoryListTableRow';
 
@@ -36,12 +36,26 @@ export function InventoryListTable({
 }: InventoryListTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: string } | null>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+
+  useEffect(() => {
+    const el = tableRef.current;
+    const parent = scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null;
+    if (el && parent) {
+      const elRect = el.getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      const offset = elRect.top - parentRect.top + parent.scrollTop;
+      setScrollMargin(offset);
+    }
+  }, [scrollElement, items]);
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null,
     estimateSize: () => compact ? 32 : 72,
     overscan: 5,
+    scrollMargin,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -104,7 +118,7 @@ export function InventoryListTable({
           className="table-wrap w-full bg-warm-surface rounded-[calc(2rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-x-auto" 
           style={{ '--table-sticky-top': `${toolbarHeight || 140}px` } as React.CSSProperties}
         >
-          <table className="inventory w-full min-w-[1000px]">
+          <table ref={tableRef} className="inventory w-full min-w-[1000px]">
             {/* Sticky Header - Solid Background + Proper Z-Index */}
             <thead>
               <tr className="border-b border-warm-border-warm shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
