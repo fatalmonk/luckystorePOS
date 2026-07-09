@@ -46,16 +46,25 @@ export const expenses = {
     return data as unknown as RecordExpenseResult;
   },
   update: async (expenseId: string, updates: { expenseDate?: string; vendorName?: string; description?: string; amount?: number; paymentType?: string; category?: string }) => {
+    // Only include defined fields to avoid overwriting columns with NULL
+    const patch: Partial<{
+      expense_date: string;
+      vendor_name: string;
+      description: string;
+      amount: number;
+      payment_type: string;
+      category: string;
+    }> = {};
+    if (updates.expenseDate !== undefined) patch.expense_date = updates.expenseDate;
+    if (updates.vendorName !== undefined) patch.vendor_name = updates.vendorName;
+    if (updates.description !== undefined) patch.description = updates.description;
+    if (updates.amount !== undefined) patch.amount = updates.amount;
+    if (updates.paymentType !== undefined) patch.payment_type = updates.paymentType;
+    if (updates.category !== undefined) patch.category = updates.category;
+
     const { data, error } = await supabase
       .from('expenses')
-      .update({
-        expense_date: updates.expenseDate,
-        vendor_name: updates.vendorName,
-        description: updates.description,
-        amount: updates.amount,
-        payment_type: updates.paymentType,
-        category: updates.category,
-      })
+      .update(patch)
       .eq('id', expenseId)
       .select()
       .single();

@@ -84,11 +84,14 @@ export function usePosSale(
     if (!splitMethod) return;
     const amount = parseFloat(splitAmount);
     if (isNaN(amount) || amount <= 0) return;
-    if (remainingAmount > 0 && amount > remainingAmount) return;
+    if (remainingAmount > 0 && amount > remainingAmount) {
+      onError(`Amount exceeds remaining balance of ৳${remainingAmount.toFixed(2)}`);
+      return;
+    }
     setSplitPayments(prev => [...prev, { id: crypto.randomUUID(), accountId: splitMethod, amount }]);
     setSplitMethod(null);
     setSplitAmount('');
-  }, [splitMethod, splitAmount, remainingAmount]);
+  }, [splitMethod, splitAmount, remainingAmount, onError]);
 
   const removeSplitPayment = useCallback((id: string) => {
     setSplitPayments(prev => prev.filter(p => p.id !== id));
@@ -203,7 +206,7 @@ export function usePosSale(
       debugLog('Sale result', result);
 
       if (result.status === 'success') {
-        const change = paidTotalInner - totalAmount;
+        const change = Math.max(0, paidTotalInner - totalAmount);
 
         setCompletedSale({
           cart: [...cart],

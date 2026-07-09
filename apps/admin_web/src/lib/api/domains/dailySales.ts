@@ -87,8 +87,8 @@ export const dailySales = {
     };
   },
 
-  update: async (id: string, updates: Partial<DailySaleFormData>): Promise<DailySale> => {
-    const { data, error } = await supabase
+  update: async (id: string, updates: Partial<DailySaleFormData>, storeId?: string): Promise<DailySale> => {
+    let q = supabase
       .from('daily_sales')
       .update({
         sale_date: updates.saleDate,
@@ -99,9 +99,9 @@ export const dailySales = {
         stock_purchase: updates.stockPurchase,
         daily_expense: updates.dailyExpense,
       })
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
+    if (storeId) q = q.eq('store_id', storeId);
+    const { data, error } = await q.select().single();
     if (error) throw error;
     return {
       id: data.id,

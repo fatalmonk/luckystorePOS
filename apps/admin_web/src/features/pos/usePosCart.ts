@@ -55,10 +55,11 @@ export function usePosCart(onError: (msg: string) => void): UsePosCartReturn {
 
       if (existingIndex >= 0) {
         const updated = [...prev];
+        const unitPrice = updated[existingIndex].unitPrice;
         updated[existingIndex] = {
           ...updated[existingIndex],
           qty: newQty,
-          lineTotal: newQty * updated[existingIndex].unitPrice,
+          lineTotal: Math.round(newQty * unitPrice * 100) / 100,
         };
         return updated;
       }
@@ -67,7 +68,7 @@ export function usePosCart(onError: (msg: string) => void): UsePosCartReturn {
         product,
         qty,
         unitPrice: product.price,
-        lineTotal: qty * product.price,
+        lineTotal: Math.round(qty * product.price * 100) / 100,
       }];
     });
   }, [onError]);
@@ -93,7 +94,7 @@ export function usePosCart(onError: (msg: string) => void): UsePosCartReturn {
 
       return prev.map(cartItem =>
         cartItem.product.id === productId
-          ? { ...cartItem, qty, lineTotal: qty * cartItem.unitPrice }
+          ? { ...cartItem, qty, lineTotal: Math.round(qty * cartItem.unitPrice * 100) / 100 }
           : cartItem
       );
     });
