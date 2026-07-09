@@ -129,7 +129,6 @@ export const inventory = {
       .from('items')
       .update({ is_active: false } as any)
       .eq('id', itemId);
-      // Removed .eq('store_id', storeId) as items are tenant-scoped
     if (error) throw error;
     return data;
   },

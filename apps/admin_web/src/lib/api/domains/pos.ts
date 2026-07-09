@@ -72,11 +72,12 @@ export const pos = {
     if (error) throw error;
     const result = (data ?? {}) as unknown as SaleResultData;
     debugLog('Sale result', result);
+    const isSuccess = (result.status || '').toUpperCase() === 'SUCCESS';
     return {
-      status: (result.status || '').toUpperCase() === 'SUCCESS' ? 'success' : 'error',
+      status: isSuccess ? 'success' : 'error',
       batchId: result.batch_id,
       totalAmount: result.total_revenue,
-      error: result.status !== 'success' ? 'Sale failed' : undefined,
+      error: isSuccess ? undefined : (result.status || 'Sale failed'),
     };
   },
 };

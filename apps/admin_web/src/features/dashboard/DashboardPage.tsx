@@ -74,10 +74,16 @@ export function DashboardPage() {
     },
   });
 
+  // Shared AudioContext for chime — reused to avoid leaking instances
+  const audioCtxRef = React.useRef<AudioContext | null>(null);
+
   // Helper to play chime sound using Web Audio API (so no external assets are required)
   const playChime = () => {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioCtxRef.current;
       const now = ctx.currentTime;
       
       const osc1 = ctx.createOscillator();
