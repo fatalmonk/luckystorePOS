@@ -436,7 +436,7 @@ luckystorePOS/
 - Auto-deploys on push to `main`
 - Serves landing page at `/` and admin web at `/admin/*` from a single project
 - Build command: `bash scripts/build/vercel.sh`
-- Live demo: [admin.luckystore.com](https://admin.luckystore.com/) (or [lucky-store-pos.vercel.app](https://lucky-store-pos.vercel.app/))
+- Live demo: [admin.luckystore1947.com](https://admin.luckystore1947.com/) (or [lucky-store-pos-six.vercel.app](https://lucky-store-pos-six.vercel.app/))
 
 </details>
 
