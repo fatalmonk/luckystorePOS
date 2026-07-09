@@ -214,7 +214,7 @@ export function PaymentModal({
                 <button className="quick-amount-btn" onClick={() => onQuickAmount(100)}>৳100</button>
                 <button className="quick-amount-btn" onClick={() => onQuickAmount(500)}>৳500</button>
                 <button className="quick-amount-btn" onClick={() => onQuickAmount(1000)}>৳1000</button>
-                <button className="quick-amount-btn exact" onClick={() => onQuickAmount(Math.ceil(totalAmount))}>Exact</button>
+                <button className="quick-amount-btn exact" onClick={() => onQuickAmount(totalAmount)}>Exact</button>
               </div>
             </div>
 

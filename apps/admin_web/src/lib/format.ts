@@ -8,7 +8,8 @@ export function formatCurrencyValue(amount: number): string {
 }
 
 export function formatCurrencyCompact(amount: number): string {
-  return `৳${amount.toFixed(2)}`;
+  const absAmountStr = Math.abs(amount).toFixed(2);
+  return amount < 0 ? `-৳${absAmountStr}` : `৳${absAmountStr}`;
 }
 
 export function downloadCSV(rows: Record<string, unknown>[], filename: string): void {
