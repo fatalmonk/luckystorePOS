@@ -26,27 +26,35 @@ AS $$
     LIMIT 1;
 $$;
 
--- search_items_pos (2-param version - the correct one)
-DROP FUNCTION IF EXISTS public.search_items_pos(text, uuid);
-
-CREATE OR REPLACE FUNCTION public.search_items_pos(p_query text, p_store_id uuid)
-RETURNS TABLE (item_id uuid, name text, price numeric, stock integer)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-    SELECT 
-        i.id AS item_id,
-        i.name,
-        i.price,
-        COALESCE(sl.qty, 0)::integer AS stock
-    FROM items i
-    LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
-    WHERE i.is_active = true
-    AND (i.name ILIKE '%' || p_query || '%' OR i.barcode = p_query OR i.sku = p_query)
-    LIMIT 20;
-$$;
+-- search_items_pos
+-- NOTE: The 5-param version (uuid,text,uuid,integer,integer) is the storefront contract.
+--       DO NOT replace it with a 2-param version — that breaks apps/customer_storefront/app/lib/products.ts.
+--       If the 5-param version is missing, apply migration 20260710215800_fix_search_items_pos_signature.sql.
+--
+-- Safeguard: only create the 2-param version if the 5-param one does NOT exist.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON p.pronamespace = n.oid
+    WHERE n.nspname = 'public'
+      AND p.proname = 'search_items_pos'
+      AND pg_get_function_arguments(p.oid) LIKE 'uuid%'
+  ) THEN
+    -- No 5-param version exists; create the minimal 2-param fallback.
+    CREATE OR REPLACE FUNCTION public.search_items_pos(p_query text, p_store_id uuid)
+    RETURNS TABLE (item_id uuid, name text, price numeric, stock integer)
+    LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp
+    AS $$
+        SELECT i.id AS item_id, i.name, i.price, COALESCE(sl.qty, 0)::integer AS stock
+        FROM items i
+        LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
+        WHERE i.is_active = true
+          AND (i.name ILIKE '%' || p_query || '%' OR i.barcode = p_query OR i.sku = p_query)
+        LIMIT 20;
+    $$;
+  END IF;
+END $$;
 
 -- Grant permissions for all roles
 GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text, uuid) TO authenticated;
