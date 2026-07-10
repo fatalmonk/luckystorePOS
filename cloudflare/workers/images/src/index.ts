@@ -209,7 +209,7 @@ export default {
     // -------------------------------------------------------------------------
     // GET /:key — serve image
     // -------------------------------------------------------------------------
-    if (request.method === 'GET') {
+    if (request.method === 'GET' || request.method === 'HEAD') {
       const key = url.pathname.slice(1);
       // Block exposure of repository metadata or env files
       const blockedKeys = ['.git', '.env', '.git/HEAD', '.env.backup'];
@@ -240,6 +240,11 @@ export default {
 
       for (const [k, v] of Object.entries(cors)) {
         headers.set(k, v);
+      }
+
+      // For HEAD requests, return headers without streaming the body
+      if (request.method === 'HEAD') {
+        return new Response(null, { headers });
       }
 
       return new Response(object.body, { headers });
