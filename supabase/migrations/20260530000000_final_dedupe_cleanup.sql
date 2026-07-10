@@ -187,7 +187,7 @@ $$;
 DROP FUNCTION IF EXISTS public.search_items_pos(text, uuid);
 
 CREATE OR REPLACE FUNCTION public.search_items_pos(p_query text, p_store_id uuid)
-RETURNS TABLE (item_id uuid, name text, price numeric, stock integer)
+RETURNS TABLE (item_id uuid, name text, price numeric, stock integer, image_url text)
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
@@ -197,7 +197,8 @@ AS $$
         i.id AS item_id,
         i.name,
         i.price,
-        COALESCE(sl.qty, 0)::integer AS stock
+        COALESCE(sl.qty, 0)::integer AS stock,
+        i.image_url
     FROM items i
     LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
     WHERE i.is_active = true

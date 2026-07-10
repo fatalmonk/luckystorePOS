@@ -43,24 +43,25 @@ BEGIN
   ) THEN
     -- No 5-param version exists; create the minimal 2-param fallback.
     CREATE OR REPLACE FUNCTION public.search_items_pos(p_query text, p_store_id uuid)
-    RETURNS TABLE (item_id uuid, name text, price numeric, stock integer)
+    RETURNS TABLE (item_id uuid, name text, price numeric, stock integer, image_url text)
     LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp
-    AS $$
-        SELECT i.id AS item_id, i.name, i.price, COALESCE(sl.qty, 0)::integer AS stock
+    AS $func$
+        SELECT i.id AS item_id, i.name, i.price, COALESCE(sl.qty, 0)::integer AS stock, i.image_url
         FROM items i
         LEFT JOIN stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
         WHERE i.is_active = true
           AND (i.name ILIKE '%' || p_query || '%' OR i.barcode = p_query OR i.sku = p_query)
         LIMIT 20;
-    $$;
+    $func$;
+
+    -- Grant on the newly-created 2-param version
+    GRANT EXECUTE ON FUNCTION public.search_items_pos(text, uuid) TO authenticated;
+    GRANT EXECUTE ON FUNCTION public.search_items_pos(text, uuid) TO service_role;
+    GRANT EXECUTE ON FUNCTION public.search_items_pos(text, uuid) TO anon;
   END IF;
 END $$;
 
--- Grant permissions for all roles
+-- Grant permissions for lookup_item_by_scan (always created above)
 GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text, uuid) TO anon;
-
-GRANT EXECUTE ON FUNCTION public.search_items_pos(text, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.search_items_pos(text, uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.search_items_pos(text, uuid) TO anon;
