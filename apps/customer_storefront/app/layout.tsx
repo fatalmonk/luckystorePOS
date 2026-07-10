@@ -9,19 +9,19 @@ import { WebMCPInit } from './components/WebMCPInit';
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',
-  display: 'swap',
+  display: 'optional',
 });
 
 const geistMono = Geist_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
-  display: 'swap',
+  display: 'optional',
 });
 
 const notoBengali = Noto_Sans_Bengali({
   subsets: ['bengali'],
   variable: '--font-bengali',
-  display: 'swap',
+  display: 'optional',
 });
 
 export const metadata: Metadata = {

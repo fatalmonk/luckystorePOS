@@ -95,7 +95,7 @@ AS $$
   LEFT JOIN public.categories c ON c.id = i.category_id
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
   LEFT JOIN public.stock_alert_thresholds sat ON sat.item_id = i.id AND sat.store_id = p_store_id
-  WHERE i.active = true
+  WHERE i.is_active = true
     AND COALESCE(sl.qty, 0) <= COALESCE(sat.min_qty, 5)
   ORDER BY COALESCE(sl.qty, 0) ASC, i.name ASC
   LIMIT 50;
@@ -134,7 +134,7 @@ BEGIN
   FROM public.items i
   JOIN public.stock_levels sl ON sl.item_id = i.id
   WHERE sl.store_id = p_store_id
-    AND i.active = true;
+    AND i.is_active = true;
 
   RETURN jsonb_build_object(
     'total_skus', COALESCE(v_total_skus, 0),

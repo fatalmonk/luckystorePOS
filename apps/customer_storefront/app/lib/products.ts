@@ -149,7 +149,7 @@ export async function fetchCategories(): Promise<{ id: string; slug: Category; n
   try {
     const { data, error } = await supabase
       .from('categories')
-      .select('id, slug, category, emoji')
+      .select('id, slug, name, emoji')
       .eq('active', true)
       .order('display_order');
 
@@ -157,9 +157,9 @@ export async function fetchCategories(): Promise<{ id: string; slug: Category; n
 
     return (data ?? []).map((c: any) => ({
       id: c.id,
-      slug: (c.slug ?? c.category) as Category,
-      name: c.category,
-      emoji: getCategoryEmoji(c.category, c.emoji),
+      slug: (c.slug ?? c.name) as Category,
+      name: c.name,
+      emoji: getCategoryEmoji(c.name, c.emoji),
     }));
   } catch (error) {
     console.error('Error in fetchCategories:', error);

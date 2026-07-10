@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface HeroBannerProps {
   title: string;
@@ -20,16 +21,28 @@ export function HeroBanner({
   return (
     <section
       className={`w-full mb-6 rounded-[24px] overflow-hidden relative h-44 flex flex-col justify-center p-6 border border-stone-200/40 shadow-sm hover:shadow-md transition-shadow duration-300 ${
-        hasBgImage ? 'bg-cover bg-center' : `bg-gradient-to-r ${bgGradient}`
+        hasBgImage ? '' : `bg-gradient-to-r ${bgGradient}`
       }`}
-      style={hasBgImage ? { backgroundImage: `url(${bgImage})` } : {}}
     >
+      {/* Optimised hero image — preloaded, discovered early by browser */}
+      {hasBgImage && (
+        <Image
+          src={bgImage}
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 800px"
+          className="object-cover object-center z-0"
+          quality={80}
+        />
+      )}
+
       {/* Dark overlay for rich legibility on background images */}
-      {hasBgImage && <div className="absolute inset-0 bg-gradient-to-r from-stone-950/80 via-stone-950/40 to-transparent z-0" />}
+      {hasBgImage && <div className="absolute inset-0 bg-gradient-to-r from-stone-950/80 via-stone-950/40 to-transparent z-[1]" />}
 
       {/* Decorative premium radial vector blobs */}
-      <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-xl z-0 pointer-events-none" />
-      <div className="absolute -bottom-10 right-10 w-40 h-40 bg-black/5 rounded-full blur-2xl z-0 pointer-events-none" />
+      <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-xl z-[1] pointer-events-none" />
+      <div className="absolute -bottom-10 right-10 w-40 h-40 bg-black/5 rounded-full blur-2xl z-[1] pointer-events-none" />
 
       {/* Content wrapper */}
       <div className="relative z-10 max-w-lg">
