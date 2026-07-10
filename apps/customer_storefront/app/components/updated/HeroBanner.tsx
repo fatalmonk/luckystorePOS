@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface HeroBannerProps {
   title: string;
@@ -24,16 +23,13 @@ export function HeroBanner({
         hasBgImage ? '' : `bg-gradient-to-r ${bgGradient}`
       }`}
     >
-      {/* Optimised hero image — preloaded, discovered early by browser */}
+      {/* Background image served directly from R2 — no Vercel proxy */}
       {hasBgImage && (
-        <Image
+        <img
           src={bgImage}
           alt=""
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, 800px"
-          className="object-cover object-center z-0"
-          quality={80}
+          loading="eager"
+          className="absolute inset-0 w-full h-full object-cover object-center z-0"
         />
       )}
 
