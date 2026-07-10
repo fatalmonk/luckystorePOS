@@ -1,0 +1,21 @@
+name = "lucky-store-whatsapp-webhook"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+account_id = "8e457654e12c3b75d2094bbd8914030b"
+workers_dev = false
+
+[[routes]]
+pattern = "whatsapp.luckystore1947.com/webhook*"
+zone_id = "cadbf71f2c3aee47e0c299319cba570d"
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+# Secrets — set via wrangler secret put:
+# WHATSAPP_PHONE_NUMBER_ID  = 1133667033174167
+# WHATSAPP_ACCESS_TOKEN     = <Meta system-user token with whatsapp_business_messaging scope>
+# WHATSAPP_VERIFY_TOKEN     = <generate a random string and paste it into Meta dashboard>
+# SUPABASE_URL              = https://hvmyxyccfnkrbxqbhlnm.supabase.co
+# SUPABASE_SERVICE_ROLE_KEY = <service_role key>
+# META_APP_SECRET           = <Facebook app secret>  (optional, enables signature verification)
