@@ -75,6 +75,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
 
       // 2. Create item
       const insertData: any = {
+        tenant_id: tenantId,
         name,
         sku: sku || null,
         barcode: barcode || null,

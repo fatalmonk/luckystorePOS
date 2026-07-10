@@ -6,20 +6,27 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
-  create: async (product: {
-    name: string;
-    sku?: string;
-    barcode?: string;
-    price: number;
-    cost?: number;
-    mrp?: number;
-    category_id?: string;
-    image_url?: string;
-    short_code?: string;
-    brand?: string;
-    group_tag?: string;
-  }) => {
-    const { data, error } = await supabase.from('items').insert(product as any).select().single();
+  create: async (
+    tenantId: string,
+    product: {
+      name: string;
+      sku?: string;
+      barcode?: string;
+      price: number;
+      cost?: number;
+      mrp?: number;
+      category_id?: string;
+      image_url?: string;
+      short_code?: string;
+      brand?: string;
+      group_tag?: string;
+    }
+  ) => {
+    const { data, error } = await supabase
+      .from('items')
+      .insert({ ...product, tenant_id: tenantId } as any)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
