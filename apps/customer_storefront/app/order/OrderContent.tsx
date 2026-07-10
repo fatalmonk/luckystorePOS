@@ -12,10 +12,53 @@ interface OrderData {
   name: string;
   phone: string;
   address: string;
-  items: number;
+  notes?: string;
+  deliverySlot?: string;
+  items: { id: string; name: string; price: number; qty: number; unit?: string; total: number }[];
+  subtotal: number;
+  deliveryFee: number;
+  discount: number;
   total: number;
   time: string;
 }
+
+const formatItemsList = (items: OrderData['items']) =>
+  items
+    .map((item, i) => {
+      const unit = item.unit ? ` (${item.unit})` : '';
+      return `${i + 1}. ${item.name}${unit}\n   Qty: ${item.qty} × ৳${item.price.toFixed(2)} = ৳${item.total.toFixed(2)}`;
+    })
+    .join('\n');
+
+const formatOrderMessage = (order: OrderData): string => {
+  const slotLabel = order.deliverySlot === 'morning' ? 'Morning (9AM–1PM)' : order.deliverySlot === 'evening' ? 'Evening (4PM–8PM)' : order.deliverySlot || 'Not selected';
+  const notes = order.notes ? `\n📝 Notes: ${order.notes}` : '';
+
+  return [
+    `🛒 New Order — #${order.orderNumber}`,
+    ``,
+    `👤 ${order.name}`,
+    `📱 ${order.phone}`,
+    `📍 ${order.address}`,
+    ``,
+    `⏰ Delivery Slot: ${slotLabel}`,
+    notes,
+    notes ? `` : '',
+    `🧾 Items:`,
+    formatItemsList(order.items),
+    ``,
+    `Subtotal: ৳${order.subtotal.toFixed(2)}`,
+    order.discount > 0 ? `Delivery Discount: -৳${order.discount.toFixed(2)}` : '',
+    `Delivery Fee: ৳${order.deliveryFee.toFixed(2)}`,
+    `*Total: ৳${order.total.toFixed(2)}*`,
+    ``,
+    `💵 Cash on Delivery`,
+    ``,
+    `Please confirm this order.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+};
 
 const TIMELINE_STEPS = [
   { id: 'placed', label: 'Order Placed', time: 'Just now', state: 'done' as const },
@@ -105,7 +148,7 @@ export default function OrderContent() {
         <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
           <div className="flex justify-between mb-2 text-sm">
             <span className="text-warm-muted">Items</span>
-            <span>{order.items} items</span>
+            <span>{order.items.length} items</span>
           </div>
           <div className="flex justify-between mb-2 text-sm">
             <span className="text-warm-muted">Total</span>
@@ -169,9 +212,7 @@ export default function OrderContent() {
             Tap below to send your order details to our store WhatsApp.
           </p>
           <a
-            href={`https://wa.me/8801731944544?text=${encodeURIComponent(
-              `Hi Lucky Store, I just placed an order.\n\nOrder #: ${order.orderNumber}\nName: ${order.name}\nPhone: ${order.phone}\nAddress: ${order.address}\nTotal: ${formatBdt(order.total)}\n\nPlease confirm. Thanks!`
-            )}`}
+            href={`https://wa.me/8801731944544?text=${encodeURIComponent(formatOrderMessage(order))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full"
