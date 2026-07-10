@@ -211,6 +211,11 @@ export default {
     // -------------------------------------------------------------------------
     if (request.method === 'GET') {
       const key = url.pathname.slice(1);
+      // Block exposure of repository metadata or env files
+      const blockedKeys = ['.git', '.env', '.git/HEAD', '.env.backup'];
+      if (blockedKeys.includes(key) || key.startsWith('.')) {
+        return new Response('Forbidden', { status: 403, headers: cors });
+      }
       if (!key || key === 'favicon.ico') {
         return new Response('Not found', { status: 404 });
       }
