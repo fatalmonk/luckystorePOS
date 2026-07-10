@@ -1,0 +1,19 @@
+{
+  "name": "lucky-store-whatsapp-webhook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20260623.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "wrangler": "^4.104.0"
+  }
+}
