@@ -162,6 +162,26 @@ export default function OrderContent() {
           </div>
         </div>
 
+        {/* WhatsApp confirmation — no API credentials needed */}
+        <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+          <h3 className="text-sm font-bold mb-1">💬 Get updates on WhatsApp</h3>
+          <p className="text-sm text-warm-muted mb-3">
+            Tap below to send your order details to our store WhatsApp.
+          </p>
+          <a
+            href={`https://wa.me/8801731944544?text=${encodeURIComponent(
+              `Hi Lucky Store, I just placed an order.\n\nOrder #: ${order.orderNumber}\nName: ${order.name}\nPhone: ${order.phone}\nAddress: ${order.address}\nTotal: ${formatBdt(order.total)}\n\nPlease confirm. Thanks!`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full"
+          >
+            <Button fullWidth variant="secondary">
+              Message on WhatsApp
+            </Button>
+          </a>
+        </div>
+
         {/* Actions */}
         <Button fullWidth className="mb-3" onClick={() => router.push('/')}>
           Continue Shopping
