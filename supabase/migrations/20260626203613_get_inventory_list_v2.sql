@@ -60,7 +60,7 @@ BEGIN
         LEFT JOIN public.categories c ON i.category_id = c.id
         LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
         LEFT JOIN public.stock_alert_thresholds sat ON sat.item_id = i.id AND sat.store_id = p_store_id
-        WHERE i.active = true
+        WHERE i.is_active = true
           AND (p_category_id IS NULL OR i.category_id = p_category_id)
           AND (
               p_search IS NULL OR p_search = '' 

@@ -19,7 +19,7 @@ AS $$
       c.icon,
       COUNT(i.id) AS item_count
     FROM public.categories c
-    JOIN public.items i ON i.category_id = c.id AND i.active = true
+    JOIN public.items i ON i.category_id = c.id AND i.is_active = true
     GROUP BY c.id, c.name, c.image_url, c.color, c.icon
     HAVING COUNT(i.id) > 0
   ) r;

@@ -64,10 +64,10 @@
 ### Environment Variables
 ```bash
 # .env.local
-VITE_NEON_PROXY_URL="https://lucky-store-neon-proxy.luckystore-1947.workers.dev"
-VITE_NEON_API_KEY="luckystore1947"
-SUPABASE_URL="https://hvmyxyccfnkrbxqbhlnm.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="sb_secret_..."  # See .env.local
+VITE_NEON_PROXY_URL      https://lucky-store-neon-proxy.luckystore-1947.workers.dev
+VITE_NEON_API_KEY        your-api-key
+SUPABASE_URL             https://hvmyxyccfnkrbxqbhlnm.supabase.co
+SUPABASE_SERVICE_ROLE_KEY your-service-role-key  # See .env.local
 ```
 
 ---
