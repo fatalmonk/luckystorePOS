@@ -16,9 +16,13 @@ export const products = {
     if (error) throw error;
     return data;
   },
-  create: async (product: ProductCreateInput) => {
+  create: async (tenantId: string, product: ProductCreateInput) => {
     const { stock: _stock, ...itemData } = product;
-    const { data, error } = await supabase.from('items').insert(itemData as any).select().single();
+    const { data, error } = await supabase
+      .from('items')
+      .insert({ ...itemData, tenant_id: tenantId } as any)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
