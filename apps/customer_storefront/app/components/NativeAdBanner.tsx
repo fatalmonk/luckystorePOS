@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 interface NativeAdBannerProps {
   title: string;
   subtitle?: string;
@@ -24,11 +22,11 @@ export function NativeAdBanner({
         className="block relative rounded-xl overflow-hidden h-40 sm:h-48 group"
       >
         {bgImage ? (
-          <Image
+          <img
             src={bgImage}
             alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="absolute inset-0" style={{ backgroundColor: bgColor }} />
