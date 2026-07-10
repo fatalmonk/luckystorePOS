@@ -16,6 +16,9 @@ preview_bucket_name = "lucky-store-images"
 
 [vars]
 ALLOWED_ORIGINS = "https://luckystore1947.com,https://lucky-store-bd.vercel.app,https://admin.luckystore1947.com,https://lucky-store-pos-six.vercel.app,http://localhost:3000,http://localhost:5173"
+PUBLIC_BASE_URL = "https://images.luckystore1947.com"
+# DELETE_SECRET must be set as an encrypted secret — never commit it here:
+#   npx wrangler secret put DELETE_SECRET
 
 # Rate limiting: 30 uploads/min per IP, 600 reads/min per IP
 [limits]

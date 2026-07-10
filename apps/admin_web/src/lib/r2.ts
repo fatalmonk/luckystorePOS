@@ -6,10 +6,13 @@
  * to the browser.
  *
  * Env vars (admin_web):
- *   VITE_R2_PUBLIC_URL — public Worker URL for reading/uploading images
+ *   VITE_R2_PUBLIC_URL        — public Worker URL for reading/uploading images
+ *   VITE_IMAGE_DELETE_SECRET  — secret token for authorised DELETE requests
+ *                               (admin-only; acceptable to expose in admin bundle)
  */
 
 const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL || '';
+const DELETE_SECRET = import.meta.env.VITE_IMAGE_DELETE_SECRET || '';
 
 /**
  * Upload image to R2 via Worker. Returns the public URL.
@@ -44,9 +47,13 @@ export async function deleteFromR2(key: string): Promise<void> {
   if (!R2_PUBLIC_URL) {
     throw new Error('VITE_R2_PUBLIC_URL not configured');
   }
+  if (!DELETE_SECRET) {
+    throw new Error('VITE_IMAGE_DELETE_SECRET not configured');
+  }
 
   const response = await fetch(`${R2_PUBLIC_URL}/${key}`, {
     method: 'DELETE',
+    headers: { 'X-Store-Id': DELETE_SECRET },
   });
 
   if (!response.ok && response.status !== 404) {
