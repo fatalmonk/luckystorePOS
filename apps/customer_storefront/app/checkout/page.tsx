@@ -131,8 +131,20 @@ function CheckoutContent() {
         name: formData.name,
         phone: cleanPhone,
         address: formData.address,
-        items: cart.length,
-        total: total,
+        notes: formData.notes || undefined,
+        deliverySlot: formData.deliverySlot,
+        items: cart.map(c => ({
+          id: c.id,
+          name: c.name,
+          price: c.price,
+          qty: c.qty,
+          unit: c.unit,
+          total: c.price * c.qty,
+        })),
+        subtotal,
+        deliveryFee,
+        discount: deliveryFee === 0 ? 40 : 0,
+        total,
         time: new Date().toISOString(),
       };
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
