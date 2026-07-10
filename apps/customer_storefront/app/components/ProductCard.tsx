@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode, useState, useEffect } from 'react';
-import Image from 'next/image';
 import { WishlistButton } from './WishlistButton';
 import { QtyNumber } from './ui/QtyNumber';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
@@ -225,24 +224,24 @@ export function ProductCard({
         </button>
       </div>
 
-      {/* Image Container with Soft background */}
+      {/* Image Container — plain img for reliability, same as admin portal */}
       <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0">
-        <div className="absolute inset-0 flex items-center justify-center opacity-40">
-          <CategoryPlaceholder category={category} />
-        </div>
-        {image_url && (
-          <Image
+        {image_url ? (
+          <img
             src={image_url}
             alt={name}
-            fill
-            sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 180px"
-            className="object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06] p-3"
-            priority={priority}
+            className="w-full h-full object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06] p-3"
+            loading={priority ? 'eager' : 'lazy'}
             onError={(e) => {
               e.currentTarget.style.display = 'none';
+              const placeholder = e.currentTarget.parentElement?.querySelector('[data-placeholder]');
+              if (placeholder) placeholder.classList.remove('hidden');
             }}
           />
-        )}
+        ) : null}
+        <div data-placeholder className={`absolute inset-0 flex items-center justify-center ${image_url ? 'hidden' : 'opacity-40'}`}>
+          <CategoryPlaceholder category={category} />
+        </div>
       </div>
 
       {/* Content - calibrated and clean */}
