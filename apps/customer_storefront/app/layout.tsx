@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     locale: 'en_BD',
     url: '/',
     siteName: 'Lucky Store',
-    title: 'Lucky Store — Your Neighborhood Grocery',
+    title: 'Lucky Store — Your Friendly Neighborhood Grocer',
     description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
     images: [
       {
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store — Your Neighborhood Grocery',
+    title: 'Lucky Store — Your Friendly Neighborhood Grocer',
     description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
     images: ['/twitter-image.png'],
     creator: '@luckystore1947',
