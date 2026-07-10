@@ -44,7 +44,7 @@ BEGIN
   FROM public.items i
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
   LEFT JOIN public.stock_alert_thresholds sat ON sat.item_id = i.id AND sat.store_id = p_store_id
-  WHERE i.active = true
+  WHERE i.is_active = true
   ORDER BY
     CASE
       WHEN COALESCE(sl.qty, 0) = 0 THEN 0

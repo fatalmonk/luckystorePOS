@@ -48,7 +48,7 @@ AS $$
   FROM public.items i
   LEFT JOIN public.categories c   ON c.id = i.category_id
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
-  WHERE i.active = true
+  WHERE i.is_active = true
   ORDER BY total_value DESC
   LIMIT p_limit;
 $$;
@@ -143,7 +143,7 @@ AS $$
                                     AND sa.store_id = p_store_id
                                     AND sa.status = 'completed'
                                     AND sa.created_at >= now() - (p_days || ' days')::interval
-  WHERE i.active = true
+  WHERE i.is_active = true
     AND COALESCE(sl.qty, 0) > 0
   GROUP BY i.id, i.name, i.sku, c.name, sl.qty, i.cost
   HAVING COUNT(si.item_id) = 0   -- zero sales in window

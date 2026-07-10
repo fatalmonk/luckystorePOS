@@ -37,7 +37,7 @@ AS $$
          ON sl.item_id = i.id AND sl.store_id = p_store_id
   LEFT JOIN public.categories c
          ON c.id = i.category_id
-  WHERE i.active = true
+  WHERE i.is_active = true
     AND (
       i.sku        = p_scan_value OR
       i.barcode    = p_scan_value OR
@@ -81,7 +81,7 @@ AS $$
            ON sl.item_id = i.id AND sl.store_id = p_store_id
     LEFT JOIN public.categories c
            ON c.id = i.category_id
-    WHERE i.active = true
+    WHERE i.is_active = true
       AND (
         p_query = '' OR
         i.name        ILIKE '%' || p_query || '%' OR
