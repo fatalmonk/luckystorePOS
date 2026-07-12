@@ -61,7 +61,7 @@ export const OtherIncomePage: React.FC = () => {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchRecords();
     }
-  }, [fetchRecords]);
+  }, [fetchRecords, tenantId]);
 
   const onSubmit = async (values: IncomeFormValues) => {
     setSubmitting(true);

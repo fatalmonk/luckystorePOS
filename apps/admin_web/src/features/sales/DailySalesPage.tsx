@@ -38,6 +38,8 @@ const CHART_COLORS = [
   'var(--color-primary-default)',
 ];
 
+const salesStartDate = new Date('2026-04-04');
+
 export function DailySalesPage() {
   const { notify } = useNotify();
   const { storeId } = useAuth();
@@ -452,7 +454,7 @@ export function DailySalesPage() {
 
   
 
-  const allSales = sales || [];
+  const allSales = useMemo(() => sales || [], [sales]);
 
   // Time-based totals
   const todayTotal = useMemo(
@@ -461,42 +463,42 @@ export function DailySalesPage() {
   );
 
   // Yesterday's total
-  const yesterdayDate = subDays(new Date(), 1);
-  const yesterdayTotal = useMemo(
-    () => allSales.filter((s) => isSameDay(new Date(s.saleDate), yesterdayDate)).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
-  );
+  const yesterdayTotal = useMemo(() => {
+    const yesterdayDate = subDays(new Date(), 1);
+    return allSales.filter((s) => isSameDay(new Date(s.saleDate), yesterdayDate)).reduce((sum, s) => sum + s.totalSales, 0);
+  }, [allSales]);
+
   const weekTotal = useMemo(
     () => allSales.filter((s) => isThisWeek(new Date(s.saleDate), { weekStartsOn: 6 })).reduce((sum, s) => sum + s.totalSales, 0),
     [allSales],
   );
+
   // Last week's total (previous week)
-  const startPrevWeek = startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
-  const endPrevWeek = endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
-  const lastWeekTotal = useMemo(
-    () => allSales.filter((s) => {
+  const lastWeekTotal = useMemo(() => {
+    const startPrevWeek = startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
+    const endPrevWeek = endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 6 });
+    return allSales.filter((s) => {
       const d = new Date(s.saleDate);
       return d >= startPrevWeek && d <= endPrevWeek;
-    }).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
-  );
+    }).reduce((sum, s) => sum + s.totalSales, 0);
+  }, [allSales]);
+
   const monthTotal = useMemo(
     () => allSales.filter((s) => isThisMonth(new Date(s.saleDate))).reduce((sum, s) => sum + s.totalSales, 0),
     [allSales],
   );
+
   // Last month's total (previous month)
-  const startPrevMonth = startOfMonth(subMonths(new Date(), 1));
-  const endPrevMonth = endOfMonth(subMonths(new Date(), 1));
-  const lastMonthTotal = useMemo(
-    () => allSales.filter((s) => {
+  const lastMonthTotal = useMemo(() => {
+    const startPrevMonth = startOfMonth(subMonths(new Date(), 1));
+    const endPrevMonth = endOfMonth(subMonths(new Date(), 1));
+    return allSales.filter((s) => {
       const d = new Date(s.saleDate);
       return d >= startPrevMonth && d <= endPrevMonth;
-    }).reduce((sum, s) => sum + s.totalSales, 0),
-    [allSales],
-  );
+    }).reduce((sum, s) => sum + s.totalSales, 0);
+  }, [allSales]);
 
   // Days with sales since April 4th
-  const salesStartDate = new Date('2026-04-04');
   const daysSinceStartCount = useMemo(() => {
     const dateSet = new Set<string>();
     allSales.forEach(s => {
