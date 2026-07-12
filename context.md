@@ -61,15 +61,10 @@ Lucky Store operates on a simplified two-tier cloud architecture:
 
 The following Neon variables have been removed: `DATABASE_URL_UNPOOLED`, `NEON_BRANCH`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_JWKS_URL`, `VITE_NEON_PROXY_URL`, `VITE_NEON_API_KEY`.
 
-Active credentials in `.env.local`:
-```bash
-# Main Postgres Connection String (Points to Supabase)
-DATABASE_URL="postgresql://postgres:[PASSWORD]@db.hvmyxyccfnkrbxqbhlnm.supabase.co:5432/postgres"
-
-# Supabase Client Credentials
-SUPABASE_URL="https://hvmyxyccfnkrbxqbhlnm.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="[REDACTED]"
-```
+Required environment variables in `.env.local`:
+- `DATABASE_URL` (Supabase connection string)
+- `SUPABASE_URL` (Supabase API URL)
+- `SUPABASE_SERVICE_ROLE_KEY` (Supabase service role secret)
 
 ---
 
