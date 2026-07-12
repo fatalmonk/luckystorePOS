@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
+import { uploadProcessedImage } from '../../lib/images';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
 import { Modal } from '../../components/ui/Modal';
@@ -62,15 +63,16 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
       let imageUrl = '';
       if (imageFile) {
         setUploading(true);
-        const fileExt = imageFile.name.split('.').pop();
-        const filePath = `${crypto.randomUUID()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, imageFile, { upsert: true });
-        if (uploadError) throw new Error(uploadError.message);
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath);
-        imageUrl = urlData?.publicUrl ?? '';
-        setUploading(false);
+        try {
+          imageUrl = await uploadProcessedImage({
+            file: imageFile,
+            sku,
+            barcode,
+            itemId: null,
+          });
+        } finally {
+          setUploading(false);
+        }
       }
 
       // 2. Create item
