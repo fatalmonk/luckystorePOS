@@ -4,9 +4,9 @@ declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_NAME = 'lucky-pos-v1';
 const API_CACHE_NAME = 'lucky-pos-api-v1';
-const OFFLINE_URL = 'offline.html';
+const INDEX_URL = '/';
 
-const PRECACHE_URLS: string[] = [OFFLINE_URL];
+const PRECACHE_URLS: string[] = [INDEX_URL];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -39,7 +39,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstWithOfflinePage(request));
+    event.respondWith(networkFirstWithIndexHtml(request).catch(() => fallbackOfflineResponse()));
     return;
   }
 
@@ -64,21 +64,33 @@ async function networkFirstWithCache(request: Request): Promise<Response> {
   }
 }
 
-async function networkFirstWithOfflinePage(request: Request): Promise<Response> {
+async function networkFirstWithIndexHtml(request: Request): Promise<Response> {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+    if (!networkResponse.ok) {
+      throw new Error('Network response was not ok');
     }
+    
+    // Don't cache redirected responses for navigation, but return them
+    if (networkResponse.redirected) {
+      return networkResponse;
+    }
+
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, networkResponse.clone());
     return networkResponse;
   } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    const offlinePage = await caches.match(OFFLINE_URL);
-    if (offlinePage) return offlinePage;
-    return new Response('You are offline', { status: 503 });
+    const cachedIndex = await caches.match(INDEX_URL);
+    if (cachedIndex) return cachedIndex;
+    return fallbackOfflineResponse();
   }
+}
+
+function fallbackOfflineResponse(): Response {
+  return new Response('<html><head><title>Offline</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="background:#0B0B0D;color:#f0c444;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;text-align:center;"><div><h1>App Offline</h1><p>Please check your internet connection.</p></div></body></html>', {
+    status: 200,
+    headers: { 'Content-Type': 'text/html' },
+  });
 }
 
 async function staleWhileRevalidate(request: Request): Promise<Response> {
