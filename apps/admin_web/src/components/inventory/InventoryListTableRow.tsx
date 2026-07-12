@@ -84,7 +84,14 @@ export function InventoryListTableRow({
 
   const handleImageUpload = async (file: File) => {
     if (!storeId) return;
-    await uploadImage({ file, itemId: item.id, storeId });
+    await uploadImage({
+      file,
+      itemId: item.id,
+      storeId,
+      sku: item.sku,
+      barcode: item.barcode,
+      oldImageUrl: item.image_url,
+    });
   };
 
   const startEditing = (field: string) => {

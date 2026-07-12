@@ -1,47 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { uploadToR2, deleteFromR2, isR2Configured, extractR2Key } from '../lib/r2';
+import { deleteFromR2, extractR2Key } from '../lib/r2';
 import { useNotify } from '../components/NotificationContext';
-
-/**
- * Upload image to R2 via Worker (primary) or Supabase Storage (fallback).
- * Returns the public URL.
- */
-async function uploadProductImage(
-  file: File,
-  itemId: string,
-  storeId: string
-): Promise<string> {
-  const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const fileName = `${storeId}/${itemId}_${Date.now()}.${fileExtension}`;
-
-  // Primary: R2 via Worker
-  if (isR2Configured()) {
-    try {
-      return await uploadToR2(file, fileName);
-    } catch (err) {
-      console.warn('R2 upload failed, falling back to Supabase:', err);
-    }
-  }
-
-  // Fallback: Supabase Storage
-  const { data: _data, error: uploadError } = await supabase.storage
-    .from('product-images')
-    .upload(fileName, file, {
-      contentType: file.type,
-      upsert: true,
-    });
-
-  if (uploadError) {
-    throw new Error(uploadError.message);
-  }
-
-  const { data: publicUrlData } = supabase.storage
-    .from('product-images')
-    .getPublicUrl(fileName);
-
-  return publicUrlData.publicUrl;
-}
+import { uploadProcessedImage } from '../lib/images';
 
 /**
  * Delete an image from R2 or Supabase Storage based on its URL.
@@ -91,19 +52,24 @@ export function useImageUpload() {
       file,
       itemId,
       storeId,
+      sku,
+      barcode,
+      oldImageUrl,
     }: {
       file: File;
       itemId: string;
       storeId: string;
+      sku?: string | null;
+      barcode?: string | null;
+      oldImageUrl?: string | null;
     }) => {
-      // Fetch current image_url to delete old image after upload
-      const { data: currentItem } = await supabase
-        .from('items')
-        .select('image_url')
-        .eq('id', itemId)
-        .single();
-
-      const publicUrl = await uploadProductImage(file, itemId, storeId);
+      // Upload processed webp to R2
+      const publicUrl = await uploadProcessedImage({
+        file,
+        sku,
+        barcode,
+        itemId,
+      });
 
       // Update the product with the new image URL
       const { error } = await supabase
@@ -115,9 +81,21 @@ export function useImageUpload() {
         throw new Error(error.message);
       }
 
-      // Delete the old image from storage (non-fatal if it fails)
-      if (currentItem?.image_url && currentItem.image_url !== publicUrl) {
-        await deleteProductImage(currentItem.image_url);
+      // Determine previous image URL
+      let previousUrl = oldImageUrl;
+      if (previousUrl === undefined) {
+        const { data: currentItem } = await supabase
+          .from('items')
+          .select('image_url')
+          .eq('id', itemId)
+          .single();
+        previousUrl = currentItem?.image_url;
+      }
+
+      // Delete the old image from storage if path has changed (prevents self-deletion)
+      const getCleanPath = (url: string) => url.split('?')[0];
+      if (previousUrl && getCleanPath(previousUrl) !== getCleanPath(publicUrl)) {
+        await deleteProductImage(previousUrl);
       }
 
       return publicUrl;
