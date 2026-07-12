@@ -10,6 +10,7 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname, '../../'),
   devIndicators: false,
   images: {
+    unoptimized: true,
     formats: ['image/webp'],
     remotePatterns: [
       {
