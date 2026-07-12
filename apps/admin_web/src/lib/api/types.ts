@@ -141,6 +141,35 @@ export interface RecordExpenseResult {
   batch_id?: string;
 }
 
+export interface ExpenseTemplate {
+  id: string;
+  storeId: string;
+  name: string;
+  vendorName: string;
+  description: string;
+  amount: number;
+  paymentType: ExpensePaymentType;
+  category: ExpenseCategory;
+  isPinned: boolean;
+  recurrenceInterval: 'none' | 'weekly' | 'monthly';
+  recurrenceAnchorDate: string | null;
+  recurrenceDayOfMonth: number | null;
+  recurrenceDayOfWeek: number | null;
+  lastTriggeredAt: string | null;
+  nextDueAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseBatchItem {
+  date: string;
+  vendor: string;
+  description: string;
+  amount: number;
+  payment_type: ExpensePaymentType;
+  category: ExpenseCategory;
+}
+
 // =============================================================================
 // Product CRUD Input Types
 // Snake-case keys match the Supabase 'items' table columns

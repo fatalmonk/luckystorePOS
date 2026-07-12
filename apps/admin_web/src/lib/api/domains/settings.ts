@@ -1,6 +1,21 @@
 import { supabase } from "@/lib/supabase";
+import { createClient } from '@supabase/supabase-js';
 import type { ReceiptConfigUpdateInput } from '../types';
 import type { Database } from '../../database.types';
+
+// Create a single temporary client for signups to prevent GoTrue warning
+const tempSupabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      storageKey: 'temp-signup-key',
+    },
+  }
+);
 
 export const settings = {
   getPaymentMethods: async (storeId: string) => {
@@ -29,27 +44,44 @@ export const settings = {
     return data;
   },
   addUser: async (storeId: string, user: { email: string; password: string; fullName: string; role: string; pin: string; tenantId: string }) => {
-    // 1. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: user.email,
-      password: user.password,
-    });
-    if (authError) throw authError;
-    const authId = authData.user?.id;
-    if (!authId) throw new Error('Signup succeeded but no auth user ID returned');
-    
-    // 2. Create user record via RPC (bypasses RLS)
-    const { data, error } = await supabase.rpc('create_store_user' as any, {
-      p_email: user.email,
-      p_full_name: user.fullName,
-      p_role: user.role,
-      p_pin: user.pin,
-      p_store_id: storeId,
-      p_tenant_id: user.tenantId,
-      p_auth_id: authId,
-    });
-    if (error) throw error;
-    return data;
+    try {
+      // 1. Create auth user
+      const { data: authData, error: authError } = await tempSupabase.auth.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      
+      if (authError) {
+        console.error("Auth Error full object:", authError);
+        throw new Error(authError.message || `Auth Error: ${JSON.stringify(authError, Object.getOwnPropertyNames(authError))}`);
+      }
+      
+      const authId = authData.user?.id;
+      if (!authId) {
+        throw new Error('Signup succeeded but no auth user ID returned from Supabase.');
+      }
+      
+      // 2. Create user record via RPC (bypasses RLS)
+      const { data, error } = await supabase.rpc('create_store_user' as any, {
+        p_email: user.email,
+        p_full_name: user.fullName,
+        p_role: user.role,
+        p_pin: user.pin,
+        p_store_id: storeId,
+        p_tenant_id: user.tenantId,
+        p_auth_id: authId,
+      });
+      
+      if (error) {
+        console.error("RPC Error full object:", error);
+        throw new Error(error.message || `Database Error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
+      }
+      
+      return data;
+    } catch (err: any) {
+      console.error("Catch block err:", err);
+      throw new Error(err.message || `Unknown Error: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
+    }
   },
   addPaymentMethod: async (
     storeId: string,

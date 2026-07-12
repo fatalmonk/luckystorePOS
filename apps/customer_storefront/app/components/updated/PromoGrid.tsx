@@ -66,7 +66,17 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
           className="relative flex-shrink-0 snap-start w-[88vw] max-w-[380px] md:w-auto md:max-w-none md:col-span-6 h-52 md:h-60 flex flex-col justify-end overflow-hidden rounded-[24px] p-6 group border border-stone-200/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         >
           {/* Background image & overlay */}
-          <div className="absolute inset-0 z-0 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105" style={largePromoBgStyle} />
+          {largePromo.bgImage ? (
+            <img
+              src={largePromo.bgImage}
+              alt=""
+              loading="eager"
+              fetchPriority="high"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 z-0"
+            />
+          ) : (
+            <div className="absolute inset-0 z-0 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105" style={largePromoBgStyle} />
+          )}
           {largePromo.bgImage && <div className="absolute inset-0 bg-gradient-to-t from-stone-900/70 via-stone-900/30 to-transparent z-10" />}
           
           {/* Liquid Glass inner borders & glows */}
@@ -106,10 +116,19 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
                 href={promo.ctaHref}
                 className="relative flex-shrink-0 snap-start w-[88vw] max-w-[380px] md:w-auto md:max-w-none flex flex-col justify-end overflow-hidden rounded-[20px] p-5 group border border-stone-200/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[116px] flex-1"
               >
-                <div 
-                  className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 z-0" 
-                  style={bgStyle} 
-                />
+                {promo.bgImage ? (
+                  <img
+                    src={promo.bgImage}
+                    alt=""
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 z-0"
+                  />
+                ) : (
+                  <div 
+                    className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 z-0" 
+                    style={bgStyle} 
+                  />
+                )}
                 {promo.bgImage && <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-transparent z-10" />}
                 
                 {/* Liquid Glass border refraction */}
