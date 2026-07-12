@@ -7,6 +7,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
+import { Modal } from '../../components/ui/Modal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
@@ -32,7 +33,7 @@ import {
   EXPENSE_CATEGORIES,
   EXPENSE_PAYMENT_TYPES,
 } from '../../lib/api/types';
-import type { Expense, ExpenseFormData, ExpenseCategory, ExpensePaymentType } from '../../lib/api/types';
+import type { Expense, ExpenseFormData, ExpenseCategory, ExpensePaymentType, ExpenseTemplate, ExpenseBatchItem } from '../../lib/api/types';
 import { downloadCSV, formatCurrency } from '../../lib/format';
 
 // Chart colors matching the app's design system
@@ -51,6 +52,7 @@ export function ExpensesPage() {
   const queryClient = useQueryClient();
 
   const [showForm, setShowForm] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ExpenseTemplate | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
@@ -63,6 +65,11 @@ export function ExpensesPage() {
     queryFn: () => api.expenses.list(storeId),
   });
 
+  const { data: templates } = useQuery({
+    queryKey: ['expense_templates', storeId],
+    queryFn: () => api.expenses.listTemplates(storeId),
+  });
+
   const createMutation = useMutation({
     mutationFn: (form: ExpenseFormData) => api.expenses.create(storeId, form),
     onSuccess: () => {
@@ -72,6 +79,18 @@ export function ExpensesPage() {
     },
     onError: (err: { message?: string }) => {
       notify(err.message || 'Failed to record expense.', 'error');
+    },
+  });
+
+  const batchCreateMutation = useMutation({
+    mutationFn: (list: ExpenseBatchItem[]) => api.expenses.recordBatch(storeId, list),
+    onSuccess: () => {
+      notify('Expenses batch recorded successfully.', 'success');
+      queryClient.invalidateQueries({ queryKey: ['expenses', storeId] });
+      setShowForm(false);
+    },
+    onError: (err: { message?: string }) => {
+      notify(err.message || 'Failed to record batch.', 'error');
     },
   });
 
@@ -277,6 +296,31 @@ export function ExpensesPage() {
           </div>
         }
       />
+
+      {templates && templates.filter(t => t.isPinned).length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-sm font-semibold text-text-muted mb-3 uppercase tracking-wider">Quick Add (Pinned)</h2>
+          <div className="flex flex-wrap gap-3">
+            {templates.filter(t => t.isPinned).map(t => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setSelectedTemplate(t);
+                  setShowForm(true);
+                }}
+                className="bg-surface-secondary hover:bg-surface-tertiary border border-border-light rounded-lg p-3 text-left transition-colors duration-200"
+                style={{ minWidth: '180px' }}
+              >
+                <div className="font-medium text-text-primary text-sm mb-1">{t.name}</div>
+                <div className="text-xs text-text-muted mb-2">{t.vendorName}</div>
+                <div className="font-semibold text-text-primary" style={{ color: 'var(--color-primary-default)' }}>
+                  {formatCurrency(t.amount)}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="dashboard-grid mt-6 mb-6">
         <MetricCard title="Today" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
@@ -576,8 +620,15 @@ export function ExpensesPage() {
       <AddExpenseDrawer
         isOpen={showForm}
         onSubmit={(form) => createMutation.mutate(form)}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false);
+          setSelectedTemplate(null);
+        }}
         isPending={createMutation.isPending}
+        selectedTemplate={selectedTemplate}
+        onBatchSubmit={(list) => batchCreateMutation.mutate(list)}
+        batchIsPending={batchCreateMutation.isPending}
+        previousExpenses={expenses ?? []}
       />
 
       <EditExpenseDrawer
@@ -608,13 +659,24 @@ function AddExpenseDrawer({
   onSubmit,
   onClose,
   isPending,
+  selectedTemplate,
+  onBatchSubmit,
+  batchIsPending,
+  previousExpenses = []
 }: {
   isOpen: boolean;
   onSubmit: (form: ExpenseFormData) => void;
   onClose: () => void;
   isPending: boolean;
+  selectedTemplate?: ExpenseTemplate | null;
+  onBatchSubmit?: (list: ExpenseBatchItem[]) => void;
+  batchIsPending?: boolean;
+  previousExpenses?: Expense[];
 }) {
   const today = format(new Date(), 'yyyy-MM-dd');
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  
+  // Single mode state
   const [form, setForm] = useState<ExpenseFormData>({
     expenseDate: today,
     vendorName: '',
@@ -623,119 +685,240 @@ function AddExpenseDrawer({
     paymentType: 'Cash',
     category: 'All Other Expenses',
   });
+  const [isAutofilled, setIsAutofilled] = useState(false);
 
-  const set = <K extends keyof ExpenseFormData>(key: K, value: ExpenseFormData[K]) =>
+  // Bulk mode state
+  const [bulkRows, setBulkRows] = useState<ExpenseBatchItem[]>([
+    { date: today, vendor: '', description: '', amount: 0, payment_type: 'Cash', category: 'All Other Expenses' }
+  ]);
+
+  // Handle selected template effect
+  React.useEffect(() => {
+    if (selectedTemplate && isOpen) {
+      setForm({
+        expenseDate: today,
+        vendorName: selectedTemplate.vendorName || '',
+        description: selectedTemplate.description || '',
+        amount: selectedTemplate.amount || 0,
+        paymentType: selectedTemplate.paymentType,
+        category: selectedTemplate.category,
+      });
+      setIsBulkMode(false);
+      setIsAutofilled(false);
+    } else if (isOpen && !selectedTemplate) {
+      setForm({
+        expenseDate: today,
+        vendorName: '',
+        description: '',
+        amount: 0,
+        paymentType: 'Cash',
+        category: 'All Other Expenses',
+      });
+      setBulkRows([{ date: today, vendor: '', description: '', amount: 0, payment_type: 'Cash', category: 'All Other Expenses' }]);
+      setIsAutofilled(false);
+    }
+  }, [isOpen, selectedTemplate, today]);
+
+  const set = <K extends keyof ExpenseFormData>(key: K, value: ExpenseFormData[K]) => {
+    if (isAutofilled && (key === 'amount' || key === 'paymentType' || key === 'category')) {
+      setIsAutofilled(false);
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleVendorBlur = () => {
+    if (!form.vendorName.trim()) return;
+    const match = previousExpenses.find(e => e.vendorName.toLowerCase() === form.vendorName.toLowerCase().trim());
+    if (match && form.amount === 0) {
+      setForm(prev => ({
+        ...prev,
+        amount: match.amount,
+        paymentType: match.paymentType,
+        category: match.category
+      }));
+      setIsAutofilled(true);
+    }
+  };
+
+  const handleSingleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.vendorName.trim() || form.amount <= 0) return;
     onSubmit(form);
   };
 
+  const handleBulkSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onBatchSubmit) return;
+    const validRows = bulkRows.filter(r => r.vendor.trim() && r.amount > 0);
+    if (validRows.length === 0) return;
+    onBatchSubmit(validRows);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent, index: number) => {
+    const text = e.clipboardData.getData('text');
+    if (!text || (text.indexOf('\t') === -1 && text.indexOf(',') === -1)) return;
+    e.preventDefault();
+    const rows = text.split('\n').filter(r => r.trim());
+    const newBulkRows = [...bulkRows];
+    rows.forEach((rowStr, i) => {
+      let cols = rowStr.split('\t');
+      if (cols.length < 2) {
+        cols = rowStr.split(',');
+      }
+      if (cols.length >= 2) {
+        const targetIdx = index + i;
+        
+        let parsedDate = today;
+        const rawDate = cols[0]?.trim();
+        if (rawDate) {
+          if (rawDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            parsedDate = rawDate;
+          } else {
+            const dmy = rawDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            if (dmy) {
+              const day = dmy[1].padStart(2, '0');
+              const month = dmy[2].padStart(2, '0');
+              const year = dmy[3];
+              parsedDate = `${year}-${month}-${day}`;
+            }
+          }
+        }
+
+        const rawAmount = cols[3]?.replace(/,/g, '').trim();
+        const parsedAmount = parseFloat(rawAmount) || 0;
+
+        const rawPaymentType = cols[4]?.trim();
+        const rawCategory = cols[5]?.trim();
+
+        const item: ExpenseBatchItem = {
+          date: parsedDate,
+          vendor: cols[1]?.trim() || '',
+          description: cols[2]?.trim() || '',
+          amount: parsedAmount,
+          payment_type: (rawPaymentType as ExpensePaymentType) || 'Cash',
+          category: (rawCategory as ExpenseCategory) || 'All Other Expenses',
+        };
+        if (targetIdx < newBulkRows.length) {
+          newBulkRows[targetIdx] = item;
+        } else {
+          newBulkRows.push(item);
+        }
+      }
+    });
+    setBulkRows(newBulkRows);
+  };
+
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} title="Add Expense">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-1">
-            Date
-          </label>
-          <input
-            type="date"
-            value={form.expenseDate}
-            onChange={(e) => set('expenseDate', e.target.value)}
-            className="input w-full"
-            required
-          />
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={isBulkMode ? "Bulk Add Expenses" : "Add Expense"} size={isBulkMode ? "xl" : "lg"}>
+      <div className="mb-6 flex gap-2">
+        <button type="button" className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${!isBulkMode ? 'bg-surface-tertiary text-text-primary border border-border-default' : 'text-text-muted hover:bg-surface-secondary'}`} onClick={() => setIsBulkMode(false)}>Single Record</button>
+        <button type="button" className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${isBulkMode ? 'bg-surface-tertiary text-text-primary border border-border-default' : 'text-text-muted hover:bg-surface-secondary'}`} onClick={() => setIsBulkMode(true)}>Bulk Upload</button>
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-1">
-            Vendor
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. ABC Supplies"
-            value={form.vendorName}
-            onChange={(e) => set('vendorName', e.target.value)}
-            className="input w-full"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-1">
-            Description
-          </label>
-          <input
-            type="text"
-            placeholder="What was this for?"
-            value={form.description}
-            onChange={(e) => set('description', e.target.value)}
-            className="input w-full"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-1">
-            Amount (৳)
-          </label>
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
-            placeholder="0.00"
-            value={form.amount || ''}
-            onChange={(e) => set('amount', parseFloat(e.target.value) || 0)}
-            className="input w-full"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-1">
-            Category
-          </label>
-          <select
-            value={form.category}
-            onChange={(e) => set('category', e.target.value as ExpenseCategory)}
-            className="input w-full"
-          >
-            {EXPENSE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-1">
-            Payment Method
-          </label>
-          <select
-            value={form.paymentType}
-            onChange={(e) => set('paymentType', e.target.value as ExpensePaymentType)}
-            className="input w-full"
-          >
-            {EXPENSE_PAYMENT_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border-light">
-          <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
-          <button
-            type="submit"
-            className="button-primary"
-            disabled={isPending || !form.vendorName.trim() || form.amount <= 0}
-            style={{ opacity: isPending || !form.vendorName.trim() || form.amount <= 0 ? 0.5 : 1 }}
-          >
-            {isPending ? 'Saving...' : 'Record Expense'}
-          </button>
-        </div>
-      </form>
-    </Drawer>
+      {!isBulkMode ? (
+        <form onSubmit={handleSingleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium text-text-muted mb-1">Date</label>
+            <input type="date" value={form.expenseDate} onChange={(e) => set('expenseDate', e.target.value)} className="input w-full" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-muted mb-1">Vendor</label>
+            <input type="text" placeholder="e.g. ABC Supplies" value={form.vendorName} onChange={(e) => set('vendorName', e.target.value)} onBlur={handleVendorBlur} className="input w-full" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-muted mb-1">Description</label>
+            <input type="text" placeholder="What was this for?" value={form.description} onChange={(e) => set('description', e.target.value)} className="input w-full" required />
+          </div>
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-text-muted mb-1">
+              Amount (৳)
+              {isAutofilled && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20">⚠️ Last used value — verify</span>}
+            </label>
+            <input type="number" min="0.01" step="0.01" placeholder="0.00" value={form.amount || ''} onChange={(e) => set('amount', parseFloat(e.target.value) || 0)} className={`input w-full ${isAutofilled ? 'border-warning/50' : ''}`} required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-muted mb-1">Category</label>
+            <select value={form.category} onChange={(e) => set('category', e.target.value as ExpenseCategory)} className="input w-full">
+              {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-muted mb-1">Payment Method</label>
+            <select value={form.paymentType} onChange={(e) => set('paymentType', e.target.value as ExpensePaymentType)} className="input w-full">
+              {EXPENSE_PAYMENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border-light">
+            <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
+            <button type="submit" className="button-primary" disabled={isPending || !form.vendorName.trim() || form.amount <= 0} style={{ opacity: isPending || !form.vendorName.trim() || form.amount <= 0 ? 0.5 : 1 }}>
+              {isPending ? 'Saving...' : 'Record Expense'}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={handleBulkSubmit} className="flex flex-col gap-4">
+          <div className="overflow-x-auto pb-4">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border-default text-text-muted text-left">
+                  <th className="pb-2 font-medium">Date</th>
+                  <th className="pb-2 font-medium">Vendor</th>
+                  <th className="pb-2 font-medium">Description</th>
+                  <th className="pb-2 font-medium">Amount (৳)</th>
+                  <th className="pb-2 font-medium">Category</th>
+                  <th className="pb-2 font-medium">Payment</th>
+                  <th className="pb-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {bulkRows.map((row, i) => (
+                  <tr key={i} className="border-b border-border-light">
+                    <td className="py-2 pr-2">
+                      <input type="date" value={row.date} onChange={(e) => { const n = [...bulkRows]; n[i].date = e.target.value; setBulkRows(n); }} className="input w-[130px] p-1.5 text-sm" required />
+                    </td>
+                    <td className="py-2 pr-2">
+                      <input type="text" placeholder="Paste excel here..." value={row.vendor} onPaste={(e) => handlePaste(e, i)} onChange={(e) => { const n = [...bulkRows]; n[i].vendor = e.target.value; setBulkRows(n); }} className="input w-[150px] p-1.5 text-sm" required />
+                    </td>
+                    <td className="py-2 pr-2">
+                      <input type="text" placeholder="Desc" value={row.description} onChange={(e) => { const n = [...bulkRows]; n[i].description = e.target.value; setBulkRows(n); }} className="input w-[150px] p-1.5 text-sm" required />
+                    </td>
+                    <td className="py-2 pr-2">
+                      <input type="number" min="0" step="0.01" value={row.amount || ''} onChange={(e) => { const n = [...bulkRows]; n[i].amount = parseFloat(e.target.value) || 0; setBulkRows(n); }} className="input w-[100px] p-1.5 text-sm" required />
+                    </td>
+                    <td className="py-2 pr-2">
+                      <select value={row.category} onChange={(e) => { const n = [...bulkRows]; n[i].category = e.target.value as ExpenseCategory; setBulkRows(n); }} className="input w-[130px] p-1.5 text-sm">
+                        {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{c.substring(0, 15)}</option>)}
+                      </select>
+                    </td>
+                    <td className="py-2 pr-2">
+                      <select value={row.payment_type} onChange={(e) => { const n = [...bulkRows]; n[i].payment_type = e.target.value as ExpensePaymentType; setBulkRows(n); }} className="input w-[110px] p-1.5 text-sm">
+                        {EXPENSE_PAYMENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </td>
+                    <td className="py-2 text-right">
+                      <button type="button" onClick={() => setBulkRows(bulkRows.filter((_, idx) => idx !== i))} className="text-danger hover:text-danger/80 p-1">
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex gap-2 mb-4">
+            <button type="button" onClick={() => setBulkRows([...bulkRows, { date: today, vendor: '', description: '', amount: 0, payment_type: 'Cash', category: 'All Other Expenses' }])} className="button-outline text-sm py-1.5">
+              <Plus size={14} className="mr-1 inline" /> Add Row
+            </button>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-border-light">
+            <button type="button" className="button-outline" onClick={onClose}>Cancel</button>
+            <button type="submit" className="button-primary" disabled={batchIsPending || bulkRows.length === 0} style={{ opacity: batchIsPending || bulkRows.length === 0 ? 0.5 : 1 }}>
+              {batchIsPending ? 'Saving Batch...' : `Save ${bulkRows.length} Expenses`}
+            </button>
+          </div>
+        </form>
+      )}
+    </Modal>
   );
 }
 

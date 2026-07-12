@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { createClient } from '@supabase/supabase-js';
 import type { ReceiptConfigUpdateInput } from '../types';
 import type { Database } from '../../database.types';
 
@@ -29,8 +30,21 @@ export const settings = {
     return data;
   },
   addUser: async (storeId: string, user: { email: string; password: string; fullName: string; role: string; pin: string; tenantId: string }) => {
+    // Create a temporary Supabase client with persistSession: false to prevent logging out the current admin
+    const tempSupabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+        },
+      }
+    );
+
     // 1. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await tempSupabase.auth.signUp({
       email: user.email,
       password: user.password,
     });

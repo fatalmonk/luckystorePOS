@@ -1,6 +1,7 @@
 -- Add missing DELETE policy for daily_sales table.
 -- SELECT, INSERT, UPDATE policies already exist (20260518000000_dedupe_daily_sales_policies.sql).
 
+DROP POLICY IF EXISTS "Managers can delete daily_sales" ON public.daily_sales;
 CREATE POLICY "Managers can delete daily_sales"
   ON public.daily_sales
   FOR DELETE
