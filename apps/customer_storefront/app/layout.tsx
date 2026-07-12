@@ -35,7 +35,12 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   icons: {
-    icon: '/favicon-32x32.png',
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
@@ -43,7 +48,7 @@ export const metadata: Metadata = {
     locale: 'en_BD',
     url: '/',
     siteName: 'Lucky Store',
-    title: 'Lucky Store — Your Neighborhood Grocery',
+    title: 'Lucky Store — Your Friendly Neighborhood Grocer',
     description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
     images: [
       {
@@ -61,7 +66,7 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store — Your Neighborhood Grocery',
+    title: 'Lucky Store — Your Friendly Neighborhood Grocer',
     description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
     images: ['/twitter-image.png'],
     creator: '@luckystore1947',
