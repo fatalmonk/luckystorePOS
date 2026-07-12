@@ -68,7 +68,7 @@ DATABASE_URL="postgresql://postgres:[PASSWORD]@db.hvmyxyccfnkrbxqbhlnm.supabase.
 
 # Supabase Client Credentials
 SUPABASE_URL="https://hvmyxyccfnkrbxqbhlnm.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+SUPABASE_SERVICE_ROLE_KEY="[REDACTED]"
 ```
 
 ---
