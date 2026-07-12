@@ -14,6 +14,10 @@
       "dest": "/terms-of-service.html"
     },
     {
+      "src": "/data-deletion",
+      "dest": "/data-deletion.html"
+    },
+    {
       "src": "/thumbnail.png",
       "dest": "/thumbnail.png"
     }
