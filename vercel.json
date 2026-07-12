@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd apps/admin_web && npm install && npm run build && mkdir -p ../../dist_public && cp -r dist/* ../../dist_public/",
+  "buildCommand": "cd apps/admin_web && npm install && npm run build && rm -rf ../../dist_public && mkdir -p ../../dist_public && cp -r dist/* ../../dist_public/",
   "outputDirectory": "dist_public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
