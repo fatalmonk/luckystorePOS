@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 export const reports = {
   // Single RPC call — all aggregation done server-side in Postgres
   getSalesReport: async (storeId: string, startDate: string, endDate: string) => {
-    const { data, error } = await (supabase.rpc as any)('get_sales_report', {
+    const { data, error } = await supabase.rpc('get_sales_report', {
       p_store_id: storeId,
       p_start_date: startDate,
       p_end_date: endDate,
@@ -20,7 +20,7 @@ export const reports = {
   },
 
   getInventoryValue: async (storeId: string) => {
-    const { data, error } = await (supabase.rpc as any)('get_inventory_value', {
+    const { data, error } = await supabase.rpc('get_inventory_value', {
       p_store_id: storeId,
     });
     if (error) throw error;
@@ -35,7 +35,7 @@ export const reports = {
   },
 
   getProfitLoss: async (storeId: string, startDate: string, endDate: string) => {
-    const { data, error } = await (supabase.rpc as any)('get_profit_loss', {
+    const { data, error } = await supabase.rpc('get_profit_loss', {
       p_store_id: storeId,
       p_start_date: startDate,
       p_end_date: endDate,
