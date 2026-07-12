@@ -783,6 +783,74 @@ export type Database = {
           },
         ]
       }
+      expense_templates: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_pinned: boolean
+          last_triggered_at: string | null
+          name: string
+          next_due_at: string | null
+          payment_type: string
+          recurrence_anchor_date: string | null
+          recurrence_day_of_month: number | null
+          recurrence_day_of_week: number | null
+          recurrence_interval: string
+          store_id: string
+          updated_at: string
+          vendor_name: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_pinned?: boolean
+          last_triggered_at?: string | null
+          name: string
+          next_due_at?: string | null
+          payment_type: string
+          recurrence_anchor_date?: string | null
+          recurrence_day_of_month?: number | null
+          recurrence_day_of_week?: number | null
+          recurrence_interval?: string
+          store_id: string
+          updated_at?: string
+          vendor_name?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_pinned?: boolean
+          last_triggered_at?: string | null
+          name?: string
+          next_due_at?: string | null
+          payment_type?: string
+          recurrence_anchor_date?: string | null
+          recurrence_day_of_month?: number | null
+          recurrence_day_of_week?: number | null
+          recurrence_interval?: string
+          store_id?: string
+          updated_at?: string
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -5364,6 +5432,10 @@ export type Database = {
         }
         Returns: Json
       }
+      record_expense_batch: {
+        Args: { p_expenses: Json; p_store_id: string }
+        Returns: Json
+      }
       record_purchase: {
         Args: {
           p_amount_paid?: number
@@ -5422,26 +5494,16 @@ export type Database = {
         Args: { p_payment_method_id: string; p_store_id: string }
         Returns: string
       }
-      search_items_pos:
-        | {
-            Args: { p_query: string; p_store_id: string }
-            Returns: {
-              item_id: string
-              name: string
-              price: number
-              stock: number
-            }[]
-          }
-        | {
-            Args: {
-              p_category_id?: string
-              p_limit?: number
-              p_offset?: number
-              p_query?: string
-              p_store_id: string
-            }
-            Returns: Json
-          }
+      search_items_pos: {
+        Args: {
+          p_category_id?: string
+          p_limit?: number
+          p_offset?: number
+          p_query?: string
+          p_store_id: string
+        }
+        Returns: Json
+      }
       search_products: {
         Args: { result_limit?: number; search_query: string }
         Returns: {

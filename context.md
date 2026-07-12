@@ -1,37 +1,49 @@
-# Lucky Store — Product Images Context
+# Lucky Store — Infrastructure Context
 
-**Last updated:** July 10, 2026  
-**Status:** ✅ Product images complete — 495 images uploaded, 492 products linked
+**Last updated:** July 12, 2026  
+**Status:** ✅ Neon Retired | ✅ Images on Cloudflare R2 | ✅ All Data on Supabase
 
 ---
 
-## What Was Done
+## Architecture Overview
 
-### 1. Image Download & Creation
-- **Script:** `download_product_images.py`
-- **Source:** `missing_images.md` (149 products missing images)
-- **Results:**
-  - 142 images downloaded from Chaldal.com
-  - 4 images provided manually by user (Savoy Chocobar, Savoy Crunchybar, Snickers, Eggs)
-  - 3 images already existed
-- **Output:** `catalog-images/sku-named/*.webp` (495 total WebP files)
+Lucky Store operates on a simplified two-tier cloud architecture:
+1. **Database & API Layer:** Supabase (managed Postgres, Auth, and PostgREST client APIs). All transactional and analytical reads/writes flow directly here.
+2. **Asset Delivery (Zero-Egress):** Cloudflare R2 serves all product images and catalog assets via a custom domain (`images.luckystore1947.com`), eliminating Supabase egress costs and improving global performance.
 
-### 2. Cloudflare R2 Upload
-- **Script:** `upload_to_r2.py`
+---
+
+## Decommissioned Components (Retired July 2026)
+
+- **Neon Postgres:** Previously used as a read replica for analytics. Completely decommissioned.
+- **Sync Scripts:** `sync-supabase-to-neon.mjs` has been deleted. No more Postgres-to-Postgres mirroring or batch cron jobs are required.
+- **Neon Query Proxy:** The Cloudflare Worker (`neon-proxy`) and the `neon.ts` client wrapper have been removed.
+- **Neon Auth:** Unused configuration variables stripped from environment files.
+
+---
+
+## Current Components
+
+### 1. Cloudflare R2 (Asset Delivery)
 - **Bucket:** `lucky-store-images`
 - **Path prefix:** `products/`
-- **Results:** 495/495 images uploaded successfully
-- **Public URL:** `https://images.luckystore1947.com/products/{SKU}.webp`
+- **Public Domain:** `https://images.luckystore1947.com`
+- **Image URL Format:** `https://images.luckystore1947.com/products/{SKU}.webp`
+- **Status:** 500 catalog images successfully migrated. Supabase storage buckets `product-images` and `item-images` have been emptied.
 
-### 3. Database Update
-- **Script:** `update_db_with_r2_urls.py`
-- **Database:** Supabase (PostgreSQL)
-- **Table:** `products`
-- **Results:** 492/495 products updated with `image_url`
-- **Missing from DB:** 3 SKUs have images but no product records:
-  - `SN-ST-JHC-300G` — Starship Jhal Chanachur
-  - `BV-ST-CHL-200ML` — Beverage (chocolate?)
-  - `CC-AR-ASL` — Aril Assorted Lollipop
+### 2. Supabase (Primary Database & API)
+- **Project:** `hvmyxyccfnkrbxqbhlnm`
+- **Tables:** `products`, `daily_sales`, `competitor_prices`, `users`, etc.
+- **Database Functions (RPCs):** 
+  - `get_sales_report(p_store_id, p_start_date, p_end_date)`
+  - `get_inventory_value(p_store_id)`
+  - `get_profit_loss(p_store_id, p_start_date, p_end_date)`
+  - `get_manager_dashboard_stats(p_store_id)`
+  - `get_dashboard_missing_metrics(p_store_id)`
+  - `get_monthly_trend_metrics(p_store_id)`
+  - `get_retail_kpis(p_store_id, p_days)`
+  - `get_cashflow_data(p_store_id, p_days)`
+  - `get_low_stock_items(p_store_id)`
 
 ---
 
@@ -39,132 +51,36 @@
 
 | File | Purpose |
 |---|---|
-| `download_product_images.py` | Download product images from Chaldal/Shwapno, convert to WebP |
-| `upload_to_r2.py` | Upload WebP images to Cloudflare R2 bucket |
-| `update_db_with_r2_urls.py` | Update Supabase `products` table with R2 image URLs |
-| `missing_images.md` | List of 149 products that were missing images |
-| `catalog-images/sku-named/` | Local copy of all 495 WebP images |
+| `apps/admin_web/src/lib/api/domains/` | Domain API calls (e.g. `reports.ts`, `dashboard.ts`, `dailySales.ts`) using the `supabase` JS client. |
+| `apps/customer_storefront/app/api/webhooks/supabase-sync/route.ts` | Syncs Auth users directly to the `users` table via `supabase-js`. |
+| `supabase/migrations/` | Database schemas, SQL RPC definitions, and Row Level Security (RLS) policies. |
 
 ---
 
-## Infrastructure
+## Environment Variables
 
-### Cloudflare R2
-- **Bucket:** `lucky-store-images`
-- **Worker:** `cloudflare/workers/images/wrangler.toml`
-- **Domain:** `https://images.luckystore1947.com`
-- **Account ID:** `8e457654e12c3b75d2094bbd8914030b`
+The following Neon variables have been removed: `DATABASE_URL_UNPOOLED`, `NEON_BRANCH`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_JWKS_URL`, `VITE_NEON_PROXY_URL`, `VITE_NEON_API_KEY`.
 
-### Supabase
-- **Project:** `hvmyxyccfnkrbxqbhlnm`
-- **URL:** `https://hvmyxyccfnkrbxqbhlnm.supabase.co`
-- **Table:** `products`
-- **Columns:** `id`, `sku`, `image_url`
-
-### Environment Variables
+Active credentials in `.env.local`:
 ```bash
-# .env.local
-VITE_NEON_PROXY_URL      https://lucky-store-neon-proxy.luckystore-1947.workers.dev
-VITE_NEON_API_KEY        your-api-key
-SUPABASE_URL             https://hvmyxyccfnkrbxqbhlnm.supabase.co
-SUPABASE_SERVICE_ROLE_KEY your-service-role-key  # See .env.local
+# Main Postgres Connection String (Points to Supabase)
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.hvmyxyccfnkrbxqbhlnm.supabase.co:5432/postgres"
+
+# Supabase Client Credentials
+SUPABASE_URL="https://hvmyxyccfnkrbxqbhlnm.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="[REDACTED]"
 ```
 
 ---
 
-## Image URL Format
+## Operations Reference
 
-All product images are served at:
-```
-https://images.luckystore1947.com/products/{SKU}.webp
-```
-
-**Examples:**
-- `https://images.luckystore1947.com/products/AF-AER-RSP.webp`
-- `https://images.luckystore1947.com/products/BY-PMP-BWV.webp`
-- `https://images.luckystore1947.com/products/CC-SNK-GEN.webp`
-
----
-
-## Current Status
-
-| Component | Status | Count |
-|---|---|---|
-| Local WebP files | ✅ Complete | 495 |
-| R2 uploaded | ✅ Complete | 495 |
-| Database linked | ✅ Complete | 492/495 |
-| Missing from DB | ⚠️ Pending | 3 SKUs |
-
----
-
-## Next Steps / TODOs
-
-### Immediate
-- [ ] Add 3 missing products to database (if they should exist):
-  - `SN-ST-JHC-300G`
-  - `BV-ST-CHL-200ML`
-  - `CC-AR-ASL`
-
-### Future Maintenance
-- **New products:** Run `download_product_images.py --sku {NEW_SKU}` to fetch images
-- **Re-upload:** Run `upload_to_r2.py` to sync new images to R2
-- **Update DB:** Run `update_db_with_r2_urls.py` to link new images
-
-### Optimization Ideas
-- [ ] Add image lazy loading to frontend
-- [ ] Implement CDN caching headers on Worker
-- [ ] Add image optimization pipeline (resize variants)
-- [ ] Set up automated image download for new products
-
----
-
-## Commands Reference
-
+### DB Migrations & Types
+To push new migrations or update TypeScript definitions for Supabase:
 ```bash
-# Download images for missing products
-python download_product_images.py --delay 2
+# Push schema migrations
+npx supabase db push
 
-# Download single SKU
-python download_product_images.py --sku "AF-AER-RSP" --delay 2
-
-# Upload all images to R2
-python upload_to_r2.py
-
-# Update database with R2 URLs
-python update_db_with_r2_urls.py
-
-# Check what's in catalog-images
-ls catalog-images/sku-named/*.webp | wc -l
+# Regenerate TypeScript definitions
+npx supabase gen types typescript --project-id hvmyxyccfnkrbxqbhlnm > apps/admin_web/src/lib/database.types.ts
 ```
-
----
-
-## Notes
-
-- **WebP format:** All images converted to WebP (35-55% smaller than JPEG)
-- **Rate limiting:** Script uses 2-second delay between downloads to avoid blocking
-- **Duplicate handling:** Scripts skip files/records that already exist
-- **Image sources:** Primarily Chaldal.com (Bangladesh e-commerce), some manual uploads
-
----
-
-## Troubleshooting
-
-### If R2 upload fails:
-```bash
-# Check bucket exists
-wrangler r2 bucket list
-
-# Check Worker is deployed
-wrangler deploy cloudflare/workers/images/wrangler.toml
-```
-
-### If DB update fails:
-```bash
-# Check Supabase connection
-python -c "from supabase import create_client; print(create_client('URL', 'KEY').table('products').select('sku').limit(1).execute())"
-```
-
-### If download fails:
-- Chaldal/Shwapno may block requests — increase delay or use proxies
-- Some products may not exist on these sites — manual image required
