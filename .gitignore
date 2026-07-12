@@ -226,3 +226,10 @@ _plans/neon_data.sql
 # Local image catalog backup folder
 catalog-images/
 .env*
+
+# Added by agent
+_archive
+_data
+_plans
+context.md
+data/
