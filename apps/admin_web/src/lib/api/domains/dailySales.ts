@@ -31,7 +31,7 @@ export const dailySales = {
   },
 
   create: async (storeId: string, form: DailySaleFormData): Promise<DailySale> => {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('daily_sales')
       .insert({
         store_id: storeId,
