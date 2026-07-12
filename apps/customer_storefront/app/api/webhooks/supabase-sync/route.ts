@@ -1,47 +1,42 @@
 import { NextResponse } from 'next/server';
-import { Pool } from '@neondatabase/serverless';
+import { createClient } from '@supabase/supabase-js';
 
 const WEBHOOK_SECRET = process.env.SUPABASE_SYNC_WEBHOOK_SECRET || 'my-super-secret-webhook-key';
 
 export async function POST(request: Request) {
   try {
     const signature = request.headers.get('x-webhook-secret');
-    
+
     if (signature !== WEBHOOK_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload = await request.json();
-    
+
     if (!payload.id || !payload.email) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
     const { id, email, raw_user_meta_data } = payload;
-    
-    const connectionString = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
-    
-    if (!connectionString) {
-      console.error('Missing DATABASE_URL_UNPOOLED or DATABASE_URL environment variable');
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceKey) {
+      console.error('Missing Supabase env vars');
       return NextResponse.json({ error: 'Database misconfigured' }, { status: 500 });
     }
 
-    const pool = new Pool({ connectionString });
-    
+    // Service role client — bypasses RLS, safe for server-side webhook use
+    const supabase = createClient(supabaseUrl, serviceKey);
     const fullName = raw_user_meta_data?.full_name || '';
-    
-    // Update or insert the user profile row
-    const query = `
-      INSERT INTO public.users (id, email, full_name, created_at, updated_at)
-      VALUES ($1, $2, $3, NOW(), NOW())
-      ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = EXCLUDED.full_name,
-        updated_at = NOW();
-    `;
-    
-    await pool.query(query, [id, email, fullName]);
-    await pool.end();
+
+    const { error } = await supabase.from('users').upsert(
+      { id, email, full_name: fullName, updated_at: new Date().toISOString() },
+      { onConflict: 'id' }
+    );
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
