@@ -197,9 +197,11 @@ export function ProfitAndLossTab() {
               Last 3 Months
             </button>
             <button
-              onClick={() => {
-                setStartDate('2000-01-01');
-                setEndDate('2100-12-31');
+              onClick={async () => {
+                const firstDate = await api.dailySales.getFirstSaleDate(storeId);
+                const today = new Date();
+                setStartDate(firstDate || '2000-01-01');
+                setEndDate(today.toISOString().split('T')[0]);
               }}
               className="text-xs px-3 py-1 rounded-md bg-surface-tertiary text-text-primary border border-border-default hover:bg-surface-secondary transition-colors"
             >
