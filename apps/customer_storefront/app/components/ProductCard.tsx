@@ -2,6 +2,7 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { WishlistButton } from './WishlistButton';
+import Image from 'next/image';
 import { QtyNumber } from './ui/QtyNumber';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import type { Category } from '../lib/types';
@@ -227,11 +228,14 @@ export function ProductCard({
       {/* Image Container — plain img for reliability, same as admin portal */}
       <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0">
         {image_url ? (
-          <img
+          <Image
             src={image_url}
             alt={name}
+            width={174}
+            height={174}
             className="w-full h-full object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06] p-3"
-            loading={priority ? 'eager' : 'lazy'}
+            priority={priority}
+            loading={priority ? undefined : 'lazy'}
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               const placeholder = e.currentTarget.parentElement?.querySelector('[data-placeholder]');
