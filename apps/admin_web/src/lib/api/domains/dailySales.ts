@@ -2,6 +2,22 @@ import { supabase } from "@/lib/supabase";
 import type { DailySale, DailySaleFormData } from '../types';
 
 export const dailySales = {
+  getFirstSaleDate: async (storeId: string): Promise<string | null> => {
+    const { data, error } = await supabase
+      .from('daily_sales')
+      .select('sale_date')
+      .eq('store_id', storeId)
+      .order('sale_date', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+      
+    if (error) {
+      console.error('Error fetching first sale date', error);
+      return null;
+    }
+    return data?.sale_date || null;
+  },
+
   list: async (storeId: string, filters?: { startDate?: string; endDate?: string }): Promise<DailySale[]> => {
     let q = supabase
       .from('daily_sales')

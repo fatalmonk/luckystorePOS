@@ -40,7 +40,7 @@ const CHART_COLORS = [
 
 const salesStartDate = new Date('2026-04-04');
 
-export function DailySalesPage() {
+export function DailySalesTab() {
   const { notify } = useNotify();
   const { storeId } = useAuth();
   const queryClient = useQueryClient();

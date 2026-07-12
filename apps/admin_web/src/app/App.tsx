@@ -14,6 +14,7 @@ import { AuthProvider } from '../lib/AuthContext';
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
 const LazyMissingImagesPage = React.lazy(() => import('../features/inventory/MissingImagesPage').then(m => ({ default: m.MissingImagesPage })));
+const LazyFinanceDashboardPage = React.lazy(() => import('../features/finance/FinanceDashboardPage').then(m => ({ default: m.FinanceDashboardPage })));
 const LazySalesHistoryPage = React.lazy(() => import('../features/sales/SalesHistoryPage').then(m => ({ default: m.SalesHistoryPage })));
 const LazySupplierLedgerPage = React.lazy(() => import('../features/finance/SupplierLedgerPage').then(m => ({ default: m.SupplierLedgerPage })));
 const LazyCustomerLedgerPage = React.lazy(() => import('../features/finance/CustomerLedgerPage').then(m => ({ default: m.CustomerLedgerPage })));
@@ -24,8 +25,8 @@ const LazySettingsPage = React.lazy(() => import('../features/settings/SettingsP
 const LazyReportsPage = React.lazy(() => import('../features/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
 const LazyQuickPosPage = React.lazy(() => import('../features/pos/QuickPosPage').then(m => ({ default: m.QuickPosPage })));
 const LazyRemindersPage = React.lazy(() => import('../features/reminders/RemindersPage').then(m => ({ default: m.RemindersPage })));
-const LazyExpensesPage = React.lazy(() => import('../features/expenses/ExpensesPage').then(m => ({ default: m.ExpensesPage })));
-const LazyDailySalesPage = React.lazy(() => import('../features/sales/DailySalesPage').then(m => ({ default: m.DailySalesPage })));
+
+
 const LazyCompetitorPricesPage = React.lazy(() => import('../features/competitorPrices/CompetitorPricesPage').then(m => ({ default: m.CompetitorPricesPage })));
 const LazyImportPartiesPage = React.lazy(() => import('../features/import/ImportPartiesPage').then(m => ({ default: m.ImportPartiesPage })));
 const LazyImportProductsPage = React.lazy(() => import('../features/import/ImportProductsPage').then(m => ({ default: m.ImportProductsPage })));
@@ -84,8 +85,8 @@ export function App() {
                   <Route path="collections" element={<LazyRoute><LazyCollectionsWorkspace /></LazyRoute>} />
                   <Route path="purchase" element={<LazyRoute><LazyPurchaseEntryPage /></LazyRoute>} />
                   <Route path="purchase/history" element={<LazyRoute><LazyPurchaseHistoryPage /></LazyRoute>} />
-                  <Route path="expenses" element={<LazyRoute><LazyExpensesPage /></LazyRoute>} />
-                  <Route path="daily-sales" element={<LazyRoute><LazyDailySalesPage /></LazyRoute>} />
+                  
+                  <Route path="finance" element={<LazyRoute><LazyFinanceDashboardPage /></LazyRoute>} />
                   <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
                   <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
                   <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />

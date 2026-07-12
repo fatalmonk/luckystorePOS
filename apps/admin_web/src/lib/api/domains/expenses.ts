@@ -119,6 +119,42 @@ export const expenses = {
     }));
   },
 
+  getUpcomingRecurring: async (storeId: string, days: number = 7): Promise<ExpenseTemplate[]> => {
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + days);
+    const maxDate = nextWeek.toISOString();
+    
+    const { data, error } = await supabase
+      .from('expense_templates')
+      .select('*')
+      .eq('store_id', storeId)
+      .neq('recurrence_interval', 'none')
+      .lte('next_due_at', maxDate)
+      .order('next_due_at', { ascending: true });
+      
+    if (error) throw error;
+    
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      storeId: row.store_id ?? '',
+      name: row.name ?? '',
+      vendorName: row.vendor_name ?? '',
+      description: row.description ?? '',
+      amount: Number(row.amount ?? 0),
+      paymentType: row.payment_type as any,
+      category: row.category as any,
+      isPinned: row.is_pinned ?? false,
+      recurrenceInterval: row.recurrence_interval as 'none' | 'weekly' | 'monthly',
+      recurrenceAnchorDate: row.recurrence_anchor_date,
+      recurrenceDayOfMonth: row.recurrence_day_of_month,
+      recurrenceDayOfWeek: row.recurrence_day_of_week,
+      lastTriggeredAt: row.last_triggered_at,
+      nextDueAt: row.next_due_at,
+      createdAt: row.created_at ?? '',
+      updatedAt: row.updated_at ?? '',
+    }));
+  },
+
   createTemplate: async (storeId: string, template: Partial<ExpenseTemplate>) => {
     const payload = {
       store_id: storeId,

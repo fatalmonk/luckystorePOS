@@ -47,7 +47,7 @@ const CHART_COLORS = [
   'var(--color-secondary-default)',
 ];
 
-export function ExpensesPage() {
+export function ExpensesTab() {
   const { notify } = useNotify();
   const { storeId } = useAuth();
   const queryClient = useQueryClient();
