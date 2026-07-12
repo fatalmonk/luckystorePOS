@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { query } from "@/lib/neon";
+import { query, queryOne } from "@/lib/neon";
 import type { DailySale, DailySaleFormData } from '../types';
 
 export const dailySales = {
@@ -57,21 +57,18 @@ export const dailySales = {
   },
 
   create: async (storeId: string, form: DailySaleFormData): Promise<DailySale> => {
-    const { data, error } = await supabase
-      .from('daily_sales')
-      .insert({
-        store_id: storeId,
-        sale_date: form.saleDate,
-        cash_amount: form.cashAmount,
-        bkash_amount: form.bkashAmount,
-        credit_amount: form.creditAmount,
-        total_sales: form.totalSales,
-        stock_purchase: form.stockPurchase,
-        daily_expense: form.dailyExpense,
-      })
-      .select()
-      .single();
-    if (error) throw error;
+    const data = await queryOne<any>(
+      `INSERT INTO daily_sales (
+        store_id, sale_date, cash_amount, bkash_amount, credit_amount,
+        total_sales, stock_purchase, daily_expense
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [
+        storeId, form.saleDate, form.cashAmount, form.bkashAmount, form.creditAmount,
+        form.totalSales, form.stockPurchase, form.dailyExpense
+      ]
+    );
+    if (!data) throw new Error("Failed to create daily sale");
+    
     return {
       id: data.id,
       storeId: data.store_id ?? '',
@@ -88,21 +85,31 @@ export const dailySales = {
   },
 
   update: async (id: string, updates: Partial<DailySaleFormData>, storeId?: string): Promise<DailySale> => {
-    let q = supabase
-      .from('daily_sales')
-      .update({
-        sale_date: updates.saleDate,
-        cash_amount: updates.cashAmount,
-        bkash_amount: updates.bkashAmount,
-        credit_amount: updates.creditAmount,
-        total_sales: updates.totalSales,
-        stock_purchase: updates.stockPurchase,
-        daily_expense: updates.dailyExpense,
-      })
-      .eq('id', id);
-    if (storeId) q = q.eq('store_id', storeId);
-    const { data, error } = await q.select().single();
-    if (error) throw error;
+    const setKeys = [];
+    const values = [];
+    let i = 1;
+
+    if (updates.saleDate !== undefined) { setKeys.push(`sale_date = $${i++}`); values.push(updates.saleDate); }
+    if (updates.cashAmount !== undefined) { setKeys.push(`cash_amount = $${i++}`); values.push(updates.cashAmount); }
+    if (updates.bkashAmount !== undefined) { setKeys.push(`bkash_amount = $${i++}`); values.push(updates.bkashAmount); }
+    if (updates.creditAmount !== undefined) { setKeys.push(`credit_amount = $${i++}`); values.push(updates.creditAmount); }
+    if (updates.totalSales !== undefined) { setKeys.push(`total_sales = $${i++}`); values.push(updates.totalSales); }
+    if (updates.stockPurchase !== undefined) { setKeys.push(`stock_purchase = $${i++}`); values.push(updates.stockPurchase); }
+    if (updates.dailyExpense !== undefined) { setKeys.push(`daily_expense = $${i++}`); values.push(updates.dailyExpense); }
+
+    if (setKeys.length === 0) throw new Error('No fields to update');
+    
+    values.push(id);
+    let sql = `UPDATE daily_sales SET ${setKeys.join(', ')} WHERE id = $${i++}`;
+    if (storeId) {
+      sql += ` AND store_id = $${i++}`;
+      values.push(storeId);
+    }
+    sql += ` RETURNING *`;
+
+    const data = await queryOne<any>(sql, values);
+    if (!data) throw new Error("Failed to update daily sale");
+    
     return {
       id: data.id,
       storeId: data.store_id ?? '',
@@ -119,7 +126,6 @@ export const dailySales = {
   },
 
   remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('daily_sales').delete().eq('id', id);
-    if (error) throw error;
+    await query(`DELETE FROM daily_sales WHERE id = $1`, [id]);
   },
 };
