@@ -30,40 +30,55 @@ export const settings = {
     return data;
   },
   addUser: async (storeId: string, user: { email: string; password: string; fullName: string; role: string; pin: string; tenantId: string }) => {
-    // Create a temporary Supabase client with persistSession: false to prevent logging out the current admin
-    const tempSupabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
-        },
-      }
-    );
+    try {
+      // Create a temporary Supabase client with persistSession: false and unique storageKey to prevent logging out the current admin
+      const tempSupabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY,
+        {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+            storageKey: 'temp-signup-key',
+          },
+        }
+      );
 
-    // 1. Create auth user
-    const { data: authData, error: authError } = await tempSupabase.auth.signUp({
-      email: user.email,
-      password: user.password,
-    });
-    if (authError) throw authError;
-    const authId = authData.user?.id;
-    if (!authId) throw new Error('Signup succeeded but no auth user ID returned');
-    
-    // 2. Create user record via RPC (bypasses RLS)
-    const { data, error } = await supabase.rpc('create_store_user' as any, {
-      p_email: user.email,
-      p_full_name: user.fullName,
-      p_role: user.role,
-      p_pin: user.pin,
-      p_store_id: storeId,
-      p_tenant_id: user.tenantId,
-      p_auth_id: authId,
-    });
-    if (error) throw error;
-    return data;
+      // 1. Create auth user
+      const { data: authData, error: authError } = await tempSupabase.auth.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      
+      if (authError) {
+        throw new Error(authError.message || JSON.stringify(authError));
+      }
+      
+      const authId = authData.user?.id;
+      if (!authId) {
+        throw new Error('Signup succeeded but no auth user ID returned');
+      }
+      
+      // 2. Create user record via RPC (bypasses RLS)
+      const { data, error } = await supabase.rpc('create_store_user' as any, {
+        p_email: user.email,
+        p_full_name: user.fullName,
+        p_role: user.role,
+        p_pin: user.pin,
+        p_store_id: storeId,
+        p_tenant_id: user.tenantId,
+        p_auth_id: authId,
+      });
+      
+      if (error) {
+        throw new Error(error.message || JSON.stringify(error));
+      }
+      
+      return data;
+    } catch (err: any) {
+      throw new Error(err.message || JSON.stringify(err));
+    }
   },
   addPaymentMethod: async (
     storeId: string,
