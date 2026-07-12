@@ -65,7 +65,7 @@ function useNavGroups(): NavGroup[] {
           { label: t('nav.purchaseHistory'), path: '/purchase/history' },
         ] },
         { icon: ShoppingCart, label: t('nav.sales'), path: '/sales' },
-        { icon: BarChart3, label: t('nav.dailySales'), path: '/daily-sales' },
+        { icon: BarChart3, label: 'Finance', path: '/finance' },
       ]
     },
     {
@@ -73,7 +73,7 @@ function useNavGroups(): NavGroup[] {
       titleKey: 'nav.finance', // "Finance"
       icon: Wallet,
       items: [
-        { icon: Receipt, label: t('nav.expenses'), path: '/expenses' },
+        
         { icon: Wallet, label: t('nav.supplierLedger'), path: '/finance/suppliers' },
         { icon: Users, label: t('nav.customerLedger'), path: '/finance/customers' },
         { icon: PhoneCall, label: t('nav.collections'), path: '/collections' },
