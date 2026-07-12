@@ -21,10 +21,12 @@ const nextConfig = {
         hostname: '*.r2.cloudflarestorage.com',
       },
       {
-        // images.luckystore1947.com intentionally excluded from remotePatterns —
-        // Vercel's Image Optimization was proxying all those URLs through /_next/image,
-        // adding latency. The R2 bucket is served directly via the Cloudflare Worker
-        // at images.luckystore1947.com with proper CORS.
+        protocol: 'https',
+        hostname: 'images.luckystore1947.com',
+      },
+      {
+        // images.luckystore1947.com is now included above for Next.js image optimization,
+        // allowing on-the-fly resizing to resolve Lighthouse warnings for oversized images.
         protocol: 'https',
         hostname: '*.workers.dev',
       },
