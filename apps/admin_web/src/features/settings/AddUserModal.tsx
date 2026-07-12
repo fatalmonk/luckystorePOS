@@ -46,6 +46,13 @@ export function AddUserModal({ isOpen, storeId, tenantId, onClose }: AddUserModa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    // Enforce domain restriction
+    if (!formData.email.endsWith('@luckystore1947.com')) {
+      setError('Email must belong to the @luckystore1947.com domain');
+      return;
+    }
+
     if (formData.pin.length < 4) {
       setError('PIN must be at least 4 digits');
       return;
