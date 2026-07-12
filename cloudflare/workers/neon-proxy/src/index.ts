@@ -6,7 +6,7 @@
  * Returns JSON { rows: any[] } or { error: string }
  *
  * Security:
- * - Only SELECT queries allowed (validated server-side)
+ * - SQL queries allowed (validated server-side)
  * - API key required via x-api-key header
  * - Per-IP rate limiting (60 queries/min)
  * - CORS restricted to admin_web + localhost origins
@@ -49,21 +49,16 @@ function corsHeaders(origin: string, allowed: string): Record<string, string> {
   };
 }
 
-// Validate that SQL is read-only — reject anything that isn't a SELECT
-function isReadOnlyQuery(sql: string): boolean {
+// Validate that SQL is safe — reject DDL
+function isSafeQuery(sql: string): boolean {
   const trimmed = sql.trim().toLowerCase();
-  // Must start with SELECT or WITH (for CTEs)
-  if (!trimmed.startsWith('select') && !trimmed.startsWith('with')) {
-    return false;
-  }
-  // Block write/DDL keywords anywhere after the initial SELECT
+  
+  // Block DDL keywords
   const forbidden = [
-    /\binsert\b/, /\bupdate\b/, /\bdelete\b/, /\bdrop\b/, /\btruncate\b/,
-    /\bcreate\b/, /\balter\b/, /\bgrant\b/, /\brevoke\b/, /\bvacuum\b/,
+    /\bdrop\b/, /\btruncate\b/, /\bcreate\b/, /\balter\b/, /\bgrant\b/, /\brevoke\b/, /\bvacuum\b/,
     /\bcopy\b/, /\bcall\b/, /\bexecute\b/,
   ];
-  // Check for these as standalone words (not inside string literals)
-  // Simple heuristic: strip string literals first
+  
   const withoutStrings = trimmed.replace(/'[^']*'/g, "''");
   for (const pattern of forbidden) {
     if (pattern.test(withoutStrings)) return false;
@@ -130,9 +125,9 @@ export default {
       });
     }
 
-    // Validate read-only
-    if (!isReadOnlyQuery(body.sql)) {
-      return new Response(JSON.stringify({ error: 'Only SELECT queries are allowed' }), {
+    // Validate safe query
+    if (!isSafeQuery(body.sql)) {
+      return new Response(JSON.stringify({ error: 'Only DML queries are allowed' }), {
         status: 403,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
