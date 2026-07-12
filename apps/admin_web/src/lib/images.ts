@@ -84,7 +84,7 @@ export async function uploadProcessedImage({
 
   // 2. Generate filename based on SKU, fallback to barcode, itemId, or random UUID
   const identifier = (sku || barcode || itemId || crypto.randomUUID()).trim();
-  const sanitizedIdentifier = identifier.toUpperCase().replace(/[^A-Z0-9\-]/g, '_');
+  const sanitizedIdentifier = identifier.toUpperCase().replace(/[^A-Z0-9-]/g, '_');
   const fileName = `products/${sanitizedIdentifier}.webp`;
 
   // 3. Create a File object from the blob
