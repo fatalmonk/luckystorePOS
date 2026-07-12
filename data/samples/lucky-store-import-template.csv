@@ -1,4 +1,0 @@
-name,barcode,sku,category,supplier,batch_code,expiry_date,cost,price,stock_qty,store_code,image_url
-Parachute Coconut Oil 200ml,1234567890123,SKU-PO200,Cosmetics,Marico Ltd,BATCH-001,2026-12-31,90.00,120.00,50,BR1,https://example.com/parachute-oil.jpg
-Danish Butter Cookies 300g,,SKU-DC300,Snacks,Danish Foods,BATCH-002,2026-10-15,180.00,240.00,20,BR1,
-Sunsilk Pink Shampoo 180ml,8901234509876,SKU-SPINK,Personal Care,Unilever,BATCH-003,2027-01-20,130.00,180.00,35,BR2,
