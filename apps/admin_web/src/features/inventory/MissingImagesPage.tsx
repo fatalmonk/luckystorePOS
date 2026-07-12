@@ -7,7 +7,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Upload, ImageIcon, Check, X, Package } from 'lucide-react';
-import { uploadToR2 } from '../../lib/r2';
+import { uploadProcessedImage } from '../../lib/images';
 import type { InventoryItem } from '@/types/inventory';
 import { ErrorState } from '../../components/PageState';
 import { SkeletonBlock } from '../../components/PageState';
@@ -50,8 +50,13 @@ export function MissingImagesPage() {
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: async ({ productId, file }: { productId: string; file: File }) => {
-      const key = `products/${storeId}/${productId}-${file.name}`;
-      const url = await uploadToR2(file, key);
+      const prod = productsMissingImages.find(p => p.id === productId);
+      const url = await uploadProcessedImage({
+        file,
+        sku: prod?.sku,
+        barcode: prod?.barcode,
+        itemId: productId,
+      });
       
       // Update product with new image URL
       await api.inventory.updateProduct(storeId!, productId, { image_url: url });

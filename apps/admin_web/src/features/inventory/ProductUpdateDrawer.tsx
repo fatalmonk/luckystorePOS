@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
-import { uploadToR2 } from '../../lib/r2';
+import { deleteFromR2, extractR2Key } from '../../lib/r2';
+import { uploadProcessedImage } from '../../lib/images';
 import { clsx } from 'clsx';
 import { useNotify } from '../../components/NotificationContext';
 import { useAuth } from '../../lib/AuthContext';
@@ -174,12 +175,31 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   // Mutations
   const imageMutation = useMutation({
     mutationFn: async (file: File) => {
-      // Upload to R2 CDN via Worker (not Supabase Storage)
-      const fileExt = file.name.split('.').pop() || 'jpg';
-      const r2Key = `products/${product.id}/${crypto.randomUUID()}.${fileExt}`;
-      const publicUrl = await uploadToR2(file, r2Key);
+      // Process and upload new WebP image
+      const publicUrl = await uploadProcessedImage({
+        file,
+        sku: product.sku,
+        barcode: product.barcode,
+        itemId: product.id,
+      });
+
       // Persist the new image_url in the items table
       await api.inventory.updateProduct(storeId, product.id, { image_url: publicUrl });
+
+      // Delete the old image if the key/path has changed
+      const getCleanPath = (url: string) => url.split('?')[0];
+      const oldUrl = product.image_url;
+      if (oldUrl && getCleanPath(oldUrl) !== getCleanPath(publicUrl)) {
+        const r2Key = extractR2Key(oldUrl);
+        if (r2Key) {
+          try {
+            await deleteFromR2(r2Key);
+          } catch (err) {
+            console.warn('Failed to delete old image from R2:', err);
+          }
+        }
+      }
+
       return { image_url: publicUrl };
     },
     onSuccess: () => {
