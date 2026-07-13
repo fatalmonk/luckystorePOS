@@ -40,44 +40,43 @@ function useNavGroups(): NavGroup[] {
   const { t } = useTranslation();
   return useMemo(() => [
     {
-      id: 'business',
-      titleKey: 'nav.groupBusiness', // "Business" or fallback t('nav.business')
+      id: 'operations',
+      titleKey: 'nav.groupOperations', // "Operations" or fallback
       icon: LayoutDashboard,
       items: [
-        { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/' },
-        { icon: Monitor, label: t('nav.quickPos'), path: '/pos' },
+        { icon: LayoutDashboard, label: t('nav.dashboard', 'Dashboard'), path: '/' },
+        { icon: Monitor, label: t('nav.quickPos', 'Quick POS'), path: '/pos' },
         { icon: ShoppingBag, label: t('nav.deliveryOrders', 'Delivery Orders'), path: '/delivery-orders' },
-        { icon: TrendingDown, label: t('nav.competitorPrices'), path: '/competitor-prices' },
+        { icon: ShoppingCart, label: t('nav.sales', 'Sales History'), path: '/sales' },
       ]
     },
     {
-      id: 'inventory_sales',
-      titleKey: 'nav.groupInventorySales', // "Inventory & Sales"
+      id: 'inventory',
+      titleKey: 'nav.groupInventory', // "Inventory"
       icon: Package,
       items: [
-        { icon: Warehouse, label: t('nav.inventory'), path: '/inventory', children: [
-          { label: t('nav.list'), path: '/inventory' },
-          { label: t('nav.stockHistory'), path: '/inventory/history' },
+        { icon: Warehouse, label: t('nav.inventory', 'Inventory'), path: '/inventory', children: [
+          { label: t('nav.list', 'List'), path: '/inventory' },
+          { label: t('nav.stockHistory', 'Stock History'), path: '/inventory/history' },
           { label: t('nav.missingImages', 'Missing Images'), path: '/inventory/missing-images' },
         ] },
-        { icon: PlusCircle, label: t('nav.purchase'), path: '/purchase', children: [
-          { label: t('nav.newEntry'), path: '/purchase' },
-          { label: t('nav.purchaseHistory'), path: '/purchase/history' },
+        { icon: PlusCircle, label: t('nav.purchase', 'Purchase'), path: '/purchase', children: [
+          { label: t('nav.newEntry', 'New Entry'), path: '/purchase' },
+          { label: t('nav.purchaseHistory', 'Purchase History'), path: '/purchase/history' },
         ] },
-        { icon: ShoppingCart, label: t('nav.sales'), path: '/sales' },
-        { icon: BarChart3, label: 'Finance', path: '/finance' },
+        { icon: TrendingDown, label: t('nav.competitorPrices', 'Competitor Prices'), path: '/competitor-prices' },
       ]
     },
     {
       id: 'finance',
-      titleKey: 'nav.finance', // "Finance"
+      titleKey: 'nav.groupFinance', // "Finance & Accounting"
       icon: Wallet,
       items: [
-        
-        { icon: Wallet, label: t('nav.supplierLedger'), path: '/finance/suppliers' },
-        { icon: Users, label: t('nav.customerLedger'), path: '/finance/customers' },
-        { icon: PhoneCall, label: t('nav.collections'), path: '/collections' },
-        { icon: Banknote, label: t('nav.otherIncome'), path: '/other-income' },
+        { icon: BarChart3, label: t('nav.financeWorkspace', 'Finance Workspace'), path: '/finance' },
+        { icon: Wallet, label: t('nav.supplierLedger', 'Supplier Ledger'), path: '/finance/suppliers' },
+        { icon: Users, label: t('nav.customerLedger', 'Customer Ledger'), path: '/finance/customers' },
+        { icon: PhoneCall, label: t('nav.collections', 'Collections'), path: '/collections' },
+        { icon: Banknote, label: t('nav.otherIncome', 'Other Income'), path: '/other-income' },
       ]
     },
     {
@@ -85,11 +84,11 @@ function useNavGroups(): NavGroup[] {
       titleKey: 'nav.groupManagement', // "Management"
       icon: ShieldCheck,
       items: [
-        { icon: BarChart3, label: t('nav.reports'), path: '/reports' },
-        { icon: Users, label: t('nav.manageStaff'), path: '/staff' },
-        { icon: Database, label: t('nav.dataManagement'), path: '/import', children: [
-          { label: t('nav.importProducts'), path: '/import/products' },
-          { label: t('nav.importParties'), path: '/import/parties' },
+        { icon: BarChart3, label: t('nav.reports', 'Reports'), path: '/reports' },
+        { icon: Users, label: t('nav.manageStaff', 'Manage Staff'), path: '/staff' },
+        { icon: Database, label: t('nav.dataManagement', 'Data Management'), path: '/import', children: [
+          { label: t('nav.importProducts', 'Import Products'), path: '/import/products' },
+          { label: t('nav.importParties', 'Import Parties'), path: '/import/parties' },
         ] },
       ]
     },
@@ -98,7 +97,7 @@ function useNavGroups(): NavGroup[] {
       titleKey: 'nav.groupSystem', // "System"
       icon: Settings,
       items: [
-        { icon: Settings, label: t('nav.settings'), path: '/settings' },
+        { icon: Settings, label: t('nav.settings', 'Settings'), path: '/settings' },
         { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
         { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
       ]
