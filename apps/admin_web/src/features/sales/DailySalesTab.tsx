@@ -646,10 +646,9 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
 
   return (
     <div className="sales-container">
-      <PageHeader
-        title="Daily Sales & Expenditure Summary"
-        subtitle="Track daily sales, purchases, and expenses with auto-calculated totals."
-        actions={
+      <div className="card p-6 mt-0">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
           <div className="flex items-center gap-2">
             <button
               className="button-outline gap-2"
@@ -664,185 +663,10 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
             >
               <Download size={16} /> Export CSV
             </button>
-            {/* Add Daily Sale button moved to All Sales Entries section */}
+            <button className="button-primary gap-2" onClick={() => setShowForm(true)}>
+              <Plus size={18} /> Add Daily Sale
+            </button>
           </div>
-        }
-      />
-
-      <div className="dashboard-grid mt-6 mb-6">
-        <MetricCard title="Today's Sales" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Yesterday's Sales" value={formatCurrency(yesterdayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Week" value={formatCurrency(weekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Last Week" value={formatCurrency(lastWeekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Month" value={formatCurrency(monthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Last Month" value={formatCurrency(lastMonthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Total Records" value={totalStats.count.toString()} icon={<Banknote size={20} className="text-info" />} color="info" variant="light" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-4">Sales Overview</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-surface-secondary rounded-lg">
-              <div className="text-sm text-text-muted">Total Sales</div>
-              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.total)}</div>
-              <div className="text-xs text-text-muted">{totalStats.count} days recorded</div>
-            </div>
-            <div className="p-4 bg-surface-secondary rounded-lg">
-              <div className="text-sm text-text-muted">Average Daily</div>
-              <div className="text-2xl font-bold text-text-primary">{formatCurrency(totalStats.avg)}</div>
-              <div className="text-xs text-text-muted">per day</div>
-            </div>
-            <div className="p-4 bg-surface-secondary rounded-lg">
-              <div className="text-sm text-text-muted">Highest Day</div>
-              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.max)}</div>
-              <div className="text-xs text-text-muted">best day</div>
-            </div>
-            <div className="p-4 bg-surface-secondary rounded-lg">
-              <div className="text-sm text-text-muted">Lowest Day</div>
-              <div className="text-2xl font-bold text-danger">{formatCurrency(totalStats.min)}</div>
-              <div className="text-xs text-text-muted">slowest day</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-4">Payment Breakdown</h2>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={paymentBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {paymentBreakdown.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: any) => value !== undefined && value !== null ? [formatCurrency(Number(value)), 'Amount'] : ['N/A', 'Amount']}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 space-y-2">
-            {paymentBreakdown.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS[idx] }} />
-                  <span className="text-sm text-text-primary">{item.name}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="font-semibold">{formatCurrency(item.value)}</span>
-                  <span className="text-text-muted ml-2">({item.percentage.toFixed(1)}%)</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="card p-6 mb-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Monthly Sales Trend</h2>
-        {monthlyTrend.length > 0 ? (
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
-                <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
-                <Tooltip 
-                  formatter={(value: any) => value !== undefined && value !== null ? [formatCurrency(Number(value)), 'Total Sales'] : ['N/A', 'Total Sales']}
-                  contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-default)' }}
-                />
-                <Bar dataKey="total" fill="var(--color-success-default)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <EmptyState
-            icon={<TrendingUp size={48} />}
-            title="No data available"
-            description="Add daily sales to see trends."
-          />
-        )}
-      </div>
-
-      <div className="card p-6 mb-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Daily Trend (Last 30 Days)</h2>
-        {dailyTrend.length > 0 ? (
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={dailyTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
-                <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={10} interval="preserveStartEnd" angle={-45} textAnchor="end" height={60} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-default)' }}
-                />
-                <Legend />
-                <Line type="monotone" dataKey="sales" stroke="var(--color-success-default)" strokeWidth={2} name="Sales" dot={false} />
-                <Line type="monotone" dataKey="expense" stroke="var(--color-danger-default)" strokeWidth={2} name="Expense" dot={false} />
-                <Line type="monotone" dataKey="purchase" stroke="var(--color-info-default)" strokeWidth={2} name="Stock Purchase" dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <EmptyState
-            icon={<TrendingUp size={48} />}
-            title="No data available"
-            description="Add daily sales to see trends."
-          />
-        )}
-      </div>
-
-      <div className="card p-6 mb-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Top 5 Highest Sales Days</h2>
-        {topSalesDays.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border-default">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">Date</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Total Sales</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Cash</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Bkash</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Credit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topSalesDays.map((s) => (
-                  <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary">
-                    <td className="py-3 px-4 text-sm text-text-primary">{s.date}</td>
-                    <td className="py-3 px-4 text-sm font-semibold text-success text-right">{formatCurrency(s.totalSales)}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.cashAmount)}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.bkashAmount)}</td>
-                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.creditAmount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState
-            icon={<DollarSign size={48} />}
-            title="No sales data"
-            description="Add daily sales to see top performing days."
-          />
-        )}
-      </div>
-      <div className="card p-6 mt-0">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
-          <button className="button-primary gap-2" onClick={() => setShowForm(true)}>
-            <Plus size={18} /> Add Daily Sale
-          </button>
         </div>
         <label className="flex items-center gap-2 cursor-pointer text-sm text-text-muted mb-4">
           <input type="checkbox" checked={hideEmptyDays} onChange={(e) => setHideEmptyDays(e.target.checked)} className="form-checkbox rounded text-primary" />
