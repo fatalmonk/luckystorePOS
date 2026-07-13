@@ -13,7 +13,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { MetricCard } from '../../components/data-display/MetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts';
 import {
   Receipt,
@@ -47,7 +47,12 @@ const CHART_COLORS = [
   'var(--color-secondary-default)',
 ];
 
-export function ExpensesTab() {
+interface ExpensesTabProps {
+  startDate: string;
+  endDate: string;
+}
+
+export function ExpensesTab({ startDate, endDate }: ExpensesTabProps) {
   const { notify } = useNotify();
   const { storeId } = useAuth();
   const queryClient = useQueryClient();
@@ -62,8 +67,8 @@ export function ExpensesTab() {
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const { data: expenses, isLoading, error, refetch } = useQuery({
-    queryKey: ['expenses', storeId],
-    queryFn: () => api.expenses.list(storeId),
+    queryKey: ['expenses', storeId, startDate, endDate],
+    queryFn: () => api.expenses.list(storeId, { startDate, endDate }),
   });
 
   const { data: templates } = useQuery({
@@ -229,6 +234,25 @@ export function ExpensesTab() {
         count: data.count,
       }))
       .sort((a, b) => a.month.localeCompare(b.month));
+  }, [allExpenses]);
+
+  // Category Trend stacked bar chart data processing (Phase 6)
+  const categoryTrend = useMemo(() => {
+    const grouped: Record<string, Record<string, number>> = {};
+    allExpenses.forEach(e => {
+      const monthKey = format(parseISO(e.expenseDate), 'MMM yyyy');
+      if (!grouped[monthKey]) {
+        grouped[monthKey] = {};
+      }
+      grouped[monthKey][e.category] = (grouped[monthKey][e.category] || 0) + e.amount;
+    });
+
+    return Object.entries(grouped)
+      .map(([month, categories]) => ({
+        month,
+        ...categories,
+      }))
+      .sort((a, b) => new Date(`1 ${a.month}`).getTime() - new Date(`1 ${b.month}`).getTime());
   }, [allExpenses]);
 
   // Top vendors
@@ -439,6 +463,38 @@ export function ExpensesTab() {
             </div>
           ) : (
             <EmptyState icon={<TrendingUp size={32} />} title="No data" description="Add expenses to see trend" />
+          )}
+        </div>
+
+        {/* Category Trend Stacked Bar Chart (Phase 6) */}
+        <div className="card p-6 col-span-1 lg:col-span-2">
+          <h2 className="text-lg font-semibold text-text-primary mb-4">Category Trend (Stacked)</h2>
+          {categoryTrend.length > 0 ? (
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-text-muted)" />
+                  <YAxis tick={{ fontSize: 12 }} stroke="var(--color-text-muted)" tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    formatter={(value) => [formatCurrency(Number(value))]}
+                    labelStyle={{ color: 'var(--color-text-primary)' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)' }}
+                  />
+                  <Legend />
+                  {EXPENSE_CATEGORIES.map((cat, idx) => (
+                    <Bar
+                      key={cat}
+                      dataKey={cat}
+                      stackId="a"
+                      fill={CHART_COLORS[idx % CHART_COLORS.length]}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState icon={<TrendingUp size={32} />} title="No data" description="Add expenses to see category breakdown over time" />
           )}
         </div>
 

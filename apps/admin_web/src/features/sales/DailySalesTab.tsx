@@ -40,15 +40,18 @@ const CHART_COLORS = [
 
 const salesStartDate = new Date('2026-04-04');
 
-export function DailySalesTab() {
+interface DailySalesTabProps {
+  startDate: string;
+  endDate: string;
+}
+
+export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
   const { notify } = useNotify();
   const { storeId } = useAuth();
   const queryClient = useQueryClient();
 
   const [showForm, setShowForm] = useState(false);
   const [editingSale, setEditingSale] = useState<DailySale | null>(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [hideEmptyDays, setHideEmptyDays] = useState(true);
   // Selected month filter (format: 'yyyy-MM')
   const [selectedMonth, setSelectedMonth] = useState<string>('');
@@ -410,8 +413,8 @@ export function DailySalesTab() {
   };
 
   const { data: sales, isLoading, error, refetch } = useQuery({
-    queryKey: ['dailySales', storeId],
-    queryFn: () => api.dailySales.list(storeId),
+    queryKey: ['dailySales', storeId, startDate, endDate],
+    queryFn: () => api.dailySales.list(storeId, { startDate, endDate }),
   });
 
   const createMutation = useMutation({
