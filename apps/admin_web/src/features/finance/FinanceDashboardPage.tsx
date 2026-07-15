@@ -22,6 +22,62 @@ export function FinanceDashboardPage() {
     return new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
   });
 
+  const quickSelects = [
+    {
+      label: 'This Month',
+      getRange: () => {
+        const today = new Date();
+        return {
+          start: new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0],
+          end: new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0],
+        };
+      },
+    },
+    {
+      label: 'Last Month',
+      getRange: () => {
+        const today = new Date();
+        return {
+          start: new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0],
+          end: new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0],
+        };
+      },
+    },
+    {
+      label: 'Last 3 Months',
+      getRange: () => {
+        const today = new Date();
+        return {
+          start: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0],
+          end: new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0],
+        };
+      },
+    },
+    {
+      label: 'All Time',
+      getRange: async () => {
+        const firstDate = await api.dailySales.getFirstSaleDate(storeId);
+        const today = new Date();
+        return {
+          start: firstDate || '2000-01-01',
+          end: today.toISOString().split('T')[0],
+        };
+      },
+    },
+  ];
+
+  const handleQuickSelect = async (getRange: () => { start: string; end: string } | Promise<{ start: string; end: string }>) => {
+    const range = await getRange();
+    setStartDate(range.start);
+    setEndDate(range.end);
+  };
+
+  const tabs = [
+    { id: 'pnl' as Tab, label: 'Profit & Loss', icon: TrendingUp },
+    { id: 'sales' as Tab, label: 'Daily Sales', icon: Calculator },
+    { id: 'expenses' as Tab, label: 'Expenses', icon: Receipt },
+  ];
+
   return (
     <div className="finance-workspace pb-20 md:pb-8">
       <PageHeader
@@ -29,117 +85,67 @@ export function FinanceDashboardPage() {
         subtitle="Manage daily sales, expenses, and track your profit & loss."
       />
 
-      {/* Date Filter Bar shared across all tabs */}
-      <div className="px-6 mb-6">
-        <div className="card p-4 expenses-filters">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-text-main">From</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="rounded-md border border-border-light bg-input px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-text-main">To</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="rounded-md border border-border-light bg-input px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
+      {/* Date Filter Bar — floating pill strip, theme-aware */}
+      <div className="px-6 mb-8">
+        <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center gap-3">
+          <div className="flex items-center gap-2 bg-[var(--color-paper)]/80 backdrop-blur-md border border-[var(--color-border)] rounded-full px-4 py-2">
+            <Calendar size={14} className="text-[var(--color-accent)] shrink-0" />
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent border-none text-sm text-[var(--color-foreground)] focus:outline-none w-[120px]"
+            />
+            <span className="text-[var(--color-muted)]">→</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent border-none text-sm text-[var(--color-foreground)] focus:outline-none w-[120px]"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+            {quickSelects.map(({ label, getRange }) => (
               <button
-                onClick={() => {
-                  const today = new Date();
-                  const start = new Date(today.getFullYear(), today.getMonth(), 1);
-                  const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                  setStartDate(start.toISOString().split('T')[0]);
-                  setEndDate(end.toISOString().split('T')[0]);
-                }}
-                className="text-xs px-3 py-1 rounded-md bg-surface-tertiary text-text-primary border border-border-default hover:bg-surface-secondary transition-colors"
+                key={label}
+                onClick={() => handleQuickSelect(getRange)}
+                className="px-3 py-1 rounded-full bg-[var(--color-border-light)] text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent-ghost)] transition-all duration-300 shrink-0"
               >
-                This Month
+                {label}
               </button>
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                  const end = new Date(today.getFullYear(), today.getMonth(), 0);
-                  setStartDate(start.toISOString().split('T')[0]);
-                  setEndDate(end.toISOString().split('T')[0]);
-                }}
-                className="text-xs px-3 py-1 rounded-md bg-surface-tertiary text-text-primary border border-border-default hover:bg-surface-secondary transition-colors"
-              >
-                Last Month
-              </button>
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-                  const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                  setStartDate(start.toISOString().split('T')[0]);
-                  setEndDate(end.toISOString().split('T')[0]);
-                }}
-                className="text-xs px-3 py-1 rounded-md bg-surface-tertiary text-text-primary border border-border-default hover:bg-surface-secondary transition-colors"
-              >
-                Last 3 Months
-              </button>
-              <button
-                onClick={async () => {
-                  const firstDate = await api.dailySales.getFirstSaleDate(storeId);
-                  const today = new Date();
-                  setStartDate(firstDate || '2000-01-01');
-                  setEndDate(today.toISOString().split('T')[0]);
-                }}
-                className="text-xs px-3 py-1 rounded-md bg-surface-tertiary text-text-primary border border-border-default hover:bg-surface-secondary transition-colors"
-              >
-                All Time
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="bg-surface border-b border-border-default px-6 flex items-center gap-6 mb-6">
-        <button
-          onClick={() => setActiveTab('pnl')}
-          className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
-            activeTab === 'pnl' 
-              ? 'border-primary text-primary' 
-              : 'border-transparent text-text-muted hover:text-text-primary'
-          }`}
-        >
-          <TrendingUp size={16} /> Profit & Loss
-        </button>
-        <button
-          onClick={() => setActiveTab('sales')}
-          className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
-            activeTab === 'sales' 
-              ? 'border-primary text-primary' 
-              : 'border-transparent text-text-muted hover:text-text-primary'
-          }`}
-        >
-          <Calculator size={16} /> Daily Sales
-        </button>
-        <button
-          onClick={() => setActiveTab('expenses')}
-          className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
-            activeTab === 'expenses' 
-              ? 'border-primary text-primary' 
-              : 'border-transparent text-text-muted hover:text-text-primary'
-          }`}
-        >
-          <Receipt size={16} /> Expenses
-        </button>
+      {/* Floating pill tab navigation, theme-aware */}
+      <div className="px-6 mb-8">
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-2 bg-[var(--color-paper)]/60 backdrop-blur-md border border-[var(--color-border)] rounded-full p-1.5">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={
+                    isActive
+                      ? 'bg-[var(--color-accent)] text-[var(--color-accent-text)] rounded-full px-5 py-2 font-semibold text-sm flex items-center gap-2 transition-all duration-300'
+                      : 'bg-transparent text-[var(--color-muted)] rounded-full px-5 py-2 font-medium text-sm flex items-center gap-2 hover:bg-[var(--color-border-light)] hover:text-[var(--color-foreground)] transition-all duration-300'
+                  }
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      <div className="px-6">
+      {/* Tab content with entry animation */}
+      <div className="px-6 finance-tab-content">
         {activeTab === 'pnl' && <ProfitAndLossTab startDate={startDate} endDate={endDate} />}
         {activeTab === 'sales' && <DailySalesTab startDate={startDate} endDate={endDate} />}
         {activeTab === 'expenses' && <ExpensesTab startDate={startDate} endDate={endDate} />}
