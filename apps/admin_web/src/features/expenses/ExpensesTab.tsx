@@ -10,7 +10,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { Modal } from '../../components/ui/Modal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { MetricCard } from '../../components/data-display/MetricCard';
+import { FinanceMetricCard } from '../../components/data-display/FinanceMetricCard';
 import { TableFilters } from '../../components/data-display/TableFilters';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
@@ -348,9 +348,9 @@ export function ExpensesTab({ startDate, endDate }: ExpensesTabProps) {
       )}
 
       <div className="dashboard-grid mt-6 mb-6">
-        <MetricCard title="Today" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Week" value={formatCurrency(weekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="This Month" value={formatCurrency(monthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
+        <FinanceMetricCard title="Today" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="This Week" value={formatCurrency(weekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="This Month" value={formatCurrency(monthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" />
       </div>
 
       {/* Expense Dashboard */}
@@ -607,71 +607,73 @@ export function ExpensesTab({ startDate, endDate }: ExpensesTabProps) {
         />
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="expenses-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Vendor</th>
-              <th>Description</th>
-              <th>Category</th>
-              <th>Payment</th>
-              <th className="text-right">Amount</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array(5).fill(0).map((_, i) => (
-                <tr key={i}>
-                  <td><SkeletonBlock className="w-[80px] h-[18px]" /></td>
-                  <td><SkeletonBlock className="w-[100px] h-[18px]" /></td>
-                  <td><SkeletonBlock className="w-[140px] h-[18px]" /></td>
-                  <td><SkeletonBlock className="w-[90px] h-[18px]" /></td>
-                  <td><SkeletonBlock className="w-[70px] h-[18px]" /></td>
-                  <td><SkeletonBlock className="w-[80px] h-[18px] ml-auto" /></td>
-                  <td><SkeletonBlock className="w-[60px] h-[18px]" /></td>
-                </tr>
-              ))
-            ) : filtered.length === 0 ? (
+      <div className="bg-[var(--color-paper)] rounded-[1.25rem] p-1.5 border border-[var(--color-border)] overflow-hidden">
+        <div className="bg-[var(--color-surface)] rounded-[calc(1.25rem-0.375rem)] overflow-hidden">
+          <table className="expenses-table w-full">
+            <thead className="sticky top-0 z-10">
               <tr>
-                <td colSpan={7} className="expenses-empty">
-                  <EmptyState
-                    icon={<Receipt size={48} />}
-                    title="No expenses yet"
-                    description="Record your first expense to start tracking spending."
-                    action={<button className="button-primary" onClick={() => setShowForm(true)}><Plus size={18} /> Add Expense</button>}
-                  />
-                </td>
+                <th className="bg-[var(--color-surface)]">Date</th>
+                <th className="bg-[var(--color-surface)]">Vendor</th>
+                <th className="bg-[var(--color-surface)]">Description</th>
+                <th className="bg-[var(--color-surface)]">Category</th>
+                <th className="bg-[var(--color-surface)]">Payment</th>
+                <th className="text-right bg-[var(--color-surface)]">Amount</th>
+                <th className="bg-[var(--color-surface)]">Actions</th>
               </tr>
-            ) : (
-              filtered.map((e) => (
-                <tr key={e.id}>
-                  <td className="expenses-date">{format(new Date(e.expenseDate), 'dd/MM/yyyy')}</td>
-                  <td className="expenses-vendor">{e.vendorName}</td>
-                  <td className="expenses-desc">{e.description}</td>
-                  <td>
-                    <span className="expenses-badge">{e.category}</span>
-                  </td>
-                  <td>
-                    <span className="expenses-payment-badge">{e.paymentType}</span>
-                  </td>
-                  <td className="expenses-amount text-right">{formatCurrency(e.amount)}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => setEditingExpense(e)} style={{ color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Edit expense">
-                        <Edit2 size={14} />
-                      </button>
-                      <button onClick={() => setDeletingExpenseId(e.id)} style={{ color: 'var(--color-danger)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Delete expense">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                Array(5).fill(0).map((_, i) => (
+                  <tr key={i}>
+                    <td><SkeletonBlock className="w-[80px] h-[18px]" /></td>
+                    <td><SkeletonBlock className="w-[100px] h-[18px]" /></td>
+                    <td><SkeletonBlock className="w-[140px] h-[18px]" /></td>
+                    <td><SkeletonBlock className="w-[90px] h-[18px]" /></td>
+                    <td><SkeletonBlock className="w-[70px] h-[18px]" /></td>
+                    <td><SkeletonBlock className="w-[80px] h-[18px] ml-auto" /></td>
+                    <td><SkeletonBlock className="w-[60px] h-[18px]" /></td>
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="expenses-empty">
+                    <EmptyState
+                      icon={<Receipt size={48} className="text-[var(--color-muted)]" />}
+                      title="No expenses yet"
+                      description="Record your first expense to start tracking spending."
+                      action={<button className="button-primary" onClick={() => setShowForm(true)}><Plus size={18} /> Add Expense</button>}
+                    />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((e) => (
+                  <tr key={e.id} className="hover:bg-white/[0.03]">
+                    <td className="expenses-date">{format(new Date(e.expenseDate), 'dd/MM/yyyy')}</td>
+                    <td className="expenses-vendor">{e.vendorName}</td>
+                    <td className="expenses-desc">{e.description}</td>
+                    <td>
+                      <span className="expenses-badge">{e.category}</span>
+                    </td>
+                    <td>
+                      <span className="expenses-payment-badge">{e.paymentType}</span>
+                    </td>
+                    <td className="expenses-amount text-right">{formatCurrency(e.amount)}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => setEditingExpense(e)} style={{ color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Edit expense">
+                          <Edit2 size={14} />
+                        </button>
+                        <button onClick={() => setDeletingExpenseId(e.id)} style={{ color: 'var(--color-danger)', cursor: 'pointer', background: 'none', border: 'none' }} aria-label="Delete expense">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <AddExpenseDrawer

@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { formatCurrency } from '../../lib/format';
 import { SkeletonBlock } from '../../components/PageState';
-import { MetricCard } from '../../components/data-display/MetricCard';
+import { FinanceMetricCard } from '../../components/data-display/FinanceMetricCard';
 import { Wallet, TrendingUp, DollarSign } from 'lucide-react';
 
 const CHART_COLORS = [
@@ -135,10 +135,10 @@ export function ProfitAndLossTab({ startDate, endDate }: ProfitAndLossTabProps) 
   return (
     <div className="space-y-6">
       <div className="dashboard-grid">
-        <MetricCard title="Total Revenue" value={formatCurrency(totalRevenue)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" variant="light" />
-        <MetricCard title="Total Expenses" value={formatCurrency(totalItemizedExpenses)} icon={<DollarSign size={20} className="text-danger" />} color="danger" variant="light" />
-        <MetricCard title="Stock Purchases" value={formatCurrency(totalPurchases)} icon={<DollarSign size={20} className="text-info" />} color="info" variant="light" />
-        <MetricCard title="Net Profit" value={formatCurrency(netProfit)} icon={<TrendingUp size={20} className={netProfit >= 0 ? "text-emerald-600" : "text-danger"} />} color={netProfit >= 0 ? "success" : "danger"} variant="light" />
+        <FinanceMetricCard title="Total Revenue" value={formatCurrency(totalRevenue)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="Total Expenses" value={formatCurrency(totalItemizedExpenses)} icon={<DollarSign size={20} className="text-danger" />} color="danger" />
+        <FinanceMetricCard title="Stock Purchases" value={formatCurrency(totalPurchases)} icon={<DollarSign size={20} className="text-info" />} color="info" />
+        <FinanceMetricCard title="Net Profit" value={formatCurrency(netProfit)} icon={<TrendingUp size={20} className={netProfit >= 0 ? "text-emerald-600" : "text-danger"} />} color={netProfit >= 0 ? "success" : "danger"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -154,14 +154,14 @@ export function ProfitAndLossTab({ startDate, endDate }: ProfitAndLossTabProps) 
                   <YAxis 
                     yAxisId="left"
                     tick={{ fontSize: 12 }} 
-                    stroke="var(--color-info-default)"
+                    stroke="var(--color-text-muted)"
                     tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     tick={{ fontSize: 12 }} 
-                    stroke="var(--color-danger-default)"
+                    stroke="var(--color-text-muted)"
                     tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`}
                   />
                   <RechartsTooltip
