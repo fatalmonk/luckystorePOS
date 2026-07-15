@@ -1,31 +1,37 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
-import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { useNotify } from '../../components/NotificationContext';
-import { useDebounce } from '../../hooks/useDebounce';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Drawer } from '../../components/ui/Drawer';
-import { MetricCard } from '../../components/data-display/MetricCard';
-import { TableFilters } from '../../components/data-display/TableFilters';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { endOfMonth, endOfWeek, format, isSameDay, isThisMonth, isThisWeek, isToday, parseISO, startOfMonth, startOfWeek, subDays, subMonths, subWeeks } from 'date-fns';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-  LineChart, Line, CartesianGrid,
-} from 'recharts';
-import {
-  TrendingUp,
-  DollarSign,
+  Banknote,
   CalendarDays,
-  Wallet,
+  DollarSign,
+  Download,
   Plus,
-  ArrowUp,
-  ArrowDown,
-  CreditCard,
-  Banknote, Download, Trash2,
+  Trash2,
+  TrendingUp,
+  Wallet
 } from 'lucide-react';
-import { format, startOfDay, startOfWeek, startOfMonth, endOfWeek, endOfMonth, isToday, isThisWeek, isThisMonth, isSameDay, subMonths, subWeeks, parseISO, subDays } from 'date-fns';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis, YAxis,
+} from 'recharts';
+import { FinanceMetricCard } from '../../components/data-display/FinanceMetricCard';
+import { useNotify } from '../../components/NotificationContext';
+import { EmptyState, ErrorState, SkeletonBlock } from '../../components/PageState';
+import { Drawer } from '../../components/ui/Drawer';
+import { api } from '../../lib/api';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
+import { useAuth } from '../../lib/AuthContext';
 import { downloadCSV, formatCurrency } from '../../lib/format';
 
 type TempRow = DailySale & { tempId?: string; isNew?: boolean };
@@ -126,9 +132,9 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
       dailyExpense: Number(edited?.dailyExpense ?? tempRow.dailyExpense ?? 0),
     };
     const { salesTotal } = calculateTotals({ ...values, totalSales: 0 });
-    
+
     setSavingRows(prev => new Set(prev).add(tempRow.id));
-    
+
     try {
       await createMutation.mutateAsync({
         ...values,
@@ -185,7 +191,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
   const handleCellChange = (saleId: string, field: string, value: string) => {
     const { valid, parsed } = validateValue(field, value);
     if (!valid) return;
-    
+
     setEditValues(prev => ({
       ...prev,
       [saleId]: { ...prev[saleId], [field]: parsed }
@@ -228,7 +234,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
     });
 
     const updates: Partial<DailySaleFormData> = { [field]: newValue };
-    
+
     // Also update totalSales if payment amounts changed
     if (['cashAmount', 'bkashAmount', 'creditAmount'].includes(field)) {
       const { salesTotal } = calculateTotals(edited);
@@ -274,7 +280,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
       e.preventDefault();
       const isLastRow = rowIndex === salesList.length - 1;
       const isLastField = field === 'dailyExpense';
-      
+
       if (isTempRow(sale.id)) {
         // For temp rows, Enter saves the entire row as new entry
         handleCreateFromTemp(sale);
@@ -309,7 +315,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
       const currentFieldIndex = fieldOrder.indexOf(field);
       let nextFieldIndex: number;
       let nextRowIndex = rowIndex;
-      
+
       if (e.shiftKey) {
         // Shift+Tab: previous field
         nextFieldIndex = currentFieldIndex - 1;
@@ -325,7 +331,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
           nextRowIndex = rowIndex + 1;
         }
       }
-      
+
       if (nextRowIndex >= 0 && nextRowIndex < salesList.length) {
         saveCellValue(sale, field);
         setTimeout(() => {
@@ -366,9 +372,9 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
 
       return (
         <td className="py-2 px-2 relative" key={`${sale.id}-${field}-edit`}
-          style={{ 
-            border: '2px solid var(--color-primary)',
-            backgroundColor: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))'
+          style={{
+            border: '2px solid #f0c444',
+            backgroundColor: 'rgba(240, 196, 68, 0.12)'
           }}
         >
           <input
@@ -382,7 +388,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
             onKeyDown={(e) => handleKeyDown(e, sale, field, rowIndex, salesList)}
             className="w-full px-2 py-1 text-sm text-right rounded outline-none bg-transparent"
           />
-      </td>
+        </td>
       );
     }
 
@@ -443,7 +449,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<DailySaleFormData> }) => 
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<DailySaleFormData> }) =>
       api.dailySales.update(id, updates, storeId),
     onSuccess: () => {
       notify('Daily sale updated successfully.', 'success');
@@ -455,7 +461,7 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
     },
   });
 
-  
+
 
   const allSales = useMemo(() => sales || [], [sales]);
 
@@ -618,12 +624,10 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
     }
     return data;
   }, [sales, hideEmptyDays]);
-  const pageHeader = <PageHeader title="Daily Sales & Expenditure Summary" subtitle="Track daily sales, purchases, and expenses with auto-calculated totals." />;
 
   if (isLoading) {
     return (
       <div className="sales-container">
-        {pageHeader}
         <div className="dashboard-grid mt-6">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-24" />)}
         </div>
@@ -634,7 +638,6 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
   if (error) {
     return (
       <div className="sales-container">
-        {pageHeader}
         <div className="card">
           <ErrorState message="Failed to load daily sales." onRetry={() => refetch()} />
         </div>
@@ -642,10 +645,176 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
     );
   }
 
-  // tableData moved above loading/error checks
-
   return (
     <div className="sales-container">
+      <div className="dashboard-grid mt-6 mb-6">
+        <FinanceMetricCard title="Today's Sales" value={formatCurrency(todayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="Yesterday's Sales" value={formatCurrency(yesterdayTotal)} icon={<CalendarDays size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="This Week" value={formatCurrency(weekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="Last Week" value={formatCurrency(lastWeekTotal)} icon={<TrendingUp size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="This Month" value={formatCurrency(monthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="Last Month" value={formatCurrency(lastMonthTotal)} icon={<Wallet size={20} className="text-emerald-600" />} color="success" />
+        <FinanceMetricCard title="Total Records" value={totalStats.count.toString()} icon={<Banknote size={20} className="text-info" />} color="info" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-text-primary mb-4">Sales Overview</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-surface-secondary rounded-lg">
+              <div className="text-sm text-text-muted">Total Sales</div>
+              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.total)}</div>
+              <div className="text-xs text-text-muted">{totalStats.count} days recorded</div>
+            </div>
+            <div className="p-4 bg-surface-secondary rounded-lg">
+              <div className="text-sm text-text-muted">Average Daily</div>
+              <div className="text-2xl font-bold text-text-primary">{formatCurrency(totalStats.avg)}</div>
+              <div className="text-xs text-text-muted">per day</div>
+            </div>
+            <div className="p-4 bg-surface-secondary rounded-lg">
+              <div className="text-sm text-text-muted">Highest Day</div>
+              <div className="text-2xl font-bold text-success">{formatCurrency(totalStats.max)}</div>
+              <div className="text-xs text-text-muted">best day</div>
+            </div>
+            <div className="p-4 bg-surface-secondary rounded-lg">
+              <div className="text-sm text-text-muted">Lowest Day</div>
+              <div className="text-2xl font-bold text-danger">{formatCurrency(totalStats.min)}</div>
+              <div className="text-xs text-text-muted">slowest day</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-text-primary mb-4">Payment Breakdown</h2>
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={paymentBreakdown}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {paymentBreakdown.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: any) => value !== undefined && value !== null ? [formatCurrency(Number(value)), 'Amount'] : ['N/A', 'Amount']}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 space-y-2">
+            {paymentBreakdown.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS[idx] }} />
+                  <span className="text-sm text-text-primary">{item.name}</span>
+                </div>
+                <div className="text-sm">
+                  <span className="font-semibold">{formatCurrency(item.value)}</span>
+                  <span className="text-text-muted ml-2">({item.percentage.toFixed(1)}%)</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Monthly Sales Trend</h2>
+        {monthlyTrend.length > 0 ? (
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={monthlyTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
+                <XAxis dataKey="month" stroke="var(--color-text-muted)" fontSize={12} />
+                <YAxis stroke="var(--color-text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
+                <Tooltip
+                  formatter={(value: any) => value !== undefined && value !== null ? [formatCurrency(Number(value)), 'Total Sales'] : ['N/A', 'Total Sales']}
+                  contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}
+                />
+                <Bar dataKey="total" fill="var(--color-success-default)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <EmptyState
+            icon={<TrendingUp size={48} />}
+            title="No data available"
+            description="Add daily sales to see trends."
+          />
+        )}
+      </div>
+
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Daily Trend (Last 30 Days)</h2>
+        {dailyTrend.length > 0 ? (
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={dailyTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
+                <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={10} interval="preserveStartEnd" angle={-45} textAnchor="end" height={60} />
+                <YAxis stroke="var(--color-text-muted)" fontSize={12} tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="sales" stroke="var(--color-success-default)" strokeWidth={2} name="Sales" dot={false} />
+                <Line type="monotone" dataKey="expense" stroke="var(--color-danger-default)" strokeWidth={2} name="Expense" dot={false} />
+                <Line type="monotone" dataKey="purchase" stroke="var(--color-info-default)" strokeWidth={2} name="Stock Purchase" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <EmptyState
+            icon={<TrendingUp size={48} />}
+            title="No data available"
+            description="Add daily sales to see trends."
+          />
+        )}
+      </div>
+
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Top 5 Highest Sales Days</h2>
+        {topSalesDays.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border-default">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">Date</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Total Sales</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Cash</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Bkash</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">Credit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topSalesDays.map((s) => (
+                  <tr key={s.id} className="border-b border-border-default hover:bg-surface-secondary">
+                    <td className="py-3 px-4 text-sm text-text-primary">{s.date}</td>
+                    <td className="py-3 px-4 text-sm font-semibold text-success text-right">{formatCurrency(s.totalSales)}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.cashAmount)}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.bkashAmount)}</td>
+                    <td className="py-3 px-4 text-sm text-text-primary text-right">{formatCurrency(s.creditAmount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            icon={<DollarSign size={48} />}
+            title="No sales data"
+            description="Add daily sales to see top performing days."
+          />
+        )}
+      </div>
       <div className="card p-6 mt-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-text-primary mb-4">All Sales Entries</h2>
@@ -692,23 +861,23 @@ export function DailySalesTab({ startDate, endDate }: DailySalesTabProps) {
               <tbody>
                 {[...tempRows, ...tableData].map((s, idx, list) => {
                   const edited = editValues[s.id] || s;
-                  const salesTotal = Number(edited.cashAmount ?? s.cashAmount) + 
-                                     Number(edited.bkashAmount ?? s.bkashAmount) + 
-                                     Number(edited.creditAmount ?? s.creditAmount);
-                  const netTotal = salesTotal - 
-                                   Number(edited.stockPurchase ?? s.stockPurchase) - 
-                                   Number(edited.dailyExpense ?? s.dailyExpense);
+                  const salesTotal = Number(edited.cashAmount ?? s.cashAmount) +
+                    Number(edited.bkashAmount ?? s.bkashAmount) +
+                    Number(edited.creditAmount ?? s.creditAmount);
+                  const netTotal = salesTotal -
+                    Number(edited.stockPurchase ?? s.stockPurchase) -
+                    Number(edited.dailyExpense ?? s.dailyExpense);
                   const netColorClass = netTotal >= 0 ? 'text-success' : 'text-danger';
                   const isSaving = savingRows.has(s.id);
                   const isTemp = isTempRow(s.id);
-                  
+
                   return (
-                    <tr 
-                      key={s.id} 
-                      className="border-b border-border-default hover:bg-surface-secondary group relative" 
-                      style={{ 
+                    <tr
+                      key={s.id}
+                      className="border-b border-border-default hover:bg-surface-secondary group relative"
+                      style={{
                         opacity: isSaving ? 0.7 : 1,
-                        backgroundColor: isTemp ? 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))' : undefined
+                        backgroundColor: isTemp ? 'rgba(240, 196, 68, 0.12)' : undefined
                       }}
                     >
                       {renderEditableCell(s, 'saleDate', idx, list)}
