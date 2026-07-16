@@ -1,111 +1,69 @@
 'use client';
 
 import Link from 'next/link';
-import { CategoryIcon } from './icons/CategoryIcons';
+import Image from 'next/image';
 import type { Category } from '../lib/types';
 
-const TOP_CATEGORY_SLUGS = [
-  'eggs',
-  'tea-&-coffee',
-  'biscuits-&-cookies',
-  'cooking-needs',
-  'dairy-&-eggs',
-  'snacks',
-  'rice-&-grain',
-  'beverages',
-  'personal-care',
-  'cleaning-supply',
-  'biscuits',
-  'spices',
+const TOP_CATEGORIES: { slug: string; image: string }[] = [
+  { slug: 'tea-&-coffee', image: 'https://images.luckystore1947.com/categories/tea-coffee.webp' },
+  { slug: 'biscuits-&-cookies', image: 'https://images.luckystore1947.com/categories/biscuits-cookies.webp' },
+  { slug: 'cooking-needs', image: 'https://images.luckystore1947.com/categories/cooking-needs.webp' },
+  { slug: 'dairy-&-eggs', image: 'https://images.luckystore1947.com/categories/dairy-eggs.webp' },
+  { slug: 'snacks', image: 'https://images.luckystore1947.com/categories/snacks.webp' },
+  { slug: 'rice-&-grain', image: 'https://images.luckystore1947.com/categories/rice-grain.webp' },
+  { slug: 'beverages', image: 'https://images.luckystore1947.com/categories/beverages.webp' },
+  { slug: 'personal-care', image: 'https://images.luckystore1947.com/categories/personal-care.webp' },
+  { slug: 'cleaning-supply', image: 'https://images.luckystore1947.com/categories/cleaning-supply.webp' },
+  { slug: 'spices', image: 'https://images.luckystore1947.com/categories/spices.webp' },
 ];
-
-const FALLBACK_EMOJIS: Record<string, string> = {
-  eggs: '🥚',
-  'tea-&-coffee': '☕',
-  'biscuits-&-cookies': '🍪',
-  'cooking-needs': '🍳',
-  'dairy-&-eggs': '🥛',
-  snacks: '🍿',
-  'rice-&-grain': '🍚',
-  beverages: '🥤',
-  'personal-care': '🧴',
-  'cleaning-supply': '🧹',
-  biscuits: '🍪',
-  spices: '🌶️',
-};
-
-interface CategoryVisual {
-  slug: string;
-  label: string;
-  emoji: string;
-  gradient: string;
-}
 
 interface VisualCategoryGridProps {
   categories: { id: string; slug: Category; name: string; emoji: string }[];
 }
 
 export function VisualCategoryGrid({ categories }: VisualCategoryGridProps) {
-  // Map real categories into our visual slots
-  const visuals: CategoryVisual[] = TOP_CATEGORY_SLUGS.map((targetSlug) => {
-    const match = categories.find((c) => c.slug === targetSlug);
-    if (match) {
-      return {
-        slug: match.slug,
-        label: match.name,
-        emoji: match.emoji,
-        gradient: '',
-      };
-    }
-    // If not in our DB, skip (only show real categories)
-    return null;
-  }).filter(Boolean) as CategoryVisual[];
-
-  const gradients = [
-    'from-amber-100 to-orange-50',
-    'from-stone-100 to-stone-50',
-    'from-emerald-100 to-green-50',
-    'from-sky-100 to-blue-50',
-    'from-rose-100 to-pink-50',
-    'from-violet-100 to-purple-50',
-    'from-teal-100 to-cyan-50',
-    'from-lime-100 to-yellow-50',
-  ];
+  const byId = new Map(categories.map((c) => [c.slug, c]));
+  const visuals = TOP_CATEGORIES
+    .map((t) => {
+      const match = byId.get(t.slug as Category);
+      return match ? { ...t, label: match.name } : null;
+    })
+    .filter((v): v is NonNullable<typeof v> => v !== null);
 
   if (visuals.length === 0) return null;
 
   return (
     <section aria-labelledby="cat-grid-heading">
-      <div className="flex items-center justify-between mb-3">
-        <h2 id="cat-grid-heading" className="text-lg font-extrabold tracking-tight text-charcoal">
+      <div className="flex items-center justify-between mb-4">
+        <h2 id="cat-grid-heading" className="text-lg font-extrabold tracking-tight text-[#0B0B0D]">
           Browse Categories
         </h2>
-        <Link
-          href="/category"
-          className="text-xs font-bold text-warm-muted hover:text-warm-fg transition-colors"
-        >
+        <Link href="/category" className="text-xs font-bold text-warm-muted hover:text-warm-fg transition-colors">
           See all
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-6 gap-3">
-        {visuals.slice(0, 10).map((cat, i) => {
-          const gradient = gradients[i % gradients.length];
-          return (
-            <Link
-              key={cat.slug}
-              href={`/category/${cat.slug}`}
-              className={`group flex flex-col items-center justify-center gap-1.5 rounded-2xl p-3 bg-gradient-to-br ${gradient} border border-white/60 hover:shadow-md active:scale-[0.97] transition-all duration-200 min-h-[88px]`}
-            >
-              <div className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-200">
-                <CategoryIcon slug={cat.slug} emoji={cat.emoji} size={22} />
-              </div>
-              <span className="text-[10px] font-semibold text-center text-stone-700 leading-tight line-clamp-2">
-                {cat.label}
-              </span>
-            </Link>
-          );
-        })}
+      <div className="grid grid-cols-5 gap-y-6 gap-x-4">
+        {visuals.map((cat) => (
+          <Link
+            key={cat.slug}
+            href={`/category/${cat.slug}`}
+            className="group flex flex-col items-center justify-center text-center active:scale-[0.97] transition-transform duration-200"
+          >
+            <div className="relative w-20 h-20 flex items-center justify-center mb-2">
+              <Image
+                src={cat.image}
+                alt={cat.label}
+                fill
+                sizes="80px"
+                className="object-contain group-hover:scale-110 transition-transform duration-200"
+              />
+            </div>
+            <span className="text-[10px] font-bold text-[#0B0B0D] leading-tight line-clamp-1 w-full">
+              {cat.label}
+            </span>
+          </Link>
+        ))}
       </div>
     </section>
   );
