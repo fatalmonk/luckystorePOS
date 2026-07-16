@@ -44,7 +44,7 @@ export function HomeShell({ products }: HomeShellProps) {
 
           {/* Bento Trust Section (Service Promises) */}
           <section className="space-y-6 pt-4">
-            <h2 className="text-xl font-extrabold tracking-tight text-charcoal">Why Dhaka Trusts Lucky Store</h2>
+            <h2 className="text-xl font-extrabold tracking-tight text-charcoal">Why Chittagong Trusts Lucky Store</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Card 1 */}
