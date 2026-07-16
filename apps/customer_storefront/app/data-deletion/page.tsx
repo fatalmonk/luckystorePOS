@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Header } from '../components/Header';
+import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 
 export const metadata: Metadata = {

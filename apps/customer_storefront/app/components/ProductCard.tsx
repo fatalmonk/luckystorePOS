@@ -157,6 +157,7 @@ export function ProductCard({
   const savings = onSale ? originalPrice! - price : 0;
 
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { showToast } = useToast();
 
   // Load wishlist state from local cache on mount
@@ -223,27 +224,25 @@ export function ProductCard({
         </button>
       </div>
 
-      {/* Image Container — plain img for reliability, same as admin portal */}
+      {/* Image Container — Next/Image with fill for responsive sizing */}
       <div className="relative w-full h-32 sm:h-40 lg:h-44 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0 p-2">
-        {image_url ? (
+        {image_url && !imageError ? (
           <Image
             src={image_url}
             alt={name}
-            width={174}
-            height={174}
-            className="w-full h-full object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
+            fill
+            sizes="(max-width: 640px) 50vw, 33vw"
+            className="object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
             priority={priority}
             loading={priority ? undefined : 'lazy'}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              const placeholder = e.currentTarget.parentElement?.querySelector('[data-placeholder]');
-              if (placeholder) placeholder.classList.remove('hidden');
-            }}
+            onError={() => setImageError(true)}
           />
         ) : null}
-        <div data-placeholder className={`absolute inset-0 flex items-center justify-center p-2 ${image_url ? 'hidden' : 'opacity-40'}`}>
-          <CategoryPlaceholder category={category} />
-        </div>
+        {(!image_url || imageError) && (
+          <div className="absolute inset-0 flex items-center justify-center p-2 opacity-40">
+            <CategoryPlaceholder category={category} />
+          </div>
+        )}
       </div>
 
       {/* Content - calibrated and clean */}

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Header } from '../components/Header';
+import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 import { useCartContext } from '../components/CartProvider';
 import { useToast } from '../components/Toast';

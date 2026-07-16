@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '../components/Header';
+import { Header } from '../components/updated/Header';
 import { useToast } from '../components/Toast';
 import { useCartContext } from '../components/CartProvider';
 import { Button } from '../components/ui/Button';
