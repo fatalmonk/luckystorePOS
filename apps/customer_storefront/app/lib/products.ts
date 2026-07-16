@@ -15,7 +15,7 @@ export async function fetchProductById(id: string): Promise<Product | null> {
         p_store_id: STORE_ID,
         p_query: '',
         p_category_id: null,
-        p_limit: 1000,
+        p_limit: 200, // Band-aid: smaller batch than 1000 until get_item_by_id RPC is added
         p_offset: 0,
       }),
       fetchCategories(),
