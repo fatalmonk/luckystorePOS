@@ -208,7 +208,7 @@ export function ProductCard({
         )}
         <button
           onClick={handleWishlistToggle}
-          className="pointer-events-auto w-8.5 h-8.5 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.06)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-stone-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+          className="pointer-events-auto w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.06)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-stone-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
@@ -274,7 +274,7 @@ export function ProductCard({
             <div className="flex items-center justify-between gap-1.5 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-8.5 h-8.5 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
                 aria-label="Remove one"
               >
                 −
@@ -282,7 +282,7 @@ export function ProductCard({
               <QtyNumber qty={qtyInCart} className="font-black text-sm min-w-[20px] text-center text-stone-900 font-mono" />
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-8.5 h-8.5 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
                 aria-label="Add one"
               >
                 +
@@ -297,7 +297,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-8.5 rounded-full border-2 border-warm-accent text-stone-900 text-xs font-black hover:bg-warm-accent active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-stone-200 disabled:text-stone-300 disabled:hover:bg-white"
+              className="w-full h-10 rounded-full border-2 border-warm-accent text-stone-900 text-xs font-black hover:bg-warm-accent active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-stone-200 disabled:text-stone-300 disabled:hover:bg-white"
             >
               Add to Cart
             </button>
