@@ -6,7 +6,7 @@ import { useCartActions } from '../hooks/useCartActions';
 import type { Product } from '../lib/types';
 
 interface ProductSwimlaneClientProps {
-  title: string;
+  title: React.ReactNode;
   products: Product[];
   action?: { label: string; href: string };
 }

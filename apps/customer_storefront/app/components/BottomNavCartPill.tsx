@@ -1,13 +1,12 @@
 'use client'; // floating cart summary pill + cart sheet
 
-import { useState } from 'react';
 import { useCartContext } from './CartProvider';
-import { CartSheet } from './CartSheet';
+import { useCartSheet } from '../hooks/useCartSheet';
 import { formatBdt } from '../lib/formatPrice';
 
 export function BottomNavCartPill() {
   const { totalItems, total, isLoaded } = useCartContext();
-  const [cartOpen, setCartOpen] = useState(false);
+  const { open } = useCartSheet();
 
   // During hydration, show a skeleton pill to prevent flash of null
   if (!isLoaded) {
@@ -29,26 +28,23 @@ export function BottomNavCartPill() {
   if (totalItems === 0) return null;
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setCartOpen(true)}
-        className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-40
-          glass border rounded-full px-5 py-2.5
-          flex items-center gap-3
-          shadow-lg hover:shadow-xl
-          transition-all duration-300 ease-out
-          animate-[fadeUp_0.3s_ease]
-          press-feedback"
-        aria-label="View cart summary"
-      >
-        <span className="text-sm font-bold text-warm-fg">
-          {totalItems} {totalItems === 1 ? 'item' : 'items'}
-        </span>
-        <span className="w-px h-4 bg-warm-border-light" />
-        <span className="text-sm font-extrabold text-warm-fg">{formatBdt(total)}</span>
-      </button>
-      <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} />
-    </>
+    <button
+      type="button"
+      onClick={open}
+      className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-40
+        glass border rounded-full px-5 py-2.5
+        flex items-center gap-3
+        shadow-lg hover:shadow-xl
+        transition-all duration-300 ease-out
+        animate-[fadeUp_0.3s_ease]
+        press-feedback"
+      aria-label="View cart summary"
+    >
+      <span className="text-sm font-bold text-warm-fg">
+        {totalItems} {totalItems === 1 ? 'item' : 'items'}
+      </span>
+      <span className="w-px h-4 bg-warm-border-light" />
+      <span className="text-sm font-extrabold text-warm-fg">{formatBdt(total)}</span>
+    </button>
   );
 }
