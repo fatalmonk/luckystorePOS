@@ -1,7 +1,10 @@
+'use client';
+
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
-import { NativeAdBanner } from './NativeAdBanner';
+import { NativeAdBanner } from './PromoBanner';
 import { getCategoryGroup } from '../lib/types';
+import { Fire, Star, Package } from '@phosphor-icons/react';
 import type { Product } from '../lib/types';
 
 interface NativeAdBannerProps {
@@ -95,7 +98,7 @@ export function CategorySwimlanes({
       return {
         slug: subSlug,
         label: cat?.name || subSlug,
-        emoji: cat?.emoji || '📦',
+        icon: cat?.emoji || null,
         products: catProducts,
         count: catProducts.length,
       };
@@ -115,7 +118,10 @@ export function CategorySwimlanes({
       <>
         {deals.length > 0 && (
           <ProductSwimlaneClient
-            title="🔥 Rollbacks &amp; Deals"
+            title={<>
+              <Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />
+              Rollbacks &amp; Deals
+            </>}
             products={deals}
           />
         )}
@@ -123,7 +129,11 @@ export function CategorySwimlanes({
           <section key={grid.slug} className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-xl">{grid.emoji}</span>
+                {grid.icon ? (
+                  <span className="text-xl" aria-hidden="true">{grid.icon}</span>
+                ) : (
+                  <Package weight="bold" size={20} aria-hidden="true" />
+                )}
                 <h2 className="text-lg font-bold tracking-tight">{grid.label}</h2>
               </div>
               <a
@@ -144,14 +154,20 @@ export function CategorySwimlanes({
     <>
       {deals.length > 0 && (
         <ProductSwimlaneClient
-          title="🔥 Rollbacks &amp; Deals"
+          title={<>
+            <Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />
+            Rollbacks &amp; Deals
+          </>}
           products={deals}
           action={{ label: 'See all', href: `/category/${categorySlug}?theme=deals` }}
         />
       )}
       {bestSellers.length > 0 && (
         <ProductSwimlaneClient
-          title="⭐ Best Sellers"
+          title={<>
+            <Star weight="fill" size={16} className="inline-block mr-1.5 text-warm-accent" aria-hidden="true" />
+            Best Sellers
+          </>}
           products={bestSellers}
           action={{ label: 'See all', href: `/category/${categorySlug}?theme=bestsellers` }}
         />

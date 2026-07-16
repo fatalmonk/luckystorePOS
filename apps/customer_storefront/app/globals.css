@@ -82,4 +82,24 @@
       }
     }
   }
+
+  /* Scroll-triggered fade-up reveal */
+  .fade-up-hidden {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s var(--ease-out, ease), transform 0.5s var(--ease-out, ease);
+  }
+  .fade-up-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Product grid stagger reveal */
+  @media (prefers-reduced-motion: no-preference) {
+    .product-grid > * {
+      animation: fadeUp 0.4s var(--ease-out, ease) forwards;
+      animation-delay: calc(var(--index) * 80ms);
+      opacity: 0;
+    }
+  }
 }

@@ -18,27 +18,31 @@ export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: Pro
   };
 
   return (
-    <div data-testid="product-grid" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
+    <div data-testid="product-grid" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 product-grid">
       {products.map((product, index) => {
         let addBtnRef: HTMLButtonElement | null = null;
         return (
-          <ProductCard
+          <div
             key={product.id}
-            id={product.id}
-            emoji={product.emoji}
-            name={product.name}
-            price={product.price}
-            unit={product.unit}
-            stock={product.stock}
-            category={product.category}
-            image_url={product.image_url}
-            qtyInCart={getQtyInCart(product.id)}
-            priority={index === 0}
-            onAdd={() => onAdd(product, addBtnRef)}
-            onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
-            onClick={() => onClick(product.id)}
-            onAddRef={(el) => { addBtnRef = el; }}
-          />
+            style={{ '--index': index } as React.CSSProperties}
+          >
+            <ProductCard
+              id={product.id}
+              emoji={product.emoji}
+              name={product.name}
+              price={product.price}
+              unit={product.unit}
+              stock={product.stock}
+              category={product.category}
+              image_url={product.image_url}
+              qtyInCart={getQtyInCart(product.id)}
+              priority={index === 0}
+              onAdd={() => onAdd(product, addBtnRef)}
+              onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
+              onClick={() => onClick(product.id)}
+              onAddRef={(el) => { addBtnRef = el; }}
+            />
+          </div>
         );
       })}
     </div>

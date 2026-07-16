@@ -2,7 +2,7 @@ import { ProductCard } from './ProductCard';
 import type { Product } from '../lib/types';
 
 interface ProductSwimlaneProps {
-  title: string;
+  title: React.ReactNode;
   products: Product[];
   cart: { id: string; qty: number }[];
   onAdd: (product: Product, buttonEl?: HTMLButtonElement | null) => void;

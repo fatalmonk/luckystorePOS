@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Fire } from '@phosphor-icons/react';
 
 interface SearchSuggestionsProps {
   query: string;
@@ -88,7 +89,7 @@ export function SearchSuggestions({
               onClick={() => onSelect(term)}
               className="w-full text-left px-3 py-2 rounded-lg hover:bg-warm-border-light text-sm flex items-center gap-2"
             >
-              <span aria-hidden="true">🔥</span>
+              <Fire weight="fill" size={14} aria-hidden="true" />
               {term}
             </button>
           ))}

@@ -155,8 +155,6 @@ export function ProductCard({
   const outOfStock = stock <= 0;
   const onSale = originalPrice !== undefined && originalPrice > price;
   const savings = onSale ? originalPrice! - price : 0;
-  const taka = Math.floor(price);
-  const paisa = Math.round((price % 1) * 100).toString().padStart(2, '0');
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { showToast } = useToast();
@@ -210,7 +208,7 @@ export function ProductCard({
         )}
         <button
           onClick={handleWishlistToggle}
-          className="pointer-events-auto w-8.5 h-8.5 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.06)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-stone-200"
+          className="pointer-events-auto w-8.5 h-8.5 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.06)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-stone-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
@@ -226,14 +224,14 @@ export function ProductCard({
       </div>
 
       {/* Image Container — plain img for reliability, same as admin portal */}
-      <div className="relative w-full h-28 sm:h-32 lg:h-36 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0">
+      <div className="relative w-full h-32 sm:h-40 lg:h-44 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0 p-2">
         {image_url ? (
           <Image
             src={image_url}
             alt={name}
             width={174}
             height={174}
-            className="w-full h-full object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06] p-3"
+            className="w-full h-full object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
             priority={priority}
             loading={priority ? undefined : 'lazy'}
             onError={(e) => {
@@ -243,7 +241,7 @@ export function ProductCard({
             }}
           />
         ) : null}
-        <div data-placeholder className={`absolute inset-0 flex items-center justify-center ${image_url ? 'hidden' : 'opacity-40'}`}>
+        <div data-placeholder className={`absolute inset-0 flex items-center justify-center p-2 ${image_url ? 'hidden' : 'opacity-40'}`}>
           <CategoryPlaceholder category={category} />
         </div>
       </div>
@@ -251,25 +249,25 @@ export function ProductCard({
       {/* Content - calibrated and clean */}
       <div className="p-3 flex flex-col flex-1 gap-1">
         {/* Price block */}
-        <div className="flex items-baseline gap-0.5">
-          <span className="text-xl font-black text-stone-900 font-display">৳{taka}</span>
-          <span className="text-xs font-black text-stone-900 font-display">{paisa}</span>
+        <div className="flex items-baseline">
+          <span className="text-lg font-black text-stone-900 font-display">{formatBdt(price)}</span>
         </div>
 
         {onSale && (
-          <div className="flex items-center gap-1 text-[10px]">
-            <span className="line-through text-stone-400 font-mono">{formatBdt(originalPrice)}</span>
-            <span className="bg-green-50 text-green-700 font-bold px-1.5 py-0.5 rounded-full">Save {formatBdt(savings)}</span>
-          </div>
+          <p className="text-[10px] text-stone-400 leading-none">
+            <span className="line-through font-mono mr-1">{formatBdt(originalPrice)}</span>
+            · Save {formatBdt(savings)}
+          </p>
         )}
 
-        <p className="text-[10px] font-medium text-stone-400 leading-none">
+        <p className="text-[9px] font-medium text-stone-300 leading-none">
           {formatUnitPrice(price, unit)}
         </p>
 
         <h3 className="text-xs font-semibold leading-tight line-clamp-2 text-stone-800 font-body min-h-[2.2em]">
           {name}
         </h3>
+        <p className="text-[10px] text-stone-400 leading-none">{unit}</p>
 
         <div className="mt-auto pt-2">
           {qtyInCart > 0 ? (

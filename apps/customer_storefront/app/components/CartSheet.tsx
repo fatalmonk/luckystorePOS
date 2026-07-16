@@ -1,6 +1,7 @@
 'use client'; // cart modal dialog with useRef, useEffect, router, and cart context
 
 import { useEffect, useRef } from 'react';
+import { X } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
@@ -81,7 +82,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
             className="w-11 h-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm"
             aria-label="Close cart"
           >
-            ✕
+            <X weight="bold" size={18} aria-hidden="true" />
           </button>
         </div>
 
