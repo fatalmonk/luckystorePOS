@@ -1,6 +1,7 @@
 'use client'; // cart modal dialog with useRef, useEffect, router, and cart context
 
 import { useEffect, useRef } from 'react';
+import { X } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
@@ -62,7 +63,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
           shadow-[0_-8px_40px_rgba(28,25,23,0.12)]
           max-h-[70vh] overflow-hidden
           flex flex-col
-          transition-transform duration-300 ease-out
+          transition-transform duration-300 ease-[var(--ease-elastic)]
           ${open ? 'translate-y-0' : 'translate-y-full'}
         `}
       >
@@ -81,7 +82,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
             className="w-11 h-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm"
             aria-label="Close cart"
           >
-            ✕
+            <X weight="bold" size={18} aria-hidden="true" />
           </button>
         </div>
 
@@ -106,7 +107,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
-                      className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[24px]"
+                      className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[32px] px-1"
                       aria-label={`Remove ${item.name}`}
                     >
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

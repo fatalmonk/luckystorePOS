@@ -1,6 +1,7 @@
 'use client'; // search form with client-side router for instant redirect (fallback to form submit)
 
 import { useRouter } from 'next/navigation';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 
 export function HeaderSearch() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function HeaderSearch() {
         className="absolute right-1 top-1 h-8 w-8 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
         aria-label="Search products"
       >
-        <span aria-hidden="true" className="text-base">🔍</span>
+        <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 
 
 import Link from 'next/link';
+import { CategoryIcon } from '../icons/CategoryIcons';
 
 interface CategoryChipProps {
   slug: string;
@@ -15,13 +16,13 @@ function CategoryChip({ slug, label, emoji, isActive }: CategoryChipProps) {
   return (
     <Link
       href={href}
-      className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-2xl text-sm font-medium transition-all duration-200 ${
+      className={`group flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-2xl text-sm font-medium transition-all duration-200 ${
         isActive
           ? 'bg-warm-fg text-warm-accent'
           : 'bg-warm-border-light text-[#44403c] hover:bg-warm-border-light'
       }`}
     >
-      <span className="text-xl mb-1" aria-hidden="true">{emoji}</span>
+      <CategoryIcon slug={slug} emoji={emoji} size={24} className="mb-1" />
       <span className="text-[10px] leading-tight text-center px-1 truncate w-full">{label}</span>
     </Link>
   );
@@ -39,7 +40,7 @@ export function CategoryGrid({ categories, active }: CategoryGridProps) {
         <h2 className="text-lg font-bold">Browse Categories</h2>
       </div>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide scroll-edge-mask py-1">
-        <CategoryChip slug="all" label="All" emoji="📦" isActive={!active || active === 'all'} />
+        <CategoryChip slug="all" label="All" emoji="" isActive={!active || active === 'all'} />
         {categories.map((cat) => (
           <CategoryChip
             key={`cat-${cat.slug}`}

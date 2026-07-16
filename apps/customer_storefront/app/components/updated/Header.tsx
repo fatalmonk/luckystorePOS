@@ -3,16 +3,19 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { MagnifyingGlass, User, Heart } from '@phosphor-icons/react';
 import { HeaderCartButton } from '../HeaderCartButton';
 import { HeaderFilters } from '../HeaderFilters';
 import { SearchSuggestions } from './SearchSuggestions';
 import { Logo } from '../ui/Logo';
+import { getLocalWishlist } from '../../lib/wishlistHelpers';
 
 export function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [popularSearches] = useState(['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bread']);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +31,14 @@ export function Header() {
         console.error('Failed to parse recent searches', e);
       }
     }
+  }, []);
+
+  // Sync wishlist count from local cache
+  useEffect(() => {
+    const updateWishlistCount = () => setWishlistCount(getLocalWishlist().length);
+    updateWishlistCount();
+    window.addEventListener('storage', updateWishlistCount);
+    return () => window.removeEventListener('storage', updateWishlistCount);
   }, []);
 
   // Close suggestions when clicking outside
@@ -79,7 +90,7 @@ export function Header() {
               className="absolute right-1 top-1 h-8 w-8 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
               aria-label="Search"
             >
-              <span aria-hidden="true" className="text-sm">🔍</span>
+              <MagnifyingGlass weight="bold" size={14} aria-hidden="true" />
             </button>
           </form>
           
@@ -107,7 +118,7 @@ export function Header() {
             onClick={() => router.push('/search')}
             aria-label="Search page"
           >
-            <span aria-hidden="true" className="text-lg">🔍</span>
+            <MagnifyingGlass weight="bold" size={18} aria-hidden="true" />
           </button>
 
           <button
@@ -115,9 +126,24 @@ export function Header() {
             className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
             aria-label="Sign In"
           >
-            <span aria-hidden="true" className="text-base">👤</span>
+            <User weight="bold" size={16} aria-hidden="true" />
             <span className="hidden sm:block text-xs font-bold">Sign In</span>
           </button>
+
+          {/* Wishlist */}
+          <Link
+            href="/wishlist"
+            className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
+            aria-label="Wishlist"
+          >
+            <Heart weight="bold" size={18} aria-hidden="true" />
+            {wishlistCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold grid place-items-center border-2 border-white">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+
           <HeaderCartButton />
         </div>
       </div>

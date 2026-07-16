@@ -1,5 +1,6 @@
 import { Header } from './updated/Header';
-import { CategoryGrid } from './updated/CategoryGrid';
+import { ThemedShortcuts } from './ThemedShortcuts';
+import { FlashSaleStrip } from './FlashSaleStrip';
 import { HeroBanner } from './updated/HeroBanner';
 import { PromoGrid } from './updated/PromoGrid';
 import { HomeSectionsClient } from './HomeSectionsClient';
@@ -9,10 +10,9 @@ import type { Product } from '../lib/types';
 
 interface HomeShellProps {
   products: Product[];
-  categories: { id: string; slug: string; name: string; emoji: string }[];
 }
 
-export function HomeShell({ products, categories }: HomeShellProps) {
+export function HomeShell({ products }: HomeShellProps) {
   const MAX_SECTION_ITEMS = 20;
 
   const popular = products.slice(0, MAX_SECTION_ITEMS);
@@ -21,8 +21,8 @@ export function HomeShell({ products, categories }: HomeShellProps) {
 
   const sections = [
     { title: 'Popular Now', href: '/category?sort=popular', products: popular },
-    ...(deals.length > 0 ? [{ title: '🔥 Hot Deals', href: '/category?theme=deals', products: deals }] : []),
-    ...(bestSellers.length > 0 ? [{ title: '⭐ Best Sellers', href: '/category?theme=bestsellers', products: bestSellers }] : []),
+    ...(deals.length > 0 ? [{ title: 'Hot Deals', href: '/category?theme=deals', products: deals }] : []),
+    ...(bestSellers.length > 0 ? [{ title: 'Best Sellers', href: '/category?theme=bestsellers', products: bestSellers }] : []),
   ];
 
   return (
@@ -36,7 +36,9 @@ export function HomeShell({ products, categories }: HomeShellProps) {
             badge="Super Fast Delivery"
             bgImage="https://images.luckystore1947.com/banners/hero_grocery_banner.webp"
           />
-          <CategoryGrid categories={categories} />
+          {/* Urgency strip is data-driven and hides when no endTime is configured. */}
+          <FlashSaleStrip />
+          <ThemedShortcuts />
           <PromoGrid />
           <HomeSectionsClient sections={sections} />
 

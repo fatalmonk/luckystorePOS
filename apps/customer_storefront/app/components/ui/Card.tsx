@@ -92,7 +92,7 @@ export function ProductCard({
                   e.stopPropagation();
                   onUpdateQty(-1);
                 }}
-                className="w-7 h-8 rounded-md border border-warm-border bg-warm-bg
+                className="w-9 h-10 rounded-md border border-warm-border bg-warm-bg
                   flex items-center justify-center text-sm font-semibold
                   hover:border-warm-accent hover:text-warm-fg transition-colors
                   active:scale-95"
@@ -106,7 +106,7 @@ export function ProductCard({
                   e.stopPropagation();
                   onUpdateQty(1);
                 }}
-                className="w-7 h-8 rounded-md border border-warm-border bg-warm-bg
+                className="w-9 h-10 rounded-md border border-warm-border bg-warm-bg
                   flex items-center justify-center text-sm font-semibold
                   hover:border-warm-accent hover:text-warm-fg transition-colors
                   active:scale-95"
@@ -122,7 +122,7 @@ export function ProductCard({
                 onAdd();
               }}
               disabled={stock <= 0}
-              className="w-9 h-9 rounded-lg bg-warm-accent text-warm-fg\n                flex items-center justify-center text-lg font-medium\n                hover:bg-warm-accent-hover disabled:bg-[#a8a29e]\n                transition-colors active:scale-95"
+              className="w-10 h-10 rounded-lg bg-warm-accent text-warm-fg\n                flex items-center justify-center text-lg font-medium\n                hover:bg-warm-accent-hover disabled:bg-[#a8a29e]\n                transition-colors active:scale-95"
               aria-label={stock > 0 ? 'Add to cart' : 'Out of stock'}
             >
               +

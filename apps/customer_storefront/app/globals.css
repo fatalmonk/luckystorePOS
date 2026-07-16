@@ -68,18 +68,30 @@
     display: none;
   }
 
-  /* Micro-interactions: @starting-style reveal transitions */
+  /* Micro-interactions: card reveal transitions (Safari-safe, no @starting-style) */
   @media (prefers-reduced-motion: no-preference) {
     .card-reveal {
-      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      opacity: 1;
-      transform: translateY(0) scale(1);
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    @starting-style {
-      .card-reveal {
-        opacity: 0;
-        transform: translateY(12px) scale(0.97);
-      }
+  }
+
+  /* Scroll-triggered fade-up reveal */
+  .fade-up-hidden {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s var(--ease-out, ease), transform 0.5s var(--ease-out, ease);
+  }
+  .fade-up-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Product grid stagger reveal */
+  @media (prefers-reduced-motion: no-preference) {
+    .product-grid > * {
+      animation: fadeUp 0.4s var(--ease-out, ease) forwards;
+      animation-delay: calc(var(--index) * 80ms);
+      opacity: 0;
     }
   }
 }

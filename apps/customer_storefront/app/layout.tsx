@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
+import { CartSheetProvider } from './components/providers/CartSheetProvider';
 import { WebMCPInit } from './components/WebMCPInit';
 
 const geistSans = Geist({
@@ -156,9 +157,11 @@ export default function RootLayout({
         <WebMCPInit />
         <CartProvider>
           <ToastProvider>
-            <div className="app-container">
-              {children}
-            </div>
+            <CartSheetProvider>
+              <div className="app-container">
+                {children}
+              </div>
+            </CartSheetProvider>
           </ToastProvider>
         </CartProvider>
       </body>
