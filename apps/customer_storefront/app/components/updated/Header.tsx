@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { MagnifyingGlass, User, Heart } from '@phosphor-icons/react';
 import { HeaderCartButton } from '../HeaderCartButton';
@@ -12,6 +12,8 @@ import { getLocalWishlist } from '../../lib/wishlistHelpers';
 
 export function Header() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isFilterPage = pathname?.startsWith('/category') ?? false;
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -148,38 +150,40 @@ export function Header() {
         </div>
       </div>
 
-      {/* Category Pills Strip - Floating below the main nav bar */}
-      <div className="max-w-5xl mx-auto mt-2 px-2">
-        <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5">
-          <Link
-            href="/category?theme=deals"
-            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
-          >
-            Deals
-          </Link>
-          <Link
-            href="/category?theme=bestsellers"
-            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white text-warm-fg border border-warm-border text-xs font-bold hover:bg-stone-50 transition-colors"
-          >
-            Best Sellers
-          </Link>
-          <div className="flex-1 min-w-0 flex items-center">
-            <Suspense
-              fallback={
-                <div className="flex items-center gap-1.5">
-                  <div className="h-[26px] w-14 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
-                  <div className="h-[26px] w-16 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
-                </div>
-              }
-            >
-              <HeaderFilters />
-            </Suspense>
-          </div>
-          <span className="hidden md:inline-flex items-center text-[10px] font-semibold text-warm-muted ml-auto whitespace-nowrap">
-            Delivery in as soon as 1 hour
-          </span>
-        </nav>
-      </div>
+      {/* Category Pills Strip — only on category/search pages */}
+      {isFilterPage && (
+        <div className="max-w-5xl mx-auto mt-2 px-2">
+          <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5">
+            <>
+              <Link
+                href="/category?theme=deals"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
+              >
+                Deals
+              </Link>
+              <Link
+                href="/category?theme=bestsellers"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white text-warm-fg border border-warm-border text-xs font-bold hover:bg-stone-50 transition-colors"
+              >
+                Best Sellers
+              </Link>
+            </>
+
+            <div className="flex-1 min-w-0 flex items-center">
+              <Suspense
+                fallback={
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-[26px] w-14 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
+                    <div className="h-[26px] w-16 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
+                  </div>
+                }
+              >
+                <HeaderFilters />
+              </Suspense>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
