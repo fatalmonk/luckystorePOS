@@ -1,18 +1,19 @@
 import { Header } from './updated/Header';
-import { ThemedShortcuts } from './ThemedShortcuts';
 import { FlashSaleStrip } from './FlashSaleStrip';
 import { HeroBanner } from './updated/HeroBanner';
 import { PromoGrid } from './updated/PromoGrid';
+import { VisualCategoryGrid } from './VisualCategoryGrid';
 import { HomeSectionsClient } from './HomeSectionsClient';
 import { BottomNav } from './BottomNav';
 import { TruckIcon, CashIcon, ReturnIcon, LockIcon } from './icons';
-import type { Product } from '../lib/types';
+import type { Product, Category } from '../lib/types';
 
 interface HomeShellProps {
   products: Product[];
+  categories: { id: string; slug: Category; name: string; emoji: string }[];
 }
 
-export function HomeShell({ products }: HomeShellProps) {
+export function HomeShell({ products, categories }: HomeShellProps) {
   const MAX_SECTION_ITEMS = 20;
 
   const popular = products.slice(0, MAX_SECTION_ITEMS);
@@ -38,7 +39,7 @@ export function HomeShell({ products }: HomeShellProps) {
           />
           {/* Urgency strip is data-driven and hides when no endTime is configured. */}
           <FlashSaleStrip />
-          <ThemedShortcuts />
+          <VisualCategoryGrid categories={categories} />
           <PromoGrid />
           <HomeSectionsClient sections={sections} />
 

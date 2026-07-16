@@ -4,9 +4,9 @@ import { fetchProducts, fetchCategories } from './lib/products';
 export const revalidate = 60;
 
 export default async function Home() {
-  const [{ products }] = await Promise.all([fetchProducts(), fetchCategories()]);
+  const [{ products }, categories] = await Promise.all([fetchProducts(), fetchCategories()]);
 
   return (
-    <HomeShell products={products} />
+    <HomeShell products={products} categories={categories} />
   );
 }

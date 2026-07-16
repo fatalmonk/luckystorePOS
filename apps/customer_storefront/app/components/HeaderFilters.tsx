@@ -54,6 +54,8 @@ export function HeaderFilters() {
   const isFilterPage = pathname.startsWith('/category');
   const targetPath = isFilterPage ? pathname : '/category';
 
+  if (!isFilterPage) return null;
+
   // Active filters extraction
   const activePriceParam = searchParams.get('price') || '';
   const activePrices = activePriceParam ? activePriceParam.split(',') : [];
