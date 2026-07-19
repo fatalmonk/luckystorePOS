@@ -107,7 +107,7 @@ export function useCart() {
   const safeCart = hydrated ? cart : [];
   const totalItems = hydrated ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
   const subtotal = hydrated ? cart.reduce((sum, item) => sum + item.price * item.qty, 0) : 0;
-  const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : (hydrated ? FREE_DELIVERY_FEE : 0);
+  const deliveryFee = subtotal === 0 ? 0 : subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : (hydrated ? FREE_DELIVERY_FEE : 0);
   const discount = subtotal >= FREE_DELIVERY_THRESHOLD ? FREE_DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee - discount;
 

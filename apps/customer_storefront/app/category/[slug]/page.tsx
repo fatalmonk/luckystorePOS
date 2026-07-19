@@ -1,16 +1,29 @@
 import { CategoryShell } from '../CategoryShell';
 import { fetchProducts, fetchCategories } from '../../lib/products';
 import { getSingleParam } from '../../lib/utils';
-import { getCategoryGroup, CATEGORY_GROUPS } from '../../lib/types';
-import type { Category, Product } from '../../lib/types';
+import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS } from '../../lib/types';
+import type { Category, Product, CategoryGroup } from '../../lib/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Category',
-  description: 'Browse products by category at Lucky Store — fresh groceries, household items, and more. Same-day delivery in Chittagong.',
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const categorySlug = decodeURIComponent(resolvedParams.slug);
+  const categories = await fetchCategories();
+  const group = getCategoryGroup(categorySlug);
+  const currentCatObj = categories.find((c) => c.slug === categorySlug);
+  const titleName = group?.label || currentCatObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  return {
+    title: `${titleName} | Lucky Store`,
+    description: `Shop ${titleName} at Lucky Store — fresh groceries, household items, and same-day delivery in Chittagong.`,
+  };
+}
 
 export default async function CategorySlugPage({
   params,
@@ -37,6 +50,23 @@ export default async function CategorySlugPage({
         emoji: currentCatObj.emoji,
         subCategories: childCats.map((c) => c.slug),
       };
+    }
+  }
+
+  // Resolve parent group if this is a subcategory
+  let parentGroup: CategoryGroup | undefined;
+  if (!group) {
+    parentGroup = getParentGroup(categorySlug);
+    if (!parentGroup && currentCatObj?.parent_id) {
+      const parentCatObj = categories.find((c) => c.id === currentCatObj.parent_id);
+      if (parentCatObj) {
+        parentGroup = getCategoryGroup(parentCatObj.slug) || {
+          slug: parentCatObj.slug,
+          label: parentCatObj.name,
+          emoji: parentCatObj.emoji,
+          subCategories: [categorySlug],
+        };
+      }
     }
   }
 
@@ -72,6 +102,7 @@ export default async function CategorySlugPage({
       categorySlug={categorySlug}
       currentCat={currentCat}
       group={group}
+      parentGroup={parentGroup}
       categories={categories}
       products={products}
       theme={theme}

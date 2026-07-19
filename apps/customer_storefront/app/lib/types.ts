@@ -103,6 +103,11 @@ export function isCategoryGroup(slug: string): boolean {
   return CATEGORY_GROUPS.some((g) => g.slug === slug);
 }
 
+/** Find parent group for a sub-category slug */
+export function getParentGroup(subSlug: string): CategoryGroup | undefined {
+  return CATEGORY_GROUPS.find((g) => g.subCategories.includes(subSlug));
+}
+
 export interface CartItem extends Product {
   qty: number;
 }
