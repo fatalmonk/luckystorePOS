@@ -15,7 +15,7 @@
   }
 
   body {
-    @apply bg-warm-bg text-warm-fg font-body pb-[68px];
+    @apply bg-warm-bg text-warm-fg font-body pb-[60px];
   }
 }
 

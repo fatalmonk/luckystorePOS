@@ -25,12 +25,15 @@ export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: Pro
           <div
             key={product.id}
             style={{ '--index': index } as React.CSSProperties}
+            className="card-reveal"
           >
             <ProductCard
               id={product.id}
               emoji={product.emoji}
               name={product.name}
               price={product.price}
+              originalPrice={product.originalPrice}
+              badge={product.badge}
               unit={product.unit}
               stock={product.stock}
               category={product.category}

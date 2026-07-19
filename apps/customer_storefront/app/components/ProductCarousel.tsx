@@ -28,7 +28,7 @@ export function ProductCarousel({
         {products.map((product, index) => {
           let addBtnRef: HTMLButtonElement | null = null;
           return (
-            <div key={product.id} className="w-40 sm:w-48 flex-shrink-0 snap-start">
+            <div key={product.id} className="w-44 sm:w-52 flex-shrink-0 snap-start">
               <ProductCard
                 id={product.id}
                 emoji={product.emoji}
