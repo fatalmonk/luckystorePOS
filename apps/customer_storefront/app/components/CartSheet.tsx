@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { X } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
 import { Button } from './ui/Button';
@@ -59,8 +60,8 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
       <div
         className={`
           fixed bottom-0 left-0 right-0
-          bg-white rounded-t-[20px]
-          shadow-[0_-8px_40px_rgba(28,25,23,0.12)]
+          bg-warm-surface rounded-t-[20px]
+          shadow-[0_-8px_40px_rgba(11,11,13,0.12)]
           max-h-[70vh] overflow-hidden
           flex flex-col
           transition-transform duration-300 ease-[var(--ease-elastic)]
@@ -93,21 +94,32 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
               <p className="text-warm-muted text-sm">Your cart is empty</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {cart.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 py-2"
+                  className="flex items-center gap-3 py-2.5 px-1 rounded-xl hover:bg-warm-bg/50 transition-colors"
                 >
-                  <div className="w-11 h-11 bg-warm-border-light rounded-[10px] grid place-items-center text-xl flex-shrink-0">
-                    {item.emoji}
+                  {/* Product image or emoji fallback */}
+                  <div className="w-12 h-12 rounded-xl bg-warm-bg overflow-hidden flex-shrink-0 grid place-items-center relative">
+                    {item.image_url ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.name}
+                        fill
+                        sizes="48px"
+                        className="object-contain p-1"
+                      />
+                    ) : (
+                      <span className="text-xl">{item.emoji}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">{item.name}</p>
-                    <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
+                    <p className="font-semibold text-[13px] truncate text-warm-fg">{item.name}</p>
+                    <p className="text-[11px] text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
-                      className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[32px] px-1"
+                      className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[28px] px-0.5"
                       aria-label={`Remove ${item.name}`}
                     >
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -116,10 +128,10 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                       Remove
                     </button>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => updateQty(item.id, -1)}
-                      className="w-11 h-11 rounded-md border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
+                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
                       aria-label="Decrease quantity"
                     >
                       −
@@ -127,13 +139,13 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[20px] text-center" />
                     <button
                       onClick={() => updateQty(item.id, 1)}
-                      className="w-11 h-11 rounded-md border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
+                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
                       aria-label="Increase quantity"
                     >
                       +
                     </button>
                   </div>
-                  <span className="font-bold text-sm min-w-[50px] text-right">{formatBdt(item.price * item.qty)}</span>
+                  <span className="font-bold text-sm min-w-[55px] text-right text-warm-fg">{formatBdt(item.price * item.qty)}</span>
                 </div>
               ))}
             </div>

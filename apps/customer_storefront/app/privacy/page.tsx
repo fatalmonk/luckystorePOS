@@ -23,7 +23,7 @@ interface PolicySectionProps {
 
 function PolicySection({ icon, title, children }: PolicySectionProps) {
   return (
-    <section className="bg-white border border-warm-border rounded-[var(--radius-md)] p-5 sm:p-6 shadow-sm">
+    <section className="bg-warm-surface border border-warm-border rounded-[var(--radius-md)] p-5 sm:p-6 shadow-warm-sm">
       <div className="flex items-start gap-3 mb-3">
         <span className="text-xl leading-none mt-0.5" aria-hidden="true">{icon}</span>
         <h2 className="text-base font-bold tracking-tight text-warm-fg">{title}</h2>

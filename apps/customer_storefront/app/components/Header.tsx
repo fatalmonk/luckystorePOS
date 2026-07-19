@@ -7,9 +7,11 @@ import { HeaderSearch } from './HeaderSearch';
 import { Logo } from './ui/Logo';
 import { useState, useEffect } from 'react';
 import { getLocalWishlist } from '../lib/wishlistHelpers';
+import { useToast } from './Toast';
 
 export function Header() {
   const [wishlistCount, setWishlistCount] = useState(0);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const updateWishlistCount = () => setWishlistCount(getLocalWishlist().length);
@@ -42,6 +44,7 @@ export function Header() {
 
           <button
             type="button"
+            onClick={() => showToast('Sign in coming soon')}
             className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
             aria-label="Sign In"
           >
@@ -88,7 +91,7 @@ export function Header() {
             New
           </Link>
           <span className="hidden sm:inline-flex items-center text-[10px] font-semibold text-warm-muted ml-auto whitespace-nowrap">
-            Delivery in as soon as 1 hour
+            Delivery in as little as 1 hour
           </span>
         </nav>
       </div>

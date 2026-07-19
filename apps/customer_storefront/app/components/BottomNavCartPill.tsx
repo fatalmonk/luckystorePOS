@@ -8,19 +8,18 @@ export function BottomNavCartPill() {
   const { totalItems, total, isLoaded } = useCartContext();
   const { open } = useCartSheet();
 
-  // During hydration, show a skeleton pill to prevent flash of null
   if (!isLoaded) {
     return (
       <div
-        className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-40
+        className="fixed bottom-[72px] left-1/2 -translate-x-1/2 z-40
           glass border rounded-full px-5 py-2.5
           flex items-center gap-3
           animate-pulse"
         aria-hidden="true"
       >
-        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 w-16 bg-warm-border-light rounded animate-pulse" />
         <div className="w-px h-4 bg-warm-border-light" />
-        <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 w-12 bg-warm-border-light rounded animate-pulse" />
       </div>
     );
   }
@@ -31,7 +30,7 @@ export function BottomNavCartPill() {
     <button
       type="button"
       onClick={open}
-      className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-40
+      className="fixed bottom-[72px] left-1/2 -translate-x-1/2 z-40
         glass border rounded-full px-5 py-2.5
         flex items-center gap-3
         shadow-lg hover:shadow-xl
