@@ -89,20 +89,17 @@ export function CategorySwimlanes({
   const deals = products.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
   const bestSellers = products.filter((p) => p.stock > 10).slice(0, 8);
 
-  const subCategoryGrids = !group ? [] : group.subCategories
-    .map((subSlug) => {
-      const cat = categories.find((c) => c.slug === subSlug);
-      const catName = cat?.name ?? subSlug;
-      const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug);
-      return {
-        slug: subSlug,
-        label: cat?.name || subSlug,
-        icon: cat?.emoji || null,
-        products: catProducts,
-        count: catProducts.length,
-      };
-    })
-    .filter((s) => s.products.length > 0);
+  const subCategoryItems = !group ? [] : group.subCategories.map((subSlug) => {
+    const cat = categories.find((c) => c.slug === subSlug);
+    const catName = cat?.name ?? subSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug || p.category === cat?.name);
+    return {
+      slug: subSlug,
+      label: catName,
+      icon: cat?.emoji || '📦',
+      count: catProducts.length,
+    };
+  });
 
   if (filtered.length === 0) {
     return (
@@ -121,27 +118,40 @@ export function CategorySwimlanes({
             products={deals}
           />
         )}
-        {subCategoryGrids.map((grid) => (
-          <section key={grid.slug} className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                {grid.icon ? (
-                  <span className="text-xl" aria-hidden="true">{grid.icon}</span>
-                ) : (
-                  <Package weight="bold" size={20} aria-hidden="true" />
-                )}
-                <h2 className="text-lg font-bold tracking-tight">{grid.label}</h2>
-              </div>
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold tracking-tight">Sub Categories</h2>
+            <span className="text-xs font-semibold text-warm-muted">{subCategoryItems.length} categories</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
+            {subCategoryItems.map((sub) => (
               <a
-                href={`/category/${grid.slug}`}
-                className="text-sm font-semibold text-warm-muted hover:text-warm-fg transition-colors"
+                key={sub.slug}
+                href={`/category/${sub.slug}`}
+                className="group flex flex-col items-center justify-center p-4 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent/80 shadow-warm-sm hover:shadow-warm-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 text-center"
               >
-                See all ({grid.count})
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-warm-surface-hover/80 flex items-center justify-center text-3xl sm:text-4xl mb-2.5 group-hover:scale-110 transition-transform duration-200 shadow-inner">
+                  {sub.icon}
+                </div>
+                <h3 className="font-extrabold text-xs sm:text-sm text-warm-fg line-clamp-1 group-hover:text-warm-fg-strong transition-colors">
+                  {sub.label}
+                </h3>
+                <span className="text-[11px] font-semibold text-warm-muted mt-0.5">
+                  {sub.count} {sub.count === 1 ? 'item' : 'items'}
+                </span>
               </a>
+            ))}
+          </div>
+        </section>
+        {filtered.length > 0 && (
+          <section className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold tracking-tight">All {group.label} Products</h2>
+              <span className="text-sm text-warm-muted">{filtered.length} items</span>
             </div>
-            <ProductGridClient products={grid.products} />
+            <ProductGridClient products={filtered} />
           </section>
-        ))}
+        )}
       </>
     );
   }
