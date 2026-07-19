@@ -44,9 +44,15 @@ test.describe('Wishlist Flow', () => {
     const phoneInput = page.locator('input[type="tel"]');
     await expect(phoneInput).toBeVisible();
 
-    // Enter phone and save
+    // Enter phone and save — assert the API call succeeds so a 500
+    // (missing SUPABASE_SERVICE_ROLE_KEY, RLS, FK violation, etc.) surfaces
+    // as a real error instead of a silent button-timeout.
     await phoneInput.fill('+880 1712345678');
-    await page.click('button:has-text("Save")');
+    const [saveResponse] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/wishlist') && r.request().method() === 'POST', { timeout: 10000 }),
+      page.click('button:has-text("Save")'),
+    ]);
+    expect(saveResponse.ok(), `POST /api/wishlist failed: ${saveResponse.status()}`).toBe(true);
 
     // Should show saved state
     await expect(page.locator('button:has-text("On Wishlist")')).toBeVisible();
@@ -62,8 +68,13 @@ test.describe('Wishlist Flow', () => {
     const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
     await wishlistButton.click();
     const phoneInput = page.locator('input[type="tel"]');
+    await expect(phoneInput).toBeVisible();
     await phoneInput.fill('+880 1712345678');
-    await page.click('button:has-text("Save")');
+    const [saveResponse] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/wishlist') && r.request().method() === 'POST', { timeout: 10000 }),
+      page.click('button:has-text("Save")'),
+    ]);
+    expect(saveResponse.ok(), `POST /api/wishlist failed: ${saveResponse.status()}`).toBe(true);
     await expect(page.locator('button:has-text("On Wishlist")')).toBeVisible();
 
     // Try adding again (reload and click saved button)
