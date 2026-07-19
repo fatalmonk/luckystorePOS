@@ -9,11 +9,16 @@ import { HomeSectionsClient } from './HomeSectionsClient';
 import { BottomNav } from './BottomNav';
 import { TruckIcon, CashIcon, ReturnIcon } from './icons';
 import type { Product, Category } from '../lib/types';
+import { img, srcSet } from '../lib/imageUrl';
 
 interface HomeShellProps {
   products: Product[];
   categories: { id: string; slug: Category; name: string; emoji: string }[];
 }
+
+const SNACKS_WEBP_SRC_SET = srcSet('/images/promo_snacks_400.webp 400w, /images/promo_snacks_600.webp 600w, /images/promo_snacks_800.webp 800w, /images/promo_snacks_1200.webp 1200w');
+const SNACKS_AVIF_SRC_SET = srcSet('/images/promo_snacks.avif 600w');
+const ELECTRONICS_WEBP_SRC_SET = srcSet('/images/promo_electronics_400.webp 400w, /images/promo_electronics_600.webp 600w, /images/promo_electronics_800.webp 800w, /images/promo_electronics_1200.webp 1200w');
 
 export function HomeShell({ products, categories }: HomeShellProps) {
   const MAX_SECTION_ITEMS = 20;
@@ -36,7 +41,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
           <HeroBanner
             slides={[
               {
-                image: '/images/promo_welcome.webp',
+                image: img('/images/promo_welcome.webp'),
                 title: 'Welcome to Lucky Store',
                 subtitle: 'Chittagong\'s trusted grocery since 1947',
                 badge: 'Since 1947',
@@ -44,7 +49,15 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 ctaHref: '/category',
               },
               {
-                image: '/images/promo_snacks.webp',
+                image: {
+                  src: img('/images/promo_snacks_1200.webp'),
+                  srcSet: SNACKS_WEBP_SRC_SET,
+                  sizes: '100vw',
+                  sources: [
+                    { srcSet: SNACKS_AVIF_SRC_SET, type: 'image/avif', media: '(min-width: 1px)' },
+                  ],
+                  alt: 'Assorted snacks and treats',
+                },
                 title: 'Snacks & Treats',
                 subtitle: 'Chips, chocolates, biscuits & more',
                 badge: 'Popular',
@@ -52,7 +65,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 ctaHref: '/category/snacks',
               },
               {
-                image: '/images/promo_cooking.webp',
+                image: img('/images/promo_cooking.webp'),
                 title: 'Cooking Essentials',
                 subtitle: 'Oils, spices, rice & everything for your kitchen',
                 badge: 'Daily Needs',
@@ -60,7 +73,12 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 ctaHref: '/category/cooking-essentials',
               },
               {
-                image: '/images/promo_electronics.webp',
+                image: {
+                  src: img('/images/promo_electronics_1200.webp'),
+                  srcSet: ELECTRONICS_WEBP_SRC_SET,
+                  sizes: '100vw',
+                  alt: 'Home electronics and accessories',
+                },
                 title: 'Electronics',
                 subtitle: 'Gadgets & accessories for your home',
                 badge: 'Tech',
@@ -68,7 +86,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 ctaHref: '/category/electronics',
               },
               {
-                image: '/images/promo_savings_banner.webp',
+                image: img('/images/promo_savings_banner.webp'),
                 title: 'Big Savings',
                 subtitle: 'Up to 50% off on your favorites',
                 badge: 'Hot Deals',

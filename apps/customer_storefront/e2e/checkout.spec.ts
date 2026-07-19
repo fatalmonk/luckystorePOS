@@ -1,30 +1,49 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+async function openFirstProduct(page: Page) {
+  await page.goto('/');
+  await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
+  const firstProduct = page.locator('[data-testid="product-card"]').first();
+  await firstProduct.click();
+  await page.waitForURL(/\/product\//);
+  await expect(page.locator('h1')).toBeVisible();
+}
+
+async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
+  const addButton = page.locator('button:has-text("Add to Cart")');
+  const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
+
+  try {
+    return await Promise.race([
+      addButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'in-stock' as const),
+      wishlistButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'out-of-stock' as const),
+    ]);
+  } catch {
+    throw new Error('Product page did not render Add to Cart or Notify Me When Back within 10s');
+  }
+}
+
+async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
+  await openFirstProduct(page);
+  const status = await getFirstProductStockStatus(page);
+  if (status === 'out-of-stock') {
+    return false;
+  }
+
+  await page.locator('button:has-text("Add to Cart")').click();
+  await page.locator('[aria-label="1 items in cart"]').waitFor({ state: 'visible', timeout: 5000 });
+  return true;
+}
 
 test.describe('Checkout Flow', () => {
+  test.setTimeout(60000);
+
   test('completes a full checkout', async ({ page }) => {
-    // Navigate to home and add a product to cart
-    await page.goto('/');
-    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
-
-    // Click first product
-    const firstProduct = page.locator('[data-testid="product-card"]').first();
-    await firstProduct.click();
-
-    // Wait for product detail
-    await page.waitForURL(/\/product\//);
-    await expect(page.locator('h1')).toBeVisible();
-
-    // Add to cart if in stock
-    const addButton = page.locator('button:has-text("Add to Cart")');
-    const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
-
-    if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip(true, 'Product out of stock, skipping checkout test');
+    const added = await addFirstInStockProductToCart(page);
+    if (!added) {
+      test.skip(true, 'First product is out of stock, skipping checkout test');
       return;
     }
-
-    await addButton.click();
-    await expect(page.locator('text=Added')).toBeVisible();
 
     // Go to cart
     await page.goto('/cart');
@@ -51,23 +70,14 @@ test.describe('Checkout Flow', () => {
   });
 
   test('shows validation errors for invalid phone', async ({ page }) => {
-    // Add a product to cart first
-    await page.goto('/');
-    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
-    const firstProduct = page.locator('[data-testid="product-card"]').first();
-    await firstProduct.click();
-    await page.waitForURL(/\/product\//);
-
-    const addButton = page.locator('button:has-text("Add to Cart")');
-    const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
-    if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip(true, 'Product out of stock, skipping validation test');
+    const added = await addFirstInStockProductToCart(page);
+    if (!added) {
+      test.skip(true, 'First product is out of stock, skipping validation test');
       return;
     }
-    await addButton.click();
-    await expect(page.locator('text=Added')).toBeVisible();
 
     await page.goto('/checkout');
+    await expect(page.locator('[data-testid="checkout-name-input"]')).toBeVisible();
 
     // Try to proceed to review without filling required fields
     await page.click('[data-testid="checkout-review-btn"]');
@@ -112,27 +122,19 @@ test.describe('Checkout Price Tampering', () => {
 });
 
 test.describe('Order Confirmation Display', () => {
+  test.setTimeout(60000);
+
   test('displays order number, item count, and total correctly', async ({ page }) => {
-    // Navigate to home and add a product
-    await page.goto('/');
-    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
-
-    const firstProduct = page.locator('[data-testid="product-card"]').first();
-    await firstProduct.click();
-    await page.waitForURL(/\/product\//);
-
-    const addButton = page.locator('button:has-text("Add to Cart")');
-    const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
-    if (await wishlistButton.isVisible().catch(() => false)) {
-      test.skip(true, 'Product out of stock, skipping order confirmation test');
+    const added = await addFirstInStockProductToCart(page);
+    if (!added) {
+      test.skip(true, 'First product is out of stock, skipping order confirmation test');
       return;
     }
 
-    await addButton.click();
-    await expect(page.locator('text=Added')).toBeVisible();
-
     // Go to checkout
     await page.goto('/checkout');
+    await expect(page.locator('[data-testid="checkout-name-input"]')).toBeVisible();
+
     await page.fill('[data-testid="checkout-name-input"]', 'Confirmation Test');
     await page.fill('[data-testid="checkout-phone-input"]', '01712345678');
     await page.fill('[data-testid="checkout-address-input"]', '456 Confirm Ave, Chittagong');

@@ -6,6 +6,7 @@ import { ThemedShortcuts } from '../components/ThemedShortcuts';
 import { CategorySwimlanes } from '../components/CategorySwimlanes';
 import { HeroBanner } from '../components/updated/HeroBanner';
 import type { Product, Category, CategoryGroup } from '../lib/types';
+import { img, srcSet } from '../lib/imageUrl';
 
 interface CategoryShellProps {
   categorySlug: string;
@@ -18,18 +19,39 @@ interface CategoryShellProps {
   searchParams: Record<string, string | string[] | undefined>;
 }
 
-const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: string }> = {
+const SNACKS_SRC_SET = srcSet('/images/promo_snacks_400.webp 400w, /images/promo_snacks_600.webp 600w, /images/promo_snacks_800.webp 800w, /images/promo_snacks_1200.webp 1200w');
+const SNACKS_AVIF_SRC_SET = srcSet('/images/promo_snacks.avif 600w');
+const ELECTRONICS_SRC_SET = srcSet('/images/promo_electronics_400.webp 400w, /images/promo_electronics_600.webp 600w, /images/promo_electronics_800.webp 800w, /images/promo_electronics_1200.webp 1200w');
+
+const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: string | { src: string; srcSet: string; sizes: string; sources?: { srcSet: string; type: string; media?: string }[] } }> = {
   'snacks': {
     title: 'Snacks & Munchies',
     subtitle: 'Bite-sized happiness, from sweet biscuits to savory local crisps.',
     badge: 'Crispy & Sweet',
-    bgImage: '/images/promo_snacks.webp',
+    bgImage: {
+      src: img('/images/promo_snacks_1200.webp'),
+      srcSet: SNACKS_SRC_SET,
+      sizes: '100vw',
+      sources: [
+        { srcSet: SNACKS_AVIF_SRC_SET, type: 'image/avif', media: '(min-width: 1px)' },
+      ],
+    },
+  },
+  'electronics': {
+    title: 'Home Electronics',
+    subtitle: 'High-quality adapters, durable charging cables, and everyday electronic tools.',
+    badge: 'Tech Essentials',
+    bgImage: {
+      src: img('/images/promo_electronics_1200.webp'),
+      srcSet: ELECTRONICS_SRC_SET,
+      sizes: '100vw',
+    },
   },
   'cooking-essentials': {
     title: 'Cooking Essentials',
     subtitle: 'Pure oils, aromatic spices, and finest grains for your daily meals.',
     badge: 'Kitchen Staples',
-    bgImage: '/images/promo_cooking.webp',
+    bgImage: img('/images/promo_cooking.webp'),
   },
   'dairy-&-eggs': {
     title: 'Dairy & Eggs',
@@ -48,12 +70,6 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     subtitle: 'Ultra-soft diapers, gentle baby wash, and nourishing infant formula.',
     badge: 'Pure & Gentle',
     bgImage: 'https://images.luckystore1947.com/banners/promo_baby.webp',
-  },
-  'electronics': {
-    title: 'Home Electronics',
-    subtitle: 'High-quality adapters, durable charging cables, and everyday electronic tools.',
-    badge: 'Tech Essentials',
-    bgImage: '/images/promo_electronics.webp',
   },
   'baking-needs': {
     title: 'Baking Needs',
@@ -121,7 +137,7 @@ const DEFAULT_BANNER = {
   title: 'Lucky Store Catalog',
   subtitle: 'Browse our entire collection of premium daily essentials and fresh goods.',
   badge: 'Premium Quality',
-  bgImage: 'https://images.luckystore1947.com/banners/hero_grocery_banner.webp',
+  bgImage: img('/images/hero_grocery_banner.webp'),
 };
 
 export function CategoryShell({
@@ -141,9 +157,13 @@ export function CategoryShell({
           title: 'Big Savings',
           subtitle: 'Up to 50% off on your favorites',
           badge: 'Hot Deals',
-          bgImage: '/images/promo_savings_banner.webp',
+          bgImage: img('/images/promo_savings_banner.webp'),
         }
       : BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || DEFAULT_BANNER;
+
+  const slideImage = typeof bannerConfig.bgImage === 'string'
+    ? bannerConfig.bgImage
+    : bannerConfig.bgImage;
 
   return (
     <>
@@ -152,7 +172,7 @@ export function CategoryShell({
         <div className="p-4 sm:p-6 space-y-6">
           <HeroBanner
             slides={[{
-              image: bannerConfig.bgImage,
+              image: slideImage,
               title: bannerConfig.title,
               subtitle: bannerConfig.subtitle,
               badge: bannerConfig.badge,
