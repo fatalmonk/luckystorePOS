@@ -1,7 +1,14 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { img } from '../../lib/imageUrl';
+import { img, srcSet } from '../../lib/imageUrl';
+
+interface ResponsiveImage {
+  src: string;
+  srcSet?: string;
+  sizes?: string;
+  sources?: { srcSet: string; type: string; media?: string }[];
+  alt?: string;
+}
 
 interface PromoItem {
   id: string;
@@ -12,7 +19,20 @@ interface PromoItem {
   ctaHref: string;
   bgColor?: string;
   gradient?: string;
-  bgImage?: string;
+  bgImage?: string | ResponsiveImage;
+}
+
+/** Helper: build a responsive image object from a base name. */
+function responsiveBanner(base: string, alt: string): ResponsiveImage {
+  return {
+    src: img(`/banners/${base}_1200.webp`),
+    srcSet: srcSet(`/banners/${base}_400.webp 400w, /banners/${base}_600.webp 600w, /banners/${base}_800.webp 800w, /banners/${base}_1200.webp 1200w`),
+    sizes: '(max-width: 768px) 80vw, 50vw',
+    sources: [
+      { srcSet: srcSet(`/banners/${base}.avif 600w`), type: 'image/avif', media: '(min-width: 1px)' },
+    ],
+    alt,
+  };
 }
 
 const defaultPromos: PromoItem[] = [
@@ -23,7 +43,7 @@ const defaultPromos: PromoItem[] = [
     subtitle: 'Up to 50% off essentials',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: img('/images/promo_savings_banner.webp'),
+    bgImage: responsiveBanner('promo_savings_banner', 'Big savings week banner'),
   },
   {
     id: 'fresh-arrivals',
@@ -31,7 +51,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Fresh Arrivals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=new',
-    bgImage: img('/images/promo_fresh_banner.webp'),
+    bgImage: responsiveBanner('promo_fresh_banner', 'Fresh arrivals banner'),
   },
   {
     id: 'daily-deals',
@@ -39,9 +59,13 @@ const defaultPromos: PromoItem[] = [
     title: 'Daily Deals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: img('/images/promo_deals_banner.webp'),
+    bgImage: responsiveBanner('promo_deals_banner', 'Daily deals banner'),
   },
 ];
+
+function getBgSrc(bg: string | ResponsiveImage): string {
+  return typeof bg === 'string' ? bg : bg.src;
+}
 
 export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) {
   const largePromo = promos.find((p) => p.type === 'large');
@@ -59,6 +83,9 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
         {allPromos.map((promo, i) => {
           const isLarge = i === 0;
           const isFresh = promo.id === 'fresh-arrivals';
+          const sizes = isLarge ? '(max-width: 768px) 80vw, 50vw' : '(max-width: 768px) 80vw, 25vw';
+          const responsive = promo.bgImage && typeof promo.bgImage === 'object' ? promo.bgImage : null;
+          const bgSrc = promo.bgImage ? getBgSrc(promo.bgImage) : null;
 
           return (
             <Link
@@ -71,18 +98,27 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
               }`}
             >
               {/* Background image & overlay */}
-              {promo.bgImage ? (
-                <Image
-                  src={promo.bgImage}
-                  alt=""
-                  fill
-                  sizes={isLarge ? '(max-width: 768px) 80vw, 50vw' : '(max-width: 768px) 80vw, 25vw'}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 z-0"
-                />
+              {bgSrc ? (
+                <picture className="absolute inset-0 w-full h-full">
+                  {responsive?.sources?.map((source, idx) => (
+                    <source key={idx} srcSet={source.srcSet} type={source.type} media={source.media} />
+                  ))}
+                  {responsive?.srcSet && (
+                    <source srcSet={responsive.srcSet} type="image/webp" sizes={responsive.sizes || sizes} />
+                  )}
+                  <Image
+                    src={bgSrc}
+                    alt={responsive?.alt || ''}
+                    fill
+                    sizes={responsive?.sizes || sizes}
+                    unoptimized={!responsive?.srcSet && !responsive?.sources}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 z-0"
+                  />
+                </picture>
               ) : (
                 <div className="absolute inset-0 z-0 bg-gradient-to-br from-warm-accent to-warm-accent-dark transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105" />
               )}
-              {promo.bgImage && (
+              {bgSrc && (
                 <div className={`absolute inset-0 z-10 ${
                   isLarge
                     ? 'bg-gradient-to-t from-warm-fg/85 via-warm-fg/50 to-warm-fg/20'
@@ -125,7 +161,7 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
                 <div className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
                   isLarge
                     ? 'bg-warm-surface text-warm-fg hover:bg-warm-surface/90 active:scale-95'
-                    : promo.bgImage
+                    : bgSrc
                       ? 'text-warm-accent group-hover:text-warm-accent-hover'
                       : 'text-warm-fg group-hover:text-warm-fg'
                 }`}>
