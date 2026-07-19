@@ -16,7 +16,7 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
+
 
   const next = searchParams.get('next') ?? '/profile';
   const errorParam = searchParams.get('error');
@@ -36,6 +36,8 @@ function LoginForm() {
 
     setLoading(true);
     try {
+      const supabase = createClient();
+      if (!supabase) throw new Error('Auth service unavailable');
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
