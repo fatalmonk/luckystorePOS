@@ -2,7 +2,7 @@
 
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
-import { CategoryGrid } from '../components/updated/CategoryGrid';
+import { ThemedShortcuts } from '../components/ThemedShortcuts';
 import { CategorySwimlanes } from '../components/CategorySwimlanes';
 import { HeroBanner } from '../components/updated/HeroBanner';
 import type { Product, Category, CategoryGroup } from '../lib/types';
@@ -158,10 +158,7 @@ export function CategoryShell({
               badge: bannerConfig.badge,
             }]}
           />
-          <CategoryGrid
-            categories={categories}
-            active={currentCat === 'all' ? undefined : currentCat}
-          />
+          <ThemedShortcuts />
           <CategorySwimlanes
             categorySlug={categorySlug}
             group={group}
