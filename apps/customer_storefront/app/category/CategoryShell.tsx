@@ -12,6 +12,7 @@ interface CategoryShellProps {
   categorySlug: string;
   currentCat: Category | 'all';
   group?: CategoryGroup;
+  parentGroup?: CategoryGroup;
   categories: { id: string; slug: Category; name: string; emoji: string }[];
   products: Product[];
   theme: string;
@@ -84,8 +85,8 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     bgImage: responsiveBanner('promo_dairy', 'Dairy and eggs products'),
   },
   'personal-care': {
-    title: 'Personal Care & Cleaning',
-    subtitle: 'Gentle soaps, premium hair care, and powerful household cleaning supplies.',
+    title: 'Personal Care & Hygiene',
+    subtitle: 'Gentle soaps, premium hair care, skincare, and daily grooming essentials.',
     badge: 'Hygiene & Care',
     bgImage: responsiveBanner('promo_personal', 'Personal care products'),
   },
@@ -176,13 +177,28 @@ export function CategoryShell({
   categorySlug,
   currentCat,
   group,
+  parentGroup,
   categories,
   products,
   theme,
   sort,
   searchParams,
 }: CategoryShellProps) {
-  // Resolve banner config: deals theme → specific map → group slug → default
+  // Build dynamic fallback banner info for any slug not directly in BANNER_MAP
+  const catObj = categories.find((c) => c.slug === categorySlug);
+  const prettyName = catObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const fallbackBanner = {
+    title: prettyName,
+    subtitle: `Explore top quality ${prettyName.toLowerCase()} products delivered directly to your home.`,
+    badge: 'Lucky Choice',
+    bgImage: group?.slug && BANNER_MAP[group.slug]?.bgImage 
+      ? BANNER_MAP[group.slug].bgImage 
+      : parentGroup?.slug && BANNER_MAP[parentGroup.slug]?.bgImage
+      ? BANNER_MAP[parentGroup.slug].bgImage
+      : DEFAULT_BANNER.bgImage,
+  };
+
+  // Resolve banner config: deals theme → specific map → group slug → parent group slug → fallback
   const bannerConfig =
     theme === 'deals'
       ? {
@@ -199,7 +215,7 @@ export function CategoryShell({
             alt: 'Big savings banner',
           },
         }
-      : BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || DEFAULT_BANNER;
+      : BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || fallbackBanner;
 
   const slideImage = typeof bannerConfig.bgImage === 'string'
     ? bannerConfig.bgImage
@@ -210,6 +226,21 @@ export function CategoryShell({
       <Header />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
         <div className="p-4 sm:p-6 space-y-6">
+          {parentGroup && !group && (
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
+              <a href="/category" className="hover:text-warm-fg transition-colors">
+                Categories
+              </a>
+              <span>/</span>
+              <a href={`/category/${parentGroup.slug}`} className="hover:text-warm-fg transition-colors">
+                {parentGroup.label}
+              </a>
+              <span>/</span>
+              <span className="text-warm-fg font-bold">
+                {prettyName}
+              </span>
+            </nav>
+          )}
           <HeroBanner
             slides={[{
               image: slideImage,
