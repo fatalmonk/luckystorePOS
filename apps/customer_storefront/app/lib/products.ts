@@ -64,32 +64,59 @@ export async function fetchProducts(
   limit: number = 60
 ): Promise<FetchProductsResult> {
   try {
-    const [itemsRes, cats] = await Promise.all([
-      supabase.rpc('search_items_pos', {
+    let items: any[] = [];
+    let hasMore = false;
+
+    const cats = await fetchCategories();
+
+    if (categoryIds && categoryIds.length > 0) {
+      const results = await Promise.all(
+        categoryIds.map((id) =>
+          supabase.rpc('search_items_pos', {
+            p_store_id: STORE_ID,
+            p_query: q ?? '',
+            p_category_id: id,
+            p_limit: limit + 1,
+            p_offset: page * limit,
+          })
+        )
+      );
+
+      const subItemsList: any[][] = [];
+      results.forEach((res) => {
+        if (res.error) throw res.error;
+        const data = res.data ?? [];
+        if (data.length > limit) {
+          hasMore = true;
+        }
+        subItemsList.push(data);
+      });
+
+      const merged = subItemsList.flat();
+      merged.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      items = merged.slice(0, limit);
+      if (merged.length > limit) {
+        hasMore = true;
+      }
+    } else {
+      const { data, error } = await supabase.rpc('search_items_pos', {
         p_store_id: STORE_ID,
         p_query: q ?? '',
-        p_category_id: categoryId && !categoryIds?.length ? categoryId : null,
-        p_limit: limit + 1, // Fetch one extra to determine hasMore
+        p_category_id: categoryId || null,
+        p_limit: limit + 1,
         p_offset: page * limit,
-      }),
-      fetchCategories()
-    ]);
+      });
 
-    if (itemsRes.error) throw itemsRes.error;
+      if (error) throw error;
 
-    let items = (itemsRes.data ?? []) as any[];
-    const hasMore = items.length > limit;
-    if (hasMore) items = items.slice(0, limit); // Remove the extra item
+      let raw = (data ?? []) as any[];
+      hasMore = raw.length > limit;
+      if (hasMore) raw = raw.slice(0, limit);
+      items = raw;
+    }
 
     const emojiMap = new Map(cats.map(c => [c.slug, c.emoji]));
     const emojiById = new Map(cats.map(c => [c.id, c.emoji]));
-
-    // Client-side category filter (only needed for multi-category groups)
-    if (categoryIds && categoryIds.length > 0) {
-      items = items.filter((item: any) =>
-        categoryIds.includes(item.category_id)
-      );
-    }
 
     const products = items.map((item: any) => {
       const price = Number(item.price);
@@ -145,22 +172,52 @@ function getCategoryEmoji(name: string, dbEmoji?: string | null): string {
   return '📦';
 }
 
-export async function fetchCategories(): Promise<{ id: string; slug: Category; name: string; emoji: string }[]> {
+export interface CategoryWithParent {
+  id: string;
+  slug: Category;
+  name: string;
+  emoji: string;
+  parent_id?: string | null;
+}
+
+export async function fetchCategories(): Promise<CategoryWithParent[]> {
   try {
     const { data, error } = await supabase
       .from('categories')
-      .select('id, slug, name, emoji')
+      .select('id, slug, name, emoji, parent_id')
       .eq('active', true)
       .order('display_order');
 
     if (error) throw error;
 
-    return (data ?? []).map((c: any) => ({
-      id: c.id,
-      slug: (c.slug ?? c.name) as Category,
-      name: c.name,
-      emoji: getCategoryEmoji(c.name, c.emoji),
-    }));
+    const rawCats = data ?? [];
+    const catMap = new Map<string, any>();
+    rawCats.forEach(c => {
+      catMap.set(c.id, {
+        id: c.id,
+        slug: (c.slug ?? c.name) as Category,
+        name: c.name,
+        emoji: c.emoji,
+        parent_id: c.parent_id
+      });
+    });
+
+    return Array.from(catMap.values()).map(c => {
+      let resolvedEmoji = c.emoji;
+      if (c.parent_id && (!resolvedEmoji || resolvedEmoji === '📦')) {
+        const parent = catMap.get(c.parent_id);
+        if (parent && parent.emoji && parent.emoji !== '📦') {
+          resolvedEmoji = parent.emoji;
+        }
+      }
+      return {
+        id: c.id,
+        slug: c.slug,
+        name: c.name,
+        emoji: getCategoryEmoji(c.name, resolvedEmoji),
+        parent_id: c.parent_id
+      };
+    });
   } catch (error) {
     console.error('Error in fetchCategories:', error);
     return [];

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
@@ -13,6 +13,7 @@ import { Plus, Upload, X, Package } from 'lucide-react';
 interface Category {
   id: string;
   name: string;
+  parent_id?: string | null;
 }
 
 interface ProductAddModalProps {
@@ -43,6 +44,44 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
 
   const margin = cost > 0 && price > 0 ? Math.round(((price - cost) / cost) * 100) : null;
   const lowMargin = margin !== null && margin < 10;
+
+  // Group categories for hierarchical optgroup select
+  const { rootOnlyLeaves, grouped } = useMemo(() => {
+    const cats = categories || [];
+    const parentIds = new Set(cats.map((c) => c.parent_id).filter(Boolean));
+    const roots = cats.filter((c) => !c.parent_id);
+    
+    const childrenMap: Record<string, Category[]> = {};
+    cats.forEach((c) => {
+      if (c.parent_id) {
+        if (!childrenMap[c.parent_id]) {
+          childrenMap[c.parent_id] = [];
+        }
+        childrenMap[c.parent_id].push(c);
+      }
+    });
+
+    const rootsWithChildren = roots.filter((r) => parentIds.has(r.id));
+    const rootOnlyLeaves = roots.filter((r) => !parentIds.has(r.id));
+
+    const grouped = rootsWithChildren.map((r) => ({
+      root: r,
+      children: childrenMap[r.id] || [],
+    }));
+
+    return { rootOnlyLeaves, grouped };
+  }, [categories]);
+
+  const handleCategoryChange = (val: string) => {
+    if (val) {
+      const hasChildren = categories?.some((c) => c.parent_id === val);
+      if (hasChildren) {
+        alert('Please select a sub-category.');
+        return;
+      }
+    }
+    setCategoryId(val);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -189,12 +228,21 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
             <label className="text-sm font-medium text-warm-fg">Category</label>
             <select
               value={categoryId}
-              onChange={e => setCategoryId(e.target.value)}
+              onChange={e => handleCategoryChange(e.target.value)}
               className="px-3 py-[11px] rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg focus:ring-2 focus:ring-warm-accent focus:border-transparent transition-all text-sm"
             >
               <option value="">Select Category</option>
-              {categories?.map(cat => (
+              {/* Roots with no children */}
+              {rootOnlyLeaves.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+              {/* Groups with children */}
+              {grouped.map(({ root, children }) => (
+                <optgroup key={root.id} label={root.name}>
+                  {children.map(child => (
+                    <option key={child.id} value={child.id}>{child.name}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>

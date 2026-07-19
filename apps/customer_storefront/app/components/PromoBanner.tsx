@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { img } from '../lib/imageUrl';
 
 type PromoVariant = 'image' | 'saffron' | 'dark';
 
@@ -23,7 +24,7 @@ export function PromoBanner({
   subtitle,
   ctaText = 'Shop now',
   ctaHref = '#',
-  bgImage = 'https://images.luckystore1947.com/banners/native_ad_banner.webp',
+  bgImage = img('/images/native_ad_banner.webp'),
   bgColor = '#1c1917',
   variant = 'image',
   inline = false,

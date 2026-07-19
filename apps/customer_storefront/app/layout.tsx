@@ -6,6 +6,7 @@ import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
 import { WebMCPInit } from './components/WebMCPInit';
+import { AuthProvider } from './components/providers/AuthProvider';
 
 const geistSans = Geist({
   subsets: ['latin'],
@@ -155,15 +156,17 @@ export default function RootLayout({
           `}
         </Script>
         <WebMCPInit />
-        <CartProvider>
-          <ToastProvider>
-            <CartSheetProvider>
-              <div className="app-container">
-                {children}
-              </div>
-            </CartSheetProvider>
-          </ToastProvider>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <ToastProvider>
+              <CartSheetProvider>
+                <div className="app-container">
+                  {children}
+                </div>
+              </CartSheetProvider>
+            </ToastProvider>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

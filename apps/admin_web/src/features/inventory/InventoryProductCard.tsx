@@ -3,6 +3,9 @@ import React, { useState, useCallback } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { Pencil, Package } from 'lucide-react';
 import { EditableCell } from '../../components/ui/EditableCell';
+import { CategoryPicker } from '@/components/inventory/CategoryPicker';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
 interface InventoryProductCardProps {
   item: InventoryItem;
@@ -37,6 +40,11 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
 }: InventoryProductCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingField, setEditingField] = useState<keyof InventoryItem | null>(null);
+
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => api.categories.list(),
+  });
 
   const margin = item.cost && item.price ? Math.round(((item.price - item.cost) / item.cost) * 100) : null;
   const profitMarginVal = item.cost && item.price ? (item.price - item.cost) : null;
@@ -317,6 +325,23 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 No MRP
               </span>
             )}
+          </div>
+        )}
+
+        {/* Category Row - inline editing */}
+        {(isEditMode || isEditing) && (
+          <div className="flex items-center justify-between text-[10px] mb-2 flex-shrink-0">
+            <span className="text-warm-muted">Category:</span>
+            <CategoryPicker
+              value={item.category_id}
+              categories={categories || []}
+              onChange={(categoryId) => {
+                onInlineSave?.(item.id, 'category_id', categoryId ?? '');
+              }}
+              loading={categoriesLoading}
+              size="sm"
+              className="min-w-[100px]"
+            />
           </div>
         )}
 

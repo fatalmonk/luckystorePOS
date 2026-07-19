@@ -1,7 +1,8 @@
 'use client'; // wishlist form state, localStorage fingerprint, and API calls
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createWishlistItem } from '../lib/wishlist';
+import { getLocalWishlist, saveLocalWishlist } from '../lib/wishlistHelpers';
 import { useToast } from './Toast';
 
 export function getOrCreateFingerprint(): string {
@@ -24,8 +25,27 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
   const [phone, setPhone] = useState('');
   const { showToast } = useToast();
 
+  useEffect(() => {
+    const list = getLocalWishlist();
+    if (list.includes(productId)) {
+      setStatus('saved');
+    }
+  }, [productId]);
+
+  const setSavedLocally = () => {
+    const list = getLocalWishlist();
+    if (!list.includes(productId)) {
+      saveLocalWishlist([...list, productId]);
+    }
+  };
+
   const handleNotify = async () => {
-    if (status === 'loading' || status === 'saved') return;
+    if (status === 'loading') return;
+
+    if (status === 'saved') {
+      showToast('Already on your wishlist');
+      return;
+    }
 
     if (status === 'phone') {
       if (phone && !phone.replace(/[\s-]/g, '').match(/^(?:\+880|0)1\d{9}$/)) {
@@ -41,12 +61,14 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
     try {
       const fp = getOrCreateFingerprint();
       await createWishlistItem(productId, fp, productName, phone || undefined);
+      setSavedLocally();
       setStatus('saved');
       showToast(`We'll notify you when ${productName} is back in stock`);
     } catch (e: any) {
       if (String(e).includes('Already on wishlist')) {
-        showToast('Already on your wishlist');
+        setSavedLocally();
         setStatus('saved');
+        showToast('Already on your wishlist');
       } else {
         showToast(`Couldn't save — please try again`);
         setStatus('idle');
@@ -85,7 +107,10 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
 
   if (status === 'saved') {
     return (
-      <button disabled className="w-full h-10 bg-warm-bg border border-warm-border rounded-md text-warm-muted text-sm font-semibold animate-[fadeUp_0.2s_ease]">
+      <button
+        onClick={handleNotify}
+        className="w-full h-10 bg-warm-bg border border-warm-border rounded-md text-warm-muted text-sm font-semibold animate-[fadeUp_0.2s_ease]"
+      >
         ✓ On Wishlist
       </button>
     );

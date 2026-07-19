@@ -8,8 +8,10 @@ import { Logo } from './ui/Logo';
 import { useState, useEffect } from 'react';
 import { getLocalWishlist } from '../lib/wishlistHelpers';
 import { useToast } from './Toast';
+import { useAuth } from './providers/AuthProvider';
 
 export function Header() {
+  const { user } = useAuth();
   const [wishlistCount, setWishlistCount] = useState(0);
   const { showToast } = useToast();
 
@@ -42,15 +44,16 @@ export function Header() {
             <MagnifyingGlass weight="bold" size={18} aria-hidden="true" />
           </Link>
 
-          <button
-            type="button"
-            onClick={() => showToast('Sign in coming soon')}
+          <Link
+            href={user ? "/profile" : "/login"}
             className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
-            aria-label="Sign In"
+            aria-label={user ? "Profile" : "Sign In"}
           >
             <User weight="bold" size={16} aria-hidden="true" />
-            <span className="hidden sm:block text-xs font-bold">Sign In</span>
-          </button>
+            <span className="hidden sm:block text-xs font-bold">
+              {user ? (user.user_metadata?.full_name?.split(' ')[0] || 'Profile') : 'Sign In'}
+            </span>
+          </Link>
 
           <Link
             href="/wishlist"

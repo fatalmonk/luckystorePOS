@@ -7,13 +7,13 @@ import type { Category } from '../lib/types';
 const TOP_CATEGORIES: { slug: string; image: string }[] = [
   { slug: 'tea-&-coffee', image: 'https://images.luckystore1947.com/categories/tea-coffee.webp' },
   { slug: 'biscuits-&-cookies', image: 'https://images.luckystore1947.com/categories/biscuits-cookies.webp' },
-  { slug: 'cooking-needs', image: 'https://images.luckystore1947.com/categories/cooking-needs.webp' },
+  { slug: 'cooking-essentials', image: 'https://images.luckystore1947.com/categories/cooking-needs.webp' },
   { slug: 'dairy-&-eggs', image: 'https://images.luckystore1947.com/categories/dairy-eggs.webp' },
   { slug: 'snacks', image: 'https://images.luckystore1947.com/categories/snacks.webp' },
   { slug: 'rice-&-grain', image: 'https://images.luckystore1947.com/categories/rice-grain.webp' },
-  { slug: 'beverages', image: 'https://images.luckystore1947.com/categories/beverages.webp' },
+  { slug: 'cold-beverages', image: 'https://images.luckystore1947.com/categories/beverages.webp' },
   { slug: 'personal-care', image: 'https://images.luckystore1947.com/categories/personal-care.webp' },
-  { slug: 'cleaning-supply', image: 'https://images.luckystore1947.com/categories/cleaning-supply.webp' },
+  { slug: 'cleaning-supplies', image: 'https://images.luckystore1947.com/categories/cleaning-supply.webp' },
   { slug: 'spices', image: 'https://images.luckystore1947.com/categories/spices.webp' },
 ];
 

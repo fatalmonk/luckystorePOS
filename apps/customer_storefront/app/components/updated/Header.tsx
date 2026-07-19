@@ -9,9 +9,11 @@ import { HeaderFilters } from '../HeaderFilters';
 import { SearchSuggestions } from './SearchSuggestions';
 import { Logo } from '../ui/Logo';
 import { getLocalWishlist } from '../../lib/wishlistHelpers';
+import { useAuth } from '../providers/AuthProvider';
 
 export function Header() {
   const router = useRouter();
+  const { user } = useAuth();
   const pathname = usePathname();
   const isFilterPage = pathname?.startsWith('/category') ?? false;
   const [searchQuery, setSearchQuery] = useState('');
@@ -123,14 +125,16 @@ export function Header() {
             <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
           </button>
 
-          <button
-            type="button"
+          <Link
+            href={user ? "/profile" : "/login"}
             className="flex items-center gap-1.5 min-h-[36px] sm:min-h-[40px] px-2 sm:px-3 py-1.5 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
-            aria-label="Sign In"
+            aria-label={user ? "Profile" : "Sign In"}
           >
             <User weight="bold" size={14} className="sm:size-4" aria-hidden="true" />
-            <span className="hidden sm:block text-xs font-bold">Sign In</span>
-          </button>
+            <span className="hidden sm:block text-xs font-bold">
+              {user ? (user.user_metadata?.full_name?.split(' ')[0] || 'Profile') : 'Sign In'}
+            </span>
+          </Link>
 
           {/* Wishlist */}
           <Link
