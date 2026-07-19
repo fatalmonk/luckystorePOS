@@ -140,7 +140,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased font-body pb-[68px]" suppressHydrationWarning>
+      <body className="antialiased font-body pb-[60px]" suppressHydrationWarning>
         {/* Google Analytics — deferred, never blocks LCP */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"

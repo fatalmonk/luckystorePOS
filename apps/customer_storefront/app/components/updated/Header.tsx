@@ -69,8 +69,8 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-3 pb-1 bg-warm-bg">
-      <div className="max-w-5xl mx-auto h-[64px] bg-white border border-warm-border rounded-full flex items-center px-4 sm:px-6 justify-between gap-2 sm:gap-4 shadow-sm hover:shadow-md transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-2 pb-0 bg-warm-bg">
+      <div className="max-w-5xl mx-auto h-[52px] sm:h-[56px] bg-warm-surface border border-warm-border rounded-full flex items-center px-3 sm:px-5 justify-between gap-1.5 sm:gap-3 shadow-warm-sm hover:shadow-warm-md transition-all duration-300">
         {/* Logo */}
         <Logo />
 
@@ -84,12 +84,12 @@ export function Header() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               placeholder="Search products, brands..."
-              className="w-full h-10 pl-4 pr-11 rounded-full bg-warm-bg border border-warm-border focus:border-warm-accent focus:bg-white outline-none text-sm transition-all"
+              className="w-full h-9 pl-3.5 pr-10 rounded-full bg-warm-bg border border-warm-border focus:border-warm-accent focus:bg-white outline-none text-sm transition-all"
               aria-label="Search products"
             />
             <button
               type="submit"
-              className="absolute right-1 top-1 h-8 w-8 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
+              className="absolute right-1 top-1 h-7 w-7 bg-warm-accent rounded-full flex items-center justify-center text-warm-fg hover:bg-warm-accent-hover transition-colors"
               aria-label="Search"
             >
               <MagnifyingGlass weight="bold" size={14} aria-hidden="true" />
@@ -112,35 +112,35 @@ export function Header() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-0.5 sm:gap-1.5 flex-shrink-0">
           {/* Mobile search icon button */}
           <button
             type="button"
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-full hover:bg-warm-bg text-warm-fg transition-colors"
+            className="md:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-warm-bg text-warm-fg transition-colors"
             onClick={() => router.push('/search')}
             aria-label="Search page"
           >
-            <MagnifyingGlass weight="bold" size={18} aria-hidden="true" />
+            <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
           </button>
 
           <button
             type="button"
-            className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
+            className="flex items-center gap-1.5 min-h-[36px] sm:min-h-[40px] px-2 sm:px-3 py-1.5 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
             aria-label="Sign In"
           >
-            <User weight="bold" size={16} aria-hidden="true" />
+            <User weight="bold" size={14} className="sm:size-4" aria-hidden="true" />
             <span className="hidden sm:block text-xs font-bold">Sign In</span>
           </button>
 
           {/* Wishlist */}
           <Link
             href="/wishlist"
-            className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
+            className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-warm-bg transition-colors text-warm-fg"
             aria-label="Wishlist"
           >
-            <Heart weight="bold" size={18} aria-hidden="true" />
+            <Heart weight="bold" size={16} aria-hidden="true" />
             {wishlistCount > 0 && (
-              <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold grid place-items-center border-2 border-white">
+              <span className="absolute top-0 right-0 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[8px] font-bold grid place-items-center border-2 border-white">
                 {wishlistCount}
               </span>
             )}
@@ -163,7 +163,7 @@ export function Header() {
               </Link>
               <Link
                 href="/category?theme=bestsellers"
-                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white text-warm-fg border border-warm-border text-xs font-bold hover:bg-stone-50 transition-colors"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-surface text-warm-fg border border-warm-border text-xs font-bold hover:bg-warm-bg transition-colors"
               >
                 Best Sellers
               </Link>

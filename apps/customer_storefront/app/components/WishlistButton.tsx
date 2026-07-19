@@ -28,8 +28,8 @@ export function WishlistButton({ productId, productName }: WishlistButtonProps) 
     if (status === 'loading' || status === 'saved') return;
 
     if (status === 'phone') {
-      if (phone && !phone.match(/^\+880\s?1\d{9}$/)) {
-        showToast('Enter a valid number: +880 1XXXXXXXXX');
+      if (phone && !phone.replace(/[\s-]/g, '').match(/^(?:\+880|0)1\d{9}$/)) {
+        showToast('Enter a valid number: 01XXXXXXXXX or +8801XXXXXXXXX');
         return;
       }
       setStatus('loading');

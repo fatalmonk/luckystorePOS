@@ -1,7 +1,8 @@
 'use client'; // product detail page with cart interactions and toast
 
 import Link from 'next/link';
-import { Header } from '../../components/Header';
+import Image from 'next/image';
+import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
 import { useCartContext } from '../../components/CartProvider';
@@ -52,16 +53,17 @@ function ProductContent({ product }: ProductClientProps) {
       <Header />
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24">
-        <div className="max-w-3xl mx-auto bg-white min-h-full">
+        <div className="max-w-3xl mx-auto bg-warm-surface min-h-full rounded-t-2xl mt-2">
           {/* Hero Section */}
           <div className="px-4 pt-6 pb-5 sm:px-6 lg:px-8">
-            <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-border-light overflow-hidden mb-5">
+            <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-bg overflow-hidden mb-6">
               {product.image_url ? (
-                <img
+                <Image
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-contain p-4 sm:p-6"
-                  loading="eager"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 360px"
+                  className="w-full h-full object-contain p-6 sm:p-8"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     const placeholder = e.currentTarget.parentElement?.querySelector('[data-placeholder]');
@@ -92,12 +94,12 @@ function ProductContent({ product }: ProductClientProps) {
             </div>
 
             {/* Action Area — inline below price, no fixed bar collision */}
-            <div className="mt-5">
+            <div className="mt-6">
               {qtyInCart > 0 ? (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleUpdateQty(-1)}
-                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback"
+                    className="w-12 h-12 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -106,7 +108,7 @@ function ProductContent({ product }: ProductClientProps) {
                   <button
                     onClick={() => handleUpdateQty(1)}
                     disabled={qtyInCart >= product.stock}
-                    className="w-11 h-11 rounded-full border-2 border-warm-accent bg-white text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent hover:text-white active:scale-95 transition-all press-feedback disabled:opacity-50"
+                    className="w-12 h-12 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback disabled:opacity-50"
                     aria-label="Increase quantity"
                   >
                     +
@@ -122,7 +124,7 @@ function ProductContent({ product }: ProductClientProps) {
                   </div>
                   <Link
                     href={`/category/${product.category}`}
-                    className="h-12 px-5 rounded-full bg-warm-border-light text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
+                    className="h-12 px-5 rounded-full bg-warm-bg text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
                   >
                     See Similar Items →
                   </Link>
@@ -139,16 +141,16 @@ function ProductContent({ product }: ProductClientProps) {
           </div>
 
           {/* Description */}
-          <div className="border-t border-warm-border-light px-4 py-5 sm:px-6 lg:px-8">
-            <h2 className="text-[15px] font-bold mb-2">Description</h2>
+          <div className="border-t border-warm-border px-4 py-5 sm:px-6 lg:px-8">
+            <h2 className="text-[15px] font-bold mb-2 text-warm-fg">Description</h2>
             <p className="text-sm text-warm-muted leading-relaxed">
               {product.description || `Fresh ${product.name} delivered to your door.`}
             </p>
           </div>
 
           {product.nutrition && (
-            <div className="border-t border-warm-border-light px-4 py-5 sm:px-6 lg:px-8">
-              <h2 className="text-[15px] font-bold mb-2">Nutrition per 100ml</h2>
+            <div className="border-t border-warm-border px-4 py-5 sm:px-6 lg:px-8">
+              <h2 className="text-[15px] font-bold mb-2 text-warm-fg">Nutrition per 100ml</h2>
               <p className="text-sm text-warm-muted leading-relaxed">{product.nutrition}</p>
             </div>
           )}

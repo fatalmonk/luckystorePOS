@@ -67,13 +67,13 @@ export default function WishlistPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white border border-warm-border rounded-[20px] h-64 animate-pulse"
+                className="bg-warm-surface border border-warm-border rounded-[20px] h-64 animate-pulse"
               />
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="bg-white border border-warm-border rounded-[24px] p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warm-bg flex items-center justify-center text-stone-400">
+          <div className="bg-warm-surface border border-warm-border rounded-[24px] p-8 sm:p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warm-bg flex items-center justify-center text-warm-muted">
               <Heart weight="bold" size={28} />
             </div>
             <h2 className="text-lg font-bold text-warm-fg mb-2">Your wishlist is empty</h2>
@@ -92,29 +92,35 @@ export default function WishlistPage() {
             {items.map((product) => (
               <div
                 key={product.id}
-                className={`group bg-white border border-warm-border rounded-[20px] overflow-hidden transition-all duration-300 ${removedIds.includes(product.id) ? 'opacity-0 scale-95' : ''}`}
+                className={`group bg-warm-surface border border-warm-border rounded-[20px] overflow-hidden transition-all duration-300 card-hover ${removedIds.includes(product.id) ? 'opacity-0 scale-95' : ''}`}
               >
                 <Link href={`/product/${product.id}`} className="block">
-                  <div className="relative w-full h-40 bg-stone-50 flex items-center justify-center p-3 border-b border-warm-border">
+                  <div className="relative w-full aspect-[4/3] bg-warm-bg flex items-center justify-center overflow-hidden">
                     {product.image_url ? (
                       <Image
                         src={product.image_url}
                         alt={product.name}
-                        width={160}
-                        height={160}
-                        className="w-full h-full object-contain"
+                        fill
+                        sizes="(max-width: 640px) 50vw, 25vw"
+                        className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.06]"
                       />
                     ) : (
-                      <span className="text-4xl">{product.emoji}</span>
+                      <span className="text-4xl opacity-40">{product.emoji}</span>
                     )}
+                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-warm-surface/60 to-transparent pointer-events-none" />
                   </div>
-                  <div className="p-3">
-                    <p className="text-lg font-black text-warm-fg font-display">{formatBdt(product.price)}</p>
-                    <h3 className="text-sm font-semibold text-warm-fg line-clamp-2 mt-1">{product.name}</h3>
-                    <p className="text-xs text-warm-muted mt-0.5">{product.unit}</p>
+                  <div className="p-3.5">
+                    <p className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(product.price)}</p>
+                    {product.originalPrice && product.originalPrice > product.price && (
+                      <p className="text-[10px] font-bold text-red-600 leading-none mt-0.5">
+                        Save {formatBdt(product.originalPrice - product.price)}
+                      </p>
+                    )}
+                    <h3 className="text-[13px] font-semibold text-warm-fg line-clamp-2 mt-1.5 leading-snug">{product.name}</h3>
+                    <p className="text-[10px] text-warm-muted mt-0.5">{product.unit}</p>
                   </div>
                 </Link>
-                <div className="px-3 pb-3">
+                <div className="px-3.5 pb-3.5">
                   <button
                     type="button"
                     onClick={() => handleRemove(product.id)}

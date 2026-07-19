@@ -31,13 +31,13 @@ export function ProductSwimlane({
   return (
     <section className="mb-6">
       <div className="flex items-center justify-between mb-3 px-3 sm:px-4 lg:px-6">
-        <h2 className="text-base sm:text-lg font-bold tracking-tight">{title}</h2>
+        <h2 className="text-base sm:text-lg font-extrabold tracking-tight text-warm-fg">{title}</h2>
         {action && (
           <a
             href={action.href}
-            className="text-sm font-medium text-warm-muted hover:text-warm-fg hover:underline transition-colors"
+            className="text-xs font-bold text-warm-muted hover:text-warm-fg transition-colors"
           >
-            {action.label}
+            {action.label} →
           </a>
         )}
       </div>
@@ -48,7 +48,7 @@ export function ProductSwimlane({
           return (
             <div
               key={product.id}
-              className="w-[160px] sm:w-[180px] lg:w-[200px] flex-shrink-0 snap-start"
+              className="w-[176px] sm:w-[200px] lg:w-[220px] flex-shrink-0 snap-start"
             >
               <ProductCard
                 id={product.id}

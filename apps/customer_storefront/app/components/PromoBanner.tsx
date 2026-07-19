@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 type PromoVariant = 'image' | 'saffron' | 'dark';
 
@@ -60,10 +61,11 @@ export function PromoBanner({
       {isImage && (
         <>
           {bgImage ? (
-            <img
+            <Image
               src={bgImage}
               alt={title}
-              loading="lazy"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (

@@ -2,7 +2,7 @@
 
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
-import { NativeAdBanner } from './PromoBanner';
+import { PromoBanner } from './PromoBanner';
 import { getCategoryGroup } from '../lib/types';
 import { Fire, Star, Package } from '@phosphor-icons/react';
 import type { Product } from '../lib/types';
@@ -92,7 +92,6 @@ export function CategorySwimlanes({
   const subCategoryGrids = !group ? [] : group.subCategories
     .map((subSlug) => {
       const cat = categories.find((c) => c.slug === subSlug);
-      // Items store category as the name (e.g. "Biscuits & Cookies"), not the slug
       const catName = cat?.name ?? subSlug;
       const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug);
       return {
@@ -108,7 +107,7 @@ export function CategorySwimlanes({
   if (filtered.length === 0) {
     return (
       <div className="text-center py-16 px-3">
-        <p className="text-gray-500">No products found</p>
+        <p className="text-warm-muted">No products found</p>
       </div>
     );
   }
@@ -118,10 +117,7 @@ export function CategorySwimlanes({
       <>
         {deals.length > 0 && (
           <ProductSwimlaneClient
-            title={<>
-              <Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />
-              Rollbacks &amp; Deals
-            </>}
+            title={<><Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />Rollbacks & Deals</>}
             products={deals}
           />
         )}
@@ -140,7 +136,7 @@ export function CategorySwimlanes({
                 href={`/category/${grid.slug}`}
                 className="text-sm font-semibold text-warm-muted hover:text-warm-fg transition-colors"
               >
-                See all {grid.count}
+                See all ({grid.count})
               </a>
             </div>
             <ProductGridClient products={grid.products} />
@@ -154,25 +150,19 @@ export function CategorySwimlanes({
     <>
       {deals.length > 0 && (
         <ProductSwimlaneClient
-          title={<>
-            <Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />
-            Rollbacks &amp; Deals
-          </>}
+          title={<><Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />Rollbacks & Deals</>}
           products={deals}
           action={{ label: 'See all', href: `/category/${categorySlug}?theme=deals` }}
         />
       )}
       {bestSellers.length > 0 && (
         <ProductSwimlaneClient
-          title={<>
-            <Star weight="fill" size={16} className="inline-block mr-1.5 text-warm-accent" aria-hidden="true" />
-            Best Sellers
-          </>}
+          title={<><Star weight="fill" size={16} className="inline-block mr-1.5 text-warm-accent" aria-hidden="true" />Best Sellers</>}
           products={bestSellers}
           action={{ label: 'See all', href: `/category/${categorySlug}?theme=bestsellers` }}
-        />
-      )}
-      {ad && <NativeAdBanner {...ad} />}
+          />
+        )}
+      {ad && <PromoBanner {...ad} />}
       <section className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold tracking-tight">All Products</h2>

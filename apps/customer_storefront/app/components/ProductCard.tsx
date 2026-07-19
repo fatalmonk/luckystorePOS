@@ -24,10 +24,10 @@ export function Card({ children, className = '', hover = false, onClick, 'data-t
       onClick={onClick}
       data-testid={testId}
       className={`
-        bg-white border border-stone-200/60 rounded-[20px]
+        bg-warm-surface border border-warm-border rounded-[20px]
         overflow-hidden
         transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-        ${hover ? 'card-hover hover:border-stone-300 cursor-pointer shadow-sm hover:shadow-md' : ''}
+        ${hover ? 'card-hover hover:border-warm-border cursor-pointer shadow-warm-sm hover:shadow-warm-md' : ''}
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
@@ -37,27 +37,8 @@ export function Card({ children, className = '', hover = false, onClick, 'data-t
   );
 }
 
-interface ProductCardProps {
-  id: string;
-  emoji: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  badge?: string;
-  unit: string;
-  stock: number;
-  category: Category;
-  image_url?: string;
-  qtyInCart?: number;
-  priority?: boolean;
-  onAdd: () => void;
-  onUpdateQty: (delta: number) => void;
-  onClick: () => void;
-  onAddRef?: (el: HTMLButtonElement | null) => void;
-}
-
 function CategoryPlaceholder({ category }: { category: Category }) {
-  const baseClasses = "w-12 h-12 text-stone-400/70 transition-transform duration-500 group-hover:scale-110";
+  const baseClasses = "w-12 h-12 text-warm-muted/70 transition-transform duration-500 group-hover:scale-110";
   
   switch (category) {
     case 'Beverages':
@@ -118,7 +99,7 @@ function CategoryPlaceholder({ category }: { category: Category }) {
     case 'Electronics':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <rect x="2" y="3" width="20" height=" la-height-14" rx="2" />
           <line x1="8" y1="21" x2="16" y2="21" />
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
@@ -131,6 +112,25 @@ function CategoryPlaceholder({ category }: { category: Category }) {
         </svg>
       );
   }
+}
+
+interface ProductCardProps {
+  id: string;
+  emoji: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  badge?: string;
+  unit: string;
+  stock: number;
+  category: Category;
+  image_url?: string | null;
+  qtyInCart?: number;
+  onAdd: () => void;
+  onUpdateQty: (delta: number) => void;
+  onClick: () => void;
+  onAddRef?: (el: HTMLButtonElement | null) => void;
+  priority?: boolean;
 }
 
 export function ProductCard({
@@ -160,7 +160,6 @@ export function ProductCard({
   const [imageError, setImageError] = useState(false);
   const { showToast } = useToast();
 
-  // Load wishlist state from local cache on mount
   useEffect(() => {
     const list = getLocalWishlist();
     const isPresent = list.includes(id);
@@ -201,7 +200,7 @@ export function ProductCard({
       {/* Badges + wishlist */}
       <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex justify-between items-start pointer-events-none">
         {badge ? (
-          <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider font-display">
+          <span className="bg-red-600 text-warm-surface text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
             {badge}
           </span>
         ) : (
@@ -209,79 +208,83 @@ export function ProductCard({
         )}
         <button
           onClick={handleWishlistToggle}
-          className="pointer-events-auto w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(28,25,23,0.06)] flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-stone-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+          className="pointer-events-auto w-10 h-10 rounded-full bg-warm-surface/95 backdrop-blur-sm shadow-warm-sm flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-warm-border opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
             <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              <path d="M12 21.35l-1.45-1.32C5.4 15.3 la-15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           ) : (
-            <svg className="w-4 h-4 text-stone-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-warm-muted hover:text-red-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           )}
         </button>
       </div>
 
-      {/* Image Container — Next/Image with fill for responsive sizing */}
-      <div className="relative w-full h-32 sm:h-40 lg:h-44 bg-stone-50/40 overflow-hidden flex items-center justify-center border-b border-stone-100 shrink-0 p-2">
+      {/* Image Container — taller, cleaner, editorial */}
+      <div className="relative w-full aspect-[4/3] bg-warm-bg/30 overflow-hidden flex items-center justify-center shrink-0">
         {image_url && !imageError ? (
           <Image
             src={image_url}
             alt={name}
             fill
-            sizes="(max-width: 640px) 50vw, 33vw"
-            className="object-contain transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain p-3 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
             priority={priority}
             loading={priority ? undefined : 'lazy'}
             onError={() => setImageError(true)}
           />
         ) : null}
         {(!image_url || imageError) && (
-          <div className="absolute inset-0 flex items-center justify-center p-2 opacity-40">
+          <div className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
             <CategoryPlaceholder category={category} />
           </div>
         )}
+        {/* Subtle bottom gradient fade into content */}
+        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-warm-surface/60 to-transparent pointer-events-none" />
       </div>
 
-      {/* Content - calibrated and clean */}
-      <div className="p-3 flex flex-col flex-1 gap-1">
-        {/* Price block */}
-        <div className="flex items-baseline">
-          <span className="text-lg font-black text-stone-900 font-display">{formatBdt(price)}</span>
+      {/* Content — refined editorial layout */}
+      <div className="p-3.5 flex flex-col flex-1 gap-1.5">
+        {/* Price block: prominent, clean */}
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(price)}</span>
+          {onSale && (
+            <span className="text-[11px] text-warm-muted line-through font-mono">{formatBdt(originalPrice)}</span>
+          )}
         </div>
 
         {onSale && (
-          <p className="text-[10px] text-stone-400 leading-none">
-            <span className="line-through font-mono mr-1">{formatBdt(originalPrice)}</span>
-            · Save {formatBdt(savings)}
+          <p className="text-[10px] font-bold text-red-600 leading-none">
+            Save {formatBdt(savings)}
           </p>
         )}
 
-        <p className="text-[9px] font-medium text-stone-300 leading-none">
+        <p className="text-[10px] text-warm-dim leading-none">
           {formatUnitPrice(price, unit)}
         </p>
 
-        <h3 className="text-xs font-semibold leading-tight line-clamp-2 text-stone-800 font-body min-h-[2.2em]">
+        <h3 className="text-[13px] font-semibold leading-snug line-clamp-2 text-warm-fg font-body min-h-[2.4em]">
           {name}
         </h3>
-        <p className="text-[10px] text-stone-400 leading-none">{unit}</p>
+        <p className="text-[10px] text-warm-muted leading-none">{unit}</p>
 
         <div className="mt-auto pt-2">
           {qtyInCart > 0 ? (
             <div className="flex items-center justify-between gap-1.5 w-full">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
-                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
                 aria-label="Remove one"
               >
                 −
               </button>
-              <QtyNumber qty={qtyInCart} className="font-black text-sm min-w-[20px] text-center text-stone-900 font-mono" />
+              <QtyNumber qty={qtyInCart} className="font-black text-sm min-w-[20px] text-center text-warm-fg font-mono" />
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
-                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-white text-stone-900 flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
                 aria-label="Add one"
               >
                 +
@@ -296,7 +299,7 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-10 rounded-full border-2 border-warm-accent text-stone-900 text-xs font-black hover:bg-warm-accent active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-stone-200 disabled:text-stone-300 disabled:hover:bg-white"
+              className="w-full h-10 rounded-full border-2 border-warm-accent text-warm-fg text-xs font-black hover:bg-warm-accent active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-warm-border disabled:text-warm-muted disabled:hover:bg-warm-surface"
             >
               Add to Cart
             </button>

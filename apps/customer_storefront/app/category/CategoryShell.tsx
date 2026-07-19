@@ -23,13 +23,13 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     title: 'Snacks & Munchies',
     subtitle: 'Bite-sized happiness, from sweet biscuits to savory local crisps.',
     badge: 'Crispy & Sweet',
-    bgImage: 'https://images.luckystore1947.com/banners/promo_snacks.webp',
+    bgImage: '/images/promo_snacks.webp',
   },
   'cooking-needs': {
     title: 'Cooking Essentials',
     subtitle: 'Pure oils, aromatic spices, and finest grains for your daily meals.',
     badge: 'Kitchen Staples',
-    bgImage: 'https://images.luckystore1947.com/banners/promo_cooking.webp',
+    bgImage: '/images/promo_cooking.webp',
   },
   'dairy-&-eggs': {
     title: 'Dairy & Eggs',
@@ -53,7 +53,7 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     title: 'Home Electronics',
     subtitle: 'High-quality adapters, durable charging cables, and everyday electronic tools.',
     badge: 'Tech Essentials',
-    bgImage: 'https://images.luckystore1947.com/banners/promo_electronics.webp',
+    bgImage: '/images/promo_electronics.webp',
   },
   'baking-needs': {
     title: 'Baking Needs',
@@ -134,8 +134,16 @@ export function CategoryShell({
   sort,
   searchParams,
 }: CategoryShellProps) {
-  // Resolve banner config: first match categorySlug, then fall back to group slug, then default
-  const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || DEFAULT_BANNER;
+  // Resolve banner config: deals theme → specific map → group slug → default
+  const bannerConfig =
+    theme === 'deals'
+      ? {
+          title: 'Big Savings',
+          subtitle: 'Up to 50% off on your favorites',
+          badge: 'Hot Deals',
+          bgImage: '/images/promo_savings_banner.webp',
+        }
+      : BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || DEFAULT_BANNER;
 
   return (
     <>
@@ -143,10 +151,12 @@ export function CategoryShell({
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
         <div className="p-4 sm:p-6 space-y-6">
           <HeroBanner
-            title={bannerConfig.title}
-            subtitle={bannerConfig.subtitle}
-            badge={bannerConfig.badge}
-            bgImage={bannerConfig.bgImage}
+            slides={[{
+              image: bannerConfig.bgImage,
+              title: bannerConfig.title,
+              subtitle: bannerConfig.subtitle,
+              badge: bannerConfig.badge,
+            }]}
           />
           <CategoryGrid
             categories={categories}

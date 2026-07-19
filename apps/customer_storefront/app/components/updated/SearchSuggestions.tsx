@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Fire } from '@phosphor-icons/react';
+import { Fire, Clock } from '@phosphor-icons/react';
 
 interface SearchSuggestionsProps {
   query: string;
@@ -20,7 +20,6 @@ export function SearchSuggestions({
 }: SearchSuggestionsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter suggestions based on query
   const filteredRecent = query 
     ? recentSearches.filter(term => 
         term.toLowerCase().includes(query.toLowerCase())
@@ -33,12 +32,10 @@ export function SearchSuggestions({
       )
     : popularSearches;
 
-  // Close when pressing Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
@@ -70,7 +67,7 @@ export function SearchSuggestions({
                 onClick={() => onSelect(term)}
                 className="w-full text-left px-3 py-2 rounded-lg hover:bg-warm-border-light text-sm flex items-center gap-2"
               >
-                <span aria-hidden="true">🕒</span>
+                <Clock weight="bold" size={14} aria-hidden="true" />
                 {term}
               </button>
             ))}

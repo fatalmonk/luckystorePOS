@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Header } from '../components/updated/Header';
 import { useToast } from '../components/Toast';
 import { useCartContext } from '../components/CartProvider';
@@ -194,7 +195,7 @@ function CheckoutContent() {
           {/* Step 1: Details */}
           {currentStep === 1 && (
             <div className="animate-[fadeUp_0.25s_ease]">
-              <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+              <div className="bg-warm-surface border border-warm-border rounded-[14px] p-4 mb-5">
                 <p className="text-xs text-warm-muted uppercase tracking-widest mb-1">Store</p>
                 <p className="font-bold text-[15px] mb-0.5">Lucky Store — Emdad Park</p>
                 <p className="text-[13px] text-warm-muted">665 Percival Hill Rd, Chittagong 4203</p>
@@ -259,7 +260,7 @@ function CheckoutContent() {
                       className={`flex-1 py-2.5 px-3 rounded-[14px] border-2 text-sm font-bold transition-all ${
                         formData.deliverySlot === slot.id
                           ? 'border-warm-accent bg-warm-accent/10 text-warm-fg'
-                          : 'border-warm-border bg-white text-warm-muted hover:border-[#d6d3d1]'
+                          : 'border-warm-border bg-warm-surface text-warm-muted hover:border-warm-border'
                       }`}
                     >
                       {slot.label}
@@ -293,22 +294,34 @@ function CheckoutContent() {
 
                   <h3 className="text-sm font-bold text-warm-muted uppercase tracking-widest mb-4">Order Summary</h3>
 
-                  <div className="space-y-3 mb-5">
+                  <div className="space-y-2.5 mb-5">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 py-2 border-b border-warm-border-light">
-                        <div className="text-[22px]">{item.emoji}</div>
+                      <div key={item.id} className="flex items-center gap-3 py-2 border-b border-warm-border last:border-0">
+                        <div className="w-10 h-10 rounded-lg bg-warm-bg overflow-hidden flex-shrink-0 grid place-items-center relative">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.name}
+                              fill
+                              sizes="40px"
+                              className="object-contain p-1"
+                            />
+                          ) : (
+                            <span className="text-lg">{item.emoji}</span>
+                          )}
+                        </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-sm">{item.name}</p>
-                          <p className="text-[13px] text-warm-muted">
+                          <p className="font-semibold text-[13px] text-warm-fg">{item.name}</p>
+                          <p className="text-[11px] text-warm-muted">
                             {formatBdt(item.price)} × {item.qty}
                           </p>
                         </div>
-                        <p className="font-bold">{formatBdt(item.price * item.qty)}</p>
+                        <p className="font-bold text-sm text-warm-fg">{formatBdt(item.price * item.qty)}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+                  <div className="bg-warm-surface border border-warm-border rounded-[14px] p-4 mb-5">
                     <h4 className="text-xs font-bold text-warm-muted uppercase tracking-widest mb-3">Delivery Details</h4>
                     <div className="space-y-1.5 text-sm">
                       <div className="flex">
@@ -338,7 +351,7 @@ function CheckoutContent() {
                     </div>
                   </div>
 
-                  <div className="bg-white border border-warm-border rounded-[14px] p-[18px] mb-6">
+                  <div className="bg-warm-surface border border-warm-border rounded-[14px] p-[18px] mb-6">
                     <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
                       <span>Subtotal</span>
                       <span>{formatBdt(subtotal)}</span>
@@ -363,7 +376,11 @@ function CheckoutContent() {
                 </>
               ) : (
                 <div className="text-center py-12 animate-[fadeUp_0.25s_ease]">
-                  <div className="text-6xl mb-4">⏳</div>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warm-accent-muted flex items-center justify-center">
+                    <svg className="w-8 h-8 text-warm-accent animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="32" />
+                    </svg>
+                  </div>
                   <h3 className="text-lg font-bold mb-2">Placing your order…</h3>
                   <p className="text-warm-muted">This usually takes a few seconds</p>
                 </div>

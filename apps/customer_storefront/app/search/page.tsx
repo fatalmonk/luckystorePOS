@@ -6,5 +6,6 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  redirect(`/category${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+  if (!q) redirect('/category');
+  redirect(`/category?q=${encodeURIComponent(q)}`);
 }

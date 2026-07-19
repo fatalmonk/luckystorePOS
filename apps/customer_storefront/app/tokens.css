@@ -53,8 +53,8 @@
   --glass-border: rgba(231, 229, 228, 0.5);
 
   /* Dimensions */
-  --header-h: 108px;
-  --bottom-h: 68px;
+  --header-h: 68px;
+  --bottom-h: 60px;
 
   /* Animation */
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);

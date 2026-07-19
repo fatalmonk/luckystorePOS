@@ -113,9 +113,9 @@ export default function OrderContent() {
   if (loading) {
     return (
       <div className="flex flex-col h-full items-center justify-center p-6 bg-warm-bg">
-        <div className="w-16 h-16 rounded-full bg-gray-200 animate-pulse mb-4" />
-        <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2" />
-        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+        <div className="w-16 h-16 rounded-full bg-warm-border-light animate-pulse mb-4" />
+        <div className="h-5 w-32 bg-warm-border-light rounded animate-pulse mb-2" />
+        <div className="h-4 w-24 bg-warm-border-light rounded animate-pulse" />
       </div>
     );
   }
@@ -145,7 +145,7 @@ export default function OrderContent() {
         </div>
 
         {/* Summary */}
-        <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+        <div className="bg-warm-surface border border-warm-border rounded-[14px] p-4 mb-5">
           <div className="flex justify-between mb-2 text-sm">
             <span className="text-warm-muted">Items</span>
             <span>{order.items.length} items</span>
@@ -183,7 +183,7 @@ export default function OrderContent() {
                     step.state === 'done'
                       ? 'bg-warm-success border-warm-success'
                       : step.state === 'active'
-                      ? 'bg-white border-warm-accent'
+                      ? 'bg-warm-surface border-warm-accent'
                       : 'bg-warm-border-light border-warm-border'
                   }`}
                 >
@@ -206,7 +206,7 @@ export default function OrderContent() {
         </div>
 
         {/* WhatsApp confirmation — no API credentials needed */}
-        <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-5">
+        <div className="bg-warm-surface border border-warm-border rounded-[14px] p-4 mb-5">
           <h3 className="text-sm font-bold mb-1">💬 Get updates on WhatsApp</h3>
           <p className="text-sm text-warm-muted mb-3">
             Tap below to send your order details to our store WhatsApp.
