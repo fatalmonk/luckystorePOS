@@ -59,6 +59,7 @@ export const inventory = {
     mrp?: number;
     sku?: string;
     barcode?: string;
+    category_id?: string | null;
     image_url?: string;
   }) => {
     // Remove properties that are not columns in the items table

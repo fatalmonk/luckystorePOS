@@ -93,6 +93,7 @@ export function InventoryListTable({
       const editableFields = [
         'name',
         'sku',
+        'category_id',
         'current_qty',
         'cost',
         'price',
