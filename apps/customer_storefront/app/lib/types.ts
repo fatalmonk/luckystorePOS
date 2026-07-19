@@ -41,7 +41,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     slug: 'personal-care',
     label: 'Personal Care',
     emoji: '🧴',
-    subCategories: ['dental', 'facial', 'hair', 'skin'],
+    subCategories: ['dental', 'facial', 'hair', 'skin', 'perfume-&-body-spray', 'grooming'],
   },
   {
     slug: 'cleaning-supplies',
