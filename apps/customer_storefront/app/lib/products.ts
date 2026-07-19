@@ -145,22 +145,52 @@ function getCategoryEmoji(name: string, dbEmoji?: string | null): string {
   return '📦';
 }
 
-export async function fetchCategories(): Promise<{ id: string; slug: Category; name: string; emoji: string }[]> {
+export interface CategoryWithParent {
+  id: string;
+  slug: Category;
+  name: string;
+  emoji: string;
+  parent_id?: string | null;
+}
+
+export async function fetchCategories(): Promise<CategoryWithParent[]> {
   try {
     const { data, error } = await supabase
       .from('categories')
-      .select('id, slug, name, emoji')
+      .select('id, slug, name, emoji, parent_id')
       .eq('active', true)
       .order('display_order');
 
     if (error) throw error;
 
-    return (data ?? []).map((c: any) => ({
-      id: c.id,
-      slug: (c.slug ?? c.name) as Category,
-      name: c.name,
-      emoji: getCategoryEmoji(c.name, c.emoji),
-    }));
+    const rawCats = data ?? [];
+    const catMap = new Map<string, any>();
+    rawCats.forEach(c => {
+      catMap.set(c.id, {
+        id: c.id,
+        slug: (c.slug ?? c.name) as Category,
+        name: c.name,
+        emoji: c.emoji,
+        parent_id: c.parent_id
+      });
+    });
+
+    return Array.from(catMap.values()).map(c => {
+      let resolvedEmoji = c.emoji;
+      if (c.parent_id && (!resolvedEmoji || resolvedEmoji === '📦')) {
+        const parent = catMap.get(c.parent_id);
+        if (parent && parent.emoji && parent.emoji !== '📦') {
+          resolvedEmoji = parent.emoji;
+        }
+      }
+      return {
+        id: c.id,
+        slug: c.slug,
+        name: c.name,
+        emoji: getCategoryEmoji(c.name, resolvedEmoji),
+        parent_id: c.parent_id
+      };
+    });
   } catch (error) {
     console.error('Error in fetchCategories:', error);
     return [];

@@ -25,7 +25,7 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     badge: 'Crispy & Sweet',
     bgImage: '/images/promo_snacks.webp',
   },
-  'cooking-needs': {
+  'cooking-essentials': {
     title: 'Cooking Essentials',
     subtitle: 'Pure oils, aromatic spices, and finest grains for your daily meals.',
     badge: 'Kitchen Staples',
@@ -79,7 +79,7 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     badge: 'Bakery Fresh',
     bgImage: 'https://images.luckystore1947.com/banners/promo_biscuits.webp',
   },
-  'cleaning-supply': {
+  'cleaning-supplies': {
     title: 'Cleaning Supplies',
     subtitle: 'Powerful detergents, gentle soaps, and essential household cleaning tools.',
     badge: 'Sparkling Clean',

@@ -11,6 +11,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { useAuth } from '../../lib/AuthContext';
 import type { Database } from '../../lib/database.types';
 import { PriceHistoryMini } from './PriceHistoryMini';
+import { CategoryPicker } from '@/components/inventory/CategoryPicker';
 
 type ProductWithExtras = {
   id: string;
@@ -102,12 +103,21 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
   const stockDirty = quantity > 0 || notes !== '';
 
+  const [categoryId, setCategoryId] = useState<string | null>(product?.category_id ?? null);
+  const infoDirty = product ? product.category_id !== categoryId : false;
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => api.categories.list(),
+  });
+
   const [prevProductId, setPrevProductId] = useState(product?.id);
   if (product?.id !== prevProductId) {
     setPrevProductId(product?.id);
     setSellingPrice(product?.price || 0);
     setMrp(product?.mrp ?? undefined);
     setCostPrice(product?.cost ?? undefined);
+    setCategoryId(product?.category_id ?? null);
   }
 
   // Focus the close button when drawer opens
@@ -249,6 +259,20 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     onError: (err: Error) => notify(err.message || 'Failed to update prices.', 'error'),
   });
 
+  const infoMutation = useMutation({
+    mutationFn: async () => {
+      if (!product) throw new Error('No product selected');
+      return api.inventory.updateProduct(storeId, product.id, { category_id: categoryId });
+    },
+    onSuccess: () => {
+      notify(`Category updated for ${product.name}`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['inventory', storeId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      if (!stockDirty && !pricingDirty) onClose();
+    },
+    onError: (err: Error) => notify(err.message || 'Failed to update category.', 'error'),
+  });
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -269,6 +293,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
     e.preventDefault();
     if (stockDirty && !stockMutation.isPending) stockMutation.mutate();
     if (pricingDirty && !priceMutation.isPending) priceMutation.mutate();
+    if (infoDirty && !infoMutation.isPending) infoMutation.mutate();
   };
 
   const stockColors = {
@@ -279,16 +304,19 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
   // Button label logic
   const getButtonLabel = () => {
-    if (stockMutation.isPending || priceMutation.isPending) {
+    if (stockMutation.isPending || priceMutation.isPending || infoMutation.isPending) {
       return 'Saving...';
     }
-    if (stockDirty && pricingDirty) return 'Save Price & Stock';
-    if (pricingDirty) return 'Save Price Only';
-    if (stockDirty) return 'Save Stock Only';
-    return 'Save Changes';
+    const dirtyParts: string[] = [];
+    if (stockDirty) dirtyParts.push('Stock');
+    if (pricingDirty) dirtyParts.push('Price');
+    if (infoDirty) dirtyParts.push('Category');
+    if (dirtyParts.length === 0) return 'Save Changes';
+    if (dirtyParts.length === 1) return `Save ${dirtyParts[0]} Only`;
+    return `Save ${dirtyParts.join(' & ')}`;
   };
 
-  const isButtonDisabled = (!stockDirty && !pricingDirty) || stockMutation.isPending || priceMutation.isPending;
+  const isButtonDisabled = (!stockDirty && !pricingDirty && !infoDirty) || stockMutation.isPending || priceMutation.isPending || infoMutation.isPending;
 
   if (!product) return null;
 
@@ -424,7 +452,12 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                 </div>
                 <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
                   <p className="text-xs text-warm-muted mb-1">Category</p>
-                  <p className="text-sm font-medium text-warm-fg">{product.category_name || product.category_id || '—'}</p>
+                  <CategoryPicker
+                    value={categoryId}
+                    categories={categories?.map((c: any) => ({ id: c.id, name: c.name || c.category || '', parent_id: c.parent_id })) ?? []}
+                    onChange={setCategoryId}
+                    size="md"
+                  />
                 </div>
                 <div className="p-3 bg-warm-surface border border-warm-border-warm rounded-lg shadow-sm">
                   <p className="text-xs text-warm-muted mb-1">Cost (Per Unit)</p>

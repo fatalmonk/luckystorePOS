@@ -57,7 +57,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 subtitle: 'Oils, spices, rice & everything for your kitchen',
                 badge: 'Daily Needs',
                 ctaText: 'Shop Cooking',
-                ctaHref: '/category/cooking-needs',
+                ctaHref: '/category/cooking-essentials',
               },
               {
                 image: '/images/promo_electronics.webp',
