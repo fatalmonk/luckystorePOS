@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-
 export interface WishlistItem {
   id: string;
   product_id: string;
@@ -18,17 +16,17 @@ export async function createWishlistItem(
   if (!productId) throw new Error('productId required');
   if (!fingerprint) throw new Error('fingerprint required');
 
-  const { data, error } = await supabase
-    .from('wishlist')
-    .insert({ product_id: productId, customer_fingerprint: fingerprint, product_name: productName, customer_phone: phone })
-    .select()
-    .single();
+  const res = await fetch('/api/wishlist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId, fingerprint, productName, phone }),
+  });
 
-  if (error) {
-    if (error.code === '23505') throw new Error('Already on wishlist');
-    throw error;
+  const body = await res.json();
+  if (!res.ok) {
+    throw new Error(body.error || `Wishlist save failed (${res.status})`);
   }
-  return data as WishlistItem;
+  return body.item as WishlistItem;
 }
 
 export async function deleteWishlistItem(
@@ -38,13 +36,14 @@ export async function deleteWishlistItem(
   if (!productId) throw new Error('productId required');
   if (!fingerprint) throw new Error('fingerprint required');
 
-  const { error } = await supabase
-    .from('wishlist')
-    .delete()
-    .eq('product_id', productId)
-    .eq('customer_fingerprint', fingerprint);
+  const res = await fetch(`/api/wishlist?productId=${encodeURIComponent(productId)}&fingerprint=${encodeURIComponent(fingerprint)}`, {
+    method: 'DELETE',
+  });
 
-  if (error) throw error;
+  const body = await res.json();
+  if (!res.ok) {
+    throw new Error(body.error || `Wishlist delete failed (${res.status})`);
+  }
 }
 
 export async function fetchWishlistItems(
@@ -52,11 +51,10 @@ export async function fetchWishlistItems(
 ): Promise<string[]> {
   if (!fingerprint) return [];
 
-  const { data, error } = await supabase
-    .from('wishlist')
-    .select('product_id')
-    .eq('customer_fingerprint', fingerprint);
-
-  if (error) throw error;
-  return (data || []).map((item) => item.product_id);
+  const res = await fetch(`/api/wishlist?fingerprint=${encodeURIComponent(fingerprint)}`);
+  const body = await res.json();
+  if (!res.ok) {
+    throw new Error(body.error || `Wishlist fetch failed (${res.status})`);
+  }
+  return (body.productIds ?? []) as string[];
 }
