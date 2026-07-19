@@ -23,8 +23,24 @@ export default async function CategorySlugPage({
   const resolvedSearch = await searchParams;
   const categories = await fetchCategories();
   const categorySlug = decodeURIComponent(resolvedParams.slug);
-  const group = getCategoryGroup(categorySlug);
-  const isValidCat = categories.some((c) => c.slug === categorySlug);
+  
+  let group = getCategoryGroup(categorySlug);
+  const currentCatObj = categories.find((c) => c.slug === categorySlug);
+
+  // Dynamically treat root categories with child categories as groups
+  if (!group && currentCatObj) {
+    const childCats = categories.filter((c) => c.parent_id === currentCatObj.id);
+    if (childCats.length > 0) {
+      group = {
+        slug: currentCatObj.slug,
+        label: currentCatObj.name,
+        emoji: currentCatObj.emoji,
+        subCategories: childCats.map((c) => c.slug),
+      };
+    }
+  }
+
+  const isValidCat = !!currentCatObj;
   const currentCat = isValidCat || group ? categorySlug : 'all';
 
   const searchTerm = getSingleParam(resolvedSearch.q);
@@ -40,7 +56,7 @@ export default async function CategorySlugPage({
       const result = await fetchProducts(searchTerm || undefined, undefined, subCatIds.length > 0 ? subCatIds : undefined);
       products = result.products;
     } else if (currentCat !== 'all') {
-      const catId = categories.find((c) => c.slug === currentCat)?.id;
+      const catId = currentCatObj?.id;
       const result = await fetchProducts(searchTerm || undefined, catId);
       products = result.products;
     } else {

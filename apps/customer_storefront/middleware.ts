@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { updateSession } from './app/lib/supabase/middleware';
 
 /**
  * Middleware for Markdown-for-Agents content negotiation.
@@ -13,7 +14,9 @@ import { NextRequest, NextResponse } from 'next/server';
  * https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
  */
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const supabaseResponse = await updateSession(request);
+
   const accept = request.headers.get('accept') || '';
 
   // Check if the client explicitly wants markdown
@@ -31,13 +34,18 @@ export function middleware(request: NextRequest) {
     url.pathname = '/api/markdown';
     url.search = `?path=${encodeURIComponent(originalPath)}${search ? `&${search.slice(1)}` : ''}`;
 
-    return NextResponse.rewrite(url);
+    const rewriteResponse = NextResponse.rewrite(url);
+    
+    // Propagate headers/cookies from supabaseResponse
+    supabaseResponse.headers.forEach((value, key) => {
+      rewriteResponse.headers.set(key, value);
+    });
+    
+    return rewriteResponse;
   }
 
-  // Normal request — pass through, but always set Vary: Accept
-  const response = NextResponse.next();
-  response.headers.set('Vary', 'Accept');
-  return response;
+  supabaseResponse.headers.set('Vary', 'Accept');
+  return supabaseResponse;
 }
 
 export const config = {

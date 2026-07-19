@@ -5,10 +5,13 @@ import { clsx } from 'clsx';
 import { EditableCell } from '../../components/ui/EditableCell';
 import { ImageUploadZone } from '../../components/inventory/ImageUploadZone';
 import { SmartPricingEditor } from './SmartPricingEditor';
+import { CategoryPicker } from '../../components/inventory/CategoryPicker';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import { useMagneticHover } from '../../hooks/useMagneticHover';
+import { useQuery } from '@tanstack/react-query';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { api } from '../../lib/api';
 
 const calcMargin = (cost?: number, price?: number) => {
   if (typeof cost !== 'number' || typeof price !== 'number' || price <= 0 || cost <= 0) return null;
@@ -69,6 +72,12 @@ export function InventoryListTableRow({
 }: InventoryListTableRowProps) {
   const { mutateAsync: uploadImage } = useImageUpload();
   const [showSmartPricing, setShowSmartPricing] = useState(false);
+
+  // Fetch categories for inline editing
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => api.categories.list(),
+  });
 
   const margin = calcMargin(item.cost, item.price);
 
@@ -203,6 +212,29 @@ export function InventoryListTableRow({
             {item.sku && (
               <div className="text-[11px] text-warm-dim font-mono">{item.sku}</div>
             )}
+            <div className="mt-1">
+              {isEditing('category_id') ? (
+                <CategoryPicker
+                  value={item.category_id}
+                  categories={categories || []}
+                  loading={categoriesLoading}
+                  onChange={(categoryId) => handleSave('category_id', categoryId || '')}
+                  size="sm"
+                  className="w-full"
+                />
+              ) : (
+                <div
+                  className="text-[11px] text-warm-muted cursor-pointer hover:text-warm-fg transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startEditing('category_id');
+                  }}
+                  title="Click to change category"
+                >
+                  {categories?.find((c) => c.id === item.category_id)?.name ?? '—'}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </td>

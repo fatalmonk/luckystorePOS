@@ -172,6 +172,7 @@ export function InventoryListPage() {
     return categories?.map((c: any) => ({
       id: c.id,
       name: c.name || c.category || '',
+      parent_id: c.parent_id || null,
       itemCount: inventory?.filter((p: InventoryItem) => p.category_id === c.id).length ?? 0,
       imageUrl: c.image_url || undefined,
       color: c.color || undefined,
@@ -184,7 +185,10 @@ export function InventoryListPage() {
       const matchesSearch =
         p.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
         p.sku?.toLowerCase().includes(deferredSearch.toLowerCase());
-      const matchesCategory = selectedCategoryId ? p.category_id === selectedCategoryId : true;
+      const matchesCategory = selectedCategoryId
+        ? (p.category_id === selectedCategoryId ||
+           categories?.some((c: any) => c.id === p.category_id && c.parent_id === selectedCategoryId))
+        : true;
 
       // Stock status filter
       let matchesStock = true;

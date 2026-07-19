@@ -29,11 +29,13 @@ function CategoryChip({ slug, label, emoji, isActive }: CategoryChipProps) {
 }
 
 interface CategoryGridProps {
-  categories: { id: string; slug: string; name: string; emoji: string }[];
+  categories: { id: string; slug: string; name: string; emoji: string; parent_id?: string | null }[];
   active?: string;
 }
 
 export function CategoryGrid({ categories, active }: CategoryGridProps) {
+  const roots = categories.filter((cat) => !cat.parent_id);
+
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
@@ -41,15 +43,20 @@ export function CategoryGrid({ categories, active }: CategoryGridProps) {
       </div>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide scroll-edge-mask py-1">
         <CategoryChip slug="all" label="All" emoji="" isActive={!active || active === 'all'} />
-        {categories.map((cat) => (
-          <CategoryChip
-            key={`cat-${cat.slug}`}
-            slug={cat.slug}
-            label={cat.name}
-            emoji={cat.emoji}
-            isActive={active === cat.slug}
-          />
-        ))}
+        {roots.map((cat) => {
+          const isActive =
+            active === cat.slug ||
+            (!!active && categories.find((c) => c.slug === active)?.parent_id === cat.id);
+          return (
+            <CategoryChip
+              key={`cat-${cat.slug}`}
+              slug={cat.slug}
+              label={cat.name}
+              emoji={cat.emoji}
+              isActive={isActive}
+            />
+          );
+        })}
       </div>
     </section>
   );

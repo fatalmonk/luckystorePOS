@@ -228,6 +228,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string | null
+          parent_id: string | null
           slug: string | null
           store_id: string | null
           tenant_id: string | null
@@ -242,6 +243,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string | null
+          parent_id?: string | null
           slug?: string | null
           store_id?: string | null
           tenant_id?: string | null
@@ -256,6 +258,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string | null
+          parent_id?: string | null
           slug?: string | null
           store_id?: string | null
           tenant_id?: string | null

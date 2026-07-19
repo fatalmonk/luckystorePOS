@@ -17,8 +17,10 @@ export function useInventoryEditing(storeId: string | undefined) {
       }
 
       // Convert string numbers to actual numbers for numeric fields
-      let processedValue: string | number = value;
-      if (['price', 'cost', 'mrp', 'current_qty'].includes(field)) {
+      let processedValue: string | number | null = value;
+      if (field === 'category_id') {
+        processedValue = value === '' ? null : (value as string);
+      } else if (['price', 'cost', 'mrp', 'current_qty'].includes(field)) {
         processedValue = typeof value === 'string' ? parseFloat(value) : value;
       }
 

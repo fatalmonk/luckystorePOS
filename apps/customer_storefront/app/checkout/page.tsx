@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Header } from '../components/updated/Header';
@@ -28,7 +29,19 @@ function CheckoutContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPlacing, setIsPlacing] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { user } = useAuth();
   const phoneRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || user.user_metadata?.full_name || '',
+        phone: prev.phone || user.user_metadata?.phone || '',
+        address: prev.address || user.user_metadata?.address || '',
+      }));
+    }
+  }, [user]);
 
   const [formData, setFormData] = useState({
     name: '',

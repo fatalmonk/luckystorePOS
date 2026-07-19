@@ -1,6 +1,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { img } from '../../lib/imageUrl';
 
 interface PromoItem {
   id: string;
@@ -22,7 +23,7 @@ const defaultPromos: PromoItem[] = [
     subtitle: 'Up to 50% off essentials',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: '/images/promo_savings_banner.webp',
+    bgImage: img('/images/promo_savings_banner.webp'),
   },
   {
     id: 'fresh-arrivals',
@@ -30,7 +31,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Fresh Arrivals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=new',
-    bgImage: 'https://images.luckystore1947.com/banners/promo_fresh_banner.webp',
+    bgImage: img('/images/promo_fresh_banner.webp'),
   },
   {
     id: 'daily-deals',
@@ -38,7 +39,7 @@ const defaultPromos: PromoItem[] = [
     title: 'Daily Deals',
     ctaText: 'Shop now',
     ctaHref: '/category?theme=deals',
-    bgImage: 'https://images.luckystore1947.com/banners/promo_deals_banner.webp',
+    bgImage: img('/images/promo_deals_banner.webp'),
   },
 ];
 

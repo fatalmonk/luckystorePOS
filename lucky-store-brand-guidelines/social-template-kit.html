@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Store 1947 — Social Media Template Kit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #FDFBF7;
+      --surface: #FFFFFF;
+      --foreground: #0B0B0D;
+      --muted: #6B6B6B;
+      --dim: #9C958C;
+      --border: #E8E4DC;
+      --accent: #f0c444;
+      --accent-hover: #e0b434;
+      --accent-muted: #FFF8E1;
+      --accent-dark: #C79400;
+      --danger: #E34234;
+      --success: #16A34A;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(11,11,13,0.04), 0 1px 3px rgba(11,11,13,0.03);
+      --shadow-md: 0 4px 8px rgba(11,11,13,0.06), 0 2px 4px rgba(11,11,13,0.04);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #e5e1da;
+      color: var(--foreground);
+      line-height: 1.5;
+      padding: 40px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .controls {
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .controls h1 {
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      margin-right: auto;
+    }
+    .btn {
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--foreground);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { background: var(--paper); border-color: var(--dim); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--foreground); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 32px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .spec {
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--paper);
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+    }
+    .canvas-wrapper {
+      display: flex;
+      justify-content: center;
+      background: #d6d2cc;
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    /* ===== INSTAGRAM FEED POST ===== */
+    .ig-feed {
+      width: 1080px;
+      height: 1350px;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform-origin: top center;
+      transform: scale(0.3);
+    }
+    .ig-feed .photo-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 55%;
+    }
+    .ig-feed .photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .ig-feed .photo-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(to top, rgba(253,251,247,1) 0%, rgba(253,251,247,0) 100%);
+    }
+    .ig-feed .content-area {
+      padding: 48px 56px 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .ig-feed .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      background: var(--accent-muted);
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      width: fit-content;
+    }
+    .ig-feed h3 {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--foreground);
+    }
+    .ig-feed h3 .bengali {
+      font-family: 'Noto Sans Bengali', 'Geist', sans-serif;
+      font-weight: 700;
+    }
+    .ig-feed .subtitle {
+      font-size: 28px;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 36ch;
+    }
+    .ig-feed .subtitle .bengali {
+      font-family: 'Noto Sans Bengali', sans-serif;
+    }
+    .ig-feed .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      margin-top: 8px;
+    }
+    .ig-feed .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+    .ig-feed .meta-item .icon {
+      width: 28px;
+      height: 28px;
+    }
+    .ig-feed .meta-item .price {
+      font-family: 'Geist Mono', monospace;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .ig-feed .cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .ig-feed .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--accent);
+      color: var(--foreground);
+      font-size: 24px;
+      font-weight: 700;
+      padding: 18px 36px;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .ig-feed .cta-btn:hover { background: var(--accent-hover); }
+    .ig-feed .brand-footer {
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .ig-feed .brand-footer span {
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+
+    /* ===== INSTAGRAM STORY ===== */
+    .ig-story {
+      width: 1080px;
+      height: 1920px;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform-origin: top center;
+      transform: scale(0.22);
+    }
+    .ig-story .story-photo {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .ig-story .story-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .ig-story .story-badge {
+      position: absolute;
+      top: 64px;
+      left: 48px;
+      right: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ig-story .story-badge .badge-title {
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .ig-story .story-badge .badge-title .bengali {
+      font-family: 'Noto Sans Bengali', sans-serif;
+      font-weight: 700;
+    }
+    .ig-story .story-badge .badge-price {
+      font-family: 'Geist Mono', monospace;
+      font-size: 36px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .ig-story .story-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 64px 48px 80px;
+      background: linear-gradient(to top, rgba(253,251,247,0.95) 0%, rgba(253,251,247,0) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .ig-story .story-cta {
+      background: var(--accent);
+      color: var(--foreground);
+      font-size: 32px;
+      font-weight: 700;
+      padding: 22px 48px;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ig-story .story-url {
+      font-size: 22px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .ig-story .story-url span { color: var(--accent-dark); font-weight: 700; }
+
+    /* ===== FACEBOOK COVER ===== */
+    .fb-cover {
+      width: 1640px;
+      height: 624px;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      transform-origin: top center;
+      transform: scale(0.22);
+    }
+    .fb-cover .cover-left {
+      width: 42%;
+      padding: 64px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+      z-index: 2;
+    }
+    .fb-cover .cover-logo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .fb-cover .cover-logo .wordmark {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--foreground);
+    }
+    .fb-cover .cover-logo .wordmark span {
+      color: var(--accent);
+    }
+    .fb-cover .cover-logo .year {
+      font-family: 'Geist Mono', monospace;
+      font-size: 22px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    .fb-cover .cover-tagline {
+      font-size: 28px;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 32ch;
+    }
+    .fb-cover .cover-tagline .bengali {
+      font-family: 'Noto Sans Bengali', sans-serif;
+    }
+    .fb-cover .cover-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: var(--foreground);
+      font-size: 22px;
+      font-weight: 700;
+      padding: 16px 32px;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      width: fit-content;
+      margin-top: 8px;
+    }
+    .fb-cover .cover-right {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .fb-cover .cover-right img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .fb-cover .cover-gradient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(to right, var(--paper) 30%, rgba(253,251,247,0) 100%);
+      z-index: 1;
+    }
+
+    /* ===== EDITABLE FIELDS ===== */
+    [contenteditable] {
+      outline: none;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+      transition: background 0.15s;
+    }
+    [contenteditable]:hover { background: rgba(240,196,68,0.12); }
+    [contenteditable]:focus { background: rgba(240,196,68,0.18); }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .controls, .card-header { display: none; }
+      .grid { gap: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      .canvas-wrapper { background: none; padding: 0; }
+      .ig-feed, .ig-story, .fb-cover { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <h1>Lucky Store 1947 — Social Kit</h1>
+    <button class="btn" onclick="downloadAll()">Download All PNGs</button>
+    <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+    <span style="color:var(--muted);font-size:0.8rem;">Click any text to edit live. Images are AI-generated placeholders.</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- Instagram Feed Post (4:5) -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Instagram Feed Post (4:5)</h2>
+        <span class="spec">1080 × 1350px</span>
+      </div>
+      <div class="canvas-wrapper">
+        <div class="ig-feed" id="igFeed">
+          <div class="photo-area">
+            <img src="https://v3b.fal.media/files/b/0aa27eda/0AAMvvPvYP2lao0rb6dS6_nbpfAbeH.png" alt="Assorted chocolates">
+            <div class="photo-overlay"></div>
+          </div>
+          <div class="content-area">
+            <div class="tag">🍫 New Arrival</div>
+            <h3 contenteditable="true">
+              <span class="bengali">প্রিমিয়াম চকলেট কালেকশন</span><br>
+              Premium Chocolate Collection
+            </h3>
+            <p class="subtitle" contenteditable="true">
+              <span class="bengali">বাচ্চাদের থেকে বড়দের — সবার পছন্দ</span><br>
+              From kids to grown-ups — everyone's favorite
+            </p>
+            <div class="meta-row">
+              <div class="meta-item">
+                <span class="price">৳350/pack</span>
+              </div>
+              <div class="meta-item">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                Same Day Delivery
+              </div>
+            </div>
+            <div class="cta-row">
+              <a class="cta-btn" href="#" contenteditable="true">
+                Order Now
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+              </a>
+              <div class="brand-footer">
+                <span>luckystorebd.com</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instagram Story (9:16) -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Instagram Story</h2>
+        <span class="spec">1080 × 1920px</span>
+      </div>
+      <div class="canvas-wrapper">
+        <div class="ig-story" id="igStory">
+          <div class="story-photo">
+            <img src="https://v3b.fal.media/files/b/0aa27ee7/fZoL6bx8RAI8ZqGp-8Fbt_tZrQRxdL.png" alt="Ice cream scoop">
+          </div>
+          <div class="story-badge">
+            <div class="badge-title" contenteditable="true">
+              <span class="bengali">গরমে আইসক্রিম মাস্ট</span><br>
+              Beat the Heat — Ice Cream
+            </div>
+            <div class="badge-price" contenteditable="true">৳120/tub</div>
+          </div>
+          <div class="story-bottom">
+            <a class="story-cta" href="#" contenteditable="true">
+              Order Now
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            </a>
+            <div class="story-url">
+              <span>luckystorebd.com</span> — Same-day delivery
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Facebook Cover (16:9-ish) -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Facebook Cover</h2>
+        <span class="spec">1640 × 624px (scaled)</span>
+      </div>
+      <div class="canvas-wrapper">
+        <div class="fb-cover" id="fbCover">
+          <div class="cover-left">
+            <div class="cover-logo">
+              <div class="wordmark">LUCKY ST<span>O</span>RE</div>
+              <div class="year">1947</div>
+            </div>
+            <div class="cover-tagline" contenteditable="true">
+              <span class="bengali">আপনার পাশের দোকান, এখন অনলাইনেও</span><br>
+              Your neighborhood store, now online
+            </div>
+            <a class="cover-cta" href="#" contenteditable="true">
+              Shop Now
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            </a>
+          </div>
+          <div class="cover-right">
+            <div class="cover-gradient"></div>
+            <img src="https://v3b.fal.media/files/b/0aa27ee8/slGO_U0_-Bi_hUbpW40xz_w5vhhSpD.png" alt="Cookies and biscuits">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Download canvas as PNG
+    async function downloadAll() {
+      const templates = [
+        { id: 'igFeed', name: 'lucky-store-instagram-feed', w: 1080, h: 1350 },
+        { id: 'igStory', name: 'lucky-store-instagram-story', w: 1080, h: 1920 },
+        { id: 'fbCover', name: 'lucky-store-facebook-cover', w: 1640, h: 624 },
+      ];
+      for (const t of templates) {
+        await downloadTemplate(t.id, t.name, t.w, t.h);
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+
+    async function downloadTemplate(id, filename, w, h) {
+      const el = document.getElementById(id);
+      const originalTransform = el.style.transform;
+      el.style.transform = 'scale(1)';
+
+      // Use dom-to-image or html2canvas approach via simple screenshot
+      // For now, prompt user to use browser print-to-PNG or screenshot tool
+      // Or we can use the native Canvas API with foreignObject
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+
+      // Draw background
+      const computed = getComputedStyle(el);
+      ctx.fillStyle = computed.backgroundColor || '#FDFBF7';
+      ctx.fillRect(0, 0, w, h);
+
+      // Convert to SVG for proper rendering
+      const svgData = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+          <foreignObject width="100%" height="100%">
+            <div xmlns="http://www.w3.org/1999/xhtml">
+              ${el.outerHTML}
+            </div>
+          </foreignObject>
+        </svg>`;
+      const img = new Image();
+      const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(svgBlob);
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+
+      const link = document.createElement('a');
+      link.download = `${filename}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      el.style.transform = originalTransform;
+    }
+
+    // Simple approach: warn about CORS images
+    document.querySelectorAll('img').forEach(img => {
+      img.crossOrigin = 'anonymous';
+    });
+  </script>
+
+</body>
+</html>

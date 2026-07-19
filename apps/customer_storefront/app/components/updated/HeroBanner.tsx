@@ -4,8 +4,16 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+export interface ResponsiveImage {
+  src: string;
+  srcSet?: string;
+  sizes?: string;
+  sources?: { srcSet: string; type: string; media?: string }[];
+  alt?: string;
+}
+
 interface Slide {
-  image: string;
+  image: string | ResponsiveImage;
   title: string;
   subtitle: string;
   badge?: string;
@@ -17,6 +25,10 @@ interface HeroBannerProps {
   slides: Slide[];
   /** Fallback gradient when no images */
   bgGradient?: string;
+}
+
+function getSlideImage(slide: Slide): string {
+  return typeof slide.image === 'string' ? slide.image : slide.image.src;
 }
 
 export function HeroBanner({
@@ -66,7 +78,7 @@ export function HeroBanner({
   };
 
   const slide = slides[current];
-  const hasBgImage = !!slide?.image;
+  const hasBgImage = !!getSlideImage(slide);
 
   return (
     <section
@@ -77,19 +89,32 @@ export function HeroBanner({
       onTouchEnd={handleTouchEnd}
     >
       {/* Background images — crossfade */}
-      {slides.map((s, i) => (
-        <Image
-          key={i}
-          src={s.image}
-          alt=""
-          fill
-          sizes="100vw"
-          priority={i === 0}
-          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${
-            i === current && !fading ? 'opacity-100 z-0' : 'opacity-0 z-0'
-          }`}
-        />
-      ))}
+      {slides.map((s, i) => {
+        const img = typeof s.image === 'string' ? null : s.image;
+        const src = getSlideImage(s);
+        const isVisible = i === current && !fading;
+        const baseClasses = `absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${
+          isVisible ? 'opacity-100 z-0' : 'opacity-0 z-0'
+        }`;
+        return (
+          <picture key={i} className={baseClasses}>
+            {img?.sources?.map((source, idx) => (
+              <source key={idx} srcSet={source.srcSet} type={source.type} media={source.media} />
+            ))}
+            {img?.srcSet && (
+              <source srcSet={img.srcSet} type="image/webp" sizes={img.sizes || '100vw'} />
+            )}
+            <Image
+              src={src as string}
+              alt={img?.alt || ''}
+              fill
+              sizes={img?.sizes || '100vw'}
+              priority={i === 0}
+              unoptimized={!img?.srcSet && !img?.sources}
+            />
+          </picture>
+        );
+      })}
 
       {/* Light overlay for text legibility */}
       {hasBgImage && (
