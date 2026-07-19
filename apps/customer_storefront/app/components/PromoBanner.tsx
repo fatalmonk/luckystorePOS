@@ -3,28 +3,51 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { img } from '../lib/imageUrl';
+import { img, srcSet } from '../lib/imageUrl';
 
 type PromoVariant = 'image' | 'saffron' | 'dark';
+
+interface ResponsiveImage {
+  src: string;
+  srcSet?: string;
+  sizes?: string;
+  sources?: { srcSet: string; type: string; media?: string }[];
+  alt?: string;
+}
 
 interface PromoBannerProps {
   title: string;
   subtitle?: string;
   ctaText?: string;
   ctaHref?: string;
-  bgImage?: string;
+  bgImage?: string | ResponsiveImage;
   bgColor?: string;
   variant?: PromoVariant;
   /** Inline placement: removes outer section margin/padding so it nests inside another container. */
   inline?: boolean;
 }
 
+/** Build a responsive banner image from a base filename. */
+function responsiveBanner(base: string, alt: string): ResponsiveImage {
+  return {
+    src: img(`/banners/${base}_1200.webp`),
+    srcSet: srcSet(`/banners/${base}_400.webp 400w, /banners/${base}_600.webp 600w, /banners/${base}_800.webp 800w, /banners/${base}_1200.webp 1200w`),
+    sizes: '(max-width: 768px) 100vw, 50vw',
+    sources: [
+      { srcSet: srcSet(`/banners/${base}.avif 600w`), type: 'image/avif', media: '(min-width: 1px)' },
+    ],
+    alt,
+  };
+}
+
+const DEFAULT_BG_IMAGE = responsiveBanner('native_ad_banner', 'Promotional banner');
+
 export function PromoBanner({
   title,
   subtitle,
   ctaText = 'Shop now',
   ctaHref = '#',
-  bgImage = img('/images/native_ad_banner.webp'),
+  bgImage = DEFAULT_BG_IMAGE,
   bgColor = '#1c1917',
   variant = 'image',
   inline = false,
@@ -46,7 +69,6 @@ export function PromoBanner({
 
   const isImage = variant === 'image';
   const isSaffron = variant === 'saffron';
-  const isDark = variant === 'dark';
 
   const containerClasses = [
     'block relative rounded-[20px] overflow-hidden h-40 sm:h-48 group press-feedback',
@@ -57,18 +79,30 @@ export function PromoBanner({
     visible ? 'fade-up-visible' : '',
   ].join(' ');
 
+  const responsive = bgImage && typeof bgImage === 'object' ? bgImage : null;
+  const bgSrc = bgImage ? (typeof bgImage === 'string' ? bgImage : bgImage.src) : null;
+
   const content = (
     <div ref={ref} className={containerClasses}>
       {isImage && (
         <>
-          {bgImage ? (
-            <Image
-              src={bgImage}
-              alt={title}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+          {bgSrc ? (
+            <picture className="absolute inset-0 w-full h-full">
+              {responsive?.sources?.map((source, idx) => (
+                <source key={idx} srcSet={source.srcSet} type={source.type} media={source.media} />
+              ))}
+              {responsive?.srcSet && (
+                <source srcSet={responsive.srcSet} type="image/webp" sizes={responsive.sizes || '(max-width: 768px) 100vw, 50vw'} />
+              )}
+              <Image
+                src={bgSrc}
+                alt={responsive?.alt || title}
+                fill
+                sizes={responsive?.sizes || '(max-width: 768px) 100vw, 50vw'}
+                unoptimized={!responsive?.srcSet && !responsive?.sources}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </picture>
           ) : (
             <div className="absolute inset-0" style={{ backgroundColor: bgColor }} />
           )}

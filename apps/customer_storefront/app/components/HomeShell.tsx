@@ -16,9 +16,16 @@ interface HomeShellProps {
   categories: { id: string; slug: Category; name: string; emoji: string }[];
 }
 
-const SNACKS_WEBP_SRC_SET = srcSet('/images/promo_snacks_400.webp 400w, /images/promo_snacks_600.webp 600w, /images/promo_snacks_800.webp 800w, /images/promo_snacks_1200.webp 1200w');
-const SNACKS_AVIF_SRC_SET = srcSet('/images/promo_snacks.avif 600w');
-const ELECTRONICS_WEBP_SRC_SET = srcSet('/images/promo_electronics_400.webp 400w, /images/promo_electronics_600.webp 600w, /images/promo_electronics_800.webp 800w, /images/promo_electronics_1200.webp 1200w');
+const WELCOME_WEBP_SRC_SET = srcSet('/banners/promo_welcome_400.webp 400w, /banners/promo_welcome_600.webp 600w, /banners/promo_welcome_800.webp 800w, /banners/promo_welcome_1200.webp 1200w');
+const WELCOME_AVIF_SRC_SET = srcSet('/banners/promo_welcome.avif 600w');
+const SNACKS_WEBP_SRC_SET = srcSet('/banners/promo_snacks_400.webp 400w, /banners/promo_snacks_600.webp 600w, /banners/promo_snacks_800.webp 800w, /banners/promo_snacks_1200.webp 1200w');
+const SNACKS_AVIF_SRC_SET = srcSet('/banners/promo_snacks.avif 600w');
+const COOKING_WEBP_SRC_SET = srcSet('/banners/promo_cooking_400.webp 400w, /banners/promo_cooking_600.webp 600w, /banners/promo_cooking_800.webp 800w, /banners/promo_cooking_1200.webp 1200w');
+const COOKING_AVIF_SRC_SET = srcSet('/banners/promo_cooking.avif 600w');
+const ELECTRONICS_WEBP_SRC_SET = srcSet('/banners/promo_electronics_400.webp 400w, /banners/promo_electronics_600.webp 600w, /banners/promo_electronics_800.webp 800w, /banners/promo_electronics_1200.webp 1200w');
+const ELECTRONICS_AVIF_SRC_SET = srcSet('/banners/promo_electronics.avif 600w');
+const SAVINGS_WEBP_SRC_SET = srcSet('/banners/promo_savings_banner_400.webp 400w, /banners/promo_savings_banner_600.webp 600w, /banners/promo_savings_banner_800.webp 800w, /banners/promo_savings_banner_1200.webp 1200w');
+const SAVINGS_AVIF_SRC_SET = srcSet('/banners/promo_savings_banner.avif 600w');
 
 export function HomeShell({ products, categories }: HomeShellProps) {
   const MAX_SECTION_ITEMS = 20;
@@ -41,7 +48,15 @@ export function HomeShell({ products, categories }: HomeShellProps) {
           <HeroBanner
             slides={[
               {
-                image: img('/images/promo_welcome.webp'),
+                image: {
+                  src: img('/banners/promo_welcome_1200.webp'),
+                  srcSet: WELCOME_WEBP_SRC_SET,
+                  sizes: '100vw',
+                  sources: [
+                    { srcSet: WELCOME_AVIF_SRC_SET, type: 'image/avif', media: '(min-width: 1px)' },
+                  ],
+                  alt: 'Welcome to Lucky Store',
+                },
                 title: 'Welcome to Lucky Store',
                 subtitle: 'Chittagong\'s trusted grocery since 1947',
                 badge: 'Since 1947',
@@ -50,7 +65,7 @@ export function HomeShell({ products, categories }: HomeShellProps) {
               },
               {
                 image: {
-                  src: img('/images/promo_snacks_1200.webp'),
+                  src: img('/banners/promo_snacks_1200.webp'),
                   srcSet: SNACKS_WEBP_SRC_SET,
                   sizes: '100vw',
                   sources: [
@@ -65,7 +80,15 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 ctaHref: '/category/snacks',
               },
               {
-                image: img('/images/promo_cooking.webp'),
+                image: {
+                  src: img('/banners/promo_cooking_1200.webp'),
+                  srcSet: COOKING_WEBP_SRC_SET,
+                  sizes: '100vw',
+                  sources: [
+                    { srcSet: COOKING_AVIF_SRC_SET, type: 'image/avif', media: '(min-width: 1px)' },
+                  ],
+                  alt: 'Cooking essentials — oils, spices, rice',
+                },
                 title: 'Cooking Essentials',
                 subtitle: 'Oils, spices, rice & everything for your kitchen',
                 badge: 'Daily Needs',
@@ -74,9 +97,12 @@ export function HomeShell({ products, categories }: HomeShellProps) {
               },
               {
                 image: {
-                  src: img('/images/promo_electronics_1200.webp'),
+                  src: img('/banners/promo_electronics_1200.webp'),
                   srcSet: ELECTRONICS_WEBP_SRC_SET,
                   sizes: '100vw',
+                  sources: [
+                    { srcSet: ELECTRONICS_AVIF_SRC_SET, type: 'image/avif', media: '(min-width: 1px)' },
+                  ],
                   alt: 'Home electronics and accessories',
                 },
                 title: 'Electronics',
@@ -86,7 +112,15 @@ export function HomeShell({ products, categories }: HomeShellProps) {
                 ctaHref: '/category/electronics',
               },
               {
-                image: img('/images/promo_savings_banner.webp'),
+                image: {
+                  src: img('/banners/promo_savings_banner_1200.webp'),
+                  srcSet: SAVINGS_WEBP_SRC_SET,
+                  sizes: '100vw',
+                  sources: [
+                    { srcSet: SAVINGS_AVIF_SRC_SET, type: 'image/avif', media: '(min-width: 1px)' },
+                  ],
+                  alt: 'Big savings on your favorite products',
+                },
                 title: 'Big Savings',
                 subtitle: 'Up to 50% off on your favorites',
                 badge: 'Hot Deals',

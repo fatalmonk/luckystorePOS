@@ -233,3 +233,10 @@ _data
 _plans
 context.md
 data/
+
+# Generated responsive image variants — served from R2 CDN in production
+apps/customer_storefront/public/images/*_400.webp
+apps/customer_storefront/public/images/*_600.webp
+apps/customer_storefront/public/images/*_800.webp
+apps/customer_storefront/public/images/*_1200.webp
+apps/customer_storefront/public/images/*.avif
