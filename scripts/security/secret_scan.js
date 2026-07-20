@@ -42,7 +42,7 @@ function isGitIgnored(filePath) {
   return false;
 }
 
-const ALLOW_PLACEHOLDER = resolve(__dirname, '..', '.env.example');
+const ALLOW_PLACEHOLDER = resolve(__dirname, '..', '..', '.env.example');
 const SELF = resolve(__dirname, 'secret_scan.js');
 
 const PATTERNS = [
@@ -72,7 +72,7 @@ function walk(dir) {
     const full = resolve(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if (!IGNORE_DIRS.has(entry.name)) walk(full);
+      if (!IGNORE_DIRS.has(entry.name) && !entry.name.startsWith('.venv')) walk(full);
       continue;
     }
 

@@ -5,9 +5,9 @@
  * and updates the items.image_url column to point to R2.
  * 
  * Usage:
- *   node scripts/migrate-images-to-r2.mjs              # full migration
- *   node scripts/migrate-images-to-r2.mjs --dry-run     # show what would migrate
- *   node scripts/migrate-images-to-r2.mjs --limit=50    # only migrate 50 images
+ *   node scripts/images/migrate-images-to-r2.mjs              # full migration
+ *   node scripts/images/migrate-images-to-r2.mjs --dry-run     # show what would migrate
+ *   node scripts/images/migrate-images-to-r2.mjs --limit=50    # only migrate 50 images
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -125,7 +125,7 @@ async function main() {
 
       // Upload to R2 via S3 API
       // Minimal S3 PUT — uses AWS Signature V4
-      const { signV4Put } = await import('./_r2-s3-sign.mjs');
+      const { signV4Put } = await import('../lib/_r2-s3.mjs');
       const signedHeaders = await signV4Put(
         s3Endpoint, r2Bucket, key, imageBuffer, r2AccessKey, r2SecretKey
       );

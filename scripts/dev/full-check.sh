@@ -11,7 +11,7 @@ echo ""
 
 # 1. Secret scan
 echo ">>> Step 1/5: Secret Scan"
-node scripts/secret_scan.js
+node scripts/security/secret_scan.js
 echo "✅  Secret scan passed."
 echo ""
 

@@ -13,9 +13,11 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Flutter-3.29.3-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter">
+  <img src="https://img.shields.io/badge/Flutter-3.29+-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter">
   &nbsp;
   <img src="https://img.shields.io/badge/React-19-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React">
+  &nbsp;
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js">
   &nbsp;
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
   &nbsp;
@@ -28,7 +30,7 @@
 
 <p align="center">
   <strong>A free, open-source Point of Sale system built for retail shops in Bangladesh</strong><br>
-  <em>bKash Payments | Offline-First | Bangla Interface | Bluetooth Label Printing | Real-Time Inventory | AI Price Monitoring | E-commerce</em>
+  <em>bKash Payments | Offline-First | Bangla Interface | Bluetooth Label Printing | Real-Time Inventory | AI Price Monitoring | Live E-commerce Storefront</em>
 </p>
 
 <p align="center">
@@ -120,7 +122,6 @@
 - **Background sync** via WorkManager + flutter_background_service
 - **Conflict resolution** with idempotency keys and server-authoritative override
 - **Feature toggle:** `ENABLE_OFFLINE_MODE=true`
-- See: [Conflict Resolution Policy](docs/conflict_resolution_policy.md)
 
 </details>
 
@@ -148,7 +149,6 @@
 - 40×30mm labels with MRP strikethrough pricing
 - Bulk printing from CSV files
 - Print retry queue for reliability
-- See: [MHT-P29L Setup Guide](docs/root-docs/MHT-P29L_SETUP.md) · [Bulk Label Printing](docs/root-docs/BULK_LABEL_PRINTING.md)
 
 </details>
 
@@ -179,6 +179,18 @@
 | Purchase Management | Expense Tracking | PWA Support |
 |:------------------:|:--------------:|:-----------:|
 | Purchase entry, receiving, history | Pie/bar charts, 6 categories, 4 payment types | Installable on any device, offline caching |
+
+| Delivery Orders | Social Posting | Staff Dashboard |
+|:--------------:|:--------------:|:---------------:|
+| Order tracking & fulfillment | Facebook Pages API integration | Staff PIN auth & session management |
+
+| Competitor Prices | Import Wizard | Reports |
+|:-----------------:|:-------------:|:-------:|
+| Shwapno/Chaldal price comparison | CSV/Excel product + party import | Sales, finance, inventory reporting |
+
+| OAuth Consent | Other Income | Reminders |
+|:-------------:|:------------:|:---------:|
+| Third-party agent access flow | Non-sale income tracking | Follow-up & task reminders |
 
 <details>
 <summary><strong>🔍 Dashboard & Analytics</strong></summary>
@@ -235,17 +247,54 @@
 
 ### 🛒 Customer Storefront (Next.js 15 + E-commerce)
 
-| Browse | Product Details | Cart & Checkout |
+> **Live at [luckystore1947.com](https://luckystore1947.com)** — production storefront serving real customers.
+
+| Browse & Shop | Product Details | Cart & Checkout |
 |:------:|:---------------:|:---------------:|
-| Department dropdown, category swimlanes, thematic pills, price filter | Variant selector, quantity stepper, MRP/strikethrough pricing | Cart sidebar, persistent state, stock-aware |
+| Department dropdown, category swimlanes, thematic pills, price filter | Variant selector, quantity stepper, MRP/strikethrough pricing | Cart sidebar, persistent state, stock-aware checkout |
 
-| Responsive Design | URL-Based Filters | Performance |
-|:----------------:|:---------------:|:-----------:|
-| Two-column desktop layout, mobile-optimized top nav | URL params for availability, sort, price ranges | SSR with Supabase, skeleton loading states |
+| Search & Filter | Subcategory Pages | Wishlist |
+|:---------------:|:-----------------:|:--------:|
+| URL params for availability, sort, price ranges, query suggestions | `/category/[slug]` thumbnail grids with SSR + ISR (60s revalidate) | Out-of-stock notifications, persistent across sessions |
 
-| Accessibility | Internationalization | Testing |
-|:-------------:|:--------------------:|:-------:|
-| WCAG 2.1 AA compliant, semantic landmarks, focus management | English + Bangla (HindSiliguri font) | Playwright E2E (4 passed, 4 skipped), Lighthouse-ready |
+| Responsive Design | Accessibility | Internationalization |
+|:----------------:|:-------------:|:--------------------:|
+| Two-column desktop, mobile-optimized top nav | WCAG 2.1 AA compliant, semantic landmarks, focus management | English + Bangla (HindSiliguri font) |
+
+<details>
+<summary><strong>🔍 Storefront Pages & Routes (16 pages, 9 API routes)</strong></summary>
+
+<br>
+
+**Pages:** Home (`/`), Category listing (`/category`), Subcategory (`/category/[slug]`), Product details (`/product/[id]`), Search (`/search`), Cart (`/cart`), Checkout (`/checkout`), Order tracking (`/order`), Wishlist (`/wishlist`), Login (`/login`), Signup (`/signup`), Profile (`/profile`), Privacy (`/privacy`), Terms (`/terms`), Security policy, Data deletion
+
+**API routes:** `/api/products`, `/api/categories`, `/api/checkout`, `/api/orders`, `/api/wishlist`, `/api/auth/callback`, `/api/health`, `/api/markdown`, `/api/webhooks/supabase-sync`
+
+</details>
+
+<details>
+<summary><strong>🔍 AI Agent Protocol (MCP / OAuth 2.1)</strong></summary>
+
+<br>
+
+- **Agent-assisted shopping** via `auth.md` + OAuth 2.1 authorization server metadata
+- `.well-known/` endpoints: `oauth-authorization-server`, `oauth-protected-resource`, `auth.md`, `api-catalog`, `openid-configuration`
+- Admin web includes OAuth consent flow for third-party agent access
+- See: [agent.luckystore1947.com](https://agent.luckystore1947.com)
+
+</details>
+
+<details>
+<summary><strong>🔍 Testing</strong></summary>
+
+<br>
+
+- **Vitest** unit tests (5 suites): cart, wishlist, orders, validation, price formatting
+- **Playwright** E2E: checkout + wishlist flows (desktop Chrome + Pixel 5 mobile)
+- Lighthouse-ready, sitemap + robots.ts generation
+- Run: `cd apps/customer_storefront && npm test && npx playwright test`
+
+</details>
 
 ---
 
@@ -253,10 +302,10 @@
 
 | Dimension | Count |
 |:----------|:-----|
-| Database tables | 50 |
-| SQL migrations | 86 |
-| Stored procedures (RPCs) | 80+ |
-| Edge functions (Deno) | 8 |
+| Database tables | 117 |
+| SQL migrations | 162 |
+| Stored procedures (RPCs) | 86 |
+| Edge functions (Deno) | 10 |
 | RLS policies | Tenant-isolated on every table |
 
 <details>
@@ -274,6 +323,8 @@
 | `payment-return-success` | SSLCommerz success callback handler |
 | `payment-return-fail` | SSLCommerz failure callback handler |
 | `payment-return-cancel` | SSLCommerz cancellation callback handler |
+| `post-facebook` | Facebook Pages API social media posting |
+| `send-whatsapp-message` | WhatsApp Business Cloud API messaging |
 
 </details>
 
@@ -288,7 +339,7 @@
 - **Service role key** used only in edge functions; anon key for client operations
 - **Rate limiting** via database-backed `rate_limits` table + `check_rate_limit` RPC
 - **Input validation** on all edge functions (UUID format, positive numbers, max amounts)
-- See: [RLS Security Model](docs/RLS_SECURITY_MODEL.md)
+- See: [Security Recommendations](docs/SECURITY_RECOMMENDATIONS.md)
 
 </details>
 
@@ -331,19 +382,19 @@
 ## 🛠 Tech Stack
 
 ### Mobile App
-**Flutter 3.29.3** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · esc_pos_utils_plus · pdf · printing · csv · excel · webview_flutter
+**Flutter 3.29+** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · flutter_thermal_printer · pdf · printing · csv · excel · webview_flutter
 
 ### Customer Storefront
-**Next.js 15** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Zod 3 · PostCSS · Autoprefixer
+**Next.js 15.5** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 3 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
 
 ### Admin Web
-**React 19** · Vite 8 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 4 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns · clsx
+**React 19.2** · Vite 6 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 3 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns 4 · clsx
 
 ### Backend
-**Supabase** · PostgreSQL 17 · Deno Edge Functions · Row-Level Security · Realtime Subscriptions · Storage
+**Supabase** · PostgreSQL 17 · Deno Edge Functions · Row-Level Security · Realtime Subscriptions · Storage · Neon APAC read replica
 
-### DevOps
-**Docker** (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions (Flutter analyze/test/build + admin TS check/build) · Vercel (landing page + admin hosting)
+### Infrastructure
+**Cloudflare** · R2 object storage (APAC) · Workers (image proxy, Neon proxy, agent) · Turnstile · Wrangler · Docker (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions (7 workflows) · Vercel (admin + storefront + landing)
 
 ### Scraper
 **Node.js** · Puppeteer · string-similarity · xlsx
@@ -386,11 +437,16 @@ cd apps/admin_web
 npm install
 npm run dev                  # Opens at http://localhost:5173
 
-# 5. Storybook (optional)
-# Already in apps/admin_web from step 4
+# 5. Run the customer storefront
+cd apps/customer_storefront
+npm install
+cp .env.example .env.local   # Fill in Supabase + R2 image URL
+npm run dev                  # Opens at http://localhost:3000
+
+# 6. Storybook (optional, in apps/admin_web)
 npm run storybook            # Opens at http://localhost:6006
 
-# 6. Docker (optional — production-like)
+# 7. Docker (optional — production-like)
 docker compose up -d         # Admin web at http://localhost:8080
 ```
 
@@ -401,23 +457,24 @@ docker compose up -d         # Admin web at http://localhost:8080
 ```
 luckystorePOS/
 ├── apps/
-│   ├── mobile_app/          # Flutter POS app (95+ Dart files, 8 feature modules)
-│   ├── admin_web/           # React + Vite admin dashboard (12+ pages, 15 routes)
-│   ├── customer_storefront/   # Next.js 15 e-commerce storefront (SSR, Playwright E2E)
-│   └── scraper/             # Puppeteer competitor price scraper
+│   ├── mobile_app/          # Flutter POS app (141 Dart files, 13 feature modules)
+│   ├── admin_web/           # React + Vite admin dashboard (19 features, 26 routes)
+│   ├── customer_storefront/   # Next.js 15 e-commerce — LIVE at luckystore1947.com (16 pages, 9 API routes)
+│   └── scraper/             # Puppeteer competitor price scraper (Shwapno, Chaldal, AamaderBazar, Unilever)
 ├── supabase/
-│   ├── migrations/          # 86 SQL migration files
-│   ├── functions/           # 8 Deno edge functions
+│   ├── migrations/          # 162 SQL migration files
+│   ├── functions/           # 10 Deno edge functions
 │   ├── rpc/                 # Raw stored procedure scripts
 │   ├── views/               # Database views
 │   └── public/policies/     # RLS policy definitions
-├── landing-page/            # Static HTML marketing page (Vercel)
+├── landing/                 # Static HTML marketing page (Vercel)
+├── cloudflare/              # Workers (images, neon-proxy, agent) + R2 config
 ├── assets/                  # Screenshots & static assets
-│   └── screenshots/         # App screenshots
+│   └── screenshots/         # App screenshots (incl. dark mode)
 ├── scripts/                 # Build, deploy, DB, seed, ops, and test scripts
 ├── data/                    # Inventory CSVs, competitor data, account data
 ├── docker/                  # Nginx config + seed DB Dockerfile
-├── .github/workflows/       # CI/CD (flutter-ci.yml + ci.yml)
+├── .github/workflows/       # CI/CD (7 workflows: ci, flutter-ci, storefront-ci, deploy-storefront, deploy-agent, scraper-daily, monitor-robots)
 ├── docker-compose.yml       # One-command Docker deployment
 ├── Dockerfile               # Multi-stage Node 22 + Nginx 1.27 Alpine
 ├── vercel.json              # Vercel routing & build config
@@ -436,7 +493,19 @@ luckystorePOS/
 - Auto-deploys on push to `main`
 - Serves landing page at `/` and admin web at `/admin/*` from a single project
 - Build command: `bash scripts/build/vercel.sh`
-- Live demo: [admin.luckystore1947.com](https://admin.luckystore1947.com/) (or [lucky-store-pos-six.vercel.app](https://lucky-store-pos-six.vercel.app/))
+- Live: [admin.luckystore1947.com](https://admin.luckystore1947.com/) (or [lucky-store-pos-six.vercel.app](https://lucky-store-pos-six.vercel.app/))
+
+</details>
+
+<details>
+<summary><strong>🔍 Vercel (Customer Storefront)</strong></summary>
+
+<br>
+
+- Separate Vercel project, auto-deploys on push to `main`/`develop` (workflow: `deploy-storefront.yml`)
+- Next.js 15 App Router with ISR (60s revalidate), SSR, sitemap + robots generation
+- Live: [luckystore1947.com](https://luckystore1947.com)
+- Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_IMAGE_BASE_URL`, `NEXT_PUBLIC_AGENT_WORKER_URL`
 
 </details>
 
@@ -488,16 +557,17 @@ Set required secrets on each edge function:
 
 | Document | Purpose |
 |:---------|:--------|
-| [Quick Start Checklist](docs/01-getting-started/00-QUICK-START-CHECKLIST.md) | Step-by-step onboarding |
-| [Store Setup Guide](docs/02-setup/STORE-SETUP-GUIDE.md) | Database creation guide |
-| [Import Master Guide](docs/03-import-system/IMPORT-MASTER-GUIDE.md) | CSV/Excel product import |
-| [RLS Security Model](docs/RLS_SECURITY_MODEL.md) | Row-level security architecture |
-| [MHT-P29L Setup](docs/root-docs/MHT-P29L_SETUP.md) | Label printer configuration |
-| [Bulk Label Printing](docs/root-docs/BULK_LABEL_PRINTING.md) | Multi-label workflow |
-| [Branch Strategy](docs/root-docs/BRANCH_STRATEGY.md) | Git workflow |
-| [Production Plan](docs/root-docs/PRODUCTION_PLAN.md) | Production readiness |
-| [Conflict Resolution](docs/conflict_resolution_policy.md) | Offline sync conflicts |
-| [Contributing Guide](docs/root-docs/CONTRIBUTING.md) | How to contribute |
+| [Deployment Guide](docs/DEPLOYMENT.md) | Full deployment instructions |
+| [Design System](docs/DESIGN_SYSTEM.md) | Visual language, tokens, component patterns |
+| [Brand Guidelines](docs/BRAND_GUIDELINES.md) | Brand identity, colors, typography |
+| [Security Recommendations](docs/SECURITY_RECOMMENDATIONS.md) | Security fixes and hardening |
+| [Env Variable Security](docs/env-security.md) | Public vs. secret env management |
+| [Admin Login Guide](docs/ADMIN-LOGIN.md) | Admin portal access setup |
+| [Drawer Reconciliation](docs/DRAWER_RECONCILIATION_IMPLEMENTATION.md) | Cash drawer reconciliation |
+| [DNS + Aid Setup](docs/dns-aid-setup.md) | DNS configuration |
+| [Architecture — Schema Authority](docs/architecture/schema-authority.md) | Database schema authority |
+| [Architecture — Migration Baseline](docs/architecture/migration-baseline-repair.md) | Migration baseline repair |
+| [Contributing](apps/customer_storefront/CONTRIBUTING.md) | How to contribute |
 
 ---
 
@@ -513,7 +583,7 @@ Set required secrets on each edge function:
 
 ## 🤝 Contributing
 
-We welcome contributions. See [CONTRIBUTING.md](docs/root-docs/CONTRIBUTING.md) for guidelines.
+We welcome contributions. See [CONTRIBUTING.md](apps/customer_storefront/CONTRIBUTING.md) for guidelines.
 
 1. Fork this repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)

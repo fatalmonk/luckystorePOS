@@ -244,11 +244,15 @@ async function scrapeAllCategories() {
   
   let browser;
   try {
-    const defaultChromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-    const hasChrome = fs.existsSync(defaultChromePath);
+    const isCI = !!process.env.CI;
+    const defaultChromePath = process.env.CHROME_BIN
+      || (fs.existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : undefined);
+    const hasChrome = !!defaultChromePath;
     
     browser = await puppeteer.launch({
-      headless: false,
+      headless: isCI ? true : false,
       executablePath: hasChrome ? defaultChromePath : undefined,
       args: [
         '--no-sandbox', 

@@ -8,10 +8,10 @@
  *   R2_SECRET_ACCESS_KEY      - S3-compatible secret key
  *
  * Usage:
- *   node scripts/check-sensitive-objects.js
+ *   node scripts/security/check-sensitive-objects.js
  */
 
-import { listR2Objects } from './_r2-s3-list.mjs';
+import { listR2Objects } from '../lib/_r2-s3.mjs';
 
 const bucket = process.env.R2_BUCKET_NAME || 'lucky-store-images';
 const accountId = process.env.R2_ACCOUNT_ID;

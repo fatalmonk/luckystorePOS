@@ -11,8 +11,8 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci --no-save
-      - run: node scripts/monitor-robots.js
+      - run: node scripts/infra/monitor-robots.js
       - uses: actions/upload-artifact@v4
         with:
           name: robots-log
-          path: scripts/robots.log
+          path: scripts/infra/robots.log

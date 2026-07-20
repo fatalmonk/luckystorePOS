@@ -1,7 +1,7 @@
 #!/bin/bash
 # DNS-AID setup for luckystore1947.com
 # Usage: Provide cloudflare token via environment variable
-#   or:  source .env.local && ./scripts/dns_aid_setup.sh
+#   or:  source .env.local && ./scripts/infra/dns_aid_setup.sh
 
 # Read token from env — never hardcode here
 printf -v TOKEN '%s' "${CLOUDFLARE_API_TOKEN:-}"
