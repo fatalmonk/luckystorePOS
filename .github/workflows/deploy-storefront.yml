@@ -1,5 +1,5 @@
 # Deploy Customer Storefront to Vercel
-# This workflow deploys apps/customer_storefront to the separate Vercel project
+# This workflow deploys apps/customer_storefront to the separate Vercel project (Triggered refresh)
 
 name: Deploy Storefront
 
