@@ -54,14 +54,23 @@ jobs:
     if: github.event_name == 'pull_request'
     env:
       CI: true
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      # Server-side wishlist API route (app/api/wishlist/route.ts) uses the
-      # service role key to bypass RLS. Secret is stored as SUPABASE_SERVICE_KEY
-      # but the route reads process.env.SUPABASE_SERVICE_ROLE_KEY.
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Fetch Supabase Preview Branch
+        id: supabase_preview
+        uses: 0xbigboss/supabase-branch-gh-action@v1
+        with:
+          supabase-access-token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          supabase-project-id: 'hvmyxyccfnkrbxqbhlnm'
+          git-branch: ${{ github.head_ref }}
+
+      - name: Set environment variables for preview branch
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ steps.supabase_preview.outputs.api_url }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.supabase_preview.outputs.anon_key }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 24

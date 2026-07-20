@@ -48,14 +48,23 @@ jobs:
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
+      - name: Fetch Supabase Preview Branch
+        if: github.event_name == 'pull_request'
+        id: supabase_preview
+        uses: 0xbigboss/supabase-branch-gh-action@v1
+        with:
+          supabase-access-token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          supabase-project-id: 'hvmyxyccfnkrbxqbhlnm'
+          git-branch: ${{ github.head_ref }}
+      
       - name: Build
         run: vercel build --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ github.event_name == 'pull_request' && steps.supabase_preview.outputs.api_url || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.event_name == 'pull_request' && steps.supabase_preview.outputs.anon_key || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       
       - name: Deploy to Preview
         if: github.event_name == 'pull_request'
