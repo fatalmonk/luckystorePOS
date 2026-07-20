@@ -23,6 +23,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
     
     steps:
       - name: Checkout
@@ -49,7 +51,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
       - name: Fetch Supabase Preview Branch
-        if: github.event_name == 'pull_request' && secrets.SUPABASE_ACCESS_TOKEN != ''
+        if: github.event_name == 'pull_request' && env.HAS_SUPABASE_TOKEN == 'true'
         id: supabase_preview
         uses: 0xbigboss/supabase-branch-gh-action@v1
         with:
