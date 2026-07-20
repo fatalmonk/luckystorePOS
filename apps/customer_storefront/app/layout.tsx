@@ -142,12 +142,12 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-body pb-[60px]" suppressHydrationWarning>
-        {/* Google Analytics — deferred, never blocks LCP */}
+        {/* Google Analytics — deferred to idle time, never blocks render or layout */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="gtag-init" strategy="afterInteractive">
+        <Script id="gtag-init" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}

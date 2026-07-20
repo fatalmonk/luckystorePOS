@@ -4,14 +4,14 @@ import { createClient } from '@supabase/supabase-js';
 const BASE_URL = 'https://luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
-// Static pages that actually exist in the production build
+// Static pages that actually exist in the production build and are indexable
 const staticRoutes = [
   { path: '', priority: 1.0, changefreq: 'daily' },
   { path: '/category', priority: 0.8, changefreq: 'daily' },
-  { path: '/search', priority: 0.4, changefreq: 'always' },
-  { path: '/cart', priority: 0.4, changefreq: 'always' },
-  { path: '/checkout', priority: 0.4, changefreq: 'always' },
-  { path: '/order', priority: 0.5, changefreq: 'always' },
+  { path: '/privacy', priority: 0.3, changefreq: 'monthly' },
+  { path: '/terms', priority: 0.3, changefreq: 'monthly' },
+  { path: '/security-policy', priority: 0.3, changefreq: 'monthly' },
+  { path: '/data-deletion', priority: 0.3, changefreq: 'monthly' },
 ] as const;
 
 // Initialize Supabase client
@@ -29,28 +29,31 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
   try {
     const { data, error } = await supabase
       .from('categories')
-      .select('slug, category')
+      .select('slug, name, category')
       .eq('active', true)
       .eq('store_id', STORE_ID);
 
     if (error) throw error;
 
     return (data || []).map((c: any) => ({
-      slug: c.slug || (c.category || '').toLowerCase().trim().replace(/\s+/g, '-'),
+      slug: c.slug || (c.name || c.category || '').toLowerCase().trim().replace(/\s+/g, '-'),
       updatedAt: new Date().toISOString(),
     }));
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
     // Fallback static categories if DB query fails to ensure a valid sitemap is generated
     return [
-      { slug: 'fresh-vegetables', updatedAt: new Date().toISOString() },
-      { slug: 'fruits', updatedAt: new Date().toISOString() },
-      { slug: 'dairy-eggs', updatedAt: new Date().toISOString() },
-      { slug: 'meat-seafood', updatedAt: new Date().toISOString() },
-      { slug: 'bakery', updatedAt: new Date().toISOString() },
-      { slug: 'beverages', updatedAt: new Date().toISOString() },
       { slug: 'snacks', updatedAt: new Date().toISOString() },
-      { slug: 'pantry-staples', updatedAt: new Date().toISOString() },
+      { slug: 'cooking-essentials', updatedAt: new Date().toISOString() },
+      { slug: 'personal-care', updatedAt: new Date().toISOString() },
+      { slug: 'cleaning-supplies', updatedAt: new Date().toISOString() },
+      { slug: 'air-freshner', updatedAt: new Date().toISOString() },
+      { slug: 'pest-control', updatedAt: new Date().toISOString() },
+      { slug: 'breakfast', updatedAt: new Date().toISOString() },
+      { slug: 'baby-care', updatedAt: new Date().toISOString() },
+      { slug: 'tea-&-coffee', updatedAt: new Date().toISOString() },
+      { slug: 'electronics', updatedAt: new Date().toISOString() },
+      { slug: 'baking-needs', updatedAt: new Date().toISOString() },
     ];
   }
 }
@@ -86,12 +89,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${BASE_URL}${route.path}`,
     lastModified: now,
-    changeFrequency: (route.changefreq === 'always' ? 'daily' : route.changefreq) as any,
+    changeFrequency: route.changefreq as any,
     priority: route.priority,
   }));
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${BASE_URL}/category/${cat.slug}`,
+    url: `${BASE_URL}/category/${encodeURIComponent(cat.slug)}`,
     lastModified: new Date(cat.updatedAt).toISOString().split('.')[0] + 'Z',
     changeFrequency: 'weekly',
     priority: 0.7,
