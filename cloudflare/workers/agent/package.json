@@ -10,7 +10,7 @@
     "test": "vitest run",
     "lint": "eslint src/",
     "lint:fix": "eslint --fix src/",
-    "scan:secrets": "node ../../../scripts/secret_scan.js"
+    "scan:secrets": "node ../../../scripts/security/secret_scan.js"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240923.0",

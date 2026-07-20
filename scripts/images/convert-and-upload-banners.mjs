@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { resolve, join, basename } from 'path';
 import sharp from 'sharp';
-import { signV4Put } from './_r2-s3-sign.mjs';
+import { signV4Put } from '../lib/_r2-s3.mjs';
 
 // Load env variables
 function loadEnv() {

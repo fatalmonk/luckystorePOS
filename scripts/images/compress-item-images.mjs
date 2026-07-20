@@ -6,8 +6,8 @@
  * Successful conversions are logged to ./compress-results.json for targeted SQL UPDATE.
  *
  * Usage:
- *   DRY_RUN=true  node scripts/compress-item-images.mjs   # preview only
- *   DRY_RUN=false node scripts/compress-item-images.mjs   # execute
+ *   DRY_RUN=true  node scripts/images/compress-item-images.mjs   # preview only
+ *   DRY_RUN=false node scripts/images/compress-item-images.mjs   # execute
  *
  * Env required:
  *   SUPABASE_URL

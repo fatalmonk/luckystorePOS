@@ -61,7 +61,7 @@ async function checkPriceAlerts() {
           `Our ৳${alert.our_price} vs Market avg ৳${alert.market_avg_price} ` +
           `(${Math.round(alert.price_gap_percent * 100)}% above)`);
         
-        // Insert alert into notifications table
+        // Insert alert into notifications table (if it exists)
         const { error: notifError } = await supabase
           .from('notifications')
           .insert({
@@ -81,7 +81,7 @@ async function checkPriceAlerts() {
           });
         
         if (notifError) {
-          console.error('  Failed to create notification:', notifError);
+          console.warn(`  ⚠ Could not create notification: ${notifError.message}`);
         }
       }
     }

@@ -92,6 +92,6 @@ jobs:
         with:
           node-version: '20'
       - name: Run Secret Scan
-        run: node scripts/secret_scan.js
+        run: node scripts/security/secret_scan.js
 
 

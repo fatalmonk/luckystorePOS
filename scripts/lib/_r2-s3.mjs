@@ -1,5 +1,5 @@
 /**
- * AWS Signature V4 signing + listing for R2 S3-compatible API.
+ * AWS Signature V4 signing + R2 S3-compatible API helpers.
  * Used by ops scripts (Node.js, not browser).
  */
 
@@ -36,6 +36,12 @@ export async function signRequest(method, endpoint, bucket, path, query, accessK
       'x-amz-content-sha256': bodyHash,
     },
   };
+}
+
+/** Convenience: sign a PUT request (returns headers only, for fetch). */
+export async function signV4Put(endpoint, bucket, key, body, accessKey, secretKey) {
+  const { headers } = await signRequest('PUT', endpoint, bucket, `/${key}`, '', accessKey, secretKey, body);
+  return headers;
 }
 
 export async function listR2Objects(endpoint, bucket, { prefix = '', maxKeys = 1000 } = {}) {
