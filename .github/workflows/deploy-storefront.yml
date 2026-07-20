@@ -49,13 +49,12 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
       - name: Fetch Supabase Preview Branch
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && secrets.SUPABASE_ACCESS_TOKEN != ''
         id: supabase_preview
         uses: 0xbigboss/supabase-branch-gh-action@v1
         with:
           supabase-access-token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           supabase-project-id: 'hvmyxyccfnkrbxqbhlnm'
-          git-branch: ${{ github.head_ref }}
       
       - name: Build
         run: vercel build --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
