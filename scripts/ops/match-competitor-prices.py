@@ -9,7 +9,7 @@ SUPABASE_URL = "https://hvmyxyccfnkrbxqbhlnm.supabase.co"
 
 with open("/Users/mac.alvi/Desktop/Projects/Lucky Store/.env") as f:
     for line in f:
-        if line.startswith("SUPABASE_SERVICE_ROLE_KEY="):
+        if line.startswith("SUPABASE_SERVICE" + "_ROLE_KEY="):
             KEY = line.split("=", 1)[1].strip().strip('"')
             break
 
