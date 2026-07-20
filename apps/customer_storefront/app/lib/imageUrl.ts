@@ -9,7 +9,7 @@
  * NOTE: R2 bucket object keys use /banners/ and /categories/ prefixes.
  * Avoid /images/ — that prefix does not exist on the CDN.
  */
-const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '').replace(/\/$/, '');
+const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? 'https://images.luckystore1947.com').replace(/\/$/, '');
 
 export function img(path: string): string {
   if (!BASE) return path;
