@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export interface ResponsiveImage {
   src: string;
@@ -90,27 +89,62 @@ export function HeroBanner({
     >
       {/* Background images — crossfade */}
       {slides.map((s, i) => {
-        const img = typeof s.image === 'string' ? null : s.image;
+        const imgVal = typeof s.image === 'string' ? null : s.image;
         const src = getSlideImage(s);
         const isVisible = i === current && !fading;
         const baseClasses = `absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${
           isVisible ? 'opacity-100 z-0' : 'opacity-0 z-0'
         }`;
+        const isLcp = i === 0;
+
         return (
           <picture key={i} className={baseClasses}>
-            {img?.sources?.map((source, idx) => (
+            {/* Hoist preload link to head for LCP image */}
+            {isLcp && imgVal?.sources?.[0]?.srcSet && (
+              <link
+                rel="preload"
+                as="image"
+                href={imgVal.src}
+                imageSrcSet={imgVal.sources[0].srcSet}
+                imageSizes={imgVal.sizes || '100vw'}
+                fetchPriority="high"
+                type={imgVal.sources[0].type}
+              />
+            )}
+            {isLcp && !imgVal?.sources?.[0]?.srcSet && imgVal?.srcSet && (
+              <link
+                rel="preload"
+                as="image"
+                href={src}
+                imageSrcSet={imgVal.srcSet}
+                imageSizes={imgVal.sizes || '100vw'}
+                fetchPriority="high"
+                type="image/webp"
+              />
+            )}
+            {isLcp && !imgVal?.sources?.[0]?.srcSet && !imgVal?.srcSet && (
+              <link
+                rel="preload"
+                as="image"
+                href={src}
+                fetchPriority="high"
+              />
+            )}
+
+            {imgVal?.sources?.map((source, idx) => (
               <source key={idx} srcSet={source.srcSet} type={source.type} media={source.media} />
             ))}
-            {img?.srcSet && (
-              <source srcSet={img.srcSet} type="image/webp" sizes={img.sizes || '100vw'} />
+            {imgVal?.srcSet && (
+              <source srcSet={imgVal.srcSet} type="image/webp" sizes={imgVal.sizes || '100vw'} />
             )}
-            <Image
-              src={src as string}
-              alt={img?.alt || ''}
-              fill
-              sizes={img?.sizes || '100vw'}
-              priority={i === 0}
-              unoptimized={!img?.srcSet && !img?.sources}
+            <img
+              src={src}
+              alt={imgVal?.alt || ''}
+              sizes={imgVal?.sizes || '100vw'}
+              srcSet={imgVal?.srcSet || undefined}
+              fetchPriority={isLcp ? 'high' : 'low'}
+              loading={isLcp ? 'eager' : 'lazy'}
+              className="absolute inset-0 w-full h-full object-cover object-center"
             />
           </picture>
         );
