@@ -38,6 +38,8 @@ export async function fetchCompetitorPrices(
     competitor_name: row.competitor_name,
     competitor_price: row.competitor_price,
     competitor_url: row.competitor_product_url,
+    our_price: row.our_price ?? null,
+    price_gap_percent: row.price_gap_percent ?? null,
     scraped_at: row.scraped_at,
     created_at: row.created_at,
     updated_at: row.updated_at,

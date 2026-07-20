@@ -13,7 +13,7 @@
 - `apps/mobile_app/pubspec.yaml`
 - `.env.example`
 - `package.json`
-- `scripts/secret_scan.js`
+- `scripts/security/secret_scan.js`
 - `docs/env-security.md`
 
 ### Forbidden Areas (Do Not Touch)
@@ -33,7 +33,7 @@
 - `git status`
 - `git diff`
 - `git diff --stat`
-- `node scripts/secret_scan.js`
+- `node scripts/security/secret_scan.js`
 - `npm run lint`
 - `npm run build`
 - `flutter analyze`

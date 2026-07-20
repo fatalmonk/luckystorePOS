@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TrendingUp, Plus, Trash2, ExternalLink, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, ExternalLink, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '../../components/NotificationContext';
 import { DataTable, Column } from '../../components/data-display/DataTable';
@@ -54,13 +54,86 @@ export function CompetitorPricesPage() {
 
   const alertProductIds = new Set(alerts?.map((a: PriceAlert) => a.product_id) || []);
 
+  // Sorting state
+  type SortKey = 'item_name' | 'competitor_name' | 'our_price' | 'competitor_price' | 'price_gap_percent' | 'scraped_at';
+  type SortDir = 'asc' | 'desc';
+  const [sortKey, setSortKey] = useState<SortKey>('scraped_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
   const filteredPrices = showAlertsOnly
     ? prices?.filter((p: CompetitorPrice) => alertProductIds.has(p.item_id))
     : prices;
 
+  // Sort the filtered data
+  const sortedPrices = useMemo(() => {
+    if (!filteredPrices) return [];
+    const sorted = [...filteredPrices].sort((a, b) => {
+      let aVal: string | number | null;
+      let bVal: string | number | null;
+      switch (sortKey) {
+        case 'item_name':
+          aVal = a.item_name ?? '';
+          bVal = b.item_name ?? '';
+          break;
+        case 'competitor_name':
+          aVal = a.competitor_name;
+          bVal = b.competitor_name;
+          break;
+        case 'our_price':
+          aVal = a.our_price ?? -1;
+          bVal = b.our_price ?? -1;
+          break;
+        case 'competitor_price':
+          aVal = a.competitor_price;
+          bVal = b.competitor_price;
+          break;
+        case 'price_gap_percent':
+          aVal = a.price_gap_percent ?? -Infinity;
+          bVal = b.price_gap_percent ?? -Infinity;
+          break;
+        case 'scraped_at':
+          aVal = new Date(a.scraped_at).getTime();
+          bVal = new Date(b.scraped_at).getTime();
+          break;
+        default:
+          return 0;
+      }
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [filteredPrices, sortKey, sortDir]);
+
+  const SortIcon = ({ column }: { column: SortKey }) => {
+    if (sortKey !== column) return <ArrowUpDown size={12} className="opacity-30 inline ml-1" />;
+    return sortDir === 'asc'
+      ? <ArrowUp size={12} className="inline ml-1" />
+      : <ArrowDown size={12} className="inline ml-1" />;
+  };
+
+  const sortableHeader = (label: string, key: SortKey) => (
+    <button
+      onClick={() => toggleSort(key)}
+      className="inline-flex items-center hover:text-warm-foreground transition-colors"
+    >
+      {label}
+      <SortIcon column={key} />
+    </button>
+  );
+
   const columns: Column<CompetitorPrice>[] = [
     {
-      header: 'Product',
+      header: sortableHeader('Product', 'item_name'),
       accessor: (row: CompetitorPrice) => (
         <div className="competitor-product-cell">
           <span className="font-medium">{row.item_name || 'Unknown'}</span>
@@ -75,13 +148,21 @@ export function CompetitorPricesPage() {
       ),
     },
     {
-      header: 'Competitor',
+      header: sortableHeader('Competitor', 'competitor_name'),
       accessor: (row: CompetitorPrice) => (
         <span className="font-medium">{row.competitor_name}</span>
       ),
     },
     {
-      header: 'Their Price',
+      header: sortableHeader('Our Price', 'our_price'),
+      accessor: (row: CompetitorPrice) => (
+        <span className="font-mono font-medium">
+          {row.our_price ? formatCurrency(row.our_price) : '—'}
+        </span>
+      ),
+    },
+    {
+      header: sortableHeader('Their Price', 'competitor_price'),
       accessor: (row: CompetitorPrice) => (
         <span className="font-mono font-medium">
           {formatCurrency(row.competitor_price)}
@@ -89,7 +170,21 @@ export function CompetitorPricesPage() {
       ),
     },
     {
-      header: 'Last Updated',
+      header: sortableHeader('Gap', 'price_gap_percent'),
+      accessor: (row: CompetitorPrice) => {
+        if (row.price_gap_percent == null) return <span className="text-muted">—</span>;
+        const pct = Math.round(row.price_gap_percent * 100);
+        const isHigher = pct > 0;
+        const isLower = pct < 0;
+        return (
+          <span className={`font-mono font-medium ${isHigher ? 'text-danger' : isLower ? 'text-success' : 'text-muted'}`}>
+            {isHigher ? '+' : ''}{pct}%
+          </span>
+        );
+      },
+    },
+    {
+      header: sortableHeader('Last Updated', 'scraped_at'),
       accessor: (row: CompetitorPrice) => formatDateTime(row.scraped_at),
     },
     {
@@ -187,7 +282,7 @@ export function CompetitorPricesPage() {
 
       {/* Prices Table */}
       <DataTable
-        data={filteredPrices || []}
+        data={sortedPrices}
         columns={columns}
         emptyMessage="No competitor prices recorded yet"
       />

@@ -316,6 +316,8 @@ export interface CompetitorPrice {
   competitor_name: string;
   competitor_price: number;
   competitor_url: string | null;
+  our_price: number | null;
+  price_gap_percent: number | null;
   scraped_at: string;
   created_at: string;
   updated_at: string;

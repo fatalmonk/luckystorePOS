@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# scripts/doctor.sh – Pre‑flight validation for Lucky Store development environment
+# scripts/dev/doctor.sh – Pre‑flight validation for Lucky Store development environment
 # --------------------------------------------------------------
 # Checks:
 #   • Docker daemon is running and version >= 20.10

@@ -28,25 +28,30 @@ export async function saveToSupabase(storeId, competitor, products, ourProductsM
     // Try to match with our product catalog
     const ourProduct = findMatchingProduct(product.name, ourProductsMap);
     
-    return {
+    // Build record — only include nullable fields when they have values
+    // (sending null for columns the PostgREST schema cache can't resolve causes upsert failures)
+    const record = {
       store_id: storeId,
-      product_id: ourProduct?.id || null,
       product_name: product.name,
-      product_sku: ourProduct?.sku || null,
       competitor_name: competitor,
-      competitor_product_id: product.id || null,
-      competitor_product_url: product.url || null,
       competitor_price: parseFloat(product.price) || 0,
-      competitor_original_price: parseFloat(product.originalPrice) || null,
-      our_price: ourProduct?.price || null,
-      price_gap_percent: ourProduct?.price && product.price 
-        ? ((ourProduct.price - parseFloat(product.price)) / parseFloat(product.price))
-        : null,
       scraped_at: scrapedAt,
       scrape_batch_id: batchId,
       scrape_status: 'success',
-      raw_data: product
+      raw_data: product,
     };
+    if (ourProduct?.id) record.item_id = ourProduct.id;
+    if (ourProduct?.sku) record.product_sku = ourProduct.sku;
+    if (product.id) record.competitor_product_id = product.id;
+    if (product.url) record.competitor_product_url = product.url;
+    if (product.originalPrice) record.competitor_original_price = parseFloat(product.originalPrice);
+    if (ourProduct?.price) {
+      record.our_price = ourProduct.price;
+      if (product.price) {
+        record.price_gap_percent = ((ourProduct.price - parseFloat(product.price)) / parseFloat(product.price));
+      }
+    }
+    return record;
   });
   
   // Insert in batches of 100
@@ -56,10 +61,7 @@ export async function saveToSupabase(storeId, competitor, products, ourProductsM
     
     const { error } = await supabase
       .from('competitor_prices')
-      .upsert(batch, {
-        onConflict: 'store_id,competitor_name,product_name,scraped_at',
-        ignoreDuplicates: false
-      });
+      .insert(batch);
     
     if (error) {
       console.error(`Error saving batch ${i / batchSize + 1}:`, error);
@@ -107,7 +109,7 @@ export async function loadOurProducts(storeId) {
   const { data, error } = await supabase
     .from('items')
     .select('id, name, sku, price')
-    .eq('store_id', storeId);
+    .eq('tenant_id', storeId);
   
   if (error) {
     console.error('Error loading our products:', error);
