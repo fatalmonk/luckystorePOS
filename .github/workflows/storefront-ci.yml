@@ -69,7 +69,7 @@ jobs:
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=${{ steps.supabase_preview.outputs.api_url }}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.supabase_preview.outputs.anon_key }}" >> $GITHUB_ENV
-          echo "SUPABASE_SERVICE_ROLE_KEY=${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY"="${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
       
       - uses: actions/setup-node@v4
         with:
