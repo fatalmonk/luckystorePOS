@@ -1,31 +1,92 @@
-# Deploy Customer Storefront to Vercel
-# This workflow deploys apps/customer_storefront to the separate Vercel project (Triggered refresh)
-
-name: Deploy Storefront
+name: Storefront CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
     paths:
       - 'apps/customer_storefront/**'
       - 'supabase/migrations/**'
-      - '.github/workflows/deploy-storefront.yml'
+      - '.github/workflows/storefront.yml'
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
     paths:
       - 'apps/customer_storefront/**'
       - 'supabase/migrations/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run lint --workspace=customer_storefront
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: cd apps/customer_storefront && npx tsc --noEmit
+
+  e2e:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    env:
+      CI: true
+      HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Fetch Supabase Preview Branch
+        if: env.HAS_SUPABASE_TOKEN == 'true'
+        id: supabase_preview
+        uses: 0xbigboss/supabase-branch-gh-action@v1
+        with:
+          supabase-access-token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          supabase-project-id: 'hvmyxyccfnkrbxqbhlnm'
+
+      - name: Set environment variables for preview branch
+        run: |
+          if [ -n "${{ steps.supabase_preview.outputs.api_url }}" ]; then
+            echo "NEXT_PUBLIC_SUPABASE_URL=${{ steps.supabase_preview.outputs.api_url }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.supabase_preview.outputs.anon_key }}" >> $GITHUB_ENV
+            echo "SUPABASE_SERVICE_ROLE_KEY"="${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
+          else
+            echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+            echo "SUPABASE_SERVICE_ROLE_KEY"="${{ secrets.SUPABASE_SERVICE_KEY }}" >> $GITHUB_ENV
+          fi
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npm run build --workspace=customer_storefront
+      - run: cd apps/customer_storefront && npx playwright test --project=chromium
+
   deploy:
     runs-on: ubuntu-latest
+    # Run only if lint and typecheck succeed
+    needs: [lint, typecheck]
     env:
       HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
