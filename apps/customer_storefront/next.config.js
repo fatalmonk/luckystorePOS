@@ -35,6 +35,7 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js'],
+    inlineCss: true,
   },
   async headers() {
     const linkHeaders = [
