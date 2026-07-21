@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
@@ -23,6 +23,7 @@ function normalizeBrand(value?: string | null): string {
 function BrandFilterBar({ products, selectedBrand }: { products: Product[]; selectedBrand?: string }) {
   const router = useRouter();
   const params = useSearchParams();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ function BrandFilterBar({ products, selectedBrand }: { products: Product[]; sele
     } else {
       nextParams.delete('brand');
     }
-    router.push(`${window.location.pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ''}`, { scroll: false });
+    router.push(`${pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ''}`, { scroll: false });
   };
 
   const chipBase = 'flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-bold border transition-all duration-200 whitespace-nowrap';
