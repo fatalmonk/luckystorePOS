@@ -7,11 +7,13 @@ export interface Product {
   badge?: string;
   unit: string;
   category: Category;
+  category_id?: string;
   stock: number;
   description: string;
   nutrition?: string;
   image_url?: string;
   created_at?: string;
+  brand?: string;
 }
 
 export type Category = string;
@@ -26,46 +28,16 @@ export interface CategoryGroup {
 /** Category groups — each group page aggregates multiple sub-categories into swimlanes */
 export const CATEGORY_GROUPS: CategoryGroup[] = [
   {
-    slug: 'snacks',
-    label: 'Snacks',
-    emoji: '🍪',
-    subCategories: ['biscuits-&-cookies', 'chocolates-&-candies', 'ice-cream', 'cold-beverages'],
-  },
-  {
-    slug: 'cooking-essentials',
-    label: 'Cooking Essentials',
-    emoji: '🍳',
-    subCategories: ['rice-&-grain', 'spices', 'oil-&-ghee', 'salt-&-sugar', 'premium-ingredients', 'condiments'],
-  },
-  {
     slug: 'personal-care',
     label: 'Personal Care',
     emoji: '🧴',
     subCategories: ['dental', 'facial', 'hair', 'skin', 'perfume-&-body-spray', 'grooming'],
   },
   {
-    slug: 'cleaning-supplies',
-    label: 'Cleaning Supplies',
-    emoji: '🧼',
-    subCategories: ['cleaning-supplies'],
-  },
-  {
     slug: 'air-freshner',
-    label: 'Air Freshner',
+    label: 'Air Freshener',
     emoji: '🌬️',
     subCategories: ['air-freshner'],
-  },
-  {
-    slug: 'pest-control',
-    label: 'Pest Control',
-    emoji: '🐀',
-    subCategories: ['pest-control'],
-  },
-  {
-    slug: 'breakfast',
-    label: 'Breakfast',
-    emoji: '🍳',
-    subCategories: ['cereals', 'dairy-&-eggs', 'energy-boosters'],
   },
   {
     slug: 'baby-care',
@@ -74,10 +46,34 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     subCategories: ['baby-care'],
   },
   {
+    slug: 'cooking-essentials',
+    label: 'Cooking Essentials',
+    emoji: '🌾',
+    subCategories: ['rice-&-grain', 'spices', 'oil-&-ghee', 'salt-&-sugar', 'premium-ingredients', 'condiments'],
+  },
+  {
+    slug: 'snacks',
+    label: 'Snacks',
+    emoji: '🍪',
+    subCategories: ['biscuits-&-cookies', 'chocolates-&-candies', 'ice-cream', 'cold-beverages'],
+  },
+  {
+    slug: 'breakfast',
+    label: 'Breakfast',
+    emoji: '🍳',
+    subCategories: ['cereals', 'dairy-&-eggs', 'energy-boosters'],
+  },
+  {
     slug: 'tea-&-coffee',
     label: 'Tea & Coffee',
     emoji: '☕',
     subCategories: ['tea-&-coffee'],
+  },
+  {
+    slug: 'baking-needs',
+    label: 'Baking Needs',
+    emoji: '🧁',
+    subCategories: ['baking-needs'],
   },
   {
     slug: 'electronics',
@@ -86,10 +82,16 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     subCategories: ['electronics'],
   },
   {
-    slug: 'baking-needs',
-    label: 'Baking Needs',
-    emoji: '🧁',
-    subCategories: ['baking-needs'],
+    slug: 'cleaning-supplies',
+    label: 'Cleaning Supplies',
+    emoji: '🧼',
+    subCategories: ['cleaning-supplies'],
+  },
+  {
+    slug: 'pest-control',
+    label: 'Pest Control',
+    emoji: '🐛',
+    subCategories: ['pest-control'],
   },
 ];
 

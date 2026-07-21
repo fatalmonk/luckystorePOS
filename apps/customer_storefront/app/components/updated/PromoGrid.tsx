@@ -37,13 +37,13 @@ function responsiveBanner(base: string, alt: string): ResponsiveImage {
 
 const defaultPromos: PromoItem[] = [
   {
-    id: 'big-savings',
+    id: 'fresh-produce',
     type: 'large',
-    title: 'Big Savings Week',
-    subtitle: 'Up to 50% off essentials',
+    title: 'Fresh Produce',
+    subtitle: 'Farm-fresh fruits & vegetables daily',
     ctaText: 'Shop now',
-    ctaHref: '/category?theme=deals',
-    bgImage: responsiveBanner('promo_savings_banner', 'Big savings week banner'),
+    ctaHref: '/category?theme=fresh',
+    bgImage: responsiveBanner('promo_fresh_banner', 'Fresh produce banner'),
   },
   {
     id: 'fresh-arrivals',
@@ -135,11 +135,11 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
               {/* Decorative SVG for small cards */}
               {!isLarge && (
                 isFresh ? (
-                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-warm-surface/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-warm-surface/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m9-9H3m14-7l4 4m-4 0l-4-4m-2 10l-4 4m4 0l4-4" />
                   </svg>
                 ) : (
-                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-warm-surface/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-warm-surface/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581a1.5 1.5 0 002.122 0l4.318-4.318a1.5 1.5 0 000-2.122L11.16 3.659A2.25 2.25 0 009.568 3z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
                   </svg>
@@ -158,13 +158,7 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
                 {promo.subtitle && (
                   <p className="mb-4 text-sm font-medium text-warm-surface/90 drop-shadow leading-relaxed max-w-[30ch]">{promo.subtitle}</p>
                 )}
-                <div className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
-                  isLarge
-                    ? 'bg-warm-surface text-warm-fg hover:bg-warm-surface/90 active:scale-95'
-                    : bgSrc
-                      ? 'text-warm-accent group-hover:text-warm-accent-hover'
-                      : 'text-warm-fg group-hover:text-warm-fg'
-                }`}>
+                <div className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all bg-white text-[#0B0B0D] hover:bg-white/90 active:scale-95 shadow-warm-sm">
                   {promo.ctaText}
                   <span className="text-sm transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">→</span>
                 </div>

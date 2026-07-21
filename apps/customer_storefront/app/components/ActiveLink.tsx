@@ -12,11 +12,21 @@ interface ActiveLinkProps {
   showBadge?: boolean;
 }
 
+function CartBadge() {
+  const { totalItems } = useCartContext();
+  if (totalItems <= 0) return null;
+  return (
+    <span className="absolute top-0.5 right-2.5 min-w-[17px] h-[17px] bg-warm-accent text-warm-fg text-[10px] font-bold rounded-full grid place-items-center px-1 leading-none">
+      {totalItems}
+      <span className="sr-only"> items in cart</span>
+    </span>
+  );
+}
+
 export function ActiveLink({ href, icon, label, showBadge }: ActiveLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== '/' && pathname?.startsWith(`${href}/`));
-  const { totalItems } = useCartContext();
-  const badgeCount = showBadge ? totalItems : 0;
+  const hrefPath = href.split('?')[0];
+  const isActive = pathname === hrefPath || (hrefPath !== '/' && pathname?.startsWith(`${hrefPath}/`));
 
   return (
     <Link
@@ -31,11 +41,7 @@ export function ActiveLink({ href, icon, label, showBadge }: ActiveLinkProps) {
       )}
       <span className="inline-flex items-center justify-center" aria-hidden="true">{icon}</span>
       <span className="text-[10px] font-bold">{label}</span>
-      {badgeCount > 0 && (
-        <span className="absolute top-0.5 right-2.5 min-w-[17px] h-[17px] bg-warm-accent text-warm-fg text-[10px] font-bold rounded-full grid place-items-center px-1 leading-none">
-          {badgeCount}
-        </span>
-      )}
+      {showBadge && <CartBadge />}
     </Link>
   );
 }

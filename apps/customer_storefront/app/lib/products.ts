@@ -44,6 +44,7 @@ export async function fetchProductById(id: string): Promise<Product | null> {
       description: item.description ?? '',
       image_url: item.image_url,
       created_at: item.created_at,
+      brand: deriveBrand(item.name),
     };
   } catch (error) {
     console.error('Error in fetchProductById:', error);
@@ -130,10 +131,12 @@ export async function fetchProducts(
         badge: originalPrice > price ? 'On Sale' : undefined,
         unit: 'pc',
         category: item.category as Category,
+        category_id: item.category_id,
         stock: Number(item.stock ?? item.qty_on_hand ?? 0),
         description: item.description ?? '',
         image_url: item.image_url,
         created_at: item.created_at,
+        brand: deriveBrand(item.name),
       };
     });
 
@@ -145,6 +148,14 @@ export async function fetchProducts(
 }
 
 /** Admin-web compatible deterministic emoji fallback from category name */
+function deriveBrand(name: string): string | undefined {
+  if (!name) return undefined;
+  const firstWord = name.trim().split(/\s+/)[0];
+  const knownBrands = ['Polar', 'Igloo', 'Savoy', 'Kwality', 'Lux', 'Pran', 'Ruchi', 'Aarong', 'Dekko', 'Danish'];
+  const brand = knownBrands.find((b) => firstWord.toLowerCase() === b.toLowerCase());
+  return brand;
+}
+
 function getCategoryEmoji(name: string, dbEmoji?: string | null): string {
   if (dbEmoji && dbEmoji.trim() && dbEmoji !== '📦') return dbEmoji;
   const words = name.toLowerCase().trim().split(/\s+/);

@@ -1,11 +1,93 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
 import { PromoBanner } from './PromoBanner';
 import { getCategoryGroup } from '../lib/types';
 import { Fire, Star, Package } from '@phosphor-icons/react';
 import type { Product } from '../lib/types';
+
+const ICE_CREAM_SLUGS = ['ice-cream', 'snacks'];
+
+function getSingleBrand(value: string | string[] | undefined): string | undefined {
+  if (!value) return undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function buildBrandHref(currentParams: URLSearchParams, brand: string | null): string {
+  const params = new URLSearchParams(currentParams.toString());
+  if (brand) {
+    params.set('brand', brand);
+  } else {
+    params.delete('brand');
+  }
+  const query = params.toString();
+  return `${window.location.pathname}${query ? `?${query}` : ''}`;
+}
+
+function BrandFilterBar({ products, selectedBrand }: { products: Product[]; selectedBrand?: string }) {
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const counts = products.reduce((acc, p) => {
+    const brand = p.brand || 'Others';
+    acc[brand] = (acc[brand] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const brands = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([brand]) => brand);
+
+  if (brands.length <= 1) return null;
+
+  const handleClick = (brand: string | null) => {
+    const nextParams = new URLSearchParams(params.toString());
+    if (brand) {
+      nextParams.set('brand', brand);
+    } else {
+      nextParams.delete('brand');
+    }
+    router.push(`${window.location.pathname}?${nextParams.toString()}`, { scroll: false });
+  };
+
+  const chipBase = 'flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-bold border transition-all duration-200 whitespace-nowrap';
+
+  return (
+    <section className="mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-extrabold tracking-tight text-warm-fg">Shop by Brand</h3>
+        <span className="text-xs font-semibold text-warm-muted">{brands.length} brands</span>
+      </div>
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask pb-1">
+        <button
+          onClick={() => handleClick(null)}
+          className={`${chipBase} ${
+            !selectedBrand
+              ? 'bg-warm-fg text-warm-surface border-warm-fg'
+              : 'bg-warm-surface text-warm-fg border-warm-border/60 hover:border-warm-fg'
+          }`}
+        >
+          All ({products.length})
+        </button>
+        {brands.map((brand) => (
+          <button
+            key={brand}
+            onClick={() => handleClick(brand === selectedBrand ? null : brand)}
+            className={`${chipBase} ${
+              selectedBrand === brand
+                ? 'bg-warm-fg text-warm-surface border-warm-fg'
+                : 'bg-warm-surface text-warm-fg border-warm-border/60 hover:border-warm-fg'
+            }`}
+          >
+            {brand} ({counts[brand]})
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 interface NativeAdBannerProps {
   title: string;
@@ -19,6 +101,7 @@ interface NativeAdBannerProps {
 interface CategorySwimlanesProps {
   categorySlug: string;
   group?: ReturnType<typeof getCategoryGroup>;
+  parentGroup?: ReturnType<typeof getCategoryGroup>;
   products: Product[];
   categories: { id: string; slug: string; name: string; emoji: string }[];
   theme: string;
@@ -30,6 +113,7 @@ interface CategorySwimlanesProps {
 export function CategorySwimlanes({
   categorySlug,
   group,
+  parentGroup,
   products,
   theme,
   sort,
@@ -37,6 +121,8 @@ export function CategorySwimlanes({
   ad,
   searchParams,
 }: CategorySwimlanesProps) {
+  const router = useRouter();
+  const urlParams = useSearchParams();
   const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
   const availabilityParam = Array.isArray(searchParams?.availability) 
@@ -52,7 +138,24 @@ export function CategorySwimlanes({
     return { min, max };
   }) : [];
 
+  const selectedBrand = getSingleBrand(urlParams.get('brand') || searchParams?.brand);
+
+  const displayGroup = group || parentGroup;
+  const isIceCreamGroup = ICE_CREAM_SLUGS.includes(categorySlug) ||
+    ICE_CREAM_SLUGS.includes(displayGroup?.slug || '');
+
   let filtered = [...products];
+
+  if (!group && parentGroup) {
+    const currentCatObj = categories.find((c) => c.slug === categorySlug);
+    const catName = currentCatObj?.name ?? categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    filtered = filtered.filter((p) => 
+      (currentCatObj?.id && p.category_id === currentCatObj.id) ||
+      p.category === catName ||
+      p.category === categorySlug ||
+      (currentCatObj?.name && p.category === currentCatObj.name)
+    );
+  }
 
   if (theme === 'deals') {
     filtered = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price);
@@ -79,6 +182,10 @@ export function CategorySwimlanes({
     );
   }
 
+  if (selectedBrand) {
+    filtered = filtered.filter((p) => p.brand?.toLowerCase() === selectedBrand.toLowerCase());
+  }
+
   if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
   else if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
   else if (sort === 'newest')
@@ -89,19 +196,25 @@ export function CategorySwimlanes({
   const deals = products.filter((p) => p.originalPrice && p.originalPrice > p.price).slice(0, 8);
   const bestSellers = products.filter((p) => p.stock > 10).slice(0, 8);
 
-  const subCategoryItems = !group ? [] : group.subCategories.map((subSlug) => {
+  const subCategoryItems = !displayGroup ? [] : displayGroup.subCategories.map((subSlug) => {
     const cat = categories.find((c) => c.slug === subSlug);
     const catName = cat?.name ?? subSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    const catProducts = filtered.filter((p) => p.category === catName || p.category === subSlug || p.category === cat?.name);
+    const catProducts = products.filter((p) => 
+      (cat?.id && p.category_id === cat.id) ||
+      p.category === catName || 
+      p.category === subSlug || 
+      (cat?.name && p.category === cat.name)
+    );
     return {
       slug: subSlug,
       label: catName,
       icon: cat?.emoji || '📦',
       count: catProducts.length,
+      isActive: subSlug === categorySlug,
     };
   });
 
-  if (filtered.length === 0) {
+  if (filtered.length === 0 && !displayGroup) {
     return (
       <div className="text-center py-16 px-3">
         <p className="text-warm-muted">No products found</p>
@@ -109,18 +222,28 @@ export function CategorySwimlanes({
     );
   }
 
-  if (group) {
-    return (
-      <>
-        {deals.length > 0 && (
-          <ProductSwimlaneClient
-            title={<><Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />Rollbacks & Deals</>}
-            products={deals}
-          />
-        )}
+  const currentCategoryName = categories.find(c => c.slug === categorySlug)?.name || categorySlug;
+
+  return (
+    <>
+      {deals.length > 0 && (
+        <ProductSwimlaneClient
+          title={<><Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />Rollbacks & Deals</>}
+          products={deals}
+        />
+      )}
+      {isIceCreamGroup && subCategoryItems.length === 0 && (
+        <BrandFilterBar products={products} selectedBrand={selectedBrand} />
+      )}
+      {subCategoryItems.length > 0 && (
         <section className="mb-8">
+          {isIceCreamGroup && (
+            <BrandFilterBar products={products} selectedBrand={selectedBrand} />
+          )}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold tracking-tight">Sub Categories</h2>
+            <h2 className="text-lg font-bold tracking-tight">
+              {displayGroup ? `${displayGroup.label} Categories` : 'Sub Categories'}
+            </h2>
             <span className="text-xs font-semibold text-warm-muted">{subCategoryItems.length} categories</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
@@ -128,12 +251,18 @@ export function CategorySwimlanes({
               <a
                 key={sub.slug}
                 href={`/category/${sub.slug}`}
-                className="group flex flex-col items-center justify-center p-4 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent/80 shadow-warm-sm hover:shadow-warm-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 text-center"
+                className={`group flex flex-col items-center justify-center p-4 rounded-2xl bg-warm-surface border ${
+                  sub.isActive
+                    ? 'border-2 border-warm-accent bg-warm-accent/10 shadow-warm-md'
+                    : 'border-warm-border/60 hover:border-warm-accent/80 shadow-warm-sm hover:shadow-warm-md'
+                } hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 text-center`}
               >
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-warm-surface-hover/80 flex items-center justify-center text-3xl sm:text-4xl mb-2.5 group-hover:scale-110 transition-transform duration-200 shadow-inner">
                   {sub.icon}
                 </div>
-                <h3 className="font-extrabold text-xs sm:text-sm text-warm-fg line-clamp-1 group-hover:text-warm-fg-strong transition-colors">
+                <h3 className={`font-extrabold text-xs sm:text-sm line-clamp-1 transition-colors ${
+                  sub.isActive ? 'text-warm-fg font-black' : 'text-warm-fg group-hover:text-warm-fg-strong'
+                }`}>
                   {sub.label}
                 </h3>
                 <span className="text-[11px] font-semibold text-warm-muted mt-0.5">
@@ -143,43 +272,18 @@ export function CategorySwimlanes({
             ))}
           </div>
         </section>
-        {filtered.length > 0 && (
-          <section className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold tracking-tight">All {group.label} Products</h2>
-              <span className="text-sm text-warm-muted">{filtered.length} items</span>
-            </div>
-            <ProductGridClient products={filtered} />
-          </section>
-        )}
-      </>
-    );
-  }
-
-  return (
-    <>
-      {deals.length > 0 && (
-        <ProductSwimlaneClient
-          title={<><Fire weight="fill" size={16} className="inline-block mr-1.5 text-red-500" aria-hidden="true" />Rollbacks & Deals</>}
-          products={deals}
-          action={{ label: 'See all', href: `/category/${categorySlug}?theme=deals` }}
-        />
       )}
-      {bestSellers.length > 0 && (
-        <ProductSwimlaneClient
-          title={<><Star weight="fill" size={16} className="inline-block mr-1.5 text-warm-accent" aria-hidden="true" />Best Sellers</>}
-          products={bestSellers}
-          action={{ label: 'See all', href: `/category/${categorySlug}?theme=bestsellers` }}
-          />
-        )}
-      {ad && <PromoBanner {...ad} />}
-      <section className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold tracking-tight">All Products</h2>
-          <span className="text-sm text-warm-muted">{filtered.length} items</span>
-        </div>
-        <ProductGridClient products={filtered} />
-      </section>
+      {filtered.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold tracking-tight">
+              {group ? `All ${group.label} Products` : `${currentCategoryName} Products`}
+            </h2>
+            <span className="text-sm text-warm-muted">{filtered.length} items</span>
+          </div>
+          <ProductGridClient products={filtered} showBrandBadge={isIceCreamGroup} />
+        </section>
+      )}
     </>
   );
 }

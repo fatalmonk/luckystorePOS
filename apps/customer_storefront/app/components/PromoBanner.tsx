@@ -32,9 +32,9 @@ function responsiveBanner(base: string, alt: string): ResponsiveImage {
   return {
     src: img(`/banners/${base}_1200.webp`),
     srcSet: srcSet(`/banners/${base}_400.webp 400w, /banners/${base}_600.webp 600w, /banners/${base}_800.webp 800w, /banners/${base}_1200.webp 1200w`),
-    sizes: '(max-width: 768px) 100vw, 50vw',
+    sizes: '(max-width: 768px) 100vw, 95vw',
     sources: [
-      { srcSet: srcSet(`/banners/${base}.avif 600w`), type: 'image/avif', media: '(min-width: 1px)' },
+      { srcSet: srcSet(`/banners/${base}.avif 600w, /banners/${base}_1200.avif 1200w`), type: 'image/avif' },
     ],
     alt,
   };
@@ -52,7 +52,7 @@ export function PromoBanner({
   variant = 'image',
   inline = false,
 }: PromoBannerProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLAnchorElement>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -70,12 +70,12 @@ export function PromoBanner({
   const isImage = variant === 'image';
   const isSaffron = variant === 'saffron';
 
-  const containerClasses = [
-    'block relative rounded-[20px] overflow-hidden h-40 sm:h-48 group press-feedback',
+  const linkClasses = [
+    'block relative rounded-[20px] overflow-hidden h-40 sm:h-48 group press-feedback outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-surface',
     isImage ? '' : isSaffron
       ? 'bg-gradient-to-r from-[#f0c444] to-[#e8b840]'
-      : `bg-[${bgColor}]`,
-    'fade-up-hidden',
+      : '',
+    'fade-up-hidden motion-reduce:opacity-100 motion-reduce:transform-none motion-reduce:transition-none',
     visible ? 'fade-up-visible' : '',
   ].join(' ');
 
@@ -83,7 +83,7 @@ export function PromoBanner({
   const bgSrc = bgImage ? (typeof bgImage === 'string' ? bgImage : bgImage.src) : null;
 
   const content = (
-    <div ref={ref} className={containerClasses}>
+    <>
       {isImage && (
         <>
           {bgSrc ? (
@@ -92,15 +92,15 @@ export function PromoBanner({
                 <source key={idx} srcSet={source.srcSet} type={source.type} media={source.media} />
               ))}
               {responsive?.srcSet && (
-                <source srcSet={responsive.srcSet} type="image/webp" sizes={responsive.sizes || '(max-width: 768px) 100vw, 50vw'} />
+                <source srcSet={responsive.srcSet} type="image/webp" sizes={responsive.sizes || '(max-width: 768px) 100vw, 95vw'} />
               )}
               <Image
                 src={bgSrc}
                 alt={responsive?.alt || title}
                 fill
-                sizes={responsive?.sizes || '(max-width: 768px) 100vw, 50vw'}
+                sizes={responsive?.sizes || '(max-width: 768px) 100vw, 95vw'}
                 unoptimized={!responsive?.srcSet && !responsive?.sources}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
               />
             </picture>
           ) : (
@@ -132,22 +132,27 @@ export function PromoBanner({
           <span aria-hidden="true">→</span>
         </span>
       </div>
-    </div>
+    </>
+  );
+
+  const link = (
+    <Link
+      ref={ref}
+      href={ctaHref}
+      className={linkClasses}
+      style={{ backgroundColor: isImage || isSaffron ? undefined : bgColor }}
+    >
+      {content}
+    </Link>
   );
 
   if (inline) {
-    return (
-      <Link href={ctaHref} className="contents">
-        {content}
-      </Link>
-    );
+    return link;
   }
 
   return (
     <section className="mb-6 px-3 sm:px-4 lg:px-6">
-      <Link href={ctaHref} className="contents">
-        {content}
-      </Link>
+      {link}
     </section>
   );
 }

@@ -6,12 +6,13 @@ import type { Product } from '../lib/types';
 interface ProductGridProps {
   products: Product[];
   cart: { id: string; qty: number }[];
+  showBrandBadge?: boolean;
   onAdd: (product: Product, buttonEl?: HTMLButtonElement | null) => void;
   onUpdateQty: (id: string, delta: number) => void;
   onClick: (id: string) => void;
 }
 
-export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: ProductGridProps) {
+export function ProductGrid({ products, cart, showBrandBadge = false, onAdd, onUpdateQty, onClick }: ProductGridProps) {
   const getQtyInCart = (productId: string) => {
     const item = cart.find((c) => c.id === productId);
     return item?.qty || 0;
@@ -34,12 +35,14 @@ export function ProductGrid({ products, cart, onAdd, onUpdateQty, onClick }: Pro
               price={product.price}
               originalPrice={product.originalPrice}
               badge={product.badge}
+              brand={product.brand}
               unit={product.unit}
               stock={product.stock}
               category={product.category}
               image_url={product.image_url}
               qtyInCart={getQtyInCart(product.id)}
               priority={index === 0}
+              showBrandBadge={showBrandBadge}
               onAdd={() => onAdd(product, addBtnRef)}
               onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
               onClick={() => onClick(product.id)}

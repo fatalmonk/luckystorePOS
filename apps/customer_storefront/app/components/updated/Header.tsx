@@ -118,11 +118,11 @@ export function Header() {
           {/* Mobile search icon button */}
           <button
             type="button"
-            className="md:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-warm-bg text-warm-fg transition-colors"
+            className="md:hidden flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full hover:bg-warm-bg text-warm-fg transition-colors"
             onClick={() => router.push('/search')}
             aria-label="Search page"
           >
-            <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
+            <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
           </button>
 
           <Link

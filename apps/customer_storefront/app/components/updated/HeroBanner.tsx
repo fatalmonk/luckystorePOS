@@ -18,6 +18,8 @@ interface Slide {
   badge?: string;
   ctaText?: string;
   ctaHref?: string;
+  /** Custom object-position focal point, e.g. '50% 64%' */
+  objectPosition?: string;
 }
 
 interface HeroBannerProps {
@@ -35,38 +37,37 @@ export function HeroBanner({
   bgGradient = 'from-[#f0c444] via-[#e8b840] to-[#d4a030]',
 }: HeroBannerProps) {
   const [current, setCurrent] = useState(0);
-  const [fading, setFading] = useState(false);
+  const [paused, setPaused] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
   const goTo = useCallback((index: number) => {
-    if (index === current) return;
-    setFading(true);
-    setTimeout(() => {
-      setCurrent(index);
-      setFading(false);
-    }, 300);
-  }, [current]);
+    setCurrent(index);
+  }, []);
 
-  // Auto-rotate
+  // Auto-rotate — pauses on hover (desktop) and touch (mobile)
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || paused) return;
     const timer = setInterval(() => {
-      goTo((current + 1) % slides.length);
-    }, 5000);
+      setCurrent((c) => (c + 1) % slides.length);
+    }, 4000);
     return () => clearInterval(timer);
-  }, [current, slides.length, goTo]);
+  }, [slides.length, paused]);
 
   // Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    setPaused(true);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     touchEndX.current = e.changedTouches[0].clientX;
     const diff = touchStartX.current - touchEndX.current;
     const threshold = 50;
-    if (Math.abs(diff) < threshold) return;
+    if (Math.abs(diff) < threshold) {
+      setPaused(false);
+      return;
+    }
     if (diff > 0) {
       // Swipe left → next
       goTo((current + 1) % slides.length);
@@ -74,6 +75,7 @@ export function HeroBanner({
       // Swipe right → previous
       goTo((current - 1 + slides.length) % slides.length);
     }
+    setTimeout(() => setPaused(false), 3000);
   };
 
   const slide = slides[current];
@@ -81,25 +83,30 @@ export function HeroBanner({
 
   return (
     <section
-      className={`w-full mb-6 rounded-[24px] overflow-hidden relative h-44 flex flex-col justify-center p-6 border border-warm-border/40 shadow-warm-sm transition-shadow duration-300 ${
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Featured categories"
+      className={`w-full mb-6 rounded-[24px] overflow-hidden relative h-44 sm:h-52 lg:h-60 flex flex-col justify-center p-6 border border-warm-border/40 shadow-warm-sm transition-shadow duration-300 ${
         hasBgImage ? '' : `bg-gradient-to-r ${bgGradient}`
       }`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      {/* Background images — crossfade */}
+      {/* Background images — smooth crossfade */}
       {slides.map((s, i) => {
         const imgVal = typeof s.image === 'string' ? null : s.image;
         const src = getSlideImage(s);
-        const isVisible = i === current && !fading;
-        const baseClasses = `absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${
+        const isVisible = i === current;
+        const baseClasses = `absolute inset-0 w-full h-full transition-opacity duration-500 ${
           isVisible ? 'opacity-100 z-0' : 'opacity-0 z-0'
         }`;
         const isLcp = i === 0;
 
         return (
           <picture key={i} className={baseClasses}>
-            {/* Hoist preload link to head for LCP image */}
+            {/* Preload header link for LCP image */}
             {isLcp && imgVal?.sources?.[0]?.srcSet && (
               <link
                 rel="preload"
@@ -144,37 +151,44 @@ export function HeroBanner({
               srcSet={imgVal?.srcSet || undefined}
               fetchPriority={isLcp ? 'high' : 'low'}
               loading={isLcp ? 'eager' : 'lazy'}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: s.objectPosition ?? '50% 60%' }}
             />
           </picture>
         );
       })}
 
-      {/* Light overlay for text legibility */}
+      {/* Dark overlay for text legibility over banner images */}
       {hasBgImage && (
-        <div className="absolute inset-0 bg-gradient-to-r from-warm-surface/90 via-warm-surface/60 to-warm-surface/20 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent z-[1]" />
       )}
 
-      {/* Decorative blobs */}
-      <div className="absolute -top-8 -right-8 w-32 h-32 bg-warm-surface/10 rounded-full blur-xl z-[1] pointer-events-none" />
-      <div className="absolute -bottom-10 right-10 w-40 h-40 bg-warm-fg/5 rounded-full blur-2xl z-[1] pointer-events-none" />
+      {/* Brand warm decorative glows */}
+      <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#FCCE09]/[0.06] rounded-full blur-xl z-[1] pointer-events-none" />
+      <div className="absolute -bottom-10 right-10 w-40 h-40 bg-[#FCCE09]/[0.04] rounded-full blur-2xl z-[1] pointer-events-none" />
 
-      {/* Content — left aligned (clean canvas on left, products on right) */}
-      <div className="relative z-10 max-w-lg mr-auto text-left">
+      {/* Content — left aligned */}
+      <div className="relative z-10 max-w-lg mr-auto text-left flex flex-col items-start justify-center h-full" aria-live="polite">
         {slide.badge && (
-          <p className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md inline-block mb-2 text-warm-fg bg-warm-fg/10">
+          <p className="px-2.5 py-0.5 rounded-full inline-block mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--color-foreground)] bg-[var(--color-accent)] shrink-0">
             {slide.badge}
           </p>
         )}
-        <h2 className="text-2xl lg:text-3xl font-black mb-1.5 leading-none font-display tracking-tight text-[#4a3728]">
+        <h2 className={`text-xl sm:text-2xl lg:text-3xl font-black mb-1 sm:mb-1.5 leading-tight font-display tracking-tight ${
+          hasBgImage ? 'text-white drop-shadow-sm' : 'text-[#4a3728]'
+        }`}>
           {slide.title}
         </h2>
-        <p className="text-xs sm:text-sm font-medium mb-4 max-w-[45ch] text-[#4a3728]/75">
-          {slide.subtitle}
-        </p>
+        {slide.subtitle && (
+          <p className={`text-xs sm:text-sm font-medium mb-3 sm:mb-4 max-w-[45ch] line-clamp-2 sm:line-clamp-none ${
+            hasBgImage ? 'text-white/90 drop-shadow-sm' : 'text-[#4a3728]/75'
+          }`}>
+            {slide.subtitle}
+          </p>
+        )}
         <Link
           href={slide.ctaHref || '/category?theme=deals'}
-          className="inline-flex items-center gap-1.5 rounded-full bg-warm-fg px-4.5 py-1.5 text-xs font-bold text-warm-surface hover:bg-warm-fg/90 active:scale-[0.97] hover:-translate-y-0.5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm hover:shadow-warm-md"
+          className="group inline-flex items-center gap-1.5 rounded-full bg-white px-[1.125rem] py-1.5 text-xs font-bold text-[#0B0B0D] hover:bg-white/90 active:scale-[0.97] hover:-translate-y-0.5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm hover:shadow-warm-md shrink-0"
         >
           {slide.ctaText || 'Shop Now'}
           <span aria-hidden="true" className="text-sm transition-transform duration-300 group-hover:translate-x-0.5">→</span>
@@ -225,3 +239,4 @@ export function HeroBanner({
     </section>
   );
 }
+

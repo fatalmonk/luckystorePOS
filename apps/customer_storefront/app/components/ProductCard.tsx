@@ -27,7 +27,7 @@ export function Card({ children, className = '', hover = false, onClick, 'data-t
         bg-warm-surface border border-warm-border rounded-[20px]
         overflow-hidden
         transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-        ${hover ? 'card-hover hover:border-warm-border cursor-pointer shadow-warm-sm hover:shadow-warm-md' : ''}
+        ${hover ? 'card-hover hover:border-warm-accent hover:-translate-y-0.5 cursor-pointer shadow-warm-sm hover:shadow-warm-md' : ''}
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
@@ -121,16 +121,19 @@ interface ProductCardProps {
   price: number;
   originalPrice?: number;
   badge?: string;
+  brand?: string;
   unit: string;
   stock: number;
   category: Category;
   image_url?: string | null;
   qtyInCart?: number;
+  theme?: 'deals' | 'bestsellers';
   onAdd: () => void;
   onUpdateQty: (delta: number) => void;
   onClick: () => void;
   onAddRef?: (el: HTMLButtonElement | null) => void;
   priority?: boolean;
+  showBrandBadge?: boolean;
 }
 
 export function ProductCard({
@@ -140,16 +143,19 @@ export function ProductCard({
   price,
   originalPrice,
   badge,
+  brand,
   unit,
   stock,
   category,
   image_url,
   qtyInCart = 0,
+  theme,
   onAdd,
   onUpdateQty,
   onClick,
   onAddRef,
   priority = false,
+  showBrandBadge = false,
 }: ProductCardProps) {
   const stockLow = stock > 0 && stock <= 5;
   const outOfStock = stock <= 0;
@@ -196,19 +202,34 @@ export function ProductCard({
   };
 
   return (
-    <Card hover onClick={onClick} className="flex flex-col group relative card-reveal" data-testid="product-card">
+    <Card hover onClick={onClick} className={`flex flex-col group relative card-reveal ${
+      theme === 'deals' ? 'border-red-300/60' : theme === 'bestsellers' ? 'border-warm-accent/70' : ''
+    }`} data-testid="product-card">
       {/* Badges + wishlist */}
       <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex justify-between items-start pointer-events-none">
-        {badge ? (
+        {theme === 'bestsellers' ? (
+          <span className="bg-warm-accent text-warm-fg text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
+            ⭐ Best Seller
+          </span>
+        ) : badge ? (
           <span className="bg-red-600 text-warm-surface text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
             {badge}
+          </span>
+        ) : showBrandBadge && brand ? (
+          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display ${
+            brand === 'Polar' ? 'bg-blue-100 text-blue-700' :
+            brand === 'Igloo' ? 'bg-red-100 text-red-700' :
+            brand === 'Savoy' ? 'bg-green-100 text-green-700' :
+            'bg-warm-accent text-warm-fg'
+          }`}>
+            {brand}
           </span>
         ) : (
           <span />
         )}
         <button
           onClick={handleWishlistToggle}
-          className="pointer-events-auto w-10 h-10 rounded-full bg-warm-surface/95 backdrop-blur-sm shadow-warm-sm flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-warm-border opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+          className="pointer-events-auto w-10 h-10 rounded-full bg-warm-surface/95 backdrop-blur-sm shadow-warm-sm flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-warm-border"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
@@ -299,9 +320,14 @@ export function ProductCard({
               ref={onAddRef}
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
               disabled={stock <= 0}
-              className="w-full h-10 rounded-full border-2 border-warm-accent text-warm-fg text-xs font-black hover:bg-warm-accent active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-warm-border disabled:text-warm-muted disabled:hover:bg-warm-surface"
+              className={`w-full h-10 rounded-full border-2 text-warm-fg text-[11px] sm:text-xs font-black active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-warm-border disabled:text-warm-muted disabled:hover:bg-warm-surface px-2 sm:px-3 ${
+                theme === 'deals'
+                  ? 'border-red-400 hover:bg-red-50'
+                  : 'border-warm-accent hover:bg-warm-accent'
+              }`}
             >
-              Add to Cart
+              <span className="hidden sm:inline">Add to Cart</span>
+              <span className="sm:hidden">Add</span>
             </button>
           )}
         </div>

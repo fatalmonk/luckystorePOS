@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ProductCarousel } from './ProductCarousel';
-import { PromoBanner } from './PromoBanner';
 import { useCartActions } from '../hooks/useCartActions';
 import type { Product } from '../lib/types';
 
@@ -14,6 +13,7 @@ interface Section {
   title: string;
   href: string;
   products: Product[];
+  theme?: 'deals' | 'bestsellers';
 }
 
 interface HomeSectionsClientProps {
@@ -25,39 +25,33 @@ export function HomeSectionsClient({ sections }: HomeSectionsClientProps) {
 
   return (
     <>
-      {sections.map(({ title, href, products }, index) => (
-        <React.Fragment key={title}>
-          <section key={title}>
-            <div className="bg-warm-surface rounded-2xl p-4 sm:p-5 border border-warm-border/60 shadow-warm-sm">
-              <div className="flex items-center justify-between mb-4">
+      {sections.map(({ title, href, products, theme }) => (
+        <section key={title}>
+          <div className={`bg-warm-surface rounded-2xl p-4 sm:p-5 border shadow-warm-sm ${
+            theme === 'deals' ? 'border-red-300/60' : theme === 'bestsellers' ? 'border-warm-accent/60' : 'border-warm-border/60'
+          }`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                {theme === 'bestsellers' && <span className="text-lg">⭐</span>}
                 <h2 className="text-lg font-extrabold tracking-tight text-warm-fg">{title}</h2>
-                <Link
-                  href={href}
-                  className="text-xs font-bold text-warm-muted hover:text-warm-fg transition-colors"
-                >
-                  View All →
-                </Link>
               </div>
-              <ProductCarousel
-                products={products}
-                cart={cart}
-                onAdd={handleAddToCart}
-                onUpdateQty={handleUpdateQty}
-                onClick={handleClick}
-              />
+              <Link
+                href={href}
+                className="text-xs font-bold text-warm-muted hover:text-warm-fg transition-colors underline-offset-2 hover:underline"
+              >
+                View All →
+              </Link>
             </div>
-          </section>
-          {index === 1 && (
-            <PromoBanner
-              variant="saffron"
-              title="Free Same-Day Delivery"
-              subtitle="On orders ৳500+. Order before 6 PM."
-              ctaText="Shop Essentials"
-              ctaHref="/category?theme=essentials"
-              inline
+            <ProductCarousel
+              products={products}
+              cart={cart}
+              theme={theme}
+              onAdd={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              onClick={handleClick}
             />
-          )}
-        </React.Fragment>
+          </div>
+        </section>
       ))}
       <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
     </>

@@ -9,7 +9,7 @@
  * NOTE: R2 bucket object keys use /banners/ and /categories/ prefixes.
  * Avoid /images/ — that prefix does not exist on the CDN.
  */
-const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? 'https://images.luckystore1947.com').replace(/\/$/, '');
+const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '').replace(/\/$/, '');
 
 export function img(path: string): string {
   if (!BASE) return path;
@@ -26,3 +26,33 @@ export function srcSet(set: string): string {
   if (!BASE) return set;
   return set.replace(/(\/(banners|categories|images)\/[^\s,]+)/g, (match) => `${BASE}${match}`);
 }
+
+export interface ResponsiveImage {
+  src: string;
+  srcSet?: string;
+  sizes?: string;
+  sources?: { srcSet: string; type: string; media?: string }[];
+  alt?: string;
+}
+
+/**
+ * Build standardized responsive hero banner image object with AVIF & WebP srcsets.
+ */
+export function responsiveHeroBanner(base: string, alt: string): ResponsiveImage {
+  return {
+    src: img(`/banners/${base}_1200.webp`),
+    srcSet: srcSet(
+      `/banners/${base}_400.webp 400w, /banners/${base}_600.webp 600w, /banners/${base}_800.webp 800w, /banners/${base}_1200.webp 1200w`
+    ),
+    sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px',
+    sources: [
+      {
+        srcSet: srcSet(`/banners/${base}.avif 600w`),
+        type: 'image/avif',
+      },
+    ],
+    alt,
+  };
+}
+
+
