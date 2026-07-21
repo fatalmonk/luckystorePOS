@@ -9,8 +9,7 @@ import { getCategoryGroup } from '../lib/types';
 import { Fire, Star, Package } from '@phosphor-icons/react';
 import type { Product } from '../lib/types';
 
-const ICE_CREAM_SLUG = 'ice-cream';
-const ICE_CREAM_BRANDS = ['Igloo', 'Polar', 'Savoy'];
+const ICE_CREAM_SLUGS = ['ice-cream', 'snacks'];
 
 function getSingleBrand(value: string | string[] | undefined): string | undefined {
   if (!value) return undefined;
@@ -33,18 +32,16 @@ function BrandFilterBar({ products, selectedBrand }: { products: Product[]; sele
   const selectedNormalized = normalizeBrand(selectedBrand);
 
   const counts = products.reduce((acc, p) => {
-    const brand = ICE_CREAM_BRANDS.find(
-      (b) => normalizeBrand(p.brand) === normalizeBrand(b)
-    );
-    if (brand) {
-      acc[brand] = (acc[brand] || 0) + 1;
-    }
+    const brand = p.brand || 'Others';
+    acc[brand] = (acc[brand] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const brands = ICE_CREAM_BRANDS.filter((b) => (counts[b] || 0) > 0);
+  const brands = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([brand]) => brand);
 
-  if (brands.length === 0) return null;
+  if (brands.length <= 1) return null;
 
   const handleClick = (brand: string | null) => {
     const nextParams = new URLSearchParams(params?.toString() ?? '');
@@ -58,8 +55,6 @@ function BrandFilterBar({ products, selectedBrand }: { products: Product[]; sele
 
   const chipBase = 'flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-bold border transition-all duration-200 whitespace-nowrap';
 
-  // Render a static, non-interactive skeleton during SSR to avoid hydration mismatch.
-  // The interactive version hydrates after mount.
   if (!mounted) {
     return (
       <section className="mb-5" aria-hidden="true">
@@ -166,7 +161,8 @@ export function CategorySwimlanes({
   const selectedBrand = getSingleBrand(urlParams.get('brand') || searchParams?.brand);
 
   const displayGroup = group || parentGroup;
-  const isIceCreamPage = categorySlug === ICE_CREAM_SLUG;
+  const isIceCreamGroup = ICE_CREAM_SLUGS.includes(categorySlug) ||
+    ICE_CREAM_SLUGS.includes(displayGroup?.slug || '');
 
   let filtered = [...products];
 
@@ -207,10 +203,7 @@ export function CategorySwimlanes({
   }
 
   if (selectedBrand) {
-    filtered = filtered.filter((p) => {
-      const selectedNormalized = normalizeBrand(selectedBrand);
-      return ICE_CREAM_BRANDS.some((b) => normalizeBrand(p.brand) === normalizeBrand(b) && normalizeBrand(b) === selectedNormalized);
-    });
+    filtered = filtered.filter((p) => normalizeBrand(p.brand) === normalizeBrand(selectedBrand));
   }
 
   if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
@@ -259,12 +252,12 @@ export function CategorySwimlanes({
           products={deals}
         />
       )}
-      {isIceCreamPage && subCategoryItems.length === 0 && (
+      {isIceCreamGroup && subCategoryItems.length === 0 && (
         <BrandFilterBar products={products} selectedBrand={selectedBrand} />
       )}
       {subCategoryItems.length > 0 && (
         <section className="mb-8">
-          {isIceCreamPage && (
+          {isIceCreamGroup && (
             <BrandFilterBar products={products} selectedBrand={selectedBrand} />
           )}
           <div className="flex items-center justify-between mb-4">
@@ -308,9 +301,10 @@ export function CategorySwimlanes({
             </h2>
             <span className="text-sm text-warm-muted">{filtered.length} items</span>
           </div>
-          <ProductGridClient products={filtered} showBrandBadge={isIceCreamPage} />
+          <ProductGridClient products={filtered} showBrandBadge={isIceCreamGroup} />
         </section>
       )}
     </>
   );
 }
+
