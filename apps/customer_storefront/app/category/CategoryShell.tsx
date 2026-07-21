@@ -253,6 +253,7 @@ export function CategoryShell({
           <CategorySwimlanes
             categorySlug={categorySlug}
             group={group}
+            parentGroup={parentGroup}
             products={products}
             categories={categories}
             theme={theme}

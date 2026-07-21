@@ -7,9 +7,10 @@ import type { Product } from '../lib/types';
 
 interface ProductGridClientProps {
   products: Product[];
+  showBrandBadge?: boolean;
 }
 
-export function ProductGridClient({ products }: ProductGridClientProps) {
+export function ProductGridClient({ products, showBrandBadge = false }: ProductGridClientProps) {
   const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete, handleClick } = useCartActions();
 
   if (products.length === 0) return null;
@@ -19,6 +20,7 @@ export function ProductGridClient({ products }: ProductGridClientProps) {
       <ProductGrid
         products={products}
         cart={cart}
+        showBrandBadge={showBrandBadge}
         onAdd={handleAddToCart}
         onUpdateQty={handleUpdateQty}
         onClick={handleClick}

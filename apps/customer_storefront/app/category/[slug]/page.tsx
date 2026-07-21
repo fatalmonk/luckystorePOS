@@ -79,18 +79,19 @@ export default async function CategorySlugPage({
 
   let products: Product[] = [];
   try {
-    if (group) {
+    const activeGroup = group || parentGroup;
+    if (activeGroup) {
       const subCatIds = categories
-        .filter((c) => group.subCategories.includes(c.slug))
+        .filter((c) => activeGroup.subCategories.includes(c.slug))
         .map((c) => c.id);
-      const result = await fetchProducts(searchTerm || undefined, undefined, subCatIds.length > 0 ? subCatIds : undefined);
+      const result = await fetchProducts(searchTerm || undefined, undefined, subCatIds.length > 0 ? subCatIds : undefined, 0, 500);
       products = result.products;
     } else if (currentCat !== 'all') {
       const catId = currentCatObj?.id;
-      const result = await fetchProducts(searchTerm || undefined, catId);
+      const result = await fetchProducts(searchTerm || undefined, catId, undefined, 0, 200);
       products = result.products;
     } else {
-      const result = await fetchProducts(searchTerm || undefined);
+      const result = await fetchProducts(searchTerm || undefined, undefined, undefined, 0, 200);
       products = result.products;
     }
   } catch (err) {
