@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { SearchClientPage } from './SearchClientPage';
 
 export default async function SearchPage({
   searchParams,
@@ -6,6 +7,8 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  if (!q) redirect('/category');
-  redirect(`/category?q=${encodeURIComponent(q)}`);
+  if (q) {
+    redirect(`/category?q=${encodeURIComponent(q)}`);
+  }
+  return <SearchClientPage />;
 }

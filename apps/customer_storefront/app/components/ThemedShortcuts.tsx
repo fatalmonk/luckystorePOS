@@ -16,10 +16,15 @@ export function ThemedShortcuts() {
             <Link
               key={group.slug}
               href={`/category/${group.slug}`}
-              className="group flex-shrink-0 flex flex-col items-center justify-center w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-[18px] border border-warm-border/50 bg-warm-surface hover:bg-warm-fg hover:border-warm-fg hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm hover:shadow-warm-md"
+              className="group flex-shrink-0 flex flex-col items-center w-[72px] sm:w-[80px]"
             >
-              <span className="text-3xl mb-1 group-hover:scale-110 transition-transform duration-200" aria-hidden="true">
-                {group.emoji}
+              <div className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-[18px] border border-warm-border/50 bg-warm-surface group-hover:bg-warm-fg group-hover:border-warm-fg group-hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm group-hover:shadow-warm-md flex items-center justify-center mb-1.5">
+                <span className="text-3xl group-hover:scale-110 transition-transform duration-200" aria-hidden="true">
+                  {group.emoji}
+                </span>
+              </div>
+              <span className="text-[11px] leading-tight text-center font-semibold text-warm-muted group-hover:text-warm-fg transition-colors line-clamp-2">
+                {group.label}
               </span>
             </Link>
           ))}
@@ -29,16 +34,7 @@ export function ThemedShortcuts() {
           <span className="text-warm-muted/70 text-lg animate-pulse">→</span>
         </div>
       </div>
-      <div className="flex gap-3 px-0.5 -mt-1">
-        {CATEGORY_GROUPS.map((group) => (
-          <span
-            key={`${group.slug}-label`}
-            className="w-[72px] sm:w-[80px] flex-shrink-0 text-[11px] leading-tight text-center font-semibold text-warm-muted"
-          >
-            {group.label}
-          </span>
-        ))}
-      </div>
     </section>
   );
 }
+
