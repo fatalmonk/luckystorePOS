@@ -240,3 +240,11 @@ apps/customer_storefront/public/images/*_600.webp
 apps/customer_storefront/public/images/*_800.webp
 apps/customer_storefront/public/images/*_1200.webp
 apps/customer_storefront/public/images/*.avif
+apps/customer_storefront/public/banners/
+lucky-store-brand-guidelines/**/*.png
+lucky-store-brand-guidelines/**/*.jpg
+lucky-store-brand-guidelines/**/*.jpeg
+lucky-store-brand-guidelines/**/*.webp
+lucky-store-brand-guidelines/**/*.html
+
+

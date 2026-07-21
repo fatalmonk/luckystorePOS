@@ -10,20 +10,33 @@ export function ThemedShortcuts() {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight text-warm-fg">Quick Picks</h2>
       </div>
-      <div className="flex gap-2.5 overflow-x-auto scrollbar-hide scroll-edge-mask py-1">
+      <div className="relative">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide scroll-edge-mask py-1.5 px-0.5">
+          {CATEGORY_GROUPS.map((group) => (
+            <Link
+              key={group.slug}
+              href={`/category/${group.slug}`}
+              className="group flex-shrink-0 flex flex-col items-center justify-center w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-[18px] border border-warm-border/50 bg-warm-surface hover:bg-warm-fg hover:border-warm-fg hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm hover:shadow-warm-md"
+            >
+              <span className="text-3xl mb-1 group-hover:scale-110 transition-transform duration-200" aria-hidden="true">
+                {group.emoji}
+              </span>
+            </Link>
+          ))}
+        </div>
+        {/* Right-edge scroll hint for tablet/desktop */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-warm-bg via-warm-bg/80 to-transparent hidden md:flex items-center justify-end pr-1">
+          <span className="text-warm-muted/70 text-lg animate-pulse">→</span>
+        </div>
+      </div>
+      <div className="flex gap-3 px-0.5 -mt-1">
         {CATEGORY_GROUPS.map((group) => (
-          <Link
-            key={group.slug}
-            href={`/category/${group.slug}`}
-            className="group flex-shrink-0 flex flex-col items-center justify-center w-[96px] h-[84px] rounded-[16px] border border-warm-border/50 bg-warm-surface hover:bg-warm-fg hover:border-warm-fg hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm hover:shadow-warm-md"
+          <span
+            key={`${group.slug}-label`}
+            className="w-[72px] sm:w-[80px] flex-shrink-0 text-[11px] leading-tight text-center font-semibold text-warm-muted"
           >
-            <span className="text-2xl mb-1 group-hover:scale-110 transition-transform duration-200" aria-hidden="true">
-              {group.emoji}
-            </span>
-            <span className="text-[10px] leading-tight text-center px-1 font-semibold text-warm-muted group-hover:text-warm-accent transition-colors duration-200">
-              {group.label}
-            </span>
-          </Link>
+            {group.label}
+          </span>
         ))}
       </div>
     </section>

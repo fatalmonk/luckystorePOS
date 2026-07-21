@@ -6,6 +6,7 @@ import type { Product } from '../lib/types';
 interface ProductCarouselProps {
   products: Product[];
   cart: { id: string; qty: number }[];
+  theme?: 'deals' | 'bestsellers';
   onAdd: (product: Product, buttonEl?: HTMLButtonElement | null) => void;
   onUpdateQty: (id: string, delta: number) => void;
   onClick: (id: string) => void;
@@ -14,6 +15,7 @@ interface ProductCarouselProps {
 export function ProductCarousel({
   products,
   cart,
+  theme,
   onAdd,
   onUpdateQty,
   onClick,
@@ -24,7 +26,8 @@ export function ProductCarousel({
   };
 
   return (
-    <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide scroll-edge-mask">
+    <div className="relative">
+      <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide scroll-edge-mask">
         {products.map((product, index) => {
           let addBtnRef: HTMLButtonElement | null = null;
           return (
@@ -42,6 +45,7 @@ export function ProductCarousel({
                 image_url={product.image_url}
                 qtyInCart={getQtyInCart(product.id)}
                 priority={index === 0}
+                theme={theme}
                 onAdd={() => onAdd(product, addBtnRef)}
                 onUpdateQty={(delta) => onUpdateQty(product.id, delta)}
                 onClick={() => onClick(product.id)}
@@ -51,5 +55,10 @@ export function ProductCarousel({
           );
         })}
       </div>
+      {/* Right-edge scroll hint for tablet/desktop */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-warm-bg via-warm-bg/80 to-transparent hidden md:flex items-center justify-end pr-1">
+        <span className="text-warm-muted/70 text-lg animate-pulse">→</span>
+      </div>
+    </div>
   );
 }
