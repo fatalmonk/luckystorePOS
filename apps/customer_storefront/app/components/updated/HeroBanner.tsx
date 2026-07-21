@@ -112,38 +112,6 @@ export function HeroBanner({
 
         return (
           <picture key={i} className={baseClasses}>
-            {/* Preload header link for LCP image */}
-            {isLcp && imgVal?.sources?.[0]?.srcSet && (
-              <link
-                rel="preload"
-                as="image"
-                href={imgVal.src}
-                imageSrcSet={imgVal.sources[0].srcSet}
-                imageSizes={imgVal.sizes || '100vw'}
-                fetchPriority="high"
-                type={imgVal.sources[0].type}
-              />
-            )}
-            {isLcp && !imgVal?.sources?.[0]?.srcSet && imgVal?.srcSet && (
-              <link
-                rel="preload"
-                as="image"
-                href={src}
-                imageSrcSet={imgVal.srcSet}
-                imageSizes={imgVal.sizes || '100vw'}
-                fetchPriority="high"
-                type="image/webp"
-              />
-            )}
-            {isLcp && !imgVal?.sources?.[0]?.srcSet && !imgVal?.srcSet && (
-              <link
-                rel="preload"
-                as="image"
-                href={src}
-                fetchPriority="high"
-              />
-            )}
-
             {imgVal?.sources?.map((source, idx) => (
               <source key={idx} srcSet={source.srcSet} type={source.type} media={source.media} />
             ))}
