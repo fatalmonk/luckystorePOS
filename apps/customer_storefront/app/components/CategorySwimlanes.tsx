@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
 import { PromoBanner } from './PromoBanner';
@@ -8,51 +9,75 @@ import { getCategoryGroup } from '../lib/types';
 import { Fire, Star, Package } from '@phosphor-icons/react';
 import type { Product } from '../lib/types';
 
-const ICE_CREAM_SLUGS = ['ice-cream', 'snacks'];
+const ICE_CREAM_SLUG = 'ice-cream';
+const ICE_CREAM_BRANDS = ['Igloo', 'Polar', 'Savoy'];
 
 function getSingleBrand(value: string | string[] | undefined): string | undefined {
   if (!value) return undefined;
   return Array.isArray(value) ? value[0] : value;
 }
 
-function buildBrandHref(currentParams: URLSearchParams, brand: string | null): string {
-  const params = new URLSearchParams(currentParams.toString());
-  if (brand) {
-    params.set('brand', brand);
-  } else {
-    params.delete('brand');
-  }
-  const query = params.toString();
-  return `${window.location.pathname}${query ? `?${query}` : ''}`;
+function normalizeBrand(value?: string | null): string {
+  return (value || '').trim().toLowerCase();
 }
 
 function BrandFilterBar({ products, selectedBrand }: { products: Product[]; selectedBrand?: string }) {
   const router = useRouter();
   const params = useSearchParams();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const selectedNormalized = normalizeBrand(selectedBrand);
 
   const counts = products.reduce((acc, p) => {
-    const brand = p.brand || 'Others';
-    acc[brand] = (acc[brand] || 0) + 1;
+    const brand = ICE_CREAM_BRANDS.find(
+      (b) => normalizeBrand(p.brand) === normalizeBrand(b)
+    );
+    if (brand) {
+      acc[brand] = (acc[brand] || 0) + 1;
+    }
     return acc;
   }, {} as Record<string, number>);
 
-  const brands = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([brand]) => brand);
+  const brands = ICE_CREAM_BRANDS.filter((b) => (counts[b] || 0) > 0);
 
-  if (brands.length <= 1) return null;
+  if (brands.length === 0) return null;
 
   const handleClick = (brand: string | null) => {
-    const nextParams = new URLSearchParams(params.toString());
+    const nextParams = new URLSearchParams(params?.toString() ?? '');
     if (brand) {
       nextParams.set('brand', brand);
     } else {
       nextParams.delete('brand');
     }
-    router.push(`${window.location.pathname}?${nextParams.toString()}`, { scroll: false });
+    router.push(`${window.location.pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ''}`, { scroll: false });
   };
 
   const chipBase = 'flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-bold border transition-all duration-200 whitespace-nowrap';
+
+  // Render a static, non-interactive skeleton during SSR to avoid hydration mismatch.
+  // The interactive version hydrates after mount.
+  if (!mounted) {
+    return (
+      <section className="mb-5" aria-hidden="true">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-extrabold tracking-tight text-warm-fg">Shop by Brand</h3>
+          <span className="text-xs font-semibold text-warm-muted">{brands.length} brands</span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask pb-1">
+          <div className={`${chipBase} bg-warm-surface text-warm-fg border-warm-border/60`}>All ({products.length})</div>
+          {brands.map((brand) => (
+            <div key={brand} className={`${chipBase} bg-warm-surface text-warm-fg border-warm-border/60`}>
+              {brand} ({counts[brand]})
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-5">
@@ -74,9 +99,9 @@ function BrandFilterBar({ products, selectedBrand }: { products: Product[]; sele
         {brands.map((brand) => (
           <button
             key={brand}
-            onClick={() => handleClick(brand === selectedBrand ? null : brand)}
+            onClick={() => handleClick(selectedNormalized === normalizeBrand(brand) ? null : brand)}
             className={`${chipBase} ${
-              selectedBrand === brand
+              selectedNormalized === normalizeBrand(brand)
                 ? 'bg-warm-fg text-warm-surface border-warm-fg'
                 : 'bg-warm-surface text-warm-fg border-warm-border/60 hover:border-warm-fg'
             }`}
@@ -141,8 +166,7 @@ export function CategorySwimlanes({
   const selectedBrand = getSingleBrand(urlParams.get('brand') || searchParams?.brand);
 
   const displayGroup = group || parentGroup;
-  const isIceCreamGroup = ICE_CREAM_SLUGS.includes(categorySlug) ||
-    ICE_CREAM_SLUGS.includes(displayGroup?.slug || '');
+  const isIceCreamPage = categorySlug === ICE_CREAM_SLUG;
 
   let filtered = [...products];
 
@@ -183,7 +207,10 @@ export function CategorySwimlanes({
   }
 
   if (selectedBrand) {
-    filtered = filtered.filter((p) => p.brand?.toLowerCase() === selectedBrand.toLowerCase());
+    filtered = filtered.filter((p) => {
+      const selectedNormalized = normalizeBrand(selectedBrand);
+      return ICE_CREAM_BRANDS.some((b) => normalizeBrand(p.brand) === normalizeBrand(b) && normalizeBrand(b) === selectedNormalized);
+    });
   }
 
   if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
@@ -232,12 +259,12 @@ export function CategorySwimlanes({
           products={deals}
         />
       )}
-      {isIceCreamGroup && subCategoryItems.length === 0 && (
+      {isIceCreamPage && subCategoryItems.length === 0 && (
         <BrandFilterBar products={products} selectedBrand={selectedBrand} />
       )}
       {subCategoryItems.length > 0 && (
         <section className="mb-8">
-          {isIceCreamGroup && (
+          {isIceCreamPage && (
             <BrandFilterBar products={products} selectedBrand={selectedBrand} />
           )}
           <div className="flex items-center justify-between mb-4">
@@ -281,7 +308,7 @@ export function CategorySwimlanes({
             </h2>
             <span className="text-sm text-warm-muted">{filtered.length} items</span>
           </div>
-          <ProductGridClient products={filtered} showBrandBadge={isIceCreamGroup} />
+          <ProductGridClient products={filtered} showBrandBadge={isIceCreamPage} />
         </section>
       )}
     </>
