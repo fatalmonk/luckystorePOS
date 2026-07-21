@@ -109,6 +109,54 @@ export async function uploadProcessedImage({
   return `${publicUrl}?t=${Date.now()}`;
 }
 
+/**
+ * Upload a category thumbnail image to R2 (or Supabase fallback).
+ * Stores at `categories/{storeId}/{categoryId}.webp`.
+ */
+export async function uploadCategoryImage({
+  file,
+  storeId,
+  categoryId,
+}: {
+  file: File;
+  storeId: string;
+  categoryId: string;
+}): Promise<string> {
+  // 1. Convert file to WebP blob
+  let webpBlob: Blob;
+  try {
+    webpBlob = await convertToWebP(file, { maxWidth: 800, maxHeight: 800, quality: 0.8 });
+  } catch (err) {
+    console.error('Failed to convert image to WebP:', err);
+    throw new Error('Failed to convert image to WebP format. Please upload a valid image file.');
+  }
+
+  // 2. Generate filename
+  const sanitizedStoreId = storeId.replace(/[^a-zA-Z0-9-]/g, '_');
+  const fileName = `categories/${sanitizedStoreId}/${categoryId}.webp`;
+
+  // 3. Create a File object from the blob
+  const webpFile = new File([webpBlob], `${categoryId}.webp`, {
+    type: 'image/webp',
+  });
+
+  // 4. Upload to R2 (Primary) or Supabase (Fallback)
+  let publicUrl: string;
+  if (isR2Configured()) {
+    try {
+      publicUrl = await uploadToR2(webpFile, fileName);
+    } catch (err) {
+      console.warn('R2 upload failed, falling back to Supabase:', err);
+      publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
+    }
+  } else {
+    publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
+  }
+
+  // 5. Append cache-busting parameter
+  return `${publicUrl}?t=${Date.now()}`;
+}
+
 async function uploadToSupabaseFallback(file: File, key: string): Promise<string> {
   const { data: _data, error: uploadError } = await supabase.storage
     .from('product-images')

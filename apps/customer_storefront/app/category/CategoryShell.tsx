@@ -38,7 +38,7 @@ function responsiveBanner(base: string, alt: string, avif = true) {
   return { src: img(`/banners/${base}_1200.webp`), srcSet: webp, sizes: '100vw', sources, alt };
 }
 
-const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: string | { src: string; srcSet: string; sizes: string; sources?: { srcSet: string; type: string; media?: string }[] } }> = {
+const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; hideText?: boolean; hideOverlay?: boolean; objectPosition?: string; objectFit?: 'cover' | 'contain' | 'fill'; bgImage: string | { src: string; srcSet: string; sizes: string; sources?: { srcSet: string; type: string; media?: string }[] } }> = {
   'snacks': {
     title: 'Snacks & Munchies',
     subtitle: 'Bite-sized happiness, from sweet biscuits to savory local crisps.',
@@ -133,9 +133,12 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     bgImage: responsiveBanner('promo_tea_coffee', 'Tea and coffee'),
   },
   'ice-cream': {
-    title: 'Chilled Ice Cream',
-    subtitle: 'Creamy, melting scoops of your favorite traditional and modern flavors.',
-    badge: 'Sweet Treats',
+    title: '',
+    subtitle: '',
+    badge: '',
+    hideText: true,
+    hideOverlay: true,
+    objectPosition: 'left center',
     bgImage: responsiveBanner('promo_ice_cream', 'Ice cream products'),
   },
   'chocolates-&-candies': {
@@ -247,6 +250,11 @@ export function CategoryShell({
               title: bannerConfig.title,
               subtitle: bannerConfig.subtitle,
               badge: bannerConfig.badge,
+              ctaText: 'hideText' in bannerConfig && bannerConfig.hideText ? null : undefined,
+              hideText: 'hideText' in bannerConfig ? bannerConfig.hideText : undefined,
+              hideOverlay: 'hideOverlay' in bannerConfig ? bannerConfig.hideOverlay : undefined,
+              objectPosition: 'objectPosition' in bannerConfig ? (bannerConfig as any).objectPosition : undefined,
+              objectFit: 'objectFit' in bannerConfig ? (bannerConfig as any).objectFit : undefined,
             }]}
           />
           <ThemedShortcuts />

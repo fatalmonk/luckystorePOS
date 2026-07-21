@@ -144,4 +144,4 @@ Before downloading from Canva:
 
 ---
 
-*Questions? Ping Mac on WhatsApp or hello@luckystorebd.com*
+*Questions? Ping Mac on WhatsApp or hello@luckystore1947.com*
