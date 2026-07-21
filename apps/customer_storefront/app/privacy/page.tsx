@@ -136,7 +136,8 @@ export default function PrivacyPolicyPage() {
               <p>If you have any questions about this Privacy Policy, please contact us:</p>
               <ul className="list-disc pl-4 space-y-1">
                 <li>Email: <a href="mailto:luckystore.1947@gmail.com" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">luckystore.1947@gmail.com</a></li>
-                <li>Phone: <a href="tel:+8801731944544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></li>
+                <li>Phone: <a href="tel:+880****4544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></li>
+                <li>Find us on Google Maps: <a href="https://maps.app.goo.gl/tfiRABoc1WsKEt619" target="_blank" rel="noopener" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">maps.app.goo.gl/tfiRABoc1WsKEt619</a></li>
                 <li>Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh</li>
               </ul>
             </PolicySection>

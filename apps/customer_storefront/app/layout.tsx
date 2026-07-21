@@ -83,6 +83,7 @@ export const metadata: Metadata = {
   },
   other: {
     'fb:app_id': '842610775238413',
+    'google-site-verification': '10811156927444855134',
   },
 };
 
@@ -136,6 +137,7 @@ export default function RootLayout({
                 'https://facebook.com/luckystore1947',
                 'https://instagram.com/luckystore1947',
                 'https://wa.me/8801731944544',
+                'https://www.google.com/maps/place/Lucky+Store/@22.3550277,91.8363056,17z',
               ],
             }),
           }}

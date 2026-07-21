@@ -149,7 +149,7 @@ All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospac
 │  ┌───────────────────┐   │
 │  │  Order Now  ↗     │   │  ← Brand Yellow pill
 │  └───────────────────┘   │
-│       luckystorebd.com   │
+│       luckystore1947.com   │
 └─────────────────────────┘
 ```
 
@@ -232,7 +232,7 @@ Free delivery on ৳500+ orders.
 Friday – Sunday
 Auto-applied. No code needed.
 
-অর্ডার করুন: luckystorebd.com
+অর্ডার করুন: luckystore1947.com
 Questions? WhatsApp us 💬
 ```
 
@@ -262,7 +262,7 @@ This fresh, this real — just for you.
 His first order was skeptical.
 Now he hasn't been to the market in months.
 
-Join him: luckystorebd.com
+Join him: luckystore1947.com
 ```
 
 ---
@@ -337,7 +337,7 @@ Join him: luckystorebd.com
 | Goal | Copy |
 |------|------|
 | Direct order | "Reply with quantity" |
-| Browse | "See all: luckystorebd.com" |
+| Browse | "See all: luckystore1947.com" |
 | Urgency | "Only 12 left — reply now" |
 | Feedback | "Reply YES if you want this weekly" |
 
@@ -351,22 +351,65 @@ Before going live:
 - [ ] Brand Yellow `#F5C518` + Charcoal `#1A1A1A` + Warm Bone `#FDFBF7` added to your design tool
 - [ ] **Geist** + **Geist Mono** + Noto Sans Bengali fonts installed
 - [ ] Canva/Figma templates created (feed, story, flyer)
-- [ ] Instagram Business account connected to `hello@luckystorebd.com`
+- [ ] Instagram Business account connected to `hello@luckystore1947.com`
 - [ ] Facebook page linked to Instagram
 - [ ] WhatsApp Business profile completed (catalog, hours, address)
 - [ ] 7 days of content scheduled in buffer
-- [ ] Bio link set to `luckystorebd.com`
+- [ ] Bio link set to `luckystore1947.com`
 - [ ] First post published with proper hashtags
 
 ---
 
 ## 📞 Questions?
 
+## 📍 Google Business Profile
+
+> Mandatory for local SEO, Google Maps presence, "near me" search, and customer reviews. Keep NAP (Name/Address/Phone) consistent across all platforms — Google penalizes mismatches.
+
+**Canonical Place ID (CID):** `0x30ad279098e1891f:0x9274c6c949a94b80`
+**Feature ID:** `g/11n9w6zw_l`
+
+### URLs
+
+| Use | URL |
+|-----|-----|
+| **Canonical Maps listing** | `https://www.google.com/maps/place/Lucky+Store/@22.3550277,91.8363056,17z` |
+| **Short URL (mobile, social bio)** | `https://maps.app.goo.gl/tfiRABoc1WsKEt619` |
+| **Write a review** | `https://g.page/r/CYBLqUnJxnSSEBM/review` |
+| **Directions** | `https://www.google.com/maps?q=Lucky+Store,+Emdad+Park,+665+Percival+Hill+Rd,+Chattogram+4203&ftid=0x30ad279098e1891f:0x9274c6c949a94b80` |
+
+### NAP (must match across all listings)
+
+  - **Name:** Lucky Store
+  - **Address:** Emdad Park, 665 Percival Hill Rd, Chattogram 4203, Bangladesh
+  - **Phone:** +880 1731-944544
+  - **Area label:** Chawkbazar, Chittagong (বাংলা: চকবাজার, চট্টগ্রাম)
+  - **Hours:** _(set in GBP dashboard — confirm with Mac)_
+  - **Category:** Grocery store / Supermarket (primary), plus secondary: Convenience store, Fruit & vegetable store
+
+### How to share
+
+  - In **Instagram/TikTok bio**: use the short URL (mobile-friendly)
+  - In **Facebook page "About"**: use the full Maps URL
+  - In **print materials / flyers**: use the short URL or a QR code (the existing `scripts/tools/price_tags/price_tags_qr.html` can generate a QR)
+  - In **email signatures**: "Find us on Google Maps → [short URL]"
+
+### Review solicitation
+
+  - Send the review URL via WhatsApp 1-2 days after a successful delivery
+  - **Never** offer discounts for reviews (violates Google policy)
+  - **Never** write fake reviews — brand pillar is wholesale honesty
+  - Negative reviews: respond within 24h, public reply + move to DM/WhatsApp for resolution
+
+---
+
+## 📞 Quick Contact
+
 | Topic | Contact |
 |-------|---------|
-| Logo usage / asset requests | hello@luckystorebd.com |
+| Logo usage / asset requests | hello@luckystore1947.com |
 | Campaign ideas | Mac (WhatsApp) |
-| Technical / website issues | dev@luckystorebd.com |
+| Technical / website issues | dev@luckystore1947.com |
 | Urgent approvals | WhatsApp group "Lucky Store Marketing" |
 
 ---

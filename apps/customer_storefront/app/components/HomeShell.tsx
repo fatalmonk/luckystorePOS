@@ -46,6 +46,16 @@ export function HomeShell({ products }: HomeShellProps) {
                 objectPosition: '50% 64%',
               },
               {
+                image: responsiveHeroBanner('promo_ice_cream', 'Monsoon Ice Cream Deals'),
+                title: 'Monsoon Ice Cream Deals',
+                subtitle: 'Up to 55% off ice creams',
+                badge: 'Sweet Deals',
+                hideText: true,
+                hideOverlay: true,
+                ctaHref: '/category/ice-cream',
+                objectPosition: 'left center',
+              },
+              {
                 image: responsiveHeroBanner('promo_savings_banner', 'Big savings on your favorite products'),
                 title: 'Big Savings Week',
                 subtitle: 'Up to 50% off daily essentials for a limited time',

@@ -34,6 +34,7 @@ const LazyOtherIncomePage = React.lazy(() => import('../features/otherIncome/Oth
 const LazyStaffDashboardPage = React.lazy(() => import('../features/staff/StaffDashboardPage').then(m => ({ default: m.StaffDashboardPage })));
 const LazyDeliveryOrdersPage = React.lazy(() => import('../features/deliveryOrders/DeliveryOrdersPage').then(m => ({ default: m.DeliveryOrdersPage })));
 const LazySocialPostPage = React.lazy(() => import('../features/social/SocialPostPage').then(m => ({ default: m.SocialPostPage })));
+const LazyCategoriesPage = React.lazy(() => import('../features/inventory/CategoriesPage').then(m => ({ default: m.CategoriesPage })));
 
 function SuspenseFallback() {
   return (
@@ -80,6 +81,7 @@ export function App() {
                   <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
                   <Route path="inventory/missing-images" element={<LazyRoute><LazyMissingImagesPage /></LazyRoute>} />
                   <Route path="inventory/history" element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />
+                  <Route path="inventory/categories" element={<LazyRoute><LazyCategoriesPage /></LazyRoute>} />
                   <Route path="finance/suppliers" element={<LazyRoute><LazySupplierLedgerPage /></LazyRoute>} />
                   <Route path="finance/customers" element={<LazyRoute><LazyCustomerLedgerPage /></LazyRoute>} />
                   <Route path="collections" element={<LazyRoute><LazyCollectionsWorkspace /></LazyRoute>} />

@@ -2,12 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User as UserIcon, SignOut, Calendar, MapPin, Phone, Package, ArrowLeft } from '@phosphor-icons/react';
+import Link from 'next/link';
+import { User as UserIcon, SignOut, Calendar, MapPin, Phone, Package, ArrowLeft, Heart } from '@phosphor-icons/react';
 import { useAuth } from '../components/providers/AuthProvider';
 import { useToast } from '../components/Toast';
 import { Button } from '../components/ui/Button';
 import { Header } from '../components/updated/Header';
 import { formatBdt } from '../lib/formatPrice';
+import { getLocalWishlist } from '../lib/wishlistHelpers';
 
 interface OrderItem {
   id: string;
@@ -37,12 +39,20 @@ export default function ProfilePage() {
   const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login?next=/profile');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const updateWishlist = () => setWishlistCount(getLocalWishlist().length);
+    updateWishlist();
+    window.addEventListener('storage', updateWishlist);
+    return () => window.removeEventListener('storage', updateWishlist);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -141,6 +151,22 @@ export default function ProfilePage() {
                   </p>
                 </div>
               </div>
+
+              <Link
+                href="/wishlist"
+                className="flex items-center justify-between p-3 rounded-2xl bg-warm-bg border border-warm-border hover:border-warm-accent transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+                    <Heart size={18} weight="fill" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-warm-fg">My Saved Wishlist</p>
+                    <p className="text-[11px] text-warm-muted">{wishlistCount} {wishlistCount === 1 ? 'item' : 'items'} saved</p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-warm-fg group-hover:translate-x-0.5 transition-transform">→</span>
+              </Link>
             </div>
 
             <Button

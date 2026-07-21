@@ -37,13 +37,13 @@ function responsiveBanner(base: string, alt: string): ResponsiveImage {
 
 const defaultPromos: PromoItem[] = [
   {
-    id: 'fresh-produce',
+    id: 'buldak-ramen',
     type: 'large',
-    title: 'Fresh Produce',
-    subtitle: 'Farm-fresh fruits & vegetables daily',
+    title: 'Buldak Ramen',
+    subtitle: 'Hot chicken & spicy varieties',
     ctaText: 'Shop now',
-    ctaHref: '/category?theme=fresh',
-    bgImage: responsiveBanner('promo_fresh_banner', 'Fresh produce banner'),
+    ctaHref: '/search?q=buldak',
+    bgImage: responsiveBanner('promo_buldak', 'Buldak Ramen banner'),
   },
   {
     id: 'fresh-arrivals',
@@ -121,44 +121,44 @@ export function PromoGrid({ promos = defaultPromos }: { promos?: PromoItem[] }) 
               {bgSrc && (
                 <div className={`absolute inset-0 z-10 ${
                   isLarge
-                    ? 'bg-gradient-to-t from-warm-fg/85 via-warm-fg/50 to-warm-fg/20'
-                    : 'bg-gradient-to-t from-warm-fg/80 via-warm-fg/40 to-warm-fg/15'
+                    ? 'bg-gradient-to-r from-[#0B0B0D]/90 via-[#0B0B0D]/55 to-transparent'
+                    : 'bg-gradient-to-r from-[#0B0B0D]/85 via-[#0B0B0D]/45 to-transparent'
                 }`} />
               )}
               
               {/* Liquid Glass inner borders & glows */}
-              <div className="absolute inset-0 z-20 rounded-[24px] border border-warm-surface/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] pointer-events-none" />
+              <div className="absolute inset-0 z-20 rounded-[24px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] pointer-events-none" />
               {isLarge && (
-                <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-warm-surface/10 blur-2xl z-10" />
+                <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-2xl z-10" />
               )}
 
               {/* Decorative SVG for small cards */}
               {!isLarge && (
                 isFresh ? (
-                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-warm-surface/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-white/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m9-9H3m14-7l4 4m-4 0l-4-4m-2 10l-4 4m4 0l4-4" />
                   </svg>
                 ) : (
-                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-warm-surface/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="absolute -bottom-2 -right-2 w-20 h-20 text-white/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 z-10" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581a1.5 1.5 0 002.122 0l4.318-4.318a1.5 1.5 0 000-2.122L11.16 3.659A2.25 2.25 0 009.568 3z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
                   </svg>
                 )
               )}
               
-              <div className="relative z-20 w-full">
+              <div className="relative z-20 w-full max-w-[55%] sm:max-w-[50%] flex flex-col items-start justify-end h-full">
                 {isLarge && (
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-warm-accent text-warm-fg mb-2">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#f0c444] text-[#0B0B0D] mb-2 shadow-sm shrink-0">
                     Featured Deal
                   </span>
                 )}
-                <h2 className={`font-black text-warm-surface drop-shadow-md leading-tight mb-1 font-display tracking-tight ${
-                  isLarge ? 'text-2xl md:text-3xl' : 'text-lg'
+                <h2 className={`font-black text-white drop-shadow-md leading-tight mb-1 font-display tracking-tight ${
+                  isLarge ? 'text-xl sm:text-2xl md:text-3xl' : 'text-base sm:text-lg'
                 }`}>{promo.title}</h2>
                 {promo.subtitle && (
-                  <p className="mb-4 text-sm font-medium text-warm-surface/90 drop-shadow leading-relaxed max-w-[30ch]">{promo.subtitle}</p>
+                  <p className="mb-3 sm:mb-4 text-xs sm:text-sm font-medium text-white/95 drop-shadow leading-snug max-w-[24ch] line-clamp-2">{promo.subtitle}</p>
                 )}
-                <div className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all bg-white text-[#0B0B0D] hover:bg-white/90 active:scale-95 shadow-warm-sm">
+                <div className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all bg-white text-[#0B0B0D] hover:bg-white/90 active:scale-95 shadow-warm-sm shrink-0">
                   {promo.ctaText}
                   <span className="text-sm transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">→</span>
                 </div>

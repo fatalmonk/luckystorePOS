@@ -74,7 +74,8 @@ export default function DataDeletionPage() {
               </p>
               <div className="bg-warm-bg border border-warm-border rounded-[var(--radius-md)] p-4 my-2">
                 <p><strong>Email:</strong> <a href="mailto:luckystore.1947@gmail.com" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">luckystore.1947@gmail.com</a></p>
-                <p><strong>Phone / WhatsApp:</strong> <a href="tel:+8801731944544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></p>
+                <p><strong>Phone / WhatsApp:</strong> <a href="tel:+880****4544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></p>
+                <p><strong>Find us on Google Maps:</strong> <a href="https://maps.app.goo.gl/tfiRABoc1WsKEt619" target="_blank" rel="noopener" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">maps.app.goo.gl/tfiRABoc1WsKEt619</a></p>
                 <p><strong>Subject line:</strong> “Data Deletion Request – [Your Store Name / Registered Phone]”</p>
               </div>
               <p><strong>Option B: In-App Account Closure</strong></p>
@@ -121,7 +122,8 @@ export default function DataDeletionPage() {
               <p>If you have any questions about deleting your data, please contact us:</p>
               <ul className="list-disc pl-4 space-y-1">
                 <li>Email: <a href="mailto:luckystore.1947@gmail.com" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">luckystore.1947@gmail.com</a></li>
-                <li>Phone / WhatsApp: <a href="tel:+8801731944544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></li>
+                <li>Phone / WhatsApp: <a href="tel:+880****4544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></li>
+                <li>Find us on Google Maps: <a href="https://maps.app.goo.gl/tfiRABoc1WsKEt619" target="_blank" rel="noopener" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">maps.app.goo.gl/tfiRABoc1WsKEt619</a></li>
                 <li>Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh</li>
               </ul>
             </PolicySection>

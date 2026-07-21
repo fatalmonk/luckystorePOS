@@ -71,4 +71,59 @@ export const categories = {
     if (error) throw error;
     return data;
   },
+  create: async (tenantId: string, storeId: string, category: {
+    name: string;
+    category: string;
+    slug: string;
+    parent_id?: string | null;
+    color?: string | null;
+    icon?: string | null;
+    emoji?: string | null;
+    display_order?: number | null;
+    active?: boolean | null;
+    image_url?: string | null;
+    id?: string;
+  }) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({
+        ...category,
+        tenant_id: tenantId,
+        store_id: storeId,
+      } as any)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+  update: async (id: string, updates: {
+    name?: string;
+    category?: string;
+    slug?: string;
+    parent_id?: string | null;
+    color?: string | null;
+    icon?: string | null;
+    emoji?: string | null;
+    display_order?: number | null;
+    active?: boolean | null;
+  }) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .update(updates as any)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+  remove: async (id: string) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
 };

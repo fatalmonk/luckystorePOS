@@ -57,6 +57,7 @@ function useNavGroups(): NavGroup[] {
       items: [
         { icon: Warehouse, label: t('nav.inventory', 'Inventory'), path: '/inventory', children: [
           { label: t('nav.list', 'List'), path: '/inventory' },
+          { label: t('nav.categories', 'Categories'), path: '/inventory/categories' },
           { label: t('nav.stockHistory', 'Stock History'), path: '/inventory/history' },
           { label: t('nav.missingImages', 'Missing Images'), path: '/inventory/missing-images' },
         ] },

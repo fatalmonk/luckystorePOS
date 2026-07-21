@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { ProductSwimlaneClient } from './ProductSwimlaneClient';
 import { ProductGridClient } from './ProductGridClient';
 import { PromoBanner } from './PromoBanner';
@@ -15,20 +16,20 @@ function getSingleBrand(value: string | string[] | undefined): string | undefine
   return Array.isArray(value) ? value[0] : value;
 }
 
-function buildBrandHref(currentParams: URLSearchParams, brand: string | null): string {
-  const params = new URLSearchParams(currentParams.toString());
-  if (brand) {
-    params.set('brand', brand);
-  } else {
-    params.delete('brand');
-  }
-  const query = params.toString();
-  return `${window.location.pathname}${query ? `?${query}` : ''}`;
+function normalizeBrand(value?: string | null): string {
+  return (value || '').trim().toLowerCase();
 }
 
 function BrandFilterBar({ products, selectedBrand }: { products: Product[]; selectedBrand?: string }) {
   const router = useRouter();
   const params = useSearchParams();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const selectedNormalized = normalizeBrand(selectedBrand);
 
   const counts = products.reduce((acc, p) => {
     const brand = p.brand || 'Others';
@@ -43,16 +44,35 @@ function BrandFilterBar({ products, selectedBrand }: { products: Product[]; sele
   if (brands.length <= 1) return null;
 
   const handleClick = (brand: string | null) => {
-    const nextParams = new URLSearchParams(params.toString());
+    const nextParams = new URLSearchParams(params?.toString() ?? '');
     if (brand) {
       nextParams.set('brand', brand);
     } else {
       nextParams.delete('brand');
     }
-    router.push(`${window.location.pathname}?${nextParams.toString()}`, { scroll: false });
+    router.push(`${window.location.pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ''}`, { scroll: false });
   };
 
   const chipBase = 'flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-bold border transition-all duration-200 whitespace-nowrap';
+
+  if (!mounted) {
+    return (
+      <section className="mb-5" aria-hidden="true">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-extrabold tracking-tight text-warm-fg">Shop by Brand</h3>
+          <span className="text-xs font-semibold text-warm-muted">{brands.length} brands</span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide scroll-edge-mask pb-1">
+          <div className={`${chipBase} bg-warm-surface text-warm-fg border-warm-border/60`}>All ({products.length})</div>
+          {brands.map((brand) => (
+            <div key={brand} className={`${chipBase} bg-warm-surface text-warm-fg border-warm-border/60`}>
+              {brand} ({counts[brand]})
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-5">
@@ -74,9 +94,9 @@ function BrandFilterBar({ products, selectedBrand }: { products: Product[]; sele
         {brands.map((brand) => (
           <button
             key={brand}
-            onClick={() => handleClick(brand === selectedBrand ? null : brand)}
+            onClick={() => handleClick(selectedNormalized === normalizeBrand(brand) ? null : brand)}
             className={`${chipBase} ${
-              selectedBrand === brand
+              selectedNormalized === normalizeBrand(brand)
                 ? 'bg-warm-fg text-warm-surface border-warm-fg'
                 : 'bg-warm-surface text-warm-fg border-warm-border/60 hover:border-warm-fg'
             }`}
@@ -183,7 +203,7 @@ export function CategorySwimlanes({
   }
 
   if (selectedBrand) {
-    filtered = filtered.filter((p) => p.brand?.toLowerCase() === selectedBrand.toLowerCase());
+    filtered = filtered.filter((p) => normalizeBrand(p.brand) === normalizeBrand(selectedBrand));
   }
 
   if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
@@ -287,3 +307,4 @@ export function CategorySwimlanes({
     </>
   );
 }
+
