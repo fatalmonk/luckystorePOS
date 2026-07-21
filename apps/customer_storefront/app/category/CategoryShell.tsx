@@ -1,5 +1,6 @@
 
 
+import Link from 'next/link';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 import { ThemedShortcuts } from '../components/ThemedShortcuts';
@@ -231,13 +232,13 @@ export function CategoryShell({
         <div className="p-4 sm:p-6 space-y-6">
           {parentGroup && !group && (
             <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
-              <a href="/category" className="hover:text-warm-fg transition-colors">
+              <Link href="/category" className="hover:text-warm-fg transition-colors">
                 Categories
-              </a>
+              </Link>
               <span>/</span>
-              <a href={`/category/${parentGroup.slug}`} className="hover:text-warm-fg transition-colors">
+              <Link href={`/category/${parentGroup.slug}`} className="hover:text-warm-fg transition-colors">
                 {parentGroup.label}
-              </a>
+              </Link>
               <span>/</span>
               <span className="text-warm-fg font-bold">
                 {prettyName}
