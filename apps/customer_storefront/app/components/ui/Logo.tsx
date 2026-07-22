@@ -3,13 +3,18 @@ import Link from 'next/link';
 interface LogoProps {
   className?: string;
   href?: string;
+  variant?: 'default' | 'white';
 }
 
-export function Logo({ className = '', href = '/' }: LogoProps) {
+export function Logo({ className = '', href = '/', variant = 'default' }: LogoProps) {
+  const isWhite = variant === 'white';
+
   const content = (
     <div className={`flex items-center gap-1.5 select-none group ${className}`}>
       {/* Wordmark */}
-      <span className="font-display font-black text-warm-fg tracking-tighter text-sm sm:text-lg leading-none transition-colors duration-200 group-hover:text-warm-muted uppercase">
+      <span className={`font-display font-black tracking-tighter text-sm sm:text-lg leading-none transition-colors duration-200 uppercase ${
+        isWhite ? 'text-white group-hover:text-warm-surface/80' : 'text-warm-fg group-hover:text-warm-muted'
+      }`}>
         LUCKY STORE
       </span>
       {/* Yellow Dot */}
@@ -18,7 +23,9 @@ export function Logo({ className = '', href = '/' }: LogoProps) {
         aria-hidden="true" 
       />
       {/* Monospace Year — hidden on mobile */}
-      <span className="hidden sm:inline font-mono text-xs text-warm-muted font-medium mt-0.5 flex-shrink-0">
+      <span className={`hidden sm:inline font-mono text-xs font-medium mt-0.5 flex-shrink-0 ${
+        isWhite ? 'text-warm-surface/70' : 'text-warm-muted'
+      }`}>
         1947
       </span>
     </div>
