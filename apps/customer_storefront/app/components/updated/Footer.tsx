@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#0B0B0D] text-white pt-12 pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden font-body">
+    <footer className="hidden sm:block w-full bg-[#0B0B0D] text-white pt-12 pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden font-body">
       <div className="max-w-6xl mx-auto space-y-12">
         {/* Top Section: Email Headline + Get Started Saffron Card */}
         <div className="flex flex-col lg:flex-row items-start justify-between gap-8 pb-8 border-b border-white/10">
@@ -75,8 +75,8 @@ export function Footer() {
 
         {/* Giant Display Brand Wordmark */}
         <div className="py-2 text-center overflow-hidden select-none">
-          <h2 className="text-[3.5rem] sm:text-[6.5rem] md:text-[9rem] lg:text-[11rem] font-black font-display tracking-tighter leading-none text-white opacity-95 hover:opacity-100 transition-opacity">
-            LuckyStore
+          <h2 className="text-[13.5vw] xl:text-[11rem] font-black font-display tracking-tighter leading-none text-white opacity-95 hover:opacity-100 transition-opacity uppercase whitespace-nowrap">
+            LUCKY STORE
           </h2>
         </div>
 
@@ -85,7 +85,7 @@ export function Footer() {
           <span>Copyright © Lucky Store 1947</span>
           <div className="flex items-center gap-1.5 text-[#0B0B0D]/80">
             <span aria-hidden="true">🌐</span>
-            <span>Chittagong, BD</span>
+            <span>Chittagong, Bangladesh</span>
           </div>
           <div className="flex items-center gap-4 text-[#0B0B0D]/90">
             <a

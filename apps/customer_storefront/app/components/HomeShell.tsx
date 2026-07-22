@@ -19,7 +19,7 @@ export function HomeShell({ products }: HomeShellProps) {
     <>
       <h1 className="sr-only">Lucky Store 1947 — Authentic Grocery &amp; Daily Essentials</h1>
       <Header />
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
           {/* Main Campaign Grid */}
           <CampaignGrid />

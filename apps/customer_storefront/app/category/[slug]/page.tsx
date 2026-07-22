@@ -1,5 +1,6 @@
 import { CategoryShell } from '../CategoryShell';
-import { fetchProducts, fetchCategories } from '../../lib/products';
+import { createProductRepository } from '../../lib/products/index';
+import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS } from '../../lib/types';
 import type { Category, Product, CategoryGroup } from '../../lib/types';
@@ -14,7 +15,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const resolvedParams = await params;
   const categorySlug = decodeURIComponent(resolvedParams.slug);
-  const categories = await fetchCategories();
+  const { repo } = createProductRepository(supabase);
+  const categories = await repo.getCategories();
   const group = getCategoryGroup(categorySlug);
   const currentCatObj = categories.find((c) => c.slug === categorySlug);
   const titleName = group?.label || currentCatObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -34,7 +36,8 @@ export default async function CategorySlugPage({
 }) {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
-  const categories = await fetchCategories();
+  const { repo } = createProductRepository(supabase);
+  const categories = await repo.getCategories();
   const categorySlug = decodeURIComponent(resolvedParams.slug);
   
   let group = getCategoryGroup(categorySlug);
@@ -42,7 +45,7 @@ export default async function CategorySlugPage({
 
   // Dynamically treat root categories with child categories as groups
   if (!group && currentCatObj) {
-    const childCats = categories.filter((c) => c.parent_id === currentCatObj.id);
+    const childCats = categories.filter((c) => (c.parentId ?? c.parent_id) === currentCatObj.id);
     if (childCats.length > 0) {
       group = {
         slug: currentCatObj.slug,
@@ -57,8 +60,9 @@ export default async function CategorySlugPage({
   let parentGroup: CategoryGroup | undefined;
   if (!group) {
     parentGroup = getParentGroup(categorySlug);
-    if (!parentGroup && currentCatObj?.parent_id) {
-      const parentCatObj = categories.find((c) => c.id === currentCatObj.parent_id);
+    const parentId = currentCatObj?.parentId ?? currentCatObj?.parent_id;
+    if (!parentGroup && parentId) {
+      const parentCatObj = categories.find((c) => c.id === parentId);
       if (parentCatObj) {
         parentGroup = getCategoryGroup(parentCatObj.slug) || {
           slug: parentCatObj.slug,
@@ -84,15 +88,26 @@ export default async function CategorySlugPage({
       const subCatIds = categories
         .filter((c) => activeGroup.subCategories.includes(c.slug))
         .map((c) => c.id);
-      const result = await fetchProducts(searchTerm || undefined, undefined, subCatIds.length > 0 ? subCatIds : undefined, 0, 500);
-      products = result.products;
+      const result = await repo.search({
+        query: searchTerm || undefined,
+        categoryIds: subCatIds.length > 0 ? subCatIds : undefined,
+        limit: 500,
+      });
+      products = result.products as any[];
     } else if (currentCat !== 'all') {
       const catId = currentCatObj?.id;
-      const result = await fetchProducts(searchTerm || undefined, catId, undefined, 0, 200);
-      products = result.products;
+      const result = await repo.search({
+        query: searchTerm || undefined,
+        categoryId: catId,
+        limit: 200,
+      });
+      products = result.products as any[];
     } else {
-      const result = await fetchProducts(searchTerm || undefined, undefined, undefined, 0, 200);
-      products = result.products;
+      const result = await repo.search({
+        query: searchTerm || undefined,
+        limit: 200,
+      });
+      products = result.products as any[];
     }
   } catch (err) {
     console.error('Failed to fetch category products:', err);

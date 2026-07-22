@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchProducts, fetchProductById, fetchCategories } from '../../lib/products';
+import { createProductRepository, createProductId } from '../../lib/products/index';
+import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -59,13 +60,14 @@ export async function GET(req: NextRequest) {
   const path = searchParams.get('path') || '/';
 
   let markdown = '';
+  const { repo } = createProductRepository(supabase);
 
   try {
     if (path === '/' || path === '') {
       // Homepage
       const [{ products }, categories] = await Promise.all([
-        fetchProducts(undefined, undefined, undefined, 0, 12),
-        fetchCategories(),
+        repo.search({ limit: 12 }),
+        repo.getCategories(),
       ]);
 
       markdown = mdHeader(
@@ -87,11 +89,11 @@ export async function GET(req: NextRequest) {
 
       // Check if it's a category group
       const group = CATEGORY_GROUPS.find((g) => g.slug === slug);
-      const categories = await fetchCategories();
+      const categories = await repo.getCategories();
       const cat = categories.find((c) => c.slug === slug);
 
       if (cat) {
-        const { products } = await fetchProducts(undefined, cat.id, undefined, 0, 24);
+        const { products } = await repo.search({ categoryId: cat.id, limit: 24 });
         markdown = mdHeader(
           `${cat.emoji || '📦'} ${cat.name}`,
           `${products.length} products available`
@@ -111,7 +113,7 @@ export async function GET(req: NextRequest) {
       }
     } else if (path.startsWith('/product/')) {
       const id = path.replace('/product/', '');
-      const product = await fetchProductById(id);
+      const product = await repo.getById(createProductId(id));
 
       if (product) {
         markdown = mdHeader(`${product.emoji || '📦'} ${product.name}`);
@@ -127,7 +129,7 @@ export async function GET(req: NextRequest) {
     } else if (path === '/search') {
       const q = searchParams.get('q') || '';
       if (q) {
-        const { products } = await fetchProducts(q, undefined, undefined, 0, 20);
+        const { products } = await repo.search({ query: q, limit: 20 });
         markdown = mdHeader(`Search: "${q}"`, `${products.length} results`);
         for (const p of products) {
           markdown += mdProduct(p);
@@ -136,13 +138,13 @@ export async function GET(req: NextRequest) {
         markdown = mdHeader('Search Lucky Store');
         markdown += `Search our product catalog. Visit ${BASE_URL}/search to use the web search.\n\n`;
         markdown += `Available categories:\n\n`;
-        const categories = await fetchCategories();
+        const categories = await repo.getCategories();
         for (const cat of categories) {
           markdown += `- [${cat.name}](${BASE_URL}/category/${cat.slug})\n`;
         }
       }
     } else if (path === '/category') {
-      const categories = await fetchCategories();
+      const categories = await repo.getCategories();
       markdown = mdHeader('All Categories', `${categories.length} categories`);
       for (const cat of categories) {
         markdown += `- ${cat.emoji || '📦'} [${cat.name}](${BASE_URL}/category/${cat.slug})\n`;

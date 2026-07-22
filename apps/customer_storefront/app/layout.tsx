@@ -143,7 +143,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased font-body pb-[60px]" suppressHydrationWarning>
+      <body className="antialiased font-body pb-[60px] md:pb-0" suppressHydrationWarning>
         {/* Google Analytics — deferred to idle time, never blocks render or layout */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"
