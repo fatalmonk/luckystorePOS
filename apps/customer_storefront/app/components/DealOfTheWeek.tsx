@@ -60,13 +60,22 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Lead Product Hero Card */}
         <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-[20px] p-5 flex flex-col justify-between space-y-4">
-          <div className="relative flex items-center justify-center p-6 bg-white/5 rounded-2xl border border-white/5">
-            <span className="absolute top-3 left-3 bg-red-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md">
+          <div className="relative flex items-center justify-center p-6 bg-white/5 rounded-2xl border border-white/5 min-h-[220px]">
+            <span className="absolute top-3 left-3 bg-red-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md z-10">
               {leadDiscount}% OFF
             </span>
-            <span className="text-7xl sm:text-8xl transform hover:scale-110 transition-transform duration-300">
-              {leadProduct.emoji}
-            </span>
+            {leadProduct.image_url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={leadProduct.image_url}
+                alt={leadProduct.name}
+                className="max-h-52 w-full object-contain p-2 transform hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <span className="text-7xl sm:text-8xl transform hover:scale-110 transition-transform duration-300">
+                {leadProduct.emoji}
+              </span>
+            )}
           </div>
 
           <div className="space-y-2">
