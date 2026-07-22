@@ -26,7 +26,7 @@ export function ProductGrid({ products, cart, showBrandBadge = false, onAdd, onU
           <div
             key={product.id}
             style={{ '--index': index } as React.CSSProperties}
-            className="card-reveal"
+            className="card-reveal h-full flex flex-col"
           >
             <ProductCard
               id={product.id}

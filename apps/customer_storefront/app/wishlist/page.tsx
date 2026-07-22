@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 import { getLocalWishlist } from '../lib/wishlistHelpers';
-import { fetchProductById } from '../lib/products';
+import { createProductRepository, createProductId } from '../lib/products/index';
+import { supabase } from '../lib/supabase';
 import { formatBdt } from '../lib/formatPrice';
 import type { Product } from '../lib/types';
 import { Heart, ArrowRight } from '@phosphor-icons/react';
@@ -24,10 +25,12 @@ export default function WishlistPage() {
       return;
     }
 
-    Promise.all(ids.map((id) => fetchProductById(id)))
+    const { repo } = createProductRepository(supabase);
+
+    Promise.all(ids.map((id) => repo.getById(createProductId(id))))
       .then((products) => {
         if (cancelled) return;
-        setItems(products.filter(Boolean) as Product[]);
+        setItems(products.filter(Boolean) as any[]);
         setLoading(false);
       })
       .catch((err) => {

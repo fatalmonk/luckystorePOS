@@ -110,7 +110,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
         {displayedProducts.map((product, index) => {
           let addBtnRef: HTMLButtonElement | null = null;
           return (
-            <div key={product.id}>
+            <div key={product.id} className="h-full flex flex-col">
               <ProductCard
                 id={product.id}
                 emoji={product.emoji}

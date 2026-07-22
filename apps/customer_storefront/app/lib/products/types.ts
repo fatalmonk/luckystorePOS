@@ -19,6 +19,7 @@ export interface Category {
   name: string;
   emoji: string;
   parentId?: string | null;
+  parent_id?: string | null;
 }
 
 export type CategorySlug = string;
@@ -37,10 +38,13 @@ export interface Product {
   unit: string;
   category: CategorySlug;
   categoryId?: string;
+  category_id?: string;
   stock: number;
   description: string;
   imageUrl?: string;
+  image_url?: string;
   createdAt?: Date;
+  created_at?: string;
   brand?: Brand;
 }
 

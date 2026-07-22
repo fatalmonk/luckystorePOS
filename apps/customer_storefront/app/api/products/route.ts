@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchProducts, fetchProductById } from '../../lib/products';
+import { createProductRepository, createProductId } from '../../lib/products/index';
+import { supabase } from '../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -21,15 +22,17 @@ export async function GET(req: NextRequest) {
   const page = Math.floor(offset / limit);
 
   try {
+    const { repo } = createProductRepository(supabase);
+
     if (id) {
-      const product = await fetchProductById(id);
+      const product = await repo.getById(createProductId(id));
       if (!product) {
         return NextResponse.json({ error: 'Product not found' }, { status: 404 });
       }
       return NextResponse.json(product);
     }
 
-    const { products, hasMore } = await fetchProducts(query, undefined, undefined, page, limit);
+    const { products, hasMore } = await repo.search({ query, page, limit });
     return NextResponse.json({ products, hasMore, offset, limit });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });

@@ -59,10 +59,13 @@ function mapRowToProduct(
     unit: 'pc', // Could be moved to schema later
     category: categorySlug,
     categoryId: row.category_id ?? undefined,
+    category_id: row.category_id ?? undefined,
     stock,
     description: row.description ?? '',
     imageUrl: row.image_url ?? undefined,
+    image_url: row.image_url ?? undefined,
     createdAt: row.created_at ? new Date(row.created_at) : undefined,
+    created_at: row.created_at ?? undefined,
     brand,
   };
 }
@@ -77,6 +80,7 @@ function mapRowToCategory(row: CategoryRow): Category {
     name: row.name,
     emoji: row.emoji ?? '📦',
     parentId: row.parent_id ?? null,
+    parent_id: row.parent_id ?? null,
   };
 }
 

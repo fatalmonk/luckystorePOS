@@ -202,7 +202,7 @@ export function ProductCard({
   };
 
   return (
-    <Card hover onClick={onClick} className={`flex flex-col group relative card-reveal ${
+    <Card hover onClick={onClick} className={`flex flex-col h-full group relative card-reveal ${
       theme === 'deals' ? 'border-red-300/60' : theme === 'bestsellers' ? 'border-warm-accent/70' : ''
     }`} data-testid="product-card">
       {/* Badges + wishlist */}
@@ -234,7 +234,7 @@ export function ProductCard({
         >
           {isWishlisted ? (
             <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.3 la-15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           ) : (
             <svg className="w-4 h-4 text-warm-muted hover:text-red-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -265,30 +265,34 @@ export function ProductCard({
         )}
       </div>
 
-      {/* Content — refined editorial layout */}
-      <div className="p-3.5 flex flex-col flex-1 gap-1.5">
-        {/* Price block: prominent, clean */}
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(price)}</span>
-          {onSale && (
-            <span className="text-[11px] text-warm-muted line-through font-mono">{formatBdt(originalPrice)}</span>
-          )}
-        </div>
+      {/* Content — refined editorial layout with consistent heights */}
+      <div className="p-3.5 flex flex-col flex-1 justify-between gap-1.5">
+        <div className="flex flex-col gap-1">
+          {/* Price block: prominent, clean */}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(price)}</span>
+            {onSale && (
+              <span className="text-[11px] text-warm-muted line-through font-mono">{formatBdt(originalPrice)}</span>
+            )}
+          </div>
 
-        {onSale && (
-          <p className="text-[10px] font-bold text-red-600 leading-none">
-            Save {formatBdt(savings)}
+          {/* Reserved slot for sale savings to align all cards vertically */}
+          <div className="h-3.5 flex items-center">
+            {onSale ? (
+              <p className="text-[10px] font-bold text-red-600 leading-none">
+                Save {formatBdt(savings)}
+              </p>
+            ) : null}
+          </div>
+
+          <p className="text-[10px] text-warm-dim leading-none">
+            {formatUnitPrice(price, unit)}
           </p>
-        )}
 
-        <p className="text-[10px] text-warm-dim leading-none">
-          {formatUnitPrice(price, unit)}
-        </p>
-
-        <h3 className="text-[13px] font-semibold leading-snug line-clamp-2 text-warm-fg font-body min-h-[2.4em]">
-          {name}
-        </h3>
-        <p className="text-[10px] text-warm-muted leading-none">{unit}</p>
+          <h3 className="text-[13px] font-semibold leading-snug line-clamp-2 text-warm-fg font-body min-h-[2.5em] flex items-start">
+            {name}
+          </h3>
+        </div>
 
         <div className="mt-auto pt-2">
           {qtyInCart > 0 ? (
