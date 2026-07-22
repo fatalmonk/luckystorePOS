@@ -235,4 +235,44 @@ export async function fetchCategories(): Promise<CategoryWithParent[]> {
   }
 }
 
+/**
+ * MIGRATION GUIDE: Moving to the new Product Repository
+ *
+ * The new repository pattern is available in './products' module.
+ * This file (products.ts) is now in maintenance mode.
+ *
+ * Old way (current):
+ *   import { fetchProducts, fetchProductById, fetchCategories } from './products';
+ *   const { products } = await fetchProducts('query', categoryId);
+ *
+ * New way (recommended):
+ *   import { createProductRepository, createProductId } from './products';
+ *   import { supabase } from './supabase';
+ *
+ *   const repo = createProductRepository(supabase);
+ *   const { products } = await repo.search({ query: 'milk', limit: 20 });
+ *   const product = await repo.getById(createProductId('abc-123'));
+ *
+ * Benefits:
+ *   - Clean interface (seam) — test without mocking Supabase
+ *   - Automatic caching via CachingProductAdapter decorator
+ *   - Brand/emoji parsing extracted to injectable strategies
+ *   - Zod validation catches schema drift early
+ *
+ * For Server Components (Next.js App Router):
+ *   const repo = createProductRepository(supabase);
+ *   // Caching happens automatically via the decorator
+ *
+ * For Client Components:
+ *   Same API — the repository works in both environments.
+ *
+ * For Tests:
+ *   import { ProductRepository } from './products';
+ *   const fakeAdapter = { search: async () => ({ products: [], hasMore: false }) };
+ *   const repo = new ProductRepository(fakeAdapter, parser, resolver);
+ *   // No Supabase mocking needed!
+ *
+ * @deprecated Consider migrating to the new repository pattern in './products'
+ */
+
 
