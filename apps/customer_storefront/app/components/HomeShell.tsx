@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import { Header } from './updated/Header';
-import { FlashSaleStrip } from './FlashSaleStrip';
-import { HeroBanner } from './updated/HeroBanner';
-import { PromoGrid } from './updated/PromoGrid';
+import { Footer } from './updated/Footer';
+import { CampaignGrid } from './CampaignGrid';
 import { ThemedShortcuts } from './ThemedShortcuts';
-import { HomeSectionsClient } from './HomeSectionsClient';
+import { FeaturedProducts } from './FeaturedProducts';
+import { DealOfTheWeek } from './DealOfTheWeek';
 import { BottomNav } from './BottomNav';
 import { WhatsAppFloat } from './WhatsAppFloat';
 import type { Product, Category } from '../lib/types';
-import { responsiveHeroBanner } from '../lib/imageUrl';
 
 interface HomeShellProps {
   products: Product[];
@@ -16,64 +15,15 @@ interface HomeShellProps {
 }
 
 export function HomeShell({ products }: HomeShellProps) {
-  const MAX_SECTION_ITEMS = 8;
-
-  const inStock = products.filter((p) => p.stock > 0);
-  const deals = inStock.filter((p) => (p.originalPrice ?? 0) > p.price).slice(0, MAX_SECTION_ITEMS);
-  const bestSellers = inStock.filter((p) => p.stock > 20).slice(0, MAX_SECTION_ITEMS);
-
-  const sections = [
-    ...(deals.length > 0 ? [{ title: 'Hot Deals', href: '/category?theme=deals', products: deals, theme: 'deals' as const }] : []),
-    ...(bestSellers.length > 0 ? [{ title: 'Best Sellers', href: '/category?theme=bestsellers', products: bestSellers, theme: 'bestsellers' as const }] : []),
-  ];
-
   return (
     <>
-      <h1 className="sr-only">Lucky Store 1947 — Authentic Grocery & Daily Essentials</h1>
+      <h1 className="sr-only">Lucky Store 1947 — Authentic Grocery &amp; Daily Essentials</h1>
       <Header />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
-        <div className="p-4 sm:p-6 space-y-6">
-          <HeroBanner
-            slides={[
-              {
-                image: responsiveHeroBanner('promo_welcome_v2', 'Welcome to Lucky Store'),
-                title: 'Welcome to Lucky Store',
-                subtitle: 'Fresh groceries delivered daily. Chittagong\'s trusted store since 1947.',
-                badge: 'Since 1947',
-                ctaText: 'Start Shopping',
-                ctaHref: '/category',
-                objectPosition: '50% 64%',
-              },
-              {
-                image: responsiveHeroBanner('promo_ice_cream', 'Monsoon Ice Cream Deals'),
-                title: 'Monsoon Ice Cream Deals',
-                subtitle: 'Up to 55% off ice creams',
-                badge: 'Sweet Deals',
-                hideText: true,
-                hideOverlay: true,
-                ctaHref: '/category/ice-cream',
-                objectPosition: 'left center',
-              },
-              {
-                image: responsiveHeroBanner('promo_savings_banner', 'Big savings on your favorite products'),
-                title: 'Big Savings Week',
-                subtitle: 'Up to 50% off daily essentials for a limited time',
-                badge: 'Hot Deals',
-                ctaText: 'Shop Deals',
-                ctaHref: '/category?theme=deals',
-                objectPosition: '50% 60%',
-              },
-              {
-                image: responsiveHeroBanner('promo_cooking', 'Cooking essentials'),
-                title: 'Cooking Essentials',
-                subtitle: 'Oils, spices, rice & everything for your kitchen',
-                badge: 'Daily Needs',
-                ctaText: 'Shop Cooking',
-                ctaHref: '/category/cooking-essentials',
-                objectPosition: '50% 60%',
-              },
-            ]}
-          />
+        <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+          {/* Main Campaign Grid */}
+          <CampaignGrid />
+
           {/* Trust micro-bar — immediately visible after hero */}
           <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-warm-surface border border-warm-border/50 p-3 shadow-warm-sm">
             <div className="flex flex-col items-center justify-center text-center gap-1">
@@ -92,14 +42,18 @@ export function HomeShell({ products }: HomeShellProps) {
               <span className="text-[9px] text-warm-muted">Pay on arrival</span>
             </div>
           </div>
-          {/* Urgency strip is data-driven and hides when no endTime is configured. */}
-          <FlashSaleStrip />
-          <ThemedShortcuts />
-          <PromoGrid />
-          <HomeSectionsClient sections={sections} />
 
-          {/* How It Works — 3-step flow, visually distinct from micro-bar */}
-          <section className="space-y-5 pt-2" aria-label="How It Works">
+          {/* Category Rail */}
+          <ThemedShortcuts products={products} />
+
+          {/* Featured Products Section */}
+          <FeaturedProducts products={products} />
+
+          {/* Deal of the Week Anchor Section */}
+          <DealOfTheWeek products={products} />
+
+          {/* How It Works — 3-step flow */}
+          <section id="how-it-works" className="space-y-5 pt-2" aria-label="How It Works">
             <h2 className="text-lg font-extrabold tracking-tight text-warm-fg">How Lucky Store Works</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -140,10 +94,10 @@ export function HomeShell({ products }: HomeShellProps) {
             </Link>
           </section>
         </div>
+        <Footer />
       </main>
       <BottomNav />
       <WhatsAppFloat />
     </>
   );
 }
-
