@@ -8,7 +8,7 @@ async function openFirstOutOfStockProduct(page: Page): Promise<Page | null> {
   const count = await productCards.count();
   expect(count).toBeGreaterThan(0);
 
-  await productCards.first().click();
+  await productCards.first().locator('h3').click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 

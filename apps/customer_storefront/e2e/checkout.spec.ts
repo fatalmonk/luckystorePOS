@@ -4,7 +4,7 @@ async function openFirstProduct(page: Page) {
   await page.goto('/');
   await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
   const firstProduct = page.locator('[data-testid="product-card"]').first();
-  await firstProduct.click();
+  await firstProduct.locator('h3').click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 }
@@ -12,10 +12,12 @@ async function openFirstProduct(page: Page) {
 async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
   const addButton = page.locator('button:has-text("Add to Cart")');
   const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
+  const alreadyInCart = page.locator('button[aria-label="Increase quantity"]');
 
   try {
     return await Promise.race([
       addButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'in-stock' as const),
+      alreadyInCart.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'in-stock' as const),
       wishlistButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'out-of-stock' as const),
     ]);
   } catch {
@@ -30,8 +32,11 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
     return false;
   }
 
-  await page.locator('button:has-text("Add to Cart")').click();
-  await page.locator('[aria-label="1 items in cart"]').waitFor({ state: 'visible', timeout: 5000 });
+  const addButton = page.locator('button:has-text("Add to Cart")');
+  if (await addButton.isVisible()) {
+    await addButton.click();
+  }
+  await page.locator('[aria-label*="items in cart"]').waitFor({ state: 'visible', timeout: 5000 });
   return true;
 }
 

@@ -176,13 +176,11 @@ export class SupabaseProductAdapter implements ProductDataPort {
   }
 
   async getById(id: ProductId): Promise<Product | null> {
-    // Current workaround: search with limit 2 and find match
-    // Cache decorator will mitigate the inefficiency
     const { data, error } = await this.supabase.rpc('search_items_pos', {
       p_store_id: this.storeId,
-      p_query: String(id),
+      p_query: '',
       p_category_id: null,
-      p_limit: 2,
+      p_limit: 100,
       p_offset: 0,
     });
 
