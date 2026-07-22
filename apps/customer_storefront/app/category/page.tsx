@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { CategoryShell } from './CategoryShell';
-import { fetchProducts, fetchCategories } from '../lib/products';
+import { createProductRepository } from '../lib/products/index';
+import { supabase } from '../lib/supabase';
 import { getSingleParam } from '../lib/utils';
 import type { Category } from '../lib/types';
 
@@ -33,8 +34,9 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
   const searchTerm = getSingleParam(resolvedParams.q);
   const theme = getSingleParam(resolvedParams.theme);
   const sort = getSingleParam(resolvedParams.sort) || 'best';
-  const categories = await fetchCategories();
-  const { products } = await fetchProducts(searchTerm || undefined);
+  const { repo } = createProductRepository(supabase);
+  const categories = await repo.getCategories();
+  const { products } = await repo.search({ query: searchTerm || undefined });
 
   return (
     <CategoryShell

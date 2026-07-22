@@ -65,6 +65,17 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
     }
   }, 10_000); // 10s max wait for subscription
 
+  const safelyRemoveChannel = (ch: any) => {
+    if (!ch) return;
+    setTimeout(() => {
+      try {
+        supabase.removeChannel(ch);
+      } catch (err) {
+        console.error('Error removing channel:', err);
+      }
+    }, 0);
+  };
+
   try {
     channel = supabase.channel(`store-notifications:${STORE_ID}`);
     channel.subscribe((status) => {
@@ -85,22 +96,25 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
         }).then(() => {
           clearTimeout(cleanupTimer);
           if (channel) {
-            supabase.removeChannel(channel);
+            const ch = channel;
             channel = null;
+            safelyRemoveChannel(ch);
           }
         }).catch((err) => {
           clearTimeout(cleanupTimer);
           console.error('Failed to send broadcast:', err);
           if (channel) {
-            supabase.removeChannel(channel);
+            const ch = channel;
             channel = null;
+            safelyRemoveChannel(ch);
           }
         });
       } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
         clearTimeout(cleanupTimer);
         if (channel) {
-          supabase.removeChannel(channel);
+          const ch = channel;
           channel = null;
+          safelyRemoveChannel(ch);
         }
       }
     });
@@ -108,11 +122,9 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
     clearTimeout(cleanupTimer);
     console.error('Failed to send realtime broadcast:', err);
     if (channel) {
-      try {
-        supabase.removeChannel(channel);
-      } catch (cleanupErr) {
-        console.error('Failed to cleanup channel after error:', cleanupErr);
-      }
+      const ch = channel;
+      channel = null;
+      safelyRemoveChannel(ch);
     }
   }
 

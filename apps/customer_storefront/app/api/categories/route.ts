@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { fetchCategories } from '../../lib/products';
+import { createProductRepository } from '../../lib/products/index';
+import { supabase } from '../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
@@ -9,7 +10,8 @@ export const revalidate = 3600;
  */
 export async function GET() {
   try {
-    const categories = await fetchCategories();
+    const { repo } = createProductRepository(supabase);
+    const categories = await repo.getCategories();
     return NextResponse.json({ categories });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });
