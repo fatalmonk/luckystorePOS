@@ -5,7 +5,7 @@ import { responsiveHeroBanner } from '../lib/imageUrl';
 
 export function CampaignGrid() {
   const primaryHero = responsiveHeroBanner('promo_welcome_v2', 'Welcome to Lucky Store');
-  const secondaryBanner = responsiveHeroBanner('promo_savings_banner', 'Big Savings Week');
+  const secondaryBanner = responsiveHeroBanner('promo_buldak', 'Buldak Spicy Ramen');
   const iceCreamTile = responsiveHeroBanner('promo_ice_cream', 'Monsoon Ice Cream');
   const cookingTile = responsiveHeroBanner('promo_cooking', 'Cooking Essentials');
 
@@ -52,9 +52,9 @@ export function CampaignGrid() {
 
         {/* Right side container on desktop: Secondary wide + 2 supporting tiles */}
         <div className="md:col-span-5 flex flex-col gap-3 sm:gap-4">
-          {/* Secondary Campaign Banner */}
+          {/* Secondary Campaign Banner — Buldak Spicy Ramen */}
           <Link
-            href="/category?theme=deals"
+            href="/search?q=buldak"
             className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[120px] sm:min-h-[135px] flex flex-col justify-end p-4"
           >
             <picture className="absolute inset-0 w-full h-full">
@@ -65,7 +65,7 @@ export function CampaignGrid() {
                 src={secondaryBanner.src}
                 srcSet={secondaryBanner.srcSet}
                 sizes="(max-width: 768px) 100vw, 40vw"
-                alt={secondaryBanner.alt || 'Big Savings Week'}
+                alt={secondaryBanner.alt || 'Buldak Spicy Ramen'}
                 className="w-full h-full object-cover object-[50%_60%] group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
@@ -74,12 +74,12 @@ export function CampaignGrid() {
             <div className="relative z-10 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-warm-accent uppercase tracking-wider">
-                  Hot Deals
+                  Hot &amp; Spicy
                 </span>
-                <h3 className="text-base sm:text-lg font-black text-white">Big Savings Week</h3>
+                <h3 className="text-base sm:text-lg font-black text-white">50% off on Buldak Ramen !</h3>
               </div>
               <span className="px-3 py-1.5 rounded-full bg-white/90 text-warm-fg text-xs font-extrabold group-hover:bg-white transition-colors">
-                Shop Deals →
+                Shop Now →
               </span>
             </div>
           </Link>
