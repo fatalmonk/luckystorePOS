@@ -245,14 +245,14 @@ export function ProductCard({
       </div>
 
       {/* Image Container — taller, cleaner, editorial */}
-      <div className="relative w-full aspect-[4/3] bg-warm-bg/30 overflow-hidden flex items-center justify-center shrink-0">
+      <div className="relative w-full aspect-[4/3] bg-white overflow-hidden flex items-center justify-center shrink-0">
         {image_url && !imageError ? (
           <Image
             src={image_url}
             alt={name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-contain p-3 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
+            className="object-contain p-2 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
             priority={priority}
             loading={priority ? undefined : 'lazy'}
             onError={() => setImageError(true)}
@@ -263,8 +263,6 @@ export function ProductCard({
             <CategoryPlaceholder category={category} />
           </div>
         )}
-        {/* Subtle bottom gradient fade into content */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-warm-surface/60 to-transparent pointer-events-none" />
       </div>
 
       {/* Content — refined editorial layout */}
