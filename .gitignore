@@ -248,3 +248,10 @@ lucky-store-brand-guidelines/**/*.webp
 lucky-store-brand-guidelines/**/*.html
 
 
+.hermes/
+
+templates/ui-redesign/download.png
+templates/ui-redesign/home-02.png
+templates/ui-redesign/home.jpeg
+templates/ui-redesign/home.png
+templates/ui-redesign/product-page-single.png

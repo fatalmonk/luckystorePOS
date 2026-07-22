@@ -7,30 +7,19 @@ export const revalidate = 60;
 export default async function Home() {
   const [{ products }, categories] = await Promise.all([fetchProducts(), fetchCategories()]);
 
-  // Preload the welcome hero banner image (LCP element) in the initial HTML
-  const welcomeAvif = img('/banners/promo_welcome.avif');
-  const welcomeAvifSrcSet = srcSet('/banners/promo_welcome.avif 600w');
-  const welcomeWebp = img('/banners/promo_welcome_1200.webp');
-  const welcomeWebpSrcSet = srcSet('/banners/promo_welcome_400.webp 400w, /banners/promo_welcome_600.webp 600w, /banners/promo_welcome_800.webp 800w, /banners/promo_welcome_1200.webp 1200w');
+  // Preload primary campaign hero image (LCP element)
+  const primaryHeroAvif = img('/banners/promo_welcome_v2.avif');
+  const primaryHeroSrcSet = srcSet('/banners/promo_welcome_v2.avif 600w');
 
   return (
     <>
       <link
         rel="preload"
         as="image"
-        href={welcomeAvif}
-        imageSrcSet={welcomeAvifSrcSet}
-        imageSizes="100vw"
+        href={primaryHeroAvif}
+        imageSrcSet={primaryHeroSrcSet}
+        imageSizes="(max-width: 768px) 100vw, 50vw"
         type="image/avif"
-        fetchPriority="high"
-      />
-      <link
-        rel="preload"
-        as="image"
-        href={welcomeWebp}
-        imageSrcSet={welcomeWebpSrcSet}
-        imageSizes="100vw"
-        type="image/webp"
         fetchPriority="high"
       />
       <HomeShell products={products} categories={categories} />
