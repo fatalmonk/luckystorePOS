@@ -60,6 +60,19 @@ export function Header({ className = '' }: HeaderProps) {
     }
   }, []);
 
+  // Sync selectedCategory dropdown label with current URL pathname
+  useEffect(() => {
+    if (pathname?.startsWith('/category/')) {
+      const slug = pathname.replace('/category/', '').split('/')[0];
+      if (slug && CATEGORY_GROUPS.some((g) => g.slug === slug)) {
+        setSelectedCategory(slug);
+        return;
+      }
+    } else if (pathname === '/category') {
+      setSelectedCategory('all');
+    }
+  }, [pathname]);
+
   // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -98,8 +111,19 @@ export function Header({ className = '' }: HeaderProps) {
       }
       setShowSuggestions(false);
       setIsMobileSearchOpen(false);
-      const catParam = selectedCategory !== 'all' ? `&cat=${encodeURIComponent(selectedCategory)}` : '';
-      router.push(`/category?q=${encodeURIComponent(trimmed)}${catParam}`);
+      if (selectedCategory && selectedCategory !== 'all') {
+        router.push(`/category/${encodeURIComponent(selectedCategory)}?q=${encodeURIComponent(trimmed)}`);
+      } else {
+        router.push(`/category?q=${encodeURIComponent(trimmed)}`);
+      }
+    } else if (selectedCategory && selectedCategory !== 'all') {
+      setShowSuggestions(false);
+      setIsMobileSearchOpen(false);
+      router.push(`/category/${encodeURIComponent(selectedCategory)}`);
+    } else {
+      setShowSuggestions(false);
+      setIsMobileSearchOpen(false);
+      router.push('/category');
     }
   };
 
@@ -180,36 +204,36 @@ export function Header({ className = '' }: HeaderProps) {
   return (
     <header className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border/50 ${className}`}>
       {/* Top High-Density Utility Bar */}
-      <div className="bg-warm-surface text-warm-fg border-b border-warm-border/40 text-[11px] py-1.5 px-3 sm:px-6">
+      <div className="bg-[#0B0B0D] text-white border-b border-white/10 text-[11px] py-1.5 px-3 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4 font-semibold">
           {/* Contact Details & Location */}
-          <div className="flex items-center gap-4 text-warm-muted">
-            <a href="tel:+8801731944544" className="flex items-center gap-1 hover:text-warm-fg transition-colors">
-              <Phone weight="bold" size={13} className="text-warm-accent-dark" aria-hidden="true" />
+          <div className="flex items-center gap-4 text-white/80">
+            <a href="tel:+8801731944544" className="flex items-center gap-1 hover:text-white transition-colors">
+              <Phone weight="bold" size={13} className="text-[#f0c444]" aria-hidden="true" />
               <span>+880 1731-944544</span>
             </a>
-            <span className="hidden sm:inline opacity-40">|</span>
-            <span className="hidden sm:flex items-center gap-1 text-warm-muted">
-              <MapPin weight="bold" size={13} className="text-warm-accent-dark" aria-hidden="true" />
+            <span className="hidden sm:inline text-white/30">|</span>
+            <span className="hidden sm:flex items-center gap-1 text-white/80">
+              <MapPin weight="bold" size={13} className="text-[#f0c444]" aria-hidden="true" />
               <span>Chittagong Hub, BD</span>
             </span>
           </div>
 
           {/* Promotional Banner Code */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warm-accent text-warm-fg font-black text-[10px] uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#f0c444] text-[#0B0B0D] font-black text-[10px] uppercase tracking-wider">
               <Tag weight="bold" size={11} aria-hidden="true" /> PROMO
             </span>
-            <span className="truncate max-w-[280px] sm:max-w-none text-warm-fg font-semibold">
+            <span className="truncate max-w-[280px] sm:max-w-none text-white/90 font-semibold">
               {PROMO_CODES[0].text}
             </span>
           </div>
 
           {/* Customer Service & Currency */}
-          <div className="hidden lg:flex items-center gap-4 text-warm-muted">
+          <div className="hidden lg:flex items-center gap-4 text-white/80">
             <span>BDT (৳)</span>
-            <span className="opacity-40">|</span>
-            <Link href="/#how-it-works" className="hover:text-warm-fg transition-colors">
+            <span className="text-white/30">|</span>
+            <Link href="/#how-it-works" className="hover:text-white transition-colors">
               Help Center
             </Link>
           </div>
@@ -246,6 +270,7 @@ export function Header({ className = '' }: HeaderProps) {
                     onClick={() => {
                       setSelectedCategory('all');
                       setIsCategoryDropdownOpen(false);
+                      router.push('/category');
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
                       selectedCategory === 'all' ? 'bg-warm-fg text-warm-accent' : 'text-warm-fg hover:bg-warm-bg'
@@ -262,6 +287,7 @@ export function Header({ className = '' }: HeaderProps) {
                         onClick={() => {
                           setSelectedCategory(g.slug);
                           setIsCategoryDropdownOpen(false);
+                          router.push(`/category/${g.slug}`);
                         }}
                         className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors ${
                           selectedCategory === g.slug ? 'bg-warm-fg text-warm-accent font-bold' : 'text-warm-fg hover:bg-warm-bg'

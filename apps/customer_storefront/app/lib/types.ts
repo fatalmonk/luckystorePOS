@@ -25,49 +25,109 @@ export interface CategoryGroup {
   subCategories: Category[];
 }
 
-/** Category groups — each group page aggregates multiple sub-categories into swimlanes */
+/** Category groups — root categories and aggregated sub-categories */
 export const CATEGORY_GROUPS: CategoryGroup[] = [
+  {
+    slug: 'ice-cream',
+    label: 'Ice Cream',
+    emoji: '🍦',
+    subCategories: ['ice-cream', 'ice-creams'],
+  },
+  {
+    slug: 'cold-beverages',
+    label: 'Cold Beverages',
+    emoji: '🥤',
+    subCategories: ['cold-beverages', 'beverages', 'juices', 'soft-drinks'],
+  },
+  {
+    slug: 'chips-and-pretzels',
+    label: 'Chips & Pretzels',
+    emoji: '🍿',
+    subCategories: ['chips-&-pretzels', 'chips-pretzels', 'chips', 'pretzels'],
+  },
+  {
+    slug: 'condiments',
+    label: 'Condiments',
+    emoji: '🥫',
+    subCategories: ['condiments', 'sauces', 'pickles'],
+  },
+  {
+    slug: 'energy-boosters',
+    label: 'Energy Boosters',
+    emoji: '⚡',
+    subCategories: ['energy-boosters', 'energy-drinks', 'malt-drinks'],
+  },
+  {
+    slug: 'biscuits-and-cookies',
+    label: 'Biscuits & Cookies',
+    emoji: '🍪',
+    subCategories: ['biscuits-&-cookies', 'biscuits-cookies', 'biscuits', 'cookies'],
+  },
+  {
+    slug: 'chocolates-and-candies',
+    label: 'Chocolates & Candies',
+    emoji: '🍫',
+    subCategories: ['chocolates-&-candies', 'chocolates-candies', 'chocolates', 'candies'],
+  },
+  {
+    slug: 'dairy-and-eggs',
+    label: 'Dairy & Eggs',
+    emoji: '🥛',
+    subCategories: ['dairy-&-eggs', 'dairy-eggs', 'dairy', 'eggs', 'milk'],
+  },
+  {
+    slug: 'rice-and-grain',
+    label: 'Rice & Grains',
+    emoji: '🍚',
+    subCategories: ['rice-&-grain', 'rice-grain', 'rice', 'grains'],
+  },
+  {
+    slug: 'spices',
+    label: 'Spices & Masala',
+    emoji: '🌶️',
+    subCategories: ['spices', 'masala'],
+  },
+  {
+    slug: 'oil-and-ghee',
+    label: 'Oil & Ghee',
+    emoji: '🛢️',
+    subCategories: ['oil-&-ghee', 'oil-ghee', 'oil', 'ghee'],
+  },
+  {
+    slug: 'cereals',
+    label: 'Cereals & Oats',
+    emoji: '🥣',
+    subCategories: ['cereals', 'oats'],
+  },
   {
     slug: 'personal-care',
     label: 'Personal Care',
     emoji: '🧴',
-    subCategories: ['dental', 'facial', 'hair', 'skin', 'perfume-&-body-spray', 'grooming'],
-  },
-  {
-    slug: 'air-freshner',
-    label: 'Air Freshener',
-    emoji: '🌬️',
-    subCategories: ['air-freshner'],
-  },
-  {
-    slug: 'baby-care',
-    label: 'Baby Care',
-    emoji: '🍼',
-    subCategories: ['baby-care'],
+    subCategories: ['personal-care', 'dental', 'facial', 'hair', 'skin', 'perfume-&-body-spray', 'grooming'],
   },
   {
     slug: 'cooking-essentials',
     label: 'Cooking Essentials',
     emoji: '🌾',
-    subCategories: ['rice-&-grain', 'spices', 'oil-&-ghee', 'salt-&-sugar', 'premium-ingredients', 'condiments'],
+    subCategories: ['cooking-essentials', 'salt-&-sugar', 'premium-ingredients'],
   },
   {
     slug: 'snacks',
     label: 'Snacks',
-    emoji: '🍪',
-    subCategories: ['biscuits-&-cookies', 'chocolates-&-candies', 'ice-cream', 'cold-beverages'],
+    emoji: '🍿',
+    subCategories: ['snacks', 'chanachur'],
   },
   {
     slug: 'breakfast',
     label: 'Breakfast',
     emoji: '🍳',
-    subCategories: ['cereals', 'dairy-&-eggs', 'energy-boosters'],
+    subCategories: ['breakfast'],
   },
   {
     slug: 'tea-&-coffee',
     label: 'Tea & Coffee',
     emoji: '☕',
-    subCategories: ['tea-&-coffee'],
+    subCategories: ['tea-&-coffee', 'tea', 'coffee'],
   },
   {
     slug: 'baking-needs',
@@ -93,21 +153,44 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: '🐛',
     subCategories: ['pest-control'],
   },
+  {
+    slug: 'air-freshner',
+    label: 'Air Freshener',
+    emoji: '🌬️',
+    subCategories: ['air-freshner'],
+  },
+  {
+    slug: 'baby-care',
+    label: 'Baby Care',
+    emoji: '🍼',
+    subCategories: ['baby-care'],
+  },
 ];
 
 /** Check if a slug is a category group */
 export function getCategoryGroup(slug: string): CategoryGroup | undefined {
-  return CATEGORY_GROUPS.find((g) => g.slug === slug);
+  if (!slug) return undefined;
+  const normSlug = slug.toLowerCase().trim();
+  return (
+    CATEGORY_GROUPS.find((g) => g.slug === normSlug) ||
+    CATEGORY_GROUPS.find((g) => g.subCategories.includes(normSlug))
+  );
 }
 
 /** Check if a slug is a category group */
 export function isCategoryGroup(slug: string): boolean {
-  return CATEGORY_GROUPS.some((g) => g.slug === slug);
+  if (!slug) return false;
+  const normSlug = slug.toLowerCase().trim();
+  return CATEGORY_GROUPS.some((g) => g.slug === normSlug || g.subCategories.includes(normSlug));
 }
 
 /** Find parent group for a sub-category slug */
 export function getParentGroup(subSlug: string): CategoryGroup | undefined {
-  return CATEGORY_GROUPS.find((g) => g.subCategories.includes(subSlug));
+  if (!subSlug) return undefined;
+  const normSlug = subSlug.toLowerCase().trim();
+  const exactGroup = CATEGORY_GROUPS.find((g) => g.slug === normSlug);
+  if (exactGroup) return exactGroup;
+  return CATEGORY_GROUPS.find((g) => g.subCategories.includes(normSlug));
 }
 
 export interface CartItem extends Product {

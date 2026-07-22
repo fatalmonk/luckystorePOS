@@ -9,22 +9,26 @@
  * NOTE: R2 bucket object keys use /banners/ and /categories/ prefixes.
  * Avoid /images/ — that prefix does not exist on the CDN.
  */
-const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '').replace(/\/$/, '');
+const DEFAULT_CDN_BASE = 'https://images.luckystore1947.com';
+const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL || DEFAULT_CDN_BASE).replace(/\/$/, '');
 
 export function img(path: string): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
   if (!BASE) return path;
-  // path should start with /, e.g. '/images/foo.webp'
+  // path should start with /, e.g. '/banners/foo.webp'
   return `${BASE}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
 /**
  * Converts a srcSet string with local paths to CDN-prefixed paths.
  * Input:  '/banners/foo_400.webp 400w, /banners/foo_800.webp 800w'
- * Output: 'https://cdn.../banners/foo_400.webp 400w, ...'
+ * Output: 'https://images.luckystore1947.com/banners/foo_400.webp 400w, ...'
  */
 export function srcSet(set: string): string {
+  if (!set) return '';
   if (!BASE) return set;
-  return set.replace(/(\/(banners|categories|images)\/[^\s,]+)/g, (match) => `${BASE}${match}`);
+  return set.replace(/(^|[\s,])(\/(banners|categories|images)\/[^\s,]+)/g, (_match, p1, p2) => `${p1}${BASE}${p2}`);
 }
 
 export interface ResponsiveImage {
