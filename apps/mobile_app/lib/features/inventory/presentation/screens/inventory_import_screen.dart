@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:csv/csv.dart';
 import 'package:provider/provider.dart';
+import '../../../../config/runtime_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -151,7 +151,9 @@ class _InventoryImportScreenState extends State<InventoryImportScreen> {
         );
       }
 
-      final url = Uri.parse('${dotenv.env['SUPABASE_URL']}/functions/v1/import-inventory');
+      final url = Uri.parse(
+        '${RuntimeConfig.supabaseUrl}/functions/v1/import-inventory',
+      );
       String? runId;
       bool complete = false;
 

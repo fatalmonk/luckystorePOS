@@ -9,11 +9,13 @@
 
 ## Mobile App Must Not Bundle Secrets
 
-The Flutter app bundles `assets/app.env` at build time.
+The Flutter app reads its public Supabase configuration from compile-time
+`--dart-define` values. It does not bundle or load an environment file.
 
-- Do **not** list root `.env` (or any path containing secrets) in `pubspec.yaml` → `flutter` → `assets`.
-- `assets/app.env` may contain **placeholders only** (`your-…-here`). Real staff passwords, payment passwords, service-role keys, and PATs must never be committed there.
-- Supply only public client configuration to mobile builds. Never inject staff passwords, payment credentials, service-role keys, database credentials, or provider secrets into a client build.
+- Do **not** list root `.env` or an app-specific env file in `pubspec.yaml` → `flutter` → `assets`.
+- Supply `SUPABASE_URL` and `SUPABASE_ANON_KEY` to mobile builds with `--dart-define`.
+- Never inject staff passwords, payment credentials, service-role keys, database credentials, or provider secrets into a client build.
+- Configure staff authentication and payment-provider credentials in their approved server-side runtime.
 - Removing a value from git does **not** revoke it — rotate first, then replace with placeholders.
 
 ## Service Role / DB Password — CI and Server Only

@@ -17,14 +17,12 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  int _selectedPayment = 0; // 0=COD, 1=bKash, 2=Card
+  int _selectedPayment = 0; // Cash on delivery only until payment backends exist.
   String _deliveryType = 'standard'; // 'standard' | 'scheduled'
   AddressResult? _deliveryAddress;
 
   static const List<_PaymentOption> _paymentOptions = [
     _PaymentOption(label: 'Cash on Delivery', icon: Icons.money, color: AppColors.successDefault),
-    _PaymentOption(label: 'bKash', icon: Icons.account_balance_wallet, color: Color(0xFFE2136E)), // bKash brand
-    _PaymentOption(label: 'Card / Nagad / Rocket', icon: Icons.credit_card, color: AppColors.infoDefault),
   ];
 
   @override
@@ -214,13 +212,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 );
                 return;
               }
-              if (_selectedPayment == 0) {
-                Navigator.of(context).pushNamed('/order-confirmed');
-              } else if (_selectedPayment == 1) {
-                Navigator.of(context).pushNamed('/bkash-checkout');
-              } else {
-                Navigator.of(context).pushNamed('/ssl-checkout');
-              }
+              Navigator.of(context).pushNamed('/order-confirmed');
             },
             style: AppButtonStyles.primary,
             child: Text(

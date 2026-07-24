@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/app_user.dart';
+import '../services/anonymous_session_guard.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth status enum
@@ -97,30 +97,16 @@ class AuthProvider extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      // Ensure we have a server-issued JWT for RLS.
-      // We prioritize the bootstrapped manager session if present.
-      if (_supabase.auth.currentSession == null) {
-        try {
+      final response = await AnonymousSessionGuard.run(
+        hasSession: _supabase.auth.currentSession != null,
+        signInAnonymously: () async {
           await _supabase.auth.signInAnonymously();
-        } catch (e) {
-          debugPrint('[AuthProvider] Anonymous sign-in failed (might be disabled): $e');
-          final managerEmail = dotenv.env['MANAGER_EMAIL']?.trim();
-          final managerPassword = dotenv.env['MANAGER_PASSWORD']?.trim();
-          if (managerEmail != null && managerEmail.isNotEmpty &&
-              managerPassword != null && managerPassword.isNotEmpty) {
-            debugPrint('[AuthProvider] Attempting manager bootstrap login...');
-            await _supabase.auth.signInWithPassword(
-              email: managerEmail,
-              password: managerPassword,
-            );
-            debugPrint('[AuthProvider] Bootstrapped manager session successfully.');
-          }
-        }
-      }
-
-      final response = await _supabase.rpc('authenticate_staff_pin', params: {
-        'p_pin': pin,
-      });
+        },
+        authenticatedAction: () => _supabase.rpc(
+          'authenticate_staff_pin',
+          params: {'p_pin': pin},
+        ),
+      );
 
       if (response == null || (response is List && response.isEmpty)) {
         _signInError = 'Invalid PIN. Please try again.';

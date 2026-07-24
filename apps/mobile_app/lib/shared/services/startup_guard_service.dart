@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../config/environment_contract.dart';
+import '../../config/runtime_config.dart';
 
 enum StartupState {
   ready,
@@ -36,27 +35,8 @@ class StartupGuardService {
   static bool _supabaseInitialized = false;
 
   static Future<StartupResult> validateAndBootstrap() async {
-    // Try multiple paths for environment variables to handle web/mobile/desktop differences.
-    final envPaths = ['assets/app.env', '.env', 'assets/.env'];
-    bool loaded = false;
-    
-    for (final path in envPaths) {
-      try {
-        await dotenv.load(fileName: path);
-        debugPrint('[StartupGuardService] Loaded environment from $path');
-        loaded = true;
-        break;
-      } catch (e) {
-        debugPrint('[StartupGuardService] Failed to load env from $path: $e');
-      }
-    }
-    
-    if (!loaded) {
-      debugPrint('[StartupGuardService] No environment file could be loaded.');
-    }
-
     final infra = _evaluateInfrastructure();
-    final devMode = _isTrue(dotenv.maybeGet('DEV_MODE'));
+    final devMode = RuntimeConfig.developmentMode;
     final isStrictProduction = kReleaseMode && !devMode;
     final mode = isStrictProduction ? StartupMode.strict : StartupMode.development;
 
@@ -109,14 +89,13 @@ class StartupGuardService {
   static Future<void> _initializeSupabaseIfNeeded() async {
     if (_supabaseInitialized) return;
 
-    // I26: Add explicit null/empty checks for SUPABASE_URL and SUPABASE_ANON_KEY
-    final supabaseUrl = dotenv.env['SUPABASE_URL']?.trim();
-    final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']?.trim();
+    final supabaseUrl = RuntimeConfig.supabaseUrl.trim();
+    final supabaseAnonKey = RuntimeConfig.supabaseAnonKey.trim();
 
-    if (supabaseUrl == null || supabaseUrl.isEmpty) {
+    if (supabaseUrl.isEmpty) {
       throw StateError('SUPABASE_URL is missing or empty');
     }
-    if (supabaseAnonKey == null || supabaseAnonKey.isEmpty) {
+    if (supabaseAnonKey.isEmpty) {
       throw StateError('SUPABASE_ANON_KEY is missing or empty');
     }
 
@@ -127,18 +106,10 @@ class StartupGuardService {
     _supabaseInitialized = true;
   }
 
-  static bool _isTrue(String? value) {
-    final normalized = value?.trim().toLowerCase();
-    return normalized == '1' || normalized == 'true' || normalized == 'yes';
-  }
-
   static _InfrastructureResult _evaluateInfrastructure() {
-    final missing = <String>[];
-    for (final key in EnvironmentContract.requiredStartupVars) {
-      final value = dotenv.maybeGet(key)?.trim() ?? '';
-      if (value.isEmpty) missing.add(key);
-    }
-    return _InfrastructureResult(missing: missing);
+    return _InfrastructureResult(
+      missing: RuntimeConfig.missingStartupVariables(),
+    );
   }
 
   static StartupResult _buildResult({

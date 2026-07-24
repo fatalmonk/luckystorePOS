@@ -10,7 +10,6 @@ import 'shared/providers/auth_provider.dart';
 import 'shared/providers/pos_provider.dart';
 import 'shared/controllers/app_access_controller.dart';
 import 'features/checkout/presentation/screens/checkout_screen.dart';
-import 'features/checkout/presentation/screens/bkash_checkout.dart';
 import 'features/checkout/presentation/screens/gamified_reward_screen.dart';
 import 'features/pos/presentation/providers/pos_search_provider.dart';
 import 'shared/services/startup_guard_service.dart';
@@ -68,7 +67,6 @@ class _BootstrapAppState extends State<BootstrapApp> {
       create: (_) => AppLocaleNotifier(),
       child: LuckyStoreApp(
         startupResult: startupResult,
-        onReloadConfig: _reloadConfig,
       ),
     );
   }
@@ -78,12 +76,10 @@ class _BootstrapAppState extends State<BootstrapApp> {
 
 class LuckyStoreApp extends StatelessWidget {
   final StartupResult startupResult;
-  final Future<void> Function() onReloadConfig;
 
   const LuckyStoreApp({
     super.key,
     required this.startupResult,
-    required this.onReloadConfig,
   });
 
   @override
@@ -122,11 +118,6 @@ class LuckyStoreApp extends StatelessWidget {
       // Named routes used within POS / checkout flows only.
       routes: {
         '/checkout':       (_) => const CheckoutScreen(),
-        '/bkash-checkout': (_) => BkashCheckoutScreen(
-          bkashUrl: 'about:blank',
-          paymentId: 'PENDING_PAYMENT_ID',
-          amount: 0,
-        ),
         '/order-confirmed': (_) => const GamifiedRewardScreen(),
       },
     );
@@ -137,7 +128,6 @@ class LuckyStoreApp extends StatelessWidget {
       case StartupState.blocked:
         return StartupConfigErrorScreen(
           missingVariables: startupResult.missingVariables,
-          onReloadConfig: onReloadConfig,
         );
       case StartupState.degraded:
       case StartupState.warning:

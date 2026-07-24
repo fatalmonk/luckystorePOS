@@ -5,37 +5,25 @@ import '../../../../config/environment_contract.dart';
 
 class StartupConfigErrorScreen extends StatelessWidget {
   final List<String> missingVariables;
-  final Future<void> Function()? onReloadConfig;
 
   const StartupConfigErrorScreen({
     super.key,
     required this.missingVariables,
-    this.onReloadConfig,
   });
 
   static const String _setupGuideUrl =
       'https://supabase.com/docs/guides/getting-started';
 
   static String get _envTemplate {
-    final keys = [
-      ...EnvironmentContract.requiredStartupVars,
-      ...EnvironmentContract.requiredRoleCredentialVars,
-    ];
-    return keys.map((k) => '$k=').join('\n');
+    return EnvironmentContract.requiredStartupVars
+        .map((key) => '--dart-define=$key=')
+        .join('\n');
   }
 
   static String get _envExample => '''
-# Required startup
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_ANON_KEY=your_anon_key
-
-# Required role service accounts
-MANAGER_EMAIL=manager@example.com
-MANAGER_PASSWORD=your_manager_password
-CASHIER_EMAIL=cashier@example.com
-CASHIER_PASSWORD=your_cashier_password
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=your_admin_password
+# Public mobile startup configuration
+--dart-define=SUPABASE_URL=https://your-project-ref.supabase.co
+--dart-define=SUPABASE_ANON_KEY=<your-project-anon-key>
 ''';
 
   @override
@@ -102,7 +90,7 @@ ADMIN_PASSWORD=your_admin_password
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Fix your .env file, then reload startup config.',
+                      'Provide the missing --dart-define values, then restart the app.',
                       style: TextStyle(color: Colors.white54, fontSize: 12),
                     ),
                     const SizedBox(height: 16),
@@ -113,14 +101,7 @@ ADMIN_PASSWORD=your_admin_password
                         OutlinedButton.icon(
                           onPressed: () => _copyTemplate(context),
                           icon: const Icon(Icons.copy, size: 16),
-                          label: const Text('Copy Missing Env Template'),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: onReloadConfig == null
-                              ? null
-                              : () => onReloadConfig!(),
-                          icon: const Icon(Icons.refresh, size: 16),
-                          label: const Text('Reload Config'),
+                          label: const Text('Copy Build Config Template'),
                         ),
                         TextButton.icon(
                           onPressed: () => _openSetupGuide(context),
@@ -139,7 +120,7 @@ ADMIN_PASSWORD=your_admin_password
                         iconColor: Colors.white70,
                         collapsedIconColor: Colors.white54,
                         title: const Text(
-                          'Show .env example',
+                          'Show build configuration example',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
@@ -180,7 +161,7 @@ ADMIN_PASSWORD=your_admin_password
 
   Future<void> _copyTemplate(BuildContext context) async {
     final missingOnly = missingVariables
-        .map((k) => '$k=')
+        .map((key) => '--dart-define=$key=')
         .join('\n');
     final template = '''# Missing variables only
 $missingOnly
