@@ -91,6 +91,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Secret scan self-test
+        run: node scripts/security/secret_scan.js --self-test
       - name: Run Secret Scan
         run: node scripts/security/secret_scan.js
 

@@ -219,6 +219,28 @@ dist_public/
 
 # Documentation
 docs/
+!docs/
+docs/*
+!docs/env-security.md
+!docs/audit/
+docs/audit/*
+!docs/audit/database-contract-reconciliation.md
+!docs/audit/glm5.2audit.md
+!docs/audit/infrastructure-audit.md
+!docs/audit/kimi2.7-audit-2.md
+!docs/audit/kimi2.7audit.md
+!docs/audit/qwenAudit.md
+!docs/archive/
+docs/archive/*
+!docs/archive/2026-04-27/
+docs/archive/2026-04-27/*
+!docs/archive/2026-04-27/05-frontend-pos/
+docs/archive/2026-04-27/05-frontend-pos/*
+!docs/archive/2026-04-27/05-frontend-pos/08-REACT-POS-SETUP.md
+!docs/agents/
+docs/agents/*
+!docs/agents/issue-tracker.md
+!docs/agents/domain.md
 
 # Neon sync artifacts (contain data, not just schema)
 _plans/neon_data.sql
@@ -232,6 +254,12 @@ _archive
 _data
 _plans
 context.md
+!apps/customer_storefront/CONTEXT.md
+!apps/admin_web/CONTEXT.md
+!apps/mobile_app/CONTEXT.md
+!apps/scraper/CONTEXT.md
+!supabase/CONTEXT.md
+!cloudflare/workers/CONTEXT.md
 data/
 
 # Generated responsive image variants — served from R2 CDN in production
@@ -256,3 +284,7 @@ templates/ui-redesign/home.jpeg
 templates/ui-redesign/home.png
 templates/ui-redesign/product-page-single.png
 architecture-review.html
+
+# Do not commit — local dump and font archive
+apps/scraper/chaldal-dump.txt
+lucky-store-brand-guidelines/fonts/Geist.zip
