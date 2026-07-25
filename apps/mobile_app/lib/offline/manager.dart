@@ -4,18 +4,15 @@ import 'package:workmanager/workmanager.dart';
 import 'package:flutter/foundation.dart';
 import '../offline/db.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../config/runtime_config.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      // P1 FIX: Load dotenv before reading env variables in background isolate
-      await dotenv.load();
-      
       // C4 FIX: Initialize Supabase in isolate before using client
-      final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
-      final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+      final supabaseUrl = RuntimeConfig.supabaseUrl;
+      final supabaseAnonKey = RuntimeConfig.supabaseAnonKey;
 
       if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
         debugPrint('Background sync failed: Missing Supabase credentials');

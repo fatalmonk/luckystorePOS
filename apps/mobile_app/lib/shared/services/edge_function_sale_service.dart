@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../config/runtime_config.dart';
 
 /// Calls the create-sale edge function instead of using direct RPC.
 /// Provides rate limiting, input validation, and CORS enforcement that
 /// direct RPC calls bypass.
 class EdgeFunctionSaleService {
   static String get _edgeUrl =>
-      dotenv.maybeGet('CREATE_SALE_EDGE_URL')?.trim() ?? '';
+      RuntimeConfig.edgeFunctionUrl('create-sale');
 
-  static bool get isConfigured => _edgeUrl.isNotEmpty;
+  static bool get isConfigured => RuntimeConfig.supabaseUrl.trim().isNotEmpty;
 
   /// Submit a sale through the create-sale edge function.
   /// Falls back to null if the edge function is not configured, so callers

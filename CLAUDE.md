@@ -38,3 +38,12 @@
 - `npm run build`
 - `flutter analyze`
 - `flutter test`
+
+## Agent skills
+
+- Before creating, updating, or reporting work items, read
+  `docs/agents/issue-tracker.md`. The Lucky Store Notion Tasks database is the
+  authoritative tracker.
+- Before changing domain behavior, terminology, data ownership, or boundaries,
+  read `docs/agents/domain.md`, then `CONTEXT-MAP.md`, the relevant
+  `CONTEXT.md`, and applicable ADRs.
