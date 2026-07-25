@@ -306,34 +306,6 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
     };
   });
 
-  React.useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: initialData.name || initialData.category || '',
-        slug: initialData.slug || '',
-        parent_id: initialData.parent_id,
-        color: initialData.color,
-        icon: initialData.icon,
-        emoji: initialData.emoji,
-        display_order: initialData.display_order ?? null,
-        active: initialData.active !== false,
-        image_url: initialData.image_url,
-      });
-    } else {
-      setFormData({
-        name: '',
-        slug: '',
-        parent_id: null,
-        color: null,
-        icon: null,
-        emoji: null,
-        display_order: null,
-        active: true,
-        image_url: null,
-      });
-    }
-  }, [initialData, isOpen]);
-
   const handleChange = (field: keyof CategoryFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -788,6 +760,7 @@ export function CategoriesPage() {
 
       {/* Form Modal */}
       <CategoryFormModal
+        key={`${isFormOpen ? 'open' : 'closed'}-${editingCategory?.id ?? 'new'}`}
         isOpen={isFormOpen}
         onClose={() => {
           setIsFormOpen(false);

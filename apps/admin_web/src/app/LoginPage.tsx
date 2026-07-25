@@ -9,7 +9,9 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +27,30 @@ export function LoginPage() {
       setError(authError.message);
     }
     setLoading(false);
+  };
+
+  const handlePasswordRecovery = async () => {
+    const recoveryEmail = email.trim();
+    setError(null);
+    setRecoveryMessage(null);
+
+    if (!recoveryEmail) {
+      setError('Enter your admin email first.');
+      return;
+    }
+
+    setRecoveryLoading(true);
+    const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
+      redirectTo: 'https://admin.luckystore1947.com/reset-password',
+    });
+    setRecoveryLoading(false);
+
+    if (recoveryError) {
+      setError(recoveryError.message);
+      return;
+    }
+
+    setRecoveryMessage('If that account exists, a password recovery email has been sent.');
   };
 
   return (
@@ -72,9 +98,16 @@ export function LoginPage() {
               </div>
             )}
 
+            {recoveryMessage && (
+              <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-success text-sm font-medium" role="status">
+                {recoveryMessage}
+              </div>
+            )}
+
             <Button 
               type="submit" 
               loading={loading}
+              disabled={recoveryLoading}
               className="w-full h-12 text-base font-bold shadow-level-2"
               icon={<LogIn size={20} />}
             >
@@ -90,7 +123,14 @@ export function LoginPage() {
         </Card>
 
         <p className="mt-8 text-center text-sm text-text-muted">
-          Forgot password? <span className="text-primary font-semibold cursor-pointer hover:underline">Contact System Admin</span>
+          <button
+            type="button"
+            className="text-primary font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={loading || recoveryLoading}
+            onClick={handlePasswordRecovery}
+          >
+            {recoveryLoading ? 'Sending recovery email…' : 'Forgot password?'}
+          </button>
         </p>
       </div>
     </div>

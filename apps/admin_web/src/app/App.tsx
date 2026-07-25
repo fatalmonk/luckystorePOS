@@ -10,6 +10,7 @@ import { NotificationProvider } from '../components/Notification';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import { InstallPrompt } from '../components/InstallPrompt';
 import { AuthProvider } from '../lib/AuthContext';
+import { ResetPasswordPage } from './ResetPasswordPage';
 
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
@@ -71,6 +72,7 @@ export function App() {
               <OfflineIndicator />
               <Routes>
                 <Route path="/oauth/consent" element={<OAuthConsentPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<DashboardPage />} />
