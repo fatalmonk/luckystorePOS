@@ -21,7 +21,7 @@
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",
     "remove-duplicates:dry-run": "node scripts/ops/remove-duplicate-items.js --dry-run",
     "scan:secrets": "node scripts/security/secret_scan.js",
-
+    "scan:secrets:self-test": "node scripts/security/secret_scan.js --self-test",
 
     "migrate:images": "node scripts/images/migrate-images-to-r2.mjs",
     "migrate:images:dry-run": "node scripts/images/migrate-images-to-r2.mjs --dry-run",

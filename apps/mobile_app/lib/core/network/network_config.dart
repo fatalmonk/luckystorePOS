@@ -1,13 +1,13 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../config/runtime_config.dart';
 
 /// Configuration for network and API connections
 class NetworkConfig {
   /// Base URL for Supabase
-  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get supabaseUrl => RuntimeConfig.supabaseUrl;
 
   /// Supabase Anon Key for client-side operations
-  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  static String get supabaseAnonKey => RuntimeConfig.supabaseAnonKey;
 
   /// HTTP request timeout in seconds
   static const int requestTimeout = 30;

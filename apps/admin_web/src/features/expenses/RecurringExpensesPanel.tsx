@@ -21,7 +21,7 @@ export function RecurringExpensesPanel({ recurringExpenses, onRecordNow }: Recur
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {recurringExpenses.map(template => {
           const daysLeft = template.nextDueAt ? differenceInDays(new Date(template.nextDueAt), new Date()) : 0;
-          let dueText = daysLeft < 0 ? `Overdue by ${Math.abs(daysLeft)} days` : daysLeft === 0 ? 'Due Today' : `Due in ${daysLeft} days`;
+          const dueText = daysLeft < 0 ? `Overdue by ${Math.abs(daysLeft)} days` : daysLeft === 0 ? 'Due Today' : `Due in ${daysLeft} days`;
           
           return (
             <div key={template.id} className="bg-surface rounded-lg p-4 border border-border-default shadow-sm flex flex-col justify-between">
