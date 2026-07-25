@@ -32,7 +32,7 @@ const IGNORE_DIRS = new Set([
 ]);
 
 const PLACEHOLDER_RE =
-  /^(?:your[-_][a-z0-9_-]+[-_]here|your[-_](?:[a-z0-9]+[-_]){2,}[a-z0-9]+|<(?:placeholder|redacted)>|<your(?:[-_ ][a-z0-9]+){2,}>|changeme|replace-me|only_needed_for_ci_cd|false|true|\[(?:PASSWORD|REF|REGION|DUMMY_VALUE_FOR_DEV_ONLY)\]|sbp_\.\.\.|eyJhbG\.\.\.|\$\{[A-Z][A-Z0-9_]*\})$/i;
+  /^(?:your[-_][a-z0-9_-]+[-_]here|<(?:placeholder|redacted)>|changeme|replace-me|only_needed_for_ci_cd|false|true|\[(?:PASSWORD|REF|REGION|DUMMY_VALUE_FOR_DEV_ONLY)\]|sbp_\.\.\.|eyJhbG\.\.\.|\$\{[A-Z][A-Z0-9_]*\})$/i;
 
 const CODEISH_LHS_RE =
   /^(?:const|let|var|final|late|static|private|public|protected|readonly|type|interface|function|async|await|return|if|for|while|class|String\??|int\??|bool\??|dynamic|List|Map|get|set)\b/;
@@ -294,8 +294,20 @@ function runSelfTest() {
       expectedCount: 1,
     },
     {
+      name: 'rejects multi-segment your-prefix without here suffix',
+      content: 'MANAGER_PASSWORD=your-production-secret-value\n',
+      expectFinding: true,
+      expectedCount: 1,
+    },
+    {
       name: 'rejects arbitrary angle-bracket placeholder',
       content: 'MANAGER_PASSWORD=<credential>\n',
+      expectFinding: true,
+      expectedCount: 1,
+    },
+    {
+      name: 'rejects arbitrary multiword your angle placeholder',
+      content: 'MANAGER_PASSWORD=<your production secret>\n',
       expectFinding: true,
       expectedCount: 1,
     },
