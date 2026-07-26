@@ -112,6 +112,7 @@ pnpm-debug.log*
 !.vscode/extensions.json
 
 .idea/
+.neon
 *.iml
 *.suo
 *.swp
