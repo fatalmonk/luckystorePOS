@@ -70,6 +70,8 @@ jobs:
     needs: analyze-and-test
     if: github.event_name != 'pull_request'
     runs-on: macos-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: apps/mobile_app
