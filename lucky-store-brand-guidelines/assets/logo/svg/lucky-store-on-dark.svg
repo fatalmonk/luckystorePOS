@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Approved Dark Inverse Variant (Slightly Larger Dot-O) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 360" width="460" height="360">
+<!-- Lucky Store 1947 — Approved Dark Inverse Variant (Dot-O Inline Aligned) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 360" width="440" height="360">
   <!-- Deep Night Dark Card Background -->
-  <rect width="460" height="360" rx="36" fill="#0B0B0D" id="bg"/>
+  <rect width="440" height="360" rx="36" fill="#0B0B0D" id="bg"/>
 
   <g id="logo-dark-inverse">
     <!-- LUCKY -->
@@ -25,11 +25,11 @@
           letter-spacing="-2"
           id="st-part">ST</text>
 
-    <!-- LARGER SAFFRON YELLOW DOT (O) -->
-    <circle cx="222" cy="205" r="42" fill="#f0c444" id="dot-o"/>
+    <!-- SAFFRON YELLOW DOT (O - Inline aligned) -->
+    <circle cx="211" cy="208" r="37" fill="#f0c444" id="dot-o"/>
 
     <!-- RE -->
-    <text x="269" y="245"
+    <text x="256" y="245"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="105"
           font-weight="900"
