@@ -6,7 +6,7 @@ Mode: audit followed by explicitly approved production containment via forward m
 
 ## Executive summary
 
-The audit found critical authorization and schema-drift issues. The first four
+The audit found critical authorization and schema-drift issues. The first thirteen
 approved containment steps are now deployed; the remaining high-priority
 findings should still block unrelated database feature work until reconciled.
 
@@ -14,7 +14,7 @@ findings should still block unrelated database feature work until reconciled.
 - **REMEDIATED/PARTIAL — LIVE VERIFIED:** Anonymous execution of security-definer functions fell from 73 signatures to six intentional signatures by `20260726123532_revoke_unintended_anon_security_definer_access`; three are storefront APIs and three are PostGIS extension overloads.
 - **REMEDIATED — LIVE VERIFIED:** The anonymous storefront order RPC now derives/validates scope, prices and totals in the database, aggregates duplicate quantities, locks stock, fixes `search_path`, and exposes only its active signature.
 - **REMEDIATED — LIVE VERIFIED:** `public.homepage_categories` and `public.featured_products` now use `security_invoker=true`; their anonymous results remain stable and are restricted by the active, storefront-tenant `items` policy.
-- **HIGH — LIVE VERIFIED:** Eight write policies use unconditional `WITH CHECK (true)`, including sales, payments, order, and wishlist inserts.
+- **HIGH — LIVE VERIFIED:** One remaining write policy uses unconditional `WITH CHECK (true)`: anonymous wishlist inserts. Direct client inserts into the order and sale transaction tables are now contained.
 - **HIGH — LIVE VERIFIED:** Seven deployed Edge Functions have `verify_jwt=false`. Four are payment callbacks where public invocation may be intentional; three (`create-sale`, `import-inventory`, and `create-card-checkout`) implement application-level JWT validation but remain dependent on that code being correct.
 - **HIGH — LIVE VERIFIED:** Migration history and live catalog state disagree. For example, the repository explicitly enables RLS on `parties`, while the live advisor reports it disabled.
 - **HIGH — TEST GAP:** Current integration coverage skips the canonical sale/ledger, idempotency, void, and tenant-isolation paths.
@@ -155,15 +155,8 @@ Advisor remediation:
 **Severity:** High  
 **Status:** LIVE VERIFIED + REPOSITORY VERIFIED
 
-Security Advisor reports unconditional insert checks on:
+Security Advisor now reports one unconditional insert check:
 
-- `online_order_items` — `public insert items`
-- `online_orders` — `public insert orders`
-- `orders` — `Allow anon insert orders`
-- `payments` — `payments_insert_cashier`
-- `sale_items` — `si_insert`
-- `sale_payments` — `sp_insert`
-- `sales` — `sales_insert_cashier`
 - `wishlist` — `Allow anon insert wishlist`
 
 Repository examples:
@@ -182,6 +175,26 @@ Required follow-up:
 - Verify table grants and expected direct-client writes.
 - Bind inserts to authenticated identity, tenant/store ownership, parent-row access, or a narrowly authorized RPC.
 - Add negative tests for cross-tenant IDs, arbitrary cashier/payment IDs, and anonymous spam.
+
+Remediated:
+
+- `20260726132349_require_rpc_for_anonymous_orders` removes the unconditional
+  `orders` insert policy and anonymous INSERT grant while preserving anonymous
+  execution of the hardened checkout RPC.
+- `20260726132934_contain_legacy_online_order_tables` removes every public policy
+  and anonymous privilege from `online_orders` and `online_order_items`, closing
+  public customer-contact reads and anonymous mutations while retaining
+  `service_role` access.
+- `20260726134051_retire_place_online_order_rpc` removes the uncalled privileged
+  legacy RPC without cascading into historical tables or their triggers.
+- `20260726134706_require_rpc_for_sales_writes` removes the four unconditional
+  sale/payment insert policies, revokes direct `anon` and `authenticated`
+  INSERT grants while preserving reads and `service_role`, and retires the
+  uncalled `complete_sale_v2` security-definer function.
+- `20260726142226_harden_create_sale_authorization` binds the canonical sale RPC
+  to authenticated staff identity, role, tenant, store and POS session; validates
+  items and payment methods before mutation; derives authoritative pricing and
+  totals; serializes idempotency keys; and locks stock rows deterministically.
 
 Advisor remediation:
 
@@ -260,6 +273,9 @@ Evidence:
 - Mobile offline sync uses `complete_sale` at `apps/mobile_app/lib/features/sales/offline_transaction_sync_service.dart:482-492`.
 - The active integration suite skips `record_sale` because it was dropped and says it must be unified with `create_sale` at `supabase/tests/rpc_integration.test.ts:98-100`.
 - Idempotency, ledger, void, and tenant-isolation assertions sit inside skipped suites at `supabase/tests/rpc_integration.test.ts:100-176` and `:176-222`.
+- Live `post_sale_to_ledger(uuid)` referenced the removed
+  `sale_items.unit_price` field four times even though the authoritative selling
+  value is `sale_items.price`.
 
 Impact:
 
@@ -271,6 +287,20 @@ Required follow-up:
 - Declare one canonical sale contract.
 - Add authenticated tests using complete canonical arguments.
 - Test duplicate replay, stock locking, ledger balance, cross-tenant rejection, offline retry, and conflict behavior without disabling RLS.
+
+Remediation applied:
+
+- `20260726145906_repair_post_sale_to_ledger_price_column.sql` rewrites only
+  the four reviewed `v_item.unit_price` references to `v_item.price` and fails
+  closed if the function or table contract has drifted.
+- The repair preserves the existing function security mode, search path, and
+  role grants.
+- `20260726151358_restrict_ledger_worker_chain_to_service_role.sql` removes
+  direct anonymous/authenticated execution from the privileged posting and
+  worker-control chain while preserving `service_role`.
+- `20260726151659_restrict_ledger_enqueue_helpers_to_service_role.sql` applies
+  the same boundary to the enqueue helper and its sales trigger function. The
+  enabled sales trigger continues to enqueue `PENDING_POSTING` sales internally.
 
 ### F-08 — Local/live migration drift
 
@@ -470,13 +500,23 @@ At audit start, these unrelated user changes were already present and were prese
 - `apps/mobile_app/lib/l10n/generated/app_localizations.dart`
 - `apps/mobile_app/pubspec.lock`
 
-This task added `codex-supabaseaudit.md` and five forward migrations:
+This task added `codex-supabaseaudit.md` and fifteen forward migrations:
 
 - `20260726122245_contain_exposed_public_tables.sql`
 - `20260726123532_revoke_unintended_anon_security_definer_access.sql`
 - `20260726124455_harden_storefront_order_rpc.sql`
 - `20260726124725_drop_obsolete_order_rpc_overload.sql`
 - `20260726130029_convert_storefront_views_to_security_invoker.sql`
+- `20260726132349_require_rpc_for_anonymous_orders.sql`
+- `20260726132934_contain_legacy_online_order_tables.sql`
+- `20260726134051_retire_place_online_order_rpc.sql`
+- `20260726134706_require_rpc_for_sales_writes.sql`
+- `20260726142226_harden_create_sale_authorization.sql`
+- `20260726145906_repair_post_sale_to_ledger_price_column.sql`
+- `20260726151358_restrict_ledger_worker_chain_to_service_role.sql`
+- `20260726151659_restrict_ledger_enqueue_helpers_to_service_role.sql`
+- `20260726170458_add_service_daily_sales_summary_rpc.sql`
+- `20260726181800_harden_daily_sales_summary_delivery.sql`
 
 ## Reference guidance
 

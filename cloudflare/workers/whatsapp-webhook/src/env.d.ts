@@ -3,7 +3,8 @@ export interface Env {
   WHATSAPP_PHONE_NUMBER_ID: string;
   WHATSAPP_ACCESS_TOKEN: string;
   WHATSAPP_VERIFY_TOKEN: string;
-  META_APP_SECRET?: string; // optional — enables signature verification when set
+  META_APP_SECRET: string;
+  DAILY_SUMMARY_RECIPIENT: string;
 
   // Supabase
   SUPABASE_URL: string;
