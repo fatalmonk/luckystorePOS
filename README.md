@@ -561,7 +561,7 @@ Set required secrets on each edge function:
 | [Design System](docs/DESIGN_SYSTEM.md) | Visual language, tokens, component patterns |
 | [Brand Guidelines](docs/BRAND_GUIDELINES.md) | Brand identity, colors, typography |
 | [Security Recommendations](docs/SECURITY_RECOMMENDATIONS.md) | Security fixes and hardening |
-| [Env Variable Security](docs/env-security.md) | Public vs. secret env management |
+| [Env Variable Security](system-docs/env-security.md) | Public vs. secret env management |
 | [Admin Login Guide](docs/ADMIN-LOGIN.md) | Admin portal access setup |
 | [Drawer Reconciliation](docs/DRAWER_RECONCILIATION_IMPLEMENTATION.md) | Cash drawer reconciliation |
 | [DNS + Aid Setup](docs/dns-aid-setup.md) | DNS configuration |
