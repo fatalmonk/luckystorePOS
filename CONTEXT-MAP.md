@@ -10,3 +10,4 @@ Read root `CONTEXT.md` first, then the context relevant to the work.
 | Scraper | `apps/scraper/CONTEXT.md` | Competitor catalog collection and price mapping |
 | Supabase backend | `supabase/CONTEXT.md` | Postgres schema, RLS, auth, storage, RPCs, and Edge Functions |
 | Cloudflare workers | `cloudflare/workers/CONTEXT.md` | Agent, image, and webhook worker boundaries |
+| Notion migration archive | `docs/notion-migration/2026-07-25/README.md` | Historical Notion exports, migration sources, and tooling; not runtime documentation |
