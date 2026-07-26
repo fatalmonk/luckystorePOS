@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Approved Inverse Logo (Bold Dot-O, Transparent Background) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 330" width="440" height="330">
+<!-- Lucky Store 1947 — Approved Inverse Logo (Tight Kerned Dot-O) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 330" width="420" height="330">
   <g id="logo-inverse">
     <!-- LUCKY -->
     <text x="35" y="115"
@@ -22,11 +22,11 @@
           letter-spacing="-2"
           id="st-part">ST</text>
 
-    <!-- LARGER SAFFRON YELLOW DOT (O) -->
-    <circle cx="210" cy="184" r="42" fill="#f0c444" id="dot-o"/>
+    <!-- SAFFRON YELLOW DOT (O - Tightly kerned) -->
+    <circle cx="204" cy="184" r="40" fill="#f0c444" id="dot-o"/>
 
     <!-- RE -->
-    <text x="268" y="225"
+    <text x="250" y="225"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="110"
           font-weight="900"
