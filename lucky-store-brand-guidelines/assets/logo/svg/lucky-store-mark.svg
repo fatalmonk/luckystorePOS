@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store — App Icon / Favicon Mark (512×512, optimized for small sizes) -->
+<!-- Lucky Store — App Icon / Favicon Mark (512×512, Bold LS Stacked Monogram on Saffron) -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Deep Night Rounded Square Background -->
-  <rect width="512" height="512" rx="112" fill="#0B0B0D" id="bg"/>
+  <!-- Saffron Rounded Square Background -->
+  <rect width="512" height="512" rx="112" fill="#f0c444" id="bg"/>
 
-  <!-- Bold "L" Letterform -->
-  <text x="100" y="370"
+  <!-- Stacked LS Monogram -->
+  <text x="256" y="250"
         font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-        font-size="380"
+        font-size="200"
         font-weight="900"
-        fill="#FDFBF7"
-        text-anchor="start"
-        letter-spacing="-8"
+        fill="#0B0B0D"
+        text-anchor="middle"
+        letter-spacing="-6"
         id="letter-L">L</text>
 
-  <!-- Saffron Brand Dot (top-right accent) -->
-  <circle cx="370" cy="140" r="68" fill="#f0c444" id="brand-dot"/>
+  <text x="256" y="430"
+        font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
+        font-size="200"
+        font-weight="900"
+        fill="#0B0B0D"
+        text-anchor="middle"
+        letter-spacing="-6"
+        id="letter-S">S</text>
 </svg>
