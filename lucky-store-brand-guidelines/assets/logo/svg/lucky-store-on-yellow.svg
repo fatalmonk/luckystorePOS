@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — On Saffron Yellow (Saffron #f0c444 background with Deep Night #0B0B0D text) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" width="400" height="440">
-  <!-- Saffron Background -->
-  <rect width="400" height="440" fill="#f0c444" rx="0" id="bg"/>
+<!-- Lucky Store 1947 — Approved On Saffron Variant (Yellow Card with Solid Black Dot-O and Left-Aligned 1947) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 410" width="460" height="410">
+  <!-- Saffron Card Background -->
+  <rect width="460" height="410" rx="36" fill="#f0c444" id="bg"/>
 
-  <g id="logo-wordmark">
+  <g id="logo-on-saffron">
     <!-- LUCKY -->
-    <text x="200" y="150"
+    <text x="50" y="140"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-          font-size="115"
+          font-size="105"
           font-weight="900"
           fill="#0B0B0D"
-          text-anchor="middle"
+          text-anchor="start"
           letter-spacing="-2"
           id="line-lucky">LUCKY</text>
 
     <!-- ST -->
-    <text x="145" y="270"
+    <text x="50" y="245"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-          font-size="115"
+          font-size="105"
           font-weight="900"
           fill="#0B0B0D"
-          text-anchor="end"
+          text-anchor="start"
           letter-spacing="-2"
           id="st-part">ST</text>
 
-    <!-- DEEP NIGHT DOT (O) -->
-    <circle cx="200" cy="236" r="33" fill="#0B0B0D" id="dot-o"/>
+    <!-- SOLID BLACK DOT (O) -->
+    <circle cx="222" cy="214" r="32" fill="#0B0B0D" id="dot-o"/>
 
     <!-- RE -->
-    <text x="255" y="270"
+    <text x="267" y="245"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-          font-size="115"
+          font-size="105"
           font-weight="900"
           fill="#0B0B0D"
           text-anchor="start"
@@ -39,13 +39,23 @@
           id="re-part">RE</text>
 
     <!-- YEAR: 1947 -->
-    <text x="200" y="340"
+    <text x="50" y="310"
           font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
-          font-size="28"
+          font-size="26"
           font-weight="600"
-          fill="rgba(11, 11, 13, 0.7)"
-          text-anchor="middle"
-          letter-spacing="10"
+          fill="#3D382B"
+          text-anchor="start"
+          letter-spacing="6"
           id="year">1947</text>
+
+    <!-- VARIANT LABEL -->
+    <text x="50" y="360"
+          font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
+          font-size="20"
+          font-weight="500"
+          fill="#5C5440"
+          text-anchor="start"
+          letter-spacing="4"
+          id="label">ON SAFFRON VARIANT</text>
   </g>
 </svg>
