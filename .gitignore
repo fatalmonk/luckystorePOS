@@ -282,11 +282,7 @@ lucky-store-brand-guidelines/assets/logo/canva-svg/
 
 .hermes/
 
-templates/ui-redesign/download.png
-templates/ui-redesign/home-02.png
-templates/ui-redesign/home.jpeg
-templates/ui-redesign/home.png
-templates/ui-redesign/product-page-single.png
+templates/
 architecture-review.html
 
 # Do not commit — local dump and font archive
