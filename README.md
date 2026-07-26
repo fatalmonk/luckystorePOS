@@ -564,7 +564,7 @@ Set required secrets on each edge function:
 | [Env Variable Security](system-docs/env-security.md) | Public vs. secret env management |
 | [Admin Login Guide](docs/ADMIN-LOGIN.md) | Admin portal access setup |
 | [Drawer Reconciliation](docs/DRAWER_RECONCILIATION_IMPLEMENTATION.md) | Cash drawer reconciliation |
-| [DNS + Aid Setup](docs/dns-aid-setup.md) | DNS configuration |
+| [DNS + Aid Setup](system-docs/dns-aid-setup.md) | DNS configuration |
 | [Architecture — Schema Authority](docs/architecture/schema-authority.md) | Database schema authority |
 | [Architecture — Migration Baseline](docs/architecture/migration-baseline-repair.md) | Migration baseline repair |
 | [Contributing](apps/customer_storefront/CONTRIBUTING.md) | How to contribute |
