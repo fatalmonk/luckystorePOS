@@ -26,6 +26,7 @@
     "migrate:images": "node scripts/images/migrate-images-to-r2.mjs",
     "migrate:images:dry-run": "node scripts/images/migrate-images-to-r2.mjs --dry-run",
     "deploy:worker": "cd cloudflare/workers/images && npx wrangler deploy",
+    "sync:notion": "node scripts/ops/sync-notion-hub.mjs",
     "facebook:post": "tsx src/facebook.ts",
     "typecheck": "tsc --noEmit"
   },
