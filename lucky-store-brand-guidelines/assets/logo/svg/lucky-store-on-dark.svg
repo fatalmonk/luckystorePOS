@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Approved Dark Inverse Variant (Dark Card with Saffron Yellow Dot-O and Left-Aligned 1947) -->
+<!-- Lucky Store 1947 — Approved Dark Inverse Variant (Letter-Sized Saffron Yellow Dot-O and Left-Aligned 1947) -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 410" width="460" height="410">
   <!-- Deep Night Dark Card Background -->
   <rect width="460" height="410" rx="36" fill="#0B0B0D" id="bg"/>
@@ -25,11 +25,11 @@
           letter-spacing="-2"
           id="st-part">ST</text>
 
-    <!-- SAFFRON YELLOW DOT (O) -->
-    <circle cx="222" cy="214" r="32" fill="#f0c444" id="dot-o"/>
+    <!-- SAFFRON YELLOW DOT (O - Sized to match cap height of S, T, R, E) -->
+    <circle cx="207.5" cy="207.5" r="37.5" fill="#f0c444" id="dot-o"/>
 
     <!-- RE -->
-    <text x="267" y="245"
+    <text x="255" y="245"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="105"
           font-weight="900"
