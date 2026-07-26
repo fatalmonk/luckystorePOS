@@ -13,9 +13,10 @@ enabled = true
 invocation_logs = true
 
 # Secrets — set via wrangler secret put:
-# WHATSAPP_PHONE_NUMBER_ID  = 1133667033174167
+# WHATSAPP_PHONE_NUMBER_ID  = 1142670135604389
 # WHATSAPP_ACCESS_TOKEN     = <Meta system-user token with whatsapp_business_messaging scope>
 # WHATSAPP_VERIFY_TOKEN     = <generate a random string and paste it into Meta dashboard>
 # SUPABASE_URL              = https://hvmyxyccfnkrbxqbhlnm.supabase.co
 # SUPABASE_SERVICE_ROLE_KEY = <service_role key>
-# META_APP_SECRET           = <Facebook app secret>  (optional, enables signature verification)
+# META_APP_SECRET           = <Facebook app secret>
+# DAILY_SUMMARY_RECIPIENT   = <international digits-only WhatsApp number>

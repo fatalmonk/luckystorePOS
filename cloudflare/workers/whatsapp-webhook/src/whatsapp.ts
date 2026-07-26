@@ -48,6 +48,7 @@ export async function logToSupabase(
     message_id?: string;
     message_type?: string;
     message_body?: string;
+    template?: string;
     status?: string;
     payload?: unknown;
     response?: unknown;
@@ -57,7 +58,9 @@ export async function logToSupabase(
   const body = {
     recipient: row.recipient ?? row.display_phone_number ?? row.sender,
     ...row,
-    template: row.direction === 'incoming' ? 'incoming_webhook' : 'auto_reply',
+    template:
+      row.template ??
+      (row.direction === 'incoming' ? 'incoming_webhook' : 'auto_reply'),
   };
 
   const response = await fetch(url, {

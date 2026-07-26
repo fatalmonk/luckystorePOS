@@ -1,4 +1,5 @@
 import type { Env } from './env';
+import { sendDailySalesSummary } from './report';
 import { verifySignature } from './signature';
 import { logToSupabase, sendReply, type WebhookPayload } from './whatsapp';
 
@@ -26,23 +27,30 @@ export default {
 
     // ── POST /webhook — Incoming webhook events ──────────────────────────────
     if (request.method === 'POST' && pathname.replace(/\/$/, '') === '/webhook') {
-      // Optional signature verification
-      if (env.META_APP_SECRET) {
-        const signature = request.headers.get('X-Hub-Signature-256');
-        const payload = await request.text();
-        const valid = await verifySignature(payload, signature, env.META_APP_SECRET);
-        if (!valid) {
-          console.warn('Invalid webhook signature');
-          return new Response('Invalid signature', { status: 401 });
-        }
-        return handleWebhookPayload(env, payload);
+      if (!env.META_APP_SECRET) {
+        console.error('META_APP_SECRET is not configured');
+        return new Response('Webhook verification unavailable', { status: 503 });
       }
 
+      const signature = request.headers.get('X-Hub-Signature-256');
       const payload = await request.text();
+      const valid = await verifySignature(payload, signature, env.META_APP_SECRET);
+      if (!valid) {
+        console.warn('Invalid webhook signature');
+        return new Response('Invalid signature', { status: 401 });
+      }
       return handleWebhookPayload(env, payload);
     }
 
     return new Response('Not found', { status: 404 });
+  },
+
+  async scheduled(
+    controller: ScheduledController,
+    env: Env,
+    context: ExecutionContext
+  ): Promise<void> {
+    context.waitUntil(sendDailySalesSummary(env, controller.scheduledTime));
   },
 };
 
