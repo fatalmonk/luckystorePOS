@@ -252,17 +252,7 @@ lucky-store-brand-guidelines/**/*.png
 lucky-store-brand-guidelines/**/*.jpg
 lucky-store-brand-guidelines/**/*.jpeg
 lucky-store-brand-guidelines/**/*.webp
-lucky-store-brand-guidelines/**/*.html
-
-
 .hermes/
-
-templates/ui-redesign/download.png
-templates/ui-redesign/home-02.png
-templates/ui-redesign/home.jpeg
-templates/ui-redesign/home.png
-templates/ui-redesign/product-page-single.png
-architecture-review.html
 
 # Do not commit — local dump and font archive
 apps/scraper/chaldal-dump.txt
