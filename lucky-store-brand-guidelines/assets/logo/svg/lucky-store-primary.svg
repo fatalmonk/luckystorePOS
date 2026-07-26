@@ -19,14 +19,14 @@
           font-weight="900"
           fill="#0B0B0D"
           text-anchor="start"
-          letter-spacing="-2"
+          letter-spacing="-4"
           id="st-part">ST</text>
 
     <!-- SAFFRON YELLOW DOT (O - Increased Kerning) -->
-    <circle cx="206" cy="186" r="41" fill="#f0c444" id="dot-o"/>
+    <circle cx="206" cy="186" r="42" fill="#f0c444" id="dot-o"/>
 
     <!-- RE -->
-    <text x="256" y="225"
+    <text x="250" y="225"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="110"
           font-weight="900"

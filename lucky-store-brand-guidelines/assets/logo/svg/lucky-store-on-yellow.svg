@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Approved On Saffron Variant (Increased Dot Kerning Spacing) -->
+<!-- Lucky Store 1947 — Approved On Saffron Variant -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 360" width="440" height="360">
   <!-- Saffron Card Background -->
   <rect width="440" height="360" rx="36" fill="#f0c444" id="bg"/>
@@ -22,14 +22,14 @@
           font-weight="900"
           fill="#0B0B0D"
           text-anchor="start"
-          letter-spacing="-2"
+          letter-spacing="-4"
           id="st-part">ST</text>
 
     <!-- SOLID BLACK DOT (O) -->
     <circle cx="213" cy="205" r="40" fill="#0B0B0D" id="dot-o"/>
 
     <!-- RE -->
-    <text x="261" y="245"
+    <text x="255" y="245"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="105"
           font-weight="900"
