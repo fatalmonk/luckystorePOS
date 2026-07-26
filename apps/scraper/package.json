@@ -8,6 +8,8 @@
   "scripts": {
     "start": "node scrape-shwapno.js",
     "scrape": "node scrape-shwapno.js",
+    "scrape:chaldal": "node scrape-chaldal.js",
+    "scrape:category": "node scrape-chaldal-category.js",
     "map": "node generate-price-mapping.js",
     "update-prices": "npm run scrape && npm run map"
   },
