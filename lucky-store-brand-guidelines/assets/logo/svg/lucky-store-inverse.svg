@@ -1,39 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Inverse Logo (for Dark Backgrounds) -->
-<!-- White wordmark with Brand Yellow dot-O on transparent -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+<!-- Lucky Store 1947 — Inverse Logo (White wordmark with Saffron #f0c444 dot) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" width="400" height="440">
+  <g id="logo-wordmark">
+    <!-- LUCKY -->
+    <text x="200" y="150"
+          font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
+          font-size="115"
+          font-weight="900"
+          fill="#FDFBF7"
+          text-anchor="middle"
+          letter-spacing="-2"
+          id="line-lucky">LUCKY</text>
 
-  <!-- ===== WORDMARK: LUCKY ===== -->
-  <text x="200" y="175"
-        font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-        font-size="140"
-        font-weight="800"
-        fill="#FDFBF7"
-        text-anchor="middle"
-        letter-spacing="-4"
-        id="line-lucky">LUCKY</text>
+    <!-- ST -->
+    <text x="145" y="270"
+          font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
+          font-size="115"
+          font-weight="900"
+          fill="#FDFBF7"
+          text-anchor="end"
+          letter-spacing="-2"
+          id="st-part">ST</text>
 
-  <!-- ===== WORDMARK: ST RE (without O) ===== -->
-  <text x="200" y="310"
-        font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-        font-size="140"
-        font-weight="800"
-        fill="#FDFBF7"
-        text-anchor="middle"
-        letter-spacing="-4"
-        id="line-store">ST    RE</text>
+    <!-- BRAND SAFFRON DOT (O) -->
+    <circle cx="200" cy="236" r="33" fill="#f0c444" id="dot-o"/>
 
-  <!-- ===== BRAND YELLOW DOT (replaces O) ===== -->
-  <circle cx="200" cy="278" r="36" fill="#F5C518" id="dot-o"/>
+    <!-- RE -->
+    <text x="255" y="270"
+          font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
+          font-size="115"
+          font-weight="900"
+          fill="#FDFBF7"
+          text-anchor="start"
+          letter-spacing="-2"
+          id="re-part">RE</text>
 
-  <!-- ===== YEAR: 1947 ===== -->
-  <text x="200" y="370"
-        font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
-        font-size="32"
-        font-weight="500"
-        fill="rgba(253,251,247,0.4)"
-        text-anchor="middle"
-        letter-spacing="8"
-        id="year">1947</text>
-
+    <!-- YEAR: 1947 -->
+    <text x="200" y="340"
+          font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
+          font-size="28"
+          font-weight="600"
+          fill="rgba(253, 251, 247, 0.5)"
+          text-anchor="middle"
+          letter-spacing="10"
+          id="year">1947</text>
+  </g>
 </svg>

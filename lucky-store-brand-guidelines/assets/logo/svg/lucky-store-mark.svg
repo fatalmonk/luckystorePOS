@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Lucky Store 1947 — Mark Only (Favicon / App Icon / Avatar) -->
-<!-- Brand Yellow dot with LS initials — compact mark -->
+<!-- Saffron #f0c444 dot with LS initials in Deep Night #0B0B0D -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
 
-  <!-- ===== BACKGROUND CIRCLE ===== -->
-  <circle cx="200" cy="200" r="190" fill="#FDFBF7" id="bg-circle"/>
+  <!-- Background container circle -->
+  <circle cx="200" cy="200" r="190" fill="#0B0B0D" id="bg-circle"/>
 
-  <!-- ===== BRAND YELLOW DOT (large, centered) ===== -->
-  <circle cx="200" cy="180" r="100" fill="#F5C518" id="brand-dot"/>
+  <!-- SAFFRON DOT -->
+  <circle cx="200" cy="180" r="100" fill="#f0c444" id="brand-dot"/>
 
-  <!-- ===== LS INITIALS on dot ===== -->
+  <!-- LS INITIALS -->
   <text x="200" y="210"
         font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-        font-size="80"
-        font-weight="800"
-        fill="#1A1A1A"
+        font-size="85"
+        font-weight="900"
+        fill="#0B0B0D"
         text-anchor="middle"
         letter-spacing="-2"
         id="initials">LS</text>
 
-  <!-- ===== YEAR: 1947 below dot ===== -->
+  <!-- YEAR: 1947 -->
   <text x="200" y="340"
         font-family="'Geist Mono','JetBrains Mono','SF Mono',monospace"
         font-size="28"
-        font-weight="500"
-        fill="#6B6B6B"
+        font-weight="600"
+        fill="rgba(253, 251, 247, 0.6)"
         text-anchor="middle"
         letter-spacing="6"
         id="year">1947</text>
