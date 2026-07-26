@@ -1,30 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store — App Icon Mark (512×512, Geometric LS Monogram on Saffron) -->
-<!-- Inspired by Facebook f, Telegram plane — single bold geometric mark -->
+<!-- Lucky Store — App Icon (Grocery Cart with Brand Integration, 512×512) -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
 
   <!-- Saffron Rounded Square Background -->
   <rect width="512" height="512" rx="112" fill="#f0c444" id="bg"/>
 
-  <!-- Geometric "L" — thick vertical + horizontal bar -->
-  <rect x="128" y="88" width="64" height="296" rx="8" fill="#0B0B0D" id="L-vertical"/>
-  <rect x="128" y="320" width="192" height="64" rx="8" fill="#0B0B0D" id="L-horizontal"/>
+  <g id="cart-icon" transform="translate(80, 60)">
 
-  <!-- Geometric "S" — built from 3 horizontal bars + 2 vertical connectors -->
-  <!-- Top bar -->
-  <rect x="196" y="88" width="188" height="52" rx="8" fill="#0B0B0D" id="S-top"/>
-  <!-- Right connector (top half) -->
-  <rect x="332" y="88" width="52" height="140" rx="8" fill="#0B0B0D" id="S-right-top"/>
-  <!-- Middle bar -->
-  <rect x="196" y="176" width="188" height="52" rx="8" fill="#0B0B0D" id="S-mid"/>
-  <!-- Left connector (bottom half) — overlaps with L -->
-  <!-- Bottom bar -->
-  <rect x="196" y="332" width="188" height="52" rx="8" fill="#0B0B0D" id="S-bottom"/>
-  <!-- Left connector (bottom half) -->
-  <rect x="196" y="228" width="52" height="156" rx="8" fill="#0B0B0D" id="S-left-bottom"/>
+    <!-- === GROCERY ITEMS (poking out of cart) === -->
 
-  <!-- Saffron Brand Dot Accent (bottom-right, breaks the grid) -->
-  <circle cx="384" cy="384" r="40" fill="#0B0B0D" id="brand-dot-outline"/>
-  <circle cx="384" cy="384" r="28" fill="#f0c444" id="brand-dot-cutout"/>
+    <!-- Banana (curved) -->
+    <path d="M80,145 Q60,90 90,70 Q100,65 105,75 Q85,95 95,145"
+          fill="#0B0B0D" stroke="none" id="banana"/>
+
+    <!-- Carrot -->
+    <rect x="125" y="60" width="22" height="90" rx="11" fill="#E8553A" id="carrot-body"/>
+    <!-- Carrot top leaves -->
+    <path d="M130,65 Q136,35 128,30 M136,60 Q142,32 150,28 M140,65 Q148,40 140,35"
+          stroke="#2D8B46" stroke-width="5" stroke-linecap="round" fill="none" id="carrot-leaves"/>
+
+    <!-- Bread/Baguette -->
+    <ellipse cx="190" cy="110" rx="18" ry="50" fill="#0B0B0D" id="bread"/>
+
+    <!-- Fish/Meat wedge -->
+    <path d="M230,145 L250,70 L270,145 Z" fill="#E8873A" stroke="#0B0B0D" stroke-width="4" id="wedge"/>
+
+    <!-- Small broccoli/item -->
+    <circle cx="110" cy="80" r="16" fill="#0B0B0D" id="broccoli-head"/>
+    <rect x="106" y="90" width="8" height="30" rx="4" fill="#0B0B0D" id="broccoli-stem"/>
+
+    <!-- === CART BODY === -->
+
+    <!-- Cart basket top rim -->
+    <rect x="55" y="145" width="240" height="16" rx="8" fill="#0B0B0D" id="cart-rim"/>
+
+    <!-- Cart basket body (trapezoid) -->
+    <path d="M70,161 L60,260 Q58,275 73,275 L265,275 Q280,275 278,260 L268,161"
+          fill="none" stroke="#0B0B0D" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" id="cart-body"/>
+
+    <!-- "LS" text on cart body -->
+    <text x="168" y="242"
+          font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
+          font-size="60"
+          font-weight="900"
+          fill="#0B0B0D"
+          text-anchor="middle"
+          letter-spacing="-2"
+          id="cart-text">LS</text>
+
+    <!-- Cart handle -->
+    <line x1="290" y1="165" x2="335" y2="135" stroke="#0B0B0D" stroke-width="16" stroke-linecap="round" id="cart-handle"/>
+
+    <!-- === WHEELS === -->
+
+    <!-- Left wheel (Brand Saffron Dot) -->
+    <circle cx="120" cy="310" r="28" fill="#0B0B0D" id="wheel-left"/>
+    <circle cx="120" cy="310" r="10" fill="#f0c444" id="wheel-left-hub"/>
+
+    <!-- Right wheel -->
+    <circle cx="240" cy="310" r="28" fill="#0B0B0D" id="wheel-right"/>
+    <circle cx="240" cy="310" r="10" fill="#f0c444" id="wheel-right-hub"/>
+
+  </g>
 
 </svg>
