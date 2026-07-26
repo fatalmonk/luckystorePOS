@@ -22,14 +22,14 @@
           font-weight="900"
           fill="#0B0B0D"
           text-anchor="start"
-          letter-spacing="-2"
+          letter-spacing="-4"
           id="st-part">ST</text>
 
     <!-- SOLID BLACK DOT (O) -->
-    <circle cx="236" cy="254" r="45" fill="#0B0B0D" id="dot-o"/>
+    <circle cx="236" cy="254" r="46" fill="#0B0B0D" id="dot-o"/>
 
     <!-- RE -->
-    <text x="285" y="300"
+    <text x="278" y="300"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="120"
           font-weight="900"
