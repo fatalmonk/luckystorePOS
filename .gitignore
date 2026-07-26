@@ -237,6 +237,7 @@ docs/archive/2026-04-27/*
 !docs/archive/2026-04-27/05-frontend-pos/
 docs/archive/2026-04-27/05-frontend-pos/*
 !docs/archive/2026-04-27/05-frontend-pos/08-REACT-POS-SETUP.md
+docs/notion-migration/
 !docs/agents/
 docs/agents/*
 !docs/agents/issue-tracker.md

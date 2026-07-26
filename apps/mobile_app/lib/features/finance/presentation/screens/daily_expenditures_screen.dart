@@ -194,7 +194,7 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
 
                   // Category
                   DropdownButtonFormField<String>(
-                    value: selectedCategory,
+                    initialValue: selectedCategory,
                     decoration: InputDecoration(
                       labelText: 'Category',
                       labelStyle: AppTextStyles.bodySm,
@@ -209,7 +209,7 @@ class _DailyExpendituresScreenState extends State<DailyExpendituresScreen> {
 
                   // Payment Type
                   DropdownButtonFormField<String>(
-                    value: selectedPaymentType,
+                    initialValue: selectedPaymentType,
                     decoration: InputDecoration(
                       labelText: 'Payment Type',
                       labelStyle: AppTextStyles.bodySm,
