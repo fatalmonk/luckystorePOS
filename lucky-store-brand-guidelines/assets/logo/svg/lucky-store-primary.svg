@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store 1947 — Primary Approved Logo (Slightly Larger Dot-O) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 330" width="440" height="330">
+<!-- Lucky Store 1947 — Primary Approved Logo (Tight Kerned STORE Matching LUCKY Width) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 410 330" width="410" height="330">
   <g id="logo-primary">
     <!-- LUCKY -->
     <text x="35" y="115"
@@ -22,11 +22,11 @@
           letter-spacing="-2"
           id="st-part">ST</text>
 
-    <!-- LARGER SAFFRON YELLOW DOT (O) -->
-    <circle cx="216" cy="186" r="41" fill="#f0c444" id="dot-o"/>
+    <!-- SAFFRON YELLOW DOT (O - Tight Kerned) -->
+    <circle cx="196" cy="186" r="41" fill="#f0c444" id="dot-o"/>
 
     <!-- RE -->
-    <text x="265" y="225"
+    <text x="241" y="225"
           font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
           font-size="110"
           font-weight="900"
