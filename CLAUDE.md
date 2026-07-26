@@ -14,7 +14,7 @@
 - `.env.example`
 - `package.json`
 - `scripts/security/secret_scan.js`
-- `docs/env-security.md`
+- `system-docs/env-security.md`
 
 ### Forbidden Areas (Do Not Touch)
 - `PosProvider` (and related state management)

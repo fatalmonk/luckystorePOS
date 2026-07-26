@@ -14,7 +14,7 @@
 - `.env.example`
 - `package.json`
 - `scripts/security/secret_scan.js`
-- `docs/env-security.md`
+- `system-docs/env-security.md`
 
 ### Forbidden Areas (No Modification)
 These remain off-limits for any code changes, edits, or implementation:
