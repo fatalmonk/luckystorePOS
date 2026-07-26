@@ -1,6 +1,8 @@
 # Lucky Store WhatsApp Webhook Worker
 
-Cloudflare Worker that receives WhatsApp Business Platform webhooks, logs them to Supabase, and auto-replies to customer messages with a greeting.
+Cloudflare Worker that receives WhatsApp Business Platform webhooks, logs them
+to Supabase, auto-replies to customer messages, and sends the approved internal
+daily sales summary.
 
 ## Endpoints
 
@@ -13,12 +15,13 @@ Cloudflare Worker that receives WhatsApp Business Platform webhooks, logs them t
 
 Set these with `npx wrangler secret put <NAME>`:
 
-- `WHATSAPP_PHONE_NUMBER_ID` — `1133667033174167`
+- `WHATSAPP_PHONE_NUMBER_ID` — `1142670135604389`
 - `WHATSAPP_ACCESS_TOKEN` — Meta system-user token with `whatsapp_business_messaging` scope
 - `WHATSAPP_VERIFY_TOKEN` — generate a random string, also paste into Meta dashboard
 - `SUPABASE_URL` — `https://hvmyxyccfnkrbxqbhlnm.supabase.co`
 - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service-role key
-- `META_APP_SECRET` — Facebook app secret (optional, enables webhook signature verification)
+- `META_APP_SECRET` — Facebook app secret; webhook signatures are required
+- `DAILY_SUMMARY_RECIPIENT` — recipient in international digits-only format
 
 ## Deployment
 
@@ -45,3 +48,15 @@ Thank you for saving with Lucky Store.
 ```
 
 Both the incoming message and the outgoing reply are logged to `public.whatsapp_logs`.
+
+## Daily sales summary
+
+The production Cron Trigger is temporarily disabled until the Lucky Store
+WhatsApp business number is verified and registered. When re-enabled, schedule
+it for `18:05 UTC` (`00:05 Asia/Dhaka`) so it reports the previous completed
+Dhaka calendar day.
+
+The Worker sends the approved `daily_sales_summary` utility template, calls the
+service-role-only `get_service_daily_sales_summary` RPC, and sends aggregate
+metrics only. A service-only atomic claim prevents duplicate sends for the same
+report date; failed or abandoned pre-send claims can be retried safely.
