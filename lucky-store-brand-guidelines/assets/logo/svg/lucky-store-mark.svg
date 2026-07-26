@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Lucky Store — App Icon / Favicon Mark (512×512, Bold LS Stacked Monogram on Saffron) -->
+<!-- Lucky Store — App Icon Mark (512×512, Geometric LS Monogram on Saffron) -->
+<!-- Inspired by Facebook f, Telegram plane — single bold geometric mark -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
   <!-- Saffron Rounded Square Background -->
   <rect width="512" height="512" rx="112" fill="#f0c444" id="bg"/>
 
-  <!-- Stacked LS Monogram -->
-  <text x="256" y="250"
-        font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-        font-size="200"
-        font-weight="900"
-        fill="#0B0B0D"
-        text-anchor="middle"
-        letter-spacing="-6"
-        id="letter-L">L</text>
+  <!-- Geometric "L" — thick vertical + horizontal bar -->
+  <rect x="128" y="88" width="64" height="296" rx="8" fill="#0B0B0D" id="L-vertical"/>
+  <rect x="128" y="320" width="192" height="64" rx="8" fill="#0B0B0D" id="L-horizontal"/>
 
-  <text x="256" y="430"
-        font-family="'Geist','Inter','Helvetica Neue',Arial,sans-serif"
-        font-size="200"
-        font-weight="900"
-        fill="#0B0B0D"
-        text-anchor="middle"
-        letter-spacing="-6"
-        id="letter-S">S</text>
+  <!-- Geometric "S" — built from 3 horizontal bars + 2 vertical connectors -->
+  <!-- Top bar -->
+  <rect x="196" y="88" width="188" height="52" rx="8" fill="#0B0B0D" id="S-top"/>
+  <!-- Right connector (top half) -->
+  <rect x="332" y="88" width="52" height="140" rx="8" fill="#0B0B0D" id="S-right-top"/>
+  <!-- Middle bar -->
+  <rect x="196" y="176" width="188" height="52" rx="8" fill="#0B0B0D" id="S-mid"/>
+  <!-- Left connector (bottom half) — overlaps with L -->
+  <!-- Bottom bar -->
+  <rect x="196" y="332" width="188" height="52" rx="8" fill="#0B0B0D" id="S-bottom"/>
+  <!-- Left connector (bottom half) -->
+  <rect x="196" y="228" width="52" height="156" rx="8" fill="#0B0B0D" id="S-left-bottom"/>
+
+  <!-- Saffron Brand Dot Accent (bottom-right, breaks the grid) -->
+  <circle cx="384" cy="384" r="40" fill="#0B0B0D" id="brand-dot-outline"/>
+  <circle cx="384" cy="384" r="28" fill="#f0c444" id="brand-dot-cutout"/>
+
 </svg>
