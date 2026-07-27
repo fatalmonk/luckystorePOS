@@ -38,7 +38,7 @@ async function renderAllAppIcons() {
     }
   }
 
-  // --- 2. Mobile App (Android & iOS) ---
+  // --- 2. Mobile App (Android & iOS & Web) ---
   const mobileRes = path.resolve('apps/mobile_app/android/app/src/main/res');
   if (fs.existsSync(mobileRes)) {
     const androidTargets = [
@@ -84,7 +84,22 @@ async function renderAllAppIcons() {
     }
   }
 
-  console.log('\n✨ All app icons rendered at 100% full-bleed maximum size!');
+  const mobileWebDir = path.resolve('apps/mobile_app/web');
+  if (fs.existsSync(mobileWebDir)) {
+    await renderIconFullBleed(svgSourcePath, path.join(mobileWebDir, 'favicon.png'), 48);
+    console.log('✓ Generated mobile_app/web/favicon.png');
+
+    const iconsSubdir = path.join(mobileWebDir, 'icons');
+    if (fs.existsSync(iconsSubdir)) {
+      await renderIconFullBleed(svgSourcePath, path.join(iconsSubdir, 'Icon-192.png'), 192);
+      await renderIconFullBleed(svgSourcePath, path.join(iconsSubdir, 'Icon-512.png'), 512);
+      await renderIconFullBleed(svgSourcePath, path.join(iconsSubdir, 'Icon-maskable-192.png'), 192);
+      await renderIconFullBleed(svgSourcePath, path.join(iconsSubdir, 'Icon-maskable-512.png'), 512);
+      console.log('✓ Generated mobile_app/web/icons (Icon-192, Icon-512, maskables)');
+    }
+  }
+
+  console.log('\n✨ All app icons across admin_web, mobile_app (Android, iOS, Web) rendered successfully!');
 }
 
 async function renderIconFullBleed(sourceSvg, targetPng, size) {

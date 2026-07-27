@@ -1,11 +1,11 @@
 {
-    "name": "lucky_store",
-    "short_name": "lucky_store",
+    "name": "Lucky Store",
+    "short_name": "Lucky Store",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B0B0D",
+    "theme_color": "#f0c444",
+    "description": "Your friendly neighborhood grocery store in Chittagong. Point of Sale & Order Management.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
