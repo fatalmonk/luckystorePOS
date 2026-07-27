@@ -10,6 +10,8 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname, '../../'),
   devIndicators: false,
   images: {
+    // Keep unoptimized: true so Vercel Image Optimization quota (1,000 free requests/mo) is never exceeded.
+    // Static assets & banners use native responsive srcsets (_400, _600, _800, _1200 AVIF/WebP) directly from CDN.
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -26,7 +28,7 @@ const nextConfig = {
         hostname: 'images.luckystore1947.com',
       },
       {
-        // images.luckystore1947.com is now included above for Next.js image optimization,
+        // images.luckystore1947.com is included above for Next.js image optimization,
         // allowing on-the-fly resizing to resolve Lighthouse warnings for oversized images.
         protocol: 'https',
         hostname: '*.workers.dev',
@@ -51,6 +53,12 @@ const nextConfig = {
       '</sitemap.xml>; rel="sitemap"',
     ];
     return [
+      {
+        source: '/site.webmanifest',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

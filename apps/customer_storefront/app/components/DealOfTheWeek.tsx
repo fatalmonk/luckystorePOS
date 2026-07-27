@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -65,12 +66,15 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
               {leadDiscount}% OFF
             </span>
             {leadProduct.image_url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={leadProduct.image_url}
-                alt={leadProduct.name}
-                className="max-h-[260px] sm:max-h-[320px] w-full object-contain transform hover:scale-105 transition-transform duration-300"
-              />
+              <div className="relative w-full h-[260px] sm:h-[320px]">
+                <Image
+                  src={leadProduct.image_url}
+                  alt={leadProduct.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
+                  className="object-contain transform hover:scale-105 transition-transform duration-300"
+                />
+              </div>
             ) : (
               <span className="text-8xl sm:text-9xl transform hover:scale-110 transition-transform duration-300">
                 {leadProduct.emoji}
