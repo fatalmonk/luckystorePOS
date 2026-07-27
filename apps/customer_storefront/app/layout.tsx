@@ -155,6 +155,18 @@ export default function RootLayout({
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Lucky Store',
+              alternateName: ['LuckyStore', 'Lucky Store - Est. 1947', 'luckystore1947.com'],
+              url: 'https://luckystore1947.com',
+            }),
+          }}
+        />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
         {/* Google Analytics — deferred to idle time, never blocks render or layout */}
