@@ -7,47 +7,33 @@ const publicDir = path.resolve('apps/customer_storefront/public');
 
 async function renderIcons() {
   if (!fs.existsSync(svgPath)) {
-    console.error('❌ favicon-inverse.svg not found');
+    console.error('❌ favicon.svg not found');
     process.exit(1);
   }
 
-
-
-  // Sizes to render with padding (Google Search requires multiples of 48px: 48x48, 96x96, 192x192)
+  // Render full-bleed (0 padding) so favicons fill 100% of available viewport / tab / snippet space
   const targets = [
-    { name: 'favicon-32x32.png', size: 32, padding: 4 },
-    { name: 'favicon-48x48.png', size: 48, padding: 6 },
-    { name: 'icon.png', size: 48, padding: 6 },
-    { name: 'favicon.ico', size: 48, padding: 6 },
-    { name: 'apple-touch-icon.png', size: 180, padding: 24 },
-    { name: 'icon-192x192.png', size: 192, padding: 24 },
-    { name: 'icon-512x512.png', size: 512, padding: 64 },
+    { name: 'favicon-32x32.png', size: 32 },
+    { name: 'favicon-48x48.png', size: 48 },
+    { name: 'icon.png', size: 48 },
+    { name: 'favicon.ico', size: 48 },
+    { name: 'apple-touch-icon.png', size: 180 },
+    { name: 'icon-192x192.png', size: 192 },
+    { name: 'icon-512x512.png', size: 512 },
   ];
 
-  for (const { name, size, padding } of targets) {
+  for (const { name, size } of targets) {
     const targetPath = path.join(publicDir, name);
-    const innerSize = size - padding * 2;
 
-    const renderedBuffer = await sharp(svgPath, { density: 300 })
-      .resize(innerSize, innerSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .toBuffer();
-
-    await sharp({
-      create: {
-        width: size,
-        height: size,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      },
-    })
-      .composite([{ input: renderedBuffer, top: padding, left: padding }])
+    await sharp(svgPath, { density: 300 })
+      .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toFile(targetPath);
 
-    console.log(`✓ Generated ${name} (${size}x${size} with ${padding}px padding)`);
+    console.log(`✓ Generated ${name} (${size}x${size} full-bleed max size)`);
   }
 
-  console.log('\n✨ Favicons updated successfully!');
+  console.log('\n✨ Favicons updated to maximum size!');
 }
 
 renderIcons().catch(console.error);

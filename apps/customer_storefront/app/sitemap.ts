@@ -8,6 +8,7 @@ const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 const staticRoutes = [
   { path: '', priority: 1.0, changefreq: 'daily' },
   { path: '/category', priority: 0.8, changefreq: 'daily' },
+  { path: '/contact', priority: 0.5, changefreq: 'monthly' },
   { path: '/privacy', priority: 0.3, changefreq: 'monthly' },
   { path: '/terms', priority: 0.3, changefreq: 'monthly' },
   { path: '/security-policy', priority: 0.3, changefreq: 'monthly' },

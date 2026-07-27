@@ -102,15 +102,9 @@
 
 /* Explicit dark text on saffron elements & saffron backgrounds */
 .accent-text-dark,
-.accent-text-dark svg,
-.accent-text-dark *,
 .bg-warm-accent,
-.bg-warm-accent svg,
-.bg-warm-accent *,
-.bg-\[\#f0c444\],
-.bg-\[\#f0c444\] svg,
-.bg-\[\#f0c444\] * {
-  color: #0B0B0D !important;
+.bg-\[\#f0c444\] {
+  color: #0B0B0D;
 }
 
 /* Theme transition — performant targeting for theme switching */
@@ -126,14 +120,7 @@ html.theme-transitioning .glass {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Dark Theme: Force all light borders to transparent */
-[data-theme="dark"] [class*="border-white"],
-[data-theme="dark"] [class*="border-gray-"],
-[data-theme="dark"] [class*="border-neutral-"] {
-  border-color: transparent !important;
-}
-
-/* Also target inline border styles if any */
-[data-theme="dark"] .border {
-  border-color: transparent !important;
+/* Dark Theme: Subtle border adjustment for high contrast cards */
+[data-theme="dark"] [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.08);
 }
