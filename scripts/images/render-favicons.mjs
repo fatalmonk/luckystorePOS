@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 
-const svgPath = path.resolve('apps/customer_storefront/public/favicon-inverse.svg');
+const svgPath = path.resolve('apps/customer_storefront/public/favicon.svg');
 const publicDir = path.resolve('apps/customer_storefront/public');
 
 async function renderIcons() {
@@ -11,10 +11,7 @@ async function renderIcons() {
     process.exit(1);
   }
 
-  // Update favicon.svg with inverse dark handles content
-  const svgContent = fs.readFileSync(svgPath, 'utf-8');
-  fs.writeFileSync(path.join(publicDir, 'favicon.svg'), svgContent);
-  console.log('✓ Updated public/favicon.svg from favicon-inverse.svg');
+
 
   // Sizes to render with padding (Google Search requires multiples of 48px: 48x48, 96x96, 192x192)
   const targets = [
