@@ -28,7 +28,7 @@ const notoBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Lucky Store', template: '%s | Lucky Store' },
+  title: { default: 'Lucky Store — Your Friendly Neighborhood Grocer', template: '%s | Lucky Store' },
   description: 'Your friendly neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
