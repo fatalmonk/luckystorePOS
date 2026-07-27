@@ -28,12 +28,12 @@ async function renderAllAppIcons() {
     });
 
     const adminTargets = [
-      { name: 'pwa-192x192.png', size: 192, padding: 24 },
-      { name: 'pwa-512x512.png', size: 512, padding: 64 },
+      { name: 'pwa-192x192.png', size: 192 },
+      { name: 'pwa-512x512.png', size: 512 },
     ];
 
-    for (const { name, size, padding } of adminTargets) {
-      await renderIconWithPadding(svgSourcePath, path.join(adminPublic, name), size, padding);
+    for (const { name, size } of adminTargets) {
+      await renderIconFullBleed(svgSourcePath, path.join(adminPublic, name), size);
       console.log(`✓ Generated admin_web/public/${name}`);
     }
   }
@@ -42,17 +42,17 @@ async function renderAllAppIcons() {
   const mobileRes = path.resolve('apps/mobile_app/android/app/src/main/res');
   if (fs.existsSync(mobileRes)) {
     const androidTargets = [
-      { folder: 'mipmap-mdpi', size: 48, padding: 6 },
-      { folder: 'mipmap-hdpi', size: 72, padding: 9 },
-      { folder: 'mipmap-xhdpi', size: 96, padding: 12 },
-      { folder: 'mipmap-xxhdpi', size: 144, padding: 18 },
-      { folder: 'mipmap-xxxhdpi', size: 192, padding: 24 },
+      { folder: 'mipmap-mdpi', size: 48 },
+      { folder: 'mipmap-hdpi', size: 72 },
+      { folder: 'mipmap-xhdpi', size: 96 },
+      { folder: 'mipmap-xxhdpi', size: 144 },
+      { folder: 'mipmap-xxxhdpi', size: 192 },
     ];
 
-    for (const { folder, size, padding } of androidTargets) {
+    for (const { folder, size } of androidTargets) {
       const dir = path.join(mobileRes, folder);
       if (fs.existsSync(dir)) {
-        await renderIconWithPadding(svgSourcePath, path.join(dir, 'ic_launcher.png'), size, padding);
+        await renderIconFullBleed(svgSourcePath, path.join(dir, 'ic_launcher.png'), size);
         console.log(`✓ Generated Android launcher: ${folder}/ic_launcher.png (${size}x${size})`);
       }
     }
@@ -61,48 +61,35 @@ async function renderAllAppIcons() {
   const iosAppIconSet = path.resolve('apps/mobile_app/ios/Runner/Assets.xcassets/AppIcon.appiconset');
   if (fs.existsSync(iosAppIconSet)) {
     const iosTargets = [
-      { name: 'Icon-App-1024x1024@1x.png', size: 1024, padding: 128 },
-      { name: 'Icon-App-83.5x83.5@2x.png', size: 167, padding: 20 },
-      { name: 'Icon-App-76x76@2x.png', size: 152, padding: 19 },
-      { name: 'Icon-App-76x76@1x.png', size: 76, padding: 9 },
-      { name: 'Icon-App-60x60@3x.png', size: 180, padding: 22 },
-      { name: 'Icon-App-60x60@2x.png', size: 120, padding: 15 },
-      { name: 'Icon-App-40x40@3x.png', size: 120, padding: 15 },
-      { name: 'Icon-App-40x40@2x.png', size: 80, padding: 10 },
-      { name: 'Icon-App-40x40@1x.png', size: 40, padding: 5 },
-      { name: 'Icon-App-29x29@3x.png', size: 87, padding: 10 },
-      { name: 'Icon-App-29x29@2x.png', size: 58, padding: 7 },
-      { name: 'Icon-App-29x29@1x.png', size: 29, padding: 3 },
-      { name: 'Icon-App-20x20@3x.png', size: 60, padding: 7 },
-      { name: 'Icon-App-20x20@2x.png', size: 40, padding: 5 },
-      { name: 'Icon-App-20x20@1x.png', size: 20, padding: 2 },
+      { name: 'Icon-App-1024x1024@1x.png', size: 1024 },
+      { name: 'Icon-App-83.5x83.5@2x.png', size: 167 },
+      { name: 'Icon-App-76x76@2x.png', size: 152 },
+      { name: 'Icon-App-76x76@1x.png', size: 76 },
+      { name: 'Icon-App-60x60@3x.png', size: 180 },
+      { name: 'Icon-App-60x60@2x.png', size: 120 },
+      { name: 'Icon-App-40x40@3x.png', size: 120 },
+      { name: 'Icon-App-40x40@2x.png', size: 80 },
+      { name: 'Icon-App-40x40@1x.png', size: 40 },
+      { name: 'Icon-App-29x29@3x.png', size: 87 },
+      { name: 'Icon-App-29x29@2x.png', size: 58 },
+      { name: 'Icon-App-29x29@1x.png', size: 29 },
+      { name: 'Icon-App-20x20@3x.png', size: 60 },
+      { name: 'Icon-App-20x20@2x.png', size: 40 },
+      { name: 'Icon-App-20x20@1x.png', size: 20 },
     ];
 
-    for (const { name, size, padding } of iosTargets) {
-      await renderIconWithPadding(svgSourcePath, path.join(iosAppIconSet, name), size, padding);
+    for (const { name, size } of iosTargets) {
+      await renderIconFullBleed(svgSourcePath, path.join(iosAppIconSet, name), size);
       console.log(`✓ Generated iOS AppIcon: ${name}`);
     }
   }
 
-  console.log('\n✨ All app icons across admin_web and mobile_app rendered successfully!');
+  console.log('\n✨ All app icons rendered at 100% full-bleed maximum size!');
 }
 
-async function renderIconWithPadding(sourceSvg, targetPng, size, padding) {
-  const innerSize = Math.max(1, size - padding * 2);
-
-  const renderedBuffer = await sharp(sourceSvg, { density: 300 })
-    .resize(innerSize, innerSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .toBuffer();
-
-  await sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite([{ input: renderedBuffer, top: padding, left: padding }])
+async function renderIconFullBleed(sourceSvg, targetPng, size) {
+  await sharp(sourceSvg, { density: 300 })
+    .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
     .toFile(targetPng);
 }
