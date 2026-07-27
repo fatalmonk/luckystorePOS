@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { img } from '../../lib/imageUrl';
 
 export function Footer() {
   return (
@@ -24,9 +26,11 @@ export function Footer() {
 
           {/* Right Brand Logo Card */}
           <div className="w-full lg:w-72 bg-white rounded-[24px] p-3 shadow-warm-md flex items-center justify-center min-h-[160px] shrink-0 overflow-hidden">
-            <img
-              src="/lucky-store-est1947.svg"
+            <Image
+              src={img('/lucky-store-est1947.svg')}
               alt="Lucky Store — Est. 1947"
+              width={260}
+              height={140}
               className="w-full h-auto max-h-[140px] object-contain"
             />
           </div>
