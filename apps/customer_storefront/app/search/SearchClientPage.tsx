@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
+import { useDebounce } from '../hooks/useDebounce';
 import { MagnifyingGlass, Clock, Fire, X } from '@phosphor-icons/react';
 
 const POPULAR_SEARCHES = ['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bread', 'Ice Cream', 'Snacks', 'Tea & Coffee'];
@@ -12,6 +13,7 @@ const POPULAR_SEARCHES = ['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bre
 export function SearchClientPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 350);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {

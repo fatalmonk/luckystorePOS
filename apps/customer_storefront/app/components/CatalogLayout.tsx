@@ -198,7 +198,7 @@ export function CatalogLayout({
   return (
     <div className="max-w-7xl mx-auto space-y-5">
       {/* Top Toolbar */}
-      <div className="bg-warm-surface border border-warm-border/60 rounded-[20px] p-4 shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-warm-surface border border-warm-border dark:border-transparent rounded-[20px] p-4 shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
@@ -217,7 +217,7 @@ export function CatalogLayout({
             <h1 className="text-lg font-black tracking-tight text-warm-fg">
               {searchQuery ? `Search results for "${searchQuery}"` : categorySlug === 'all' ? 'All Products' : group?.label || categorySlug}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-warm-bg border border-warm-border/60 text-xs font-extrabold text-warm-fg">
+            <span className="px-2.5 py-0.5 rounded-full bg-warm-bg border border-warm-border dark:border-transparent text-xs font-extrabold text-warm-fg">
               {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
             </span>
           </div>
@@ -311,8 +311,8 @@ export function CatalogLayout({
       {/* Catalog Main Layout Grid: Left Sticky Sidebar (Desktop) + Right Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Desktop Sticky Sidebar */}
-        <aside className="hidden md:block md:col-span-3 sticky top-20 bg-warm-surface border border-warm-border/60 rounded-[24px] p-5 shadow-warm-sm space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-warm-border/40">
+        <aside className="hidden md:block md:col-span-3 sticky top-20 bg-warm-surface border border-warm-border dark:border-transparent rounded-[24px] p-5 shadow-warm-sm space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-warm-border dark:border-transparent">
             <h3 className="font-extrabold text-sm text-warm-fg flex items-center gap-1.5">
               <Funnel weight="bold" size={16} /> Filters
             </h3>
@@ -482,7 +482,7 @@ export function CatalogLayout({
 
       {/* Mobile Accessible Filter Bottom Sheet */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-warm-fg/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200">
           <div
             className="w-full bg-warm-surface rounded-t-[28px] max-h-[85vh] flex flex-col overflow-hidden border-t border-warm-border shadow-2xl animate-in slide-in-from-bottom duration-300"
             role="dialog"

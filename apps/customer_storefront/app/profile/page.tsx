@@ -109,7 +109,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 mb-6">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-stone-50 border border-warm-border text-warm-fg transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-warm-surface hover:bg-warm-bg border border-warm-border text-warm-fg transition-colors"
             aria-label="Back to home"
           >
             <ArrowLeft size={16} weight="bold" />
@@ -119,7 +119,7 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Account Details */}
-          <div className="md:col-span-1 bg-white border border-warm-border rounded-[24px] p-6 shadow-sm h-fit">
+          <div className="md:col-span-1 bg-warm-surface border border-warm-border rounded-[24px] p-6 shadow-sm h-fit">
             <div className="flex flex-col items-center text-center mb-6">
               <div className="w-20 h-20 bg-warm-accent text-warm-fg font-bold rounded-full flex items-center justify-center text-2xl mb-3 shadow-inner">
                 {user.user_metadata?.full_name?.[0]?.toUpperCase() || 'U'}
@@ -181,7 +181,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Order History */}
-          <div className="md:col-span-2 bg-white border border-warm-border rounded-[24px] p-6 shadow-sm">
+          <div className="md:col-span-2 bg-warm-surface border border-warm-border rounded-[24px] p-6 shadow-sm">
             <h2 className="text-lg font-bold text-warm-fg mb-4 flex items-center gap-2">
               <Package size={20} weight="bold" className="text-warm-muted" />
               Order History

@@ -9,23 +9,23 @@
   --color-surface: #ffffff;
   --color-foreground: #0B0B0D;
   --color-muted: #6B6B6B;
-  --color-dim: #6B6B6B;
+  --color-dim: #7D776F;
   --color-border: #E8E4DC;
-  --color-border-light: #FDFBF7;
+  --color-border-light: #F7F5F0;
 
   /* Accent - Lucky Store Saffron palette */
   --color-accent: #f0c444;
   --color-accent-hover: #e0b434;
-  --color-accent-ghost: rgba(240, 196, 68, 0.08);
+  --color-accent-ghost: rgba(240, 196, 68, 0.12);
   --color-accent-text: #0B0B0D;
   --color-accent-muted: #FFF8E1;
-  --color-accent-olive: #FFF8E1;
+  --color-accent-dark: #e0b434;
 
   /* Semantic - status colors */
   --color-success: #16A34A;
   --color-success-bg: rgba(22, 163, 74, 0.08);
-  --color-warning: #b45309;
-  --color-warning-bg: rgba(180, 83, 9, 0.08);
+  --color-warning: #C79400;
+  --color-warning-bg: rgba(199, 148, 0, 0.08);
   --color-danger: #E34234;
   --color-danger-bg: rgba(227, 66, 52, 0.07);
 
@@ -36,16 +36,16 @@
   --radius-xl: 24px;
 
   /* Shadows — 3-level spatial system, top-left light source */
-  --shadow-rest: 0 4px 24px rgba(240, 196, 68, 0.03), 0 1px 2px rgba(11, 11, 13, 0.02);
-  --shadow-hover: 0 12px 32px rgba(240, 196, 68, 0.08), 0 4px 8px rgba(11, 11, 13, 0.04);
+  --shadow-rest: 0 4px 24px rgba(240, 196, 68, 0.06), 0 1px 2px rgba(11, 11, 13, 0.04);
+  --shadow-hover: 0 12px 32px rgba(240, 196, 68, 0.12), 0 4px 8px rgba(11, 11, 13, 0.06);
   --shadow-elevated: 0 12px 40px rgba(240, 196, 68, 0.12), 0 4px 12px rgba(11, 11, 13, 0.06);
   /* Legacy aliases */
   --shadow-sm: var(--shadow-rest);
   --shadow-md: var(--shadow-hover);
   --shadow-lg: var(--shadow-elevated);
   /* Demo exact shadows */
-  --shadow-warm-rest: 0 4px 24px rgba(240, 196, 68, 0.03), 0 1px 2px rgba(11, 11, 13, 0.02);
-  --shadow-warm-hover: 0 12px 32px rgba(240, 196, 68, 0.08), 0 4px 8px rgba(11, 11, 13, 0.04);
+  --shadow-warm-rest: 0 4px 24px rgba(240, 196, 68, 0.06), 0 1px 2px rgba(11, 11, 13, 0.04);
+  --shadow-warm-hover: 0 12px 32px rgba(240, 196, 68, 0.12), 0 4px 8px rgba(11, 11, 13, 0.06);
 
   /* Glassmorphism */
   --glass-bg: rgba(250, 248, 245, 0.82);
@@ -75,6 +75,51 @@
   --text-body: clamp(0.875rem, 0.5vw + 0.5rem, 1rem);
   --text-small: clamp(0.75rem, 0.3vw + 0.5rem, 0.875rem);
   --text-xs: clamp(0.6875rem, 0.2vw + 0.5rem, 0.75rem);
+}
+
+/* ===== DARK THEME ===== */
+[data-theme="dark"] {
+  /* Paper scale - warm dark */
+  --color-paper: #0B0B0D;
+  --color-surface: #241e1a;
+  --color-foreground: #f5f0eb;
+  --color-muted: #b0a89e;
+  --color-dim: #7a7268;
+  --color-border: transparent;
+  --color-border-light: transparent;
+
+  /* Accent - Lucky Store Saffron palette (dark) */
+  --color-accent: #f0c444;
+  --color-accent-hover: #d4a820;
+  --color-accent-ghost: rgba(240, 196, 68, 0.15);
+  --color-accent-text: #0B0B0D;
+  --color-accent-muted: #2a2418;
+  --color-accent-dark: #d4a820;
+
+  /* Semantic - status colors (dark) */
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34, 197, 94, 0.12);
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-danger: #f87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.10);
+
+  /* Shadows — inverted for dark backgrounds */
+  --shadow-rest: 0 4px 24px rgba(0, 0, 0, 0.20), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.30), 0 4px 8px rgba(0, 0, 0, 0.18);
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.40), 0 4px 12px rgba(0, 0, 0, 0.24);
+  --shadow-sm: var(--shadow-rest);
+  --shadow-md: var(--shadow-hover);
+  --shadow-lg: var(--shadow-elevated);
+  --shadow-warm-rest: 0 4px 24px rgba(0, 0, 0, 0.20), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-warm-hover: 0 12px 32px rgba(0, 0, 0, 0.30), 0 4px 8px rgba(0, 0, 0, 0.18);
+
+  /* Glassmorphism (dark) */
+  --glass-bg: rgba(26, 20, 16, 0.85);
+  --glass-border: transparent;
+
+  /* Native form controls */
+  color-scheme: dark;
 }
 
 /* Base resets */
@@ -211,6 +256,23 @@ body {
   box-shadow: var(--shadow-rest);
 }
 
+/* Glassmorphism Utility */
+.glass-element {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+/* Cross-browser scrollbar hiding */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Add to cart — elastic bounce */
 @keyframes elasticBounce {
   0% { transform: scale(1); }
@@ -233,11 +295,11 @@ body {
 .shimmer {
   background: linear-gradient(
     105deg,
-    #f0ede8 0%,
-    #f0ede8 35%,
-    #faf8f5 50%,
-    #f0ede8 65%,
-    #f0ede8 100%
+    var(--color-surface) 0%,
+    var(--color-surface) 35%,
+    var(--color-border) 50%,
+    var(--color-surface) 65%,
+    var(--color-surface) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
@@ -276,7 +338,218 @@ body {
 /* Focus states */
 :focus-visible {
   outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline-offset: 4px;
+}
+
+/* Component Refinement Utilities */
+
+/* Sticky Header Glassmorphism */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
+  transition: background 0.3s ease;
+}
+
+.app-header.scrolled {
+  background: rgba(250, 248, 245, 0.95);
+}
+
+[data-theme="dark"] .app-header.scrolled {
+  background: rgba(11, 11, 13, 0.95);
+}
+
+/* Deal of the Week Section Depth */
+.deal-section {
+  background: radial-gradient(circle at top right, #1a1a1c 0%, #0B0B0D 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Strikethrough Prices */
+.price-original {
+  color: var(--color-dim);
+  text-decoration: line-through;
+  text-decoration-color: var(--color-dim);
+  text-decoration-thickness: 1px;
+}
+
+/* Mobile Category Scroll Snapping */
+.category-scroll,
+.category-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 1rem;
+  padding: 0 1rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.category-scroll::-webkit-scrollbar,
+.category-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.category-item {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+.category-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Wishlist Button Interaction */
+.wishlist-btn:active svg {
+  fill: var(--color-danger);
+  stroke: var(--color-danger);
+  transform: scale(1.2);
+}
+
+/* Product Card Add Button Faint Ghost Background */
+.btn-outline-add,
+.btn-add-to-cart {
+  background: var(--color-accent-ghost);
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-foreground);
+  transition: all 0.2s var(--ease-out);
+}
+
+.btn-outline-add:hover,
+.btn-add-to-cart:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+.btn-outline-add:active,
+.btn-add-to-cart:active {
+  transform: scale(var(--press-scale));
+}
+
+/* Dark Mode: Make Add to Cart buttons visible and clickable */
+[data-theme="dark"] .btn-add-to-cart,
+[data-theme="dark"] .btn-outline-add {
+  background-color: var(--color-accent-ghost);
+  color: var(--color-accent);
+  border: 1px solid rgba(240, 196, 68, 0.3);
+  transition: all 0.2s var(--ease-out);
+}
+
+[data-theme="dark"] .btn-add-to-cart:hover,
+[data-theme="dark"] .btn-outline-add:hover {
+  background-color: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 15px rgba(240, 196, 68, 0.2);
+}
+
+[data-theme="dark"] .btn-add-to-cart:active,
+[data-theme="dark"] .btn-outline-add:active {
+  transform: scale(var(--press-scale));
+}
+
+/* Dark Mode: Use borders instead of shadows for depth */
+[data-theme="dark"] .card-hover,
+[data-theme="dark"] .product-card {
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .card-hover:hover,
+[data-theme="dark"] .product-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(240, 196, 68, 0.4);
+  background-color: #2a241e;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Fix the Wishlist heart button */
+[data-theme="dark"] .btn-wishlist {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+
+[data-theme="dark"] .btn-wishlist:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+[data-theme="dark"] .btn-wishlist.active {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: var(--color-danger);
+}
+
+[data-theme="dark"] .btn-wishlist.active svg {
+  fill: var(--color-danger);
+  stroke: var(--color-danger);
+}
+
+/* Fix the ON SALE badge */
+[data-theme="dark"] .badge-sale {
+  background: var(--color-danger);
+  color: #ffffff;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(227, 66, 52, 0.3);
+}
+
+/* Price hierarchy improvements */
+[data-theme="dark"] .price-current {
+  color: var(--color-foreground);
+  font-size: var(--text-h3);
+  font-weight: 700;
+}
+
+[data-theme="dark"] .price-save {
+  color: var(--color-danger);
+  font-size: var(--text-small);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+[data-theme="dark"] .price-unit {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  margin-top: 0.25rem;
+}
+
+[data-theme="dark"] .product-title {
+  color: var(--color-foreground);
+  font-size: var(--text-body);
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
+/* Footer Typography Clamp */
+.footer-brand-text {
+  font-size: clamp(3rem, 15vw, 8rem);
+  line-height: 0.9;
+  word-break: break-all;
 }
 
 /* Quantity pulse — fires when qty value changes */

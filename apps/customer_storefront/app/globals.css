@@ -4,18 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #faf8f5;
-  --foreground: #1c1917;
-}
-
 @layer base {
   html {
     scroll-behavior: auto;
   }
 
   body {
-    @apply bg-warm-bg text-warm-fg font-body pb-[60px] md:pb-0;
+    @apply bg-warm-bg text-warm-fg font-body;
+  }
+
+  body.has-bottom-nav {
+    @apply pb-[60px] md:pb-0;
+  }
+
+  button, a, [role="button"], input, select {
+    touch-action: manipulation;
   }
 }
 
@@ -43,20 +46,16 @@
 
   /* Scroll edge fade masks */
   .scroll-edge-mask {
-    mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 4%,
-      black 96%,
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 4%,
-      black 96%,
-      transparent 100%
-    );
+    mask-image: linear-gradient(to right,
+        transparent 0%,
+        black 4%,
+        black 96%,
+        transparent 100%);
+    -webkit-mask-image: linear-gradient(to right,
+        transparent 0%,
+        black 4%,
+        black 96%,
+        transparent 100%);
   }
 
   /* Hide scrollbar but keep scroll */
@@ -64,13 +63,16 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
 
-  /* Micro-interactions: card reveal transitions (Safari-safe, no @starting-style) */
+  /* Micro-interactions: card reveal transitions with initial state */
   @media (prefers-reduced-motion: no-preference) {
     .card-reveal {
+      opacity: 0;
+      transform: translateY(16px);
       animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   }
@@ -81,17 +83,57 @@
     transform: translateY(16px);
     transition: opacity 0.5s var(--ease-out, ease), transform 0.5s var(--ease-out, ease);
   }
+
   .fade-up-visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* Product grid stagger reveal */
+  /* Product grid stagger reveal with fallback */
   @media (prefers-reduced-motion: no-preference) {
-    .product-grid > * {
+    .product-grid>* {
+      --index: 0;
       animation: fadeUp 0.4s var(--ease-out, ease) forwards;
-      animation-delay: calc(var(--index) * 80ms);
+      animation-delay: calc(var(--index, 0) * 80ms);
       opacity: 0;
     }
   }
+}
+
+/* Explicit dark text on saffron elements & saffron backgrounds */
+.accent-text-dark,
+.accent-text-dark svg,
+.accent-text-dark *,
+.bg-warm-accent,
+.bg-warm-accent svg,
+.bg-warm-accent *,
+.bg-\[\#f0c444\],
+.bg-\[\#f0c444\] svg,
+.bg-\[\#f0c444\] * {
+  color: #0B0B0D !important;
+}
+
+/* Theme transition — performant targeting for theme switching */
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning header,
+html.theme-transitioning main,
+html.theme-transitioning footer,
+html.theme-transitioning nav,
+html.theme-transitioning .card,
+html.theme-transitioning .btn,
+html.theme-transitioning .glass {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Dark Theme: Force all light borders to transparent */
+[data-theme="dark"] [class*="border-white"],
+[data-theme="dark"] [class*="border-gray-"],
+[data-theme="dark"] [class*="border-neutral-"] {
+  border-color: transparent !important;
+}
+
+/* Also target inline border styles if any */
+[data-theme="dark"] .border {
+  border-color: transparent !important;
 }

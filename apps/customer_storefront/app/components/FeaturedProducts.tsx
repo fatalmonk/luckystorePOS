@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { ProductCard } from './ProductCard';
+import { ProductGridSkeleton } from './ui/ProductCardSkeleton';
+import { ProductErrorBoundary } from './ProductErrorBoundary';
 import { useCartActions } from '../hooks/useCartActions';
 import { CATEGORY_GROUPS, getParentGroup } from '../lib/types';
 import type { Product } from '../lib/types';
@@ -14,9 +16,10 @@ const CartFlyAnimation = dynamic(
 
 interface FeaturedProductsProps {
   products: Product[];
+  isLoading?: boolean;
 }
 
-export function FeaturedProducts({ products }: FeaturedProductsProps) {
+export function FeaturedProducts({ products, isLoading = false }: FeaturedProductsProps) {
   const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete, handleClick } = useCartActions();
 
   // Find top 3 category groups with the most in-stock products
@@ -64,14 +67,15 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
   };
 
   return (
-    <section className="bg-warm-surface rounded-[24px] p-4 sm:p-6 border border-warm-border/60 shadow-warm-sm space-y-4">
+    <section className="bg-gradient-to-br from-[#0B0B0D] via-[#1c180d] to-[#2a220b] border border-[#f0c444]/20 rounded-[24px] p-4 sm:p-6 shadow-warm-md space-y-4 text-white">
+      
       {/* Header & Category Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-warm-border/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
         <div>
-          <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-warm-fg flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
             <span>🌟</span> Featured Products
           </h2>
-          <p className="text-xs text-warm-muted mt-0.5">Top-rated items & daily grocery essentials</p>
+          <p className="text-xs text-white/70 mt-0.5">Top-rated items & daily grocery essentials</p>
         </div>
 
         {/* Tabs navigation */}
@@ -79,10 +83,10 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
           <button
             type="button"
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all whitespace-nowrap ${
               activeTab === 'all'
-                ? 'bg-warm-fg text-warm-accent shadow-sm'
-                : 'bg-warm-bg text-warm-fg hover:bg-warm-border/40'
+                ? 'bg-[#f0c444] text-[#0B0B0D] shadow-md scale-105'
+                : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
             }`}
           >
             All
@@ -92,10 +96,10 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
               key={group.slug}
               type="button"
               onClick={() => setActiveTab(group.slug)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === group.slug
-                  ? 'bg-warm-fg text-warm-accent shadow-sm'
-                  : 'bg-warm-bg text-warm-fg hover:bg-warm-border/40'
+                  ? 'bg-[#f0c444] text-[#0B0B0D] shadow-md scale-105'
+                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
               }`}
             >
               <span>{group.emoji}</span>
@@ -106,35 +110,41 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-        {displayedProducts.map((product, index) => {
-          let addBtnRef: HTMLButtonElement | null = null;
-          return (
-            <div key={product.id} className="h-full flex flex-col">
-              <ProductCard
-                id={product.id}
-                emoji={product.emoji}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                badge={product.badge}
-                unit={product.unit}
-                stock={product.stock}
-                category={product.category}
-                image_url={product.image_url}
-                qtyInCart={getQtyInCart(product.id)}
-                priority={index === 0}
-                onAdd={() => handleAddToCart(product, addBtnRef)}
-                onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                onClick={() => handleClick(product.id)}
-                onAddRef={(el) => {
-                  addBtnRef = el;
-                }}
-              />
-            </div>
-          );
-        })}
-      </div>
+      <ProductErrorBoundary fallbackMessage="Failed to load featured products">
+        {isLoading ? (
+          <ProductGridSkeleton count={10} />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+            {displayedProducts.map((product, index) => {
+              let addBtnRef: HTMLButtonElement | null = null;
+              return (
+                <div key={product.id} className="h-full flex flex-col">
+                  <ProductCard
+                    id={product.id}
+                    emoji={product.emoji}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    badge={product.badge}
+                    unit={product.unit}
+                    stock={product.stock}
+                    category={product.category}
+                    image_url={product.image_url}
+                    qtyInCart={getQtyInCart(product.id)}
+                    priority={index === 0}
+                    onAdd={() => handleAddToCart(product, addBtnRef)}
+                    onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
+                    onClick={() => handleClick(product.id)}
+                    onAddRef={(el) => {
+                      addBtnRef = el;
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </ProductErrorBoundary>
 
       <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
     </section>

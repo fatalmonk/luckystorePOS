@@ -386,6 +386,7 @@
     .badge-danger{background:var(--color-danger-bg);color:var(--color-danger)}
     .badge-neutral{background:var(--color-border-light);color:var(--color-muted)}
     .badge-accent{background:var(--color-accent-ghost);color:var(--color-accent)}
+    .badge-paid{background:var(--color-success-bg);color:var(--color-success)}
     .badge-cash{background:rgba(43,122,59,0.12);color:var(--color-cash)}
     .badge-bkash{background:rgba(230,30,42,0.12);color:var(--color-bkash)}
     .badge-nagad{background:rgba(217,43,127,0.12);color:var(--color-nagad)}
@@ -430,6 +431,7 @@
     .metric-label{color:var(--color-muted)}
     .metric-value{color:var(--color-foreground);font-weight:600}
     .metric-value.accent{color:var(--color-accent)}
+    .metric-value.price{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums}
     .metric-value.success{color:var(--color-success)}
     .metric-value.warning{color:var(--color-warning)}
     .actions{display:flex;align-items:center;gap:var(--space-1);flex-shrink:0}
@@ -765,7 +767,7 @@
         <div class="swatch"><div class="chip" style="background:var(--color-warning)"></div><div class="meta"><span class="name">Warning</span><span class="hex">#C79400</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-warning-bg)"></div><div class="meta"><span class="name">Warning BG</span><span class="hex">rgba(199, 148, 0, 0.08)</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-danger)"></div><div class="meta"><span class="name">Danger</span><span class="hex">#E34234</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-danger-bg)"></div><div class="meta"><span class="name">Danger BG</span><span class="hex">rgba(220, 38, 38, 0.07)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-danger-bg)"></div><div class="meta"><span class="name">Danger BG</span><span class="hex">rgba(227, 66, 52, 0.07)</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary Dark</span><span class="hex">#0B0B0D</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#1a1a1a</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11, 11, 13, 0.12)</span></div></div>
@@ -778,13 +780,13 @@
       <table class="typo-table">
         <thead><tr><th>Role</th><th>Font</th><th>Size (clamp)</th><th>Weight</th><th>Sample</th></tr></thead>
         <tbody>
-          <tr><td>Display H1</td><td>Geist</td><td><code>clamp(2rem, 5vw, 3.5rem)</code></td><td>700</td><td class="typo-sample">LUCKY STORE 1947</td></tr>
-          <tr><td>Display H2</td><td>Geist</td><td><code>1.25rem</code></td><td>600</td><td class="typo-sample">Modern Neighborhood Grocery</td></tr>
-          <tr><td>Heading 3</td><td>Geist</td><td><code>1.125rem</code></td><td>600</td><td class="typo-sample">Fresh Vegetables &amp; Essentials</td></tr>
-          <tr><td>Body</td><td>Geist</td><td><code>1rem</code></td><td>400</td><td class="typo-sample body">Tactile storefront layouts with haptic depth and zero serif elements.</td></tr>
-          <tr><td>Micro / Tags</td><td>Geist</td><td><code>0.75rem</code></td><td>500</td><td class="typo-sample body" style="font-size:0.75rem">SAME DAY DELIVERY</td></tr>
+          <tr><td>Display H1</td><td>Geist</td><td><code>clamp(1.5rem, 3vw + 0.5rem, 2.25rem)</code></td><td>700</td><td class="typo-sample">LUCKY STORE 1947</td></tr>
+          <tr><td>Display H2</td><td>Geist</td><td><code>clamp(1.25rem, 2vw + 0.5rem, 1.75rem)</code></td><td>600</td><td class="typo-sample">Modern Neighborhood Grocery</td></tr>
+          <tr><td>Heading 3</td><td>Geist</td><td><code>clamp(1.125rem, 1.5vw + 0.4rem, 1.5rem)</code></td><td>600</td><td class="typo-sample">Fresh Vegetables &amp; Essentials</td></tr>
+          <tr><td>Body</td><td>Geist</td><td><code>clamp(0.875rem, 0.5vw + 0.5rem, 1rem)</code></td><td>400</td><td class="typo-sample body">Tactile storefront layouts with haptic depth and zero serif elements.</td></tr>
+          <tr><td>Micro / Tags</td><td>Geist</td><td><code>clamp(0.75rem, 0.2vw + 0.5rem, 0.8125rem)</code></td><td>500</td><td class="typo-sample body" style="font-size:0.75rem">SAME DAY DELIVERY</td></tr>
           <tr><td>Bengali Fallback</td><td>Noto Sans Bengali</td><td>Matches body scale</td><td>400/700</td><td class="typo-sample bengali">লাকি স্টোর — ভোরের তাজা সবজি</td></tr>
-          <tr><td>Price / Mono</td><td>Geist Mono</td><td><code>1.125rem</code></td><td>500</td><td class="typo-sample mono">৳250.00</td></tr>
+          <tr><td>Price / Mono</td><td>Geist Mono</td><td><code>clamp(0.875rem, 0.5vw + 0.5rem, 1rem)</code></td><td>500</td><td class="typo-sample mono">৳250.00</td></tr>
         </tbody>
       </table>
     </section>
@@ -881,17 +883,17 @@
     <section>
       <h2 class="section-title">Palette — POS (Additions)</h2>
       <div class="palette">
-        <div class="swatch"><div class="chip" style="background:var(--color-border-strong)"></div><div class="meta"><span class="name">Border Strong</span><span class="hex">#d6d3d1</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-surface-hover)"></div><div class="meta"><span class="name">Surface Hover</span><span class="hex">#f5f3f0</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-accent-strong)"></div><div class="meta"><span class="name">Accent Strong</span><span class="hex">rgba(255, 231, 33, 0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-border-strong)"></div><div class="meta"><span class="name">Border Strong</span><span class="hex">#CDC8BC</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-surface-hover)"></div><div class="meta"><span class="name">Surface Hover</span><span class="hex">#f5f2eb</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-accent-strong)"></div><div class="meta"><span class="name">Accent Strong</span><span class="hex">rgba(240, 196, 68, 0.18)</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-cash)"></div><div class="meta"><span class="name">Cash</span><span class="hex">#2b7a3b</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-bkash)"></div><div class="meta"><span class="name">bKash</span><span class="hex">#e61e2a</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-nagad)"></div><div class="meta"><span class="name">Nagad</span><span class="hex">#d92b7f</span></div></div>
         <div class="swatch"><div class="chip" style="background:var(--color-card)"></div><div class="meta"><span class="name">Card</span><span class="hex">#1a3c6e</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary Blue</span><span class="hex">#0b4fd9</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#0943b8</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11,79,217,0.12)</span></div></div>
-        <div class="swatch"><div class="chip" style="background:var(--color-primary-light)"></div><div class="meta"><span class="name">Primary Light</span><span class="hex">#e8f0fe</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary)"></div><div class="meta"><span class="name">Primary</span><span class="hex">#0B0B0D</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-hover)"></div><div class="meta"><span class="name">Primary Hover</span><span class="hex">#1a1a1a</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-ghost)"></div><div class="meta"><span class="name">Primary Ghost</span><span class="hex">rgba(11, 11, 13, 0.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--color-primary-light)"></div><div class="meta"><span class="name">Primary Light</span><span class="hex">#FDFBF7</span></div></div>
       </div>
     </section>
 
@@ -901,7 +903,7 @@
       <div class="components">
         <div class="card" style="padding:0">
           <div class="pos-product-card">
-            <div class="thumb placeholder">🌾</div>
+            <div class="pos-thumb placeholder">🌾</div>
             <div class="product-main">
               <p class="product-title">Organic Basmati Rice</p>
               <p class="product-sku">SKU: LS-001284</p>
@@ -926,7 +928,7 @@
         </div>
         <div class="card" style="padding:0">
           <div class="pos-product-card">
-            <div class="thumb placeholder">🍌</div>
+            <div class="pos-thumb placeholder">🍌</div>
             <div class="product-main">
               <p class="product-title">Fresh Bananas</p>
               <p class="product-sku">SKU: LS-000892</p>
@@ -951,7 +953,7 @@
         </div>
         <div class="card" style="padding:0">
           <div class="pos-product-card" style="opacity:0.5">
-            <div class="thumb placeholder">❌</div>
+            <div class="pos-thumb placeholder">❌</div>
             <div class="product-main">
               <p class="product-title">Imported Olive Oil</p>
               <p class="product-sku">SKU: LS-002101</p>
@@ -1305,17 +1307,17 @@
           <table class="typo-table" style="font-size:var(--text-small)">
             <thead><tr><th>Token</th><th>Light</th><th>Dark</th></tr></thead>
             <tbody>
-              <tr><td><code>--color-paper</code></td><td>#faf8f5</td><td>#1f1a17</td></tr>
+              <tr><td><code>--color-paper</code></td><td>#FDFBF7</td><td>#1f1a17</td></tr>
               <tr><td><code>--color-surface</code></td><td>#ffffff</td><td>#2a2420</td></tr>
-              <tr><td><code>--color-surface-hover</code></td><td>#f5f3f0</td><td>#332c27</td></tr>
-              <tr><td><code>--color-foreground</code></td><td>#1c1917</td><td>#faf8f5</td></tr>
-              <tr><td><code>--color-muted</code></td><td>#78716c</td><td>#b8b0a8</td></tr>
-              <tr><td><code>--color-border</code></td><td>#e7e5e4</td><td>#3d3630</td></tr>
-              <tr><td><code>--color-accent</code></td><td>#ffe721</td><td>#ffe721</td></tr>
-              <tr><td><code>--color-primary</code></td><td>#0b4fd9</td><td>#4a8eff</td></tr>
-              <tr><td><code>--color-success</code></td><td>#0b4fd9</td><td>#4a8eff</td></tr>
-              <tr><td><code>--color-warning</code></td><td>#8c4200</td><td>#f5b84e</td></tr>
-              <tr><td><code>--color-danger</code></td><td>#a32624</td><td>#f47c7a</td></tr>
+              <tr><td><code>--color-surface-hover</code></td><td>#f5f2eb</td><td>#332c27</td></tr>
+              <tr><td><code>--color-foreground</code></td><td>#0B0B0D</td><td>#faf8f5</td></tr>
+              <tr><td><code>--color-muted</code></td><td>#6B6B6B</td><td>#b8b0a8</td></tr>
+              <tr><td><code>--color-border</code></td><td>#E8E4DC</td><td>#3d3630</td></tr>
+              <tr><td><code>--color-accent</code></td><td>#f0c444</td><td>#f0c444</td></tr>
+              <tr><td><code>--color-primary</code></td><td>#0B0B0D</td><td>#faf8f5</td></tr>
+              <tr><td><code>--color-success</code></td><td>#16A34A</td><td>#16A34A</td></tr>
+              <tr><td><code>--color-warning</code></td><td>#C79400</td><td>#C79400</td></tr>
+              <tr><td><code>--color-danger</code></td><td>#E34234</td><td>#E34234</td></tr>
             </tbody>
           </table>
         </div>
@@ -1422,11 +1424,11 @@
       <p>This separation prevents the classic mistake of forcing catalog UI patterns onto high-frequency POS workflows.</p>
 
       <h2>Color System</h2>
-      <p>Warm minimal palette: ivory paper (<code>#faf8f5</code>), white surfaces, vivid yellow accent (<code>#ffe721</code>), vivid blue primary (<code>#0b4fd9</code>). Semantic pairs (text + bg) for Success/Warning/Danger. Success uses vivid blue. Bangladesh payment method colors: Cash (green), bKash (red), Nagad (magenta), Card (blue).</p>
+      <p>Warm minimal palette: ivory paper (<code>#FDFBF7</code>), white surfaces, saffron accent (<code>#f0c444</code>), deep night primary (<code>#0B0B0D</code>). Semantic pairs (text + bg) for Success/Warning/Danger. Bangladesh payment method colors: Cash (green), bKash (red), Nagad (magenta), Card (blue).</p>
       <p><strong>Dark mode tokens defined</strong> but not yet activated — toggle in top-right to preview.</p>
 
       <h2>Typography</h2>
-      <p>Inter (Latin) + Hind Siliguri (Bengali) — fluid <code>clamp()</code> scale, no fixed px breakpoints. Price uses H2 scale at weight 700. Mono uses JetBrains Mono for SKUs, prices, timestamps.</p>
+      <p>Geist (Latin) + Noto Sans Bengali (Bengali) — fluid <code>clamp()</code> scale, no fixed px breakpoints. Price uses body scale at weight 700. Mono uses Geist Mono for SKUs, prices, timestamps.</p>
 
       <h2>Spacing &amp; Radius</h2>
       <p>4px base unit (space-1 through space-16). Four radius sizes with <code>radius-md (12px)</code> as universal default. Shadows use warm black tint (<code>rgba(28,25,23,α)</code>) for cohesive elevation.</p>
@@ -1473,7 +1475,7 @@
 
       <h2>Accessibility</h2>
       <ul>
-        <li>Contrast: <strong>4.5:1</strong> body text (<code>#1c1917</code> on <code>#faf8f5</code>), <strong>3:1</strong> large text on accent</li>
+        <li>Contrast: <strong>4.5:1</strong> body text (<code>#0B0B0D</code> on <code>#FDFBF7</code>), <strong>3:1</strong> large text on accent</li>
         <li>Focus ring: <code>2px solid var(--color-accent)</code> with <code>2px</code> offset</li>
         <li>Tap targets: minimum <strong>44×44px</strong> (all buttons, inputs, clickable rows)</li>
         <li><code>prefers-reduced-motion</code>: transitions disabled</li>
