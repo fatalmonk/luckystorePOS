@@ -10,7 +10,9 @@
  * Avoid /images/ — that prefix does not exist on the CDN.
  */
 const DEFAULT_CDN_BASE = 'https://images.luckystore1947.com';
-const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL || DEFAULT_CDN_BASE).replace(/\/$/, '');
+const BASE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL !== undefined
+  ? process.env.NEXT_PUBLIC_IMAGE_BASE_URL
+  : (process.env.NODE_ENV === 'development' ? '' : DEFAULT_CDN_BASE);
 
 export function img(path: string): string {
   if (!path) return '';
