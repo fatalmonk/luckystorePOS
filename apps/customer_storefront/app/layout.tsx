@@ -93,6 +93,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B0B0D' },
+  ],
 };
 
 export default function RootLayout({
@@ -105,7 +109,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
-        <meta name="theme-color" content="var(--color-paper)" />
+        <meta name="theme-color" content="#0B0B0D" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
         <script
           dangerouslySetInnerHTML={{
