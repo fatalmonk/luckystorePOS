@@ -1,2 +1,0 @@
-import { scrapeChaldalCategory } from './lib/browser.js';
-scrapeChaldalCategory({ url: 'https://chaldal.com/energy-boosters', label: 'energy boosters', filename: 'chaldal_energy-boosters_products.json' });

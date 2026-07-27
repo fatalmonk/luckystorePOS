@@ -12,8 +12,8 @@ async function openFirstOutOfStockProduct(page: Page): Promise<Page | null> {
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 
-  const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
-  const addToCartButton = page.locator('button:has-text("Add to Cart")');
+  const wishlistButton = page.locator('button:has-text("Notify Me When Back")').first();
+  const addToCartButton = page.locator('button:has-text("Add to Cart")').first();
 
   try {
     const status = await Promise.race([
@@ -36,7 +36,7 @@ test.describe('Wishlist Flow', () => {
       return;
     }
 
-    const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
+    const wishlistButton = page.locator('button:has-text("Notify Me When Back")').first();
     await expect(wishlistButton).toBeVisible();
     await wishlistButton.click();
 

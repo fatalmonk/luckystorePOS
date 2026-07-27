@@ -25,9 +25,9 @@ export function HomeShell({ products }: HomeShellProps) {
           <CampaignGrid />
 
           {/* Trust micro-bar — immediately visible after hero */}
-          <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-warm-surface border border-warm-border/50 p-3 shadow-warm-sm">
+          <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-warm-surface border border-warm-border p-3 shadow-warm-sm">
             <div className="flex flex-col items-center justify-center text-center gap-1">
-              <span className="text-lg">🛵</span>
+              <span className="text-lg"></span>
               <span className="text-[10px] font-bold text-warm-fg leading-tight">Free Delivery</span>
               <span className="text-[9px] text-warm-muted">৳500+</span>
             </div>
@@ -58,7 +58,7 @@ export function HomeShell({ products }: HomeShellProps) {
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Step 1 */}
-              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border/60 shadow-warm-sm flex flex-col items-start gap-3">
+              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border shadow-warm-sm flex flex-col items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-warm-accent flex items-center justify-center shrink-0 text-warm-fg font-black text-sm">1</div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-warm-fg">Browse &amp; Add</h3>
@@ -67,7 +67,7 @@ export function HomeShell({ products }: HomeShellProps) {
               </div>
 
               {/* Step 2 */}
-              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border/60 shadow-warm-sm flex flex-col items-start gap-3">
+              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border shadow-warm-sm flex flex-col items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-warm-accent flex items-center justify-center shrink-0 text-warm-fg font-black text-sm">2</div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-warm-fg">Quick Checkout</h3>
@@ -76,7 +76,7 @@ export function HomeShell({ products }: HomeShellProps) {
               </div>
 
               {/* Step 3 */}
-              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border/60 shadow-warm-sm flex flex-col items-start gap-3">
+              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border shadow-warm-sm flex flex-col items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-warm-accent flex items-center justify-center shrink-0 text-warm-fg font-black text-sm">3</div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-warm-fg">Same-Day Delivery</h3>
@@ -90,7 +90,7 @@ export function HomeShell({ products }: HomeShellProps) {
               href="/category"
               className="block bg-gradient-to-br from-warm-accent to-[#e8b840] rounded-[20px] p-5 shadow-warm-sm text-center hover:shadow-warm-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 group"
             >
-              <span className="text-sm font-black text-warm-fg uppercase tracking-wider group-hover:tracking-widest transition-all duration-300">Start Shopping →</span>
+              <span className="text-sm font-black text-[#0B0B0D] uppercase tracking-wider group-hover:tracking-widest transition-all duration-300">Start Shopping →</span>
             </Link>
           </section>
         </div>

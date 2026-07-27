@@ -4,8 +4,8 @@
   "description": "Your friendly neighborhood grocery store in Chittagong since 1947. Fresh products, fair prices, same-day delivery.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "background_color": "#0B0B0D",
+  "theme_color": "#f0c444",
   "icons": [
     {
       "src": "/favicon.svg",

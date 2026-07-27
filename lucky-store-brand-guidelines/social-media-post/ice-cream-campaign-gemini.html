@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Store 1947 — Ice Cream Fiesta Campaign</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800&family=Geist:wght@400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* Reset & Foundational Tokens */
+    :root {
+      /* Palette: Vibrant Cool Summer */
+      --base-white: #FFFFFF;
+      --zinc-50: #fafafa;
+      --zinc-900: #18181b;
+      --sky-100: #e0f2fe;
+      --teal-50: #f0fdfa;
+      
+      --aurora-1: #cffafe; /* Mint */
+      --aurora-2: #fed7aa; /* Coral */
+      --aurora-3: #ddd6fe; /* Lavender */
+
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      
+      --accent-fiesta: #fb923c; /* Coral */
+      --accent-cool: #4ade80;   /* Mint Green */
+      --accent-gold: #fbbf24;   /* Gold */
+
+      /* Typography */
+      --font-display: 'Cabinet Grotesk', sans-serif;
+      --font-bengali: 'Noto Sans Bengali', sans-serif;
+      --font-body: 'Geist', sans-serif;
+
+      /* Materiality */
+      --glass-background: rgba(255, 255, 255, 0.4);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.25);
+      --glass-refraction: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      
+      /* Radii */
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 32px;
+      --radius-pill: 999px;
+
+      /* Shadows */
+      --shadow-soft: 0 4px 12px rgba(0,0,0,0.03);
+      --shadow-hover: 0 12px 32px rgba(251, 146, 60, 0.12);
+    }
+
+    /* Base Setup */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body), -apple-system, sans-serif;
+      background: var(--zinc-50);
+      padding: 60px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Controls Interface */
+    .controls {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 24px;
+      background: var(--base-white);
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: var(--shadow-soft);
+    }
+    .btn {
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 12px 24px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-primary { 
+      background: var(--zinc-900); 
+      color: var(--base-white); 
+    }
+    .btn-primary:hover { 
+      background: var(--zinc-900); 
+      transform: scale(1.02); 
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: var(--text-main);
+    }
+    .btn-secondary:hover { 
+      background: #f9fafb; 
+    }
+
+    /* Decorative Background Elements (Aurora & Abstract Shapes) */
+    .deco-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .aurora {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.15;
+    }
+    .aurora-1 { top: -20%; left: -20%; background: var(--aurora-1); }
+    .aurora-2 { top: 30%; right: -25%; background: var(--aurora-2); }
+    .aurora-3 { bottom: -10%; left: 30%; background: var(--aurora-3); }
+    
+    .abstract-shape {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.06;
+      z-index: 1;
+    }
+    .deco-flower {
+      top: 10%; right: 10%;
+      width: 150px; height: 150px;
+    }
+    .deco-swirl {
+      bottom: 15%; left: 10%;
+      width: 200px; height: 200px;
+    }
+
+    /* Editable Text & Image Hovers */
+    [contenteditable] {
+      outline: none;
+      transition: background 0.15s;
+      cursor: text;
+    }
+    [contenteditable]:hover { background: rgba(74, 222, 128, 0.15); border-radius: 4px; }
+    [contenteditable]:focus { background: rgba(74, 222, 128, 0.25); border-radius: 4px; }
+
+    .img-wrap {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .img-hover {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.65);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: inherit;
+    }
+    .img-wrap:hover .img-hover { opacity: 1; }
+    .img-hover span {
+      background: var(--base-white);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* ===== FLYER CANVAS ===== */
+    .flyer-wrap {
+      position: relative;
+      width: fit-content;
+    }
+    .flyer {
+      width: 1080px;
+      /* A4-ish ratio, standard landscape flyer */
+      aspect-ratio: 1.414; 
+      background: #FFFFFF;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 1.0 — HERO HEADER */
+    .flyer-header {
+      padding: 60px 80px;
+      background: linear-gradient(to right, var(--aurora-1), var(--aurora-2));
+      position: relative;
+      z-index: 2;
+    }
+    .flyer-header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.4) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .brand-block {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .store-name {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.04em;
+    }
+    .brand-dot {
+      width: 20px;
+      height: 20px;
+      background: var(--accent-gold);
+      border-radius: 50%;
+      border: 4px solid var(--base-white);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+    }
+    .est {
+      font-family: 'Geist Mono', monospace;
+      font-size: 1.5rem;
+      color: var(--zinc-900);
+      opacity: 0.8;
+    }
+    .fiesta-title {
+      font-family: var(--font-display);
+      font-size: 5rem;
+      font-weight: 800;
+      color: var(--base-white);
+      letter-spacing: -0.05em;
+      line-height: 1;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .tagline-block {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .tagline {
+      font-family: var(--font-bengali);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .date-badge {
+      background: var(--glass-background);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 16px 32px;
+      border-radius: var(--radius-pill);
+      border: var(--glass-border);
+      box-shadow: var(--glass-refraction), 0 8px 32px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .date-badge .label {
+      font-family: var(--font-bengali);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .date-badge .deal {
+      font-family: var(--font-body);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    /* 2.0 — BENTO MAIN SECTION */
+    .flyer-main {
+      flex: 1;
+      padding: 60px 80px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 32px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Glass Panels Common */
+    .glass-panel {
+      background: var(--glass-background);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: var(--radius-lg);
+      border: var(--glass-border);
+      box-shadow: var(--glass-refraction), 0 10px 40px rgba(0,0,0,0.04);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-panel:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* 2.1 — Featured Panel: Large, Asymmetric Split */
+    .featured-panel {
+      grid-column: span 2;
+      grid-row: span 1;
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      align-items: center;
+      gap: 24px;
+    }
+    .featured-panel.offset-text {
+      grid-template-columns: 200px 1fr;
+    }
+    .featured-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .discount-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--aurora-1);
+      color: #FFFFFF;
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 800;
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .discount-pill strong {
+      font-size: 1.1rem;
+      font-weight: 900;
+    }
+    .prod-name {
+      font-family: var(--font-bengali);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+    .prod-desc {
+      font-family: var(--font-bengali);
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .price-old {
+      font-family: var(--font-body);
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+    .price-new {
+      font-family: var(--font-body);
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--accent-cool);
+    }
+    .price-unit {
+      font-family: var(--font-bengali);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .featured-img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      background: var(--zinc-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .featured-img-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* 2.2 — Standard Grid Tiles */
+    .prod-tile {
+      grid-column: span 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    /* Dynamic Span for visual interest */
+    .prod-tile.wide {
+      grid-column: span 2;
+      flex-direction: row;
+      align-items: center;
+    }
+    .prod-tile .img-wrap {
+      width: 100%;
+      height: 120px;
+      border-radius: var(--radius-md);
+      background: var(--teal-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    .prod-tile.wide .img-wrap {
+      width: 140px; height: 140px;
+      flex-shrink: 0;
+    }
+    .prod-tile .img-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .tile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tile-name {
+      font-family: var(--font-bengali);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+    .tile-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .tile-price {
+      font-family: var(--font-body);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .tile-price .prev {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+    .discount-tag {
+      background: var(--aurora-2);
+      color: #FFFFFF;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* 3.0 — MODERN FOOTER */
+    .flyer-footer {
+      padding: 40px 80px;
+      background: var(--zinc-900);
+      color: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    .footer-aurora {
+      position: absolute;
+      bottom: -40%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px; height: 500px;
+      background: var(--aurora-1);
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.1;
+    }
+    .cta {
+      font-family: var(--font-bengali);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .contact {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: #FFFFFF;
+      opacity: 0.8;
+    }
+
+    /* ===== PICKER MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,11,13,0.65);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--base-white);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .modal-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .modal-body {
+      padding: 32px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .upload-action {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 2px dashed #cbd5e1;
+      background: #f8fafc;
+    }
+    .upload-action input[type="file"] { display: none; }
+    .upload-btn {
+      background: var(--zinc-900);
+      color: #FFFFFF;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    .upload-action p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+    }
+    .picker-item {
+      background: #f8fafc;
+      border: 2px solid transparent;
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+    }
+    .picker-item:hover {
+      border-color: var(--aurora-1);
+      background: #f0f9ff;
+    }
+    .picker-item img {
+      width: 100%;
+      height: 90px;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .picker-item p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ===== LOADING STATE ===== */
+    .spinner-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 2000;
+    }
+    .spinner-overlay.active { display: flex; }
+    .spinner {
+      width: 50px; height: 50px;
+      border: 4px solid rgba(17, 24, 39, 0.05);
+      border-top-color: var(--zinc-900);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-overlay p {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-primary" onclick="exportPNG()">⬇ Export as high-res PNG</button>
+    <button class="btn btn-secondary" onclick="window.print()">Print / PDF</button>
+    <span style="color:var(--text-muted);font-size:0.875rem;">Click text to edit • Hover image to change</span>
+  </div>
+
+  <!-- Flyer -->
+  <div class="flyer-wrap">
+    <div class="flyer" id="flyer">
+      
+      <!-- Background Decorations -->
+      <div class="deco-bg">
+        <div class="aurora aurora-1"></div>
+        <div class="aurora aurora-2"></div>
+        <div class="aurora aurora-3"></div>
+        
+        <!-- illustrative SVG background shapes for texture -->
+        <svg class="abstract-shape deco-flower" viewBox="0 0 100 100"><path fill="var(--zinc-900)" d="M50 0C63.8 0 75 11.2 75 25C75 38.8 86.2 50 100 50C86.2 50 75 61.2 75 75C75 88.8 63.8 100 50 100C36.2 100 25 88.8 25 75C25 61.2 13.8 50 0 50C13.8 50 25 38.8 25 25C25 11.2 36.2 0 50 0Z" /></svg>
+        <svg class="abstract-shape deco-swirl" viewBox="0 0 100 100"><path fill="var(--accent-gold)" d="M10 50 A 40 40 0 1 1 50 90 A 40 40 0 0 0 10 50" opacity="0.6"/></svg>
+      </div>
+
+      <!-- Header Section -->
+      <header class="flyer-header">
+        <div class="brand-block">
+          <span class="store-name">LUCKY STORE</span>
+          <div class="brand-dot"></div>
+          <span class="est">1947</span>
+        </div>
+        <h1 class="fiesta-title">ICE CREAM FIESTA</h1>
+        <div class="tagline-block">
+          <div class="tagline" contenteditable="true">গরমে শীতল আনন্দ — আসল পোলার এবং সাভয় আইসক্রিম!</div>
+          <div class="date-badge">
+            <div class="label">অফার চলবে</div>
+            <div class="deal" contenteditable="true">১৫–৩১ জুলাই</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Bento Main Section -->
+      <section class="flyer-main">
+        
+        <!-- Featured Panel: Left-Text Split -->
+        <div class="glass-panel featured-panel offset-text">
+          <div class="featured-info">
+            <div>
+              <div class="discount-pill" contenteditable="true"><strong>৪%</strong> ছাড়</div>
+            </div>
+            <div class="prod-name" contenteditable="true">Polar Robusto</div>
+            <div class="prod-desc" contenteditable="true">প্রিমিয়াম আইসক্রিম | ভ্যানিলা</div>
+            <div class="price-row">
+              <span class="price-old">৳১২০</span>
+              <span class="price-new" contenteditable="true">৳১১৫</span>
+              <span class="price-unit">প্রতি পিস</span>
+            </div>
+          </div>
+          <div class="img-wrap featured-img-wrap" onclick="openPicker(this)">
+            <img src="../../catalog-images/polar/Robusto-Vanilla.webp" alt="Polar Robusto Vanilla">
+            <div class="img-hover"><span>🖼 Change Image</span></div>
+          </div>
+        </div>
+
+        <!-- Tile: Wide Split -->
+        <div class="glass-panel prod-tile wide">
+          <div class="img-wrap" onclick="openPicker(this)">
+            <img src="../../catalog-images/polar/chocobar-vanilla.webp" alt="Polar Chocobar Vanilla">
+            <div class="img-hover"><span>🖼 Change</span></div>
+          </div>
+          <div class="tile-info">
+            <div class="tile-name" contenteditable="true">Polar Chocobar</div>
+            <div class="tile-meta">
+              <div class="tile-price" contenteditable="true"><span class="prev">৳৩৫</span> ৳৩২</div>
+              <div class="discount-tag">৯% ছাড়</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Panel: Right-Text Split -->
+        <div class="glass-panel featured-panel">
+          <div class="img-wrap featured-img-wrap" onclick="openPicker(this)">
+            <img src="../../catalog-images/polar/cone-chocodelight.webp" alt="Polar Chocodelight Cone">
+            <div class="img-hover"><span>🖼 Change Image</span></div>
+          </div>
+          <div class="featured-info">
+            <div>
+              <div class="discount-pill" contenteditable="true"><strong>৭%</strong> ছাড়</div>
+            </div>
+            <div class="prod-name" contenteditable="true">Polar Cone Chocodelight</div>
+            <div class="price-row">
+              <span class="price-old">৳৭০</span>
+              <span class="price-new" contenteditable="true">৳৬৫</span>
+              <span class="price-unit">প্রতি পিস</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tile -->
+        <div class="glass-panel prod-tile">
+          <div class="img-wrap" onclick="openPicker(this)">
+            <img src="../../catalog-images/polar/shormalai.webp" alt="Polar Shormalai">
+            <div class="img-hover"><span>🖼 Change</span></div>
+          </div>
+          <div class="tile-info">
+            <div class="tile-name" contenteditable="true">Polar Shormalai</div>
+            <div class="tile-meta">
+              <div class="tile-price" contenteditable="true"><span class="prev">৳৩০</span> ৳২৮</div>
+              <div class="discount-tag">৭% ছাড়</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tile -->
+        <div class="glass-panel prod-tile">
+          <div class="img-wrap" onclick="openPicker(this)">
+            <img src="../../catalog-images/polar/Essora-Mixed-Berry.webp" alt="Polar Essora">
+            <div class="img-hover"><span>🖼 Change</span></div>
+          </div>
+          <div class="tile-info">
+            <div class="tile-name" contenteditable="true">Polar Essora Mixed Berry</div>
+            <div class="tile-meta">
+              <div class="tile-price" contenteditable="true"><span class="prev">৳৮০</span> ৳৭৫</div>
+              <div class="discount-tag">৬% ছাড়</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Modern Footer Section -->
+      <footer class="flyer-footer">
+        <div class="footer-aurora"></div>
+        <div class="cta" contenteditable="true">🛵 Same Day Ice Cream Delivery!</div>
+        <div class="contact">
+          <span contenteditable="true">📞 +880****4544</span>
+          <span>·</span>
+          <span contenteditable="true">🌐 luckystore1947.com</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Image Picker Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Change Product Image</h3>
+        <button class="modal-close" onclick="closePicker()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="upload-action">
+          <div class="upload-btn">Upload Image</div>
+          <p>Pick a file from your computer</p>
+          <input type="file" accept="image/*" onchange="handleFileUpload(event)">
+        </label>
+        <div class="picker-grid" id="catalogGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="spinner-overlay" id="spinner">
+    <div class="spinner"></div>
+    <p>Generating PNG... this might take a second</p>
+  </div>
+
+  <script>
+    const catalog = [
+      { name: "Robusto Vanilla", src: "../../catalog-images/polar/Robusto-Vanilla.webp" },
+      { name: "Cone Chocodelight", src: "../../catalog-images/polar/cone-chocodelight.webp" },
+      { name: "Chocobar Vanilla", src: "../../catalog-images/polar/chocobar-vanilla.webp" },
+      { name: "Ice Lolly Orange", src: "../../catalog-images/polar/ice-lolly-orange.webp" },
+      { name: "Shormalai", src: "../../catalog-images/polar/shormalai.webp" },
+      { name: "Essora Mixed Berry", src: "../../catalog-images/polar/Essora-Mixed-Berry.webp" },
+      { name: "Tornado Stick", src: "../../catalog-images/polar/stick-tornado-strawberry.webp" },
+      { name: "Hazelnut Cone", src: "../../catalog-images/polar/cone-carnival-hazelnut.webp" },
+    ];
+
+    let targetImgElement = null;
+
+    function openPicker(imgWrap) {
+      targetImgElement = imgWrap.querySelector('img');
+      const grid = document.getElementById('catalogGrid');
+      grid.innerHTML = catalog.map(p => `
+        <div class="picker-item" onclick="selectCatalogImage('${p.src}', '${p.name}')">
+          <img src="${p.src}" alt="${p.name}" loading="lazy">
+          <p>${p.name}</p>
+        </div>
+      `).join('');
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closePicker() {
+      document.getElementById('modal').classList.remove('active');
+      targetImgElement = null;
+    }
+
+    function selectCatalogImage(src, name) {
+      if (targetImgElement) {
+        targetImgElement.src = src;
+        targetImgElement.alt = name;
+      }
+      closePicker();
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file || !targetImgElement) return;
+      const reader = new FileReader();
+      reader.onload = (readerE) => {
+        targetImgElement.src = readerE.target.result;
+        targetImgElement.alt = file.name;
+        closePicker();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function exportPNG() {
+      const flyer = document.getElementById('flyer');
+      const spinner = document.getElementById('spinner');
+      spinner.classList.add('active');
+
+      try {
+        const canvas = await html2canvas(flyer, {
+          scale: 2.5, // 2700px width for printing / hi-res display
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#FFFFFF',
+          logging: false,
+          onclone: (doc) => {
+            // Hide hovers/editable indicators in the clone
+            doc.querySelectorAll('.img-hover').forEach(el => el.style.opacity = '0');
+            doc.querySelectorAll('. abstract-shape').forEach(el => el.style.opacity = '0.04');
+          }
+        });
+
+        const link = document.createElement('a');
+        link.download = `luckystore-icecreamfiesta-${new Date().getTime()}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+      } catch (err) {
+        console.error('Export failed:', err);
+        alert('PNG export failed. You can try Print → Save as PDF instead.');
+      } finally {
+        spinner.classList.remove('active');
+      }
+    }
+
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) closePicker();
+    });
+  </script>
+</body>
+</html>

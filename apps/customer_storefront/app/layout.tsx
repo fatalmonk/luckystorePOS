@@ -7,23 +7,24 @@ import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
 import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
+import { ThemeProvider } from './components/providers/ThemeProvider';
 
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',
-  display: 'optional',
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
-  display: 'optional',
+  display: 'swap',
 });
 
 const notoBengali = Noto_Sans_Bengali({
   subsets: ['bengali'],
   variable: '--font-bengali',
-  display: 'optional',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -90,7 +91,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#ffffff',
 };
 
 export default function RootLayout({
@@ -102,7 +102,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
+        <meta name="theme-color" content="var(--color-paper)" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('lucky-theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}if(t==='dark')document.documentElement.dataset.theme='dark';})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -143,7 +149,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased font-body pb-[60px] md:pb-0" suppressHydrationWarning>
+      <body className="antialiased font-body" suppressHydrationWarning>
         {/* Google Analytics — deferred to idle time, never blocks render or layout */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"
@@ -159,15 +165,17 @@ export default function RootLayout({
         </Script>
         <WebMCPInit />
         <AuthProvider>
-          <CartProvider>
-            <ToastProvider>
-              <CartSheetProvider>
-                <div className="app-container">
-                  {children}
-                </div>
-              </CartSheetProvider>
-            </ToastProvider>
-          </CartProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <ToastProvider>
+                <CartSheetProvider>
+                  <div className="app-container">
+                    {children}
+                  </div>
+                </CartSheetProvider>
+              </ToastProvider>
+            </CartProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
