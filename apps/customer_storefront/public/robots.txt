@@ -8,6 +8,7 @@ Disallow: /api/
 Disallow: /order/
 Disallow: /checkout/
 Disallow: /cart/
+Disallow: /search?*
 
 # --- AI Crawlers: allowed (search indexing) ---
 User-agent: GPTBot
