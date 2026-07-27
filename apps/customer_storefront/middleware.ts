@@ -50,10 +50,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except static assets, API routes, and well-known
-     * files (which have their own content types).
-     */
-    '/((?!_next/static|_next/image|api|favicon|icon|opengraph|twitter|logo|apple|robots\\.txt|sitemap|\\.well-known|auth\\.md).*)',
+    '/((?!_next/static|_next/image|api|robots\\.txt|sitemap|site\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
   ],
 };
