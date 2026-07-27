@@ -10,9 +10,9 @@ async function openFirstProduct(page: Page) {
 }
 
 async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
-  const addButton = page.locator('button:has-text("Add to Cart")');
-  const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
-  const alreadyInCart = page.locator('button[aria-label="Increase quantity"]');
+  const addButton = page.locator('button:has-text("Add to Cart")').first();
+  const wishlistButton = page.locator('button:has-text("Notify Me When Back")').first();
+  const alreadyInCart = page.locator('button[aria-label="Increase quantity"]').first();
 
   try {
     return await Promise.race([
@@ -32,11 +32,11 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
     return false;
   }
 
-  const addButton = page.locator('button:has-text("Add to Cart")');
+  const addButton = page.locator('button:has-text("Add to Cart")').first();
   if (await addButton.isVisible()) {
     await addButton.click();
   }
-  await page.locator('[aria-label*="items in cart"]').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('[aria-label*="items in cart"]').first().waitFor({ state: 'visible', timeout: 5000 });
   return true;
 }
 
