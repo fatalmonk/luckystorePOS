@@ -51,7 +51,9 @@ export function responsiveHeroBanner(base: string, alt: string): ResponsiveImage
     sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px',
     sources: [
       {
-        srcSet: srcSet(`/banners/${base}.avif 600w`),
+        srcSet: srcSet(
+          `/banners/${base}_400.avif 400w, /banners/${base}_600.avif 600w, /banners/${base}_800.avif 800w, /banners/${base}_1200.avif 1200w`
+        ),
         type: 'image/avif',
       },
     ],
