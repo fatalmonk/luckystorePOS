@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 
-const svgPath = path.resolve('apps/customer_storefront/public/favicon.svg');
+const svgPath = path.resolve('apps/customer_storefront/public/favicon-inverse.svg');
 const publicDir = path.resolve('apps/customer_storefront/public');
 
 async function renderIcons() {
@@ -11,14 +11,14 @@ async function renderIcons() {
     process.exit(1);
   }
 
+  // Update favicon.svg with inverse dark handles content
+  const svgContent = fs.readFileSync(svgPath, 'utf-8');
+  fs.writeFileSync(path.join(publicDir, 'favicon.svg'), svgContent);
+  console.log('✓ Updated public/favicon.svg from favicon-inverse.svg');
 
-
-  // Sizes to render with padding (Google Search requires multiples of 48px: 48x48, 96x96, 192x192)
+  // Sizes to render with padding
   const targets = [
     { name: 'favicon-32x32.png', size: 32, padding: 4 },
-    { name: 'favicon-48x48.png', size: 48, padding: 6 },
-    { name: 'icon.png', size: 48, padding: 6 },
-    { name: 'favicon.ico', size: 48, padding: 6 },
     { name: 'apple-touch-icon.png', size: 180, padding: 24 },
     { name: 'icon-192x192.png', size: 192, padding: 24 },
     { name: 'icon-512x512.png', size: 512, padding: 64 },
@@ -28,6 +28,7 @@ async function renderIcons() {
     const targetPath = path.join(publicDir, name);
     const innerSize = size - padding * 2;
 
+    // Render SVG at high res then fit in padded canvas
     const renderedBuffer = await sharp(svgPath, { density: 300 })
       .resize(innerSize, innerSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .toBuffer();
