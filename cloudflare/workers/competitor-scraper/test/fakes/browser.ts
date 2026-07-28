@@ -9,11 +9,19 @@ export interface FakeBrowser extends BrowserBinding {
   state: { browserClosed: boolean; pageClosed: boolean };
 }
 
-export function createFakeBrowser(htmlByUrl: Map<string, string>): FakeBrowser {
+export function createFakeBrowser(
+  htmlByUrl: Map<string, string>,
+  options?: { launchFailureCount?: number },
+): FakeBrowser {
   const state = { browserClosed: false, pageClosed: false };
+  let launches = 0;
   return {
     state,
     launch: async () => {
+      launches += 1;
+      if (options?.launchFailureCount !== undefined && launches <= options.launchFailureCount) {
+        throw new Error(`simulated browser launch failure ${launches}`);
+      }
       return {
         close: async () => {
           state.browserClosed = true;

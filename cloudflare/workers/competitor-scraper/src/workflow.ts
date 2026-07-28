@@ -44,7 +44,6 @@ export class CompetitorScrapeWorkflow extends WorkflowEntrypoint<Env, WorkflowPa
   override async run(event: Readonly<WorkflowEvent<WorkflowParams>>, step: WorkflowStep): Promise<RunSummary> {
     const env = this.env;
     const log = createLogger();
-    const version = workflowVersion(env.WORKFLOW_VERSION);
     const scheduledAt =
       event.payload.scheduledAt ??
       new Date(event.schedule?.scheduledTime ?? event.timestamp).toISOString();
@@ -52,17 +51,17 @@ export class CompetitorScrapeWorkflow extends WorkflowEntrypoint<Env, WorkflowPa
     const gate = evaluateRunGate(env);
     if (gate) {
       log.info({ message: `${gate}; no-op` });
-      return buildNoOpSummary(gate, scheduledAt, version);
+      return buildNoOpSummary(gate, scheduledAt, workflowVersion(env.WORKFLOW_VERSION));
     }
 
-    const runKey = deterministicRunKey(scheduledAt, version);
+    const runKey = deterministicRunKey(scheduledAt, workflowVersion(env.WORKFLOW_VERSION));
     const storeIds = parseStoreAllowlist(env.STORE_ALLOWLIST);
 
     log.info({
       message: "workflow started",
       run_key: runKey,
       scheduled_at: scheduledAt,
-      workflow_version: version,
+      workflow_version: workflowVersion(env.WORKFLOW_VERSION),
       store_count: storeIds.length,
     });
 
@@ -71,32 +70,49 @@ export class CompetitorScrapeWorkflow extends WorkflowEntrypoint<Env, WorkflowPa
     if (isSourceApproved(env, "shwapno")) adapters.push({ name: "shwapno", run: runShwapnoAdapter });
 
     const perCompetitorResults = new Map<CompetitorName, StepResult>();
-    const browser: BrowserBinding = {
-      launch: async () =>
-        (await puppeteer.launch(env.BROWSER)) as unknown as Awaited<
-          ReturnType<BrowserBinding["launch"]>
-        >,
-    };
+    // Use env.BROWSER directly if it's already a BrowserBinding (test fake), otherwise wrap puppeteer.launch for production
+    const browser: BrowserBinding =
+      "launch" in env.BROWSER && typeof env.BROWSER.launch === "function"
+        ? (env.BROWSER as unknown as BrowserBinding)
+        : {
+            launch: async () =>
+              (await puppeteer.launch(env.BROWSER)) as unknown as Awaited<
+                ReturnType<BrowserBinding["launch"]>
+              >,
+          };
 
     for (const adapter of adapters) {
-      const result = await step.do(
-        `scrape-${adapter.name}`,
-        { retries: { limit: 2, delay: "5 seconds" } },
-        async () => {
-          const scrapeLog = createLogger(runKey);
-          const adapterResult = await adapter.run(browser, scrapeLog);
-          return {
-            competitor: adapterResult.competitor,
-            error: adapterResult.error,
-            products: adapterResult.products as WorkflowProduct[],
-          } satisfies StepResult;
-        },
-      );
-      perCompetitorResults.set(adapter.name, result);
+      try {
+        const result = await step.do(
+          `scrape-${adapter.name}`,
+          { retries: { limit: 2, delay: "5 seconds" } },
+          async () => {
+            const scrapeLog = createLogger(runKey);
+            const adapterResult = await adapter.run(browser, scrapeLog);
+            if (adapterResult.error) {
+              throw new Error(adapterResult.error);
+            }
+            return {
+              competitor: adapterResult.competitor,
+              error: null,
+              products: adapterResult.products as WorkflowProduct[],
+            } satisfies StepResult;
+          },
+        );
+        perCompetitorResults.set(adapter.name, result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        log.error({ message: "source scrape failed after retries", competitor: adapter.name, error: message });
+        perCompetitorResults.set(adapter.name, {
+          competitor: adapter.name,
+          products: [],
+          error: message,
+        });
+      }
     }
 
-    const supabase = createSupabaseClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-    const summary = buildEmptySummary(runKey, scheduledAt, version);
+    const supabase = env.SUPABASE_CLIENT ?? createSupabaseClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+    const summary = buildEmptySummary(runKey, scheduledAt, workflowVersion(env.WORKFLOW_VERSION));
 
     for (const [competitor, scrapeResult] of perCompetitorResults) {
       if (scrapeResult.error) {

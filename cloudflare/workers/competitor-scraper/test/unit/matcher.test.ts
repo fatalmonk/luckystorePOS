@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findBestMatch, matchAll, parsePackageInfo, canonicalUnit } from "../../src/matcher.ts";
+import { findBestMatch, matchAll, parsePackageInfo, canonicalUnit, parseCountableQuantity, extractQuantity } from "../../src/matcher.ts";
 import type { MatchableItem, NormalizedProduct } from "../../src/types.ts";
 
 describe("matcher", () => {
@@ -54,8 +54,8 @@ describe("matcher", () => {
   });
 
   it("rejects when package size mismatches", () => {
-    const product = makeProduct({ name: "Pran Potato Crackers 50 gm" });
-    const item = makeItem({ name: "Pran Potato Crackers 50 gm", package_quantity: 100 });
+    const product = makeProduct({ name: "Pran Potato Crackers 50 gm", package_quantity: 50, package_unit: "g" });
+    const item = makeItem({ name: "Pran Potato Crackers 50 gm", package_quantity: 100, package_unit: "g" });
     const result = findBestMatch(product, [item]);
     expect(result.item_id).toBeNull();
   });
@@ -100,10 +100,50 @@ describe("matcher", () => {
     expect(results.every((r) => r.result.item_id !== null)).toBe(true);
   });
 
+  it("matches pack-compatible items", () => {
+    const product = makeProduct({ name: "Nestle Maggi Noodles 4 Pack" });
+    const item = makeItem({ name: "Nestle Maggi Noodles 4 Pack" });
+    const result = findBestMatch(product, [item]);
+    expect(result.item_id).toBe("item-1");
+  });
+
+  it("rejects pack quantity mismatch", () => {
+    const product = makeProduct({ name: "Nestle Maggi Noodles 4 Pack" });
+    const item = makeItem({ name: "Nestle Maggi Noodles 12 Pack" });
+    const result = findBestMatch(product, [item]);
+    expect(result.item_id).toBeNull();
+  });
+
+  it("rejects weight vs count family mismatch", () => {
+    const product = makeProduct({ name: "Pran Potato Crackers 50 gm" });
+    const item = makeItem({ name: "Pran Potato Crackers 4 Pack" });
+    const result = findBestMatch(product, [item]);
+    expect(result.item_id).toBeNull();
+  });
+
+  it("rejects missing size on one side", () => {
+    const product = makeProduct({ name: "Pran Potato Crackers 50 gm" });
+    const item = makeItem({ name: "Pran Potato Crackers" });
+    const result = findBestMatch(product, [item]);
+    expect(result.item_id).toBeNull();
+  });
+
   it("parses package info", () => {
     expect(parsePackageInfo("Rice 1 kg")).toEqual({ quantity: 1, unit: "kg" });
     expect(parsePackageInfo("Rice 1KG")).toEqual({ quantity: 1, unit: "kg" });
     expect(parsePackageInfo("Milk")).toEqual({ quantity: null, unit: null });
+  });
+
+  it("parses countable quantities", () => {
+    expect(parseCountableQuantity("4 Pack")).toBe(4);
+    expect(parseCountableQuantity("6 bottles")).toBe(6);
+    expect(parseCountableQuantity("Milk")).toBeNull();
+  });
+
+  it("extracts any quantity", () => {
+    expect(extractQuantity("Rice 1 kg")).toBe(1);
+    expect(extractQuantity("4 Pack")).toBe(4);
+    expect(extractQuantity("Milk")).toBeNull();
   });
 
   it("canonicalizes units", () => {

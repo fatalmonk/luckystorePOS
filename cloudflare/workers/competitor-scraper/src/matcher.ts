@@ -13,7 +13,7 @@ export function normalizeName(name: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\b(kg|g|gm|ml|l|liter|litre|pack|pcs|piece|pieces|bottle|can|box|bag|sachet)\b/g, " ")
+    .replace(/\b(kg|g|gm|ml|l|liter|litre|pack|pcs|piece|pieces|bottle|bottles|can|cans|box|boxes|bag|bags|sachet|sachets)\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -52,6 +52,38 @@ export function parsePackageInfo(name: string): { quantity: number | null; unit:
   return { quantity, unit };
 }
 
+const COUNTABLE_UNITS = new Set([
+  "pack",
+  "pcs",
+  "piece",
+  "pieces",
+  "bottle",
+  "bottles",
+  "can",
+  "cans",
+  "box",
+  "boxes",
+  "bag",
+  "bags",
+  "sachet",
+  "sachets",
+]);
+
+export function parseCountableQuantity(name: string): number | null {
+  const match = name.match(/(\d+(?:\.\d+)?)\s*(pack|pcs|piece|pieces|bottles|bottle|cans|can|boxes|box|bags|bag|sachets|sachet)\b/i);
+  if (!match) return null;
+  const rawValue = match[1];
+  if (rawValue === undefined) return null;
+  const value = Number.parseFloat(rawValue);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+export function extractQuantity(name: string): number | null {
+  const weight = parsePackageInfo(name).quantity;
+  if (weight !== null) return weight;
+  return parseCountableQuantity(name);
+}
+
 function toCanonicalWeight(quantity: number, unit: string): number | null {
   const u = unit.toLowerCase();
   if (["kg"].includes(u)) return quantity * 1000;
@@ -66,61 +98,103 @@ function toCanonicalVolume(quantity: number, unit: string): number | null {
   return null;
 }
 
-function hasSize(item: MatchableItem): boolean {
-  const parsed = parsePackageInfo(item.name);
-  return (
-    item.package_quantity !== null ||
-    item.package_unit !== null ||
-    (parsed.quantity !== null && parsed.unit !== null)
-  );
-}
-
-function itemCanonicalSize(item: MatchableItem): CanonicalSize | null {
+function itemCanonicalWeight(item: MatchableItem): number | null {
   if (item.package_quantity !== null && item.package_unit !== null) {
-    const weight = toCanonicalWeight(item.package_quantity, item.package_unit);
-    if (weight !== null) return { grams: weight, milliliters: null };
-    const volume = toCanonicalVolume(item.package_quantity, item.package_unit);
-    if (volume !== null) return { grams: null, milliliters: volume };
-  }
-  if (item.package_unit !== null) {
-    return canonicalUnit(item.package_unit);
-  }
-  if (item.package_quantity !== null) {
-    return { grams: item.package_quantity, milliliters: null };
+    const w = toCanonicalWeight(item.package_quantity, item.package_unit);
+    if (w !== null) return w;
   }
   const parsed = parsePackageInfo(item.name);
   if (parsed.quantity !== null && parsed.unit !== null) {
-    const weight = toCanonicalWeight(parsed.quantity, parsed.unit);
-    if (weight !== null) return { grams: weight, milliliters: null };
-    const volume = toCanonicalVolume(parsed.quantity, parsed.unit);
-    if (volume !== null) return { grams: null, milliliters: volume };
+    return toCanonicalWeight(parsed.quantity, parsed.unit);
   }
   return null;
 }
 
+function itemCanonicalVolume(item: MatchableItem): number | null {
+  if (item.package_quantity !== null && item.package_unit !== null) {
+    const v = toCanonicalVolume(item.package_quantity, item.package_unit);
+    if (v !== null) return v;
+  }
+  const parsed = parsePackageInfo(item.name);
+  if (parsed.quantity !== null && parsed.unit !== null) {
+    return toCanonicalVolume(parsed.quantity, parsed.unit);
+  }
+  return null;
+}
+
+function productQuantity(product: NormalizedProduct): number | null {
+  if (product.package_quantity !== null) return product.package_quantity;
+  return extractQuantity(product.name);
+}
+
+function productUnitFamily(product: NormalizedProduct): "weight" | "volume" | "count" | null {
+  const parsed = parsePackageInfo(product.name);
+  if (parsed.unit !== null) {
+    if (["kg", "g", "gm"].includes(parsed.unit)) return "weight";
+    if (["ml", "l", "liter", "litre"].includes(parsed.unit)) return "volume";
+  }
+  if (product.package_unit !== null) {
+    const u = product.package_unit.toLowerCase();
+    if (["kg", "g", "gm"].includes(u)) return "weight";
+    if (["ml", "l", "liter", "litre"].includes(u)) return "volume";
+    if (COUNTABLE_UNITS.has(u)) return "count";
+  }
+  if (parseCountableQuantity(product.name) !== null) return "count";
+  return null;
+}
+
+function itemUnitFamily(item: MatchableItem): "weight" | "volume" | "count" | null {
+  const parsed = parsePackageInfo(item.name);
+  if (parsed.unit !== null) {
+    if (["kg", "g", "gm"].includes(parsed.unit)) return "weight";
+    if (["ml", "l", "liter", "litre"].includes(parsed.unit)) return "volume";
+  }
+  if (item.package_unit !== null) {
+    const u = item.package_unit.toLowerCase();
+    if (["kg", "g", "gm"].includes(u)) return "weight";
+    if (["ml", "l", "liter", "litre"].includes(u)) return "volume";
+    if (COUNTABLE_UNITS.has(u)) return "count";
+  }
+  if (parseCountableQuantity(item.name) !== null) return "count";
+  return null;
+}
+
 function isCompatibleSize(item: MatchableItem, product: NormalizedProduct): boolean {
+  const prodQty = productQuantity(product);
+  const itemQty = extractQuantity(item.name) ?? item.package_quantity;
+  const prodFamily = productUnitFamily(product);
+  const itemFamily = itemUnitFamily(item);
+
+  // If neither side declares size, allow fuzzy matching.
+  if (prodQty === null && itemQty === null) return true;
+  // If one side declares size and the other doesn't, reject conservatively.
+  if (prodQty === null || itemQty === null) return false;
+  // Families must be compatible (weight↔weight, volume↔volume, count↔count).
+  if (prodFamily !== null && itemFamily !== null && prodFamily !== itemFamily) return false;
+
+  // Weight/volume: convert both to canonical and compare within 1 unit tolerance.
   const prodParsed = parsePackageInfo(product.name);
-  const itemHasSize = hasSize(item);
-
-  if (prodParsed.quantity === null || prodParsed.unit === null) {
-    return !itemHasSize;
-  }
-  if (!itemHasSize) return false;
-
-  const itemCanonical = itemCanonicalSize(item);
-  if (!itemCanonical) return false;
-
-  const prodWeight = toCanonicalWeight(prodParsed.quantity, prodParsed.unit);
-  const prodVolume = toCanonicalVolume(prodParsed.quantity, prodParsed.unit);
-
-  if (prodWeight !== null && itemCanonical.grams !== null) {
-    return Math.abs(prodWeight - itemCanonical.grams) < 1;
-  }
-  if (prodVolume !== null && itemCanonical.milliliters !== null) {
-    return Math.abs(prodVolume - itemCanonical.milliliters) < 1;
+  if (prodParsed.quantity !== null && prodParsed.unit !== null) {
+    const prodWeight = toCanonicalWeight(prodParsed.quantity, prodParsed.unit);
+    const itemWeight = itemCanonicalWeight(item);
+    if (prodWeight !== null && itemWeight !== null) {
+      return Math.abs(prodWeight - itemWeight) < 1;
+    }
+    const prodVolume = toCanonicalVolume(prodParsed.quantity, prodParsed.unit);
+    const itemVolume = itemCanonicalVolume(item);
+    if (prodVolume !== null && itemVolume !== null) {
+      return Math.abs(prodVolume - itemVolume) < 1;
+    }
+    // Same family but unconvertible units (shouldn't happen with supported units).
+    return false;
   }
 
-  return false;
+  if (prodFamily === "count" || itemFamily === "count") {
+    return Math.abs(prodQty - itemQty) < 1;
+  }
+
+  // Fallback: both declared explicit numeric quantities without clear family.
+  return Math.abs(prodQty - itemQty) < 1;
 }
 
 function levenshtein(a: string, b: string): number {

@@ -55,4 +55,13 @@ describe("adapters", () => {
     expect(browser.state.pageClosed).toBe(true);
     expect(browser.state.browserClosed).toBe(true);
   });
+
+  it("closes browser after a failed scrape", async () => {
+    const html = new Map([["https://chaldal.com/fresh-vegetable", '<div class="productV2Catalog"></div>']]);
+    const browser = createFakeBrowser(html);
+    const result = await runChaldalAdapter(browser, createLogger());
+    expect(result.error).not.toBeNull();
+    expect(browser.state.pageClosed).toBe(true);
+    expect(browser.state.browserClosed).toBe(true);
+  });
 });
