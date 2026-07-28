@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { KeyRound, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
+import { Button } from '@/components';
+import { Card } from '@/components';
+import { Input } from '@/components';
 
 type RecoveryState = 'checking' | 'ready' | 'saving' | 'success' | 'error';
 

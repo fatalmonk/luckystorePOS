@@ -2,8 +2,8 @@ import type { InventoryItem } from '@/types/inventory';
 import React, { useState, useCallback } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { Pencil, Package } from 'lucide-react';
-import { EditableCell } from '../../components/ui/EditableCell';
-import { CategoryPicker } from '@/components/inventory/CategoryPicker';
+import { EditableCell } from '@/components';
+import { CategoryPicker } from '@/components';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 

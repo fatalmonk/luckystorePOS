@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, Search } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
+import { useNotify } from '@/components';
 import { addCompetitorPrice, fetchCompetitorNames } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
 import type { CompetitorPriceFormData } from '../../lib/api/types';

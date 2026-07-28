@@ -3,13 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import { Modal } from '../../components/ui/Modal';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { SkeletonBlock } from '../../components/PageState';
+import { useNotify } from '@/components';
+import { PageHeader } from '@/components';
+import { Button } from '@/components';
+import { Card } from '@/components';
+import { Modal } from '@/components';
+import { ConfirmDialog } from '@/components';
+import { SkeletonBlock } from '@/components';
 import {
   Plus,
   Pencil,
@@ -23,7 +23,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
-import { ImageUploadZone } from '../../components/inventory/ImageUploadZone';
+import { ImageUploadZone } from '@/components';
 import { uploadCategoryImage } from '../../lib/images';
 
 interface Category {

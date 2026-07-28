@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ImportWizard } from '../../components/ImportWizard';
 import { supabase } from "@/lib/supabase";
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
+import { useNotify } from '@/components';
 import { useTranslation } from 'react-i18next';
 
 const partySchema = z.object({

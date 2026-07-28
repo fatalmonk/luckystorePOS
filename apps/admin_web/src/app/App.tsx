@@ -1,14 +1,14 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './QueryProvider';
-import { Layout } from '../components/Layout';
+import { Layout } from '@/components';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { AuthGuard } from './AuthGuard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { OAuthConsentPage } from '../features/oauth/OAuthConsentPage';
-import { NotificationProvider } from '../components/Notification';
-import { OfflineIndicator } from '../components/OfflineIndicator';
-import { InstallPrompt } from '../components/InstallPrompt';
+import { NotificationProvider } from '@/components';
+import { OfflineIndicator } from '@/components';
+import { InstallPrompt } from '@/components';
 import { AuthProvider } from '../lib/AuthContext';
 import { ResetPasswordPage } from './ResetPasswordPage';
 

@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { SkeletonBlock } from '../../components/PageState';
+import { SkeletonBlock } from '@/components';
 import type { CashflowData } from '../../lib/api/domains/dashboard';
 
 export const CashflowChart = () => {

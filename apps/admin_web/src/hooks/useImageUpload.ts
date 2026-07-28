@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { deleteFromR2, extractR2Key } from '../lib/r2';
-import { useNotify } from '../components/NotificationContext';
+import { useNotify } from '@/components';
 import { uploadProcessedImage } from '../lib/images';
 
 /**

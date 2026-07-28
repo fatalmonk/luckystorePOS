@@ -8,8 +8,8 @@ import {
   LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
 import { formatCurrency } from '../../lib/format';
-import { SkeletonBlock } from '../../components/PageState';
-import { FinanceMetricCard } from '../../components/data-display/FinanceMetricCard';
+import { SkeletonBlock } from '@/components';
+import { FinanceMetricCard } from '@/components';
 import { Wallet, TrendingUp, DollarSign } from 'lucide-react';
 
 const CHART_COLORS = [

@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
+import { ErrorState, EmptyState, SkeletonBlock } from '@/components';
 import { History, ArrowLeft, ArrowUp, ArrowDown, User, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { PageHeader } from '@/components';
+import { Button } from '@/components';
+import { Card } from '@/components';
 
 interface StockHistoryEntry {
   id: string;

@@ -4,11 +4,11 @@ import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
 import { Plus } from 'lucide-react';
-import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '../../components/PageState';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Drawer } from '../../components/ui/Drawer';
+import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '@/components';
+import { PageHeader } from '@/components';
+import { Drawer } from '@/components';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
+import { useNotify } from '@/components';
 import { formatCurrency } from '../../lib/format';
 
 interface LedgerPageConfig {

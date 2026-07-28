@@ -5,31 +5,31 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState } from '../../components/PageState';
+import { ErrorState } from '@/components';
 import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, TrendingUp, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus, Filter, X } from 'lucide-react';
-import { useNotify } from '../../components/NotificationContext';
+import { useNotify } from '@/components';
 import { downloadCSV } from '../../lib/format';
 import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
 import { ProductUpdateDrawer } from './ProductUpdateDrawer';
 import { ProductAddModal } from './AddProductModal';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useDebounce } from '../../hooks/useDebounce';
-import { useInventoryEditing } from '../../hooks/useInventoryEditing';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { useDebounce } from '@/hooks';
+import { useInventoryEditing } from '@/hooks';
+import { PageHeader } from '@/components';
+import { Button } from '@/components';
+import { Card } from '@/components';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 import { ProductCardSkeletonGrid, SkeletonBlock } from '../../components/Skeleton';
-import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
-import { InventoryListTable } from '../../components/inventory/InventoryListTable';
+import { AnimatedMetric } from '@/components';
+import { InventoryListTable } from '@/components';
 import { InventoryProductCard } from './InventoryProductCard';
-import { BulkEditBar } from '../../components/inventory/BulkEditBar';
-import { BulkPriceModal } from '../../components/inventory/BulkPriceModal';
-import { BulkStockModal } from '../../components/inventory/BulkStockModal';
-import { BarcodeScannerModal } from '../../components/inventory/BarcodeScannerModal';
-import { useInventoryBulkActions } from '../../hooks/useInventoryBulkActions';
-import { AnalyticsWidgets } from '../../components/inventory/AnalyticsWidgets';
-import { InventoryFilterToolbar } from '../../components/inventory/InventoryFilterToolbar';
+import { BulkEditBar } from '@/components';
+import { BulkPriceModal } from '@/components';
+import { BulkStockModal } from '@/components';
+import { BarcodeScannerModal } from '@/components';
+import { useInventoryBulkActions } from '@/hooks';
+import { AnalyticsWidgets } from '@/components';
+import { InventoryFilterToolbar } from '@/components';
 
 export function InventoryListPage() {
   const { storeId, tenantId } = useAuth();
@@ -242,7 +242,7 @@ export function InventoryListPage() {
           return 0;
       }
     });
-  }, [inventory, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
+  }, [inventory, categories, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
 
   const stats = useMemo(() => {
     const all = inventory ?? [];

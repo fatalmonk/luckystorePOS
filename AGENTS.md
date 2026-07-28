@@ -65,17 +65,18 @@ The following remain prohibited under Phase 1A:
 ### Read-Only Inspection (Phase 1A)
 - `git status`
 - `git diff`
-- `git diff --stat`
-- `git log` (with optional `--oneline`, `--name-only`, `-n <N>`)
+- `git diff --stat` → prefer `git diff` or `rtk git diff --name-status` for change lists
+- `git log` (with optional `--oneline`, `--name-only`, `-n <N>`) → prefer `rtk git log --oneline --name-status`
 - `git show <ref>`
 - `rg <pattern> <path>` — targeted ripgrep search (no broad `rg .` scans)
-- `sed -n '<range>' <file>` — read-only print (no `-i` in-place edits)
-- `cat <file>` — read file contents (never on `.env` or credential files)
-- `head -n <N> <file>` / `tail -n <N> <file>` — read file excerpts
+- `rtk read <file> <offset> <limit>` — preferred over `sed -n`, `nl -ba`, and `cat` for file reads
+- `sed -n '<range>' <file>` — read-only print; use `rtk read` instead when possible
+- `cat <file>` — read file contents; use `rtk read` instead when possible
+- `head -n <N> <file>` / `tail -n <N> <file>` — read file excerpts; prefer `rtk read` with offset/limit
 
 ### Implementation & Validation (Phase 1)
 - `node scripts/security/secret_scan.js`
-- `npm run lint`
-- `npm run build`
+- `npm run lint` → prefer `rtk npm run lint` or the project-specific wrapper if available
+- `npm run build` → prefer `rtk npm run build --` or `rtk next build --` for Next.js apps; build logs compress much better under RTK filters
 - `flutter analyze`
 - `flutter test`

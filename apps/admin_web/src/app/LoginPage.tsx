@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { supabase } from "@/lib/supabase";
 import { LogIn, ShoppingBag } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
+import { Button } from '@/components';
+import { Input } from '@/components';
+import { Card } from '@/components';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');

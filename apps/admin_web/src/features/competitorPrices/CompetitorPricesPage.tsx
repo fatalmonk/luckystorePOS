@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TrendingUp, Plus, Trash2, ExternalLink, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
-import { DataTable, Column } from '../../components/data-display/DataTable';
+import { useNotify } from '@/components';
+import { DataTable, Column } from '@/components';
 import {
   fetchCompetitorPrices,
   fetchPriceAlerts,

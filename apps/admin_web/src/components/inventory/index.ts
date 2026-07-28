@@ -1,1 +1,13 @@
+export { AnalyticsWidgets } from './AnalyticsWidgets';
+export { BarcodeScannerModal } from './BarcodeScannerModal';
+export { BulkEditBar } from './BulkEditBar';
+export { BulkPriceModal } from './BulkPriceModal';
+export { BulkStockModal } from './BulkStockModal';
 export { CategoryPicker } from './CategoryPicker';
+export { ImageUploadZone } from './ImageUploadZone';
+export { InventoryFilterToolbar } from './InventoryFilterToolbar';
+export { InventoryListTable } from './InventoryListTable';
+export { InventoryListTableRow } from './InventoryListTableRow';
+export { PriceHistoryModal } from './PriceHistoryModal';
+export { SmartPricingEditor } from './SmartPricingEditor';
+export { StatusBadge, StatusBadgeStyles } from './StatusBadge';
