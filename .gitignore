@@ -276,6 +276,9 @@ lucky-store-brand-guidelines/**/*.jpeg
 lucky-store-brand-guidelines/**/*.webp
 lucky-store-brand-guidelines/**/*.html
 
+# Local Canva logo exports — keep outside repository history
+lucky-store-brand-guidelines/assets/logo/canva-svg/
+
 
 .hermes/
 
