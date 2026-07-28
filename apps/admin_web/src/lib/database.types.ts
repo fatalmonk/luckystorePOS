@@ -443,7 +443,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          competitor_key?: string
+          competitor_key: string
           competitor_name: string
           competitor_original_price?: number | null
           competitor_price: number
@@ -460,11 +460,11 @@ export type Database = {
           manual_override_reason?: string | null
           match_confidence?: number | null
           match_metadata?: Json
-          matcher_version?: string
+          matcher_version: string
           observation_key?: string | null
           our_price?: number | null
           price_gap_percent?: number | null
-          product_name?: string
+          product_name: string
           product_sku?: string | null
           raw_data?: Json | null
           scrape_batch_id?: string | null
@@ -479,7 +479,7 @@ export type Database = {
           competitor_key?: string
           competitor_name?: string
           competitor_original_price?: number | null
-          competitor_price?: number | null
+          competitor_price?: number
           competitor_product_id?: string | null
           competitor_product_url?: string | null
           created_at?: string

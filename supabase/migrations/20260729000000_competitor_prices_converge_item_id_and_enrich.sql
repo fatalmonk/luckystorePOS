@@ -490,6 +490,7 @@ DECLARE
   v_inserted integer := 0;
   v_duplicates integer := 0;
   v_rejected integer := 0;
+  v_cleaned integer;
 BEGIN
   IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role' THEN
     RAISE EXCEPTION 'service_role required'
@@ -639,11 +640,16 @@ BEGIN
     updated_at = now()
   WHERE id = v_run_id;
 
+  -- Automatically purge scraper rows strictly older than 90 days.
+  -- Manual rows are never deleted.
+  v_cleaned := public.cleanup_old_competitor_prices(90);
+
   RETURN jsonb_build_object(
     'run_id', v_run_id::text,
     'inserted', v_inserted,
     'duplicates', v_duplicates,
-    'rejected', v_rejected
+    'rejected', v_rejected,
+    'cleaned', v_cleaned
   );
 END;
 $$;

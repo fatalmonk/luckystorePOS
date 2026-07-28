@@ -52,4 +52,27 @@ describe('competitor pricing migration contract', () => {
       "cp.scraped_at > now() - interval '30 days'",
     );
   });
+
+  it('invokes automatic cleanup from ingestion with strict older-than-90 semantics', () => {
+    // Ingestion must call cleanup_old_competitor_prices after processing
+    expect(migration).toMatch(
+      /v_cleaned\s*:=\s*public\.cleanup_old_competitor_prices\(90\)/,
+    );
+    // Result must include cleaned count
+    expect(migration).toContain("'cleaned', v_cleaned");
+    // Cleanup uses strict older-than (not older-or-equal) via `<` comparison
+    expect(migration).toContain(
+      "AND scraped_at < now() - make_interval(days => p_retention_days)",
+    );
+  });
+
+  it('ensures manual rows are never deleted by cleanup', () => {
+    // The cleanup function filters on source = 'scraper'
+    expect(migration).toMatch(
+      /DELETE FROM public\.competitor_prices\s+WHERE source = 'scraper'/,
+    );
+    expect(migration).not.toMatch(
+      /DELETE FROM public\.competitor_prices[\s\S]{0,200}source = 'manual'/,
+    );
+  });
 });
