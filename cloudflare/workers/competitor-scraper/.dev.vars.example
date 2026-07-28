@@ -1,0 +1,2 @@
+# Copy to .dev.vars for approved local development. Never commit real values.
+SUPABASE_SERVICE_ROLE_KEY=replace-with-local-or-staging-secret

@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "lucky-store-competitor-scraper",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-29",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "browser": {
+    "binding": "BROWSER"
+  },
+  "workflows": [
+    {
+      "name": "lucky-store-competitor-scrape",
+      "binding": "COMPETITOR_SCRAPE_WORKFLOW",
+      "class_name": "CompetitorScrapeWorkflow",
+      "schedules": ["0 21 * * SUN"]
+    }
+  ],
+  "vars": {
+    "AUTOMATION_ENABLED": "false",
+    "WORKFLOW_VERSION": "competitor-scrape-v1",
+    "STORE_ALLOWLIST": "[]",
+    "SUPABASE_URL": "https://example.invalid",
+    "CHALDAL_SOURCE_APPROVED": "false",
+    "SHWAPNO_SOURCE_APPROVED": "false"
+  }
+}
