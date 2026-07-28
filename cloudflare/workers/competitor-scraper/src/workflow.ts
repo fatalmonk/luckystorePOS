@@ -70,16 +70,12 @@ export class CompetitorScrapeWorkflow extends WorkflowEntrypoint<Env, WorkflowPa
     if (isSourceApproved(env, "shwapno")) adapters.push({ name: "shwapno", run: runShwapnoAdapter });
 
     const perCompetitorResults = new Map<CompetitorName, StepResult>();
-    // Use env.BROWSER directly if it's already a BrowserBinding (test fake), otherwise wrap puppeteer.launch for production
-    const browser: BrowserBinding =
-      "launch" in env.BROWSER && typeof env.BROWSER.launch === "function"
-        ? (env.BROWSER as unknown as BrowserBinding)
-        : {
-            launch: async () =>
-              (await puppeteer.launch(env.BROWSER)) as unknown as Awaited<
-                ReturnType<BrowserBinding["launch"]>
-              >,
-          };
+    const browser: BrowserBinding = {
+      launch: async () =>
+        (await puppeteer.launch(env.BROWSER)) as unknown as Awaited<
+          ReturnType<BrowserBinding["launch"]>
+        >,
+    };
 
     for (const adapter of adapters) {
       try {

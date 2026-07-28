@@ -4,7 +4,7 @@ import {
   type WorkflowParams,
 } from "../../src/workflow.ts";
 import { CHALDAL_FIXTURE, SHWAPNO_FIXTURE } from "../fixtures/pages.ts";
-import { createFakeBrowser } from "../fakes/browser.ts";
+import { createFakeBrowserEndpoint } from "../fakes/browser.ts";
 import { createFakeSupabaseClient } from "../fakes/supabase.ts";
 import type { Env as LocalEnv } from "../../src/index.ts";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
@@ -48,7 +48,7 @@ function createWorkflow(
 ): CompetitorScrapeWorkflow {
   const fakeEnv: TestEnv = {
     ...env,
-    BROWSER: createFakeBrowser(html, options) as unknown as Fetcher,
+    BROWSER: createFakeBrowserEndpoint(html, options),
   };
   // Cloudflare WorkflowEntrypoint constructor signature is (ctx, env) at runtime.
   return new (CompetitorScrapeWorkflow as unknown as new (
@@ -167,10 +167,10 @@ describe("workflow integration", () => {
   });
 
   it("closes browser after failed source attempts", async () => {
-    const browser = createFakeBrowser(new Map(), { launchFailureCount: 1 });
+    const browser = createFakeBrowserEndpoint(new Map(), { launchFailureCount: 1 });
     const fakeEnv: TestEnv = {
       ...env,
-      BROWSER: browser as unknown as Fetcher,
+      BROWSER: browser,
     };
     const workflow = new (CompetitorScrapeWorkflow as unknown as new (
       ctx: ExecutionContext,
@@ -184,5 +184,7 @@ describe("workflow integration", () => {
 
     expect(browser.state.browserClosed).toBe(true);
     expect(browser.state.pageClosed).toBe(true);
+    expect(browser.state.browsersClosed).toBe(browser.state.browsersLaunched);
+    expect(browser.state.pagesClosed).toBe(browser.state.pagesOpened);
   });
 });

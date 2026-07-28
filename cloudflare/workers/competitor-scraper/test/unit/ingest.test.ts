@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ingestObservations, retryableIngest } from "../../src/ingest.ts";
 import { createFakeSupabaseClient } from "../fakes/supabase.ts";
 import { createLogger } from "../../src/logger.ts";
-import type { ScrapedObservation } from "../../src/types.ts";
+import type { IngestBatchResult, ScrapedObservation } from "../../src/types.ts";
 
 const observations: ScrapedObservation[] = [
   {
@@ -38,7 +38,7 @@ describe("ingest", () => {
 
   it("returns rejected rows reported by the RPC", async () => {
     const supabase = createFakeSupabaseClient({
-      ingestResult: { run_id: "run-1", inserted: 0, duplicates: 0, rejected: 1 },
+      ingestResult: { run_id: "database-run-id", inserted: 0, duplicates: 0, rejected: 1 },
     });
     const result = await ingestObservations(
       { supabase, log: createLogger() },
@@ -48,7 +48,53 @@ describe("ingest", () => {
       "store-1",
       observations,
     );
+    expect(result.run_id).toBe("database-run-id");
     expect(result.rejected).toBe(1);
+  });
+
+  it("rejects response fields outside the frozen contract", async () => {
+    const supabase = createFakeSupabaseClient({
+      ingestResult: {
+        run_id: "database-run-id",
+        inserted: 1,
+        duplicates: 0,
+        rejected: 0,
+        cleaned: 3,
+      } as unknown as IngestBatchResult,
+    });
+
+    await expect(
+      ingestObservations(
+        { supabase, log: createLogger() },
+        "run-1",
+        "2026-07-29T00:00:00Z",
+        "chaldal",
+        "store-1",
+        observations,
+      ),
+    ).rejects.toThrow("frozen four-field contract");
+  });
+
+  it("rejects non-numeric count fields", async () => {
+    const supabase = createFakeSupabaseClient({
+      ingestResult: {
+        run_id: "database-run-id",
+        inserted: "1",
+        duplicates: 0,
+        rejected: 0,
+      } as unknown as IngestBatchResult,
+    });
+
+    await expect(
+      ingestObservations(
+        { supabase, log: createLogger() },
+        "run-1",
+        "2026-07-29T00:00:00Z",
+        "chaldal",
+        "store-1",
+        observations,
+      ),
+    ).rejects.toThrow("invalid inserted count");
   });
 
   it("retryableIngest fails after three RPC errors", async () => {

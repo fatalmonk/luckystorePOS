@@ -54,6 +54,8 @@ describe("adapters", () => {
     expect(result.error).toBeNull();
     expect(browser.state.pageClosed).toBe(true);
     expect(browser.state.browserClosed).toBe(true);
+    expect(browser.state.pagesClosed).toBe(browser.state.pagesOpened);
+    expect(browser.state.browsersClosed).toBe(browser.state.browsersLaunched);
   });
 
   it("closes browser after a failed scrape", async () => {
@@ -63,5 +65,7 @@ describe("adapters", () => {
     expect(result.error).not.toBeNull();
     expect(browser.state.pageClosed).toBe(true);
     expect(browser.state.browserClosed).toBe(true);
+    expect(browser.state.pagesClosed).toBe(browser.state.pagesOpened);
+    expect(browser.state.browsersClosed).toBe(browser.state.browsersLaunched);
   });
 });

@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "cloudflare:workers": path.resolve(__dirname, "test/fakes/cloudflare-workers.ts"),
+      "@cloudflare/puppeteer": path.resolve(__dirname, "test/fakes/cloudflare-puppeteer.ts"),
     },
   },
 });

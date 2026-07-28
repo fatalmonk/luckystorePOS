@@ -6,14 +6,34 @@ import type {
 } from "../../src/types.ts";
 
 export interface FakeBrowser extends BrowserBinding {
-  state: { browserClosed: boolean; pageClosed: boolean };
+  state: FakeBrowserState;
+}
+
+export interface FakeBrowserEndpoint extends Fetcher {
+  state: FakeBrowserState;
+}
+
+interface FakeBrowserState {
+  browserClosed: boolean;
+  pageClosed: boolean;
+  browsersLaunched: number;
+  browsersClosed: number;
+  pagesOpened: number;
+  pagesClosed: number;
 }
 
 export function createFakeBrowser(
   htmlByUrl: Map<string, string>,
   options?: { launchFailureCount?: number },
 ): FakeBrowser {
-  const state = { browserClosed: false, pageClosed: false };
+  const state: FakeBrowserState = {
+    browserClosed: false,
+    pageClosed: false,
+    browsersLaunched: 0,
+    browsersClosed: 0,
+    pagesOpened: 0,
+    pagesClosed: 0,
+  };
   let launches = 0;
   return {
     state,
@@ -22,12 +42,34 @@ export function createFakeBrowser(
       if (options?.launchFailureCount !== undefined && launches <= options.launchFailureCount) {
         throw new Error(`simulated browser launch failure ${launches}`);
       }
+      state.browsersLaunched += 1;
       return {
         close: async () => {
           state.browserClosed = true;
+          state.browsersClosed += 1;
         },
-        newPage: async () => createFakePage(htmlByUrl, state),
+        newPage: async () => {
+          state.pagesOpened += 1;
+          return createFakePage(htmlByUrl, state);
+        },
       };
+    },
+  };
+}
+
+export function createFakeBrowserEndpoint(
+  htmlByUrl: Map<string, string>,
+  options?: { launchFailureCount?: number },
+): FakeBrowserEndpoint {
+  const binding = createFakeBrowser(htmlByUrl, options);
+  return {
+    state: binding.state,
+    fetch: async () => {
+      const browser = await binding.launch();
+      return { browser } as unknown as Response;
+    },
+    connect: () => {
+      throw new Error("fake browser endpoint does not support connect()");
     },
   };
 }
@@ -77,6 +119,7 @@ function createFakePage(
     },
     close: async () => {
       state.pageClosed = true;
+      state.pagesClosed += 1;
     },
   };
   return page;
