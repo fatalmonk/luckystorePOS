@@ -113,8 +113,8 @@ export default {
         primary: 'var(--font-family-primary)',
         mono: 'var(--font-family-mono)',
         // Warm Design System fonts
-        display: ['Georgia', '"Iowan Old Style"', '"Times New Roman"', 'serif'],
-        body: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)'],
+        body: ['var(--font-body)'],
       },
       boxShadow: {
         'level-1': 'var(--elevation-1)',
