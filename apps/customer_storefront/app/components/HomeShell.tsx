@@ -27,7 +27,7 @@ export function HomeShell({ products }: HomeShellProps) {
           {/* Trust micro-bar — immediately visible after hero */}
           <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-warm-surface border border-warm-border/50 p-3 shadow-warm-sm">
             <div className="flex flex-col items-center justify-center text-center gap-1">
-              <span className="text-lg">🛵</span>
+              <span className="text-lg" aria-hidden="true">🛵</span>
               <span className="text-[10px] font-bold text-warm-fg leading-tight">Free Delivery</span>
               <span className="text-[9px] text-warm-muted">৳500+</span>
             </div>
@@ -86,12 +86,17 @@ export function HomeShell({ products }: HomeShellProps) {
             </div>
 
             {/* Wide CTA */}
-            <Link
-              href="/category"
-              className="block bg-gradient-to-br from-warm-accent to-[#e8b840] rounded-[20px] p-5 shadow-warm-sm text-center hover:shadow-warm-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 group"
-            >
-              <span className="text-sm font-black text-warm-fg uppercase tracking-wider group-hover:tracking-widest transition-all duration-300">Start Shopping →</span>
-            </Link>
+            <div className="space-y-2 text-center">
+              <Link
+                href="/category"
+                className="block bg-gradient-to-br from-warm-accent to-[#e8b840] rounded-[20px] p-5 shadow-warm-sm text-center hover:shadow-warm-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 group"
+              >
+                <span className="text-sm font-black text-warm-fg uppercase tracking-wider group-hover:tracking-widest transition-all duration-300">Start Shopping →</span>
+              </Link>
+              <p className="text-[11px] font-semibold text-warm-muted">
+                No card required • Pay cash on delivery • Free delivery over ৳500
+              </p>
+            </div>
           </section>
         </div>
         <Footer />
