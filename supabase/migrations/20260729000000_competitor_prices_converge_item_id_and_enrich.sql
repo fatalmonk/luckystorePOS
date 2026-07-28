@@ -1,576 +1,781 @@
--- ============================================================================
--- Forward migration: converge competitor_prices to item_id and add
--- source tracking, manual overrides, scrape-run metadata, and retention.
--- ============================================================================
--- Status: LIVE_REQUIRED (must run against production after review)
--- Reversible: YES (DROP new columns/functions/triggers; old schema intact)
+-- Competitor pricing convergence and secure ingestion.
+-- Forward-only: historical migrations remain unchanged.
 
--- 1. Add new columns (additive — safe for existing data) -------------------
-
--- Source tracking: who provided this price observation?
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'scraper';
-COMMENT ON COLUMN public.competitor_prices.source
-  IS 'Origin of the price: scraper | manual | api';
-
--- Stable key for the competitor (slug or canonical name)
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS competitor_key text;
-COMMENT ON COLUMN public.competitor_prices.competitor_key
-  IS 'Stable slug for the competitor (e.g. chaldal, shwapno). Populated from competitor_name lowercased when NULL.';
-
--- Manual override tracking
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS is_manual_override boolean NOT NULL DEFAULT false;
-COMMENT ON COLUMN public.competitor_prices.is_manual_override
-  IS 'True when this row was set by an admin override, not a scraper.';
+-- ---------------------------------------------------------------------------
+-- Schema convergence. The 20260514 migration recreated competitor_prices with
+-- product_id; copy that data before removing the legacy column. item_id remains
+-- nullable so unmatched scraper observations remain auditable.
+-- ---------------------------------------------------------------------------
 
 ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS manual_override_reason text;
-COMMENT ON COLUMN public.competitor_prices.manual_override_reason
-  IS 'Optional reason the admin set this override.';
+  ADD COLUMN IF NOT EXISTS item_id uuid;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'competitor_prices'
+      AND column_name = 'product_id'
+  ) THEN
+    EXECUTE '
+      UPDATE public.competitor_prices
+      SET item_id = product_id
+      WHERE item_id IS NULL
+        AND product_id IS NOT NULL
+    ';
+  END IF;
+END;
+$$;
 
 ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS manual_override_at timestamptz;
-COMMENT ON COLUMN public.competitor_prices.manual_override_at
-  IS 'When the manual override was set. NULL for scraper rows.';
-
--- Observation key: idempotency for scraper ingestion
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS observation_key text;
-COMMENT ON COLUMN public.competitor_prices.observation_key
-  IS 'Idempotency key: hash(store_id, item_id, competitor_key, scrape_batch_id). Prevents duplicate ingestion.';
-
--- Scrape run tracking
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS scrape_run_id uuid;
-COMMENT ON COLUMN public.competitor_prices.scrape_run_id
-  IS 'Groups observations from a single scraper invocation.';
-
--- Match quality metadata
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS match_confidence text;
-COMMENT ON COLUMN public.competitor_prices.match_confidence
-  IS 'How confidently the competitor product matches our item: exact | high | medium | low.';
+  DROP CONSTRAINT IF EXISTS competitor_prices_item_id_fkey;
 
 ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS match_method text;
-COMMENT ON COLUMN public.competitor_prices.match_method
-  IS 'How the match was made: sku | name_fuzzy | url | manual.';
+  ADD CONSTRAINT competitor_prices_item_id_fkey
+  FOREIGN KEY (item_id) REFERENCES public.items(id) ON DELETE SET NULL;
 
-ALTER TABLE public.competitor_prices
-  ADD COLUMN IF NOT EXISTS match_metadata jsonb DEFAULT '{}';
-COMMENT ON COLUMN public.competitor_prices.match_metadata
-  IS 'Extra match details (e.g. fuzzy_score, matched_sku, competitor_category).';
-
-
--- 2. Ensure item_id is NOT NULL (convergence) --------------------------------
-
--- The baseline schema has item_id as the FK column. The 20260514 migration
--- used product_id, but baseline and generated types both use item_id.
--- We ensure item_id is NOT NULL and has a proper FK constraint.
--- First drop any stale product_id column if it exists (defensive).
 ALTER TABLE public.competitor_prices
   DROP COLUMN IF EXISTS product_id;
 
--- Now make item_id NOT NULL. Existing rows with NULL item_id are invalid
--- data; they should have been cleaned up before this migration.
--- We set a placeholder for any stragglers, then enforce NOT NULL.
--- NOTE: LIVE_REQUIRED — verify no NULL item_id rows exist before running.
-UPDATE public.competitor_prices
-  SET item_id = '00000000-0000-0000-0000-000000000000'::uuid
-  WHERE item_id IS NULL
-  AND EXISTS (SELECT 1 FROM public.stores LIMIT 1); -- guard: only if stores exist
+DROP INDEX IF EXISTS public.idx_competitor_prices_product_id;
+DROP INDEX IF EXISTS public.idx_competitor_prices_store_product_scraped;
 
--- Add FK if missing (baseline should have it, but defensive)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'competitor_prices_item_id_fkey'
-    AND conrelid = 'public.competitor_prices'::regclass
-  ) THEN
-    ALTER TABLE public.competitor_prices
-      ADD CONSTRAINT competitor_prices_item_id_fkey
-      FOREIGN KEY (item_id) REFERENCES public.items(id) ON DELETE CASCADE;
-  END IF;
-END $$;
-
--- Drop old product_id FK if it somehow lingers
 ALTER TABLE public.competitor_prices
-  DROP CONSTRAINT IF EXISTS competitor_prices_product_id_fkey;
-
--- Drop old product_id index if it lingers
-DROP INDEX IF EXISTS idx_competitor_prices_product_id;
-
--- Make item_id NOT NULL (safe after cleanup)
-ALTER TABLE public.competitor_prices
-  ALTER COLUMN item_id SET NOT NULL;
-
-
--- 3. Backfill competitor_key from competitor_name ----------------------------
+  ADD COLUMN IF NOT EXISTS source text,
+  ADD COLUMN IF NOT EXISTS competitor_key text,
+  ADD COLUMN IF NOT EXISTS is_override_active boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS manual_override_reason text,
+  ADD COLUMN IF NOT EXISTS manual_override_at timestamptz,
+  ADD COLUMN IF NOT EXISTS manual_override_cleared_at timestamptz,
+  ADD COLUMN IF NOT EXISTS observation_key text,
+  ADD COLUMN IF NOT EXISTS match_confidence numeric(6,5),
+  ADD COLUMN IF NOT EXISTS matcher_version text,
+  ADD COLUMN IF NOT EXISTS match_metadata jsonb NOT NULL DEFAULT '{}'::jsonb;
 
 UPDATE public.competitor_prices
-  SET competitor_key = lower(trim(competitor_name))
-  WHERE competitor_key IS NULL;
+SET
+  competitor_key = regexp_replace(lower(trim(competitor_name)), '[^a-z0-9]+', '-', 'g'),
+  source = CASE
+    -- The legacy admin form wrote an empty product_name and no raw payload.
+    WHEN product_name = '' AND raw_data IS NULL AND error_message IS NULL
+      THEN 'manual'
+    ELSE 'scraper'
+  END,
+  is_override_active = (
+    product_name = '' AND raw_data IS NULL AND error_message IS NULL
+  ),
+  manual_override_at = CASE
+    WHEN product_name = '' AND raw_data IS NULL AND error_message IS NULL
+      THEN COALESCE(updated_at, created_at, scraped_at)
+    ELSE NULL
+  END,
+  matcher_version = CASE
+    WHEN product_name = '' AND raw_data IS NULL AND error_message IS NULL
+      THEN 'manual'
+    ELSE 'legacy-v0'
+  END
+WHERE competitor_key IS NULL
+   OR source IS NULL
+   OR matcher_version IS NULL;
 
--- Now make competitor_key NOT NULL
+-- If legacy manual rows collide, retain the newest active row and preserve the
+-- rest as inactive manual history.
+WITH ranked_manual AS (
+  SELECT
+    id,
+    row_number() OVER (
+      PARTITION BY store_id, item_id, competitor_key
+      ORDER BY COALESCE(manual_override_at, updated_at, created_at, scraped_at) DESC, id DESC
+    ) AS position
+  FROM public.competitor_prices
+  WHERE source = 'manual'
+    AND is_override_active
+)
+UPDATE public.competitor_prices AS cp
+SET
+  is_override_active = false,
+  manual_override_cleared_at = COALESCE(cp.updated_at, cp.created_at, cp.scraped_at)
+FROM ranked_manual AS ranked
+WHERE cp.id = ranked.id
+  AND ranked.position > 1;
+
 ALTER TABLE public.competitor_prices
-  ALTER COLUMN competitor_key SET NOT NULL;
+  ALTER COLUMN source SET DEFAULT 'scraper',
+  ALTER COLUMN source SET NOT NULL,
+  ALTER COLUMN competitor_key SET NOT NULL,
+  ALTER COLUMN matcher_version SET NOT NULL;
 
+ALTER TABLE public.competitor_prices
+  DROP CONSTRAINT IF EXISTS competitor_prices_source_check;
+ALTER TABLE public.competitor_prices
+  ADD CONSTRAINT competitor_prices_source_check
+  CHECK (source IN ('manual', 'scraper'));
 
--- 4. Add required constraints and indexes ------------------------------------
+ALTER TABLE public.competitor_prices
+  DROP CONSTRAINT IF EXISTS competitor_prices_match_confidence_check;
+ALTER TABLE public.competitor_prices
+  ADD CONSTRAINT competitor_prices_match_confidence_check
+  CHECK (match_confidence IS NULL OR match_confidence BETWEEN 0 AND 1);
 
--- One active manual override per (store_id, item_id, competitor_key)
-CREATE UNIQUE INDEX IF NOT EXISTS competitor_prices_manual_override_uniq
+ALTER TABLE public.competitor_prices
+  DROP CONSTRAINT IF EXISTS competitor_prices_manual_state_check;
+ALTER TABLE public.competitor_prices
+  ADD CONSTRAINT competitor_prices_manual_state_check
+  CHECK (
+    (source = 'manual')
+    OR (
+      is_override_active = false
+      AND manual_override_reason IS NULL
+      AND manual_override_at IS NULL
+      AND manual_override_cleared_at IS NULL
+    )
+  );
+
+CREATE TABLE IF NOT EXISTS public.competitor_scrape_runs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  run_key text NOT NULL,
+  scheduled_at timestamptz NOT NULL,
+  competitor text NOT NULL,
+  store_id uuid NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
+  summary jsonb NOT NULL DEFAULT '{}'::jsonb,
+  inserted_count integer NOT NULL DEFAULT 0,
+  duplicate_count integer NOT NULL DEFAULT 0,
+  rejected_count integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (run_key, competitor, store_id)
+);
+
+ALTER TABLE public.competitor_prices
+  ADD COLUMN IF NOT EXISTS scrape_run_id uuid;
+
+ALTER TABLE public.competitor_prices
+  DROP CONSTRAINT IF EXISTS competitor_prices_scrape_run_id_fkey;
+ALTER TABLE public.competitor_prices
+  ADD CONSTRAINT competitor_prices_scrape_run_id_fkey
+  FOREIGN KEY (scrape_run_id)
+  REFERENCES public.competitor_scrape_runs(id)
+  ON DELETE SET NULL;
+
+DROP INDEX IF EXISTS public.competitor_prices_manual_override_uniq;
+CREATE UNIQUE INDEX competitor_prices_active_override_uniq
   ON public.competitor_prices (store_id, item_id, competitor_key)
-  WHERE is_manual_override = true;
+  WHERE source = 'manual' AND is_override_active;
 
--- Observation key uniqueness for idempotent ingestion
-CREATE UNIQUE INDEX IF NOT EXISTS competitor_prices_observation_key_uniq
+DROP INDEX IF EXISTS public.competitor_prices_observation_key_uniq;
+CREATE UNIQUE INDEX competitor_prices_observation_key_uniq
   ON public.competitor_prices (observation_key)
   WHERE observation_key IS NOT NULL;
 
--- Efficient effective-price lookup: newest scrape per competitor
 CREATE INDEX IF NOT EXISTS idx_competitor_prices_effective
   ON public.competitor_prices (store_id, item_id, competitor_key, scraped_at DESC)
-  WHERE is_manual_override = false AND scrape_status = 'success';
+  WHERE source = 'scraper' AND scrape_status = 'success';
 
--- Scrape run grouping
 CREATE INDEX IF NOT EXISTS idx_competitor_prices_scrape_run
   ON public.competitor_prices (scrape_run_id)
   WHERE scrape_run_id IS NOT NULL;
 
--- Index for manual overrides by store+item
-CREATE INDEX IF NOT EXISTS idx_competitor_prices_manual
-  ON public.competitor_prices (store_id, item_id)
-  WHERE is_manual_override = true;
-
-
--- 5. Drop old per-row cleanup trigger (replaced by RPC) ----------------------
+CREATE INDEX IF NOT EXISTS idx_competitor_scrape_runs_lookup
+  ON public.competitor_scrape_runs (store_id, competitor, scheduled_at DESC);
 
 DROP TRIGGER IF EXISTS trg_cleanup_competitor_prices ON public.competitor_prices;
 DROP FUNCTION IF EXISTS public.trigger_cleanup_competitor_prices();
+DROP FUNCTION IF EXISTS public.cleanup_old_competitor_prices();
+DROP FUNCTION IF EXISTS public.cleanup_old_competitor_prices(integer);
 
-
--- 6. Replace cleanup function: 90-day retention, preserve manual overrides --
-
-CREATE OR REPLACE FUNCTION public.cleanup_old_competitor_prices(
-  p_retention_days int DEFAULT 90
+CREATE FUNCTION public.cleanup_old_competitor_prices(
+  p_retention_days integer DEFAULT 90
 )
-RETURNS int AS $$
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
-  deleted_count int;
+  v_deleted integer;
 BEGIN
-  DELETE FROM public.competitor_prices
-  WHERE is_manual_override = false            -- never delete manual overrides
-    AND scraped_at < now() - (p_retention_days || ' days')::interval
-    AND scrape_status = 'success';            -- only clean up successful scrapes
-  GET DIAGNOSTICS deleted_count = ROW_COUNT;
-  RETURN deleted_count;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-COMMENT ON FUNCTION public.cleanup_old_competitor_prices
-  IS 'Deletes scraper observations older than retention_days (default 90). Manual overrides are preserved. Returns count of deleted rows.';
-
-
--- 7. RPC: set_manual_competitor_price ----------------------------------------
-
-CREATE OR REPLACE FUNCTION public.set_manual_competitor_price(
-  p_store_id    uuid,
-  p_item_id     uuid,
-  p_competitor_key text,
-  p_competitor_name text,
-  p_price       numeric(12,2),
-  p_reason      text DEFAULT NULL,
-  p_competitor_product_url text DEFAULT NULL
-)
-RETURNS uuid AS $$
-DECLARE
-  v_id uuid;
-  v_obs_key text;
-BEGIN
-  -- Validate store membership
-  IF NOT EXISTS (SELECT 1 FROM public.items WHERE id = p_item_id AND store_id = p_store_id) THEN
-    RAISE EXCEPTION 'Item % does not belong to store %', p_item_id, p_store_id;
+  IF p_retention_days < 1 THEN
+    RAISE EXCEPTION 'retention days must be positive';
   END IF;
 
-  v_obs_key := 'manual:' || p_store_id || ':' || p_item_id || ':' || lower(trim(p_competitor_key));
+  DELETE FROM public.competitor_prices
+  WHERE source = 'scraper'
+    AND scraped_at < now() - make_interval(days => p_retention_days);
+
+  GET DIAGNOSTICS v_deleted = ROW_COUNT;
+  RETURN v_deleted;
+END;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Manual overrides. These functions intentionally use SECURITY DEFINER because
+-- authenticated clients have read-only table privileges. Every function checks
+-- store authorization and uses an empty search_path.
+-- ---------------------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS public.set_manual_competitor_price(
+  uuid, uuid, text, text, numeric, text, text
+);
+
+CREATE FUNCTION public.set_manual_competitor_price(
+  p_store_id uuid,
+  p_item_id uuid,
+  p_competitor_key text,
+  p_competitor_name text,
+  p_price numeric,
+  p_reason text DEFAULT NULL,
+  p_competitor_product_url text DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_id uuid;
+  v_item_name text;
+  v_item_price numeric;
+  v_key text;
+BEGIN
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role'
+     AND public.get_current_user_store_id() IS DISTINCT FROM p_store_id THEN
+    RAISE EXCEPTION 'not authorized for store'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF p_price IS NULL OR p_price <= 0 THEN
+    RAISE EXCEPTION 'price must be positive';
+  END IF;
+
+  v_key := regexp_replace(lower(trim(p_competitor_key)), '[^a-z0-9]+', '-', 'g');
+  IF v_key = '' OR trim(p_competitor_name) = '' THEN
+    RAISE EXCEPTION 'competitor key and name are required';
+  END IF;
+
+  SELECT i.name, i.price
+  INTO v_item_name, v_item_price
+  FROM public.items AS i
+  JOIN public.stores AS s
+    ON s.id = p_store_id
+   AND s.tenant_id = i.tenant_id
+  WHERE i.id = p_item_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'item does not belong to store'
+      USING ERRCODE = '23503';
+  END IF;
+
+  UPDATE public.competitor_prices
+  SET
+    is_override_active = false,
+    manual_override_cleared_at = now(),
+    updated_at = now()
+  WHERE store_id = p_store_id
+    AND item_id = p_item_id
+    AND competitor_key = v_key
+    AND source = 'manual'
+    AND is_override_active;
 
   INSERT INTO public.competitor_prices (
-    store_id, item_id, competitor_key, competitor_name,
-    competitor_price, competitor_product_url,
-    source, is_manual_override, manual_override_reason, manual_override_at,
-    observation_key, scrape_status, scraped_at,
-    product_name, our_price, price_gap_percent
-  ) VALUES (
-    p_store_id, p_item_id, lower(trim(p_competitor_key)), p_competitor_name,
-    p_price, p_competitor_product_url,
-    'manual', true, p_reason, now(),
-    v_obs_key, 'success', now(),
-    '', 0, 0
+    store_id,
+    item_id,
+    product_name,
+    competitor_name,
+    competitor_key,
+    competitor_product_url,
+    competitor_price,
+    currency,
+    our_price,
+    price_gap_percent,
+    scraped_at,
+    scrape_status,
+    source,
+    is_override_active,
+    manual_override_reason,
+    manual_override_at,
+    matcher_version,
+    raw_data
   )
-  ON CONFLICT (observation_key) WHERE observation_key IS NOT NULL
-  DO UPDATE SET
-    competitor_price       = EXCLUDED.competitor_price,
-    competitor_name        = EXCLUDED.competitor_name,
-    competitor_product_url = EXCLUDED.competitor_product_url,
-    manual_override_reason = EXCLUDED.manual_override_reason,
-    manual_override_at     = EXCLUDED.manual_override_at,
-    is_manual_override     = true,
-    source                 = 'manual',
-    scraped_at             = now(),
-    updated_at             = now()
+  VALUES (
+    p_store_id,
+    p_item_id,
+    v_item_name,
+    trim(p_competitor_name),
+    v_key,
+    p_competitor_product_url,
+    p_price,
+    'BDT',
+    v_item_price,
+    CASE
+      WHEN v_item_price IS NOT NULL
+        THEN round((v_item_price - p_price) / NULLIF(p_price, 0), 4)
+      ELSE NULL
+    END,
+    now(),
+    'success',
+    'manual',
+    true,
+    NULLIF(trim(p_reason), ''),
+    now(),
+    'manual',
+    '{}'::jsonb
+  )
   RETURNING id INTO v_id;
-
-  -- Now upsert into the manual-override unique slot:
-  -- Deactivate any OTHER manual override for this store/item/competitor
-  UPDATE public.competitor_prices
-    SET is_manual_override = false,
-        manual_override_reason = NULL,
-        manual_override_at = NULL,
-        source = 'scraper',
-        observation_key = observation_key || ':deactivated:' || extract(epoch from now())::text,
-        updated_at = now()
-    WHERE store_id = p_store_id
-      AND item_id = p_item_id
-      AND competitor_key = lower(trim(p_competitor_key))
-      AND is_manual_override = true
-      AND id != v_id;
 
   RETURN v_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
-COMMENT ON FUNCTION public.set_manual_competitor_price
-  IS 'Upsert a manual competitor price override. Ensures exactly one active manual override per (store, item, competitor). Returns the row id.';
+DROP FUNCTION IF EXISTS public.clear_manual_competitor_price(uuid, uuid, text);
 
-
--- 8. RPC: clear_manual_competitor_price --------------------------------------
-
-CREATE OR REPLACE FUNCTION public.clear_manual_competitor_price(
-  p_store_id       uuid,
-  p_item_id        uuid,
+CREATE FUNCTION public.clear_manual_competitor_price(
+  p_store_id uuid,
+  p_item_id uuid,
   p_competitor_key text
 )
-RETURNS boolean AS $$
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
-  deleted_count int;
+  v_updated integer;
 BEGIN
-  DELETE FROM public.competitor_prices
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role'
+     AND public.get_current_user_store_id() IS DISTINCT FROM p_store_id THEN
+    RAISE EXCEPTION 'not authorized for store'
+      USING ERRCODE = '42501';
+  END IF;
+
+  UPDATE public.competitor_prices
+  SET
+    is_override_active = false,
+    manual_override_cleared_at = now(),
+    updated_at = now()
   WHERE store_id = p_store_id
     AND item_id = p_item_id
-    AND competitor_key = lower(trim(p_competitor_key))
-    AND is_manual_override = true;
+    AND competitor_key = regexp_replace(lower(trim(p_competitor_key)), '[^a-z0-9]+', '-', 'g')
+    AND source = 'manual'
+    AND is_override_active;
 
-  GET DIAGNOSTICS deleted_count = ROW_COUNT;
-  RETURN deleted_count > 0;
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  RETURN v_updated > 0;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
-COMMENT ON FUNCTION public.clear_manual_competitor_price
-  IS 'Remove the active manual override for a store/item/competitor. Returns true if a row was removed.';
+DROP FUNCTION IF EXISTS public.get_effective_competitor_prices(uuid, uuid);
 
-
--- 9. RPC: get_effective_competitor_prices ------------------------------------
--- p_item_id can be NULL to return all items for the store
-
-CREATE OR REPLACE FUNCTION public.get_effective_competitor_prices(
+CREATE FUNCTION public.get_effective_competitor_prices(
   p_store_id uuid,
-  p_item_id  uuid DEFAULT NULL
+  p_item_id uuid DEFAULT NULL
 )
 RETURNS TABLE (
-  item_id            uuid,
-  competitor_key     text,
-  competitor_name   text,
-  competitor_price   numeric,
-  our_price          numeric,
-  price_gap_percent  numeric,
-  source             text,
-  is_manual_override boolean,
+  item_id uuid,
+  competitor_key text,
+  competitor_name text,
+  competitor_price numeric,
+  our_price numeric,
+  price_gap_percent numeric,
+  source text,
+  is_override_active boolean,
   manual_override_reason text,
   manual_override_at timestamptz,
-  scraped_at         timestamptz,
+  observed_at timestamptz,
   competitor_product_url text,
-  match_confidence   text,
-  match_method        text,
-  status             text
-) AS $$
+  match_confidence numeric,
+  matcher_version text,
+  status text
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role'
+     AND public.get_current_user_store_id() IS DISTINCT FROM p_store_id THEN
+    RAISE EXCEPTION 'not authorized for store'
+      USING ERRCODE = '42501';
+  END IF;
+
   RETURN QUERY
-  WITH manual_overrides AS (
+  WITH candidates AS (
     SELECT
-      cp.id,
-      cp.store_id,
-      cp.item_id,
-      cp.competitor_key,
-      cp.competitor_name,
-      cp.competitor_price,
-      cp.our_price,
-      cp.price_gap_percent,
-      cp.source,
-      cp.is_manual_override,
-      cp.manual_override_reason,
-      cp.manual_override_at,
-      cp.scraped_at,
-      cp.competitor_product_url,
-      cp.match_confidence,
-      cp.match_method,
-      'manual'::text AS status
-    FROM public.competitor_prices cp
-    WHERE cp.store_id = p_store_id
-      AND (p_item_id IS NULL OR cp.item_id = p_item_id)
-      AND cp.is_manual_override = true
-  ),
-  latest_scrapes AS (
-    SELECT DISTINCT ON (cp.item_id, cp.competitor_key)
-      cp.id,
-      cp.store_id,
-      cp.item_id,
-      cp.competitor_key,
-      cp.competitor_name,
-      cp.competitor_price,
-      cp.our_price,
-      cp.price_gap_percent,
-      cp.source,
-      cp.is_manual_override,
-      cp.manual_override_reason,
-      cp.manual_override_at,
-      cp.scraped_at,
-      cp.competitor_product_url,
-      cp.match_confidence,
-      cp.match_method,
+      cp.*,
       CASE
-        WHEN cp.scraped_at >= now() - interval '8 days' THEN 'fresh'
-        WHEN cp.scraped_at >= now() - interval '30 days' THEN 'stale'
-        ELSE 'hidden'
-      END::text AS status
-    FROM public.competitor_prices cp
+        WHEN cp.source = 'manual' AND cp.is_override_active THEN 0
+        ELSE 1
+      END AS source_rank
+    FROM public.competitor_prices AS cp
     WHERE cp.store_id = p_store_id
+      AND cp.item_id IS NOT NULL
       AND (p_item_id IS NULL OR cp.item_id = p_item_id)
-      AND cp.is_manual_override = false
-      AND cp.scrape_status = 'success'
-      AND cp.scraped_at >= now() - interval '30 days'
-    ORDER BY cp.item_id, cp.competitor_key, cp.scraped_at DESC
+      AND (
+        (cp.source = 'manual' AND cp.is_override_active)
+        OR (
+          cp.source = 'scraper'
+          AND cp.scrape_status = 'success'
+          AND cp.scraped_at > now() - interval '30 days'
+        )
+      )
   ),
-  combined AS (
-    SELECT * FROM manual_overrides
-    UNION ALL
-    SELECT * FROM latest_scrapes
+  ranked AS (
+    SELECT
+      candidates.*,
+      row_number() OVER (
+        PARTITION BY candidates.item_id, candidates.competitor_key
+        ORDER BY candidates.source_rank, candidates.scraped_at DESC, candidates.id DESC
+      ) AS position
+    FROM candidates
   )
   SELECT
-    c.item_id,
-    c.competitor_key,
-    c.competitor_name,
-    c.competitor_price,
-    c.our_price,
-    c.price_gap_percent,
-    c.source,
-    c.is_manual_override,
-    c.manual_override_reason,
-    c.manual_override_at,
-    c.scraped_at,
-    c.competitor_product_url,
-    c.match_confidence,
-    c.match_method,
-    c.status
-  FROM combined c
-  WHERE NOT EXISTS (
-    -- Exclude scraper rows that have a manual override for the same item+competitor
-    SELECT 1 FROM manual_overrides mo
-    WHERE mo.item_id = c.item_id
-      AND mo.competitor_key = c.competitor_key
-      AND c.is_manual_override = false
-  )
-  ORDER BY c.item_id, c.competitor_key;
+    ranked.item_id,
+    ranked.competitor_key,
+    ranked.competitor_name,
+    ranked.competitor_price,
+    ranked.our_price,
+    ranked.price_gap_percent,
+    ranked.source,
+    ranked.is_override_active,
+    ranked.manual_override_reason,
+    ranked.manual_override_at,
+    ranked.scraped_at,
+    ranked.competitor_product_url,
+    ranked.match_confidence,
+    ranked.matcher_version,
+    CASE
+      WHEN ranked.source = 'manual' THEN 'manual'
+      WHEN ranked.scraped_at > now() - interval '8 days' THEN 'fresh'
+      ELSE 'stale'
+    END
+  FROM ranked
+  WHERE ranked.position = 1
+  ORDER BY ranked.item_id, ranked.competitor_key;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
-COMMENT ON FUNCTION public.get_effective_competitor_prices
-  IS 'Returns exactly one effective price per competitor for a store/item. Manual overrides win over scrapes. Status: manual | fresh (<8d) | stale (8-30d). Hidden >30d scrapes excluded.';
+-- ---------------------------------------------------------------------------
+-- Frozen service-role ingestion contract.
+-- ---------------------------------------------------------------------------
 
+DROP FUNCTION IF EXISTS public.ingest_competitor_scrape_batch(uuid, uuid, jsonb);
+DROP FUNCTION IF EXISTS public.ingest_competitor_scrape_batch(
+  text, timestamptz, text, uuid, jsonb, jsonb
+);
 
--- 10. RPC: ingest_competitor_scrape_batch ------------------------------------
-
-CREATE OR REPLACE FUNCTION public.ingest_competitor_scrape_batch(
-  p_store_id    uuid,
-  p_scrape_run_id uuid,
-  p_observations jsonb
+CREATE FUNCTION public.ingest_competitor_scrape_batch(
+  p_run_key text,
+  p_scheduled_at timestamptz,
+  p_competitor text,
+  p_store_id uuid,
+  p_observations jsonb,
+  p_summary jsonb
 )
-RETURNS TABLE (
-  run_id      uuid,
-  inserted    int,
-  duplicates  int,
-  rejected    int
-) AS $$
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
-  v_obs        record;
-  v_item_id    uuid;
-  v_obs_key    text;
-  v_inserted   int := 0;
-  v_duplicates int := 0;
-  v_rejected   int := 0;
-  v_our_price  numeric;
-  v_item_name  text;
-  v_gap        numeric;
+  v_run_id uuid;
+  v_observation jsonb;
+  v_item_id uuid;
+  v_item_name text;
+  v_our_price numeric;
+  v_competitor_price numeric;
+  v_original_price numeric;
+  v_match_confidence numeric;
+  v_inserted integer := 0;
+  v_duplicates integer := 0;
+  v_rejected integer := 0;
 BEGIN
-  -- Service-role only: enforce via RLS (caller must be service_role)
-  -- The function is SECURITY DEFINER; RLS policies still apply to the
-  -- caller. Service-role bypasses RLS, anon/authenticated does not.
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role' THEN
+    RAISE EXCEPTION 'service_role required'
+      USING ERRCODE = '42501';
+  END IF;
 
-  FOR v_obs IN
-    SELECT
-      (o->>'item_id')::uuid        AS item_id,
-      o->>'competitor_key'         AS competitor_key,
-      o->>'competitor_name'        AS competitor_name,
-      (o->>'competitor_price')::numeric(12,2) AS competitor_price,
-      (o->>'competitor_original_price')::numeric(12,2) AS competitor_original_price,
-      o->>'competitor_product_url' AS competitor_product_url,
-      o->>'competitor_product_id'  AS competitor_product_id,
-      o->>'currency'               AS currency,
-      (o->>'our_price')::numeric(12,2) AS our_price,
-      (o->>'price_gap_percent')::numeric(5,2) AS price_gap_percent,
-      o->>'scrape_status'          AS scrape_status,
-      o->>'error_message'          AS error_message,
-      o->>'match_confidence'       AS match_confidence,
-      o->>'match_method'           AS match_method,
-      o->>'match_metadata'         AS match_metadata,
-      o->>'raw_data'               AS raw_data,
-      (o->>'scraped_at')::timestamptz AS scraped_at
-    FROM jsonb_array_elements(p_observations) AS o
+  IF NULLIF(trim(p_run_key), '') IS NULL
+     OR NULLIF(trim(p_competitor), '') IS NULL
+     OR p_scheduled_at IS NULL
+     OR jsonb_typeof(p_observations) <> 'array' THEN
+    RAISE EXCEPTION 'invalid ingestion batch';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM public.stores WHERE id = p_store_id) THEN
+    RAISE EXCEPTION 'store not found'
+      USING ERRCODE = '23503';
+  END IF;
+
+  INSERT INTO public.competitor_scrape_runs (
+    run_key, scheduled_at, competitor, store_id, summary
+  )
+  VALUES (
+    p_run_key, p_scheduled_at, lower(trim(p_competitor)), p_store_id,
+    COALESCE(p_summary, '{}'::jsonb)
+  )
+  ON CONFLICT (run_key, competitor, store_id)
+  DO UPDATE SET
+    scheduled_at = EXCLUDED.scheduled_at,
+    summary = EXCLUDED.summary,
+    updated_at = now()
+  RETURNING id INTO v_run_id;
+
+  FOR v_observation IN
+    SELECT value FROM jsonb_array_elements(p_observations)
   LOOP
-    -- Reject: item must belong to this store
-    SELECT id, price, name INTO v_item_id, v_our_price, v_item_name
-    FROM public.items
-    WHERE id = v_obs.item_id AND store_id = p_store_id;
+    BEGIN
+      IF NULLIF(trim(v_observation ->> 'observation_key'), '') IS NULL
+         OR NULLIF(trim(v_observation ->> 'product_name'), '') IS NULL
+         OR NULLIF(trim(v_observation ->> 'matcher_version'), '') IS NULL
+         OR COALESCE(v_observation ->> 'currency', '') <> 'BDT' THEN
+        RAISE EXCEPTION 'required observation field missing';
+      END IF;
 
-    IF v_item_id IS NULL THEN
-      v_rejected := v_rejected + 1;
-      CONTINUE;
-    END IF;
+      v_competitor_price := (v_observation ->> 'competitor_price')::numeric;
+      v_original_price := NULLIF(v_observation ->> 'competitor_original_price', '')::numeric;
+      v_match_confidence := NULLIF(v_observation ->> 'match_confidence', '')::numeric;
+      v_item_id := NULLIF(v_observation ->> 'item_id', '')::uuid;
 
-    -- Compute price gap if not provided
-    IF v_obs.price_gap_percent IS NULL AND v_our_price IS NOT NULL AND v_obs.competitor_price IS NOT NULL AND v_obs.competitor_price > 0 THEN
-      v_gap := round(((v_our_price - v_obs.competitor_price) / v_obs.competitor_price) * 100, 2);
-    ELSE
-      v_gap := v_obs.price_gap_percent;
-    END IF;
+      IF v_competitor_price <= 0
+         OR (v_original_price IS NOT NULL AND v_original_price <= 0)
+         OR (v_match_confidence IS NOT NULL AND (v_match_confidence < 0 OR v_match_confidence > 1)) THEN
+        RAISE EXCEPTION 'invalid observation value';
+      END IF;
 
-    -- Build observation key for idempotency
-    v_obs_key := lower(trim(v_obs.competitor_key)) || ':' || p_store_id || ':' || v_obs.item_id || ':' || p_scrape_run_id::text;
+      v_item_name := NULL;
+      v_our_price := NULL;
 
-    -- Upsert by observation_key
-    INSERT INTO public.competitor_prices (
-      store_id, item_id, competitor_key, competitor_name,
-      competitor_price, competitor_original_price, competitor_product_url, competitor_product_id,
-      currency, our_price, price_gap_percent,
-      scrape_status, error_message, raw_data,
-      source, is_manual_override, observation_key, scrape_run_id,
-      scraped_at, product_name, product_sku,
-      match_confidence, match_method, match_metadata
-    ) VALUES (
-      p_store_id, v_obs.item_id, lower(trim(v_obs.competitor_key)), v_obs.competitor_name,
-      v_obs.competitor_price, v_obs.competitor_original_price, v_obs.competitor_product_url, v_obs.competitor_product_id,
-      COALESCE(v_obs.currency, 'BDT'), v_our_price, v_gap,
-      COALESCE(v_obs.scrape_status, 'success'), v_obs.error_message, v_obs.raw_data::jsonb,
-      'scraper', false, v_obs_key, p_scrape_run_id,
-      COALESCE(v_obs.scraped_at, now()), v_item_name, NULL,
-      v_obs.match_confidence, v_obs.match_method, COALESCE(v_obs.match_metadata::jsonb, '{}')
-    )
-    ON CONFLICT (observation_key) WHERE observation_key IS NOT NULL
-    DO NOTHING;
+      IF v_item_id IS NOT NULL THEN
+        SELECT i.name, i.price
+        INTO v_item_name, v_our_price
+        FROM public.items AS i
+        JOIN public.stores AS s
+          ON s.id = p_store_id
+         AND s.tenant_id = i.tenant_id
+        WHERE i.id = v_item_id;
 
-    IF FOUND THEN
-      v_inserted := v_inserted + 1;
-    ELSE
-      v_duplicates := v_duplicates + 1;
-    END IF;
+        IF NOT FOUND THEN
+          v_rejected := v_rejected + 1;
+          CONTINUE;
+        END IF;
+      END IF;
+
+      INSERT INTO public.competitor_prices (
+        store_id,
+        item_id,
+        product_name,
+        competitor_name,
+        competitor_key,
+        competitor_product_id,
+        competitor_product_url,
+        competitor_price,
+        competitor_original_price,
+        currency,
+        our_price,
+        price_gap_percent,
+        scraped_at,
+        scrape_status,
+        raw_data,
+        source,
+        is_override_active,
+        observation_key,
+        scrape_run_id,
+        match_confidence,
+        matcher_version,
+        match_metadata
+      )
+      VALUES (
+        p_store_id,
+        v_item_id,
+        v_observation ->> 'product_name',
+        trim(p_competitor),
+        lower(trim(p_competitor)),
+        NULLIF(v_observation ->> 'competitor_product_id', ''),
+        NULLIF(v_observation ->> 'competitor_product_url', ''),
+        v_competitor_price,
+        v_original_price,
+        'BDT',
+        v_our_price,
+        CASE
+          WHEN v_our_price IS NOT NULL
+            THEN round((v_our_price - v_competitor_price) / NULLIF(v_competitor_price, 0), 4)
+          ELSE NULL
+        END,
+        (v_observation ->> 'scraped_at')::timestamptz,
+        'success',
+        COALESCE(v_observation -> 'raw_data', '{}'::jsonb),
+        'scraper',
+        false,
+        v_observation ->> 'observation_key',
+        v_run_id,
+        v_match_confidence,
+        v_observation ->> 'matcher_version',
+        jsonb_build_object(
+          'matched_item_name', v_item_name,
+          'run_key', p_run_key
+        )
+      )
+      ON CONFLICT (observation_key) WHERE observation_key IS NOT NULL
+      DO NOTHING;
+
+      IF FOUND THEN
+        v_inserted := v_inserted + 1;
+      ELSE
+        v_duplicates := v_duplicates + 1;
+      END IF;
+    EXCEPTION
+      WHEN OTHERS THEN
+        v_rejected := v_rejected + 1;
+    END;
   END LOOP;
 
-  RETURN QUERY SELECT p_scrape_run_id, v_inserted, v_duplicates, v_rejected;
+  UPDATE public.competitor_scrape_runs
+  SET
+    inserted_count = inserted_count + v_inserted,
+    duplicate_count = duplicate_count + v_duplicates,
+    rejected_count = rejected_count + v_rejected,
+    updated_at = now()
+  WHERE id = v_run_id;
+
+  RETURN jsonb_build_object(
+    'run_id', v_run_id::text,
+    'inserted', v_inserted,
+    'duplicates', v_duplicates,
+    'rejected', v_rejected
+  );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
-COMMENT ON FUNCTION public.ingest_competitor_scrape_batch
-  IS 'Ingest a batch of scraper observations. Service-role only. Idempotent by observation_key. Rejects items not in the specified store. Returns (run_id, inserted, duplicates, rejected).';
+-- Price alerts use only effective manual/fresh prices.
+DROP FUNCTION IF EXISTS public.check_price_alerts(uuid, numeric);
 
-
--- 11. Update check_price_alerts to use new schema ---------------
-
-CREATE OR REPLACE FUNCTION public.check_price_alerts(
+CREATE FUNCTION public.check_price_alerts(
   p_store_id uuid,
   p_threshold numeric DEFAULT 0.15
 )
 RETURNS TABLE (
-  item_id          uuid,
-  item_name        text,
-  our_price        numeric,
+  item_id uuid,
+  item_name text,
+  our_price numeric,
   market_avg_price numeric,
   price_gap_percent numeric,
-  competitors      jsonb
-) AS $$
+  competitors jsonb
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role'
+     AND public.get_current_user_store_id() IS DISTINCT FROM p_store_id THEN
+    RAISE EXCEPTION 'not authorized for store'
+      USING ERRCODE = '42501';
+  END IF;
+
   RETURN QUERY
-  WITH effective_prices AS (
-    SELECT
-      ep.item_id,
-      ep.competitor_key,
-      ep.competitor_name,
-      ep.competitor_price,
-      ep.our_price
-    FROM public.get_effective_competitor_prices(p_store_id) ep
+  WITH effective AS (
+    SELECT ep.*
+    FROM public.get_effective_competitor_prices(p_store_id, NULL) AS ep
     WHERE ep.status IN ('manual', 'fresh')
   )
   SELECT
-    i.id AS item_id,
-    i.name AS item_name,
-    i.price AS our_price,
-    round(avg(ep.competitor_price)::numeric, 2) AS market_avg_price,
-    round(((i.price - avg(ep.competitor_price)) / NULLIF(avg(ep.competitor_price), 0))::numeric, 4) AS price_gap_percent,
-    jsonb_object_agg(ep.competitor_key, ep.competitor_price) AS competitors
-  FROM public.items i
-  JOIN effective_prices ep ON ep.item_id = i.id
-  WHERE i.store_id = p_store_id
+    i.id,
+    i.name,
+    i.price,
+    round(avg(effective.competitor_price), 2),
+    round(
+      ((i.price - avg(effective.competitor_price))
+        / NULLIF(avg(effective.competitor_price), 0)),
+      4
+    ),
+    jsonb_object_agg(effective.competitor_key, effective.competitor_price)
+  FROM public.items AS i
+  JOIN effective ON effective.item_id = i.id
   GROUP BY i.id, i.name, i.price
-  HAVING avg(ep.competitor_price) > 0
-    AND i.price > avg(ep.competitor_price) * (1 + p_threshold);
+  HAVING avg(effective.competitor_price) > 0
+     AND i.price > avg(effective.competitor_price) * (1 + p_threshold)
+  ORDER BY 5 DESC;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
+-- ---------------------------------------------------------------------------
+-- RLS and function privileges.
+-- ---------------------------------------------------------------------------
 
--- 12. RLS: tighten policies --------------------------------------------------
+ALTER TABLE public.competitor_prices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.competitor_scrape_runs ENABLE ROW LEVEL SECURITY;
 
--- Remove the old SELECT to authenticated (already done in 20260720 fix)
--- but add INSERT/UPDATE/DELETE policies for authenticated users on their store
+DROP POLICY IF EXISTS "Users can view competitor prices for their store"
+  ON public.competitor_prices;
+DROP POLICY IF EXISTS "Authenticated users can insert competitor prices for their store"
+  ON public.competitor_prices;
+DROP POLICY IF EXISTS "Authenticated users can update competitor prices for their store"
+  ON public.competitor_prices;
+DROP POLICY IF EXISTS "Authenticated users can delete competitor prices for their store"
+  ON public.competitor_prices;
+DROP POLICY IF EXISTS "Service role can manage competitor prices"
+  ON public.competitor_prices;
 
-CREATE POLICY "Authenticated users can insert competitor prices for their store"
+CREATE POLICY "Users can view competitor prices for their store"
   ON public.competitor_prices
-  FOR INSERT TO authenticated
-  WITH CHECK (store_id = public.get_current_user_store_id());
-
-CREATE POLICY "Authenticated users can update competitor prices for their store"
-  ON public.competitor_prices
-  FOR UPDATE TO authenticated
-  USING (store_id = public.get_current_user_store_id())
-  WITH CHECK (store_id = public.get_current_user_store_id());
-
-CREATE POLICY "Authenticated users can delete competitor prices for their store"
-  ON public.competitor_prices
-  FOR DELETE TO authenticated
+  FOR SELECT
+  TO authenticated
   USING (store_id = public.get_current_user_store_id());
 
--- Revoke overly-broad anon access (if it was granted in baseline)
-REVOKE ALL ON public.competitor_prices FROM anon;
-REVOKE ALL ON public.competitor_prices FROM authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.competitor_prices TO authenticated;
+CREATE POLICY "Service role can manage competitor prices"
+  ON public.competitor_prices
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Service role can manage competitor scrape runs"
+  ON public.competitor_scrape_runs
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
+
+REVOKE ALL ON public.competitor_prices FROM anon, authenticated;
+GRANT SELECT ON public.competitor_prices TO authenticated;
 GRANT ALL ON public.competitor_prices TO service_role;
 
+REVOKE ALL ON public.competitor_scrape_runs FROM anon, authenticated;
+GRANT ALL ON public.competitor_scrape_runs TO service_role;
 
--- 13. Grant execute on new RPCs ----------------------------------------------
+REVOKE EXECUTE ON FUNCTION public.set_manual_competitor_price(
+  uuid, uuid, text, text, numeric, text, text
+) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.clear_manual_competitor_price(
+  uuid, uuid, text
+) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.get_effective_competitor_prices(
+  uuid, uuid
+) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.ingest_competitor_scrape_batch(
+  text, timestamptz, text, uuid, jsonb, jsonb
+) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_old_competitor_prices(integer)
+  FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.check_price_alerts(uuid, numeric)
+  FROM PUBLIC, anon;
 
-GRANT EXECUTE ON FUNCTION public.set_manual_competitor_price TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.clear_manual_competitor_price TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.get_effective_competitor_prices TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.ingest_competitor_scrape_batch TO service_role;
-GRANT EXECUTE ON FUNCTION public.cleanup_old_competitor_prices TO service_role;
+GRANT EXECUTE ON FUNCTION public.set_manual_competitor_price(
+  uuid, uuid, text, text, numeric, text, text
+) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.clear_manual_competitor_price(
+  uuid, uuid, text
+) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.get_effective_competitor_prices(
+  uuid, uuid
+) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.ingest_competitor_scrape_batch(
+  text, timestamptz, text, uuid, jsonb, jsonb
+) TO service_role;
+GRANT EXECUTE ON FUNCTION public.cleanup_old_competitor_prices(integer)
+  TO service_role;
+GRANT EXECUTE ON FUNCTION public.check_price_alerts(uuid, numeric)
+  TO authenticated, service_role;

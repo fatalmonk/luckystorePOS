@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, Search } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '@/components';
-import { addCompetitorPrice, fetchCompetitorNames } from '../../lib/api/domains/competitorPrices';
+import {
+  addCompetitorPrice,
+  fetchCompetitorNames,
+  normalizeCompetitorKey,
+} from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
 import type { CompetitorPriceFormData } from '../../lib/api/types';
 import './AddPriceModal.css';
@@ -55,7 +59,10 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
 
   const addMutation = useMutation({
     mutationFn: (data: CompetitorPriceFormData) => addCompetitorPrice(storeId!, data),
-    onSuccess: () => {
+    onSuccess: (_result, data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['competitorPrices', 'effective', storeId, data.item_id],
+      });
       queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
       notify('Competitor price added', 'success');
       resetForm();
@@ -103,7 +110,7 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
     
     addMutation.mutate({
       item_id: selectedProduct.id,
-      competitor_key: competitorName.trim().toLowerCase().replace(/[^a-z0-9]/g, ''),
+      competitor_key: normalizeCompetitorKey(competitorName),
       competitor_name: competitorName.trim(),
       competitor_price: parseFloat(competitorPrice),
       competitor_url: competitorUrl.trim() || undefined,

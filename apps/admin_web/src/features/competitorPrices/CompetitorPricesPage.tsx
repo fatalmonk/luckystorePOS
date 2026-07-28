@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TrendingUp, Plus, Trash2, ExternalLink, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { TrendingUp, Plus, ExternalLink, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '@/components';
 import { DataTable, Column } from '@/components';
 import {
   fetchCompetitorPrices,
   fetchPriceAlerts,
-  deleteCompetitorPrice,
   clearManualCompetitorPrice,
 } from '../../lib/api/domains/competitorPrices';
 import { AddPriceModal } from './AddPriceModal';
@@ -50,19 +49,13 @@ export function CompetitorPricesPage() {
     enabled: !!storeId,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteCompetitorPrice,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
-      notify('Competitor price deleted', 'success');
-    },
-    onError: () => notify('Failed to delete', 'error'),
-  });
-
   const clearOverrideMutation = useMutation({
     mutationFn: ({ itemId, competitorKey }: { itemId: string; competitorKey: string }) =>
       clearManualCompetitorPrice(storeId!, itemId, competitorKey),
-    onSuccess: () => {
+    onSuccess: (_cleared, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['competitorPrices', 'effective', storeId, variables.itemId],
+      });
       queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
       notify('Manual override cleared', 'success');
     },
@@ -184,7 +177,7 @@ export function CompetitorPricesPage() {
           <span className={`text-xs font-medium ${row.source === 'manual' ? 'text-warm-accent' : 'text-warm-muted'}`}>
             {row.source}
           </span>
-          {row.is_manual_override && (
+          {row.is_override_active && (
             <span className="text-[10px] text-warm-accent">Override</span>
           )}
         </div>
@@ -248,7 +241,7 @@ export function CompetitorPricesPage() {
               <ExternalLink size={16} />
             </a>
           )}
-          {row.is_manual_override && (
+          {row.is_override_active && row.item_id && (
             <button
               onClick={() => clearOverrideMutation.mutate({ itemId: row.item_id, competitorKey: row.competitor_key })}
               disabled={clearOverrideMutation.isPending}
@@ -258,14 +251,6 @@ export function CompetitorPricesPage() {
               <TrendingUp size={16} />
             </button>
           )}
-          <button
-            onClick={() => deleteMutation.mutate(row.id)}
-            disabled={deleteMutation.isPending}
-            className="btn-icon btn-danger"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-          </button>
         </div>
       ),
     },

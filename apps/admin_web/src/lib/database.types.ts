@@ -420,13 +420,14 @@ export type Database = {
           currency: string | null
           error_message: string | null
           id: string
-          is_manual_override: boolean
-          item_id: string
+          is_override_active: boolean
+          item_id: string | null
           manual_override_at: string | null
+          manual_override_cleared_at: string | null
           manual_override_reason: string | null
-          match_confidence: string | null
-          match_metadata: Json | null
-          match_method: string | null
+          match_confidence: number | null
+          match_metadata: Json
+          matcher_version: string
           observation_key: string | null
           our_price: number | null
           price_gap_percent: number | null
@@ -452,13 +453,14 @@ export type Database = {
           currency?: string | null
           error_message?: string | null
           id?: string
-          is_manual_override?: boolean
-          item_id: string
+          is_override_active?: boolean
+          item_id?: string | null
           manual_override_at?: string | null
+          manual_override_cleared_at?: string | null
           manual_override_reason?: string | null
-          match_confidence?: string | null
-          match_metadata?: Json | null
-          match_method?: string | null
+          match_confidence?: number | null
+          match_metadata?: Json
+          matcher_version?: string
           observation_key?: string | null
           our_price?: number | null
           price_gap_percent?: number | null
@@ -484,13 +486,14 @@ export type Database = {
           currency?: string | null
           error_message?: string | null
           id?: string
-          is_manual_override?: boolean
-          item_id?: string
+          is_override_active?: boolean
+          item_id?: string | null
           manual_override_at?: string | null
+          manual_override_cleared_at?: string | null
           manual_override_reason?: string | null
-          match_confidence?: string | null
-          match_metadata?: Json | null
-          match_method?: string | null
+          match_confidence?: number | null
+          match_metadata?: Json
+          matcher_version?: string
           observation_key?: string | null
           our_price?: number | null
           price_gap_percent?: number | null
@@ -515,6 +518,56 @@ export type Database = {
           },
           {
             foreignKeyName: "competitor_prices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitor_scrape_runs: {
+        Row: {
+          competitor: string
+          created_at: string
+          duplicate_count: number
+          id: string
+          inserted_count: number
+          rejected_count: number
+          run_key: string
+          scheduled_at: string
+          store_id: string
+          summary: Json
+          updated_at: string
+        }
+        Insert: {
+          competitor: string
+          created_at?: string
+          duplicate_count?: number
+          id?: string
+          inserted_count?: number
+          rejected_count?: number
+          run_key: string
+          scheduled_at: string
+          store_id: string
+          summary?: Json
+          updated_at?: string
+        }
+        Update: {
+          competitor?: string
+          created_at?: string
+          duplicate_count?: number
+          id?: string
+          inserted_count?: number
+          rejected_count?: number
+          run_key?: string
+          scheduled_at?: string
+          store_id?: string
+          summary?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitor_scrape_runs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
@@ -4489,24 +4542,26 @@ export type Database = {
           our_price: number | null
           price_gap_percent: number | null
           source: string
-          is_manual_override: boolean
+          is_override_active: boolean
           manual_override_reason: string | null
           manual_override_at: string | null
-          scraped_at: string
+          observed_at: string
           competitor_product_url: string | null
-          match_confidence: string | null
-          match_method: string | null
+          match_confidence: number | null
+          matcher_version: string
           status: string
         }[]
       }
       ingest_competitor_scrape_batch: {
-        Args: { p_store_id: string; p_scrape_run_id: string; p_observations: Json }
-        Returns: {
-          run_id: string
-          inserted: number
-          duplicates: number
-          rejected: number
-        }[]
+        Args: {
+          p_run_key: string
+          p_scheduled_at: string
+          p_competitor: string
+          p_store_id: string
+          p_observations: Json
+          p_summary: Json
+        }
+        Returns: Json
       }
       set_manual_competitor_price: {
         Args: {

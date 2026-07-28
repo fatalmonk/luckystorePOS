@@ -319,14 +319,14 @@ export interface EffectiveCompetitorPrice {
   competitor_price: number;
   our_price: number | null;
   price_gap_percent: number | null;
-  source: 'scraper' | 'manual' | 'api';
-  is_manual_override: boolean;
+  source: 'scraper' | 'manual';
+  is_override_active: boolean;
   manual_override_reason: string | null;
   manual_override_at: string | null;
-  scraped_at: string;
+  observed_at: string;
   competitor_product_url: string | null;
-  match_confidence: string | null;
-  match_method: string | null;
+  match_confidence: number | null;
+  matcher_version: string;
   status: CompetitorPriceStatus;
 }
 
@@ -334,9 +334,9 @@ export interface EffectiveCompetitorPrice {
 export interface CompetitorPrice {
   id: string;
   store_id: string;
-  item_id: string;
-  item_name?: string;
-  sku?: string;
+  item_id: string | null;
+  item_name?: string | null;
+  sku?: string | null;
   competitor_key: string;
   competitor_name: string;
   competitor_price: number;
@@ -344,14 +344,15 @@ export interface CompetitorPrice {
   competitor_product_url?: string | null;
   our_price: number | null;
   price_gap_percent: number | null;
-  source: 'scraper' | 'manual' | 'api';
-  is_manual_override: boolean;
+  source: 'scraper' | 'manual';
+  is_override_active: boolean;
   manual_override_reason?: string | null;
   manual_override_at?: string | null;
+  manual_override_cleared_at?: string | null;
   observation_key?: string | null;
   scrape_run_id?: string | null;
-  match_confidence?: string | null;
-  match_method?: string | null;
+  match_confidence?: number | null;
+  matcher_version: string;
   match_metadata?: Record<string, unknown> | null;
   scraped_at: string;
   scrape_status?: string | null;
@@ -382,4 +383,3 @@ export type CompetitorPriceFilters = {
   dateFrom?: string;
   dateTo?: string;
 };
-

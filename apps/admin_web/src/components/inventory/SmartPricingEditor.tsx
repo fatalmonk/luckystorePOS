@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { AlertCircle, Pencil, X, Loader2 } from 'lucide-react';
+import { AlertCircle, X, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../../lib/AuthContext';
@@ -19,17 +19,20 @@ interface SmartPricingEditorProps {
   onCancel: () => void;
 }
 
-type CompetitorRow =
-  | { kind: 'loading' }
-  | { kind: 'error'; message: string }
-  | { kind: 'empty' }
-  | { kind: 'data'; price: EffectiveCompetitorPrice };
-
 const STATUS_LABELS: Record<CompetitorPriceStatus, { label: string; color: string }> = {
   fresh: { label: 'Fresh', color: 'text-warm-success' },
   stale: { label: 'Stale', color: 'text-warm-warning' },
   manual: { label: 'Manual', color: 'text-warm-accent' },
 };
+
+function formatObservationAge(observedAt: string): string {
+  const ageMs = Math.max(0, Date.now() - new Date(observedAt).getTime());
+  const minutes = Math.floor(ageMs / 60_000);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 export function SmartPricingEditor({
   itemId,
@@ -51,7 +54,6 @@ export function SmartPricingEditor({
     data: competitors,
     isLoading,
     isError,
-    error,
   } = useQuery({
     queryKey: ['competitorPrices', 'effective', storeId, itemId],
     queryFn: () => fetchEffectiveCompetitorPrices(storeId!, itemId),
@@ -154,13 +156,12 @@ export function SmartPricingEditor({
         <span className="text-xs text-warm-dim">Market:</span>
         {competitors.map((comp) => {
           const status = STATUS_LABELS[comp.status];
+          const observationAge = formatObservationAge(comp.observed_at);
           return (
             <div
               key={comp.competitor_key}
               className="flex items-center gap-1 text-[10px] bg-surface px-1.5 py-0.5 rounded group/comp relative"
-              title={`${comp.competitor_name}: ৳${comp.competitor_price} (${status?.label ?? comp.status})${
-                comp.is_manual_override ? ' — Manual override' : ''
-              }`}
+              title={`${comp.competitor_name}: ৳${comp.competitor_price} · ${comp.source} · ${observationAge} (${status?.label ?? comp.status})`}
             >
               <span className={`font-medium ${status?.color ?? 'text-warm-muted'}`}>
                 {comp.competitor_name.slice(0, 1).toUpperCase()}
@@ -171,12 +172,11 @@ export function SmartPricingEditor({
               {comp.status === 'stale' && (
                 <span className="text-[8px] text-warm-warning">stale</span>
               )}
-              {comp.is_manual_override && (
-                <span className="text-[8px] text-warm-accent">M</span>
-              )}
+              <span className="text-[8px] text-warm-muted">{observationAge}</span>
+              {comp.is_override_active && <span className="text-[8px] text-warm-accent">manual</span>}
               {/* Override actions on hover */}
               <div className="absolute -top-5 right-0 hidden group-hover/comp:flex items-center gap-0.5 bg-warm-surface-hover border border-warm-border-warm rounded px-1">
-                {comp.is_manual_override ? (
+                {comp.is_override_active ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -184,6 +184,7 @@ export function SmartPricingEditor({
                     }}
                     className="text-[9px] text-warm-danger hover:underline"
                     disabled={clearOverrideMutation.isPending}
+                    aria-label={`Clear ${comp.competitor_name} manual override`}
                   >
                     Clear
                   </button>
@@ -194,6 +195,7 @@ export function SmartPricingEditor({
                       handleSetOverride(comp);
                     }}
                     className="text-[9px] text-warm-accent hover:underline"
+                    aria-label={`Override ${comp.competitor_name} price`}
                   >
                     Override
                   </button>
@@ -232,6 +234,7 @@ export function SmartPricingEditor({
                 setOverrideReason('');
               }}
               className="text-warm-muted hover:text-warm-fg"
+              aria-label="Cancel manual override"
             >
               <X size={12} />
             </button>

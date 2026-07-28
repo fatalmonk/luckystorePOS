@@ -7,6 +7,10 @@ import type {
   CompetitorPriceFilters,
 } from '../types';
 
+export function normalizeCompetitorKey(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
 // ---------------------------------------------------------------------------
 // Effective competitor prices (RPC: get_effective_competitor_prices)
 // Returns exactly one row per competitor with freshness status.
@@ -69,13 +73,14 @@ export async function fetchCompetitorPrices(
     our_price: row.our_price ?? null,
     price_gap_percent: row.price_gap_percent ?? null,
     source: row.source ?? 'scraper',
-    is_manual_override: row.is_manual_override ?? false,
+    is_override_active: row.is_override_active ?? false,
     manual_override_reason: row.manual_override_reason ?? null,
     manual_override_at: row.manual_override_at ?? null,
+    manual_override_cleared_at: row.manual_override_cleared_at ?? null,
     observation_key: row.observation_key ?? null,
     scrape_run_id: row.scrape_run_id ?? null,
     match_confidence: row.match_confidence ?? null,
-    match_method: row.match_method ?? null,
+    matcher_version: row.matcher_version ?? 'legacy-v0',
     match_metadata: row.match_metadata ?? null,
     scraped_at: row.scraped_at,
     scrape_status: row.scrape_status ?? null,
@@ -94,7 +99,7 @@ interface PriceAlertResponse {
   our_price: number;
   market_avg_price: number;
   price_gap_percent: number;
-  competitors: any;
+  competitors: Record<string, number> | null;
 }
 
 export async function fetchPriceAlerts(
@@ -114,7 +119,7 @@ export async function fetchPriceAlerts(
     our_price: row.our_price,
     market_avg_price: row.market_avg_price,
     price_gap_percent: row.price_gap_percent,
-    competitors: Array.isArray(row.competitors) ? row.competitors.map(String) : [],
+    competitors: row.competitors ? Object.keys(row.competitors) : [],
   }));
 }
 
@@ -159,49 +164,22 @@ export async function clearManualCompetitorPrice(
 }
 
 // ---------------------------------------------------------------------------
-// Legacy: add/update/delete (kept for backward compatibility,
-// but manual overrides should go through the RPCs above)
+// Manual add uses the same history-preserving RPC as replacement.
 // ---------------------------------------------------------------------------
 
 export async function addCompetitorPrice(
   storeId: string,
   data: CompetitorPriceFormData,
 ): Promise<void> {
-  const { error } = await supabase.from('competitor_prices').insert({
-    store_id: storeId,
-    item_id: data.item_id,
-    competitor_key: data.competitor_key || data.competitor_name.toLowerCase(),
-    competitor_name: data.competitor_name,
-    competitor_price: data.competitor_price,
-    competitor_product_url: data.competitor_url || null,
-    source: 'manual',
-    is_manual_override: true,
-    scraped_at: new Date().toISOString(),
-    product_name: '',
-  } as any);
-
-  if (error) throw error;
-}
-
-export async function updateCompetitorPrice(
-  id: string,
-  data: Partial<CompetitorPriceFormData>,
-): Promise<void> {
-  const { error } = await supabase
-    .from('competitor_prices')
-    .update({
-      ...data,
-      competitor_product_url: data.competitor_url || null,
-      updated_at: new Date().toISOString(),
-    } as any)
-    .eq('id', id);
-
-  if (error) throw error;
-}
-
-export async function deleteCompetitorPrice(id: string): Promise<void> {
-  const { error } = await supabase.from('competitor_prices').delete().eq('id', id);
-  if (error) throw error;
+  await setManualCompetitorPrice(
+    storeId,
+    data.item_id,
+    data.competitor_key,
+    data.competitor_name,
+    data.competitor_price,
+    undefined,
+    data.competitor_url,
+  );
 }
 
 export async function fetchCompetitorNames(storeId: string): Promise<string[]> {
