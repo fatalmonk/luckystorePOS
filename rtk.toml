@@ -1,0 +1,53 @@
+[filters]
+ignore_dirs = [
+    ".git",
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    "out",
+    ".vercel",
+    ".wrangler",
+    "coverage",
+    "apps/admin_web/dist",
+    "apps/customer_storefront/.next",
+    "apps/mobile_app/build",
+    "apps/scraper/build",
+    "supabase/.temp",
+    "supabase/functions/*/node_modules",
+    "cloudflare/workers/*/node_modules",
+    "**/ios/Pods",
+    "**/android/.gradle",
+    "**/.dart_tool",
+    "**/__pycache__",
+    "**/.venv",
+    "**/.venv2",
+    "**/.venv3",
+]
+ignore_files = [
+    "*.lock",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "bun.lockb",
+    "pubspec.lock",
+    "Podfile.lock",
+    "*.min.js",
+    "*.min.css",
+    "*.g.dart",
+    "*.freezed.dart",
+    "*.log",
+    "*.tmp",
+    ".env",
+    ".env.local",
+    ".env.*",
+    "coverage/lcov.info",
+    "migrations.json",
+]
+
+[hooks]
+exclude_commands = ["playwright", "curl", "gh pr create", "gh issue create", "vercel --prod"]
+
+[display]
+ultra_compact = true
+max_width = 120
