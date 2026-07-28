@@ -49,6 +49,29 @@ describe('SmartPricingEditor market-data states', () => {
     } as never);
   });
 
+  it('shows loading without disabling pricing controls', () => {
+    mocks.useQuery.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+    } as never);
+    renderEditor();
+
+    expect(screen.getByText('Loading market data...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '10%' })).toBeEnabled();
+  });
+
+  it('shows an empty market-data state', () => {
+    mocks.useQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderEditor();
+
+    expect(screen.getByText('No competitor data available')).toBeInTheDocument();
+  });
+
   it('keeps normal pricing controls usable when market data fails', async () => {
     mocks.useQuery.mockReturnValue({
       data: undefined,
@@ -88,5 +111,61 @@ describe('SmartPricingEditor market-data states', () => {
 
     expect(screen.getByText('0m ago')).toBeInTheDocument();
     expect(screen.getByTitle(/scraper/)).toBeInTheDocument();
+  });
+
+  it('labels stale scraper observations', () => {
+    mocks.useQuery.mockReturnValue({
+      data: [{
+        item_id: 'item-1',
+        competitor_key: 'shwapno',
+        competitor_name: 'Shwapno',
+        competitor_price: 112,
+        our_price: 120,
+        price_gap_percent: 0.0714,
+        source: 'scraper',
+        is_override_active: false,
+        manual_override_reason: null,
+        manual_override_at: null,
+        observed_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+        competitor_product_url: null,
+        match_confidence: 0.96,
+        matcher_version: 'matcher-v1',
+        status: 'stale',
+      }],
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderEditor();
+
+    expect(screen.getByText('stale')).toBeInTheDocument();
+    expect(screen.getByText('9d ago')).toBeInTheDocument();
+  });
+
+  it('labels an active manual override', () => {
+    mocks.useQuery.mockReturnValue({
+      data: [{
+        item_id: 'item-1',
+        competitor_key: 'chaldal',
+        competitor_name: 'Chaldal',
+        competitor_price: 105,
+        our_price: 120,
+        price_gap_percent: 0.1429,
+        source: 'manual',
+        is_override_active: true,
+        manual_override_reason: 'Local check',
+        manual_override_at: new Date().toISOString(),
+        observed_at: new Date().toISOString(),
+        competitor_product_url: null,
+        match_confidence: null,
+        matcher_version: 'manual',
+        status: 'manual',
+      }],
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderEditor();
+
+    expect(screen.getByText('manual')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Clear Chaldal manual override' })).toBeEnabled();
   });
 });
