@@ -80,9 +80,9 @@ export function SearchSuggestions({
           {query ? 'Popular Matching' : 'Popular Searches'}
         </div>
         <div className="space-y-1">
-          {filteredPopular.map((term, index) => (
+          {filteredPopular.map((term) => (
             <button
-              key={index}
+              key={term}
               onClick={() => onSelect(term)}
               className="w-full text-left px-3 py-2 rounded-lg hover:bg-warm-border-light text-sm flex items-center gap-2"
             >
