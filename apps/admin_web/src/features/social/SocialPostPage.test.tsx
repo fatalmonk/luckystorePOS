@@ -34,7 +34,7 @@ vi.mock('@/lib/AuthContext', () => ({
 
 import { supabase } from '@/lib/supabase';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNotify } from '@/components/NotificationContext';
+import { useNotify } from '@/components';
 import { useAuth } from '@/lib/AuthContext';
 
 const mockSupabase = vi.mocked(supabase);

@@ -3,15 +3,15 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock } from '../../components/PageState';
-import { useNotify } from '../../components/NotificationContext';
-import { useDebounce } from '../../hooks/useDebounce';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Drawer } from '../../components/ui/Drawer';
-import { Modal } from '../../components/ui/Modal';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { FinanceMetricCard } from '../../components/data-display/FinanceMetricCard';
-import { TableFilters } from '../../components/data-display/TableFilters';
+import { ErrorState, EmptyState, SkeletonBlock } from '@/components';
+import { useNotify } from '@/components';
+import { useDebounce } from '@/hooks';
+import { PageHeader } from '@/components';
+import { Drawer } from '@/components';
+import { Modal } from '@/components';
+import { ConfirmDialog } from '@/components';
+import { FinanceMetricCard } from '@/components';
+import { TableFilters } from '@/components';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts';

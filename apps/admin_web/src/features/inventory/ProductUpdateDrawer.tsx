@@ -7,11 +7,11 @@ import { supabase } from "@/lib/supabase";
 import { deleteFromR2, extractR2Key } from '../../lib/r2';
 import { uploadProcessedImage } from '../../lib/images';
 import { clsx } from 'clsx';
-import { useNotify } from '../../components/NotificationContext';
+import { useNotify } from '@/components';
 import { useAuth } from '../../lib/AuthContext';
 import type { Database } from '../../lib/database.types';
 import { PriceHistoryMini } from './PriceHistoryMini';
-import { CategoryPicker } from '@/components/inventory/CategoryPicker';
+import { CategoryPicker } from '@/components';
 
 type ProductWithExtras = {
   id: string;

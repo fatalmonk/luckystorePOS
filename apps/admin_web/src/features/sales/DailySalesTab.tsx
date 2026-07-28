@@ -25,10 +25,10 @@ import {
   Tooltip,
   XAxis, YAxis,
 } from 'recharts';
-import { FinanceMetricCard } from '../../components/data-display/FinanceMetricCard';
-import { useNotify } from '../../components/NotificationContext';
-import { EmptyState, ErrorState, SkeletonBlock } from '../../components/PageState';
-import { Drawer } from '../../components/ui/Drawer';
+import { FinanceMetricCard } from '@/components';
+import { useNotify } from '@/components';
+import { EmptyState, ErrorState, SkeletonBlock } from '@/components';
+import { Drawer } from '@/components';
 import { api } from '../../lib/api';
 import type { DailySale, DailySaleFormData } from '../../lib/api/types';
 import { useAuth } from '../../lib/AuthContext';

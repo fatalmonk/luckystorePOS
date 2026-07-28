@@ -4,10 +4,10 @@ import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { uploadProcessedImage } from '../../lib/images';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
-import { Modal } from '../../components/ui/Modal';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
+import { useNotify } from '@/components';
+import { Modal } from '@/components';
+import { Input } from '@/components';
+import { Button } from '@/components';
 import { Plus, Upload, X, Package } from 'lucide-react';
 
 interface Category {

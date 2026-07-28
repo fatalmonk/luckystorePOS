@@ -1,16 +1,16 @@
 
 
 import React, { useState } from 'react';
-import { Drawer } from '../../components/ui/Drawer';
-import { Button } from '../../components/ui/Button';
+import { Drawer } from '@/components';
+import { Button } from '@/components';
 import { Edit2, Package, TrendingUp, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { SkeletonBlock } from '../../components/PageState';
-import { Badge } from '../../components/ui/Badge';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { useNotify } from '../../components/NotificationContext';
+import { SkeletonBlock } from '@/components';
+import { Badge } from '@/components';
+import { ConfirmDialog } from '@/components';
+import { useNotify } from '@/components';
 
 interface ProductDetailDrawerProps {
   productId: string | null;

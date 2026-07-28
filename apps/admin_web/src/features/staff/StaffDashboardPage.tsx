@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { staff } from '../../lib/api/domains/staff';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
-import { Modal } from '../../components/ui/Modal';
+import { useNotify } from '@/components';
+import { Modal } from '@/components';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '../../lib/format';

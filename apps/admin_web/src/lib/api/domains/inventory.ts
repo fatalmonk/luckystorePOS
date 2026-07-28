@@ -66,8 +66,7 @@ export const inventory = {
     if ('last_purchased_date' in updates) {
       delete (updates as any).last_purchased_date;
     }
-    console.log('[updateProduct] Updating item:', { storeId, itemId, updates });
-    
+
     // RLS requires store_id check - filter by both id AND store_id
     const { data, error } = await supabase
       .from('items')

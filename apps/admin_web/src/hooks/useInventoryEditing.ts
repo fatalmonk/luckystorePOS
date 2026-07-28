@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { useNotify } from '../components/NotificationContext';
+import { useNotify } from '@/components';
 import type { InventoryItem, InventoryEditableField } from '../types/inventory';
 import { INVENTORY_NUMERIC_FIELDS } from '../types/inventory';
 
@@ -23,8 +23,6 @@ export function useInventoryEditing(storeId: string | undefined) {
       } else if (['price', 'cost', 'mrp', 'current_qty'].includes(field)) {
         processedValue = typeof value === 'string' ? parseFloat(value) : value;
       }
-
-      console.log('[InlineSave] Updating:', { itemId, field, originalValue: value, processedValue, storeId });
 
       try {
         // Optimistic update

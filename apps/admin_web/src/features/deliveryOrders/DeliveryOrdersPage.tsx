@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
-import { useRealtimeSubscription } from '../../hooks/useRealtime';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { SkeletonCard, ErrorState } from '../../components/PageState';
+import { useNotify } from '@/components';
+import { useRealtimeSubscription } from '@/hooks';
+import { PageHeader } from '@/components';
+import { SkeletonCard, ErrorState } from '@/components';
 import { 
   ShoppingBag, Search, Filter, Phone, MapPin, User, 
   Calendar, Check, ChevronDown, ChevronUp, AlertCircle 

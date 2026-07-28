@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader } from '../../components/layout/PageHeader';
+import { PageHeader } from '@/components';
 import { DailySalesTab } from '../sales/DailySalesTab';
 import { ExpensesTab } from '../expenses/ExpensesTab';
 import { ProfitAndLossTab } from './ProfitAndLossTab';

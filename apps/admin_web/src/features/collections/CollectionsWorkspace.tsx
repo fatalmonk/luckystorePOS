@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from '../../lib/AuthContext';
 import { Phone, MessageCircle, FileText, Check, AlertCircle, X, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
-import { EmptyState, SkeletonCard, SkeletonBlock } from '../../components/PageState';
-import { useDebounce } from '../../hooks/useDebounce';
+import { EmptyState, SkeletonCard, SkeletonBlock } from '@/components';
+import { useDebounce } from '@/hooks';
 import { formatCurrency } from '../../lib/format';
 
 type Receivable = {

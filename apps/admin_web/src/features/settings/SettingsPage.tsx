@@ -2,15 +2,15 @@ import { useState, useLayoutEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState, EmptyState, SkeletonBlock, SkeletonRow } from '../../components/PageState';
+import { ErrorState, EmptyState, SkeletonBlock, SkeletonRow } from '@/components';
 import { Users, CreditCard, FileText, UserPlus, Save, Check, ToggleLeft, ToggleRight, Trash2, Edit2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AddUserModal } from './AddUserModal';
 import { AddPaymentMethodModal } from './AddPaymentMethodModal';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { Modal } from '../../components/ui/Modal';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { useNotify } from '../../components/NotificationContext';
+import { ConfirmDialog } from '@/components';
+import { Modal } from '@/components';
+import { PageHeader } from '@/components';
+import { useNotify } from '@/components';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',

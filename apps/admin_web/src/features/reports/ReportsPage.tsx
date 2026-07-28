@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { PageHeader } from '../../components/layout/PageHeader';
+import { PageHeader } from '@/components';
 import { BarChart3, TrendingUp, Package, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
-import { ErrorState, SkeletonBlock } from '../../components/PageState';
-import { MetricCard } from '../../components/data-display/MetricCard';
+import { ErrorState, SkeletonBlock } from '@/components';
+import { MetricCard } from '@/components';
 import { useAuth } from '../../lib/AuthContext';
 import { formatCurrency } from '../../lib/format';
 import { api } from '../../lib/api';

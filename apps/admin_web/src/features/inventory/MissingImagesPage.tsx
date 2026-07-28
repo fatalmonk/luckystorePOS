@@ -2,15 +2,15 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { useNotify } from '../../components/NotificationContext';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
+import { useNotify } from '@/components';
+import { PageHeader } from '@/components';
+import { Card } from '@/components';
+import { Button } from '@/components';
 import { Upload, ImageIcon, Check, X, Package } from 'lucide-react';
 import { uploadProcessedImage } from '../../lib/images';
 import type { InventoryItem } from '@/types/inventory';
-import { ErrorState } from '../../components/PageState';
-import { SkeletonBlock } from '../../components/PageState';
+import { ErrorState } from '@/components';
+import { SkeletonBlock } from '@/components';
 
 export function MissingImagesPage() {
   const { storeId } = useAuth();

@@ -3,9 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from '../../lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Trash2, Save, Send, Search, Package } from 'lucide-react';
-import { SkeletonBlock } from '../../components/PageState';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { useDebounce } from '../../hooks/useDebounce';
+import { SkeletonBlock } from '@/components';
+import { PageHeader } from '@/components';
+import { useDebounce } from '@/hooks';
 import { clsx } from 'clsx';
 
 type Supplier = {
