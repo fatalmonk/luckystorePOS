@@ -78,12 +78,71 @@ SELECT set_config(
   true
 );
 
--- Ensure test items exist.
+-- Deterministic tenant, store, identity, and item fixtures. The test must not
+-- depend on rows created by another suite or a developer database.
+INSERT INTO public.tenants (id, name)
+VALUES
+  ('91000000-0000-0000-0000-000000000001', 'Competitor pricing tenant A'),
+  ('91000000-0000-0000-0000-000000000002', 'Competitor pricing tenant B');
+
+INSERT INTO public.stores (id, tenant_id, code, name)
+VALUES
+  (
+    '92000000-0000-0000-0000-000000000001',
+    '91000000-0000-0000-0000-000000000001',
+    'COMP-TEST-A',
+    'Competitor pricing store A'
+  ),
+  (
+    '92000000-0000-0000-0000-000000000002',
+    '91000000-0000-0000-0000-000000000002',
+    'COMP-TEST-B',
+    'Competitor pricing store B'
+  );
+
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, created_at, updated_at
+)
+VALUES (
+  '95000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'competitor-a@test.invalid',
+  '',
+  now(),
+  now(),
+  now()
+);
+
+INSERT INTO public.users (
+  id, auth_id, email, role, store_id, tenant_id, name
+)
+VALUES (
+  '95000000-0000-0000-0000-000000000001',
+  '95000000-0000-0000-0000-000000000001',
+  'competitor-a@test.invalid',
+  'manager',
+  '92000000-0000-0000-0000-000000000001',
+  '91000000-0000-0000-0000-000000000001',
+  'Competitor pricing manager A'
+);
+
 INSERT INTO public.items (id, name, price, tenant_id)
 VALUES
-  ('93000000-0000-0000-0000-000000000001', 'Test Item A', 120, (SELECT tenant_id FROM public.stores WHERE id = '92000000-0000-0000-0000-000000000001')),
-  ('93000000-0000-0000-0000-000000000002', 'Test Item B', 200, (SELECT tenant_id FROM public.stores WHERE id = '92000000-0000-0000-0000-000000000002'))
-ON CONFLICT (id) DO NOTHING;
+  (
+    '93000000-0000-0000-0000-000000000001',
+    'Test Item A',
+    120,
+    '91000000-0000-0000-0000-000000000001'
+  ),
+  (
+    '93000000-0000-0000-0000-000000000002',
+    'Test Item B',
+    200,
+    '91000000-0000-0000-0000-000000000002'
+  );
 
 -- ---------------------------------------------------------------------------
 -- Successful ingestion and idempotency
@@ -205,6 +264,50 @@ SELECT public.ingest_competitor_scrape_batch(
   ),
   '{"test":"rls-store-b"}'::jsonb
 );
+
+-- A store-A batch cannot attach an observation to a store-B tenant item.
+DO $$
+DECLARE
+  v_result jsonb;
+BEGIN
+  v_result := public.ingest_competitor_scrape_batch(
+    'competitor-test-wrong-store-item',
+    transaction_timestamp(),
+    'chaldal',
+    '92000000-0000-0000-0000-000000000001',
+    jsonb_build_array(
+      jsonb_build_object(
+        'observation_key', 'competitor-test:wrong-store-item',
+        'competitor_product_id', 'chaldal:wrong-store',
+        'competitor_product_url', NULL,
+        'product_name', 'Wrong-store item',
+        'competitor_price', 110,
+        'competitor_original_price', NULL,
+        'currency', 'BDT',
+        'scraped_at', transaction_timestamp(),
+        'item_id', '93000000-0000-0000-0000-000000000002',
+        'match_confidence', 1,
+        'matcher_version', 'matcher-test',
+        'raw_data', '{}'::jsonb
+      )
+    ),
+    '{"test":"wrong-store-item"}'::jsonb
+  );
+
+  IF (v_result ->> 'inserted')::integer <> 0
+     OR (v_result ->> 'rejected')::integer <> 1 THEN
+    RAISE EXCEPTION 'wrong-store item was not rejected: %', v_result;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM public.competitor_prices
+    WHERE observation_key = 'competitor-test:wrong-store-item'
+  ) THEN
+    RAISE EXCEPTION 'wrong-store observation was inserted';
+  END IF;
+END;
+$$;
 
 SELECT set_config(
   'request.jwt.claims',
@@ -353,9 +456,20 @@ RESET ROLE;
 -- Stale status transitions (8 days → stale, 30 days → hidden)
 -- ---------------------------------------------------------------------------
 
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp() - interval '8 days'
-WHERE observation_key = 'competitor-test:matched';
+DO $$
+DECLARE
+  v_updated integer;
+BEGIN
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp() - interval '8 days'
+  WHERE observation_key = 'competitor-test:matched';
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 1 THEN
+    RAISE EXCEPTION 'expected to age one matched row to 8 days, updated %', v_updated;
+  END IF;
+END;
+$$;
 
 DO $$
 DECLARE
@@ -374,9 +488,20 @@ BEGIN
 END;
 $$;
 
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp() - interval '30 days'
-WHERE observation_key = 'competitor-test:matched';
+DO $$
+DECLARE
+  v_updated integer;
+BEGIN
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp() - interval '30 days'
+  WHERE observation_key = 'competitor-test:matched';
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 1 THEN
+    RAISE EXCEPTION 'expected to age one matched row to 30 days, updated %', v_updated;
+  END IF;
+END;
+$$;
 
 DO $$
 BEGIN
@@ -397,9 +522,20 @@ $$;
 -- Retention: exactly 90-day rows survive; strictly older than 90 are deleted
 -- ---------------------------------------------------------------------------
 
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp() - interval '100 days'
-WHERE observation_key IN ('competitor-test:matched', 'competitor-test:unmatched');
+DO $$
+DECLARE
+  v_updated integer;
+BEGIN
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp() - interval '100 days'
+  WHERE observation_key IN ('competitor-test:matched', 'competitor-test:unmatched');
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 2 THEN
+    RAISE EXCEPTION 'expected to age two cleanup rows, updated %', v_updated;
+  END IF;
+END;
+$$;
 
 DO $$
 DECLARE
@@ -422,7 +558,7 @@ END;
 $$;
 
 -- ---------------------------------------------------------------------------
--- Wrong-store clear_manual_competitor_price is denied
+-- Wrong-store set_manual_competitor_price is denied
 -- ---------------------------------------------------------------------------
 
 SELECT set_config(
@@ -430,6 +566,35 @@ SELECT set_config(
   '{"sub":"95000000-0000-0000-0000-000000000001","role":"authenticated"}',
   true
 );
+
+DO $$
+DECLARE
+  v_denied boolean := false;
+BEGIN
+  BEGIN
+    PERFORM public.set_manual_competitor_price(
+      '92000000-0000-0000-0000-000000000002',
+      '93000000-0000-0000-0000-000000000002',
+      'chaldal',
+      'Chaldal',
+      99,
+      'wrong-store attempt',
+      NULL
+    );
+  EXCEPTION
+    WHEN insufficient_privilege THEN
+      v_denied := true;
+  END;
+
+  IF NOT v_denied THEN
+    RAISE EXCEPTION 'wrong-store set_manual_competitor_price was not denied';
+  END IF;
+END;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Wrong-store clear_manual_competitor_price is denied
+-- ---------------------------------------------------------------------------
 
 DO $$
 DECLARE
@@ -513,7 +678,7 @@ BEGIN
       'competitor-test-auth-denied',
       transaction_timestamp(),
       'chaldal',
-      '92000000-0000-0000-0000-000000000001',
+      '92000000-0000-0000-0000-000000000002',
       '[]'::jsonb,
       '{}'::jsonb
     );
@@ -606,7 +771,7 @@ BEGIN
   -- Manual override (105) should appear in the competitors JSON for alerts
   SELECT * INTO v_alert
   FROM public.check_price_alerts(
-    '92000000-0000-0000-0000-0000-000000000001',
+    '92000000-0000-0000-0000-000000000001',
     0.0
   )
   WHERE item_id = '93000000-0000-0000-0000-000000000001';
@@ -627,17 +792,64 @@ $$;
 -- Stale competitor exclusion from alerts
 -- ---------------------------------------------------------------------------
 
--- Make the chaldal scraper observation stale (already 100 days old from cleanup)
--- and verify stale keys do not appear in the competitors JSON returned by alerts.
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp() - interval '10 days'
-WHERE observation_key = 'competitor-test:matched';
+-- The original matched Chaldal row was intentionally removed by the retention
+-- test. Ingest a new row so stale classification and exclusion are both real.
+SELECT public.ingest_competitor_scrape_batch(
+  'competitor-test-stale-alert-run',
+  transaction_timestamp(),
+  'chaldal',
+  '92000000-0000-0000-0000-000000000001',
+  jsonb_build_array(
+    jsonb_build_object(
+      'observation_key', 'competitor-test:stale-alert-chaldal',
+      'competitor_product_id', 'chaldal:stale-alert',
+      'competitor_product_url', NULL,
+      'product_name', 'Competitor test item A',
+      'competitor_price', 100,
+      'competitor_original_price', NULL,
+      'currency', 'BDT',
+      'scraped_at', transaction_timestamp(),
+      'item_id', '93000000-0000-0000-0000-000000000001',
+      'match_confidence', 0.98,
+      'matcher_version', 'matcher-test',
+      'raw_data', '{}'::jsonb
+    )
+  ),
+  '{"test":"stale-alert"}'::jsonb
+);
+
+DO $$
+DECLARE
+  v_updated integer;
+BEGIN
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp() - interval '10 days'
+  WHERE observation_key = 'competitor-test:stale-alert-chaldal';
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 1 THEN
+    RAISE EXCEPTION 'expected to age one stale-alert row, updated %', v_updated;
+  END IF;
+END;
+$$;
 
 DO $$
 DECLARE
   v_alert record;
   v_has_chaldal boolean;
+  v_status text;
 BEGIN
+  SELECT status INTO v_status
+  FROM public.get_effective_competitor_prices(
+    '92000000-0000-0000-0000-000000000001',
+    '93000000-0000-0000-0000-000000000001'
+  )
+  WHERE competitor_key = 'chaldal';
+
+  IF v_status IS DISTINCT FROM 'stale' THEN
+    RAISE EXCEPTION '10-day Chaldal observation must be stale, got %', v_status;
+  END IF;
+
   SELECT * INTO v_alert
   FROM public.check_price_alerts(
     '92000000-0000-0000-0000-000000000001',
@@ -654,11 +866,22 @@ END;
 $$;
 
 -- Reset chaldal to fresh for threshold tests
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp()
-WHERE observation_key = 'competitor-test:matched'
-  AND source = 'scraper'
-  AND store_id = '92000000-0000-0000-0000-000000000001';
+DO $$
+DECLARE
+  v_updated integer;
+BEGIN
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp()
+  WHERE observation_key = 'competitor-test:stale-alert-chaldal'
+    AND source = 'scraper'
+    AND store_id = '92000000-0000-0000-0000-000000000001';
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 1 THEN
+    RAISE EXCEPTION 'expected to refresh one stale-alert row, updated %', v_updated;
+  END IF;
+END;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Low and high threshold behavior
@@ -743,15 +966,31 @@ SELECT public.ingest_competitor_scrape_batch(
   '{}'::jsonb
 );
 
--- Set one row to exactly 90 days old
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp() - interval '90 days'
-WHERE observation_key = 'competitor-test:boundary-90';
+DO $$
+DECLARE
+  v_updated integer;
+BEGIN
+  -- Set one row to exactly 90 days old.
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp() - interval '90 days'
+  WHERE observation_key = 'competitor-test:boundary-90';
 
--- Set the other to 91 days old
-UPDATE public.competitor_prices
-SET scraped_at = transaction_timestamp() - interval '91 days'
-WHERE observation_key = 'competitor-test:boundary-91';
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 1 THEN
+    RAISE EXCEPTION 'expected to age one 90-day boundary row, updated %', v_updated;
+  END IF;
+
+  -- Set the other to 91 days old.
+  UPDATE public.competitor_prices
+  SET scraped_at = transaction_timestamp() - interval '91 days'
+  WHERE observation_key = 'competitor-test:boundary-91';
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  IF v_updated <> 1 THEN
+    RAISE EXCEPTION 'expected to age one 91-day boundary row, updated %', v_updated;
+  END IF;
+END;
+$$;
 
 DO $$
 DECLARE
@@ -846,15 +1085,11 @@ BEGIN
     '{}'::jsonb
   );
 
-  -- Ingestion result must contain exactly the frozen contract fields
+  -- Ingestion result must contain exactly the frozen contract fields.
   IF NOT (v_result ? 'run_id' AND v_result ? 'inserted'
-              AND v_result ? 'duplicates' AND v_result ? 'rejected') THEN
-    RAISE EXCEPTION 'ingestion result missing frozen fields: %', v_result;
-  END IF;
-
-  -- Ingestion result must NOT contain 'cleaned'
-  IF v_result ? 'cleaned' THEN
-    RAISE EXCEPTION 'ingestion result must not expose cleaned count';
+              AND v_result ? 'duplicates' AND v_result ? 'rejected')
+     OR (SELECT count(*) FROM jsonb_object_keys(v_result)) <> 4 THEN
+    RAISE EXCEPTION 'ingestion result does not match frozen fields: %', v_result;
   END IF;
 
   -- The 100-day-old scraper row should be gone
