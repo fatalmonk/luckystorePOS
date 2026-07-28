@@ -242,7 +242,7 @@ export function InventoryListPage() {
           return 0;
       }
     });
-  }, [inventory, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
+  }, [inventory, categories, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
