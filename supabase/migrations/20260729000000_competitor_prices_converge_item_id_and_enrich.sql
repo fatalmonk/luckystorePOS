@@ -180,6 +180,12 @@ CREATE INDEX IF NOT EXISTS idx_competitor_prices_scrape_run
 CREATE INDEX IF NOT EXISTS idx_competitor_scrape_runs_lookup
   ON public.competitor_scrape_runs (store_id, competitor, scheduled_at DESC);
 
+-- Supports retention cleanup: efficiently finds scraper rows older than the
+-- retention window without a full-table scan.
+CREATE INDEX IF NOT EXISTS idx_competitor_prices_scraper_retention
+  ON public.competitor_prices (scraped_at)
+  WHERE source = 'scraper';
+
 DROP TRIGGER IF EXISTS trg_cleanup_competitor_prices ON public.competitor_prices;
 DROP FUNCTION IF EXISTS public.trigger_cleanup_competitor_prices();
 DROP FUNCTION IF EXISTS public.cleanup_old_competitor_prices();
@@ -490,7 +496,7 @@ DECLARE
   v_inserted integer := 0;
   v_duplicates integer := 0;
   v_rejected integer := 0;
-  v_cleaned integer;
+  v_cleaned integer;  -- private: not exposed in response
 BEGIN
   IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role' THEN
     RAISE EXCEPTION 'service_role required'
@@ -648,8 +654,7 @@ BEGIN
     'run_id', v_run_id::text,
     'inserted', v_inserted,
     'duplicates', v_duplicates,
-    'rejected', v_rejected,
-    'cleaned', v_cleaned
+    'rejected', v_rejected
   );
 END;
 $$;

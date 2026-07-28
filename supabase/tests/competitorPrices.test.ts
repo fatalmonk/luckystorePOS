@@ -8,6 +8,12 @@ const migrationPath = resolve(
 );
 const migration = readFileSync(migrationPath, 'utf8');
 
+const runtimeSqlPath = resolve(
+  import.meta.dirname,
+  'competitor_prices_forward_migration_test.sql',
+);
+const runtimeSql = readFileSync(runtimeSqlPath, 'utf8');
+
 describe('competitor pricing migration contract', () => {
   it('copies product_id before dropping it and keeps unmatched item_id nullable', () => {
     const copyPosition = migration.indexOf('SET item_id = product_id');
@@ -58,12 +64,19 @@ describe('competitor pricing migration contract', () => {
     expect(migration).toMatch(
       /v_cleaned\s*:=\s*public\.cleanup_old_competitor_prices\(90\)/,
     );
-    // Result must include cleaned count
-    expect(migration).toContain("'cleaned', v_cleaned");
     // Cleanup uses strict older-than (not older-or-equal) via `<` comparison
     expect(migration).toContain(
       "AND scraped_at < now() - make_interval(days => p_retention_days)",
     );
+  });
+
+  it('does not expose cleanup count in the frozen ingestion response', () => {
+    // The response must contain exactly: run_id, inserted, duplicates, rejected
+    expect(migration).toContain("'run_id', v_run_id");
+    expect(migration).toContain("'inserted', v_inserted");
+    expect(migration).toContain("'duplicates', v_duplicates");
+    expect(migration).toContain("'rejected', v_rejected");
+    expect(migration).not.toContain("'cleaned', v_cleaned");
   });
 
   it('ensures manual rows are never deleted by cleanup', () => {
@@ -74,5 +87,17 @@ describe('competitor pricing migration contract', () => {
     expect(migration).not.toMatch(
       /DELETE FROM public\.competitor_prices[\s\S]{0,200}source = 'manual'/,
     );
+  });
+
+  it('creates a retention index for scraper rows', () => {
+    expect(migration).toContain('idx_competitor_prices_scraper_retention');
+    expect(migration).toMatch(
+      /CREATE INDEX IF NOT EXISTS idx_competitor_prices_scraper_retention[\s\S]*?ON public\.competitor_prices\s*\(\s*scraped_at\s*\)[\s\S]*?WHERE source = 'scraper'/,
+    );
+  });
+
+  it('runtime SQL contains no literal backslash-n sequences', () => {
+    // A regression guard: the runtime test file must be real SQL, not escaped text
+    expect(runtimeSql).not.toContain('\\n');
   });
 });
