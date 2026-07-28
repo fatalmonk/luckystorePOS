@@ -410,6 +410,7 @@ export type Database = {
       }
       competitor_prices: {
         Row: {
+          competitor_key: string
           competitor_name: string
           competitor_original_price: number | null
           competitor_price: number
@@ -419,19 +420,29 @@ export type Database = {
           currency: string | null
           error_message: string | null
           id: string
-          item_id: string | null
+          is_manual_override: boolean
+          item_id: string
+          manual_override_at: string | null
+          manual_override_reason: string | null
+          match_confidence: string | null
+          match_metadata: Json | null
+          match_method: string | null
+          observation_key: string | null
           our_price: number | null
           price_gap_percent: number | null
           product_name: string
           product_sku: string | null
           raw_data: Json | null
           scrape_batch_id: string | null
+          scrape_run_id: string | null
           scrape_status: string | null
           scraped_at: string
+          source: string
           store_id: string
           updated_at: string
         }
         Insert: {
+          competitor_key?: string
           competitor_name: string
           competitor_original_price?: number | null
           competitor_price: number
@@ -441,50 +452,62 @@ export type Database = {
           currency?: string | null
           error_message?: string | null
           id?: string
-          item_id?: string | null
-          our_price?: number | null
-          price_gap_percent?: number | null
-          product_name: string
-          product_sku?: string | null
-          raw_data?: Json | null
-          scrape_batch_id?: string | null
-          scrape_status?: string | null
-          scraped_at?: string
-          store_id: string
-          updated_at?: string
-        }
-        Update: {
-          competitor_name?: string
-          competitor_original_price?: number | null
-          competitor_price?: number
-          competitor_product_id?: string | null
-          competitor_product_url?: string | null
-          created_at?: string
-          currency?: string | null
-          error_message?: string | null
-          id?: string
-          item_id?: string | null
+          is_manual_override?: boolean
+          item_id: string
+          manual_override_at?: string | null
+          manual_override_reason?: string | null
+          match_confidence?: string | null
+          match_metadata?: Json | null
+          match_method?: string | null
+          observation_key?: string | null
           our_price?: number | null
           price_gap_percent?: number | null
           product_name?: string
           product_sku?: string | null
           raw_data?: Json | null
           scrape_batch_id?: string | null
+          scrape_run_id?: string | null
           scrape_status?: string | null
           scraped_at?: string
+          source?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          competitor_key?: string
+          competitor_name?: string
+          competitor_original_price?: number | null
+          competitor_price?: number | null
+          competitor_product_id?: string | null
+          competitor_product_url?: string | null
+          created_at?: string
+          currency?: string | null
+          error_message?: string | null
+          id?: string
+          is_manual_override?: boolean
+          item_id?: string
+          manual_override_at?: string | null
+          manual_override_reason?: string | null
+          match_confidence?: string | null
+          match_metadata?: Json | null
+          match_method?: string | null
+          observation_key?: string | null
+          our_price?: number | null
+          price_gap_percent?: number | null
+          product_name?: string
+          product_sku?: string | null
+          raw_data?: Json | null
+          scrape_batch_id?: string | null
+          scrape_run_id?: string | null
+          scrape_status?: string | null
+          scraped_at?: string
+          source?: string
           store_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "competitor_prices_product_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "featured_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "competitor_prices_product_id_fkey"
+            foreignKeyName: "competitor_prices_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
@@ -4407,12 +4430,12 @@ export type Database = {
       check_price_alerts: {
         Args: { p_store_id: string; p_threshold?: number }
         Returns: {
-          competitors: Json
-          market_avg_price: number
+          item_id: string
+          item_name: string
           our_price: number
+          market_avg_price: number
           price_gap_percent: number
-          product_id: string
-          product_name: string
+          competitors: Json
         }[]
       }
       check_rate_limit: {
@@ -4448,7 +4471,55 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      cleanup_old_competitor_prices: { Args: never; Returns: undefined }
+      cleanup_old_competitor_prices: {
+        Args: { p_retention_days?: number }
+        Returns: number
+      }
+      clear_manual_competitor_price: {
+        Args: { p_store_id: string; p_item_id: string; p_competitor_key: string }
+        Returns: boolean
+      }
+      get_effective_competitor_prices: {
+        Args: { p_store_id: string; p_item_id?: string | null }
+        Returns: {
+          item_id: string
+          competitor_key: string
+          competitor_name: string
+          competitor_price: number
+          our_price: number | null
+          price_gap_percent: number | null
+          source: string
+          is_manual_override: boolean
+          manual_override_reason: string | null
+          manual_override_at: string | null
+          scraped_at: string
+          competitor_product_url: string | null
+          match_confidence: string | null
+          match_method: string | null
+          status: string
+        }[]
+      }
+      ingest_competitor_scrape_batch: {
+        Args: { p_store_id: string; p_scrape_run_id: string; p_observations: Json }
+        Returns: {
+          run_id: string
+          inserted: number
+          duplicates: number
+          rejected: number
+        }[]
+      }
+      set_manual_competitor_price: {
+        Args: {
+          p_store_id: string
+          p_item_id: string
+          p_competitor_key: string
+          p_competitor_name: string
+          p_price: number
+          p_reason?: string | null
+          p_competitor_product_url?: string | null
+        }
+        Returns: string
+      }
       cleanup_rate_limits: { Args: never; Returns: number }
       close_accounting_period: {
         Args: {

@@ -8,6 +8,7 @@ import {
   fetchCompetitorPrices,
   fetchPriceAlerts,
   deleteCompetitorPrice,
+  clearManualCompetitorPrice,
 } from '../../lib/api/domains/competitorPrices';
 import { AddPriceModal } from './AddPriceModal';
 import type { CompetitorPrice, PriceAlert } from '../../lib/api/types';
@@ -23,6 +24,12 @@ function formatDateTime(dateStr: string): string {
     minute: '2-digit',
   });
 }
+
+const STATUS_BADGE: Record<string, { label: string; color: string }> = {
+  success: { label: 'OK', color: 'text-warm-success' },
+  error: { label: 'Error', color: 'text-warm-danger' },
+  not_found: { label: '404', color: 'text-warm-warning' },
+};
 
 export function CompetitorPricesPage() {
   const { storeId } = useAuth();
@@ -52,10 +59,20 @@ export function CompetitorPricesPage() {
     onError: () => notify('Failed to delete', 'error'),
   });
 
-  const alertProductIds = new Set(alerts?.map((a: PriceAlert) => a.product_id) || []);
+  const clearOverrideMutation = useMutation({
+    mutationFn: ({ itemId, competitorKey }: { itemId: string; competitorKey: string }) =>
+      clearManualCompetitorPrice(storeId!, itemId, competitorKey),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
+      notify('Manual override cleared', 'success');
+    },
+    onError: () => notify('Failed to clear override', 'error'),
+  });
+
+  const alertItemIds = new Set(alerts?.map((a: PriceAlert) => a.item_id) || []);
 
   // Sorting state
-  type SortKey = 'item_name' | 'competitor_name' | 'our_price' | 'competitor_price' | 'price_gap_percent' | 'scraped_at';
+  type SortKey = 'item_name' | 'competitor_name' | 'our_price' | 'competitor_price' | 'price_gap_percent' | 'scraped_at' | 'source';
   type SortDir = 'asc' | 'desc';
   const [sortKey, setSortKey] = useState<SortKey>('scraped_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -70,7 +87,7 @@ export function CompetitorPricesPage() {
   };
 
   const filteredPrices = showAlertsOnly
-    ? prices?.filter((p: CompetitorPrice) => alertProductIds.has(p.item_id))
+    ? prices?.filter((p: CompetitorPrice) => alertItemIds.has(p.item_id))
     : prices;
 
   // Sort the filtered data
@@ -103,6 +120,10 @@ export function CompetitorPricesPage() {
         case 'scraped_at':
           aVal = new Date(a.scraped_at).getTime();
           bVal = new Date(b.scraped_at).getTime();
+          break;
+        case 'source':
+          aVal = a.source ?? '';
+          bVal = b.source ?? '';
           break;
         default:
           return 0;
@@ -138,7 +159,7 @@ export function CompetitorPricesPage() {
         <div className="competitor-product-cell">
           <span className="font-medium">{row.item_name || 'Unknown'}</span>
           {row.sku && <span className="text-muted text-xs">{row.sku}</span>}
-          {alertProductIds.has(row.item_id) && (
+          {alertItemIds.has(row.item_id) && (
             <span className="alert-badge">
               <AlertTriangle size={12} />
               Price Alert
@@ -150,7 +171,23 @@ export function CompetitorPricesPage() {
     {
       header: sortableHeader('Competitor', 'competitor_name'),
       accessor: (row: CompetitorPrice) => (
-        <span className="font-medium">{row.competitor_name}</span>
+        <div className="flex flex-col">
+          <span className="font-medium">{row.competitor_name}</span>
+          <span className="text-[10px] text-warm-muted">{row.competitor_key}</span>
+        </div>
+      ),
+    },
+    {
+      header: 'Source',
+      accessor: (row: CompetitorPrice) => (
+        <div className="flex flex-col items-start">
+          <span className={`text-xs font-medium ${row.source === 'manual' ? 'text-warm-accent' : 'text-warm-muted'}`}>
+            {row.source}
+          </span>
+          {row.is_manual_override && (
+            <span className="text-[10px] text-warm-accent">Override</span>
+          )}
+        </div>
       ),
     },
     {
@@ -185,15 +222,24 @@ export function CompetitorPricesPage() {
     },
     {
       header: sortableHeader('Last Updated', 'scraped_at'),
-      accessor: (row: CompetitorPrice) => formatDateTime(row.scraped_at),
+      accessor: (row: CompetitorPrice) => (
+        <div className="flex flex-col">
+          <span>{formatDateTime(row.scraped_at)}</span>
+          {row.scrape_status && row.scrape_status !== 'success' && (
+            <span className={`text-[10px] ${STATUS_BADGE[row.scrape_status]?.color ?? 'text-warm-muted'}`}>
+              {STATUS_BADGE[row.scrape_status]?.label ?? row.scrape_status}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       header: '',
       accessor: (row: CompetitorPrice) => (
         <div className="flex gap-2 justify-end">
-          {row.competitor_url && (
+          {row.competitor_product_url && (
             <a
-              href={row.competitor_url}
+              href={row.competitor_product_url}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-icon"
@@ -201,6 +247,16 @@ export function CompetitorPricesPage() {
             >
               <ExternalLink size={16} />
             </a>
+          )}
+          {row.is_manual_override && (
+            <button
+              onClick={() => clearOverrideMutation.mutate({ itemId: row.item_id, competitorKey: row.competitor_key })}
+              disabled={clearOverrideMutation.isPending}
+              className="btn-icon text-warm-accent"
+              title="Clear manual override"
+            >
+              <TrendingUp size={16} />
+            </button>
           )}
           <button
             onClick={() => deleteMutation.mutate(row.id)}
@@ -239,10 +295,10 @@ export function CompetitorPricesPage() {
           </div>
           <div className="alerts-list">
             {alerts.slice(0, 3).map((alert: PriceAlert) => (
-              <div key={alert.product_id} className="alert-item">
+              <div key={alert.item_id} className="alert-item">
                 <div className="alert-product">
                   <TrendingUp className="text-danger" size={16} />
-                  <span className="font-medium">{alert.product_name}</span>
+                  <span className="font-medium">{alert.item_name}</span>
                 </div>
                 <div className="alert-details">
                   <span className="text-muted">Our price:</span>

@@ -103,6 +103,7 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
     
     addMutation.mutate({
       item_id: selectedProduct.id,
+      competitor_key: competitorName.trim().toLowerCase().replace(/[^a-z0-9]/g, ''),
       competitor_name: competitorName.trim(),
       competitor_price: parseFloat(competitorPrice),
       competitor_url: competitorUrl.trim() || undefined,
