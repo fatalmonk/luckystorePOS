@@ -29,7 +29,7 @@ export function HomeShell({ products }: HomeShellProps) {
           {/* Trust micro-bar — immediately visible after hero */}
           <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-warm-surface border border-warm-border p-3 shadow-warm-sm">
             <div className="flex flex-col items-center justify-center text-center gap-1">
-              <span className="text-lg">🚚</span>
+              <span className="text-lg" aria-hidden="true">🚚</span>
               <span className="text-[10px] font-bold text-warm-fg leading-tight">Free Delivery</span>
               <span className="text-[9px] text-warm-muted">৳500+</span>
             </div>
