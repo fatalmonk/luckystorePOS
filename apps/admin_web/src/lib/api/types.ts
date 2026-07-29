@@ -305,27 +305,65 @@ export interface StaffPerformanceItem {
 
 // =============================================================================
 // Competitor Price Domain Types
-// Aligned with public.competitor_prices table
+// Aligned with public.competitor_prices + get_effective_competitor_prices RPC
 // =============================================================================
 
-export interface CompetitorPrice {
-  id: string;
+/** Freshness status returned by get_effective_competitor_prices */
+export type CompetitorPriceStatus = 'fresh' | 'stale' | 'manual';
+
+/** Row returned by get_effective_competitor_prices RPC */
+export interface EffectiveCompetitorPrice {
   item_id: string;
-  item_name?: string;  // joined from items
-  sku?: string;        // joined from items
+  competitor_key: string;
   competitor_name: string;
   competitor_price: number;
-  competitor_url: string | null;
   our_price: number | null;
   price_gap_percent: number | null;
+  source: 'scraper' | 'manual';
+  is_override_active: boolean;
+  manual_override_reason: string | null;
+  manual_override_at: string | null;
+  observed_at: string;
+  competitor_product_url: string | null;
+  match_confidence: number | null;
+  matcher_version: string;
+  status: CompetitorPriceStatus;
+}
+
+/** Full row from competitor_prices table (for list/detail views) */
+export interface CompetitorPrice {
+  id: string;
+  store_id: string;
+  item_id: string | null;
+  product_name: string;
+  item_name?: string | null;
+  sku?: string | null;
+  competitor_key: string;
+  competitor_name: string;
+  competitor_price: number;
+  competitor_original_price?: number | null;
+  competitor_product_url?: string | null;
+  our_price: number | null;
+  price_gap_percent: number | null;
+  source: 'scraper' | 'manual';
+  is_override_active: boolean;
+  manual_override_reason?: string | null;
+  manual_override_at?: string | null;
+  manual_override_cleared_at?: string | null;
+  observation_key?: string | null;
+  scrape_run_id?: string | null;
+  match_confidence?: number | null;
+  matcher_version: string;
+  match_metadata?: Record<string, unknown> | null;
   scraped_at: string;
+  scrape_status?: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface PriceAlert {
-  product_id: string;
-  product_name: string;
+  item_id: string;
+  item_name: string;
   our_price: number;
   market_avg_price: number;
   price_gap_percent: number;
@@ -334,6 +372,7 @@ export interface PriceAlert {
 
 export interface CompetitorPriceFormData {
   item_id: string;
+  competitor_key: string;
   competitor_name: string;
   competitor_price: number;
   competitor_url?: string;
@@ -341,7 +380,7 @@ export interface CompetitorPriceFormData {
 
 export type CompetitorPriceFilters = {
   itemId?: string;
-  competitorName?: string;
+  competitorKey?: string;
   dateFrom?: string;
   dateTo?: string;
 };

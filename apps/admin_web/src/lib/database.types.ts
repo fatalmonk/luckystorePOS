@@ -410,6 +410,7 @@ export type Database = {
       }
       competitor_prices: {
         Row: {
+          competitor_key: string
           competitor_name: string
           competitor_original_price: number | null
           competitor_price: number
@@ -419,19 +420,30 @@ export type Database = {
           currency: string | null
           error_message: string | null
           id: string
+          is_override_active: boolean
           item_id: string | null
+          manual_override_at: string | null
+          manual_override_cleared_at: string | null
+          manual_override_reason: string | null
+          match_confidence: number | null
+          match_metadata: Json
+          matcher_version: string
+          observation_key: string | null
           our_price: number | null
           price_gap_percent: number | null
           product_name: string
           product_sku: string | null
           raw_data: Json | null
           scrape_batch_id: string | null
+          scrape_run_id: string | null
           scrape_status: string | null
           scraped_at: string
+          source: string
           store_id: string
           updated_at: string
         }
         Insert: {
+          competitor_key: string
           competitor_name: string
           competitor_original_price?: number | null
           competitor_price: number
@@ -441,19 +453,30 @@ export type Database = {
           currency?: string | null
           error_message?: string | null
           id?: string
+          is_override_active?: boolean
           item_id?: string | null
+          manual_override_at?: string | null
+          manual_override_cleared_at?: string | null
+          manual_override_reason?: string | null
+          match_confidence?: number | null
+          match_metadata?: Json
+          matcher_version: string
+          observation_key?: string | null
           our_price?: number | null
           price_gap_percent?: number | null
           product_name: string
           product_sku?: string | null
           raw_data?: Json | null
           scrape_batch_id?: string | null
+          scrape_run_id?: string | null
           scrape_status?: string | null
           scraped_at?: string
+          source?: string
           store_id: string
           updated_at?: string
         }
         Update: {
+          competitor_key?: string
           competitor_name?: string
           competitor_original_price?: number | null
           competitor_price?: number
@@ -463,28 +486,31 @@ export type Database = {
           currency?: string | null
           error_message?: string | null
           id?: string
+          is_override_active?: boolean
           item_id?: string | null
+          manual_override_at?: string | null
+          manual_override_cleared_at?: string | null
+          manual_override_reason?: string | null
+          match_confidence?: number | null
+          match_metadata?: Json
+          matcher_version?: string
+          observation_key?: string | null
           our_price?: number | null
           price_gap_percent?: number | null
           product_name?: string
           product_sku?: string | null
           raw_data?: Json | null
           scrape_batch_id?: string | null
+          scrape_run_id?: string | null
           scrape_status?: string | null
           scraped_at?: string
+          source?: string
           store_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "competitor_prices_product_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "featured_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "competitor_prices_product_id_fkey"
+            foreignKeyName: "competitor_prices_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
@@ -492,6 +518,56 @@ export type Database = {
           },
           {
             foreignKeyName: "competitor_prices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitor_scrape_runs: {
+        Row: {
+          competitor: string
+          created_at: string
+          duplicate_count: number
+          id: string
+          inserted_count: number
+          rejected_count: number
+          run_key: string
+          scheduled_at: string
+          store_id: string
+          summary: Json
+          updated_at: string
+        }
+        Insert: {
+          competitor: string
+          created_at?: string
+          duplicate_count?: number
+          id?: string
+          inserted_count?: number
+          rejected_count?: number
+          run_key: string
+          scheduled_at: string
+          store_id: string
+          summary?: Json
+          updated_at?: string
+        }
+        Update: {
+          competitor?: string
+          created_at?: string
+          duplicate_count?: number
+          id?: string
+          inserted_count?: number
+          rejected_count?: number
+          run_key?: string
+          scheduled_at?: string
+          store_id?: string
+          summary?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitor_scrape_runs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
@@ -4407,12 +4483,12 @@ export type Database = {
       check_price_alerts: {
         Args: { p_store_id: string; p_threshold?: number }
         Returns: {
-          competitors: Json
-          market_avg_price: number
+          item_id: string
+          item_name: string
           our_price: number
+          market_avg_price: number
           price_gap_percent: number
-          product_id: string
-          product_name: string
+          competitors: Json
         }[]
       }
       check_rate_limit: {
@@ -4448,7 +4524,57 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      cleanup_old_competitor_prices: { Args: never; Returns: undefined }
+      cleanup_old_competitor_prices: {
+        Args: { p_retention_days?: number }
+        Returns: number
+      }
+      clear_manual_competitor_price: {
+        Args: { p_store_id: string; p_item_id: string; p_competitor_key: string }
+        Returns: boolean
+      }
+      get_effective_competitor_prices: {
+        Args: { p_store_id: string; p_item_id?: string | null }
+        Returns: {
+          item_id: string
+          competitor_key: string
+          competitor_name: string
+          competitor_price: number
+          our_price: number | null
+          price_gap_percent: number | null
+          source: string
+          is_override_active: boolean
+          manual_override_reason: string | null
+          manual_override_at: string | null
+          observed_at: string
+          competitor_product_url: string | null
+          match_confidence: number | null
+          matcher_version: string
+          status: string
+        }[]
+      }
+      ingest_competitor_scrape_batch: {
+        Args: {
+          p_run_key: string
+          p_scheduled_at: string
+          p_competitor: string
+          p_store_id: string
+          p_observations: Json
+          p_summary: Json
+        }
+        Returns: Json
+      }
+      set_manual_competitor_price: {
+        Args: {
+          p_store_id: string
+          p_item_id: string
+          p_competitor_key: string
+          p_competitor_name: string
+          p_price: number
+          p_reason?: string | null
+          p_competitor_product_url?: string | null
+        }
+        Returns: string
+      }
       cleanup_rate_limits: { Args: never; Returns: number }
       close_accounting_period: {
         Args: {
