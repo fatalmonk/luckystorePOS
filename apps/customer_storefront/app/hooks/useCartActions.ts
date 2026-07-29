@@ -1,7 +1,6 @@
 'use client'; // reusable cart callbacks + fly-animation trigger
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 import { useCartContext } from '../components/CartProvider';
 import type { Product } from '../lib/types';
@@ -14,7 +13,6 @@ interface FlyItem {
 }
 
 export function useCartActions() {
-  const router = useRouter();
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const [flyItems, setFlyItems] = useState<FlyItem[]>([]);
@@ -40,10 +38,6 @@ export function useCartActions() {
     setFlyItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const handleClick = useCallback((id: string) => {
-    router.push(`/product/${id}`);
-  }, [router]);
-
   const handleUpdateQty = useCallback((id: string, delta: number) => {
     updateQty(id, delta);
   }, [updateQty]);
@@ -54,6 +48,5 @@ export function useCartActions() {
     handleAddToCart,
     handleUpdateQty,
     handleFlyComplete,
-    handleClick,
   };
 }

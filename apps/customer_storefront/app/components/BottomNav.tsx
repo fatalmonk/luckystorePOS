@@ -2,27 +2,24 @@
 
 import { BottomNavShell } from './BottomNavShell';
 import { ActiveLink } from './ActiveLink';
-import { BottomNavCartPill } from './BottomNavCartPill';
-import { HomeIcon, BrowseIcon, CartIcon, OrdersIcon, UserIcon } from './icons';
-import { useAuth } from './providers/AuthProvider';
+import { HomeIcon, BrowseIcon, CartIcon, WhatsAppIcon } from './icons';
 
 export function BottomNav() {
-  const { user } = useAuth();
-  const profileLabel = user ? (user.user_metadata?.full_name?.split(' ')[0] || 'Profile') : 'Sign In';
-  const profileHref = user ? '/profile' : '/login';
-
   const navItems = [
     { icon: <HomeIcon size={22} />, label: 'Home', href: '/' },
     { icon: <BrowseIcon size={22} />, label: 'Browse', href: '/category' },
+    {
+      icon: <WhatsAppIcon size={22} />,
+      label: 'WhatsApp',
+      href: 'https://wa.me/8801731944544?text=Hello%20Lucky%20Store%2C%20I%20need%20help%20with%20my%20order.',
+      external: true,
+    },
     { icon: <CartIcon size={22} />, label: 'Cart', href: '/cart', showBadge: true },
-    { icon: <OrdersIcon size={22} />, label: 'Orders', href: '/order' },
-    { icon: <UserIcon size={22} />, label: profileLabel, href: profileHref },
   ];
 
   return (
     <BottomNavShell>
-      <BottomNavCartPill />
-      <nav className="h-[60px] bg-warm-surface/95 backdrop-blur-xl border-t border-warm-border dark:border-transparent flex items-center justify-around flex-shrink-0 z-50" aria-label="Primary navigation">
+      <nav className="flex h-[60px] flex-shrink-0 items-center justify-around border-t border-warm-border bg-warm-surface/95 backdrop-blur-xl dark:border-transparent" aria-label="Primary navigation">
         {navItems.map((item) => (
           <ActiveLink
             key={item.href}
@@ -30,10 +27,10 @@ export function BottomNav() {
             icon={item.icon}
             label={item.label}
             showBadge={item.showBadge}
+            external={item.external}
           />
         ))}
       </nav>
     </BottomNavShell>
   );
 }
-

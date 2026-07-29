@@ -41,26 +41,47 @@ export interface ResponsiveImage {
   alt?: string;
 }
 
+interface ResponsiveImageCandidate {
+  /** Width suffix used in the asset filename. */
+  fileWidth: number;
+  /** Actual intrinsic width when it differs from the filename suffix. */
+  intrinsicWidth?: number;
+}
+
+const DEFAULT_HERO_CANDIDATES: ResponsiveImageCandidate[] = [
+  { fileWidth: 400 },
+  { fileWidth: 600 },
+  { fileWidth: 800 },
+  { fileWidth: 1200 },
+];
+
 /**
  * Build standardized responsive hero banner image object with AVIF & WebP srcsets.
  */
-export function responsiveHeroBanner(base: string, alt: string): ResponsiveImage {
+export function responsiveHeroBanner(
+  base: string,
+  alt: string,
+  candidates: ResponsiveImageCandidate[] = DEFAULT_HERO_CANDIDATES,
+): ResponsiveImage {
+  const buildSet = (extension: 'avif' | 'webp') => candidates
+    .map(({ fileWidth, intrinsicWidth }) => (
+      `/banners/${base}_${fileWidth}.${extension} ${intrinsicWidth ?? fileWidth}w`
+    ))
+    .join(', ');
+
+  const largestCandidate = candidates.at(-1) ?? DEFAULT_HERO_CANDIDATES.at(-1)!;
+
   return {
-    src: img(`/banners/${base}_1200.webp`),
-    srcSet: srcSet(
-      `/banners/${base}_400.webp 400w, /banners/${base}_600.webp 600w, /banners/${base}_800.webp 800w, /banners/${base}_1200.webp 1200w`
-    ),
+    src: img(`/banners/${base}_${largestCandidate.fileWidth}.webp`),
+    srcSet: srcSet(buildSet('webp')),
     sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px',
     sources: [
       {
-        srcSet: srcSet(
-          `/banners/${base}_400.avif 400w, /banners/${base}_600.avif 600w, /banners/${base}_800.avif 800w, /banners/${base}_1200.avif 1200w`
-        ),
+        srcSet: srcSet(buildSet('avif')),
         type: 'image/avif',
       },
     ],
     alt,
   };
 }
-
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 const priceRanges = [
@@ -30,6 +30,9 @@ export function HeaderFilters() {
 
   const [openDropdown, setOpenDropdown] = useState<'price' | 'availability' | 'sort' | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const priceTriggerRef = useRef<HTMLButtonElement>(null);
+  const availabilityTriggerRef = useRef<HTMLButtonElement>(null);
+  const sortTriggerRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown on click outside + Escape key
   useEffect(() => {
@@ -39,8 +42,14 @@ export function HeaderFilters() {
       }
     }
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && openDropdown) {
+        const activeDropdown = openDropdown;
         setOpenDropdown(null);
+        requestAnimationFrame(() => {
+          if (activeDropdown === 'price') priceTriggerRef.current?.focus();
+          if (activeDropdown === 'availability') availabilityTriggerRef.current?.focus();
+          if (activeDropdown === 'sort') sortTriggerRef.current?.focus();
+        });
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -49,7 +58,7 @@ export function HeaderFilters() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [openDropdown]);
 
   const isFilterPage = pathname.startsWith('/category');
   const targetPath = isFilterPage ? pathname : '/category';
@@ -104,6 +113,7 @@ export function HeaderFilters() {
     }
     router.push(`${targetPath}?${params.toString()}`, { scroll: false });
     setOpenDropdown(null);
+    requestAnimationFrame(() => sortTriggerRef.current?.focus());
   };
 
   const clearFilter = (type: 'price' | 'availability' | 'sort') => {
@@ -129,6 +139,7 @@ export function HeaderFilters() {
       {/* Price Filter Dropdown */}
       <div className="relative">
         <button
+          ref={priceTriggerRef}
           type="button"
           id="price-toggle"
           aria-expanded={openDropdown === 'price'}
@@ -194,6 +205,7 @@ export function HeaderFilters() {
       {/* Availability Filter Dropdown */}
       <div className="relative">
         <button
+          ref={availabilityTriggerRef}
           type="button"
           id="availability-toggle"
           aria-expanded={openDropdown === 'availability'}
@@ -259,6 +271,7 @@ export function HeaderFilters() {
       {/* Sort By Filter Dropdown */}
       <div className="relative">
         <button
+          ref={sortTriggerRef}
           type="button"
           id="sort-toggle"
           aria-expanded={openDropdown === 'sort'}

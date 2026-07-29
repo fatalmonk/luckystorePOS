@@ -2,12 +2,14 @@
 
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { ProductCard } from './ProductCard';
 import { ProductGridSkeleton } from './ui/ProductCardSkeleton';
 import { ProductErrorBoundary } from './ProductErrorBoundary';
 import { useCartActions } from '../hooks/useCartActions';
 import { CATEGORY_GROUPS, getParentGroup } from '../lib/types';
 import type { Product } from '../lib/types';
+import { MarketPanel } from './ui/MarketSurface';
 
 const CartFlyAnimation = dynamic(
   () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
@@ -19,8 +21,10 @@ interface FeaturedProductsProps {
   isLoading?: boolean;
 }
 
+const HOME_FEATURED_LIMIT = 6;
+
 export function FeaturedProducts({ products, isLoading = false }: FeaturedProductsProps) {
-  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete, handleClick } = useCartActions();
+  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
 
   // Find top 3 category groups with the most in-stock products
   const topGroups = useMemo(() => {
@@ -47,10 +51,10 @@ export function FeaturedProducts({ products, isLoading = false }: FeaturedProduc
   const displayedProducts = useMemo(() => {
     const inStock = products.filter((p) => p.stock > 0);
     if (activeTab === 'all') {
-      return inStock.slice(0, 10);
+      return inStock.slice(0, HOME_FEATURED_LIMIT);
     }
     const selectedGroup = topGroups.find((g) => g.slug === activeTab);
-    if (!selectedGroup) return inStock.slice(0, 10);
+    if (!selectedGroup) return inStock.slice(0, HOME_FEATURED_LIMIT);
 
     return inStock
       .filter((p) => {
@@ -58,7 +62,7 @@ export function FeaturedProducts({ products, isLoading = false }: FeaturedProduc
         const parent = getParentGroup(p.category);
         return parent?.slug === selectedGroup.slug;
       })
-      .slice(0, 10);
+      .slice(0, HOME_FEATURED_LIMIT);
   }, [products, activeTab, topGroups]);
 
   const getQtyInCart = (productId: string) => {
@@ -67,26 +71,38 @@ export function FeaturedProducts({ products, isLoading = false }: FeaturedProduc
   };
 
   return (
-    <section className="bg-gradient-to-br from-[#0B0B0D] via-[#1c180d] to-[#2a220b] border border-[#f0c444]/20 rounded-[24px] p-4 sm:p-6 shadow-warm-md space-y-4 text-white">
-      
-      {/* Header & Category Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+    <MarketPanel
+      aria-labelledby="featured-products-title"
+      tone="night"
+      className="merchandising-panel space-y-5 p-5 sm:p-7"
+    >
+      <div className="merchandising-divider flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-            <span>🌟</span> Featured Products
+          <p className="campaign-kicker">Ready to add</p>
+          <h2 id="featured-products-title" className="campaign-on-image mt-1 text-xl font-black tracking-[-0.02em] sm:text-2xl">
+            Featured groceries
           </h2>
-          <p className="text-xs text-white/70 mt-0.5">Top-rated items & daily grocery essentials</p>
+          <p className="campaign-on-image-muted mt-1 text-xs leading-5 sm:text-sm">
+            In-stock picks from across Lucky Store.
+          </p>
         </div>
 
-        {/* Tabs navigation */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
+        <div
+          role="tablist"
+          aria-label="Featured product categories"
+          className="scrollbar-hide flex items-center gap-2 overflow-x-auto py-1"
+        >
           <button
             type="button"
+            role="tab"
+            id="featured-tab-all"
+            aria-selected={activeTab === 'all'}
+            aria-controls="featured-product-panel"
             onClick={() => setActiveTab('all')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all whitespace-nowrap ${
+            className={`merchandising-tab min-h-11 whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold ${
               activeTab === 'all'
-                ? 'bg-[#f0c444] text-[#0B0B0D] shadow-md scale-105'
-                : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                ? 'merchandising-tab-active'
+                : ''
             }`}
           >
             All
@@ -95,58 +111,75 @@ export function FeaturedProducts({ products, isLoading = false }: FeaturedProduc
             <button
               key={group.slug}
               type="button"
+              role="tab"
+              id={`featured-tab-${group.slug}`}
+              aria-selected={activeTab === group.slug}
+              aria-controls="featured-product-panel"
               onClick={() => setActiveTab(group.slug)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`merchandising-tab flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold ${
                 activeTab === group.slug
-                  ? 'bg-[#f0c444] text-[#0B0B0D] shadow-md scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                  ? 'merchandising-tab-active'
+                  : ''
               }`}
             >
-              <span>{group.emoji}</span>
+              <span aria-hidden="true">{group.emoji}</span>
               <span>{group.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Grid */}
-      <ProductErrorBoundary fallbackMessage="Failed to load featured products">
-        {isLoading ? (
-          <ProductGridSkeleton count={10} />
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {displayedProducts.map((product, index) => {
-              let addBtnRef: HTMLButtonElement | null = null;
-              return (
-                <div key={product.id} className="h-full flex flex-col">
-                  <ProductCard
-                    id={product.id}
-                    emoji={product.emoji}
-                    name={product.name}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
-                    badge={product.badge}
-                    unit={product.unit}
-                    stock={product.stock}
-                    category={product.category}
-                    image_url={product.image_url}
-                    qtyInCart={getQtyInCart(product.id)}
-                    priority={index === 0}
-                    onAdd={() => handleAddToCart(product, addBtnRef)}
-                    onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                    onClick={() => handleClick(product.id)}
-                    onAddRef={(el) => {
-                      addBtnRef = el;
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </ProductErrorBoundary>
+      <div
+        id="featured-product-panel"
+        role="tabpanel"
+        aria-labelledby={`featured-tab-${activeTab}`}
+      >
+        <ProductErrorBoundary fallbackMessage="Failed to load featured products">
+          {isLoading ? (
+            <ProductGridSkeleton count={HOME_FEATURED_LIMIT} />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6">
+              {displayedProducts.map((product, index) => {
+                let addBtnRef: HTMLButtonElement | null = null;
+                return (
+                  <div key={product.id} className="flex h-full flex-col">
+                    <ProductCard
+                      id={product.id}
+                      emoji={product.emoji}
+                      name={product.name}
+                      price={product.price}
+                      originalPrice={product.originalPrice}
+                      badge={product.badge}
+                      unit={product.unit}
+                      stock={product.stock}
+                      category={product.category}
+                      image_url={product.image_url}
+                      qtyInCart={getQtyInCart(product.id)}
+                      priority={index === 0}
+                      onAdd={() => handleAddToCart(product, addBtnRef)}
+                      onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
+                      onAddRef={(el) => {
+                        addBtnRef = el;
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </ProductErrorBoundary>
+      </div>
+
+      <div className="flex justify-end border-t border-[var(--color-campaign-border)] pt-4">
+        <Link
+          href="/category"
+          className="campaign-card-action inline-flex min-h-11 items-center text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+        >
+          See all groceries →
+        </Link>
+      </div>
 
       <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
-    </section>
+    </MarketPanel>
   );
 }

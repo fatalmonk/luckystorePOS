@@ -25,7 +25,7 @@ interface FormErrors {
 function CheckoutContent() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { cart, subtotal, deliveryFee, total, clearCart } = useCartContext();
+  const { cart, subtotal, deliveryFee, total, clearCart, isLoaded } = useCartContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isPlacing, setIsPlacing] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -42,6 +42,12 @@ function CheckoutContent() {
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (isLoaded && cart.length === 0 && !isPlacing) {
+      router.replace('/cart');
+    }
+  }, [cart.length, isLoaded, isPlacing, router]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -171,6 +177,31 @@ function CheckoutContent() {
       // Stay on current step (step 2) — don't reset to step 1
     }
   };
+
+  if (!isLoaded || (cart.length === 0 && !isPlacing)) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div
+            role="status"
+            aria-live="polite"
+            className="mx-auto flex min-h-[45vh] max-w-md flex-col items-center justify-center px-6 text-center"
+          >
+            <div className="mb-4 h-12 w-12 animate-pulse rounded-full bg-warm-accent-muted" aria-hidden="true" />
+            <h1 className="text-lg font-extrabold text-warm-fg">
+              {isLoaded ? 'Your cart is empty' : 'Loading your cart…'}
+            </h1>
+            <p className="mt-2 text-sm text-warm-muted">
+              {isLoaded
+                ? 'Taking you back so you can add your everyday essentials.'
+                : 'Checking the items saved on this device.'}
+            </p>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>

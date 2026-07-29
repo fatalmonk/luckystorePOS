@@ -13,7 +13,7 @@ interface RecentlyViewedProps {
 
 export function RecentlyViewed({ products, currentProductId }: RecentlyViewedProps) {
   const { recentlyViewedIds, isLoaded, clearViewed } = useRecentlyViewed();
-  const { cart, handleAddToCart, handleUpdateQty, handleClick } = useCartActions();
+  const { cart, handleAddToCart, handleUpdateQty } = useCartActions();
 
   // Filter products by recently viewed IDs, excluding current item if provided
   const viewedProducts = useMemo(() => {
@@ -69,7 +69,6 @@ export function RecentlyViewed({ products, currentProductId }: RecentlyViewedPro
             qtyInCart={getQtyInCart(product.id)}
             onAdd={() => handleAddToCart(product)}
             onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-            onClick={() => handleClick(product.id)}
           />
         ))}
       </div>

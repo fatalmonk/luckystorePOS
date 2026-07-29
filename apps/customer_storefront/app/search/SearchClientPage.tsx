@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '../components/updated/Header';
@@ -13,15 +13,17 @@ export function SearchClientPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearchesUnavailable, setRecentSearchesUnavailable] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('lucky_recent_searches');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('lucky_recent_searches');
+      if (saved) {
         setRecentSearches(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse recent searches', e);
       }
+    } catch (e) {
+      console.error('Recent searches are unavailable', e);
+      setRecentSearchesUnavailable(true);
     }
   }, []);
 
@@ -31,7 +33,12 @@ export function SearchClientPage() {
     if (!recentSearches.includes(trimmed)) {
       const updated = [trimmed, ...recentSearches.slice(0, 4)];
       setRecentSearches(updated);
-      localStorage.setItem('lucky_recent_searches', JSON.stringify(updated));
+      try {
+        localStorage.setItem('lucky_recent_searches', JSON.stringify(updated));
+      } catch (error) {
+        console.error('Recent searches could not be saved', error);
+        setRecentSearchesUnavailable(true);
+      }
     }
     router.push(`/category?q=${encodeURIComponent(trimmed)}`);
   };
@@ -45,6 +52,15 @@ export function SearchClientPage() {
     <div className="min-h-screen bg-warm-bg flex flex-col">
       <Header />
       <main className="flex-1 max-w-2xl w-full mx-auto p-4 space-y-6 pb-20">
+        {recentSearchesUnavailable && (
+          <div
+            role="status"
+            className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold leading-5 text-amber-950"
+          >
+            Recent searches cannot be saved on this device. Search still works normally.
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="relative w-full">
           <input
             type="text"
@@ -81,7 +97,12 @@ export function SearchClientPage() {
               <button
                 onClick={() => {
                   setRecentSearches([]);
-                  localStorage.removeItem('lucky_recent_searches');
+                  try {
+                    localStorage.removeItem('lucky_recent_searches');
+                  } catch (error) {
+                    console.error('Recent searches could not be cleared', error);
+                    setRecentSearchesUnavailable(true);
+                  }
                 }}
                 className="text-[10px] text-warm-muted hover:text-red-500 font-semibold"
               >

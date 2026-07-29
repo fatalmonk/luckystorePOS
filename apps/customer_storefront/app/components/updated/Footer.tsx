@@ -1,119 +1,110 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { img } from '../../lib/imageUrl';
+
+const footerFocus =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-campaign-surface)]';
 
 export function Footer() {
   return (
-    <footer className="hidden sm:block w-full bg-[#0B0B0D] text-white pt-12 pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden font-body">
-      <div className="max-w-6xl mx-auto space-y-12">
-        {/* Top Section: Email Headline + Get Started Saffron Card */}
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-8 pb-8 border-b border-white/10">
-          {/* Left Email & Intro */}
-          <div className="space-y-4 max-w-2xl">
-            <div className="flex items-center gap-2 text-xs font-semibold text-warm-muted tracking-wide">
-              <span className="w-3 h-1 bg-warm-accent rounded-full inline-block" aria-hidden="true" />
-              <span>Uncover authentic groceries at Lucky Store</span>
-            </div>
+    <footer className="site-footer mt-16 block w-full overflow-hidden px-4 pb-28 pt-10 font-body sm:px-6 sm:pb-8 sm:pt-14 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <div className="site-footer-lead grid gap-7 border-b pb-9 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
+          <div className="max-w-2xl">
+            <p className="campaign-kicker">Local since 1947</p>
+            <h2 className="campaign-on-image mt-3 text-3xl font-black tracking-[-0.035em] sm:text-5xl">
+              Need help with an order?
+            </h2>
+            <p className="campaign-on-image-muted mt-3 max-w-xl text-sm leading-6">
+              Contact the Lucky Store team directly, or use the links below to keep
+              shopping and find answers.
+            </p>
             <a
               href="mailto:hello@luckystore1947.com"
-              className="block text-2xl sm:text-4xl md:text-5xl font-black font-display tracking-tight text-white hover:text-warm-accent transition-colors duration-300 underline underline-offset-8 decoration-white/20 hover:decoration-warm-accent break-all"
+              className={`campaign-on-image mt-6 inline-flex min-h-11 items-center border-b border-warm-accent text-lg font-extrabold transition-colors hover:text-warm-accent sm:text-2xl ${footerFocus}`}
             >
               hello@luckystore1947.com
             </a>
           </div>
 
-          {/* Right Brand Logo Card */}
-          <div className="w-full lg:w-96 bg-white rounded-[24px] p-2 sm:p-3 shadow-warm-md flex items-center justify-center min-h-[180px] sm:min-h-[220px] shrink-0 overflow-hidden">
+          <div className="site-footer-logo flex min-h-[150px] items-center justify-center rounded-[22px] p-4 sm:min-h-[190px]">
             <Image
               src="/logo-bangla.png"
               alt="লাকি স্টোর — ১৯৪৭"
               width={390}
               height={210}
-              className="w-full h-auto max-h-[210px] object-contain"
+              className="h-auto max-h-[180px] w-full object-contain"
             />
           </div>
         </div>
 
-        {/* Middle Section: Big Link Items + Hub Office Address */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-          {/* Left Big Links */}
-          <div className="space-y-3">
-            <Link
-              href="/category?theme=deals"
-              className="block text-2xl sm:text-3xl font-extrabold font-display text-white hover:text-warm-accent transition-colors"
-            >
-              Hot Deals
-            </Link>
-            <Link
-              href="/category"
-              className="block text-2xl sm:text-3xl font-extrabold font-display text-white hover:text-warm-accent transition-colors"
-            >
-              Categories
-            </Link>
-            <Link
-              href="/privacy"
-              className="block text-2xl sm:text-3xl font-extrabold font-display text-white hover:text-warm-accent transition-colors"
-            >
-              Privacy &amp; Terms
-            </Link>
-          </div>
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <nav aria-label="Shop links">
+            <h2 className="site-footer-heading">Shop</h2>
+            <ul className="mt-3 space-y-1">
+              <li><Link href="/category" className={`site-footer-link ${footerFocus}`}>All groceries</Link></li>
+              <li><Link href="/category?theme=deals" className={`site-footer-link ${footerFocus}`}>Weekly deals</Link></li>
+              <li><Link href="/category?theme=new" className={`site-footer-link ${footerFocus}`}>New arrivals</Link></li>
+            </ul>
+          </nav>
 
-          {/* Right Store Address */}
-          <div className="space-y-3 md:text-right flex flex-col md:items-end justify-center">
-            <h4 className="text-xl font-bold font-display text-white">Chittagong Hub</h4>
-            <address className="not-italic text-xs text-warm-muted leading-relaxed space-y-0.5">
-              <p>665 Percival Hill Road</p>
-              <p>Emdad Park, Chittagong 4203</p>
-              <p>Bangladesh</p>
-              <p className="pt-2 font-mono text-warm-accent font-semibold">+880 1731-944544</p>
+          <nav aria-label="Customer help links">
+            <h2 className="site-footer-heading">Help</h2>
+            <ul className="mt-3 space-y-1">
+              <li><Link href="/#how-it-works" className={`site-footer-link ${footerFocus}`}>How it works</Link></li>
+              <li><Link href="/contact" className={`site-footer-link ${footerFocus}`}>Contact us</Link></li>
+              <li><Link href="/privacy" className={`site-footer-link ${footerFocus}`}>Privacy &amp; terms</Link></li>
+            </ul>
+          </nav>
+
+          <div>
+            <h2 className="site-footer-heading">Visit</h2>
+            <address className="campaign-on-image-muted mt-4 not-italic text-xs leading-6">
+              665 Percival Hill Road<br />
+              Emdad Park, Chittagong 4203<br />
+              Bangladesh
             </address>
+            <a
+              href="tel:+8801731944544"
+              className={`mt-2 inline-flex min-h-11 items-center text-xs font-bold text-warm-accent ${footerFocus}`}
+            >
+              +880 1731-944544
+            </a>
           </div>
+
+          <nav aria-label="Social links">
+            <h2 className="site-footer-heading">Follow</h2>
+            <ul className="mt-3 space-y-1">
+              <li>
+                <a href="https://wa.me/8801731944544" target="_blank" rel="noopener noreferrer" className={`site-footer-link ${footerFocus}`}>
+                  WhatsApp ↗
+                </a>
+              </li>
+              <li>
+                <a href="https://facebook.com/luckystore1947" target="_blank" rel="noopener noreferrer" className={`site-footer-link ${footerFocus}`}>
+                  Facebook ↗
+                </a>
+              </li>
+              <li>
+                <a href="https://instagram.com/luckystore1947" target="_blank" rel="noopener noreferrer" className={`site-footer-link ${footerFocus}`}>
+                  Instagram ↗
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
 
-        {/* Giant Display Brand Wordmark */}
-        <div className="py-2 text-center overflow-hidden select-none">
-          <h2 className="text-[13.5vw] xl:text-[11rem] font-black font-display tracking-tighter leading-none text-white opacity-95 hover:opacity-100 transition-opacity uppercase whitespace-nowrap">
+        <div className="hidden overflow-hidden py-2 text-center select-none sm:block" aria-hidden="true">
+          <p className="campaign-on-image whitespace-nowrap text-[11.4vw] font-black leading-none tracking-[-0.065em] opacity-95 xl:text-[9rem]">
             LUCKY STORE
-          </h2>
+          </p>
         </div>
 
-        {/* Bottom Saffron Accent Bar */}
-        <div className="bg-warm-accent text-[#0B0B0D] rounded-[16px] sm:rounded-[20px] px-5 py-3.5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs font-extrabold shadow-warm-sm">
-          <span>Copyright © Lucky Store 1947</span>
-          <div className="flex items-center gap-1.5 text-[#0B0B0D]/80">
-            <span aria-hidden="true">🌐</span>
-            <span>Chittagong, Bangladesh</span>
-          </div>
-          <div className="flex items-center gap-4 text-[#0B0B0D]/90">
-            <a
-              href="https://wa.me/8801731944544"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              WhatsApp
-            </a>
-            <span>•</span>
-            <a
-              href="https://facebook.com/luckystore1947"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              Facebook
-            </a>
-            <span>•</span>
-            <a
-              href="https://instagram.com/luckystore1947"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              Instagram
-            </a>
-          </div>
+        <div className="site-footer-bottom flex flex-col gap-2 border-t pt-5 text-xs font-semibold sm:flex-row sm:items-center sm:justify-between">
+          <span>© Lucky Store 1947</span>
+          <span>Chittagong, Bangladesh · Shop local</span>
         </div>
       </div>
     </footer>
