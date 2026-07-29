@@ -39,7 +39,7 @@ export async function fetchCompetitorPrices(
 ): Promise<CompetitorPrice[]> {
   let q = supabase
     .from('competitor_prices')
-    .select('*, items(name, sku)')
+    .select('*, items!competitor_prices_item_id_fkey(name, sku)')
     .eq('store_id', storeId)
     .order('scraped_at', { ascending: false });
 
