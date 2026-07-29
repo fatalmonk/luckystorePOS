@@ -1,14 +1,14 @@
 'use client';
 
-import { ReactNode, useState, useEffect } from 'react';
-import { WishlistButton } from './WishlistButton';
 import Image from 'next/image';
-import { QtyNumber } from './ui/QtyNumber';
+import { ReactNode, useEffect, useState } from 'react';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import type { Category } from '../lib/types';
 import { getLocalWishlist, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
-import { getOrCreateFingerprint } from './WishlistButton';
 import { useToast } from './Toast';
+import { QtyNumber } from './ui/QtyNumber';
+import { getOrCreateFingerprint, WishlistButton } from './WishlistButton';
+import { CartAnnouncer } from './ui/CartAnnouncer';
 
 interface CardProps {
   children: ReactNode;
@@ -39,7 +39,7 @@ export function Card({ children, className = '', hover = false, onClick, 'data-t
 
 function CategoryPlaceholder({ category }: { category: Category }) {
   const baseClasses = "w-12 h-12 text-warm-muted/70 transition-transform duration-500 group-hover:scale-110";
-  
+
   switch (category) {
     case 'Beverages':
     case 'Tea & Coffee':
@@ -164,6 +164,7 @@ export function ProductCard({
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -202,12 +203,20 @@ export function ProductCard({
   };
 
   return (
-    <Card hover onClick={onClick} className={`flex flex-col h-full group relative card-reveal ${
-      theme === 'deals' ? 'border-red-300/60' : theme === 'bestsellers' ? 'border-warm-accent/70' : ''
-    }`} data-testid="product-card">
+    <Card hover onClick={onClick} className={`flex flex-col h-full group relative card-reveal ${theme === 'deals' ? 'border-red-300/60' : theme === 'bestsellers' ? 'border-warm-accent/70' : ''
+      }`} data-testid="product-card">
+      <CartAnnouncer message={announcement} />
       {/* Badges + wishlist */}
       <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex justify-between items-start pointer-events-none">
-        {theme === 'bestsellers' ? (
+        {stockLow ? (
+          <span className="bg-[#E65100] text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
+            ⚡ Only {stock} left!
+          </span>
+        ) : outOfStock ? (
+          <span className="bg-neutral-800 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
+            Out of stock
+          </span>
+        ) : theme === 'bestsellers' ? (
           <span className="bg-warm-accent text-warm-fg text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
             ⭐ Best Seller
           </span>
@@ -216,12 +225,11 @@ export function ProductCard({
             {badge}
           </span>
         ) : showBrandBadge && brand ? (
-          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display ${
-            brand === 'Polar' ? 'bg-blue-100 text-blue-700' :
+          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display ${brand === 'Polar' ? 'bg-blue-100 text-blue-700' :
             brand === 'Igloo' ? 'bg-red-100 text-red-700' :
-            brand === 'Savoy' ? 'bg-green-100 text-green-700' :
-            'bg-warm-accent text-warm-fg'
-          }`}>
+              brand === 'Savoy' ? 'bg-green-100 text-green-700' :
+                'bg-warm-accent text-warm-fg'
+            }`}>
             {brand}
           </span>
         ) : (
@@ -298,17 +306,25 @@ export function ProductCard({
           {qtyInCart > 0 ? (
             <div className="flex items-center justify-between gap-1.5 w-full">
               <button
-                onClick={(e) => { e.stopPropagation(); onUpdateQty(-1); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAnnouncement(`Removed one ${name} from cart`);
+                  onUpdateQty(-1);
+                }}
                 className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
-                aria-label="Remove one"
+                aria-label={`Remove one ${name}`}
               >
                 −
               </button>
               <QtyNumber qty={qtyInCart} className="font-black text-sm min-w-[20px] text-center text-warm-fg font-mono" />
               <button
-                onClick={(e) => { e.stopPropagation(); onUpdateQty(1); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAnnouncement(`Added another ${name} to cart`);
+                  onUpdateQty(1);
+                }}
                 className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
-                aria-label="Add one"
+                aria-label={`Add another ${name}`}
               >
                 +
               </button>
@@ -320,13 +336,17 @@ export function ProductCard({
           ) : (
             <button
               ref={onAddRef}
-              onClick={(e) => { e.stopPropagation(); onAdd(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setAnnouncement(`${name} added to cart`);
+                onAdd();
+              }}
               disabled={stock <= 0}
-              className={`w-full h-10 rounded-full border-2 text-warm-fg text-[11px] sm:text-xs font-black active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-warm-border disabled:text-warm-muted disabled:hover:bg-warm-surface px-2 sm:px-3 ${
-                theme === 'deals'
-                  ? 'border-red-400 hover:bg-red-50'
-                  : 'border-warm-accent hover:bg-warm-accent'
-              }`}
+              className={`w-full h-10 rounded-full border-2 text-warm-fg text-[11px] sm:text-xs font-black active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-warm-border disabled:text-warm-muted disabled:hover:bg-warm-surface px-2 sm:px-3 ${theme === 'deals'
+                ? 'border-red-400 hover:bg-red-50'
+                : 'border-warm-accent hover:bg-warm-accent'
+                }`}
+              aria-label={`Add ${name} to cart`}
             >
               <span className="hidden sm:inline">Add to Cart</span>
               <span className="sm:hidden">Add</span>

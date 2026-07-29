@@ -143,12 +143,12 @@ export function DealCountdown({
   // Early return 2: Render high-contrast "Deal Expired" state
   if (timeLeft.isExpired) {
     return (
-      <div className={`rounded-2xl bg-gradient-to-r from-red-950 via-red-900 to-black border-2 border-red-500/80 p-4 text-center shadow-lg ${className}`}>
+      <div className={`rounded-2xl bg-gradient-to-r from-red-950 via-red-900 to-warm-fg border-2 border-red-500/80 p-4 text-center shadow-lg ${className}`}>
         <div className="flex items-center justify-center gap-2 text-red-400 font-black text-xs uppercase tracking-widest">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
           <span>Deal Expired</span>
         </div>
-        <p className="text-xs font-bold text-gray-200 mt-1">
+        <p className="text-xs font-bold text-warm-muted mt-1">
           This promotion has ended. Stay tuned for next week&apos;s deals!
         </p>
       </div>
@@ -157,7 +157,7 @@ export function DealCountdown({
 
   // Active high-contrast promotional countdown display
   return (
-    <div className={`flex items-center gap-2 bg-black/80 border border-warm-accent/60 rounded-2xl px-4 py-2 shadow-lg backdrop-blur-md ${className}`}>
+    <div className={`flex items-center gap-2 bg-warm-fg/80 border border-warm-accent/60 rounded-2xl px-4 py-2 shadow-lg backdrop-blur-md ${className}`}>
       <span className="text-xs font-extrabold text-warm-accent uppercase tracking-wider hidden sm:inline">
         Ends In:
       </span>

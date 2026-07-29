@@ -10,7 +10,9 @@
  * Avoid /images/ — that prefix does not exist on the CDN.
  */
 const DEFAULT_CDN_BASE = 'https://images.luckystore1947.com';
-const BASE = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL || DEFAULT_CDN_BASE).replace(/\/$/, '');
+const BASE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL !== undefined
+  ? process.env.NEXT_PUBLIC_IMAGE_BASE_URL
+  : (process.env.NODE_ENV === 'development' ? '' : DEFAULT_CDN_BASE);
 
 export function img(path: string): string {
   if (!path) return '';
@@ -51,7 +53,9 @@ export function responsiveHeroBanner(base: string, alt: string): ResponsiveImage
     sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px',
     sources: [
       {
-        srcSet: srcSet(`/banners/${base}.avif 600w`),
+        srcSet: srcSet(
+          `/banners/${base}_400.avif 400w, /banners/${base}_600.avif 600w, /banners/${base}_800.avif 800w, /banners/${base}_1200.avif 1200w`
+        ),
         type: 'image/avif',
       },
     ],

@@ -40,7 +40,7 @@ export function ThemedShortcuts({ products = [] }: ThemedShortcutsProps) {
                 href={`/category/${group.slug}`}
                 className="group flex-shrink-0 flex flex-col items-center w-[84px] sm:w-[92px]"
               >
-                <div className="w-[84px] h-[84px] sm:w-[92px] sm:h-[92px] rounded-[20px] border border-warm-border/60 bg-warm-surface group-hover:bg-warm-fg group-hover:border-warm-fg group-hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm group-hover:shadow-warm-md flex flex-col items-center justify-center p-2 mb-1.5 text-center">
+                <div className="w-[84px] h-[84px] sm:w-[92px] sm:h-[92px] rounded-[20px] border border-warm-border dark:border-transparent bg-warm-surface group-hover:bg-warm-fg group-hover:border-warm-fg group-hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm group-hover:shadow-warm-md flex flex-col items-center justify-center p-2 mb-1.5 text-center">
                   <span className="text-3xl sm:text-4xl group-hover:scale-110 transition-transform duration-200" aria-hidden="true">
                     {group.emoji}
                   </span>

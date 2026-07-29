@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { img } from '../../lib/imageUrl';
 
 export function Footer() {
   return (
@@ -22,18 +24,15 @@ export function Footer() {
             </a>
           </div>
 
-          {/* Right Saffron CTA Card */}
-          <div className="w-full lg:w-72 bg-warm-accent rounded-[24px] p-6 text-[#0B0B0D] shadow-warm-md flex flex-col justify-between min-h-[160px] shrink-0">
-            <h3 className="text-xl sm:text-2xl font-black font-display tracking-tight text-[#0B0B0D]">
-              Start Shopping
-            </h3>
-            <Link
-              href="/category"
-              className="w-full bg-[#0B0B0D] text-white hover:bg-[#1f1f24] active:scale-[0.98] px-5 py-3 rounded-full font-bold text-xs transition-all duration-200 flex items-center justify-between group shadow-sm mt-4"
-            >
-              <span>Browse Catalog</span>
-              <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-            </Link>
+          {/* Right Brand Logo Card */}
+          <div className="w-full lg:w-72 bg-white rounded-[24px] p-3 shadow-warm-md flex items-center justify-center min-h-[160px] shrink-0 overflow-hidden">
+            <Image
+              src={img('/lucky-store-est1947.svg')}
+              alt="Lucky Store — Est. 1947"
+              width={260}
+              height={140}
+              className="w-full h-auto max-h-[140px] object-contain"
+            />
           </div>
         </div>
 

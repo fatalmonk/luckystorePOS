@@ -1,13 +1,17 @@
-'use client'; // product detail page with cart interactions and toast
+'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
 import { useCartContext } from '../../components/CartProvider';
 import { WishlistButton } from '../../components/WishlistButton';
 import { QtyNumber } from '../../components/ui/QtyNumber';
+import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
+import { ProductJsonLd } from '../../components/seo/ProductJsonLd';
+import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { formatBdt } from '../../lib/formatPrice';
 import type { Product } from '../../lib/types';
 
@@ -18,6 +22,14 @@ interface ProductClientProps {
 function ProductContent({ product }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
+  const { addViewed } = useRecentlyViewed();
+
+  // Record product view post-mount
+  useEffect(() => {
+    if (product?.id) {
+      addViewed(product.id);
+    }
+  }, [product?.id, addViewed]);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
 
@@ -50,12 +62,23 @@ function ProductContent({ product }: ProductClientProps) {
 
   return (
     <>
+      <ProductJsonLd product={product} />
       <Header />
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-12">
         <div className="max-w-3xl mx-auto bg-warm-surface min-h-full rounded-t-2xl mt-2">
+          {/* Breadcrumb Navigation */}
+          <div className="pt-2">
+            <Breadcrumbs
+              items={[
+                { label: product.category, href: `/category/${product.category}` },
+                { label: product.name, href: `/product/${product.id}` },
+              ]}
+            />
+          </div>
+
           {/* Hero Section */}
-          <div className="px-4 pt-6 pb-5 sm:px-6 lg:px-8">
+          <div className="px-4 pt-4 pb-5 sm:px-6 lg:px-8">
             <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-bg overflow-hidden mb-6">
               {product.image_url ? (
                 <Image
@@ -93,7 +116,7 @@ function ProductContent({ product }: ProductClientProps) {
               <span className="text-lg font-extrabold text-warm-fg">{paisa}</span>
             </div>
 
-            {/* Action Area — inline below price, no fixed bar collision */}
+            {/* Action Area — Desktop & Inline */}
             <div className="mt-6">
               {qtyInCart > 0 ? (
                 <div className="flex items-center gap-2">
@@ -157,6 +180,42 @@ function ProductContent({ product }: ProductClientProps) {
         </div>
       </main>
 
+      {/* Sticky Mobile Add-to-Cart Bar */}
+      <div className="fixed bottom-[60px] left-0 right-0 z-40 bg-warm-surface/95 backdrop-blur-md border-t border-warm-border p-3 px-4 flex items-center justify-between shadow-lg md:hidden">
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-warm-fg line-clamp-1">{product.name}</span>
+          <span className="text-sm font-black text-warm-fg">{formatBdt(product.price)}</span>
+        </div>
+        <div>
+          {qtyInCart > 0 ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleUpdateQty(-1)}
+                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-sm"
+              >
+                −
+              </button>
+              <QtyNumber qty={qtyInCart} className="font-bold text-xs min-w-[20px] text-center" />
+              <button
+                onClick={() => handleUpdateQty(1)}
+                disabled={qtyInCart >= product.stock}
+                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-sm disabled:opacity-50"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              disabled={product.stock <= 0}
+              className="px-5 py-2.5 rounded-full bg-[#f0c444] text-[#0B0B0D] font-extrabold text-xs shadow-sm hover:opacity-90 disabled:opacity-50"
+            >
+              {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
+          )}
+        </div>
+      </div>
+
       <BottomNav />
     </>
   );
@@ -165,3 +224,4 @@ function ProductContent({ product }: ProductClientProps) {
 export default function ProductClient({ product }: ProductClientProps) {
   return <ProductContent product={product} />;
 }
+

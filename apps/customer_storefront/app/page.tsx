@@ -10,8 +10,10 @@ export default async function Home() {
   const [{ products }, categories] = await Promise.all([repo.search({}), repo.getCategories()]);
 
   // Preload primary campaign hero image (LCP element)
-  const primaryHeroAvif = img('/banners/promo_welcome_v2.avif');
-  const primaryHeroSrcSet = srcSet('/banners/promo_welcome_v2.avif 600w');
+  const primaryHeroAvif = img('/banners/promo_welcome_v2_1200.avif');
+  const primaryHeroSrcSet = srcSet(
+    '/banners/promo_welcome_v2_400.avif 400w, /banners/promo_welcome_v2_600.avif 600w, /banners/promo_welcome_v2_800.avif 800w, /banners/promo_welcome_v2_1200.avif 1200w'
+  );
 
   return (
     <>
