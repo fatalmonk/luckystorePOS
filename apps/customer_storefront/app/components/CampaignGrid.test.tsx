@@ -16,14 +16,14 @@ describe('CampaignGrid', () => {
     render(<CampaignGrid />);
 
     const title = screen.getByRole('heading', {
-      name: 'Your neighborhood grocer, one scroll away.',
+      name: 'Groceries you know, delivered across Chittagong.',
     });
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 
     const destinations = [
       ['Browse groceries', '/category'],
-      ['How delivery works', '#how-it-works'],
+      ['How ordering works', '#how-it-works'],
       ['Explore everyday groceries', '/category'],
       ['Shop Buldak ramen deals', '/search?q=buldak'],
       ['Shop dairy and eggs', '/category/dairy-and-eggs'],
@@ -35,19 +35,20 @@ describe('CampaignGrid', () => {
     }
 
     const images = hero!.querySelectorAll('img');
-    expect(images).toHaveLength(4);
+    expect(images).toHaveLength(5);
     for (const image of images) {
       expect(image).toHaveAttribute('alt', '');
     }
 
-    expect(images[1]).toHaveAttribute(
+    expect(images[2]).toHaveAttribute(
       'srcset',
       expect.stringContaining('promo_buldak_1200.webp 1024w'),
     );
-    expect(images[2]).toHaveAttribute('srcset', expect.stringContaining('promo_dairy_1200.webp'));
-    expect(images[3]).toHaveAttribute('srcset', expect.stringContaining('promo_tea_coffee_1200.webp'));
-    expect(within(hero!).getByText('15-min express')).toBeInTheDocument();
-    expect(within(hero!).getByText('Verified inventory')).toBeInTheDocument();
+    expect(images[3]).toHaveAttribute('srcset', expect.stringContaining('promo_dairy_600.webp'));
+    expect(images[3]).not.toHaveAttribute('srcset', expect.stringContaining('promo_dairy_1200.webp'));
+    expect(images[4]).toHaveAttribute('srcset', expect.stringContaining('promo_tea_coffee_1200.webp'));
+    expect(within(hero!).getByText('Local delivery')).toBeInTheDocument();
+    expect(within(hero!).getByText('Stocked daily')).toBeInTheDocument();
     expect(within(hero!).queryByText(/Local Reviews/i)).not.toBeInTheDocument();
   });
 
@@ -73,7 +74,7 @@ describe('CampaignGrid', () => {
     render(<CampaignGrid />);
 
     const hero = screen
-      .getByRole('heading', { name: 'Your neighborhood grocer, one scroll away.' })
+      .getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' })
       .closest('section')!;
 
     expect(hero).toHaveClass('campaign-hero');

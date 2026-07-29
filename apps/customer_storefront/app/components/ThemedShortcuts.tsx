@@ -20,10 +20,10 @@ export function ThemedShortcuts() {
     <section aria-labelledby="category-rail-title">
       <div className="grid gap-6 border-y border-warm-border py-7 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:items-end">
         <div className="max-w-lg">
-          <p className="home-section-kicker">From our Chittagong shelves</p>
-          <h2 id="category-rail-title" className="home-section-title">The everyday edit</h2>
+          <p className="home-section-kicker">Shop by need</p>
+          <h2 id="category-rail-title" className="home-section-title">Four easy places to start</h2>
           <p className="home-section-description">
-            Four useful starting points, selected from the categories available online.
+            Jump into four useful grocery aisles, or browse the complete catalog.
           </p>
         </div>
 

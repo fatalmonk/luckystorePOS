@@ -9,7 +9,7 @@ test('the homepage remains useful while product images are slow', async ({ page 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   await expect(
-    page.getByRole('heading', { name: 'Your neighborhood grocer, one scroll away.' }),
+    page.getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' }),
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Browse groceries' })).toBeVisible();
   await expect(page.locator('[data-testid="product-image-loading"]').first()).toBeVisible();

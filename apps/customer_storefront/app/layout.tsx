@@ -34,8 +34,12 @@ const notoBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Lucky Store', template: '%s | Lucky Store' },
-  description: 'Your friendly neighborhood grocery store in Chittagong. Fresh groceries and daily essentials delivered locally.',
+  title: {
+    default: 'Lucky Store | Online Grocery Delivery in Chittagong',
+    template: '%s | Lucky Store',
+  },
+  description:
+    'Shop groceries, pantry staples, snacks, dairy, and household essentials online from Lucky Store, serving Chittagong since 1947.',
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
@@ -59,8 +63,9 @@ export const metadata: Metadata = {
     locale: 'en_BD',
     url: '/',
     siteName: 'Lucky Store',
-    title: 'Lucky Store — Your Friendly Neighborhood Grocer',
-    description: 'Fresh groceries and daily essentials delivered across Chittagong. Shop local.',
+    title: 'Lucky Store — Online Grocery Delivery in Chittagong',
+    description:
+      'Shop groceries and household essentials online from Lucky Store, serving Chittagong since 1947.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
@@ -77,8 +82,9 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store — Your Friendly Neighborhood Grocer',
-    description: 'Fresh groceries and daily essentials delivered across Chittagong. Shop local.',
+    title: 'Lucky Store — Online Grocery Delivery in Chittagong',
+    description:
+      'Shop groceries and household essentials online from Lucky Store, serving Chittagong since 1947.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',

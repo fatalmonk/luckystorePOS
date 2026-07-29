@@ -57,7 +57,7 @@ function mdProduct(p: any): string {
 
 /** Static site-map entries for fallback navigation. */
 const SITE_MAP = [
-  { path: '/', label: 'Home', desc: 'Featured products and categories' },
+  { path: '/', label: 'Home', desc: 'Online groceries, deals, and categories' },
   { path: '/category', label: 'All Categories', desc: 'Browse all product categories' },
   { path: '/search', label: 'Search', desc: 'Search the product catalog' },
   { path: '/contact', label: 'Contact Us', desc: 'Address, phone, email, WhatsApp' },

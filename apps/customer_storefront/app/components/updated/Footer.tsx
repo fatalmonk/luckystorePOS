@@ -15,11 +15,11 @@ export function Footer() {
           <div className="max-w-2xl">
             <p className="campaign-kicker">Local since 1947</p>
             <h2 className="campaign-on-image mt-3 text-3xl font-black tracking-[-0.035em] sm:text-5xl">
-              Need a hand with your order?
+              Need help with an order?
             </h2>
             <p className="campaign-on-image-muted mt-3 max-w-xl text-sm leading-6">
-              Talk to the Lucky Store team directly, or find the essentials you need through
-              the links below.
+              Contact the Lucky Store team directly, or use the links below to keep
+              shopping and find answers.
             </p>
             <a
               href="mailto:hello@luckystore1947.com"

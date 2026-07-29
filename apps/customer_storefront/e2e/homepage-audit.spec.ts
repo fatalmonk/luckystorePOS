@@ -5,11 +5,11 @@ test.describe('Storefront homepage shell audit', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('heading', { name: 'Your neighborhood grocer, one scroll away.' }),
+      page.getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' }),
     ).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'The everyday edit' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Featured products' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'How Lucky Store works' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Four easy places to start' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Featured groceries' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'From cart to doorstep' })).toBeVisible();
 
     const header = page.getByRole('banner');
     if ((test.info().project.use.viewport?.width ?? 1280) < 640) {
@@ -33,8 +33,8 @@ test.describe('Storefront homepage shell audit', () => {
 
     const trust = page.getByRole('region', { name: 'Why shop with Lucky Store' });
     await expect(trust.getByText('Local delivery')).toBeVisible();
-    await expect(trust.getByText('Serving since 1947')).toBeVisible();
-    await expect(trust.getByText('Pay on arrival')).toBeVisible();
+    await expect(trust.getByText('Since 1947')).toBeVisible();
+    await expect(trust.getByText('Pay on delivery')).toBeVisible();
     await expect(trust.getByText(/10k\+|500\+|Local Reviews/i)).toHaveCount(0);
 
     const footer = page.getByRole('contentinfo');

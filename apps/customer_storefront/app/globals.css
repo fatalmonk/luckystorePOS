@@ -138,9 +138,30 @@
       linear-gradient(135deg, var(--color-campaign-surface-raised), var(--color-campaign-surface));
   }
 
+  .campaign-hero-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .campaign-hero-backdrop img {
+    opacity: 0.5;
+    filter: saturate(0.86) contrast(1.04);
+  }
+
+  .campaign-hero-backdrop::after {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(11, 11, 13, 0.96) 0%, rgba(11, 11, 13, 0.82) 38%, rgba(11, 11, 13, 0.58) 100%),
+      linear-gradient(180deg, rgba(11, 11, 13, 0.16), rgba(11, 11, 13, 0.64));
+    content: '';
+  }
+
   .campaign-hero::before {
     position: absolute;
     inset: 0 auto 0 0;
+    z-index: 12;
     width: 0.25rem;
     background: var(--color-accent);
     content: '';
@@ -155,7 +176,7 @@
     display: none;
     color: var(--color-campaign-on-image-muted);
     font-family: var(--font-display);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 900;
     letter-spacing: 0.34em;
     text-transform: uppercase;
@@ -166,7 +187,7 @@
   .campaign-reel-status {
     color: var(--color-campaign-on-image-muted);
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -179,12 +200,12 @@
 
   .campaign-card-content {
     border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(11, 11, 13, 0.70);
+    background: rgba(11, 11, 13, 0.38);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 12px 32px rgba(0, 0, 0, 0.32);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+      0 10px 24px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .campaign-card-picture::after {
@@ -341,11 +362,11 @@
     }
 
     .campaign-status-badge {
-      animation: cyber-float 4.8s ease-in-out infinite;
+      animation: cyber-float 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1;
     }
 
     .campaign-status-badge:nth-child(2) {
-      animation-delay: -2.4s;
+      animation-delay: 0.2s;
     }
 
     .campaign-card-link:hover::after {
