@@ -10,9 +10,10 @@ async function openFirstProduct(page: Page) {
 }
 
 async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
-  const addButton = page.locator('button:has-text("Add to Cart")');
-  const wishlistButton = page.locator('button:has-text("Notify Me When Back")');
-  const alreadyInCart = page.locator('button[aria-label="Increase quantity"]');
+  // Scope to the main product detail area to avoid the hidden mobile sticky bar button
+  const addButton = page.locator('main button:has-text("Add to Cart")');
+  const wishlistButton = page.locator('main button:has-text("Notify Me When Back")');
+  const alreadyInCart = page.locator('main button[aria-label="Increase quantity"]');
 
   try {
     return await Promise.race([
@@ -32,7 +33,7 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
     return false;
   }
 
-  const addButton = page.locator('button:has-text("Add to Cart")');
+  const addButton = page.locator('main button:has-text("Add to Cart")');
   if (await addButton.isVisible()) {
     await addButton.click();
   }
