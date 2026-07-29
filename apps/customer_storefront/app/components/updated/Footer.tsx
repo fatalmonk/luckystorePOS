@@ -25,13 +25,13 @@ export function Footer() {
           </div>
 
           {/* Right Brand Logo Card */}
-          <div className="w-full lg:w-72 bg-white rounded-[24px] p-3 shadow-warm-md flex items-center justify-center min-h-[160px] shrink-0 overflow-hidden">
+          <div className="w-full lg:w-96 bg-white rounded-[24px] p-2 sm:p-3 shadow-warm-md flex items-center justify-center min-h-[180px] sm:min-h-[220px] shrink-0 overflow-hidden">
             <Image
-              src={img('/lucky-store-est1947.svg')}
-              alt="Lucky Store — Est. 1947"
-              width={260}
-              height={140}
-              className="w-full h-auto max-h-[140px] object-contain"
+              src="/logo-bangla.png"
+              alt="লাকি স্টোর — ১৯৪৭"
+              width={390}
+              height={210}
+              className="w-full h-auto max-h-[210px] object-contain"
             />
           </div>
         </div>
