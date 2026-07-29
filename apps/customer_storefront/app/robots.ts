@@ -16,6 +16,24 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
       {
+        userAgent: [
+          'GPTBot',
+          'PerplexityBot',
+          'ClaudeBot',
+          'Google-Extended',
+          'Applebot-Extended',
+          'cohere-ai',
+        ],
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/admin/',
+          '/checkout/',
+          '/cart/',
+          '/_next/',
+        ],
+      },
+      {
         userAgent: 'Googlebot-Image',
         allow: '/',
       },
