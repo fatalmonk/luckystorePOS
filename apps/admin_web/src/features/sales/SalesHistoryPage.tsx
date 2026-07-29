@@ -132,6 +132,7 @@ export function SalesHistoryPage() {
 
   const paginatedSales = sales?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const salesVirtualizer = useVirtualizer({
     count: paginatedSales.length,
     getScrollElement: () => salesScrollRef.current,

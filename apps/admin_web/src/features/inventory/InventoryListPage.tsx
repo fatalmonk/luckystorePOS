@@ -346,6 +346,7 @@ export function InventoryListPage() {
     };
   }, [chunkedItems]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const gridVirtualizer = useVirtualizer({
     count: chunkedItems.length,
     getScrollElement: () => (document.querySelector('.main-content') as HTMLDivElement) || null,

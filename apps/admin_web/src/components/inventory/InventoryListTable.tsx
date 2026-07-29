@@ -73,6 +73,7 @@ export function InventoryListTable({
     };
   }, [scrollElement, items]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null,

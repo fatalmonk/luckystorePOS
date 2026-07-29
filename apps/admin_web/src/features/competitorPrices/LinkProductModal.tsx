@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Search, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
@@ -26,18 +26,10 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
   const { notify } = useNotify();
   const queryClient = useQueryClient();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [competitorUrl, setCompetitorUrl] = useState('');
+  // State initialised directly from props — parent passes key={record.id} to remount on change
+  const [searchQuery, setSearchQuery] = useState(priceRecord?.product_name || '');
+  const [competitorUrl, setCompetitorUrl] = useState(priceRecord?.competitor_product_url || '');
   const [selectedItem, setSelectedItem] = useState<ItemCandidate | null>(null);
-
-  // Re-initialise whenever the modal opens with a new record
-  useEffect(() => {
-    if (priceRecord) {
-      setSearchQuery(priceRecord.product_name || '');
-      setCompetitorUrl(priceRecord.competitor_product_url || '');
-      setSelectedItem(null);
-    }
-  }, [priceRecord]);
 
   const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ['itemCandidateSearch', searchQuery.trim()],

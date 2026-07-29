@@ -512,7 +512,7 @@ export function CompetitorPricesPage() {
       <AddPriceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       {/* 1-Click Link Product Modal */}
-      <LinkProductModal priceRecord={linkingRecord} onClose={() => setLinkingRecord(null)} />
+      <LinkProductModal key={linkingRecord?.id ?? 'none'} priceRecord={linkingRecord} onClose={() => setLinkingRecord(null)} />
     </div>
   );
 }
