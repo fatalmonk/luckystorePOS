@@ -14,15 +14,31 @@ export default async function Home() {
   const primaryHeroSrcSet = srcSet(
     '/banners/promo_welcome_v2_400.avif 400w, /banners/promo_welcome_v2_600.avif 600w, /banners/promo_welcome_v2_800.avif 800w, /banners/promo_welcome_v2_1200.avif 1200w'
   );
+  const featuredProducts = products.filter((product) => product.stock > 0).slice(0, 6);
+  const productListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Featured groceries at Lucky Store',
+    itemListElement: featuredProducts.map((product, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: product.name,
+      url: `https://luckystore1947.com/product/${encodeURIComponent(product.id)}`,
+    })),
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd).replace(/</g, '\\u003c') }}
+      />
       <link
         rel="preload"
         as="image"
         href={primaryHeroAvif}
         imageSrcSet={primaryHeroSrcSet}
-        imageSizes="(max-width: 768px) 100vw, 50vw"
+        imageSizes="(max-width: 639px) 82vw, (max-width: 1023px) 56vw, 36vw"
         type="image/avif"
         fetchPriority="high"
       />

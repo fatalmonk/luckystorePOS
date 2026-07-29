@@ -1,7 +1,8 @@
 'use client'; // cart modal dialog with useRef, useEffect, router, and cart context
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { X } from '@phosphor-icons/react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCartContext } from './CartProvider';
@@ -20,6 +21,12 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
   const { showToast } = useToast();
   const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, total } = useCartContext();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [closing, setClosing] = useState(false);
+
+  const requestClose = useCallback(() => {
+    if (!dialogRef.current || closing) return;
+    setClosing(true);
+  }, [closing]);
 
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);
@@ -31,15 +38,27 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
     if (!dialog) return;
 
     if (open) {
+      setClosing(false);
       dialog.showModal();
-    } else {
-      dialog.close();
+    } else if (dialog.open) {
+      requestClose();
     }
-  }, [open]);
+  }, [open, requestClose]);
+
+  useEffect(() => {
+    if (!closing) return;
+    const timer = setTimeout(() => {
+      const dialog = dialogRef.current;
+      if (dialog?.open) dialog.close();
+      onClose();
+      setClosing(false);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [closing, onClose]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === dialogRef.current) {
-      onClose();
+      requestClose();
     }
   };
 
@@ -47,16 +66,17 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
-      onClose={onClose}
       className="
         fixed inset-0 m-0 p-0
         w-full max-w-full h-full max-h-full
         bg-transparent
         backdrop:bg-warm-fg/40 backdrop:backdrop-blur-sm
+        md:backdrop:bg-transparent
+        md:justify-end md:items-stretch
       "
       style={{ overscrollBehavior: 'contain' }}
     >
-      {/* Sheet panel — slides up from bottom */}
+      {/* Sheet panel — bottom sheet on mobile, right-side panel on desktop */}
       <div
         className={`
           fixed bottom-0 left-0 right-0
@@ -64,12 +84,18 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
           shadow-[0_-8px_40px_rgba(11,11,13,0.12)]
           max-h-[70vh] overflow-hidden
           flex flex-col
-          transition-transform duration-300 ease-[var(--ease-elastic)]
-          ${open ? 'translate-y-0' : 'translate-y-full'}
+          transition-transform duration-300 ease-[var(--ease-drawer)]
+          ${open && !closing ? 'translate-y-0' : 'translate-y-full'}
+          md:top-0 md:right-0 md:left-auto md:bottom-0
+          md:w-[420px] md:max-w-full md:max-h-full
+          md:rounded-none md:rounded-l-[20px]
+          md:shadow-[-8px_0_40px_rgba(11,11,13,0.12)]
+          md:translate-y-0
+          ${open && !closing ? 'md:translate-x-0' : 'md:translate-x-full'}
         `}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-2">
+        {/* Handle — now static visual indicator only */}
+        <div className="flex justify-center pt-3 pb-2 md:hidden">
           <div className="w-10 h-1 bg-warm-muted rounded-full" />
         </div>
 
@@ -79,7 +105,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
             Cart <span className="text-warm-muted font-semibold text-sm ml-1">({totalItems})</span>
           </h3>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="w-11 h-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm"
             aria-label="Close cart"
           >
@@ -90,8 +116,15 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
         {/* Items */}
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           {cart.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-warm-muted text-sm">Your cart is empty</p>
+            <div className="text-center py-10 px-4">
+              <p className="text-warm-muted text-sm">Your cart is empty.</p>
+              <Link
+                href="/category"
+                onClick={requestClose}
+                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-warm-accent px-5 py-2.5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover"
+              >
+                Browse groceries
+              </Link>
             </div>
           ) : (
             <div className="space-y-2">
@@ -116,13 +149,13 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[13px] truncate text-warm-fg">{item.name}</p>
-                    <p className="text-[11px] text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
+                    <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
-                      className="text-[10px] text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[28px] px-0.5"
+                      className="text-xs text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[28px] px-0.5"
                       aria-label={`Remove ${item.name}`}
                     >
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
                       </svg>
                       Remove
@@ -131,7 +164,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => updateQty(item.id, -1)}
-                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
+                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors active:scale-95"
                       aria-label="Decrease quantity"
                     >
                       −
@@ -139,7 +172,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[20px] text-center" />
                     <button
                       onClick={() => updateQty(item.id, 1)}
-                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors"
+                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors active:scale-95"
                       aria-label="Increase quantity"
                     >
                       +
@@ -156,13 +189,13 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
         {cart.length > 0 && (
           <div className="border-t border-warm-border-light px-5 py-4 flex items-center gap-4">
             <div className="flex-1">
-              <p className="text-[10px] text-warm-muted uppercase tracking-widest font-semibold mb-0.5">
+              <p className="text-xs text-warm-muted uppercase tracking-widest font-semibold mb-0.5">
                 {totalItems} items {deliveryFee === 0 && '· Free delivery'}
               </p>
               <p className="text-xl font-extrabold">{formatBdt(total)}</p>
             </div>
             <Button
-              onClick={() => { onClose(); router.push('/checkout'); }}
+              onClick={() => { requestClose(); router.push('/checkout'); }}
               className="flex-0 w-[140px]"
               data-testid="sheet-checkout-btn"
             >

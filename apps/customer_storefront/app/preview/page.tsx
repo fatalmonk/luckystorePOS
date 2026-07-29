@@ -386,7 +386,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             
             {/* Call Center / Hotline Box (Zilly Style) */}
             <div className="bg-[#eb5757] text-white px-5 py-2 rounded-r-2xl rounded-l-md flex items-center space-x-3 shadow-sm hover:bg-red-600 transition-all cursor-pointer active:scale-95">
-              <Phone className="w-4 h-4 animate-bounce" />
+              <Phone className="w-4 h-4" />
               <div className="text-xs text-left leading-tight">
                 <div className="opacity-90 text-[10px] font-medium uppercase tracking-wider">Hotline Number</div>
                 <div className="font-black text-sm tracking-wide">+880 1234 567890</div>

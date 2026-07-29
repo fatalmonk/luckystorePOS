@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { ReactNode, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import type { Category } from '../lib/types';
 import { getLocalWishlist, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
@@ -9,36 +10,10 @@ import { useToast } from './Toast';
 import { QtyNumber } from './ui/QtyNumber';
 import { getOrCreateFingerprint, WishlistButton } from './WishlistButton';
 import { CartAnnouncer } from './ui/CartAnnouncer';
-
-interface CardProps {
-  children: ReactNode;
-  className?: string;
-  hover?: boolean;
-  onClick?: () => void;
-  'data-testid'?: string;
-}
-
-export function Card({ children, className = '', hover = false, onClick, 'data-testid': testId }: CardProps) {
-  return (
-    <div
-      onClick={onClick}
-      data-testid={testId}
-      className={`
-        bg-warm-surface border border-warm-border rounded-[20px]
-        overflow-hidden
-        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-        ${hover ? 'card-hover hover:border-warm-accent hover:-translate-y-0.5 cursor-pointer shadow-warm-sm hover:shadow-warm-md' : ''}
-        ${onClick ? 'cursor-pointer' : ''}
-        ${className}
-      `}
-    >
-      {children}
-    </div>
-  );
-}
+import { MarketCard } from './ui/MarketSurface';
 
 function CategoryPlaceholder({ category }: { category: Category }) {
-  const baseClasses = "w-12 h-12 text-warm-muted/70 transition-transform duration-500 group-hover:scale-110";
+  const baseClasses = "w-12 h-12 text-warm-muted/70";
 
   switch (category) {
     case 'Beverages':
@@ -130,7 +105,6 @@ interface ProductCardProps {
   theme?: 'deals' | 'bestsellers';
   onAdd: () => void;
   onUpdateQty: (delta: number) => void;
-  onClick: () => void;
   onAddRef?: (el: HTMLButtonElement | null) => void;
   priority?: boolean;
   showBrandBadge?: boolean;
@@ -152,20 +126,21 @@ export function ProductCard({
   theme,
   onAdd,
   onUpdateQty,
-  onClick,
   onAddRef,
   priority = false,
   showBrandBadge = false,
 }: ProductCardProps) {
-  const stockLow = stock > 0 && stock <= 5;
+  const stockLow = stock === 1;
   const outOfStock = stock <= 0;
   const onSale = originalPrice !== undefined && originalPrice > price;
   const savings = onSale ? originalPrice! - price : 0;
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const { showToast } = useToast();
+  const productHref = `/product/${encodeURIComponent(id)}`;
 
   useEffect(() => {
     const list = getLocalWishlist();
@@ -173,6 +148,11 @@ export function ProductCard({
     const timer = setTimeout(() => setIsWishlisted(isPresent), 0);
     return () => clearTimeout(timer);
   }, [id]);
+
+  useEffect(() => {
+    setImageError(false);
+    setImageLoaded(false);
+  }, [image_url]);
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -203,29 +183,33 @@ export function ProductCard({
   };
 
   return (
-    <Card hover onClick={onClick} className={`flex flex-col h-full group relative card-reveal ${theme === 'deals' ? 'border-red-300/60' : theme === 'bestsellers' ? 'border-warm-accent/70' : ''
-      }`} data-testid="product-card">
+    <MarketCard
+      interactive
+      stockState={outOfStock ? 'unavailable' : stockLow ? 'limited' : 'available'}
+      className={`group relative flex h-full flex-col ${theme === 'bestsellers' ? 'border-warm-accent/70' : ''}`}
+      data-testid="product-card"
+    >
       <CartAnnouncer message={announcement} />
       {/* Badges + wishlist */}
       <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex justify-between items-start pointer-events-none">
-        {stockLow ? (
-          <span className="bg-[#E65100] text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
-            ⚡ Only {stock} left!
-          </span>
-        ) : outOfStock ? (
-          <span className="bg-neutral-800 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
+        {outOfStock ? (
+          <span className="product-badge-neutral rounded-full px-2 py-0.5 font-display text-xs font-bold uppercase tracking-wide">
             Out of stock
           </span>
+        ) : stockLow ? (
+          <span className="product-badge-warning rounded-full px-2 py-0.5 font-display text-xs font-bold uppercase tracking-wide">
+            Last one
+          </span>
         ) : theme === 'bestsellers' ? (
-          <span className="bg-warm-accent text-warm-fg text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
-            ⭐ Best Seller
+          <span className="product-badge-accent rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide">
+            Best seller
           </span>
         ) : badge ? (
-          <span className="bg-red-600 text-warm-surface text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display">
+          <span className="product-badge-sale rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide">
             {badge}
           </span>
         ) : showBrandBadge && brand ? (
-          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full shadow-warm-sm uppercase tracking-wider font-display ${brand === 'Polar' ? 'bg-blue-100 text-blue-700' :
+          <span className={`rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide ${brand === 'Polar' ? 'bg-blue-100 text-blue-700' :
             brand === 'Igloo' ? 'bg-red-100 text-red-700' :
               brand === 'Savoy' ? 'bg-green-100 text-green-700' :
                 'bg-warm-accent text-warm-fg'
@@ -237,7 +221,7 @@ export function ProductCard({
         )}
         <button
           onClick={handleWishlistToggle}
-          className="pointer-events-auto w-10 h-10 rounded-full bg-warm-surface/95 backdrop-blur-sm shadow-warm-sm flex items-center justify-center text-lg transition-transform hover:scale-105 active:scale-95 border border-warm-border"
+          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface/95 text-lg shadow-warm-sm backdrop-blur-sm transition-colors hover:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
         >
           {isWishlisted ? (
@@ -253,17 +237,32 @@ export function ProductCard({
       </div>
 
       {/* Image Container — taller, cleaner, editorial */}
-      <div className="relative w-full aspect-[4/3] bg-white overflow-hidden flex items-center justify-center shrink-0">
+      <Link
+        href={productHref}
+        aria-label={`View ${name}`}
+        className="relative w-full aspect-[4/3] bg-white overflow-hidden flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
+      >
+        {image_url && !imageLoaded && !imageError && (
+          <div
+            data-testid="product-image-loading"
+            className="absolute inset-3 animate-pulse rounded-xl bg-warm-border/50"
+            aria-hidden="true"
+          />
+        )}
         {image_url && !imageError ? (
           <Image
             src={image_url}
             alt={name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-contain p-2 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-[1.06]"
+            className="object-contain p-2"
             priority={priority}
             loading={priority ? undefined : 'lazy'}
-            onError={() => setImageError(true)}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              setImageLoaded(true);
+              setImageError(true);
+            }}
           />
         ) : null}
         {(!image_url || imageError) && (
@@ -271,7 +270,7 @@ export function ProductCard({
             <CategoryPlaceholder category={category} />
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Content — refined editorial layout with consistent heights */}
       <div className="p-3.5 flex flex-col flex-1 justify-between gap-1.5">
@@ -280,26 +279,31 @@ export function ProductCard({
           <div className="flex items-baseline gap-1.5">
             <span className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(price)}</span>
             {onSale && (
-              <span className="text-[11px] text-warm-muted line-through font-mono">{formatBdt(originalPrice)}</span>
+              <span className="font-mono text-xs text-warm-muted line-through">{formatBdt(originalPrice)}</span>
             )}
           </div>
 
           {/* Reserved slot for sale savings to align all cards vertically */}
           <div className="h-3.5 flex items-center">
             {onSale ? (
-              <p className="text-[10px] font-bold text-red-600 leading-none">
+              <p className="product-savings text-xs font-bold leading-none">
                 Save {formatBdt(savings)}
               </p>
             ) : null}
           </div>
 
-          <p className="text-[10px] text-warm-dim leading-none">
+          <p className="text-xs leading-none text-warm-dim">
             {formatUnitPrice(price, unit)}
           </p>
 
-          <h3 className="text-[13px] font-semibold leading-snug line-clamp-2 text-warm-fg font-body min-h-[2.5em] flex items-start">
-            {name}
-          </h3>
+          <Link
+            href={productHref}
+            className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          >
+            <h3 className="min-h-[3.75rem] break-words text-sm font-semibold leading-5 text-warm-fg font-body">
+              {name}
+            </h3>
+          </Link>
         </div>
 
         <div className="mt-auto pt-2">
@@ -311,7 +315,7 @@ export function ProductCard({
                   setAnnouncement(`Removed one ${name} from cart`);
                   onUpdateQty(-1);
                 }}
-                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-warm-accent bg-warm-surface text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={`Remove one ${name}`}
               >
                 −
@@ -323,7 +327,7 @@ export function ProductCard({
                   setAnnouncement(`Added another ${name} to cart`);
                   onUpdateQty(1);
                 }}
-                className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-warm-accent bg-warm-surface text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={`Add another ${name}`}
               >
                 +
@@ -342,18 +346,15 @@ export function ProductCard({
                 onAdd();
               }}
               disabled={stock <= 0}
-              className={`w-full h-10 rounded-full border-2 text-warm-fg text-[11px] sm:text-xs font-black active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] disabled:border-warm-border disabled:text-warm-muted disabled:hover:bg-warm-surface px-2 sm:px-3 ${theme === 'deals'
-                ? 'border-red-400 hover:bg-red-50'
-                : 'border-warm-accent hover:bg-warm-accent'
-                }`}
+              className="h-11 w-full rounded-full bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors duration-300 hover:bg-warm-accent-hover active:scale-[0.96] disabled:bg-warm-border disabled:text-warm-muted sm:px-3"
               aria-label={`Add ${name} to cart`}
             >
-              <span className="hidden sm:inline">Add to Cart</span>
-              <span className="sm:hidden">Add</span>
+              <span className="market-card-add-label-full">Add to Cart</span>
+              <span className="market-card-add-label-short">Add</span>
             </button>
           )}
         </div>
       </div>
-    </Card>
+    </MarketCard>
   );
 }

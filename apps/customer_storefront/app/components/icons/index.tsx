@@ -58,6 +58,15 @@ export function CartIcon(props: IconProps) {
   );
 }
 
+export function WhatsAppIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.45L3 20.5l1.45-4.72A8.5 8.5 0 1 1 20.5 11.6Z" />
+      <path d="M8.1 7.9c.2-.45.4-.46.7-.47h.58c.18 0 .35.04.48.33l.73 1.74c.1.24.05.42-.08.62l-.54.68c-.16.18-.12.35 0 .55.5.85 1.23 1.55 2.1 2.03.24.13.4.12.57-.08l.76-.9c.18-.22.4-.25.65-.15l1.72.82c.25.12.42.2.46.4.04.2-.08 1.08-.5 1.67-.4.58-1.12.85-1.75.9-.47.04-1.08-.02-2.1-.44a8.22 8.22 0 0 1-3.34-2.46 7.14 7.14 0 0 1-1.66-3.1c-.22-.95.02-1.58.26-2.14Z" />
+    </Icon>
+  );
+}
+
 export function OrdersIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -136,4 +145,3 @@ export function UserIcon(props: IconProps) {
     </Icon>
   );
 }
-

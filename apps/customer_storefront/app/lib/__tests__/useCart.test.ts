@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { act } from 'react';
 import { useCart } from '../../hooks/useCart';
@@ -44,6 +44,7 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 describe('useCart', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     localStorageMock.clear();
   });
 
@@ -258,5 +259,20 @@ describe('useCart', () => {
     const parsed = JSON.parse(saved!);
     expect(parsed).toHaveLength(1);
     expect(parsed[0].id).toBe('prod-1');
+  });
+
+  it('keeps the cart usable and reports when browser storage is unavailable', async () => {
+    vi.spyOn(localStorageMock, 'setItem').mockImplementation(() => {
+      throw new Error('Storage disabled');
+    });
+
+    const { result } = renderHook(() => useCart());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    act(() => result.current.addToCart(mockProduct));
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(result.current.cart).toHaveLength(1);
+    expect(result.current.storageError).toBe(true);
   });
 });

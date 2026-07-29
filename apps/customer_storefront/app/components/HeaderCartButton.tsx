@@ -1,7 +1,6 @@
-'use client'; // cart count badge, bounce animation, and cart sheet trigger
+'use client';
 
 import { ShoppingCart } from '@phosphor-icons/react';
-import { useEffect, useRef, useState } from 'react';
 import { useCartSheet } from '../hooks/useCartSheet';
 import { formatBdt } from '../lib/formatPrice';
 import { useCartContext } from './CartProvider';
@@ -9,24 +8,12 @@ import { useCartContext } from './CartProvider';
 export function HeaderCartButton() {
   const { totalItems, total, isLoaded } = useCartContext();
   const { open } = useCartSheet();
-  const [bouncing, setBouncing] = useState(false);
-  const prevCount = useRef(totalItems);
-
-  useEffect(() => {
-    if (isLoaded && totalItems > prevCount.current) {
-      setBouncing(true);
-      const t = setTimeout(() => setBouncing(false), 500);
-      prevCount.current = totalItems;
-      return () => clearTimeout(t);
-    }
-    prevCount.current = totalItems;
-  }, [totalItems, isLoaded]);
 
   return (
     <button
       type="button"
       onClick={open}
-      className="relative bg-warm-accent hover:bg-warm-accent-hover text-warm-fg font-extrabold text-xs px-3 py-2.5 rounded-full shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1.5 min-h-[38px]"
+      className="relative flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full bg-warm-accent px-3 py-2.5 text-xs font-extrabold text-warm-accent-text shadow-sm transition-[background-color,box-shadow] hover:bg-warm-accent-hover hover:shadow-warm-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
       aria-label={`Cart ${isLoaded && totalItems > 0 ? `(${totalItems} items, ${formatBdt(total)})` : '(empty)'}`}
     >
       <ShoppingCart weight="bold" size={18} aria-hidden="true" />
@@ -35,7 +22,7 @@ export function HeaderCartButton() {
       )}
       {isLoaded && totalItems > 0 && (
         <span
-          className={`bg-warm-fg text-white text-[10px] font-mono px-1.5 py-0.5 rounded-full ${bouncing ? 'cart-bounce' : ''}`}
+          className="rounded-full bg-warm-fg px-1.5 py-0.5 font-mono text-xs text-white"
           aria-label={`${totalItems} items in cart`}
         >
           {totalItems}

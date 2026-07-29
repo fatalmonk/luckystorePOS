@@ -64,7 +64,7 @@ export function CatalogLayout({
   const pathname = usePathname();
   const urlParams = useSearchParams();
 
-  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete, handleClick } = useCartActions();
+  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Extract active query params
@@ -467,7 +467,6 @@ export function CatalogLayout({
                       priority={index === 0}
                       onAdd={() => handleAddToCart(product, addBtnRef)}
                       onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                      onClick={() => handleClick(product.id)}
                       onAddRef={(el) => {
                         addBtnRef = el;
                       }}

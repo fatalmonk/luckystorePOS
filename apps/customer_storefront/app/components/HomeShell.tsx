@@ -6,8 +6,9 @@ import { ThemedShortcuts } from './ThemedShortcuts';
 import { FeaturedProducts } from './FeaturedProducts';
 import { DealOfTheWeek } from './DealOfTheWeek';
 import { BottomNav } from './BottomNav';
-import { WhatsAppFloat } from './WhatsAppFloat';
 import { FaqJsonLd } from './seo/FaqJsonLd';
+import { CartStorageNotice } from './CartStorageNotice';
+import { CategorySingleCarousel } from './CategorySingleCarousel';
 import type { Product, Category } from '../lib/types';
 
 interface HomeShellProps {
@@ -21,90 +22,85 @@ export function HomeShell({ products }: HomeShellProps) {
       <h1 className="sr-only">Lucky Store 1947 — Authentic Grocery &amp; Daily Essentials</h1>
       <FaqJsonLd />
       <Header />
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-          {/* Main Campaign Grid */}
-          <CampaignGrid />
+      <CartStorageNotice />
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-20 sm:pt-7 lg:pb-24">
+          <div className="space-y-4 sm:space-y-5">
+            <CampaignGrid />
 
-          {/* Trust micro-bar — immediately visible after hero */}
-          <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-warm-surface border border-warm-border p-3 shadow-warm-sm">
-            <div className="flex flex-col items-center justify-center text-center gap-1">
-              <span className="text-lg" aria-hidden="true">🚚</span>
-              <span className="text-[10px] font-bold text-warm-fg leading-tight">Free Delivery</span>
-              <span className="text-[9px] text-warm-muted">৳500+</span>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center gap-1">
-              <span className="text-lg">📅</span>
-              <span className="text-[10px] font-bold text-warm-fg leading-tight">Since 1947</span>
-              <span className="text-[9px] text-warm-muted">10k+ Orders</span>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center gap-1">
-              <span className="text-lg">💰</span>
-              <span className="text-[10px] font-bold text-warm-fg leading-tight">Cash on Delivery</span>
-              <span className="text-[9px] text-warm-muted">Pay on arrival</span>
-            </div>
+            <section aria-label="Why shop with Lucky Store" className="home-trust-strip">
+              <dl className="grid grid-cols-1 divide-y divide-warm-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                <div className="home-trust-fact">
+                  <dt>Local delivery</dt>
+                  <dd>Across Chittagong</dd>
+                </div>
+                <div className="home-trust-fact">
+                  <dt>Serving since 1947</dt>
+                  <dd>Neighborhood roots</dd>
+                </div>
+                <div className="home-trust-fact">
+                  <dt>Pay on arrival</dt>
+                  <dd>Cash on delivery</dd>
+                </div>
+              </dl>
+            </section>
           </div>
 
-          {/* Category Rail */}
-          <ThemedShortcuts products={products} />
+          <div className="mt-14 space-y-16 sm:mt-20 sm:space-y-20 lg:mt-24 lg:space-y-24">
+            <ThemedShortcuts />
+            <FeaturedProducts products={products} />
+            <DealOfTheWeek products={products} />
+            <CategorySingleCarousel products={products} />
+          </div>
 
-          {/* Featured Products Section */}
-          <FeaturedProducts products={products} />
-
-          {/* Deal of the Week Anchor Section */}
-          <DealOfTheWeek products={products} />
-
-          {/* How It Works — 3-step flow */}
-          <section id="how-it-works" className="space-y-5 pt-2" aria-label="How It Works">
-            <h2 className="text-lg font-extrabold tracking-tight text-warm-fg">How Lucky Store Works</h2>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Step 1 */}
-              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border shadow-warm-sm flex flex-col items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-warm-accent flex items-center justify-center shrink-0 text-warm-fg font-black text-sm">1</div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-warm-fg">Browse &amp; Add</h3>
-                  <p className="text-xs text-warm-muted leading-relaxed">Pick from 500+ groceries, snacks &amp; daily essentials.</p>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border shadow-warm-sm flex flex-col items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-warm-accent flex items-center justify-center shrink-0 text-warm-fg font-black text-sm">2</div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-warm-fg">Quick Checkout</h3>
-                  <p className="text-xs text-warm-muted leading-relaxed">Cash on delivery, bKash or card — your choice.</p>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="bg-warm-surface rounded-[20px] p-5 border border-warm-border shadow-warm-sm flex flex-col items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-warm-accent flex items-center justify-center shrink-0 text-warm-fg font-black text-sm">3</div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-warm-fg">Same-Day Delivery</h3>
-                  <p className="text-xs text-warm-muted leading-relaxed">We pack &amp; dispatch from our Chittagong hub fast.</p>
-                </div>
-              </div>
+          <section id="how-it-works" aria-labelledby="how-it-works-title" className="home-process mt-16 sm:mt-20 lg:mt-24">
+            <div className="max-w-2xl">
+              <p className="home-section-kicker">Simple from shelf to doorstep</p>
+              <h2 id="how-it-works-title" className="home-section-title">
+                How Lucky Store works
+              </h2>
+              <p className="home-section-description">
+                A familiar grocery run, made easier for busy Chittagong households.
+              </p>
             </div>
 
-            {/* Wide CTA */}
-            <div className="space-y-2 text-center">
+            <ol className="mt-7 grid gap-3 sm:grid-cols-3">
+              <li className="home-process-step">
+                <span className="home-process-number" aria-hidden="true">01</span>
+                <h3>Browse &amp; add</h3>
+                <p>Choose from the groceries and daily essentials available today.</p>
+              </li>
+              <li className="home-process-step">
+                <span className="home-process-number" aria-hidden="true">02</span>
+                <h3>Confirm your order</h3>
+                <p>Review quantities, delivery details, and your total before placing it.</p>
+              </li>
+              <li className="home-process-step">
+                <span className="home-process-number" aria-hidden="true">03</span>
+                <h3>Receive locally</h3>
+                <p>We prepare your order for delivery across Chittagong.</p>
+              </li>
+            </ol>
+
+            <div className="home-process-cta mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-base font-extrabold text-warm-fg">Ready to turn the aisle?</p>
+                <p className="mt-1 text-xs leading-5 text-warm-muted">
+                  Browse freely · Review before ordering · Pay cash on delivery
+                </p>
+              </div>
               <Link
                 href="/category"
-                className="block bg-gradient-to-br from-warm-accent to-[#e8b840] rounded-[20px] p-5 shadow-warm-sm text-center hover:shadow-warm-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 group"
+                className="home-primary-action inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 py-2.5 text-sm font-extrabold"
               >
-                <span className="text-sm font-black text-[#0B0B0D] uppercase tracking-wider group-hover:tracking-widest transition-all duration-300">Start Shopping →</span>
+                Start shopping →
               </Link>
-              <p className="text-[11px] font-semibold text-warm-muted">
-                No card required • Pay cash on delivery • Free delivery over ৳500
-              </p>
             </div>
           </section>
         </div>
-        <Footer />
       </main>
+      <Footer />
       <BottomNav />
-      <WhatsAppFloat />
     </>
   );
 }

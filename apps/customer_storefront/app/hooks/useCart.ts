@@ -9,6 +9,7 @@ const FREE_DELIVERY_FEE = 40;
 
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [storageError, setStorageError] = useState(false);
   // Single hydration guard — replaces the previous dual isLoaded + mounted pattern
   const [hydrated, setHydrated] = useState(false);
 
@@ -22,6 +23,7 @@ export function useCart() {
       }
     } catch (e) {
       console.error('Failed to load cart:', e);
+      setStorageError(true);
     }
     const timer = setTimeout(() => {
       if (savedCart.length > 0) {
@@ -39,6 +41,7 @@ export function useCart() {
       localStorage.setItem(CART_KEY, JSON.stringify(cart));
     } catch (e) {
       console.error('Failed to save cart:', e);
+      setStorageError(true);
     }
   }, [cart, hydrated]);
 
@@ -124,5 +127,6 @@ export function useCart() {
     deliveryFee,
     discount,
     total,
+    storageError,
   };
 }

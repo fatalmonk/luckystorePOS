@@ -9,6 +9,7 @@ import { getDealOfTheWeekProducts, getDiscountPercentage } from '../lib/deals';
 import type { Product } from '../lib/types';
 import { DealCountdown } from './DealCountdown';
 import { ProductCard } from './ProductCard';
+import { MarketPanel } from './ui/MarketSurface';
 
 const CartFlyAnimation = dynamic(
   () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
@@ -21,7 +22,7 @@ interface DealOfTheWeekProps {
 
 export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   const selection = useMemo(() => getDealOfTheWeekProducts(products), [products]);
-  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete, handleClick } = useCartActions();
+  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
 
 
 
@@ -38,91 +39,96 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   };
 
   return (
-    <section className="bg-gradient-to-br from-[#0B0B0D] via-[#1c180d] to-[#2a220b] text-white rounded-[24px] p-5 sm:p-7 shadow-warm-md border border-[#f0c444]/20 space-y-6">
-      {/* Top Banner Header with Countdown */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
+    <MarketPanel
+      aria-labelledby="weekly-deal-title"
+      tone="accent"
+      className="deal-panel space-y-7 p-5 sm:p-7"
+    >
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-warm-accent text-warm-fg text-[11px] font-black uppercase tracking-wider">
-              Limited Time
-            </span>
-            <span className="text-warm-accent font-bold text-xs">Rolling Weekly Deal</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white mt-1 flex items-center gap-2">
-            <span>🔥</span> Deal of the Week
+          <p className="home-section-kicker">Limited-time offers</p>
+          <h2 id="weekly-deal-title" className="home-section-title">
+            Deal of the week
           </h2>
+          <p className="home-section-description">One standout saving, plus more offers worth a look.</p>
         </div>
-
-        {/* Edge-Synchronized Deal Countdown Timer */}
         <DealCountdown />
       </div>
 
-      {/* Main Deal Layout: Left Lead Product Card (Prominent) | Right Supporting Products Mosaic */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Lead Product Hero Card */}
-        <div className="lg:col-span-5 bg-warm-surface/5 border border-warm-border dark:border-transparent rounded-[20px] p-5 flex flex-col justify-between space-y-4">
-          <div className="relative flex items-center justify-center p-4 bg-warm-surface rounded-2xl border border-warm-border dark:border-transparent min-h-[280px] sm:min-h-[340px] overflow-hidden">
-            <span className="absolute top-3 left-3 bg-red-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md z-10">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <article className="deal-lead-card flex flex-col justify-between space-y-4 rounded-[22px] p-5 lg:col-span-5">
+          <Link
+            href={`/product/${encodeURIComponent(leadProduct.id)}`}
+            aria-label={`View ${leadProduct.name}`}
+            className="deal-product-visual relative flex min-h-[280px] items-center justify-center overflow-hidden rounded-[18px] border p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[340px]"
+          >
+            <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
               {leadDiscount}% OFF
             </span>
             {leadProduct.image_url ? (
-              <div className="relative w-full h-[260px] sm:h-[320px]">
+              <div className="relative h-[260px] w-full sm:h-[320px]">
                 <Image
                   src={leadProduct.image_url}
                   alt={leadProduct.name}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
-                  className="object-contain transform hover:scale-105 transition-transform duration-300"
+                  className="object-contain"
                 />
               </div>
             ) : (
-              <span className="text-8xl sm:text-9xl transform hover:scale-110 transition-transform duration-300">
+              <span className="text-8xl sm:text-9xl" aria-hidden="true">
                 {leadProduct.emoji}
               </span>
             )}
-          </div>
+          </Link>
 
           <div className="space-y-2">
-            <span className="text-xs font-semibold text-warm-accent uppercase tracking-wide">
+            <span className="text-xs font-semibold uppercase tracking-wide text-warm-muted">
               {leadProduct.category}
             </span>
-            <h3 className="text-lg sm:text-xl font-black text-white">{leadProduct.name}</h3>
-            <p className="text-xs text-warm-muted line-clamp-2">{leadProduct.description}</p>
+            <h3 className="text-lg font-black text-warm-fg sm:text-xl">
+              <Link
+                href={`/product/${encodeURIComponent(leadProduct.id)}`}
+                className="hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg"
+              >
+                {leadProduct.name}
+              </Link>
+            </h3>
+            <p className="line-clamp-2 text-xs leading-5 text-warm-muted">{leadProduct.description}</p>
 
-            <div className="flex items-baseline gap-2 pt-2">
+            <div className="flex flex-wrap items-baseline gap-2 pt-2">
               <span className="text-2xl font-black text-warm-accent">৳{leadProduct.price}</span>
               {leadProduct.originalPrice && (
-                <span className="text-sm font-bold text-gray-400 line-through">
+                <span className="text-sm font-bold text-warm-muted line-through">
                   ৳{leadProduct.originalPrice}
                 </span>
               )}
-              <span className="text-xs text-gray-400 font-medium">/ {leadProduct.unit}</span>
+              <span className="text-xs font-medium text-warm-muted">/ {leadProduct.unit}</span>
             </div>
           </div>
 
-          <div className="pt-2 flex items-center gap-3">
+          <div className="flex items-center gap-3 pt-2">
             <Link
               href="/category?theme=deals"
-              className="flex-1 text-center py-3 px-4 rounded-full bg-warm-accent text-warm-fg text-xs font-black uppercase tracking-wider hover:bg-warm-accent-hover transition-colors shadow-warm-sm"
+              className="home-primary-action inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 py-3 text-center text-xs font-black uppercase tracking-wider"
             >
-              Shop All Deals →
+              Shop all deals →
             </Link>
           </div>
-        </div>
+        </article>
 
-        {/* Supporting Products Mosaic */}
-        <div className="lg:col-span-7 space-y-3">
+        <div className="space-y-4 lg:col-span-7">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-extrabold text-gray-200">More Top Savings</h4>
+            <h3 className="text-sm font-extrabold text-warm-fg">More top savings</h3>
             <Link
               href="/category?theme=deals"
-              className="text-xs font-bold text-warm-accent hover:underline"
+              className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
             >
-              View All Deals ({products.filter((p) => p.originalPrice && p.originalPrice > p.price).length}) →
+              View all {products.filter((p) => p.originalPrice && p.originalPrice > p.price).length} →
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {supportingProducts.map((product) => {
               let addBtnRef: HTMLButtonElement | null = null;
               return (
@@ -142,7 +148,6 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
                     theme="deals"
                     onAdd={() => handleAddToCart(product, addBtnRef)}
                     onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                    onClick={() => handleClick(product.id)}
                     onAddRef={(el) => {
                       addBtnRef = el;
                     }}
@@ -155,6 +160,6 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       </div>
 
       <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
-    </section>
+    </MarketPanel>
   );
 }

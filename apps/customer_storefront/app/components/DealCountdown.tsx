@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export interface DealTimeResponse {
   endTime: string;
@@ -78,10 +78,12 @@ export function DealCountdown({
 
   // Fetch accurate promotion end-time from Cloudflare Worker edge function
   const fetchEdgePromotionTime = useCallback(async () => {
-    const endpoint =
-      workerUrl ||
-      process.env.NEXT_PUBLIC_DEAL_TIMER_WORKER_URL ||
-      'https://deal-timer.luckystore1947.workers.dev/api/deal-time';
+    const endpoint = workerUrl || process.env.NEXT_PUBLIC_DEAL_TIMER_WORKER_URL;
+
+    if (!endpoint) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(endpoint, {
@@ -131,75 +133,54 @@ export function DealCountdown({
     return () => clearInterval(interval);
   }, [targetEndTime, timeSkewMs, onExpire]);
 
-  // Early return 1: Render loading placeholder state
   if (isLoading) {
     return (
-      <div className={`flex items-center gap-2 bg-warm-fg/90 border border-warm-accent/30 rounded-2xl px-4 py-2 text-white ${className}`}>
-        <span className="text-xs font-bold text-warm-accent animate-pulse">Synchronizing Edge Timer...</span>
+      <div aria-live="polite" className={`deal-countdown rounded-[18px] border px-4 py-3 ${className}`}>
+        <span className="text-xs font-bold text-warm-muted">Loading deal timer…</span>
       </div>
     );
   }
 
-  // Early return 2: Render high-contrast "Deal Expired" state
   if (timeLeft.isExpired) {
     return (
-      <div className={`rounded-2xl bg-gradient-to-r from-red-950 via-red-900 to-warm-fg border-2 border-red-500/80 p-4 text-center shadow-lg ${className}`}>
-        <div className="flex items-center justify-center gap-2 text-red-400 font-black text-xs uppercase tracking-widest">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-          <span>Deal Expired</span>
-        </div>
-        <p className="text-xs font-bold text-warm-muted mt-1">
-          This promotion has ended. Stay tuned for next week&apos;s deals!
+      <div className={`deal-countdown rounded-[18px] border p-4 text-center ${className}`}>
+        <p className="text-xs font-black uppercase tracking-wider text-warm-fg">Deal ended</p>
+        <p className="mt-1 text-xs font-medium text-warm-muted">
+          Check back for the next weekly offer.
         </p>
       </div>
     );
   }
 
-  // Active high-contrast promotional countdown display
   return (
-    <div className={`flex items-center gap-2 bg-warm-fg/80 border border-warm-accent/60 rounded-2xl px-4 py-2 shadow-lg backdrop-blur-md ${className}`}>
-      <span className="text-xs font-extrabold text-warm-accent uppercase tracking-wider hidden sm:inline">
-        Ends In:
+    <div className={`deal-countdown flex items-center gap-3 rounded-[18px] border px-3 py-2.5 sm:px-4 ${className}`}>
+      <span className="hidden text-xs font-extrabold uppercase tracking-wider text-warm-muted sm:inline">
+        Ends in
       </span>
-      <div className="flex items-center gap-1.5 font-mono text-center">
-        {/* Days */}
-        <div className="flex flex-col items-center">
-          <div className="bg-warm-accent text-warm-fg font-black px-2 py-1 rounded-lg text-xs min-w-[30px] shadow-sm">
-            {String(timeLeft.days).padStart(2, '0')}
-          </div>
-          <span className="text-[9px] text-gray-400 font-semibold uppercase mt-0.5">Days</span>
-        </div>
-
-        <span className="text-warm-accent font-black text-xs -mt-3.5">:</span>
-
-        {/* Hours */}
-        <div className="flex flex-col items-center">
-          <div className="bg-warm-accent text-warm-fg font-black px-2 py-1 rounded-lg text-xs min-w-[30px] shadow-sm">
-            {String(timeLeft.hours).padStart(2, '0')}
-          </div>
-          <span className="text-[9px] text-gray-400 font-semibold uppercase mt-0.5">Hrs</span>
-        </div>
-
-        <span className="text-warm-accent font-black text-xs -mt-3.5">:</span>
-
-        {/* Minutes */}
-        <div className="flex flex-col items-center">
-          <div className="bg-warm-accent text-warm-fg font-black px-2 py-1 rounded-lg text-xs min-w-[30px] shadow-sm">
-            {String(timeLeft.minutes).padStart(2, '0')}
-          </div>
-          <span className="text-[9px] text-gray-400 font-semibold uppercase mt-0.5">Min</span>
-        </div>
-
-        <span className="text-warm-accent font-black text-xs -mt-3.5">:</span>
-
-        {/* Seconds */}
-        <div className="flex flex-col items-center">
-          <div className="bg-warm-accent text-warm-fg font-black px-2 py-1 rounded-lg text-xs min-w-[30px] shadow-sm animate-pulse">
-            {String(timeLeft.seconds).padStart(2, '0')}
-          </div>
-          <span className="text-[9px] text-gray-400 font-semibold uppercase mt-0.5">Sec</span>
-        </div>
-      </div>
+      <time
+        dateTime={targetEndTime}
+        aria-label={`${timeLeft.days} days, ${timeLeft.hours} hours, ${timeLeft.minutes} minutes, ${timeLeft.seconds} seconds remaining`}
+        className="flex items-center gap-1.5 font-mono text-center"
+      >
+        {[
+          ['Days', timeLeft.days],
+          ['Hrs', timeLeft.hours],
+          ['Min', timeLeft.minutes],
+          ['Sec', timeLeft.seconds],
+        ].map(([label, value], index) => (
+          <React.Fragment key={String(label)}>
+            {index > 0 && <span className="mb-4 text-xs font-black text-warm-accent" aria-hidden="true">:</span>}
+            <span className="flex flex-col items-center">
+              <span className="deal-countdown-value min-w-[32px] rounded-lg px-2 py-1 text-xs font-black">
+                {String(value).padStart(2, '0')}
+              </span>
+              <span className="mt-0.5 text-xs font-semibold uppercase leading-4 text-warm-muted">
+                {label}
+              </span>
+            </span>
+          </React.Fragment>
+        ))}
+      </time>
     </div>
   );
 }

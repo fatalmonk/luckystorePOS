@@ -44,6 +44,19 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
 test.describe('Checkout Flow', () => {
   test.setTimeout(60000);
 
+  test('redirects an empty cart before showing personal-data fields', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.removeItem('lucky-cart'));
+
+    await page.goto('/checkout');
+    await page.waitForURL('/cart');
+
+    await expect(page.locator('[data-testid="checkout-name-input"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="checkout-phone-input"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="checkout-address-input"]')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Your cart is empty' })).toBeVisible();
+  });
+
   test('completes a full checkout', async ({ page }) => {
     const added = await addFirstInStockProductToCart(page);
     if (!added) {

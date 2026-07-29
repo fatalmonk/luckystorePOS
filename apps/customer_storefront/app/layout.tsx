@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Geist, Geist_Mono, Noto_Sans_Bengali } from 'next/font/google';
+import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
@@ -9,9 +9,15 @@ import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 
-const geistSans = Geist({
+const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
-  variable: '--font-geist-sans',
+  variable: '--font-bricolage',
+  display: 'swap',
+});
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
   display: 'swap',
 });
 
@@ -29,7 +35,7 @@ const notoBengali = Noto_Sans_Bengali({
 
 export const metadata: Metadata = {
   title: { default: 'Lucky Store', template: '%s | Lucky Store' },
-  description: 'Your friendly neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
+  description: 'Your friendly neighborhood grocery store in Chittagong. Fresh groceries and daily essentials delivered locally.',
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
@@ -54,10 +60,10 @@ export const metadata: Metadata = {
     url: '/',
     siteName: 'Lucky Store',
     title: 'Lucky Store — Your Friendly Neighborhood Grocer',
-    description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
+    description: 'Fresh groceries and daily essentials delivered across Chittagong. Shop local.',
     images: [
       {
-        url: '/opengraph-image.png',
+        url: '/lucky-store-social-share-v2.png',
         width: 1200,
         height: 630,
         alt: 'Lucky Store — Your Friendly Neighborhood Grocery in Chittagong',
@@ -72,8 +78,13 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Lucky Store — Your Friendly Neighborhood Grocer',
-    description: 'Fresh products, fair prices, same-day delivery in Chittagong. Shop local.',
-    images: ['/twitter-image.png'],
+    description: 'Fresh groceries and daily essentials delivered across Chittagong. Shop local.',
+    images: [
+      {
+        url: '/lucky-store-social-share-v2.png',
+        alt: 'Lucky Store — Your Friendly Neighborhood Grocery in Chittagong',
+      },
+    ],
     creator: '@luckystore1947',
   },
   appleWebApp: {
@@ -105,7 +116,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} ${notoBengali.variable}`}>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
@@ -128,7 +139,7 @@ export default function RootLayout({
               email: 'hello@luckystore1947.com',
               priceRange: '$$',
               currenciesAccepted: 'BDT',
-              paymentAccepted: 'Cash, bKash, Nagad, Card, Visa, Mastercard',
+              paymentAccepted: 'Cash',
               openingHours: [
                 'Mo-Sa 08:00-22:00',
                 'Su 09:00-21:00',

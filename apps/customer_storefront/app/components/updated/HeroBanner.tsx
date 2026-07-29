@@ -170,7 +170,7 @@ export function HeroBanner({
           {slide.ctaText !== null && (
             <Link
               href={slide.ctaHref || '/category?theme=deals'}
-              className="group inline-flex items-center gap-1.5 rounded-full bg-warm-surface px-[1.125rem] py-1.5 text-xs font-bold text-warm-fg hover:bg-warm-surface/90 active:scale-[0.97] hover:-translate-y-0.5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-warm-sm hover:shadow-warm-md shrink-0"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-warm-surface px-[1.125rem] py-1.5 text-xs font-bold text-warm-fg hover:bg-warm-surface/90 active:scale-[0.97] hover:-translate-y-0.5 transition-all duration-300 ease-out shadow-warm-sm hover:shadow-warm-md shrink-0"
             >
               {slide.ctaText || 'Shop Now'}
               <span aria-hidden="true" className="text-sm transition-transform duration-300 group-hover:translate-x-0.5">→</span>
@@ -228,4 +228,3 @@ export function HeroBanner({
     </section>
   );
 }
-
