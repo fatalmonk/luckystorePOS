@@ -43,7 +43,7 @@ export function CompetitorPricesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [linkingRecord, setLinkingRecord] = useState<CompetitorPrice | null>(null);
 
-  const { data: prices, isLoading: pricesLoading } = useQuery({
+  const { data: prices, isLoading: pricesLoading, error: pricesError } = useQuery({
     queryKey: ['competitorPrices', storeId, activeTab],
     queryFn: () =>
       fetchCompetitorPrices(storeId!, {
@@ -299,7 +299,7 @@ export function CompetitorPricesPage() {
           {!row.item_id && (
             <button
               onClick={() => setLinkingRecord(row)}
-              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold inline-flex items-center gap-1 shadow-xs"
+              className="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center gap-1 transition-colors"
               title="1-Click Link to Inventory Product"
             >
               <LinkIcon size={12} />
@@ -337,6 +337,17 @@ export function CompetitorPricesPage() {
     return (
       <div className="competitor-prices-page p-6">
         <div className="loading-state">Loading competitor prices...</div>
+      </div>
+    );
+  }
+
+  if (pricesError) {
+    return (
+      <div className="competitor-prices-page p-6">
+        <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-600 dark:text-rose-400">
+          <h3 className="font-bold">Error Loading Competitor Prices</h3>
+          <p className="text-sm mt-1">{(pricesError as Error).message}</p>
+        </div>
       </div>
     );
   }
