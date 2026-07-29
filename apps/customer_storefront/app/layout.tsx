@@ -7,6 +7,7 @@ import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
 import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
+import { ThemeProvider } from './components/providers/ThemeProvider';
 
 const geistSans = Geist({
   subsets: ['latin'],
@@ -90,7 +91,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#ffffff',
+  themeColor: '#FDFBF7',
 };
 
 export default function RootLayout({
@@ -102,6 +103,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var t='light';try{var s=localStorage.getItem('lucky-theme');t=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}var d=document.documentElement;if(t==='dark'){d.setAttribute('data-theme','dark')}else{d.removeAttribute('data-theme')}d.style.colorScheme=t;var m=document.querySelector('meta[name=\"theme-color\"]');if(m)m.setAttribute('content',t==='dark'?'#0B0B0D':'#FDFBF7')})();",
+          }}
+        />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
         <script
           type="application/ld+json"
@@ -159,15 +166,17 @@ export default function RootLayout({
         </Script>
         <WebMCPInit />
         <AuthProvider>
-          <CartProvider>
-            <ToastProvider>
-              <CartSheetProvider>
-                <div className="app-container">
-                  {children}
-                </div>
-              </CartSheetProvider>
-            </ToastProvider>
-          </CartProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <ToastProvider>
+                <CartSheetProvider>
+                  <div className="app-container">
+                    {children}
+                  </div>
+                </CartSheetProvider>
+              </ToastProvider>
+            </CartProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
