@@ -383,4 +383,7 @@ export type CompetitorPriceFilters = {
   competitorKey?: string;
   dateFrom?: string;
   dateTo?: string;
+  matchedOnly?: boolean;
+  unmatchedOnly?: boolean;
 };
+

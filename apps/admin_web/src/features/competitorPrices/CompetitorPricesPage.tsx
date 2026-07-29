@@ -42,10 +42,15 @@ export function CompetitorPricesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: prices, isLoading: pricesLoading } = useQuery({
-    queryKey: ['competitorPrices', storeId],
-    queryFn: () => fetchCompetitorPrices(storeId!),
+    queryKey: ['competitorPrices', storeId, activeTab],
+    queryFn: () =>
+      fetchCompetitorPrices(storeId!, {
+        matchedOnly: activeTab === 'matched',
+        unmatchedOnly: activeTab === 'unmatched',
+      }),
     enabled: !!storeId,
   });
+
 
   const { data: alerts } = useQuery({
     queryKey: ['priceAlerts', storeId],

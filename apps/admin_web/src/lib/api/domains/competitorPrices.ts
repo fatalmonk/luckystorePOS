@@ -47,6 +47,8 @@ export async function fetchCompetitorPrices(
   if (filters?.competitorKey) q = q.eq('competitor_key', filters.competitorKey);
   if (filters?.dateFrom) q = q.gte('scraped_at', filters.dateFrom);
   if (filters?.dateTo) q = q.lte('scraped_at', filters.dateTo);
+  if (filters?.matchedOnly) q = q.not('item_id', 'is', null);
+  if (filters?.unmatchedOnly) q = q.is('item_id', null);
 
   const { data, error } = await q;
   if (error) throw error;
