@@ -211,6 +211,17 @@ export async function linkScrapedProductToItem(
   priceRecordId: string,
   itemId: string,
 ): Promise<void> {
+  // 1. Try dedicated SECURITY DEFINER RPC first
+  const { error: rpcErr } = await (supabase.rpc as any)('link_competitor_price_item', {
+    p_store_id: storeId,
+    p_price_record_id: priceRecordId,
+    p_item_id: itemId,
+  });
+
+
+  if (!rpcErr) return;
+
+  // 2. Fallback to set_manual_competitor_price SECURITY DEFINER RPC
   const { data: rec, error: fetchErr } = await supabase
     .from('competitor_prices')
     .select('*')
@@ -219,32 +230,15 @@ export async function linkScrapedProductToItem(
 
   if (fetchErr || !rec) throw fetchErr || new Error('Record not found');
 
-  const { data: item, error: itemErr } = await supabase
-    .from('items')
-    .select('price')
-    .eq('id', itemId)
-    .single();
-
-  if (itemErr || !item) throw itemErr || new Error('Item not found');
-
-  const ourPrice = (item as unknown as { price: number }).price;
-
-  const gap = ourPrice != null && rec.competitor_price > 0
-    ? Math.round(((ourPrice - rec.competitor_price) / rec.competitor_price) * 10000) / 10000
-    : null;
-
-  const { error: updateErr } = await supabase
-    .from('competitor_prices')
-    .update({
-      item_id: itemId,
-      our_price: ourPrice,
-      price_gap_percent: gap,
-      match_confidence: 1.0,
-      matcher_version: 'url-direct-user',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', priceRecordId);
-
-  if (updateErr) throw updateErr;
+  await setManualCompetitorPrice(
+    storeId,
+    itemId,
+    rec.competitor_key,
+    rec.competitor_name,
+    rec.competitor_price,
+    'User 1-click link',
+    rec.competitor_product_url ?? undefined,
+  );
 }
+
 
