@@ -1,0 +1,25 @@
+# RTK Token Filter Ignore Rules
+
+# Dependencies & build output
+node_modules/
+dist/
+.next/
+build/
+out/
+coverage/
+.turbo/
+.cache/
+
+# Lockfiles & log files
+package-lock.json
+*.lock
+*.log
+*.sqlite
+*.db
+*.db-shm
+*.db-wal
+
+# Generated assets & maps
+*.map
+*.min.js
+*.min.css
