@@ -335,6 +335,7 @@ export interface CompetitorPrice {
   id: string;
   store_id: string;
   item_id: string | null;
+  product_name: string;
   item_name?: string | null;
   sku?: string | null;
   competitor_key: string;
