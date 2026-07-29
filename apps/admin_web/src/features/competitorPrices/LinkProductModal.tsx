@@ -7,6 +7,7 @@ import { linkScrapedProductToItem } from '../../lib/api/domains/competitorPrices
 import { supabase } from '@/lib/supabase';
 import type { CompetitorPrice } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
+import './AddPriceModal.css';
 
 interface LinkProductModalProps {
   priceRecord: CompetitorPrice | null;
