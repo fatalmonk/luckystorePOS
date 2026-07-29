@@ -14,17 +14,17 @@ export function PriceDisplay({ value, className = '', original, savings, unit }:
 
   return (
     <span className={`inline-flex items-center gap-1.5 flex-wrap ${className}`}>
-      <span className="font-bold text-gray-900">{formatBdt(value)}</span>
+      <span className="font-bold text-warm-fg">{formatBdt(value)}</span>
       {hasOriginal && (
-        <span className="line-through text-sm text-gray-500">{formatBdt(original)}</span>
+        <span className="line-through text-sm text-warm-muted">{formatBdt(original)}</span>
       )}
       {hasSavings && (
-        <span className="bg-green-100 text-green-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+        <span className="bg-warm-success-bg text-warm-success text-[10px] font-bold px-1.5 py-0.5 rounded-full">
           −{formatBdt(savings)}
         </span>
       )}
       {unit && (
-        <span className="text-xs text-gray-500">/ {unit}</span>
+        <span className="text-xs text-warm-muted">/ {unit}</span>
       )}
     </span>
   );

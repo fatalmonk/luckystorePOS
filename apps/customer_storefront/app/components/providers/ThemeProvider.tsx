@@ -22,6 +22,7 @@ export const THEME_STORAGE_KEY = 'lucky-theme';
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function getStoredTheme(): Theme | null {
+  if (typeof window === 'undefined') return null;
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     return stored === 'light' || stored === 'dark' ? stored : null;
@@ -33,15 +34,19 @@ function getStoredTheme(): Theme | null {
 function getPreferredTheme(): Theme {
   const stored = getStoredTheme();
   if (stored) return stored;
+  if (typeof window === 'undefined') return 'light';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function applyTheme(theme: Theme, withTransition = false) {
+  if (typeof document === 'undefined') return;
   const root = document.documentElement;
 
   if (withTransition) {
     root.classList.add('theme-transitioning');
-    window.setTimeout(() => root.classList.remove('theme-transitioning'), 200);
+    requestAnimationFrame(() => {
+      window.setTimeout(() => root.classList.remove('theme-transitioning'), 200);
+    });
   }
 
   if (theme === 'dark') {
@@ -66,6 +71,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleSystemThemeChange = (event: MediaQueryListEvent) => {
       if (getStoredTheme()) return;
@@ -74,8 +80,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       applyTheme(nextTheme, true);
     };
 
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    } else {
+      // @ts-ignore - legacy Safari fallback
+      mediaQuery.addListener(handleSystemThemeChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      } else {
+        // @ts-ignore - legacy Safari fallback
+        mediaQuery.removeListener(handleSystemThemeChange);
+      }
+    };
   }, []);
 
   const setTheme = useCallback((nextTheme: Theme) => {

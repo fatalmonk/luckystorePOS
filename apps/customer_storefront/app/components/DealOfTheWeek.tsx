@@ -1,13 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
-import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { ProductCard } from './ProductCard';
-import { DealCountdown } from './DealCountdown';
+import Link from 'next/link';
+import { useMemo } from 'react';
 import { useCartActions } from '../hooks/useCartActions';
 import { getDealOfTheWeekProducts, getDiscountPercentage } from '../lib/deals';
 import type { Product } from '../lib/types';
+import { DealCountdown } from './DealCountdown';
+import { ProductCard } from './ProductCard';
 
 const CartFlyAnimation = dynamic(
   () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
@@ -37,9 +38,9 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   };
 
   return (
-    <section className="bg-gradient-to-br from-warm-fg via-[#18171c] to-warm-fg text-white rounded-[24px] p-5 sm:p-7 shadow-warm-md border border-warm-accent/30 space-y-6">
+    <section className="bg-gradient-to-br from-[#0B0B0D] via-[#1c180d] to-[#2a220b] text-white rounded-[24px] p-5 sm:p-7 shadow-warm-md border border-[#f0c444]/20 space-y-6">
       {/* Top Banner Header with Countdown */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-warm-accent text-warm-fg text-[11px] font-black uppercase tracking-wider">
@@ -59,18 +60,21 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       {/* Main Deal Layout: Left Lead Product Card (Prominent) | Right Supporting Products Mosaic */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Lead Product Hero Card */}
-        <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-[20px] p-5 flex flex-col justify-between space-y-4">
-          <div className="relative flex items-center justify-center p-4 bg-white rounded-2xl border border-white/10 min-h-[280px] sm:min-h-[340px] overflow-hidden">
+        <div className="lg:col-span-5 bg-warm-surface/5 border border-warm-border dark:border-transparent rounded-[20px] p-5 flex flex-col justify-between space-y-4">
+          <div className="relative flex items-center justify-center p-4 bg-warm-surface rounded-2xl border border-warm-border dark:border-transparent min-h-[280px] sm:min-h-[340px] overflow-hidden">
             <span className="absolute top-3 left-3 bg-red-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md z-10">
               {leadDiscount}% OFF
             </span>
             {leadProduct.image_url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={leadProduct.image_url}
-                alt={leadProduct.name}
-                className="max-h-[260px] sm:max-h-[320px] w-full object-contain transform hover:scale-105 transition-transform duration-300"
-              />
+              <div className="relative w-full h-[260px] sm:h-[320px]">
+                <Image
+                  src={leadProduct.image_url}
+                  alt={leadProduct.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
+                  className="object-contain transform hover:scale-105 transition-transform duration-300"
+                />
+              </div>
             ) : (
               <span className="text-8xl sm:text-9xl transform hover:scale-110 transition-transform duration-300">
                 {leadProduct.emoji}
@@ -83,7 +87,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
               {leadProduct.category}
             </span>
             <h3 className="text-lg sm:text-xl font-black text-white">{leadProduct.name}</h3>
-            <p className="text-xs text-gray-300 line-clamp-2">{leadProduct.description}</p>
+            <p className="text-xs text-warm-muted line-clamp-2">{leadProduct.description}</p>
 
             <div className="flex items-baseline gap-2 pt-2">
               <span className="text-2xl font-black text-warm-accent">৳{leadProduct.price}</span>

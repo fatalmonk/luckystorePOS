@@ -16,7 +16,7 @@ export function CampaignGrid() {
         {/* Primary Campaign Banner (Large 7/12 on desktop) */}
         <Link
           href="/category"
-          className="md:col-span-7 group relative overflow-hidden rounded-[24px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[220px] sm:min-h-[280px] flex flex-col justify-end p-5 sm:p-7"
+          className="md:col-span-7 group relative overflow-hidden rounded-[24px] bg-warm-surface border border-warm-border dark:border-transparent shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[220px] sm:min-h-[280px] flex flex-col justify-end p-5 sm:p-7"
         >
           <picture className="absolute inset-0 w-full h-full">
             {primaryHero.sources?.map((s, idx) => (
@@ -33,9 +33,14 @@ export function CampaignGrid() {
           </picture>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           <div className="relative z-10 space-y-1.5">
-            <span className="inline-block px-3 py-1 rounded-full bg-warm-accent text-warm-fg text-[11px] font-black uppercase tracking-wider">
-              Since 1947
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-block px-3 py-1 rounded-full bg-warm-accent text-warm-fg text-[11px] font-black uppercase tracking-wider">
+                Since 1947
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-amber-300 text-[10px] font-bold border border-amber-400/30">
+                ★ 4.9 (500+ Local Reviews)
+              </span>
+            </div>
             <h2 className="text-xl sm:text-2xl font-black text-white drop-shadow-sm">
               Welcome to Lucky Store
             </h2>
@@ -43,7 +48,7 @@ export function CampaignGrid() {
               Fresh groceries delivered daily across Chittagong.
             </p>
             <div className="pt-2">
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-warm-accent text-warm-fg text-xs font-extrabold group-hover:bg-warm-accent-hover transition-colors shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-warm-accent text-[#0B0B0D] text-xs font-extrabold group-hover:bg-warm-accent-hover transition-colors shadow-sm">
                 Start Shopping →
               </span>
             </div>
@@ -55,7 +60,7 @@ export function CampaignGrid() {
           {/* Secondary Campaign Banner — Buldak Spicy Ramen */}
           <Link
             href="/search?q=buldak"
-            className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[120px] sm:min-h-[135px] flex flex-col justify-end p-4"
+            className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border dark:border-transparent shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[120px] sm:min-h-[135px] flex flex-col justify-end p-4"
           >
             <picture className="absolute inset-0 w-full h-full">
               {secondaryBanner.sources?.map((s, idx) => (
@@ -71,16 +76,11 @@ export function CampaignGrid() {
               />
             </picture>
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-            <div className="relative z-10 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-warm-accent uppercase tracking-wider">
-                  Hot &amp; Spicy
-                </span>
-                <h3 className="text-base sm:text-lg font-black text-white">50% off on Buldak Ramen !</h3>
-              </div>
-              <span className="px-3 py-1.5 rounded-full bg-white/90 text-warm-fg text-xs font-extrabold group-hover:bg-white transition-colors">
-                Shop Now →
+            <div className="relative z-10">
+              <span className="text-[10px] font-bold text-warm-accent uppercase tracking-wider">
+                Hot &amp; Spicy
               </span>
+              <h3 className="text-base sm:text-lg font-black text-white">50% off on Buldak Ramen !</h3>
             </div>
           </Link>
 
@@ -88,7 +88,7 @@ export function CampaignGrid() {
           <div className="grid grid-cols-2 gap-3 sm:gap-4 flex-1">
             <Link
               href="/category/ice-cream"
-              className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[110px] sm:min-h-[130px] flex flex-col justify-end p-3.5"
+              className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border dark:border-transparent shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[110px] sm:min-h-[130px] flex flex-col justify-end p-3.5"
             >
               <picture className="absolute inset-0 w-full h-full">
                 {iceCreamTile.sources?.map((s, idx) => (
@@ -114,7 +114,7 @@ export function CampaignGrid() {
 
             <Link
               href="/category/cooking-essentials"
-              className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[110px] sm:min-h-[130px] flex flex-col justify-end p-3.5"
+              className="group relative overflow-hidden rounded-[20px] bg-warm-surface border border-warm-border dark:border-transparent shadow-warm-sm hover:shadow-warm-md transition-all duration-300 min-h-[110px] sm:min-h-[130px] flex flex-col justify-end p-3.5"
             >
               <picture className="absolute inset-0 w-full h-full">
                 {cookingTile.sources?.map((s, idx) => (

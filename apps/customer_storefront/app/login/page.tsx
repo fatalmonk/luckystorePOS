@@ -58,7 +58,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-6 bg-white border border-warm-border rounded-[24px] shadow-sm hover:shadow-md transition-all duration-300">
+    <div className="w-full max-w-md p-6 bg-warm-surface border border-warm-border rounded-[24px] shadow-sm hover:shadow-md transition-all duration-300">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-warm-fg mb-2">Welcome Back</h1>
         <p className="text-sm text-warm-muted">Sign in to your Lucky Store account</p>

@@ -21,7 +21,7 @@ export function generateMetadata(): Metadata {
 export default async function CategoryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const resolvedParams = await searchParams;
 
-  const catParam = getSingleParam(resolvedParams.cat);
+  const catParam = resolvedParams.cat;
   if (catParam) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(resolvedParams)) {

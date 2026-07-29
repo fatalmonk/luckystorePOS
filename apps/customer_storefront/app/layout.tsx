@@ -12,23 +12,23 @@ import { ThemeProvider } from './components/providers/ThemeProvider';
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',
-  display: 'optional',
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
-  display: 'optional',
+  display: 'swap',
 });
 
 const notoBengali = Noto_Sans_Bengali({
   subsets: ['bengali'],
   variable: '--font-bengali',
-  display: 'optional',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Lucky Store', template: '%s | Lucky Store' },
+  title: { default: 'Lucky Store — Your Friendly Neighborhood Grocer', template: '%s | Lucky Store' },
   description: 'Your friendly neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
@@ -39,10 +39,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
     apple: '/apple-touch-icon.png',
   },
@@ -91,7 +93,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#FDFBF7',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B0B0D' },
+  ],
 };
 
 export default function RootLayout({
@@ -103,13 +108,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
+        <meta name="theme-color" content="#0B0B0D" />
+        <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "(function(){var t='light';try{var s=localStorage.getItem('lucky-theme');t=s==='dark'||s==='light'?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}var d=document.documentElement;if(t==='dark'){d.setAttribute('data-theme','dark')}else{d.removeAttribute('data-theme')}d.style.colorScheme=t;var m=document.querySelector('meta[name=\"theme-color\"]');if(m)m.setAttribute('content',t==='dark'?'#0B0B0D':'#FDFBF7')})();",
+            __html: `(function(){var t=localStorage.getItem('lucky-theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}if(t==='dark')document.documentElement.dataset.theme='dark';})();`,
           }}
         />
-        <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -149,8 +155,20 @@ export default function RootLayout({
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Lucky Store',
+              alternateName: ['LuckyStore', 'Lucky Store - Est. 1947', 'luckystore1947.com'],
+              url: 'https://luckystore1947.com',
+            }),
+          }}
+        />
       </head>
-      <body className="antialiased font-body pb-[60px] md:pb-0" suppressHydrationWarning>
+      <body className="antialiased font-body" suppressHydrationWarning>
         {/* Google Analytics — deferred to idle time, never blocks render or layout */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"

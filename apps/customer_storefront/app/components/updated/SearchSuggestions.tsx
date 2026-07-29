@@ -61,9 +61,9 @@ export function SearchSuggestions({
         <div className="p-3 border-b border-warm-border-light">
           <div className="text-xs font-semibold text-warm-muted mb-2">Recent Searches</div>
           <div className="space-y-1">
-            {filteredRecent.map((term) => (
+            {filteredRecent.map((term, index) => (
               <button
-                key={term}
+                key={index}
                 onClick={() => onSelect(term)}
                 className="w-full text-left px-3 py-2 rounded-lg hover:bg-warm-border-light text-sm flex items-center gap-2"
               >
@@ -80,9 +80,9 @@ export function SearchSuggestions({
           {query ? 'Popular Matching' : 'Popular Searches'}
         </div>
         <div className="space-y-1">
-          {filteredPopular.map((term) => (
+          {filteredPopular.map((term, index) => (
             <button
-              key={term}
+              key={index}
               onClick={() => onSelect(term)}
               className="w-full text-left px-3 py-2 rounded-lg hover:bg-warm-border-light text-sm flex items-center gap-2"
             >

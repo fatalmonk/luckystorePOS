@@ -52,7 +52,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
         fixed inset-0 m-0 p-0
         w-full max-w-full h-full max-h-full
         bg-transparent
-        backdrop:bg-black/40 backdrop:backdrop-blur-sm
+        backdrop:bg-warm-fg/40 backdrop:backdrop-blur-sm
       "
       style={{ overscrollBehavior: 'contain' }}
     >

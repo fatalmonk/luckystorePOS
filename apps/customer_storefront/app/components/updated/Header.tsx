@@ -204,9 +204,9 @@ export function Header({ className = '' }: HeaderProps) {
   }
 
   return (
-    <header className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border/50 ${className}`}>
+    <header className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border dark:border-transparent ${className}`}>
       {/* Top High-Density Utility Bar */}
-      <div className="bg-[#0B0B0D] text-white border-b border-white/10 text-[11px] py-1.5 px-3 sm:px-6">
+      <div className="bg-[#0B0B0D] text-white text-[11px] py-1.5 px-3 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4 font-semibold">
           {/* Contact Details & Location */}
           <div className="flex items-center gap-4 text-white/80">
@@ -369,18 +369,14 @@ export function Header({ className = '' }: HeaderProps) {
             <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
           </button>
 
+          {/* Theme Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
             className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-warm-surface text-warm-fg transition-colors"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {theme === 'dark' ? (
-              <Sun weight="bold" size={20} aria-hidden="true" />
-            ) : (
-              <Moon weight="bold" size={20} aria-hidden="true" />
-            )}
+            {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
           </button>
 
           {/* Wishlist Link */}
