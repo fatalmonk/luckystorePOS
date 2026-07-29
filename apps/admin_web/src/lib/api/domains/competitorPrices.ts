@@ -210,14 +210,15 @@ export async function linkScrapedProductToItem(
   storeId: string,
   priceRecordId: string,
   itemId: string,
+  competitorUrl?: string,
 ): Promise<void> {
   // 1. Try dedicated SECURITY DEFINER RPC first
   const { error: rpcErr } = await (supabase.rpc as any)('link_competitor_price_item', {
     p_store_id: storeId,
     p_price_record_id: priceRecordId,
     p_item_id: itemId,
+    p_competitor_product_url: competitorUrl ?? null,
   });
-
 
   if (!rpcErr) return;
 
@@ -237,8 +238,6 @@ export async function linkScrapedProductToItem(
     rec.competitor_name,
     rec.competitor_price,
     'User 1-click link',
-    rec.competitor_product_url ?? undefined,
+    competitorUrl || rec.competitor_product_url || undefined,
   );
 }
-
-

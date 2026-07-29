@@ -25,6 +25,7 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState(priceRecord?.product_name || '');
+  const [competitorUrl, setCompetitorUrl] = useState(priceRecord?.competitor_product_url || '');
 
   const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ['itemCandidateSearch', searchQuery.trim()],
@@ -38,13 +39,13 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
         .limit(10);
       return (data || []) as unknown as ItemCandidate[];
     },
-
     enabled: !!priceRecord && searchQuery.trim().length >= 2,
   });
 
   const linkMutation = useMutation({
     mutationFn: (itemId: string) =>
-      linkScrapedProductToItem(storeId!, priceRecord!.id, itemId),
+      linkScrapedProductToItem(storeId!, priceRecord!.id, itemId, competitorUrl),
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
       notify('Product linked successfully!', 'success');
@@ -90,10 +91,24 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
             </div>
           </div>
 
+          {/* Competitor URL Input */}
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold">Competitor Product URL</label>
+            <input
+              type="text"
+              placeholder="Paste competitor product URL (optional)..."
+              value={competitorUrl}
+              onChange={(e) => setCompetitorUrl(e.target.value)}
+              className="w-full text-xs px-3 py-2 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
+            />
+          </div>
+
           {/* Search Box */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold">Search Your Inventory Catalog</label>
             <div className="relative">
+
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-warm-muted" />
               <input
                 type="text"
