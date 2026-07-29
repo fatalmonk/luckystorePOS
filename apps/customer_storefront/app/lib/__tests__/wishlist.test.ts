@@ -1,84 +1,80 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-// Use vi.hoisted to create the mock before the vi.mock call
-const { chainable } = vi.hoisted(() => {
-  function createChainableMock() {
-    const mock: any = {
-      insert: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-    };
-    return mock;
-  }
-  return { chainable: createChainableMock() };
-});
-
-vi.mock('../supabase', () => ({
-  supabase: {
-    from: vi.fn(() => chainable),
-  },
-}));
-
 import { createWishlistItem, deleteWishlistItem, fetchWishlistItems } from '../wishlist';
 
 describe('createWishlistItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    chainable.single.mockReset();
-    chainable.eq.mockReset();
-    chainable.eq.mockReturnThis();
   });
 
   it('creates a wishlist item successfully', async () => {
-    chainable.single.mockResolvedValue({
-      data: {
-        id: 'wl-1',
-        product_id: 'prod-1',
-        customer_fingerprint: 'fp-123',
-        product_name: 'Milk',
-        created_at: new Date().toISOString(),
-      },
-      error: null,
-    });
+    const mockItem = {
+      id: 'wl-1',
+      product_id: 'prod-1',
+      customer_fingerprint: 'fp-123',
+      product_name: 'Milk',
+      created_at: new Date().toISOString(),
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ item: mockItem }),
+      })
+    );
 
     const result = await createWishlistItem('prod-1', 'fp-123', 'Milk');
     expect(result.product_id).toBe('prod-1');
     expect(result.customer_fingerprint).toBe('fp-123');
+    expect(fetch).toHaveBeenCalledWith('/api/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: 'prod-1', fingerprint: 'fp-123', productName: 'Milk', phone: undefined }),
+    });
   });
 
   it('creates a wishlist item with phone', async () => {
-    chainable.single.mockResolvedValue({
-      data: {
-        id: 'wl-2',
-        product_id: 'prod-2',
-        customer_fingerprint: 'fp-456',
-        customer_phone: '+880****5678',
-        product_name: 'Bread',
-        created_at: new Date().toISOString(),
-      },
-      error: null,
-    });
+    const mockItem = {
+      id: 'wl-2',
+      product_id: 'prod-2',
+      customer_fingerprint: 'fp-456',
+      customer_phone: '+880****5678',
+      product_name: 'Bread',
+      created_at: new Date().toISOString(),
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ item: mockItem }),
+      })
+    );
 
     const result = await createWishlistItem('prod-2', 'fp-456', 'Bread', '+880****5678');
     expect(result.customer_phone).toBe('+880****5678');
   });
 
   it('throws on duplicate (23505 error code)', async () => {
-    chainable.single.mockResolvedValue({
-      data: null,
-      error: { code: '23505', message: 'duplicate key' },
-    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({ error: 'Already on wishlist' }),
+      })
+    );
 
     await expect(createWishlistItem('prod-1', 'fp-123', 'Milk')).rejects.toThrow('Already on wishlist');
   });
 
   it('throws on other DB errors', async () => {
-    chainable.single.mockResolvedValue({
-      data: null,
-      error: { code: '42501', message: 'permission denied' },
-    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'permission denied' }),
+      })
+    );
 
     await expect(createWishlistItem('prod-1', 'fp-123', 'Milk')).rejects.toThrow('permission denied');
   });
@@ -95,24 +91,33 @@ describe('createWishlistItem', () => {
 describe('deleteWishlistItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    chainable.single.mockReset();
-    chainable.eq.mockReset();
-    chainable.delete.mockReturnThis();
-    chainable.select.mockReturnThis();
-    chainable.insert.mockReturnThis();
   });
 
   it('deletes successfully', async () => {
-    // deleteWishlistItem chains: .delete().eq().eq() — last .eq() returns the result
-    chainable.eq.mockReturnValueOnce(chainable) // first .eq() returns chainable for chaining
-                    .mockResolvedValueOnce({ error: null }); // second .eq() returns result
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true }),
+      })
+    );
 
     await expect(deleteWishlistItem('prod-1', 'fp-123')).resolves.toBeUndefined();
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/wishlist?productId=prod-1&fingerprint=fp-123',
+      { method: 'DELETE' }
+    );
   });
 
   it('throws on DB error', async () => {
-    chainable.eq.mockReturnValueOnce(chainable)
-                    .mockResolvedValueOnce({ error: { message: 'RLS violation' } });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ error: 'RLS violation' }),
+      })
+    );
 
     await expect(deleteWishlistItem('prod-1', 'fp-123')).rejects.toThrow('RLS violation');
   });
@@ -125,25 +130,30 @@ describe('deleteWishlistItem', () => {
 describe('fetchWishlistItems', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    chainable.eq.mockReset();
-    chainable.eq.mockReturnThis();
   });
 
   it('returns array of product_ids', async () => {
-    chainable.eq.mockResolvedValue({
-      data: [
-        { product_id: 'prod-1' },
-        { product_id: 'prod-2' },
-      ],
-      error: null,
-    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ productIds: ['prod-1', 'prod-2'] }),
+      })
+    );
 
     const result = await fetchWishlistItems('fp-123');
     expect(result).toEqual(['prod-1', 'prod-2']);
+    expect(fetch).toHaveBeenCalledWith('/api/wishlist?fingerprint=fp-123');
   });
 
   it('returns empty array when no items', async () => {
-    chainable.eq.mockResolvedValue({ data: [], error: null });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ productIds: [] }),
+      })
+    );
 
     const result = await fetchWishlistItems('fp-123');
     expect(result).toEqual([]);
@@ -155,7 +165,14 @@ describe('fetchWishlistItems', () => {
   });
 
   it('throws on DB error', async () => {
-    chainable.eq.mockResolvedValue({ data: null, error: { message: 'connection failed' } });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'connection failed' }),
+      })
+    );
 
     await expect(fetchWishlistItems('fp-123')).rejects.toThrow('connection failed');
   });
