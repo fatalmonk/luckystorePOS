@@ -60,8 +60,7 @@ BEGIN
     JOIN pg_namespace AS n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public'
       AND p.proname = 'check_price_alerts'
-      AND pg_get_function_identity_arguments(p.oid)
-        = 'p_store_id uuid, p_threshold numeric'
+      AND pg_get_function_identity_arguments(p.oid) = 'uuid, numeric'
       AND pg_get_function_result(p.oid) = 'TABLE(item_id uuid, item_name text, our_price numeric, market_avg_price numeric, price_gap_percent numeric, competitors jsonb)'
   ) THEN
     RAISE EXCEPTION 'frozen price-alerts RPC signature is missing';

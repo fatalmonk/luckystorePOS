@@ -28,7 +28,7 @@ const notoBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Lucky Store — Your Friendly Neighborhood Grocer', template: '%s | Lucky Store' },
+  title: { default: 'Lucky Store', template: '%s | Lucky Store' },
   description: 'Your friendly neighborhood grocery store in Chittagong. Fresh products, fair prices, same-day delivery. Shop local.',
   keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
   authors: [{ name: 'Lucky Store' }],
@@ -152,18 +152,6 @@ export default function RootLayout({
                 'https://wa.me/8801731944544',
                 'https://www.google.com/maps/place/Lucky+Store/@22.3550277,91.8363056,17z',
               ],
-            }),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: 'Lucky Store',
-              alternateName: ['LuckyStore', 'Lucky Store - Est. 1947', 'luckystore1947.com'],
-              url: 'https://luckystore1947.com',
             }),
           }}
         />
