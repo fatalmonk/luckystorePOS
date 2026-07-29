@@ -205,3 +205,46 @@ export async function fetchCompetitorNames(storeId: string): Promise<string[]> {
   }
   return names;
 }
+
+export async function linkScrapedProductToItem(
+  storeId: string,
+  priceRecordId: string,
+  itemId: string,
+): Promise<void> {
+  const { data: rec, error: fetchErr } = await supabase
+    .from('competitor_prices')
+    .select('*')
+    .eq('id', priceRecordId)
+    .single();
+
+  if (fetchErr || !rec) throw fetchErr || new Error('Record not found');
+
+  const { data: item, error: itemErr } = await supabase
+    .from('items')
+    .select('price')
+    .eq('id', itemId)
+    .single();
+
+  if (itemErr || !item) throw itemErr || new Error('Item not found');
+
+  const ourPrice = (item as unknown as { price: number }).price;
+
+  const gap = ourPrice != null && rec.competitor_price > 0
+    ? Math.round(((ourPrice - rec.competitor_price) / rec.competitor_price) * 10000) / 10000
+    : null;
+
+  const { error: updateErr } = await supabase
+    .from('competitor_prices')
+    .update({
+      item_id: itemId,
+      our_price: ourPrice,
+      price_gap_percent: gap,
+      match_confidence: 1.0,
+      matcher_version: 'url-direct-user',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', priceRecordId);
+
+  if (updateErr) throw updateErr;
+}
+

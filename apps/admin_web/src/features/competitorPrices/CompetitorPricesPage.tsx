@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TrendingUp, Plus, ExternalLink, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown, Search, CheckCircle2, HelpCircle, Building2, Store } from 'lucide-react';
+import { TrendingUp, Plus, ExternalLink, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown, Search, CheckCircle2, HelpCircle, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '@/components';
 import { DataTable, Column } from '@/components';
@@ -10,6 +10,7 @@ import {
   clearManualCompetitorPrice,
 } from '../../lib/api/domains/competitorPrices';
 import { AddPriceModal } from './AddPriceModal';
+import { LinkProductModal } from './LinkProductModal';
 import type { CompetitorPrice, PriceAlert } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
 import './competitorPrices.css';
@@ -40,6 +41,7 @@ export function CompetitorPricesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCompetitor, setSelectedCompetitor] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [linkingRecord, setLinkingRecord] = useState<CompetitorPrice | null>(null);
 
   const { data: prices, isLoading: pricesLoading } = useQuery({
     queryKey: ['competitorPrices', storeId, activeTab],
@@ -50,7 +52,6 @@ export function CompetitorPricesPage() {
       }),
     enabled: !!storeId,
   });
-
 
   const { data: alerts } = useQuery({
     queryKey: ['priceAlerts', storeId],
@@ -294,7 +295,17 @@ export function CompetitorPricesPage() {
     {
       header: '',
       accessor: (row: CompetitorPrice) => (
-        <div className="flex gap-2 justify-end">
+        <div className="flex items-center gap-2 justify-end">
+          {!row.item_id && (
+            <button
+              onClick={() => setLinkingRecord(row)}
+              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold inline-flex items-center gap-1 shadow-xs"
+              title="1-Click Link to Inventory Product"
+            >
+              <LinkIcon size={12} />
+              1-Click Link
+            </button>
+          )}
           {row.competitor_product_url && (
             <a
               href={row.competitor_product_url}
@@ -308,7 +319,7 @@ export function CompetitorPricesPage() {
           )}
           {row.is_override_active && row.item_id && (
             <button
-              onClick={() => clearOverrideMutation.mutate({ itemId: row.item_id, competitorKey: row.competitor_key })}
+              onClick={() => clearOverrideMutation.mutate({ itemId: row.item_id!, competitorKey: row.competitor_key })}
               disabled={clearOverrideMutation.isPending}
               className="btn-icon text-warm-accent"
               title="Clear manual override"
@@ -320,6 +331,7 @@ export function CompetitorPricesPage() {
       ),
     },
   ];
+
 
   if (pricesLoading) {
     return (
@@ -487,7 +499,11 @@ export function CompetitorPricesPage() {
 
       {/* Add Price Modal */}
       <AddPriceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+      {/* 1-Click Link Product Modal */}
+      <LinkProductModal priceRecord={linkingRecord} onClose={() => setLinkingRecord(null)} />
     </div>
   );
 }
+
 
