@@ -38,7 +38,7 @@ export default async function Home() {
         as="image"
         href={primaryHeroAvif}
         imageSrcSet={primaryHeroSrcSet}
-        imageSizes="(max-width: 639px) 82vw, (max-width: 1023px) 56vw, 36vw"
+        imageSizes="100vw"
         type="image/avif"
         fetchPriority="high"
       />

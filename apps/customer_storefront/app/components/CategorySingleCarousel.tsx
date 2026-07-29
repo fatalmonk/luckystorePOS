@@ -36,15 +36,15 @@ export function CategorySingleCarousel({ products }: { products: Product[] }) {
     >
       <div className="flex items-end justify-between gap-5">
         <div className="max-w-2xl">
-          <p className="campaign-kicker">Continue by aisle</p>
+          <p className="campaign-kicker">Shop by category</p>
           <h2
             id="category-single-carousel-title"
             className="mt-2 text-balance text-2xl font-black tracking-[-0.04em] text-white sm:text-3xl"
           >
-            Pick a shelf. Keep the momentum.
+            Find what you need by aisle.
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/70">
-            Live catalog counts keep the next move useful without turning the homepage into a product wall.
+            Browse grocery categories with products currently available online.
           </p>
         </div>
         <div className="hidden shrink-0 gap-2 sm:flex">

@@ -7,7 +7,7 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Your neighborhood grocer, one scroll away.',
+      name: 'Groceries you know, delivered across Chittagong.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
@@ -16,7 +16,7 @@ test.describe('Storefront campaign hero audit', () => {
 
     const destinations = [
       ['Browse groceries', '/category'],
-      ['How delivery works', '#how-it-works'],
+      ['How ordering works', '#how-it-works'],
       ['Explore everyday groceries', '/category'],
       ['Shop Buldak ramen deals', '/search?q=buldak'],
       ['Shop dairy and eggs', '/category/dairy-and-eggs'],
@@ -49,8 +49,9 @@ test.describe('Storefront campaign hero audit', () => {
     expect(functionalTextSizes.every((size) => size >= 11)).toBe(true);
 
     const images = hero.locator('img');
-    await expect(images).toHaveCount(4);
-    for (let index = 0; index < 4; index += 1) {
+    await expect(images).toHaveCount(5);
+    const imageCount = await images.count();
+    for (let index = 0; index < imageCount; index += 1) {
       const image = images.nth(index);
       await expect(image).toHaveAttribute('alt', '');
 
@@ -71,7 +72,7 @@ test.describe('Storefront campaign hero audit', () => {
         return {
           currentSrc: imageElement.currentSrc,
           naturalWidth: imageElement.naturalWidth,
-          renderedWidth: imageElement.getBoundingClientRect().width,
+          renderedWidth: imageElement.clientWidth,
         };
       });
       expect(imageState.currentSrc).toMatch(/\.avif$/);

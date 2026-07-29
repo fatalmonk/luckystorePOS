@@ -78,12 +78,12 @@ export function FeaturedProducts({ products, isLoading = false }: FeaturedProduc
     >
       <div className="merchandising-divider flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="campaign-kicker">Curated for the week</p>
+          <p className="campaign-kicker">Ready to add</p>
           <h2 id="featured-products-title" className="campaign-on-image mt-1 text-xl font-black tracking-[-0.02em] sm:text-2xl">
-            Featured products
+            Featured groceries
           </h2>
           <p className="campaign-on-image-muted mt-1 text-xs leading-5 sm:text-sm">
-            In-stock essentials selected from across the store.
+            In-stock picks from across Lucky Store.
           </p>
         </div>
 
@@ -175,7 +175,7 @@ export function FeaturedProducts({ products, isLoading = false }: FeaturedProduc
           href="/category"
           className="campaign-card-action inline-flex min-h-11 items-center text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
         >
-          Browse the full catalog →
+          See all groceries →
         </Link>
       </div>
 

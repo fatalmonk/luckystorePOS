@@ -8,7 +8,9 @@ test.describe('Storefront visual audit evidence', () => {
     });
 
     await page.goto('/');
-    await page.getByRole('heading', { name: 'Your neighborhood grocer, one scroll away.' }).waitFor();
+    await page.getByRole('heading', {
+      name: 'Groceries you know, delivered across Chittagong.',
+    }).waitFor();
     await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const footerLogo = page.getByRole('img', { name: 'লাকি স্টোর — ১৯৪৭' });
     await expect
@@ -87,7 +89,9 @@ test.describe('Storefront visual audit evidence', () => {
     });
 
     await page.goto('/');
-    await page.getByRole('heading', { name: 'Your neighborhood grocer, one scroll away.' }).waitFor();
+    await page.getByRole('heading', {
+      name: 'Groceries you know, delivered across Chittagong.',
+    }).waitFor();
     await page.waitForTimeout(1000);
 
     const metrics = await page.evaluate(

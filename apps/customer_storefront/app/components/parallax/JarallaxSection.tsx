@@ -1,5 +1,8 @@
 'use client';
 
+/* jarallax requires a raw image element so it can manage the parallax layer. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useEffect, useRef } from 'react';
 import { jarallax } from 'jarallax';
 import type { JarallaxOptions } from 'jarallax';
@@ -56,7 +59,8 @@ export function JarallaxSection({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const options: JarallaxOptions = {
       speed,
@@ -80,11 +84,11 @@ export function JarallaxSection({
       options.disableVideo = disableVideo;
     }
 
-    const instance = jarallax(containerRef.current, options);
+    const instance = jarallax(container, options);
     onInit?.(instance);
 
     return () => {
-      jarallax(containerRef.current as HTMLElement, 'destroy');
+      jarallax(container, 'destroy');
       onDestroy?.();
     };
   }, [
@@ -118,7 +122,7 @@ export function JarallaxSection({
       <img
         src={imageUrl}
         alt={imgAlt}
-        className="jarallax-img hidden"
+        className="jarallax-img absolute inset-0 h-full w-full object-cover"
         aria-hidden="true"
       />
       <div className="relative z-10">{children}</div>

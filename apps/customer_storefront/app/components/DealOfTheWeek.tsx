@@ -46,11 +46,13 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     >
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <p className="home-section-kicker">Limited-time offers</p>
+          <p className="home-section-kicker">Save this week</p>
           <h2 id="weekly-deal-title" className="home-section-title">
-            Deal of the week
+            This week&apos;s best deal
           </h2>
-          <p className="home-section-description">One standout saving, plus more offers worth a look.</p>
+          <p className="home-section-description">
+            Our biggest featured saving, with more discounted products alongside it.
+          </p>
         </div>
         <DealCountdown />
       </div>
@@ -119,12 +121,12 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
 
         <div className="space-y-4 lg:col-span-7">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-warm-fg">More top savings</h3>
+            <h3 className="text-sm font-extrabold text-warm-fg">More deals</h3>
             <Link
               href="/category?theme=deals"
               className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
             >
-              View all {products.filter((p) => p.originalPrice && p.originalPrice > p.price).length} →
+              See {products.filter((p) => p.originalPrice && p.originalPrice > p.price).length} deals →
             </Link>
           </div>
 
