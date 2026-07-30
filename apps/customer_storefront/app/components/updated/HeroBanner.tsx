@@ -32,6 +32,8 @@ interface HeroBannerProps {
   slides: Slide[];
   /** Fallback gradient when no images */
   bgGradient?: string;
+  /** Heading level tag for screen reader document structure */
+  titleAs?: 'h1' | 'h2' | 'h3';
 }
 
 function getSlideImage(slide: Slide): string {
@@ -40,7 +42,8 @@ function getSlideImage(slide: Slide): string {
 
 export function HeroBanner({
   slides,
-  bgGradient = 'from-[#f0c444] via-[#e8b840] to-[#d4a030]',
+  bgGradient = 'from-warm-accent via-warm-accent/90 to-warm-accent/70',
+  titleAs: TitleTag = 'h1',
 }: HeroBannerProps) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -125,7 +128,8 @@ export function HeroBanner({
               srcSet={imgVal?.srcSet || undefined}
               fetchPriority={isLcp ? 'high' : 'low'}
               loading={isLcp ? 'eager' : 'lazy'}
-              className={`absolute inset-0 w-full h-full ${
+              decoding="async"
+              className={`absolute inset-0 w-full h-full hero-banner-parallax-img ${
                 s.objectFit === 'contain' ? 'object-contain' : 'object-cover'
               }`}
               style={{
@@ -136,52 +140,34 @@ export function HeroBanner({
         );
       })}
 
-      {/* Dark overlay for text legibility over banner images */}
+      {/* Dark gradient overlay for crisp white text legibility over banner images */}
       {hasBgImage && !slide.hideOverlay && (
-        <div className="absolute inset-0 bg-gradient-to-r from-warm-fg/75 via-warm-fg/45 to-transparent z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent z-[1]" />
       )}
 
       {/* Brand warm decorative glows */}
       <div className="absolute -top-8 -right-8 w-32 h-32 bg-warm-accent/10 rounded-full blur-xl z-[1] pointer-events-none" />
       <div className="absolute -bottom-10 right-10 w-40 h-40 bg-warm-accent/10 rounded-full blur-2xl z-[1] pointer-events-none" />
 
-      {/* Content — left aligned */}
+      {/* Content — left aligned text, CTA button right-aligned on mobile */}
       {!slide.hideText && (slide.title || slide.subtitle || slide.badge) && (
-        <div className="relative z-10 max-w-lg mr-auto text-left flex flex-col items-start justify-center h-full" aria-live="polite">
+        <div className="relative z-10 max-w-lg mr-auto text-left flex flex-col items-start justify-end pb-1 sm:pb-2.5 h-full w-full" aria-live="polite">
           {slide.badge && (
-            <p className="px-2.5 py-0.5 rounded-full inline-block mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--color-foreground)] bg-[var(--color-accent)] shrink-0">
+            <p className="px-2.5 py-0.5 rounded-full inline-block mb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#0B0B0D] bg-[var(--color-accent)] shrink-0 shadow-sm">
               {slide.badge}
             </p>
           )}
           {slide.title && (
-            <h2 className={`text-xl sm:text-2xl lg:text-3xl font-black mb-1 sm:mb-1.5 leading-tight font-display tracking-tight ${
-              hasBgImage ? 'text-white drop-shadow-sm' : 'text-warm-fg'
-            }`}>
+            <TitleTag className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black leading-none font-display tracking-tight text-white drop-shadow-md">
               {slide.title}
-            </h2>
-          )}
-          {slide.subtitle && (
-            <p className={`text-xs sm:text-sm normal-case font-medium mb-3 sm:mb-4 max-w-[45ch] line-clamp-2 sm:line-clamp-none ${
-              hasBgImage ? 'text-white/90 drop-shadow-sm' : 'text-warm-fg/75'
-            }`}>
-              {slide.subtitle}
-            </p>
-          )}
-          {slide.ctaText !== null && (
-            <Link
-              href={slide.ctaHref || '/category?theme=deals'}
-              className="group inline-flex items-center gap-1.5 rounded-full bg-warm-surface px-[1.125rem] py-1.5 text-xs font-bold text-warm-fg hover:bg-warm-surface/90 active:scale-[0.97] hover:-translate-y-0.5 transition-all duration-300 ease-out shadow-warm-sm hover:shadow-warm-md shrink-0"
-            >
-              {slide.ctaText || 'Shop Now'}
-              <span aria-hidden="true" className="text-sm transition-transform duration-300 group-hover:translate-x-0.5">→</span>
-            </Link>
+            </TitleTag>
           )}
         </div>
       )}
 
-      {/* Click overlay for image-only slides */}
-      {slide.hideText && slide.ctaHref && (
-        <Link href={slide.ctaHref} className="absolute inset-0 z-[5]" aria-label={slide.title || 'View deals'} />
+      {/* Click overlay for full hero banner card */}
+      {(slide.ctaHref || slide.ctaText !== null) && (
+        <Link href={slide.ctaHref || '/category?theme=deals'} className="absolute inset-0 z-[5]" aria-label={slide.title || 'View category'} />
       )}
 
       {/* Slider nav buttons — top right */}

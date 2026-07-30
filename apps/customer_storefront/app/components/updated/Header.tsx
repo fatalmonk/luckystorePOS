@@ -239,7 +239,7 @@ export function Header({ className = '' }: HeaderProps) {
                 aria-label={`Search within ${selectedCategoryLabel}`}
               >
                 <List weight="bold" size={14} className="text-warm-accent" aria-hidden="true" />
-                <span className="max-w-[110px] truncate">{selectedCategoryLabel}</span>
+                <span className="max-w-[70px] sm:max-w-[90px] lg:max-w-[130px] truncate">{selectedCategoryLabel}</span>
                 <CaretDown weight="bold" size={12} className="text-warm-muted" aria-hidden="true" />
               </button>
 
@@ -291,8 +291,8 @@ export function Header({ className = '' }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Search groceries, essentials, and brands..."
-                className="h-11 w-full bg-transparent pl-3.5 pr-11 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted"
+                placeholder="Search products & brands..."
+                className="h-11 w-full bg-transparent pl-3.5 pr-11 text-xs sm:text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted"
                 aria-label="Search products"
               />
               {searchQuery && (
@@ -375,26 +375,27 @@ export function Header({ className = '' }: HeaderProps) {
       {/* Category Pills Strip — on filter/catalog routes */}
       {isFilterPage && (
         <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-2">
-          <nav className="flex flex-nowrap items-center overflow-x-auto md:overflow-visible h-[38px] gap-1.5 scrollbar-hide py-0.5">
-            <Link
-              href="/category?theme=deals"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
-            >
-              Deals
-            </Link>
-            <Link
-              href="/category?theme=bestsellers"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-surface text-warm-fg border border-warm-border text-xs font-bold hover:bg-warm-bg transition-colors"
-            >
-              Best Sellers
-            </Link>
+          <nav className="flex items-center justify-between gap-1.5 py-0.5">
+            <div className="flex items-center gap-1.5">
+              <Link
+                href="/category?theme=deals"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors inline-flex items-center min-h-[36px]"
+              >
+                🔥 Deals
+              </Link>
+              <Link
+                href="/category?theme=bestsellers"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-surface text-warm-fg border border-warm-border text-xs font-bold hover:bg-warm-bg transition-colors inline-flex items-center min-h-[36px]"
+              >
+                ⭐ Best Sellers
+              </Link>
+            </div>
 
-            <div className="hidden md:flex flex-1 min-w-0 items-center overflow-visible">
+            <div className="hidden md:flex items-center shrink-0">
               <Suspense
                 fallback={
                   <div className="flex items-center gap-1.5">
                     <div className="h-[26px] w-14 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
-                    <div className="h-[26px] w-16 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
                   </div>
                 }
               >

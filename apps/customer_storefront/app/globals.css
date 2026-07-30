@@ -29,6 +29,31 @@
 }
 
 @layer components {
+  .hero-banner-parallax-img {
+    will-change: transform;
+    transform: translateZ(0) scale(1.04);
+    transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-banner-parallax-img {
+        animation: heroBannerParallax linear both;
+        animation-timeline: scroll();
+        animation-range: entry 0% exit 100%;
+      }
+
+      @keyframes heroBannerParallax {
+        from {
+          transform: translateY(0px) scale(1.04);
+        }
+        to {
+          transform: translateY(40px) scale(1.12);
+        }
+      }
+    }
+  }
+
   .market-panel {
     --market-panel-edge: var(--color-market-edge);
     position: relative;
@@ -61,25 +86,35 @@
   }
 
   .market-product-card {
-    --color-surface: #111114;
-    --color-foreground: #f7f4ec;
-    --color-muted: rgba(247, 244, 236, 0.68);
-    --color-dim: rgba(247, 244, 236, 0.52);
-    --color-border: rgba(255, 255, 255, 0.11);
+    --color-surface: var(--color-surface, #ffffff);
+    --color-foreground: var(--color-foreground, #0B0B0D);
+    --color-muted: var(--color-muted, #6B6B6B);
+    --color-dim: var(--color-dim, #6B6B6B);
+    --color-border: var(--color-border, #E8E4DC);
     container-type: inline-size;
     position: relative;
     overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    background: #ffffff;
+    box-shadow: var(--shadow-rest);
+    transition:
+      border-color 220ms var(--ease-drawer),
+      box-shadow 220ms var(--ease-drawer);
+  }
+
+  [data-theme='dark'] .market-product-card {
+    --color-surface: #111114;
+    --color-foreground: #f7f4ec;
+    --color-muted: rgba(247, 244, 236, 0.68);
+    --color-dim: rgba(247, 244, 236, 0.52);
+    --color-border: rgba(255, 255, 255, 0.11);
     background:
       radial-gradient(circle at 100% 0%, rgba(240, 196, 68, 0.10), transparent 35%),
       rgba(11, 11, 13, 0.96);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.06),
       0 18px 44px rgba(11, 11, 13, 0.16);
-    transition:
-      border-color 220ms var(--ease-drawer),
-      box-shadow 220ms var(--ease-drawer);
   }
 
   .market-product-card::before {
@@ -145,16 +180,16 @@
   }
 
   .campaign-hero-backdrop img {
-    opacity: 0.5;
-    filter: saturate(0.86) contrast(1.04);
+    opacity: 0.85;
+    filter: saturate(1.02) contrast(1.02);
   }
 
   .campaign-hero-backdrop::after {
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(90deg, rgba(11, 11, 13, 0.96) 0%, rgba(11, 11, 13, 0.82) 38%, rgba(11, 11, 13, 0.58) 100%),
-      linear-gradient(180deg, rgba(11, 11, 13, 0.16), rgba(11, 11, 13, 0.64));
+      linear-gradient(90deg, rgba(11, 11, 13, 0.55) 0%, rgba(11, 11, 13, 0.35) 40%, rgba(11, 11, 13, 0.15) 100%),
+      linear-gradient(180deg, rgba(11, 11, 13, 0.05), rgba(11, 11, 13, 0.30));
     content: '';
   }
 

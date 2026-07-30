@@ -13,11 +13,7 @@ interface ParallaxHeroProps {
 function shouldDisableParallax() {
   if (typeof window === 'undefined') return true;
 
-  return (
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-    window.matchMedia('(max-width: 767px)').matches ||
-    /android|iphone|ipad|ipod/i.test(window.navigator.userAgent)
-  );
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 /**

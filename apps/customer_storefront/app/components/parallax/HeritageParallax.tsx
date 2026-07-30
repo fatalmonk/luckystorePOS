@@ -11,7 +11,7 @@ export function HeritageParallax() {
         >
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(11,11,13,0.94)_0%,rgba(11,11,13,0.78)_42%,rgba(11,11,13,0.18)_76%,rgba(11,11,13,0.34)_100%)]"
+            className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(11,11,13,0.55)_0%,rgba(11,11,13,0.35)_42%,rgba(11,11,13,0.12)_76%,rgba(11,11,13,0.05)_100%)]"
           />
 
           <div className="max-w-xl">

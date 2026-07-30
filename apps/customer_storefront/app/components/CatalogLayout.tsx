@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -35,8 +35,30 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },
 ];
 
+const BRAND_ALIASES: Record<string, string> = {
+  'cerelace': 'Cerelac',
+  'cerelac': 'Cerelac',
+  'aril': 'Aril',
+  '鈦aril': 'Aril',
+};
+
+const NON_BRAND_WORDS = new Set(['chicken', 'chocolate', 'ata', 'basmati', 'others']);
+
+function cleanBrandName(raw?: string | null): string {
+  if (!raw) return 'Others';
+  let clean = raw.replace(/[\uFEFF\u0000-\u001F\u007F-\u009F]/g, '').trim();
+  clean = clean.replace(/^[^\w\s\u0980-\u09FF]+/, '').trim();
+  if (!clean) return 'Others';
+
+  const lower = clean.toLowerCase();
+  if (BRAND_ALIASES[lower]) return BRAND_ALIASES[lower];
+  if (NON_BRAND_WORDS.has(lower)) return 'Others';
+
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
 function normalizeBrand(b?: string | null): string {
-  return (b || '').trim().toLowerCase();
+  return cleanBrandName(b).toLowerCase();
 }
 
 interface CatalogLayoutProps {
@@ -84,52 +106,71 @@ export function CatalogLayout({
   const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
   // Derive unique brands from current dataset
-  const brandCounts = products.reduce((acc, p) => {
-    const b = p.brand || 'Others';
-    acc[b] = (acc[b] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const availableBrands = Object.keys(brandCounts).sort((a, b) => brandCounts[b] - brandCounts[a]);
+  const { brandCounts, availableBrands } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      const b = cleanBrandName(p.brand);
+      if (b !== 'Others') {
+        counts[b] = (counts[b] || 0) + 1;
+      }
+    });
+    const brands = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    return { brandCounts: counts, availableBrands: brands };
+  }, [products]);
 
   // Apply filters in-memory for catalog view
-  let filtered = [...products];
+  const filtered = useMemo(() => {
+    let result = [...products];
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-  if (theme === 'deals') {
-    filtered = filtered.filter((p) => p.originalPrice && p.originalPrice > p.price);
-  } else if (theme === 'new') {
-    filtered = filtered.filter((p) => p.created_at && new Date(p.created_at).getTime() > thirtyDaysAgo);
-  } else if (theme === 'bestsellers') {
-    filtered = filtered.filter((p) => p.stock > 10);
-  }
+    if (theme === 'deals') {
+      result = result.filter((p) => p.originalPrice && p.originalPrice > p.price);
+    } else if (theme === 'new') {
+      result = result.filter((p) => p.created_at && new Date(p.created_at).getTime() > thirtyDaysAgo);
+    } else if (theme === 'bestsellers') {
+      result = result.filter((p) => p.stock > 10);
+    }
 
-  if (activeAvailabilities.length > 0) {
-    filtered = filtered.filter((p) => {
-      if (activeAvailabilities.includes('in_stock') && p.stock > 5) return true;
-      if (activeAvailabilities.includes('low_stock') && p.stock > 0 && p.stock <= 5) return true;
-      if (activeAvailabilities.includes('out_of_stock') && p.stock === 0) return true;
-      return false;
-    });
-  }
+    if (activeAvailabilities.length > 0) {
+      result = result.filter((p) => {
+        if (activeAvailabilities.includes('in_stock') && p.stock > 5) return true;
+        if (activeAvailabilities.includes('low_stock') && p.stock > 0 && p.stock <= 5) return true;
+        if (activeAvailabilities.includes('out_of_stock') && p.stock === 0) return true;
+        return false;
+      });
+    }
 
-  if (activePrices.length > 0) {
-    const parsedRanges = activePrices.map((r) => {
-      const [min, max] = r.split('-').map(Number);
-      return { min, max };
-    });
-    filtered = filtered.filter((p) => parsedRanges.some((r) => p.price >= r.min && p.price <= r.max));
-  }
+    if (activePrices.length > 0) {
+      const parsedRanges = activePrices.map((r) => {
+        const [min, max] = r.split('-').map(Number);
+        return { min, max };
+      });
+      result = result.filter((p) => parsedRanges.some((r) => p.price >= r.min && p.price <= r.max));
+    }
 
-  if (activeBrands.length > 0) {
-    const normalizedSelected = activeBrands.map(normalizeBrand);
-    filtered = filtered.filter((p) => normalizedSelected.includes(normalizeBrand(p.brand)));
-  }
+    if (activeBrands.length > 0) {
+      const normalizedSelected = activeBrands.map(normalizeBrand);
+      result = result.filter((p) => normalizedSelected.includes(normalizeBrand(p.brand)));
+    }
 
-  // Sorting
-  if (activeSort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
-  else if (activeSort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
-  else if (activeSort === 'newest')
-    filtered.sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
+    // Sorting
+    if (activeSort === 'price_asc') {
+      result.sort((a, b) => a.price - b.price);
+    } else if (activeSort === 'price_desc') {
+      result.sort((a, b) => b.price - a.price);
+    } else if (activeSort === 'newest') {
+      result.sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
+    } else {
+      // Best Match: Demote out-of-stock items (stock <= 0) to bottom
+      result.sort((a, b) => {
+        const aInStock = (a.stock ?? 0) > 0 ? 1 : 0;
+        const bInStock = (b.stock ?? 0) > 0 ? 1 : 0;
+        return bInStock - aInStock;
+      });
+    }
+
+    return result;
+  }, [products, theme, activeAvailabilities, activePrices, activeBrands, activeSort]);
 
   // Count active filters
   const totalActiveFilterCount =
@@ -179,15 +220,64 @@ export function CatalogLayout({
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   };
 
-  // Close mobile bottom sheet on Escape key
+  const modalRef = useRef<HTMLDivElement>(null);
+  const PAGE_SIZE = 24;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset pagination when active filters or sort change
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsMobileFilterOpen(false);
-    };
-    if (isMobileFilterOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+    setVisibleCount(PAGE_SIZE);
+  }, [activePrices, activeAvailabilities, activeBrands, activeSort, categorySlug]);
+
+  // Focus trapping, body scroll lock, and accessibility for Mobile Filter Sheet
+  useEffect(() => {
+    if (!isMobileFilterOpen) return;
+
+    document.body.style.overflow = 'hidden';
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+
+    if (modalRef.current) {
+      const focusables = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length > 0) focusables[0].focus();
     }
-    return () => document.removeEventListener('keydown', handleKeyDown);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileFilterOpen(false);
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusables = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length === 0) return;
+
+        const firstElement = focusables[0];
+        const lastElement = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+        previousActiveElement.focus();
+      }
+    };
   }, [isMobileFilterOpen]);
 
   const getQtyInCart = (productId: string) => {
@@ -201,23 +291,33 @@ export function CatalogLayout({
       <div className="bg-warm-surface border border-warm-border dark:border-transparent rounded-[20px] p-4 shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
-            <Link href="/" className="hover:text-warm-fg transition-colors">Home</Link>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
+            <Link href="/" className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">Home</Link>
             <span>/</span>
-            <Link href="/category" className="hover:text-warm-fg transition-colors">Shop</Link>
+            <Link href="/category" className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">Shop</Link>
             {categorySlug !== 'all' && (
               <>
                 <span>/</span>
-                <span className="text-warm-fg font-bold capitalize">{categorySlug.replace(/-/g, ' ')}</span>
+                <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">{categorySlug.replace(/-/g, ' ')}</span>
               </>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-black tracking-tight text-warm-fg">
-              {searchQuery ? `Search results for "${searchQuery}"` : categorySlug === 'all' ? 'All Products' : group?.label || categorySlug}
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-warm-bg border border-warm-border dark:border-transparent text-xs font-extrabold text-warm-fg">
+            {categorySlug !== 'all' ? (
+              <h2 className="text-lg font-black tracking-tight text-warm-fg">
+                {searchQuery ? `Search results for "${searchQuery}"` : group?.label || categorySlug.replace(/-/g, ' ')}
+              </h2>
+            ) : (
+              <h1 className="text-lg font-black tracking-tight text-warm-fg">
+                {searchQuery ? `Search results for "${searchQuery}"` : 'All Products'}
+              </h1>
+            )}
+            <span
+              aria-live="polite"
+              aria-atomic="true"
+              className="px-2.5 py-0.5 rounded-full bg-warm-bg border border-warm-border text-xs font-extrabold text-warm-fg"
+            >
               {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
             </span>
           </div>
@@ -229,7 +329,9 @@ export function CatalogLayout({
           <button
             type="button"
             onClick={() => setIsMobileFilterOpen(true)}
-            className="md:hidden flex items-center gap-2 px-3.5 py-2 rounded-full bg-warm-fg text-warm-accent font-extrabold text-xs shadow-warm-sm active:scale-95 transition-all"
+            aria-expanded={isMobileFilterOpen}
+            aria-controls="mobile-filter-drawer"
+            className="md:hidden min-h-[44px] flex items-center gap-2 px-3.5 py-2 rounded-full bg-warm-fg text-warm-accent font-extrabold text-xs shadow-warm-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-all"
           >
             <Funnel weight="fill" size={16} />
             <span>Filters</span>
@@ -241,7 +343,7 @@ export function CatalogLayout({
           </button>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-1.5 bg-warm-bg border border-warm-border/60 rounded-full px-3 py-1.5 text-xs font-bold text-warm-fg">
+          <div className="flex items-center gap-1.5 bg-warm-bg border border-warm-border/60 rounded-full px-3 py-1.5 min-h-[44px] text-xs font-bold text-warm-fg">
             <span className="text-warm-muted hidden sm:inline">Sort:</span>
             <select
               value={activeSort}
@@ -269,10 +371,10 @@ export function CatalogLayout({
               <button
                 key={p}
                 onClick={() => togglePriceFilter(p)}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg transition-colors shadow-warm-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
               >
                 <span>{label}</span>
-                <X weight="bold" size={12} className="text-warm-muted" />
+                <X weight="bold" size={14} className="text-warm-muted" />
               </button>
             );
           })}
@@ -282,10 +384,10 @@ export function CatalogLayout({
               <button
                 key={a}
                 onClick={() => toggleAvailFilter(a)}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg transition-colors shadow-warm-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
               >
                 <span>{label}</span>
-                <X weight="bold" size={12} className="text-warm-muted" />
+                <X weight="bold" size={14} className="text-warm-muted" />
               </button>
             );
           })}
@@ -293,15 +395,16 @@ export function CatalogLayout({
             <button
               key={b}
               onClick={() => toggleBrandFilter(b)}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg transition-colors shadow-warm-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
             >
               <span>Brand: {b}</span>
-              <X weight="bold" size={12} className="text-warm-muted" />
+              <X weight="bold" size={14} className="text-warm-muted" />
             </button>
           ))}
           <button
+            type="button"
             onClick={clearAllFilters}
-            className="text-xs font-extrabold text-red-500 hover:underline px-2 py-1"
+            className="text-xs font-extrabold text-warm-danger hover:underline px-3 py-2 min-h-[44px] inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-full"
           >
             Clear All
           </button>
@@ -311,15 +414,16 @@ export function CatalogLayout({
       {/* Catalog Main Layout Grid: Left Sticky Sidebar (Desktop) + Right Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Desktop Sticky Sidebar */}
-        <aside className="hidden md:block md:col-span-3 sticky top-20 bg-warm-surface border border-warm-border dark:border-transparent rounded-[24px] p-5 shadow-warm-sm space-y-6">
+        <aside className="hidden md:block md:col-span-3 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar bg-warm-surface border border-warm-border dark:border-transparent rounded-[24px] p-5 shadow-warm-sm space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-warm-border dark:border-transparent">
-            <h3 className="font-extrabold text-sm text-warm-fg flex items-center gap-1.5">
+            <h2 className="font-extrabold text-sm text-warm-fg flex items-center gap-1.5">
               <Funnel weight="bold" size={16} /> Filters
-            </h3>
+            </h2>
             {totalActiveFilterCount > 0 && (
               <button
+                type="button"
                 onClick={clearAllFilters}
-                className="text-[11px] font-bold text-red-500 hover:underline"
+                className="text-[11px] font-bold text-warm-danger hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-warm-accent rounded"
               >
                 Clear All
               </button>
@@ -328,7 +432,7 @@ export function CatalogLayout({
 
           {/* Categories Sidebar List */}
           <div className="space-y-2">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Categories</h4>
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Categories</h3>
             <div className="space-y-1">
               <Link
                 href="/category"
@@ -361,7 +465,7 @@ export function CatalogLayout({
 
           {/* Price Range Filter */}
           <div className="space-y-2 pt-2 border-t border-warm-border/40">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Price Range</h4>
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Price Range</h3>
             <div className="space-y-1.5">
               {PRICE_OPTIONS.map((opt) => (
                 <label
@@ -382,7 +486,7 @@ export function CatalogLayout({
 
           {/* Availability Filter */}
           <div className="space-y-2 pt-2 border-t border-warm-border/40">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Stock Status</h4>
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Stock Status</h3>
             <div className="space-y-1.5">
               {AVAILABILITY_OPTIONS.map((opt) => (
                 <label
@@ -404,7 +508,7 @@ export function CatalogLayout({
           {/* Brand Filter (conditional) */}
           {availableBrands.length > 1 && (
             <div className="space-y-2 pt-2 border-t border-warm-border/40">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h4>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h3>
               <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-hide">
                 {availableBrands.map((b) => (
                   <label
@@ -429,7 +533,7 @@ export function CatalogLayout({
         </aside>
 
         {/* Products Grid Area */}
-        <main className="md:col-span-9 space-y-4">
+        <section aria-label="Product catalog" className="md:col-span-9 space-y-6">
           {filtered.length === 0 ? (
             <div className="bg-warm-surface border border-warm-border/60 rounded-[24px] p-12 text-center space-y-3">
               <span className="text-4xl">🔍</span>
@@ -446,10 +550,9 @@ export function CatalogLayout({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {filtered.map((product, index) => {
-                let addBtnRef: HTMLButtonElement | null = null;
-                return (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {filtered.slice(0, visibleCount).map((product, index) => (
                   <div key={product.id} className="h-full flex flex-col">
                     <ProductCard
                       id={product.id}
@@ -464,25 +567,37 @@ export function CatalogLayout({
                       category={product.category}
                       image_url={product.image_url}
                       qtyInCart={getQtyInCart(product.id)}
-                      priority={index === 0}
-                      onAdd={() => handleAddToCart(product, addBtnRef)}
+                      priority={index < 4}
+                      onAdd={(btnEl) => handleAddToCart(product, btnEl)}
                       onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                      onAddRef={(el) => {
-                        addBtnRef = el;
-                      }}
                     />
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+
+              {/* Load More Pagination */}
+              {visibleCount < filtered.length && (
+                <div className="pt-6 pb-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                    className="min-h-[44px] px-8 py-3 rounded-full bg-warm-surface border border-warm-border text-warm-fg font-extrabold text-xs hover:bg-warm-bg hover:border-warm-accent transition-all shadow-warm-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                  >
+                    Load More Products ({filtered.length - visibleCount} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
-        </main>
+        </section>
       </div>
 
       {/* Mobile Accessible Filter Bottom Sheet */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-warm-fg/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200">
           <div
+            id="mobile-filter-drawer"
+            ref={modalRef}
             className="w-full bg-warm-surface rounded-t-[28px] max-h-[85vh] flex flex-col overflow-hidden border-t border-warm-border shadow-2xl animate-in slide-in-from-bottom duration-300"
             role="dialog"
             aria-modal="true"
@@ -497,7 +612,7 @@ export function CatalogLayout({
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="w-8 h-8 rounded-full bg-warm-bg flex items-center justify-center text-warm-fg"
+                className="w-11 h-11 rounded-full bg-warm-bg flex items-center justify-center text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors"
                 aria-label="Close filters"
               >
                 <X weight="bold" size={18} />
