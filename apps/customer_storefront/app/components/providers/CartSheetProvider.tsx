@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { CartSheet } from '../CartSheet';
 
 interface CartSheetContextType {
@@ -17,8 +17,10 @@ export function CartSheetProvider({ children }: { children: React.ReactNode }) {
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
+  const value = useMemo(() => ({ isOpen, open, close }), [isOpen, open, close]);
+
   return (
-    <CartSheetContext.Provider value={{ isOpen, open, close }}>
+    <CartSheetContext.Provider value={value}>
       {children}
       <CartSheet open={isOpen} onClose={close} />
     </CartSheetContext.Provider>

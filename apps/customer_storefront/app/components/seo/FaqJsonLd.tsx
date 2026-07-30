@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function FaqJsonLd() {
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -5,18 +7,18 @@ export function FaqJsonLd() {
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'Does Lucky Store provide same-day grocery delivery in Chittagong?',
+        name: 'Does Lucky Store deliver groceries in Chittagong?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes, Lucky Store provides same-day grocery delivery across Chittagong for orders placed before 6:00 PM. Delivery is free for orders over ৳500.',
+          text: 'Yes. Lucky Store offers local grocery delivery across Chittagong. Add groceries to your cart and review the delivery details before placing your order.',
         },
       },
       {
         '@type': 'Question',
-        name: 'What payment options does Lucky Store accept?',
+        name: 'Can I pay when my grocery order arrives?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Lucky Store accepts Cash on Delivery (COD), bKash, Nagad, and Credit/Debit cards (Visa and Mastercard).',
+          text: 'Yes. Lucky Store accepts cash on delivery, so you can pay when your grocery order arrives.',
         },
       },
       {
