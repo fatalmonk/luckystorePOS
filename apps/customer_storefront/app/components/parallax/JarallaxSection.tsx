@@ -6,8 +6,14 @@
 import { useEffect, useRef } from 'react';
 import { jarallax } from 'jarallax';
 import type { JarallaxOptions } from 'jarallax';
+import { img } from '../../lib/imageUrl';
 
 type DisableOption = boolean | RegExp | string | (() => boolean);
+
+function shouldDisableParallaxByDefault(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
 
 interface JarallaxSectionProps {
   children: React.ReactNode;
@@ -57,6 +63,15 @@ export function JarallaxSection({
   onDestroy,
 }: JarallaxSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const resolvedImageUrl = img(imageUrl);
+
+  const onInitRef = useRef(onInit);
+  const onDestroyRef = useRef(onDestroy);
+
+  useEffect(() => {
+    onInitRef.current = onInit;
+    onDestroyRef.current = onDestroy;
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -66,7 +81,7 @@ export function JarallaxSection({
       speed,
       imgPosition,
       imgSize,
-      imgSrc: imageUrl,
+      imgSrc: resolvedImageUrl,
       threshold,
       videoSrc: videoSrc ?? undefined,
       videoStartTime,
@@ -78,21 +93,29 @@ export function JarallaxSection({
     };
 
     if (disableParallax !== undefined) {
-      options.disableParallax = disableParallax;
+      if (typeof disableParallax === 'function') {
+        options.disableParallax = () => shouldDisableParallaxByDefault() || disableParallax();
+      } else {
+        options.disableParallax = disableParallax;
+      }
+    } else {
+      options.disableParallax = shouldDisableParallaxByDefault;
     }
+
     if (disableVideo !== undefined) {
       options.disableVideo = disableVideo;
     }
 
     const instance = jarallax(container, options);
-    onInit?.(instance);
+    onInitRef.current?.(instance);
 
     return () => {
       jarallax(container, 'destroy');
-      onDestroy?.();
+      onDestroyRef.current?.();
     };
   }, [
     imageUrl,
+    resolvedImageUrl,
     speed,
     imgPosition,
     imgSize,
@@ -106,8 +129,6 @@ export function JarallaxSection({
     disableParallax,
     disableVideo,
     threshold,
-    onInit,
-    onDestroy,
   ]);
 
   return (
@@ -115,13 +136,14 @@ export function JarallaxSection({
       ref={containerRef}
       className={`jarallax relative overflow-hidden ${className}`}
       data-jarallax
-      data-img={imageUrl}
+      data-img={resolvedImageUrl}
       data-speed={speed}
       aria-hidden={false}
     >
       <img
-        src={imageUrl}
+        src={resolvedImageUrl}
         alt={imgAlt}
+        decoding="async"
         className="jarallax-img absolute inset-0 h-full w-full object-cover"
         aria-hidden="true"
       />
