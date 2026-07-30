@@ -46,8 +46,26 @@ ignore_files = [
 ]
 
 [hooks]
-exclude_commands = ["playwright", "curl", "gh pr create", "gh issue create", "vercel --prod"]
+exclude_commands = [
+    "playwright",
+    "curl",
+    "gh pr create",
+    "gh issue create",
+    "vercel --prod",
+    # Build commands that produce huge output — route through specialized subcommands instead
+    "npm run build",
+    "npm run dev",
+]
 
 [display]
 ultra_compact = true
 max_width = 120
+
+# Stricter per-command settings for Lucky Store
+[command_overrides]
+# rg: always use --count-matches for discovery; ultra-compact for targeted
+rg = { default_args = "-u" }
+find = { default_args = "-maxdepth 3 -type f" }
+# git diff: prefer --name-only; full diff only when needed
+git-diff = { default_args = "--name-only" }
+git-diff-tree = { default_args = "--name-only --format=''" }
