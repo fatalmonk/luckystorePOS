@@ -8,8 +8,8 @@
   --color-paper: #FDFBF7;
   --color-surface: #ffffff;
   --color-foreground: #0B0B0D;
-  --color-muted: #6B6B6B;
-  --color-dim: #6B6B6B;
+  --color-muted: #525252;
+  --color-dim: #525252;
   --color-border: #E8E4DC;
   --color-border-light: #FDFBF7;
 
@@ -338,12 +338,15 @@ body {
   animation: qtyPulse 0.3s var(--ease-out);
 }
 
-/* Reduced motion */
+/* Reduced motion — non-destructive accessibility rules */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .transition-colors, .transition-opacity {
+    transition-duration: 0.15s !important;
   }
 }
 

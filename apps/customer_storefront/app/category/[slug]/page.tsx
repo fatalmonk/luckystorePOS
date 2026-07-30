@@ -1,5 +1,6 @@
 import { CategoryShell } from '../CategoryShell';
 import { createProductRepository } from '../../lib/products/index';
+import { getCachedCategories } from '../../lib/products/getCachedCategories';
 import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS } from '../../lib/types';
@@ -15,8 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const resolvedParams = await params;
   const categorySlug = decodeURIComponent(resolvedParams.slug);
-  const { repo } = createProductRepository(supabase);
-  const categories = await repo.getCategories();
+  const categories = await getCachedCategories();
   const group = getCategoryGroup(categorySlug);
   const currentCatObj = categories.find((c) => c.slug === categorySlug);
   const titleName = group?.label || currentCatObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -36,8 +36,8 @@ export default async function CategorySlugPage({
 }) {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
+  const categories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const categories = await repo.getCategories();
   const categorySlug = decodeURIComponent(resolvedParams.slug);
   
   let group = getCategoryGroup(categorySlug);

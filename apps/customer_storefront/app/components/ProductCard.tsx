@@ -13,7 +13,7 @@ import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
 
 function CategoryPlaceholder({ category }: { category: Category }) {
-  const baseClasses = "w-12 h-12 text-warm-muted/70";
+  const baseClasses = "w-12 h-12 text-warm-muted";
 
   switch (category) {
     case 'Beverages':
@@ -41,10 +41,10 @@ function CategoryPlaceholder({ category }: { category: Category }) {
     case 'Dairy & Eggs':
       return (
         <svg className={baseClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <rect x="6" y="7" width="12" height="15" rx="2" fill="#FFFFFF" />
-          <path d="M6 7L12 3L18 7" fill="var(--color-paper)" />
-          <circle cx="12" cy="14" r="3" fill="var(--color-accent)" opacity="0.3" />
-          <path d="M9 13.5C9.5 13 11 13 12 14.5C13 16 14.5 14 15 13.5" stroke="var(--color-accent)" strokeWidth="1.5" />
+          <rect x="6" y="7" width="12" height="15" rx="2" fill="currentColor" opacity="0.1" />
+          <path d="M6 7L12 3L18 7" fill="currentColor" opacity="0.2" />
+          <circle cx="12" cy="14" r="3" fill="var(--warm-saffron)" opacity="0.3" />
+          <path d="M9 13.5C9.5 13 11 13 12 14.5C13 16 14.5 14 15 13.5" stroke="var(--warm-saffron)" strokeWidth="1.5" />
         </svg>
       );
     case 'Personal Care':
@@ -103,7 +103,7 @@ interface ProductCardProps {
   image_url?: string | null;
   qtyInCart?: number;
   theme?: 'deals' | 'bestsellers';
-  onAdd: () => void;
+  onAdd: (btnEl?: HTMLButtonElement | null) => void;
   onUpdateQty: (delta: number) => void;
   onAddRef?: (el: HTMLButtonElement | null) => void;
   priority?: boolean;
@@ -209,11 +209,7 @@ export function ProductCard({
             {badge}
           </span>
         ) : showBrandBadge && brand ? (
-          <span className={`rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide ${brand === 'Polar' ? 'bg-blue-100 text-blue-700' :
-            brand === 'Igloo' ? 'bg-red-100 text-red-700' :
-              brand === 'Savoy' ? 'bg-green-100 text-green-700' :
-                'bg-warm-accent text-warm-fg'
-            }`}>
+          <span className="rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide bg-warm-accent/20 text-warm-fg border border-warm-accent/40 backdrop-blur-sm">
             {brand}
           </span>
         ) : (
@@ -240,7 +236,7 @@ export function ProductCard({
       <Link
         href={productHref}
         aria-label={`View ${name}`}
-        className="relative w-full aspect-[4/3] bg-white overflow-hidden flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
+        className="relative w-full aspect-[4/3] bg-warm-surface overflow-hidden flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
         {image_url && !imageLoaded && !imageError && (
           <div
@@ -343,7 +339,7 @@ export function ProductCard({
               onClick={(e) => {
                 e.stopPropagation();
                 setAnnouncement(`${name} added to cart`);
-                onAdd();
+                onAdd(e.currentTarget);
               }}
               disabled={stock <= 0}
               className="h-11 w-full rounded-full bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors duration-300 hover:bg-warm-accent-hover active:scale-[0.96] disabled:bg-warm-border disabled:text-warm-muted sm:px-3"

@@ -14,7 +14,7 @@ export function DeliveryParallax() {
       >
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(11,11,13,0.94)_0%,rgba(11,11,13,0.80)_38%,rgba(11,11,13,0.24)_68%,rgba(11,11,13,0.10)_100%)]"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(11,11,13,0.55)_0%,rgba(11,11,13,0.35)_38%,rgba(11,11,13,0.12)_68%,rgba(11,11,13,0.05)_100%)]"
         />
 
         <div className="max-w-lg">

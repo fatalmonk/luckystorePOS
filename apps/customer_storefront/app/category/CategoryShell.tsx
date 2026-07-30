@@ -5,7 +5,7 @@ import { BottomNav } from '../components/BottomNav';
 import { CatalogLayout } from '../components/CatalogLayout';
 import { HeroBanner } from '../components/updated/HeroBanner';
 import type { Product, Category, CategoryGroup } from '../lib/types';
-import { img, srcSet } from '../lib/imageUrl';
+import { img, srcSet, responsiveHeroBanner } from '../lib/imageUrl';
 
 interface CategoryShellProps {
   categorySlug: string;
@@ -20,23 +20,53 @@ interface CategoryShellProps {
 }
 
 const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: any }> = {
+  'ice-cream': {
+    title: 'Ice Cream & Frozen Delights',
+    subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
+    badge: 'Chilled & Sweet',
+    bgImage: { src: '/banners/promo_ice_cream_1200.webp', alt: 'Ice Cream & Frozen Delights' },
+  },
+  'ice-creams': {
+    title: 'Ice Cream & Frozen Delights',
+    subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
+    badge: 'Chilled & Sweet',
+    bgImage: { src: '/banners/promo_ice_cream_1200.webp', alt: 'Ice Cream & Frozen Delights' },
+  },
+  'cold-beverages': {
+    title: 'Cold Beverages & Drinks',
+    subtitle: 'Chilled sparklers, fresh juices, sodas, and energy drinks delivered ice-cold.',
+    badge: 'Chilled & Refreshing',
+    bgImage: { src: '/banners/promo_beverages_1200.webp', alt: 'Cold Beverages' },
+  },
+  'beverages': {
+    title: 'Cold Beverages & Drinks',
+    subtitle: 'Chilled sparklers, fresh juices, sodas, and energy drinks delivered ice-cold.',
+    badge: 'Chilled & Refreshing',
+    bgImage: { src: '/banners/promo_beverages_1200.webp', alt: 'Cold Beverages' },
+  },
   'snacks': {
     title: 'Snacks & Munchies',
     subtitle: 'Bite-sized happiness, from sweet biscuits to savory local crisps.',
     badge: 'Crispy & Sweet',
-    bgImage: { src: img('/banners/promo_snacks_1200.webp'), alt: 'Snacks' },
+    bgImage: responsiveHeroBanner('promo_snacks', 'Snacks'),
   },
   'cooking-essentials': {
     title: 'Cooking Essentials',
     subtitle: 'Pure oils, aromatic spices, and finest grains for your daily meals.',
     badge: 'Kitchen Staples',
-    bgImage: { src: img('/banners/promo_cooking_1200.webp'), alt: 'Cooking' },
+    bgImage: responsiveHeroBanner('promo_cooking', 'Cooking'),
   },
   'personal-care': {
     title: 'Personal Care & Hygiene',
     subtitle: 'Gentle soaps, premium hair care, skincare, and daily grooming essentials.',
     badge: 'Hygiene & Care',
-    bgImage: { src: img('/banners/promo_welcome_1200.webp'), alt: 'Personal care' },
+    bgImage: responsiveHeroBanner('promo_personal', 'Personal care'),
+  },
+  'tea-coffee': {
+    title: 'Tea & Coffee Essentials',
+    subtitle: 'Aromatic teas, premium coffee blends, and milk powders for your morning brew.',
+    badge: 'Morning Brew',
+    bgImage: responsiveHeroBanner('promo_tea_coffee', 'Tea & Coffee'),
   },
 };
 
@@ -60,28 +90,28 @@ export function CategoryShell({
     title: prettyName,
     subtitle: `Explore top quality ${prettyName.toLowerCase()} products delivered directly to your home.`,
     badge: 'Lucky Choice',
-    bgImage: { src: img('/banners/hero_grocery_banner_1200.webp'), alt: prettyName },
+    bgImage: responsiveHeroBanner('hero_grocery_banner', prettyName),
   };
 
   return (
     <>
       <Header />
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16">
+      <main className="flex-1 overflow-x-hidden pb-16">
         <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
           {/* Render compact banner ONLY for specific category/group pages, never on all-products */}
           {!isAllProducts && (
             <div className="space-y-4">
               {parentGroup && !group && (
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
-                  <Link href="/category" className="hover:text-warm-fg transition-colors">
+                <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
+                  <Link href="/category" className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                     Categories
                   </Link>
                   <span>/</span>
-                  <Link href={`/category/${parentGroup.slug}`} className="hover:text-warm-fg transition-colors">
+                  <Link href={`/category/${parentGroup.slug}`} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                     {parentGroup.label}
                   </Link>
                   <span>/</span>
-                  <span className="text-warm-fg font-bold">{prettyName}</span>
+                  <span className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">{prettyName}</span>
                 </nav>
               )}
               <HeroBanner
