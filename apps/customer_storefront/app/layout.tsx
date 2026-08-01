@@ -124,6 +124,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
+        <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+        <link rel="icon" href="/favicon-48x48.png?v=2" type="image/png" sizes="48x48" />
+        <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
         <meta name="theme-color" content="#0B0B0D" />
