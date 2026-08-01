@@ -37,25 +37,32 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
     if (error) throw error;
 
     return (data || []).map((c: any) => ({
-      slug: c.slug || (c.name || c.category || '').toLowerCase().trim().replace(/\s+/g, '-'),
+      slug: (c.slug || c.name || c.category || '')
+        .toLowerCase()
+        .trim()
+        .replace(/&/g, 'and')
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-'),
       updatedAt: new Date().toISOString(),
     }));
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
     // Fallback static categories if DB query fails to ensure a valid sitemap is generated
     return [
-      { slug: 'snacks', updatedAt: new Date().toISOString() },
-      { slug: 'cooking-essentials', updatedAt: new Date().toISOString() },
-      { slug: 'personal-care', updatedAt: new Date().toISOString() },
-      { slug: 'cleaning-supplies', updatedAt: new Date().toISOString() },
-      { slug: 'air-freshner', updatedAt: new Date().toISOString() },
-      { slug: 'pest-control', updatedAt: new Date().toISOString() },
-      { slug: 'breakfast', updatedAt: new Date().toISOString() },
-      { slug: 'baby-care', updatedAt: new Date().toISOString() },
-      { slug: 'tea-&-coffee', updatedAt: new Date().toISOString() },
-      { slug: 'electronics', updatedAt: new Date().toISOString() },
-      { slug: 'baking-needs', updatedAt: new Date().toISOString() },
-    ];
+      'oil-and-ghee',
+      'rice-and-grain',
+      'dairy-and-eggs',
+      'snacks',
+      'cold-beverages',
+      'personal-care',
+      'cooking-essentials',
+      'cleaning-supplies',
+      'breakfast',
+      'tea-and-coffee',
+      'electronics',
+      'baking-needs',
+      'baby-care',
+    ].map((slug) => ({ slug, updatedAt: new Date().toISOString() }));
   }
 }
 
@@ -95,17 +102,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${BASE_URL}/category/${encodeURIComponent(cat.slug)}`,
+    url: `${BASE_URL}/category/${cat.slug}`,
     lastModified: new Date(cat.updatedAt).toISOString().split('.')[0] + 'Z',
-    changeFrequency: 'weekly',
-    priority: 0.7,
+    changeFrequency: 'daily',
+    priority: 0.9,
   }));
 
   const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${BASE_URL}/product/${product.id}`,
     lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z',
     changeFrequency: 'daily',
-    priority: 0.9,
+    priority: 0.8,
   }));
 
   return [
