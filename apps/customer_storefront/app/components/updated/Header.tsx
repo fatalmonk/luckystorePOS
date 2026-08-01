@@ -3,7 +3,7 @@
 import React, { useCallback, useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, Phone, Tag, MapPin, List, Sun, Moon } from '@phosphor-icons/react';
+import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, Tag, List, Sun, Moon } from '@phosphor-icons/react';
 import { AppDrawer } from '../AppDrawer';
 import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
@@ -22,8 +22,6 @@ export interface CategoryOption {
   label: string;
   emoji: string;
 }
-
-const PROMO_TEXT = 'Free delivery on orders over ৳500';
 
 export function Header({ className = '' }: HeaderProps) {
   const router = useRouter();
@@ -218,40 +216,14 @@ export function Header({ className = '' }: HeaderProps) {
         isDistractionFreePage ? '' : 'lg:-ml-[72px] lg:w-[calc(100%+72px)]'
       } ${className}`}
     >
-      {/* Top High-Density Utility Bar */}
-      <div className="bg-[#0B0B0D] px-3 py-1.5 text-[11px] text-white sm:px-6 lg:hidden">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4 font-semibold">
-          {/* Contact Details & Location */}
-          <div className="flex items-center gap-4 text-white/80">
-            <a href="tel:+8801731944544" className="flex items-center gap-1 hover:text-white transition-colors">
-              <Phone weight="bold" size={13} className="text-[#f0c444]" aria-hidden="true" />
-              <span>+880 1731-944544</span>
-            </a>
-            <span className="hidden sm:inline text-white/30">|</span>
-            <span className="hidden sm:flex items-center gap-1 text-white/80">
-              <MapPin weight="bold" size={13} className="text-[#f0c444]" aria-hidden="true" />
-              <span>Chittagong Hub, BD</span>
-            </span>
-          </div>
-
-          {/* Promotional Banner Code */}
-          <div className="flex items-center gap-2">
-            <span className="truncate max-w-[280px] sm:max-w-none text-white/90 font-semibold">
-              {PROMO_TEXT}
-            </span>
-          </div>
-
-        </div>
-      </div>
-
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2.5 sm:px-6 lg:h-14 lg:max-w-none lg:gap-4 lg:px-4 lg:py-0">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 lg:max-w-none lg:px-4">
         {/* Left cluster: drawer trigger and brand */}
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden lg:flex"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden lg:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -259,11 +231,11 @@ export function Header({ className = '' }: HeaderProps) {
             <List weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo [&_img]:!h-7 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
+          <Logo className="header-brand-logo ml-1 translate-y-0.5 [&_img]:!h-10 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
         </div>
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
-        <div className="relative hidden max-w-2xl flex-1 md:block lg:max-w-[640px]" ref={searchRef}>
+        <div className="relative hidden max-w-[460px] flex-1 md:block" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-all duration-300">
             {/* Category Dropdown Toggle */}
             <div className="relative shrink-0 border-r border-warm-border lg:hidden" ref={categoryDropdownRef}>
@@ -382,14 +354,14 @@ export function Header({ className = '' }: HeaderProps) {
             }}
             aria-label="Open search"
           >
-            <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
+            <MagnifyingGlass weight="bold" size={24} aria-hidden="true" />
           </button>
 
           {/* Theme Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
@@ -398,14 +370,14 @@ export function Header({ className = '' }: HeaderProps) {
           {/* Wishlist Link */}
           <Link
             href="/wishlist"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-label="Wishlist"
           >
             <Heart weight="bold" size={20} aria-hidden="true" />
           </Link>
 
           {/* Cart Drawer Button */}
-          <HeaderCartButton />
+          <HeaderCartButton iconSize={26} />
         </div>
       </div>
 
@@ -443,7 +415,11 @@ export function Header({ className = '' }: HeaderProps) {
       )}
 
       {showDesktopCategories && !isDistractionFreePage && (
-        <div className="relative ml-[72px] hidden h-14 border-t border-warm-border/60 bg-warm-bg dark:border-transparent lg:block">
+        <div
+          className={`relative h-14 border-t border-warm-border/60 bg-warm-bg dark:border-transparent ${
+            isFilterPage ? 'hidden lg:ml-[72px] lg:block' : 'block lg:ml-[72px]'
+          }`}
+        >
           <nav
             ref={desktopCategoriesRef}
             aria-label="Product categories"
@@ -452,7 +428,7 @@ export function Header({ className = '' }: HeaderProps) {
             <Link
               href="/category"
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-              className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
                   ? 'bg-warm-fg text-warm-accent'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -463,7 +439,7 @@ export function Header({ className = '' }: HeaderProps) {
             <Link
               href="/category?theme=deals"
               aria-current={activeCatalogTheme === 'deals' ? 'page' : undefined}
-              className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 activeCatalogTheme === 'deals'
                   ? 'bg-warm-fg text-warm-accent'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -475,7 +451,7 @@ export function Header({ className = '' }: HeaderProps) {
             <Link
               href="/category?theme=bestsellers"
               aria-current={activeCatalogTheme === 'bestsellers' ? 'page' : undefined}
-              className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 activeCatalogTheme === 'bestsellers'
                   ? 'bg-warm-fg text-warm-accent'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -490,7 +466,7 @@ export function Header({ className = '' }: HeaderProps) {
                   key={group.slug}
                   href={`/category/${group.slug}`}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+                  className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                     isActive
                       ? 'bg-warm-fg text-warm-accent'
                       : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -505,7 +481,7 @@ export function Header({ className = '' }: HeaderProps) {
             type="button"
             onClick={() => desktopCategoriesRef.current?.scrollBy({ left: 360, behavior: 'smooth' })}
             aria-label="Scroll categories forward"
-            className="absolute right-2 top-1.5 flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-bg text-warm-fg shadow-warm-md transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-bg text-warm-fg shadow-warm-md transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretRight aria-hidden="true" size={22} weight="bold" />
           </button>
@@ -520,35 +496,11 @@ export function Header({ className = '' }: HeaderProps) {
 
       <AppDrawer open={isDrawerOpen} onClose={closeDrawer} />
 
-      {/* Desktop Secondary Nav Bar */}
-      <div className="hidden border-t border-warm-border/30 bg-warm-surface/50 px-3 py-2 sm:px-6 md:block lg:hidden">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-xs font-bold text-warm-fg">
-          <nav className="flex items-center gap-6" aria-label="Secondary navigation">
-            <Link href="/" className="hover:text-warm-muted transition-colors">Home</Link>
-            <Link href="/category" className="hover:text-warm-muted transition-colors">Shop</Link>
-            <Link href="/category?theme=deals" className="hover:text-warm-muted transition-colors">Deals</Link>
-            <Link href="/category?theme=new" className="hover:text-warm-muted transition-colors">New Arrivals</Link>
-            <Link href="/contact" className="hover:text-warm-muted transition-colors">Contact</Link>
-            <Link href="/#how-it-works" className="hover:text-warm-muted transition-colors">How It Works</Link>
-          </nav>
-
-          <div className="flex items-center gap-4 text-warm-muted">
-            <Link href="/category?theme=deals" className="text-warm-fg hover:underline font-extrabold flex items-center gap-1">
-              <Tag aria-hidden="true" size={14} weight="bold" /> Weekly Deals
-            </Link>
-            <span className="text-warm-border">|</span>
-            <a href="tel:+8801731944544" className="hover:text-warm-fg transition-colors flex items-center gap-1 font-semibold">
-              <Phone aria-hidden="true" size={14} weight="bold" /> +880 1731-944544
-            </a>
-          </div>
-        </div>
-      </div>
-
       <style>{`
         @media (min-width: 1024px) {
           .header-brand-logo img {
             width: auto;
-            height: 32px !important;
+            height: 40px !important;
           }
         }
       `}</style>
