@@ -18,29 +18,33 @@ export async function middleware(request: NextRequest) {
   const supabaseResponse = await updateSession(request);
 
   const accept = request.headers.get('accept') || '';
+  const userAgent = request.headers.get('user-agent') || '';
 
-  // Check if the client explicitly wants markdown
-  // Browsers send text/html,...*/*  — agents send text/markdown
+  // AI bots that prefer structured markdown over heavy client JS
+  const isKnownAiBot = /GPTBot|PerplexityBot|ClaudeBot|cohere-ai|OAI-SearchBot|Applebot-Extended/i.test(userAgent);
+
+  // Check if client wants markdown via Accept header or AI User-Agent (when html isn't forced)
   const wantsMarkdown =
-    accept.includes('text/markdown') &&
-    !accept.includes('text/html');
+    (accept.includes('text/markdown') && !accept.includes('text/html')) ||
+    (isKnownAiBot && !accept.includes('text/html'));
 
   if (wantsMarkdown) {
     const originalPath = request.nextUrl.pathname;
     const search = request.nextUrl.search;
 
-    // Rewrite to the markdown API route with the original path as query param
+    // Rewrite to the markdown API route with original path as query param
     const url = request.nextUrl.clone();
     url.pathname = '/api/markdown';
     url.search = `?path=${encodeURIComponent(originalPath)}${search ? `&${search.slice(1)}` : ''}`;
 
     const rewriteResponse = NextResponse.rewrite(url);
-    
+
     // Propagate headers/cookies from supabaseResponse
     supabaseResponse.headers.forEach((value, key) => {
       rewriteResponse.headers.set(key, value);
     });
-    
+
+    rewriteResponse.headers.set('Vary', 'Accept');
     return rewriteResponse;
   }
 
@@ -50,6 +54,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|api|robots\\.txt|sitemap|site\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
+    '/((?!_next/static|_next/image|api|robots\\.txt|sitemap|sitemap\\.xml|site\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
   ],
 };
