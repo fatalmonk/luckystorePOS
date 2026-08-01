@@ -59,6 +59,12 @@ function mdProduct(p: any): string {
 const SITE_MAP = [
   { path: '/', label: 'Home', desc: 'Online groceries, deals, and categories' },
   { path: '/category', label: 'All Categories', desc: 'Browse all product categories' },
+  { path: '/category/oil-and-ghee', label: 'Oil & Ghee', desc: 'Cooking oil, mustard oil, and pure ghee' },
+  { path: '/category/rice-and-grain', label: 'Rice & Grains', desc: 'Aromatic rice, basmati, and atta' },
+  { path: '/category/dairy-and-eggs', label: 'Dairy & Eggs', desc: 'Fresh milk, eggs, butter, and cheese' },
+  { path: '/category/snacks', label: 'Snacks', desc: 'Chanachur, chips, biscuits, and dry snacks' },
+  { path: '/category/cold-beverages', label: 'Cold Beverages', desc: 'Juices, soft drinks, and energy boosters' },
+  { path: '/category/personal-care', label: 'Personal Care', desc: 'Soaps, shampoo, toothpaste, and skincare' },
   { path: '/search', label: 'Search', desc: 'Search the product catalog' },
   { path: '/contact', label: 'Contact Us', desc: 'Address, phone, email, WhatsApp' },
   { path: '/privacy', label: 'Privacy Policy', desc: 'How we handle your data' },
@@ -80,7 +86,7 @@ function mdBusinessContext(): string {
   md += `### 📍 Location & Contact\n\n`;
   md += `- **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong 4203, Bangladesh\n`;
   md += `- **Phone:** [+880 1731-944544](tel:+8801731944544)\n`;
-  md += `- **Email:** [luckystore.1947@gmail.com](mailto:luckystore.1947@gmail.com)\n`;
+  md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
   md += `- **WhatsApp:** [wa.me/8801731944544](https://wa.me/8801731944544)\n`;
   md += `- **Google Maps:** [View on Maps](https://maps.app.goo.gl/tfiRABoc1WsKEt619)\n`;
   md += `- **Coordinates:** 22.3550°N, 91.8363°E\n\n`;
@@ -136,7 +142,7 @@ function mdContactPage(): string {
 
   md += `## How to Reach Us\n\n`;
   md += `- **Phone:** [+880 1731-944544](tel:+8801731944544)\n`;
-  md += `- **Email:** [luckystore.1947@gmail.com](mailto:luckystore.1947@gmail.com)\n`;
+  md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
   md += `- **WhatsApp:** [wa.me/8801731944544](https://wa.me/8801731944544)\n\n`;
 
   md += `## Visit Our Store\n\n`;
