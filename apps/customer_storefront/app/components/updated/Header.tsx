@@ -211,21 +211,23 @@ export function Header({ className = '' }: HeaderProps) {
     );
   }
 
+  const hasCategoryBar = showDesktopCategories && !isDistractionFreePage;
+
   return (
-    <header
-      data-desktop-shell={isDistractionFreePage ? 'false' : 'true'}
-      className={`sticky top-0 z-50 w-full border-b border-warm-border bg-warm-bg dark:border-transparent ${
-        isDistractionFreePage ? '' : 'lg:-ml-[72px] lg:w-[calc(100%+72px)]'
-      } ${className}`}
-    >
+    <>
+      <header
+        data-desktop-shell={isDistractionFreePage ? 'false' : 'true'}
+        data-desktop-categories={hasCategoryBar ? 'true' : 'false'}
+        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-warm-border bg-warm-bg dark:border-transparent ${className}`}
+      >
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 lg:max-w-none lg:px-4">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:max-w-none md:px-4">
         {/* Left cluster: drawer trigger and brand */}
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden lg:flex"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -240,7 +242,7 @@ export function Header({ className = '' }: HeaderProps) {
         <div className="relative hidden max-w-[460px] flex-1 md:block" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-all duration-300">
             {/* Category Dropdown Toggle */}
-            <div className="relative shrink-0 border-r border-warm-border lg:hidden" ref={categoryDropdownRef}>
+            <div className="relative shrink-0 border-r border-warm-border hidden" ref={categoryDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
@@ -419,7 +421,7 @@ export function Header({ className = '' }: HeaderProps) {
       {showDesktopCategories && !isDistractionFreePage && (
         <div
           className={`relative h-14 border-t border-warm-border/60 bg-warm-bg dark:border-transparent ${
-            isFilterPage ? 'hidden lg:ml-[72px] lg:block' : 'block lg:ml-[72px]'
+            isFilterPage ? 'hidden md:ml-[72px] md:block' : 'block md:ml-[72px]'
           }`}
         >
           <nav
@@ -507,5 +509,7 @@ export function Header({ className = '' }: HeaderProps) {
         }
       `}</style>
     </header>
+    <div className={hasCategoryBar ? 'h-[112px]' : 'h-14'} aria-hidden="true" />
+    </>
   );
 }

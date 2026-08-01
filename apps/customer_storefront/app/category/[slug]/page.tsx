@@ -22,8 +22,11 @@ export async function generateMetadata({
   const titleName = group?.label || currentCatObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   return {
-    title: `${titleName} | Lucky Store`,
-    description: `Shop ${titleName} at Lucky Store — fresh groceries, household items, and same-day delivery in Chittagong.`,
+    title: `${titleName} in Chittagong | Lucky Store`,
+    description: `Shop ${titleName} online at Lucky Store Chittagong. Quality items, fast home delivery, and cash on delivery.`,
+    alternates: {
+      canonical: `https://luckystore1947.com/category/${categorySlug}`,
+    },
   };
 }
 

@@ -24,7 +24,7 @@ export function HomeShell({ products }: HomeShellProps) {
       <FaqJsonLd />
       <Header />
       <CartStorageNotice />
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+      <main className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-20 sm:pt-7 lg:pb-24">
           <div className="space-y-4 sm:space-y-5">
             <CampaignGrid />

@@ -14,6 +14,14 @@ export default async function Home() {
   const primaryHeroSrcSet = srcSet(
     '/banners/promo_welcome_v2_400.avif 400w, /banners/promo_welcome_v2_600.avif 600w, /banners/promo_welcome_v2_800.avif 800w, /banners/promo_welcome_v2_1200.avif 1200w'
   );
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': 'https://luckystore1947.com/#website',
+    url: 'https://luckystore1947.com/',
+    name: 'Lucky Store',
+    alternateName: 'Lucky Store Chittagong',
+  };
   const featuredProducts = products.filter((product) => product.stock > 0).slice(0, 6);
   const productListJsonLd = {
     '@context': 'https://schema.org',
@@ -29,6 +37,10 @@ export default async function Home() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c') }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd).replace(/</g, '\\u003c') }}
