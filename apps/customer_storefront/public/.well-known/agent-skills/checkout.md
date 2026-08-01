@@ -4,7 +4,7 @@
 Submit a grocery order with cart items, customer details, and delivery information.
 
 ## Endpoint
-`POST https://lucky-store-six.vercel.app/api/checkout`
+`POST https://luckystore1947.com/api/checkout`
 
 ## Request Body
 ```json

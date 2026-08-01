@@ -13,7 +13,7 @@
       "type": "capability",
       "description": "Submit a grocery order with cart items, customer details, and delivery information",
       "url": "https://luckystore1947.com/.well-known/agent-skills/checkout.md",
-      "sha256": "a9cc3e1c5394d2289dbc627903b7a50ebe5569b9c0f26f92466db729dc191e95"
+      "sha256": "2d3e91db7ad933f81032799dd47b2e76febffbe704a4cfce49832c1e90743cc6"
     },
     {
       "name": "search-products",
