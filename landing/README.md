@@ -18,7 +18,7 @@ This is the public landing page for Lucky Store POS app, designed to pass app st
 npm i -g vercel
 
 # Navigate to this folder
-cd /Users/mac.alvi/Desktop/Projects/Lucky\ Store/landing-page
+cd /Users/mac.alvi/Desktop/Projects/Lucky\ Store/landing
 
 # Deploy
 vercel --prod
@@ -40,36 +40,38 @@ vercel --prod
 To verify ownership:
 
 1. Go to [Google Search Console](https://search.google.com/search-console)
-2. Add your property (URL: https://your-domain.com)
+2. Add your property (URL: https://luckystore1947.com)
 3. Choose "HTML tag" verification method
-4. Copy the meta tag content (looks like: `abc123xyz`)
-5. Replace `YOUR_VERIFICATION_CODE_HERE` in `index.html`:
+4. Copy the meta tag content
+5. HTML tag in `index.html`:
    ```html
-   <meta name="google-site-verification" content="abc123xyz">
+   <meta name="google-site-verification" content="10811156927444855134">
    ```
 6. Redeploy
 7. Click "Verify" in Search Console
 
 ## 📄 Pages Included
 
-- **index.html** - Main landing page
+- **index.html** - Main landing page (includes GroceryStore JSON-LD schema & cache-busted favicons)
 - **privacy-policy.html** - Privacy policy (required by Google Play)
 - **terms-of-service.html** - Terms of service
+- **data-deletion.html** - Data deletion instructions
 
 ## 🔗 Important Links
 
 Your contact information (already updated):
 
-- Email: luckystore.1947@gmail.com
-- Phone: 01731944544
+- Email: hello@luckystore1947.com
+- Phone: +880 1731-944544
 - Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh
-- Google Play Store link (add after publishing)
-- App Store link (add after publishing)
+- Primary Domain: https://luckystore1947.com
 
 ## 🎨 Customization
 
 ### Colors
-The site uses a purple gradient theme (`#667eea` to `#764ba2`).
+The site uses the Lucky Store brand color system:
+- **Brand Accent / Saffron:** `#f0c444` (RGB 240, 196, 68)
+- **Primary / Deep Night:** `#0B0B0D` (RGB 11, 11, 13)
 
 ### Logo
 Replace the emoji logo (🏪) in `index.html` with your actual logo image:
@@ -90,19 +92,19 @@ Update all placeholder text:
 
 ### Google Play Console
 1. Go to **Store presence** → **Main store listing**
-2. Set **Website** to your deployed URL
+2. Set **Website** to https://luckystore1947.com
 3. Add **Privacy policy** link
 
 ### Apple App Store
 1. Go to **App Information**
-2. Set **Marketing URL** to your landing page
-3. Set **Privacy Policy URL** to privacy-policy.html
+2. Set **Marketing URL** to https://luckystore1947.com
+3. Set **Privacy Policy URL** to https://luckystore1947.com/privacy-policy.html
 
-## 🌐 Custom Domain (Optional)
+## 🌐 Custom Domain
 
-To use your own domain:
+Primary production domain:
 
-1. Buy domain (e.g., luckystore.com.bd)
+1. Domain: `https://luckystore1947.com`
 2. In Vercel dashboard: **Settings** → **Domains**
 3. Add your domain
 4. Update DNS records as instructed

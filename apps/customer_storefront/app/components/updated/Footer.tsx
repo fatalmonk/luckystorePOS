@@ -40,13 +40,25 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-5">
           <nav aria-label="Shop links">
             <h2 className="site-footer-heading">Shop</h2>
             <ul className="mt-2.5 space-y-1">
               <li><Link href="/category" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>All groceries</Link></li>
               <li><Link href="/category?theme=deals" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Weekly deals</Link></li>
               <li><Link href="/category?theme=new" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>New arrivals</Link></li>
+            </ul>
+          </nav>
+
+          <nav aria-label="Top categories">
+            <h2 className="site-footer-heading">Categories</h2>
+            <ul className="mt-2.5 space-y-1">
+              <li><Link href="/category/oil-and-ghee" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Oil &amp; Ghee</Link></li>
+              <li><Link href="/category/rice-and-grain" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Rice &amp; Grains</Link></li>
+              <li><Link href="/category/dairy-and-eggs" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Dairy &amp; Eggs</Link></li>
+              <li><Link href="/category/snacks" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Snacks</Link></li>
+              <li><Link href="/category/cold-beverages" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Beverages</Link></li>
+              <li><Link href="/category/personal-care" className={`site-footer-link inline-flex min-h-[36px] items-center ${footerFocus}`}>Personal Care</Link></li>
             </ul>
           </nav>
 

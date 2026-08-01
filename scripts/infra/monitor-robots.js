@@ -10,7 +10,8 @@ const urls = [
   // Most visited & sensitive paths
   { name: 'git_head', url: 'https://images.luckystore1947.com/.git/HEAD' },
   { name: 'env_backup', url: 'https://images.luckystore1947.com/.env.backup' },
-  { name: 'sitemap', url: 'https://api.luckystore1947.com/sitemap.xml' },
+  { name: 'sitemap_api', url: 'https://api.luckystore1947.com/sitemap.xml' },
+  { name: 'sitemap_storefront', url: 'https://luckystore1947.com/sitemap.xml' },
 ];
 
 async function check(url) {
