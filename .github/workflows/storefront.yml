@@ -48,6 +48,8 @@ jobs:
     env:
       CI: true
       HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+      # Keep browser tests deterministic and independent of external CDN availability.
+      NEXT_PUBLIC_IMAGE_BASE_URL: ''
     steps:
       - uses: actions/checkout@v4
       
@@ -94,12 +96,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: package-lock.json
       
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@58.4.4
       
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
@@ -130,7 +132,7 @@ jobs:
       
       - name: Deploy to Preview
         if: github.event_name == 'pull_request'
-        run: vercel deploy --prebuilt
+        run: vercel deploy --prebuilt --archive=tgz
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
@@ -138,7 +140,7 @@ jobs:
       
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: vercel deploy --prebuilt --prod
+        run: vercel deploy --prebuilt --archive=tgz --prod
         env:
           VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
           VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
