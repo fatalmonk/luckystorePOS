@@ -8,9 +8,10 @@ import { useCartContext } from './CartProvider';
 
 interface HeaderCartButtonProps {
   compact?: boolean;
+  iconSize?: number;
 }
 
-export function HeaderCartButton({ compact = false }: HeaderCartButtonProps) {
+export function HeaderCartButton({ compact = false, iconSize = 22 }: HeaderCartButtonProps) {
   const { totalItems, total, isLoaded } = useCartContext();
   const { open } = useCartSheet();
 
@@ -21,11 +22,11 @@ export function HeaderCartButton({ compact = false }: HeaderCartButtonProps) {
       className={`relative flex items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-sm transition-[background-color,box-shadow] hover:bg-warm-accent-hover hover:shadow-warm-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
         compact
           ? 'min-h-11 min-w-11'
-          : 'min-h-11 min-w-11 gap-1.5 px-3 py-2.5 text-xs font-extrabold'
+          : 'h-9 w-9 gap-1.5 text-xs font-extrabold md:min-h-11 md:min-w-11 md:px-3 md:py-2.5'
       }`}
       aria-label={`Cart ${isLoaded && totalItems > 0 ? `(${totalItems} items, ${formatBdt(total)})` : '(empty)'}`}
     >
-      <ShoppingCartSimple weight="bold" size={22} aria-hidden="true" />
+      <ShoppingCartSimple weight="bold" size={iconSize} aria-hidden="true" />
       {!compact && isLoaded && totalItems > 0 && (
         <span className="font-extrabold tracking-tight">{formatBdt(total)}</span>
       )}

@@ -44,7 +44,7 @@ export function Logo({ className = '', href = '/', variant = 'default', onClick 
       <Link
         href={href}
         onClick={onClick}
-        className="flex min-h-[44px] flex-shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+        className="flex min-h-14 flex-shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
         aria-label="Lucky Store 1947"
       >
         {content}

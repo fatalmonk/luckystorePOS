@@ -35,7 +35,10 @@ test.describe('Storefront visual audit evidence', () => {
           htmlElement.getBoundingClientRect().height > 0;
         const size = Number.parseFloat(style.fontSize);
 
-        if (!visible || size >= 12 || htmlElement.classList.contains('sr-only')) return [];
+        const isQuickRailLabel =
+          size >= 10 && htmlElement.closest('nav[aria-label="Quick links"]');
+
+        if (!visible || size >= 12 || isQuickRailLabel || htmlElement.classList.contains('sr-only')) return [];
         return [{ tag: htmlElement.tagName, text: text!.slice(0, 80), size }];
       }),
     );

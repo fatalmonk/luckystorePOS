@@ -64,14 +64,14 @@ export function DesktopQuickRail() {
 
   return (
     <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-[72px] border-r border-warm-border/70 bg-warm-bg dark:border-transparent lg:flex">
-      <nav aria-label="Quick links" className="flex w-full flex-col items-center px-1 py-1">
+      <nav aria-label="Quick links" className="flex w-full flex-col items-center px-1 py-0">
         {links.map(({ href, label, icon: IconComponent, active }) => (
           <Link
             key={label}
             href={href}
             aria-current={active ? 'page' : undefined}
             title={label}
-            className={`group flex h-[76px] w-16 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center text-xs font-bold leading-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent ${
+            className={`group flex h-16 w-[46px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center text-[10px] font-bold leading-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent ${
               active
                 ? 'bg-warm-surface text-warm-fg'
                 : 'text-warm-muted hover:bg-warm-surface/70 hover:text-warm-fg'
@@ -79,7 +79,7 @@ export function DesktopQuickRail() {
           >
             <IconComponent
               aria-hidden="true"
-              size={14}
+              size={18}
               weight={active ? 'fill' : 'regular'}
               className={active ? 'text-warm-accent' : 'text-current'}
             />
