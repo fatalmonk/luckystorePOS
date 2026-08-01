@@ -49,7 +49,7 @@ jobs:
       CI: true
       HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
       # Keep browser tests deterministic and independent of external CDN availability.
-      NEXT_PUBLIC_IMAGE_BASE_URL: ''
+      NEXT_PUBLIC_IMAGE_BASE_URL: 'http://localhost:3000'
     steps:
       - uses: actions/checkout@v4
       
@@ -82,66 +82,3 @@ jobs:
       - run: npx playwright install --with-deps
       - run: npm run build --workspace=customer_storefront
       - run: cd apps/customer_storefront && npx playwright test --project=chromium
-
-  deploy:
-    runs-on: ubuntu-latest
-    # Run only if lint and typecheck succeed
-    needs: [lint, typecheck]
-    env:
-      HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-      
-      - name: Install Vercel CLI
-        run: npm install --global vercel@58.4.4
-      
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-      
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
-        env:
-          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
-          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      
-      - name: Fetch Supabase Preview Branch
-        if: github.event_name == 'pull_request' && env.HAS_SUPABASE_TOKEN == 'true'
-        id: supabase_preview
-        uses: 0xbigboss/supabase-branch-gh-action@v1
-        with:
-          supabase-access-token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          supabase-project-id: 'hvmyxyccfnkrbxqbhlnm'
-      
-      - name: Build
-        run: vercel build --target=${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production' || 'preview' }}
-        env:
-          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
-          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ github.event_name == 'pull_request' && steps.supabase_preview.outputs.api_url || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.event_name == 'pull_request' && steps.supabase_preview.outputs.anon_key || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      
-      - name: Deploy to Preview
-        if: github.event_name == 'pull_request'
-        run: vercel deploy --prebuilt --archive=tgz
-        env:
-          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
-          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      
-      - name: Deploy to Production
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: vercel deploy --prebuilt --archive=tgz --prod
-        env:
-          VERCEL_ORG_ID: team_I8viHUKz1JdI0cvVQviLZnLC
-          VERCEL_PROJECT_ID: prj_OXYSWyhB0307xKWe7BYSoZ2C1VIh
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
