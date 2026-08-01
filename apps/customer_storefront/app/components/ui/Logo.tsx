@@ -1,17 +1,19 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import type { MouseEventHandler } from 'react';
 
 interface LogoProps {
   className?: string;
   href?: string;
   variant?: 'default' | 'white';
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
 }
 
-export function Logo({ className = '', href = '/', variant = 'default' }: LogoProps) {
+export function Logo({ className = '', href = '/', variant = 'default', onClick }: LogoProps) {
   const isWhite = variant === 'white';
 
   const content = (
-    <div className={`flex items-center justify-center select-none group py-0.5 ${className}`}>
+    <div className={`flex items-center select-none group ${className}`}>
       {/* Light theme logo */}
       <Image
         src="/logo-main.png"
@@ -19,7 +21,7 @@ export function Logo({ className = '', href = '/', variant = 'default' }: LogoPr
         width={210}
         height={48}
         priority
-        className={`h-8 sm:h-11 w-auto object-contain transition-transform group-hover:scale-[1.02] ${
+        className={`h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 ${
           isWhite ? 'hidden' : 'block dark:hidden'
         }`}
       />
@@ -30,7 +32,7 @@ export function Logo({ className = '', href = '/', variant = 'default' }: LogoPr
         width={210}
         height={48}
         priority
-        className={`h-8 sm:h-11 w-auto object-contain transition-transform group-hover:scale-[1.02] ${
+        className={`h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 ${
           isWhite ? 'block' : 'hidden dark:block'
         }`}
       />
@@ -39,7 +41,12 @@ export function Logo({ className = '', href = '/', variant = 'default' }: LogoPr
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex items-center min-h-[44px] shrink-0 my-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-lg" aria-label="Lucky Store 1947">
+      <Link
+        href={href}
+        onClick={onClick}
+        className="flex min-h-[44px] flex-shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+        aria-label="Lucky Store 1947"
+      >
         {content}
       </Link>
     );

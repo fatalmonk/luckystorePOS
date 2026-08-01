@@ -147,10 +147,6 @@ export function CampaignGrid() {
 
           <div className="campaign-status-row mt-5 flex flex-wrap gap-2" aria-label="Store service status">
             <span className="campaign-status-badge">
-              <span aria-hidden="true">⚡</span>
-              Local delivery
-            </span>
-            <span className="campaign-status-badge">
               <span aria-hidden="true">🛡️</span>
               Stocked daily
             </span>
@@ -163,12 +159,6 @@ export function CampaignGrid() {
             >
               Browse groceries
               <ArrowIcon direction="right" />
-            </Link>
-            <Link
-              href="#how-it-works"
-              className={`campaign-secondary-action inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-2.5 text-sm font-bold transition-colors ${campaignFocusRing}`}
-            >
-              How ordering works
             </Link>
           </div>
         </div>

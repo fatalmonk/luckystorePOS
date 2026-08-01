@@ -23,6 +23,12 @@
     }
   }
 
+  @media (min-width: 1024px) {
+    .app-container:has(header[data-desktop-shell='true']) {
+      padding-inline-start: 72px;
+    }
+  }
+
   button, a, [role="button"], input, select {
     touch-action: manipulation;
   }

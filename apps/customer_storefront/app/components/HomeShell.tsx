@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Header } from './updated/Header';
 import { Footer } from './updated/Footer';
 import { CampaignGrid } from './CampaignGrid';
-import { ThemedShortcuts } from './ThemedShortcuts';
 import { FeaturedProducts } from './FeaturedProducts';
 import { DealOfTheWeek } from './DealOfTheWeek';
 import { BottomNav } from './BottomNav';
@@ -50,7 +49,6 @@ export function HomeShell({ products }: HomeShellProps) {
           </div>
 
           <div className="mt-14 space-y-16 sm:mt-20 sm:space-y-20 lg:mt-24 lg:space-y-24">
-            <ThemedShortcuts />
             <FeaturedProducts products={products} />
             <DealOfTheWeek products={products} />
             <CategorySingleCarousel products={products} />

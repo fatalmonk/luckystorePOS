@@ -262,7 +262,7 @@ export function ProductCard({
           />
         ) : null}
         {(!image_url || imageError) && (
-          <div className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
+          <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
             <CategoryPlaceholder category={category} />
           </div>
         )}

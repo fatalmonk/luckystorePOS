@@ -13,11 +13,21 @@ vi.mock('../providers/ThemeProvider', () => ({
 }));
 
 vi.mock('../HeaderFilters', () => ({
-  HeaderFilters: () => <div data-testid="header-filters">Filters</div>,
+  HeaderFilters: () => null,
+}));
+
+vi.mock('../DesktopQuickRail', () => ({
+  DesktopQuickRail: () => <aside>Quick rail</aside>,
+}));
+
+vi.mock('../AppDrawer', () => ({
+  AppDrawer: () => null,
 }));
 
 vi.mock('../HeaderCartButton', () => ({
-  HeaderCartButton: () => <button type="button">Cart</button>,
+  HeaderCartButton: ({ compact }: { compact?: boolean }) => (
+    <button type="button" data-compact={compact ? 'true' : 'false'}>Cart</button>
+  ),
 }));
 
 vi.mock('../ui/Logo', () => ({
@@ -29,27 +39,19 @@ vi.mock('./SearchSuggestions', () => ({
 }));
 
 describe('Header catalog filter strip', () => {
-  it('uses dependable utility copy without an unverified promotion', () => {
+  it('shows a search icon and cart button in the header', () => {
     render(<Header />);
 
-    expect(screen.getByText('Delivery across Chittagong')).toBeVisible();
-    expect(screen.getByText('Serving since 1947')).toBeVisible();
-    expect(screen.queryByText(/PROMO|WELCOME10|Free delivery/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '+880 1731-944544' })).toHaveAttribute(
-      'href',
-      'tel:+8801731944544',
-    );
+    expect(screen.getByText('Lucky Store')).toBeInTheDocument();
+    expect(screen.getByLabelText('Open search')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cart' })).toBeInTheDocument();
   });
 
-  it('keeps desktop filters outside mobile scrolling and permits visible overflow', () => {
+  it('exposes the desktop category strip and quick rail on catalog routes', () => {
     render(<Header />);
 
-    const filters = screen.getByTestId('header-filters');
-    expect(filters.parentElement).toHaveClass(
-      'hidden',
-      'md:flex',
-      'overflow-visible',
-    );
-    expect(filters.closest('nav')).toHaveClass('md:overflow-visible');
+    expect(screen.getByRole('navigation', { name: 'Product categories' })).toBeInTheDocument();
+    expect(screen.getByText('Quick rail')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
   });
 });
