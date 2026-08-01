@@ -1,5 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/cloudflare/agent-skills-discovery-rfc/main/schema.json",
+  "spec_version": "1.0",
+  "version": "1.1.0",
+  "updated_at": "2026-08-02T00:00:00Z",
   "skills": [
     {
       "name": "browse-products",
@@ -25,7 +28,7 @@
     {
       "name": "track-order",
       "type": "capability",
-      "description": "Track the status of a placed order by order number",
+      "description": "Track a placed order by order number — returns current status, estimated delivery date, and carrier info",
       "url": "https://luckystore1947.com/.well-known/agent-skills/track-order.md",
       "sha256": "c79a71f104eed402cf89251414336e16949a2b94c17375dbdfee75714a100f10"
     },
