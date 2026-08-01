@@ -24,15 +24,24 @@ export const CHALDAL_FIXTURE = `
 `;
 
 export const SHWAPNO_FIXTURE = `
-<div>
-  <img src="/p1.jpg">
-  <a href="/pran-potato-crackers-50-gm">Pran Potato Crackers 50 gm</a>
-  <span>৳ 88</span>
-</div>
-<div>
-  <img src="/p2.jpg">
-  <a href="/nestle-maggi-noodles-4-pack">Nestle Maggi Noodles 4 Pack</a>
-  <span>৳ 125</span>
+<div class="catalog">
+  <a href="/weekly-offers">Weekly Offers</a>
+  <div class="grid">
+    <div class="product-card">
+      <div class="media"><img src="/p1.jpg"></div>
+      <div class="details">
+        <a href="/pran-potato-crackers-50-gm">Pran Potato Crackers 50 gm</a>
+        <span>৳ 88</span>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="media"><img src="/p2.jpg"></div>
+      <div class="details">
+        <a href="/nestle-maggi-noodles-4-pack">Nestle Maggi Noodles 4 Pack</a>
+        <span>৳ 125</span>
+      </div>
+    </div>
+  </div>
 </div>
 <div>
   <span>Sort By</span>

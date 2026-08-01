@@ -23,10 +23,18 @@ describe("adapters", () => {
     const result = await runShwapnoAdapter(createFakeBrowser(html), createLogger());
     expect(result.competitor).toBe("shwapno");
     expect(result.error).toBeNull();
-    expect(result.products.length).toBeGreaterThan(0);
+    expect(result.products).toHaveLength(2);
+    expect(result.products.some((p) => p.name === "Weekly Offers")).toBe(false);
     const first = result.products.find((p) => p.name.includes("Pran Potato Crackers"));
     expect(first).toBeDefined();
     expect(first?.price).toBe(88);
+    expect(first?.competitor_product_id).toBe("shwapno:pran-potato-crackers-50-gm");
+    expect(first?.competitor_product_url).toBe(
+      "https://www.shwapno.com/pran-potato-crackers-50-gm",
+    );
+    const second = result.products.find((p) => p.name.includes("Nestle Maggi Noodles"));
+    expect(second?.price).toBe(125);
+    expect(second?.competitor_product_id).toBe("shwapno:nestle-maggi-noodles-4-pack");
   });
 
   it("treats empty fixture as source failure", async () => {

@@ -12,69 +12,59 @@ export async function scrapeShwapnoPage(
 
   const products = await page.evaluate(
     (catName: string, baseUrl: string) => {
-      const allDivs = document.querySelectorAll("div");
       const items: NormalizedProduct[] = [];
       const seen = new Set<string>();
 
-      for (const div of allDivs) {
+      const isProductLink = (link: Element): link is HTMLAnchorElement => {
+        const href = link.getAttribute("href") ?? "";
+        const text = link.textContent?.trim() ?? "";
+        return (
+          href.startsWith("/") &&
+          href.length > 1 &&
+          !href.includes("contact") &&
+          !href.includes("about") &&
+          !href.includes("deals") &&
+          !href.includes("brands") &&
+          text.length > 2 &&
+          text.length < 200 &&
+          !text.includes("Delivery") &&
+          !text.includes("Per") &&
+          !text.includes("Add to Bag") &&
+          !text.includes("Min.")
+        );
+      };
+
+      const links = Array.from(document.querySelectorAll('a[href^="/"]')).filter(isProductLink);
+
+      for (const productLink of links) {
         try {
-          const text = div.textContent || "";
-          const hasImage = div.querySelector("img");
+          const name = productLink.textContent?.trim() ?? "";
+          const productPath = productLink.getAttribute("href");
+          if (!productPath) continue;
+
+          let candidate: HTMLElement | null = productLink.parentElement;
+          let card: HTMLElement | null = null;
+          for (let depth = 0; candidate && depth < 8; depth += 1) {
+            const cardProductLinks = Array.from(candidate.querySelectorAll('a[href^="/"]')).filter(isProductLink);
+            const hasOnlyThisProduct =
+              cardProductLinks.length === 1 &&
+              cardProductLinks[0]?.getAttribute("href") === productPath;
+            if (hasOnlyThisProduct && candidate.querySelector("img") && candidate.textContent?.includes("৳")) {
+              card = candidate;
+              break;
+            }
+            candidate = candidate.parentElement;
+          }
+          if (!card) continue;
+
+          const text = card.textContent || "";
           const priceMatch = text.match(/৳\s*(\d{1,6}(?:,\d{3})*(?:\.\d{1,2})?)/);
           if (!priceMatch || !priceMatch[1]) continue;
 
           const price = Number.parseFloat(priceMatch[1].replace(/,/g, ""));
           if (!Number.isFinite(price) || price <= 0) continue;
 
-          let name = "";
-          for (const link of div.querySelectorAll('a[href^="/"]')) {
-            const linkText = link.textContent?.trim() ?? "";
-            const href = link.getAttribute("href") ?? "";
-            if (
-              href.length > 1 &&
-              !href.includes("contact") &&
-              !href.includes("about") &&
-              !href.includes("deals") &&
-              !href.includes("brands") &&
-              linkText.length > 2 &&
-              linkText.length < 200 &&
-              !linkText.includes("Delivery") &&
-              !linkText.includes("Per") &&
-              !linkText.includes("Add to Bag") &&
-              !linkText.includes("Min.")
-            ) {
-              name = linkText;
-              break;
-            }
-          }
-
-          if (!name) {
-            for (const line of text
-              .split("\n")
-              .map((l) => l.trim())
-              .filter((l) => l.length > 0)) {
-              if (
-                line.length > 2 &&
-                line.length < 200 &&
-                !line.includes("৳") &&
-                !line.includes("Delivery") &&
-                !line.includes("Per") &&
-                !line.includes("Add to Bag") &&
-                !line.includes("Min.") &&
-                !line.includes("Sort By") &&
-                !line.includes("Price Range") &&
-                !line.includes("Express Delivery")
-              ) {
-                name = line;
-                break;
-              }
-            }
-          }
-
-          if (!hasImage) continue;
-          if (!name || name.length < 3) continue;
-
-          const img = div.querySelector("img");
+          const img = card.querySelector("img");
           let imageUrl =
             img?.getAttribute("src") ||
             img?.getAttribute("data-src") ||
@@ -84,10 +74,8 @@ export async function scrapeShwapnoPage(
             imageUrl = `${baseUrl}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
           }
 
-          const productLink = div.querySelector('a[href^="/"]');
-          const productPath = productLink?.getAttribute("href") ?? null;
-          const competitorProductId = productPath ? `shwapno:${productPath.replace(/^\//, "")}` : null;
-          const key = `${name}::${price}`;
+          const competitorProductId = `shwapno:${productPath.replace(/^\//, "")}`;
+          const key = competitorProductId;
           if (seen.has(key)) continue;
           seen.add(key);
 
@@ -97,7 +85,7 @@ export async function scrapeShwapnoPage(
             original_price: null,
             currency: "BDT",
             competitor_product_id: competitorProductId,
-            competitor_product_url: productPath ? `${baseUrl}${productPath}` : null,
+            competitor_product_url: `${baseUrl}${productPath}`,
             package_quantity: null,
             package_unit: null,
             raw_data: {

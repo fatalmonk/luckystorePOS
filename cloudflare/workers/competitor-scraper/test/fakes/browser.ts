@@ -310,6 +310,11 @@ class ElementShim {
     return this.node.children.map((child) => ({ textContent: collectText(child) }));
   }
 
+  get parentElement(): ElementShim | null {
+    const parent = this.node.parent;
+    return parent && parent.tag !== "__root__" ? new ElementShim(parent) : null;
+  }
+
   querySelector(selector: string): ElementShim | null {
     const all = selectAll(this.node, selector);
     return all[0] ?? null;
