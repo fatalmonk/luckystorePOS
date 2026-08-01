@@ -23,6 +23,8 @@ export interface CategoryOption {
   emoji: string;
 }
 
+const PROMO_TEXT = 'Free delivery on orders over ৳500';
+
 export function Header({ className = '' }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
