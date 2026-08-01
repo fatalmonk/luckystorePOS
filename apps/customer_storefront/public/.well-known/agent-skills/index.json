@@ -41,7 +41,7 @@
       "type": "discovery",
       "description": "XML sitemap listing all canonical product and category URLs",
       "url": "https://luckystore1947.com/.well-known/agent-skills/sitemap/SKILL.md",
-      "sha256": "796b3ebbbc2c81ab208aa1b370d7a1864113383d2c5e026491c521772aed1c1c"
+      "sha256": "0217dc3bf5443336d3d73d37e1fef5fcac14b22413522d0b05b0ac103c51b6a2"
     }
   ]
 }

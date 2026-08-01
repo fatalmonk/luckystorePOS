@@ -1,10 +1,10 @@
 # Sitemap Skill
 
 ## Description
-XML sitemap listing all canonical product and category URLs for lucky-store-six.vercel.app.
+XML sitemap listing all canonical product and category URLs for luckystore1947.com.
 
 ## Location
-`https://lucky-store-six.vercel.app/sitemap.xml`
+`https://luckystore1947.com/sitemap.xml`
 
 ## Format
 Standard XML sitemap protocol (https://www.sitemaps.org/protocol.html).
