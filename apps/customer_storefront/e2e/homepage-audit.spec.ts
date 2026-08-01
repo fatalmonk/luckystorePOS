@@ -7,15 +7,16 @@ test.describe('Storefront homepage shell audit', () => {
     await expect(
       page.getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' }),
     ).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Four easy places to start' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Featured groceries' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Find what you need by aisle.' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'From cart to doorstep' })).toBeVisible();
 
     const header = page.getByRole('banner');
-    if ((test.info().project.use.viewport?.width ?? 1280) < 640) {
-      await expect(header.getByText('Delivery across Chittagong')).toBeHidden();
+    const viewportWidth = test.info().project.use.viewport?.width ?? 1280;
+    if (viewportWidth >= 640 && viewportWidth < 1024) {
+      await expect(header.getByText('Chittagong Hub, BD')).toBeVisible();
     } else {
-      await expect(header.getByText('Delivery across Chittagong')).toBeVisible();
+      await expect(header.getByText('Chittagong Hub, BD')).toBeHidden();
     }
     await expect(header.getByText(/WELCOME10|PROMO/i)).toHaveCount(0);
 

@@ -181,7 +181,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Order History */}
-          <div className="md:col-span-2 bg-white border border-warm-border rounded-[24px] p-6 shadow-sm">
+          <div id="orders" className="md:col-span-2 scroll-mt-24 bg-white border border-warm-border rounded-[24px] p-6 shadow-sm">
             <h2 className="text-lg font-bold text-warm-fg mb-4 flex items-center gap-2">
               <Package size={20} weight="bold" className="text-warm-muted" />
               Order History

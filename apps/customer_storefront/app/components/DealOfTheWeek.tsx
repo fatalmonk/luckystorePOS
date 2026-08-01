@@ -24,6 +24,10 @@ interface DealOfTheWeekProps {
 export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   const selection = useMemo(() => getDealOfTheWeekProducts(products), [products]);
   const supportingProducts = useMemo(() => selection?.supportingProducts ?? [], [selection]);
+  const discountedProductCount = useMemo(
+    () => products.filter((product) => product.originalPrice && product.originalPrice > product.price).length,
+    [products],
+  );
   const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
   const dealRailRef = useRef<HTMLDivElement>(null);
   const [canScrollPrevious, setCanScrollPrevious] = useState(false);
@@ -175,7 +179,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
                   href="/category?theme=deals"
                   className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
                 >
-                  See all {supportingProducts.length + 1} deals →
+                  See all {discountedProductCount} deals →
                 </Link>
                 <div className="flex shrink-0 gap-2" role="group" aria-label="Weekly deal carousel controls">
                   <button

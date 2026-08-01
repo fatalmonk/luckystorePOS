@@ -43,10 +43,13 @@ describe('DealOfTheWeek', () => {
   });
 
   it('keeps the strongest deal as lead and renders every remaining deal in a carousel', () => {
-    render(<DealOfTheWeek products={[50, 40, 30, 20, 10].map((discount, index) => product(`${index + 1}`, discount))} />);
+    const products = [50, 40, 30, 20, 10].map((discount, index) => product(`${index + 1}`, discount));
+    products[4].stock = 0;
+    render(<DealOfTheWeek products={products} />);
 
     expect(screen.getByRole('link', { name: 'View Deal 1' })).toBeInTheDocument();
-    expect(screen.getAllByTestId('deal-product')).toHaveLength(4);
+    expect(screen.getAllByTestId('deal-product')).toHaveLength(3);
+    expect(screen.getByRole('link', { name: 'See all 5 deals →' })).toBeInTheDocument();
 
     const rail = screen.getByRole('region', { name: 'More weekly deals' });
     expect(rail).toHaveAttribute('tabindex', '0');

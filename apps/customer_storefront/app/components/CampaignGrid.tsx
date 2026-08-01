@@ -114,7 +114,7 @@ export function CampaignGrid() {
     <MarketPanel
       aria-labelledby="campaign-hero-title"
       tone="night"
-      className="campaign-hero relative left-1/2 w-screen max-w-none -translate-x-1/2 rounded-none border-x-0"
+      className="campaign-hero relative left-1/2 w-screen max-w-none -translate-x-1/2 rounded-none border-x-0 lg:w-[calc(100vw-72px)]"
     >
       <picture className="campaign-hero-backdrop">
         {heroBackdrop.image.sources?.map((source) => (

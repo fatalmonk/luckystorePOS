@@ -37,6 +37,7 @@ export function DesktopQuickRail() {
   const accountLabel = loading ? 'Account' : user ? 'Profile' : 'Sign Up';
   const AccountIcon = loading ? UserCircle : user ? UserCircle : UserPlus;
   const isDeals = pathname.startsWith('/category') && searchParams.get('theme') === 'deals';
+  const ordersHref = user ? '/profile#orders' : '/login?next=/profile%23orders';
 
   const links: RailLink[] = [
     { href: '/', label: 'Home', icon: House, active: pathname === '/' },
@@ -58,7 +59,7 @@ export function DesktopQuickRail() {
       icon: Fire,
       active: isDeals,
     },
-    { href: '/order', label: 'Orders', icon: Package, active: pathname.startsWith('/order') },
+    { href: ordersHref, label: 'Orders', icon: Package, active: false },
   ];
 
   return (
@@ -70,7 +71,7 @@ export function DesktopQuickRail() {
             href={href}
             aria-current={active ? 'page' : undefined}
             title={label}
-            className={`group flex h-[76px] w-16 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center text-[11px] font-bold leading-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent ${
+            className={`group flex h-[76px] w-16 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center text-xs font-bold leading-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent ${
               active
                 ? 'bg-warm-surface text-warm-fg'
                 : 'text-warm-muted hover:bg-warm-surface/70 hover:text-warm-fg'

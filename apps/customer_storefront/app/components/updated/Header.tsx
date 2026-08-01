@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, Phone, Tag, MapPin, List, Sun, Moon } from '@phosphor-icons/react';
 import { AppDrawer } from '../AppDrawer';
@@ -28,9 +28,11 @@ const PROMO_TEXT = 'Free delivery on orders over ৳500';
 export function Header({ className = '' }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isFilterPage = pathname?.startsWith('/category') ?? false;
   const isHomePage = pathname === '/';
   const showDesktopCategories = isHomePage || isFilterPage;
+  const activeCatalogTheme = isFilterPage ? searchParams.get('theme') : null;
   const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
     pathname?.startsWith(path),
   );
@@ -234,22 +236,11 @@ export function Header({ className = '' }: HeaderProps) {
 
           {/* Promotional Banner Code */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#f0c444] text-[#0B0B0D] font-black text-[10px] uppercase tracking-wider">
-              <Tag weight="bold" size={11} aria-hidden="true" /> PROMO
-            </span>
             <span className="truncate max-w-[280px] sm:max-w-none text-white/90 font-semibold">
               {PROMO_TEXT}
             </span>
           </div>
 
-          {/* Customer Service & Currency */}
-          <div className="hidden lg:flex items-center gap-4 text-white/80">
-            <span>BDT (৳)</span>
-            <span className="text-white/30">|</span>
-            <Link href="/#how-it-works" className="hover:text-white transition-colors">
-              Help Center
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -261,6 +252,8 @@ export function Header({ className = '' }: HeaderProps) {
             type="button"
             onClick={() => setIsDrawerOpen(true)}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden lg:flex"
+            aria-expanded={isDrawerOpen}
+            aria-haspopup="dialog"
             aria-label="Open menu"
           >
             <List weight="bold" size={24} aria-hidden="true" />
@@ -458,9 +451,9 @@ export function Header({ className = '' }: HeaderProps) {
           >
             <Link
               href="/category"
-              aria-current={selectedCategory === 'all' ? 'page' : undefined}
+              aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
               className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                selectedCategory === 'all'
+                selectedCategory === 'all' && !activeCatalogTheme
                   ? 'bg-warm-fg text-warm-accent'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
               }`}
@@ -469,19 +462,29 @@ export function Header({ className = '' }: HeaderProps) {
             </Link>
             <Link
               href="/category?theme=deals"
-              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[10px] bg-warm-surface px-3 text-sm font-semibold text-warm-fg transition-colors hover:bg-warm-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              aria-current={activeCatalogTheme === 'deals' ? 'page' : undefined}
+              className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+                activeCatalogTheme === 'deals'
+                  ? 'bg-warm-fg text-warm-accent'
+                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+              }`}
             >
               <Tag aria-hidden="true" size={16} weight="bold" className="text-warm-accent" />
               Deals
             </Link>
             <Link
               href="/category?theme=bestsellers"
-              className="inline-flex h-11 shrink-0 items-center rounded-[10px] bg-warm-surface px-3 text-sm font-semibold text-warm-fg transition-colors hover:bg-warm-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              aria-current={activeCatalogTheme === 'bestsellers' ? 'page' : undefined}
+              className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+                activeCatalogTheme === 'bestsellers'
+                  ? 'bg-warm-fg text-warm-accent'
+                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+              }`}
             >
               Best Sellers
             </Link>
             {CATEGORY_GROUPS.map((group) => {
-              const isActive = selectedCategory === group.slug;
+              const isActive = !activeCatalogTheme && selectedCategory === group.slug;
               return (
                 <Link
                   key={group.slug}

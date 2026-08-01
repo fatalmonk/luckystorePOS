@@ -33,7 +33,10 @@ describe('DesktopQuickRail', () => {
     expect(screen.getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/category');
     expect(screen.getByRole('link', { name: 'Sign Up' })).toHaveAttribute('href', '/signup');
     expect(screen.getByRole('link', { name: 'Deals' })).toHaveAttribute('href', '/category?theme=deals');
-    expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/order');
+    expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute(
+      'href',
+      '/login?next=/profile%23orders',
+    );
     expect(screen.getByRole('link', { name: 'Home' }).querySelector('svg')).toHaveAttribute('width', '14');
   });
 
@@ -43,6 +46,7 @@ describe('DesktopQuickRail', () => {
     render(<DesktopQuickRail />);
 
     expect(screen.getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/profile');
+    expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/profile#orders');
   });
 
   it('marks Deals active from the catalog theme query', () => {

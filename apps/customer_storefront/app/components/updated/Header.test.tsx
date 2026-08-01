@@ -1,11 +1,14 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Header } from './Header';
+
+let mockSearchParams = new URLSearchParams();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => '/category',
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock('../providers/ThemeProvider', () => ({
@@ -39,6 +42,10 @@ vi.mock('./SearchSuggestions', () => ({
 }));
 
 describe('Header catalog filter strip', () => {
+  beforeEach(() => {
+    mockSearchParams = new URLSearchParams();
+  });
+
   it('shows a search icon and cart button in the header', () => {
     render(<Header />);
 
@@ -52,6 +59,20 @@ describe('Header catalog filter strip', () => {
 
     expect(screen.getByRole('navigation', { name: 'Product categories' })).toBeInTheDocument();
     expect(screen.getByText('Quick rail')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-haspopup', 'dialog');
+  });
+
+  it('marks the active catalog theme instead of All', () => {
+    mockSearchParams = new URLSearchParams('theme=deals');
+    render(<Header />);
+
+    const categories = screen.getByRole('navigation', { name: 'Product categories' });
+    expect(within(categories).getByRole('link', { name: 'Deals' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(within(categories).getByRole('link', { name: 'All' })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 });

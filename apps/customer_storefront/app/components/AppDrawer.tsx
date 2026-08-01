@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { X, House, ShoppingCart, Tag, Fire, Storefront, MapPin, Phone, Heart, Question } from '@phosphor-icons/react';
 import { CATEGORY_GROUPS } from '../lib/types';
+import { lockBodyScroll } from '../lib/bodyScrollLock';
 import { Logo } from './ui/Logo';
 
 interface AppDrawerProps {
@@ -66,12 +67,8 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
 
   // Trap scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
+    if (!open) return;
+    return lockBodyScroll();
   }, [open]);
 
   return (
@@ -131,7 +128,7 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
 
         {/* Categories */}
         <div className="flex-1 overflow-y-auto px-3 py-3">
-          <p className="px-3 mb-2 text-[11px] font-black text-warm-dim uppercase tracking-widest">Categories</p>
+          <p className="px-3 mb-2 text-xs font-black text-warm-dim uppercase tracking-widest">Categories</p>
           <ul className="space-y-0.5">
             {CATEGORY_GROUPS.map((group) => (
               <li key={group.slug}>
