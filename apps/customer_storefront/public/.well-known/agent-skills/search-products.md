@@ -4,8 +4,8 @@
 Search products by name, category, or price range in the Lucky Store catalog.
 
 ## Endpoints
-- **Search:** `GET https://lucky-store-six.vercel.app/search?q={query}`
-- **Category filter:** `GET https://lucky-store-six.vercel.app/category/{slug}?q={query}`
+- **Search:** `GET https://luckystore1947.com/search?q={query}`
+- **Category filter:** `GET https://luckystore1947.com/category/{slug}?q={query}`
 
 ## Parameters
 | Parameter | Type | Required | Description |
