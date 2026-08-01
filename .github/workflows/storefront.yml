@@ -92,6 +92,8 @@ jobs:
             promo_buldak: 'public/images/promo_spices.webp',
             promo_dairy: 'public/images/promo_dairy.webp',
             promo_tea_coffee: 'public/images/promo_tea_coffee.webp',
+            hero_grocery_banner: 'public/images/hero_grocery_banner_1200.webp',
+            native_ad_banner: 'public/images/native_ad_banner_1200.webp',
           };
           const widths = [400, 600, 800, 1200];
           const outputDirectory = 'public/banners';
