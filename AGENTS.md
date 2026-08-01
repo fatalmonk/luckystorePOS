@@ -65,18 +65,26 @@ The following remain prohibited under Phase 1A:
 ### Read-Only Inspection (Phase 1A)
 - `git status`
 - `git diff`
-- `git diff --stat` → prefer `git diff` or `rtk git diff --name-status` for change lists
+- `git diff --stat` → prefer `rtk git diff --name-status` for change lists
 - `git log` (with optional `--oneline`, `--name-only`, `-n <N>`) → prefer `rtk git log --oneline --name-status`
 - `git show <ref>`
-- `rg <pattern> <path>` — targeted ripgrep search (no broad `rg .` scans)
+- `rtk grep <pattern> <path>` — preferred over raw `rg`/`grep`; compresses output by stripping whitespace, truncating long lines, grouping by file
+- `rg <pattern> <path>` — fallback when `rtk grep` doesn't support a flag; no broad `rg .` scans
 - `rtk read <file> <offset> <limit>` — preferred over `sed -n`, `nl -ba`, and `cat` for file reads
+- `rtk ls <dir>` — preferred over `ls -la` for directory listings; strips excess metadata
+- `rtk find <args>` — preferred over raw `find`; compact tree output
 - `sed -n '<range>' <file>` — read-only print; use `rtk read` instead when possible
 - `cat <file>` — read file contents; use `rtk read` instead when possible
 - `head -n <N> <file>` / `tail -n <N> <file>` — read file excerpts; prefer `rtk read` with offset/limit
 
 ### Implementation & Validation (Phase 1)
 - `node scripts/security/secret_scan.js`
-- `npm run lint` → prefer `rtk npm run lint` or the project-specific wrapper if available
-- `npm run build` → prefer `rtk npm run build --` or `rtk next build --` for Next.js apps; build logs compress much better under RTK filters
+- `rtk npm run lint` — preferred over raw `npm run lint`; strips boilerplate, compresses output
+- `rtk npm run build --skip-env` — preferred over raw `npm run build`; skips env validation noise in child processes
+- `rtk next build` — preferred for Next.js apps; build logs compress much better under RTK filters
+- `rtk vitest` — preferred over raw `vitest`; compact test output
+- `rtk tsc` — preferred over raw `tsc --noEmit`; grouped error output
+- `rtk gh <subcommand>` — preferred over raw `gh`; token-optimized output for PRs, runs, issues
+- `rtk git <subcommand>` — preferred over raw `git`; compact output for diff/status/log/commit/push/fetch
 - `flutter analyze`
 - `flutter test`
