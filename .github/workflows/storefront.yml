@@ -79,6 +79,42 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+      - name: Prepare deterministic banner fixtures
+        working-directory: apps/customer_storefront
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs/promises');
+          const path = require('node:path');
+          const sharp = require('sharp');
+
+          const banners = {
+            promo_welcome_v2: 'public/images/hero_grocery_banner_1200.webp',
+            promo_buldak: 'public/images/promo_spices.webp',
+            promo_dairy: 'public/images/promo_dairy.webp',
+            promo_tea_coffee: 'public/images/promo_tea_coffee.webp',
+          };
+          const widths = [400, 600, 800, 1200];
+          const outputDirectory = 'public/banners';
+
+          async function generateFixtures() {
+            await fs.mkdir(outputDirectory, { recursive: true });
+            await Promise.all(Object.entries(banners).flatMap(([name, input]) =>
+              widths.flatMap((width) => {
+                const height = Math.round(width * 9 / 16);
+                const image = sharp(input).resize(width, height, { fit: 'cover' });
+                return [
+                  image.clone().avif({ quality: 70 }).toFile(path.join(outputDirectory, `${name}_${width}.avif`)),
+                  image.clone().webp({ quality: 78 }).toFile(path.join(outputDirectory, `${name}_${width}.webp`)),
+                ];
+              })
+            ));
+          }
+
+          generateFixtures().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
       - run: npx playwright install --with-deps
       - run: npm run build --workspace=customer_storefront
       - run: cd apps/customer_storefront && npx playwright test --project=chromium
