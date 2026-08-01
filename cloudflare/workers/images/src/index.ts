@@ -130,7 +130,15 @@ export default {
         }
 
         // Validate MIME type (client-provided — sufficient for basic guard)
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/gif',
+          'image/x-icon',
+          'image/vnd.microsoft.icon',
+          'image/svg+xml',
+        ];
         if (!allowedTypes.includes(file.type)) {
           return new Response(JSON.stringify({ error: 'Invalid file type' }), {
             status: 400,
@@ -216,14 +224,14 @@ export default {
       if (blockedKeys.includes(key) || key.startsWith('.')) {
         return new Response('Forbidden', { status: 403, headers: cors });
       }
-      if (!key || key === 'favicon.ico') {
+      if (!key) {
         return new Response('Not found', { status: 404 });
       }
 
       if (!checkRate(ip, 'reads', 600)) {
         return new Response('Rate limit exceeded', {
           status: 429,
-          headers: { ...cors, 'Retry-After': '60' }, // fix: CORS headers included
+          headers: { ...cors, 'Retry-After': '60' },
         });
       }
 
@@ -232,8 +240,16 @@ export default {
         return new Response('Not found', { status: 404 });
       }
 
+      const ext = key.split('.').pop()?.toLowerCase();
+      let defaultType = 'image/jpeg';
+      if (ext === 'ico') defaultType = 'image/x-icon';
+      else if (ext === 'svg') defaultType = 'image/svg+xml';
+      else if (ext === 'png') defaultType = 'image/png';
+      else if (ext === 'webp') defaultType = 'image/webp';
+      else if (ext === 'gif') defaultType = 'image/gif';
+
       const headers = new Headers();
-      headers.set('Content-Type', object.httpMetadata?.contentType || 'image/jpeg');
+      headers.set('Content-Type', object.httpMetadata?.contentType || defaultType);
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       headers.set('ETag', object.httpEtag);
       object.writeHttpMetadata(headers);
