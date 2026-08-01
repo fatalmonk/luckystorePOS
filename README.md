@@ -385,7 +385,7 @@
 **Flutter 3.29+** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · flutter_thermal_printer · pdf · printing · csv · excel · webview_flutter
 
 ### Customer Storefront
-**Next.js 15.5** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 3 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
+**Next.js 15** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 3 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
 
 ### Admin Web
 **React 19.2** · Vite 6 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 3 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns 4 · clsx
@@ -573,7 +573,7 @@ Set required secrets on each edge function:
 
 ## 💬 Community & Support
 
-- **Email:** luckystore.1947@gmail.com
+- **Email:** hello@luckystore1947.com
 - **Phone:** 01731944544
 - **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh
 - **Issues:** [GitHub Issues](https://github.com/fatalmonk/luckystorePOS/issues) — bug reports & feature requests
