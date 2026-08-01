@@ -6,7 +6,7 @@
   },
   "transport": {
     "type": "http",
-    "endpoint": "https://lucky-store-six.vercel.app/api/mcp",
+    "endpoint": "https://luckystore1947.com/api/mcp",
     "security": {
       "type": "oauth2",
       "authorizationUrl": "https://hvmyxyccfnkrbxqbhlnm.supabase.co/auth/v1/authorize",
