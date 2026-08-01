@@ -180,7 +180,7 @@ export default function SecurityPolicyPage() {
                 📧 security@luckystore1947.com
               </a>
               <a
-                href="tel:+880****4544"
+                href="tel:+8801731944544"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-colors"
               >
                 📞 +880 1731-944544
