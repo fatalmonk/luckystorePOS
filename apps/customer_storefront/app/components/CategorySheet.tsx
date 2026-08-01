@@ -4,6 +4,7 @@ import { useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { X, Sparkle, Tag, ArrowRight } from '@phosphor-icons/react';
 import { CATEGORY_GROUPS } from '../lib/types';
+import { lockBodyScroll } from '../lib/bodyScrollLock';
 
 interface CategorySheetProps {
   isOpen: boolean;
@@ -16,14 +17,14 @@ export function CategorySheet({ isOpen, onClose }: CategorySheetProps) {
   useEffect(() => {
     if (!isOpen) return;
 
-    document.body.style.overflow = 'hidden';
+    const unlockBodyScroll = lockBodyScroll();
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.style.overflow = '';
+      unlockBodyScroll();
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);

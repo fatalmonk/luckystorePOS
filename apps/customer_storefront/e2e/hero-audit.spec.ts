@@ -16,7 +16,6 @@ test.describe('Storefront campaign hero audit', () => {
 
     const destinations = [
       ['Browse groceries', '/category'],
-      ['How ordering works', '#how-it-works'],
       ['Explore everyday groceries', '/category'],
       ['Shop Buldak ramen deals', '/search?q=buldak'],
       ['Shop dairy and eggs', '/category/dairy-and-eggs'],

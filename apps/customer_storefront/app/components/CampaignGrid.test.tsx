@@ -23,7 +23,6 @@ describe('CampaignGrid', () => {
 
     const destinations = [
       ['Browse groceries', '/category'],
-      ['How ordering works', '#how-it-works'],
       ['Explore everyday groceries', '/category'],
       ['Shop Buldak ramen deals', '/search?q=buldak'],
       ['Shop dairy and eggs', '/category/dairy-and-eggs'],
@@ -47,8 +46,9 @@ describe('CampaignGrid', () => {
     expect(images[3]).toHaveAttribute('srcset', expect.stringContaining('promo_dairy_600.webp'));
     expect(images[3]).not.toHaveAttribute('srcset', expect.stringContaining('promo_dairy_1200.webp'));
     expect(images[4]).toHaveAttribute('srcset', expect.stringContaining('promo_tea_coffee_1200.webp'));
-    expect(within(hero!).getByText('Local delivery')).toBeInTheDocument();
+    expect(within(hero!).queryByText('Local delivery')).not.toBeInTheDocument();
     expect(within(hero!).getByText('Stocked daily')).toBeInTheDocument();
+    expect(within(hero!).queryByRole('link', { name: 'How ordering works' })).not.toBeInTheDocument();
     expect(within(hero!).queryByText(/Local Reviews/i)).not.toBeInTheDocument();
   });
 

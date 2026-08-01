@@ -1,17 +1,6 @@
 import { CATEGORY_GROUPS, getParentGroup } from './types';
 import type { Product } from './types';
 
-const FEATURED_CATEGORY_SLUGS = [
-  'cooking-essentials',
-  'dairy-and-eggs',
-  'noodles',
-  'tea-&-coffee',
-  'chocolates-and-candies',
-  'baking-needs',
-  'personal-care',
-  'electronics',
-] as const;
-
 function normalizeCategory(category: string) {
   return category
     .toLowerCase()
@@ -21,10 +10,7 @@ function normalizeCategory(category: string) {
 }
 
 export function selectCategoryCarousel(products: Product[]) {
-  return FEATURED_CATEGORY_SLUGS.map((slug) => {
-    const group = CATEGORY_GROUPS.find((candidate) => candidate.slug === slug);
-    if (!group) return null;
-
+  return CATEGORY_GROUPS.map((group) => {
     const itemCount = products.filter((product) => {
       if (product.stock <= 0) return false;
       const normalized = normalizeCategory(product.category);
@@ -41,7 +27,5 @@ export function selectCategoryCarousel(products: Product[]) {
       itemCount,
       href: `/category/${group.slug}`,
     };
-  }).filter(
-    (category): category is NonNullable<typeof category> => Boolean(category && category.itemCount > 0),
-  );
+  }).filter((category) => category.itemCount > 0);
 }

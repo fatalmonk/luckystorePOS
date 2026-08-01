@@ -1,11 +1,14 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Header } from './Header';
+
+let mockSearchParams = new URLSearchParams();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => '/category',
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock('../providers/ThemeProvider', () => ({
@@ -13,11 +16,21 @@ vi.mock('../providers/ThemeProvider', () => ({
 }));
 
 vi.mock('../HeaderFilters', () => ({
-  HeaderFilters: () => <div data-testid="header-filters">Filters</div>,
+  HeaderFilters: () => null,
+}));
+
+vi.mock('../DesktopQuickRail', () => ({
+  DesktopQuickRail: () => <aside>Quick rail</aside>,
+}));
+
+vi.mock('../AppDrawer', () => ({
+  AppDrawer: () => null,
 }));
 
 vi.mock('../HeaderCartButton', () => ({
-  HeaderCartButton: () => <button type="button">Cart</button>,
+  HeaderCartButton: ({ compact }: { compact?: boolean }) => (
+    <button type="button" data-compact={compact ? 'true' : 'false'}>Cart</button>
+  ),
 }));
 
 vi.mock('../ui/Logo', () => ({
@@ -29,27 +42,37 @@ vi.mock('./SearchSuggestions', () => ({
 }));
 
 describe('Header catalog filter strip', () => {
-  it('uses dependable utility copy without an unverified promotion', () => {
-    render(<Header />);
-
-    expect(screen.getByText('Delivery across Chittagong')).toBeVisible();
-    expect(screen.getByText('Serving since 1947')).toBeVisible();
-    expect(screen.queryByText(/PROMO|WELCOME10|Free delivery/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '+880 1731-944544' })).toHaveAttribute(
-      'href',
-      'tel:+8801731944544',
-    );
+  beforeEach(() => {
+    mockSearchParams = new URLSearchParams();
   });
 
-  it('keeps desktop filters outside mobile scrolling and permits visible overflow', () => {
+  it('shows a search icon and cart button in the header', () => {
     render(<Header />);
 
-    const filters = screen.getByTestId('header-filters');
-    expect(filters.parentElement).toHaveClass(
-      'hidden',
-      'md:flex',
-      'overflow-visible',
+    expect(screen.getByText('Lucky Store')).toBeInTheDocument();
+    expect(screen.getByLabelText('Open search')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cart' })).toBeInTheDocument();
+  });
+
+  it('exposes the desktop category strip and quick rail on catalog routes', () => {
+    render(<Header />);
+
+    expect(screen.getByRole('navigation', { name: 'Product categories' })).toBeInTheDocument();
+    expect(screen.getByText('Quick rail')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-haspopup', 'dialog');
+  });
+
+  it('marks the active catalog theme instead of All', () => {
+    mockSearchParams = new URLSearchParams('theme=deals');
+    render(<Header />);
+
+    const categories = screen.getByRole('navigation', { name: 'Product categories' });
+    expect(within(categories).getByRole('link', { name: 'Deals' })).toHaveAttribute(
+      'aria-current',
+      'page',
     );
-    expect(filters.closest('nav')).toHaveClass('md:overflow-visible');
+    expect(within(categories).getByRole('link', { name: 'All' })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 });

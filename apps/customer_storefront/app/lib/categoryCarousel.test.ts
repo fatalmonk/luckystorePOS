@@ -37,6 +37,7 @@ describe('selectCategoryCarousel', () => {
       'dairy-and-eggs',
       'tea-&-coffee',
       'baking-needs',
+      'air-freshner',
     ]);
     expect(categories.find((category) => category.slug === 'dairy-and-eggs')?.itemCount).toBe(2);
     expect(categories.find((category) => category.slug === 'tea-&-coffee')?.itemCount).toBe(1);

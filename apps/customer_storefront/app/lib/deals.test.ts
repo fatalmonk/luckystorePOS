@@ -47,6 +47,17 @@ const mockProducts: Product[] = [
     stock: 15,
     description: 'Fresh milk',
   },
+  {
+    id: 'p5',
+    name: 'Product 5',
+    emoji: '🍪',
+    price: 95,
+    originalPrice: 100, // 5% discount
+    unit: '1 pack',
+    category: 'snacks',
+    stock: 8,
+    description: 'Discounted snack',
+  },
 ];
 
 describe('deals logic', () => {
@@ -59,13 +70,13 @@ describe('deals logic', () => {
     const result = getDealOfTheWeekProducts(mockProducts);
     expect(result).not.toBeNull();
     expect(result?.leadProduct.id).toBe('p2'); // 50% discount
-    expect(result?.supportingProducts.map((p) => p.id)).toEqual(['p4', 'p1']); // 30%, 20% (p3 excluded because stock 0)
+    expect(result?.supportingProducts.map((p) => p.id)).toEqual(['p4', 'p1', 'p5']); // ranked discounts; p3 excluded because stock 0
   });
 
   it('returns null if no in-stock discounted products exist', () => {
     const noDeals: Product[] = [
       {
-        id: 'p5',
+        id: 'p6',
         name: 'Regular',
         emoji: '📦',
         price: 100,
