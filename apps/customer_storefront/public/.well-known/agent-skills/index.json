@@ -6,7 +6,7 @@
       "type": "capability",
       "description": "Browse the Lucky Store product catalog with categories, search, and filtering",
       "url": "https://luckystore1947.com/.well-known/agent-skills/browse-products.md",
-      "sha256": "23d30c61b29f8e48d4fad42f88f31193ea3147c8e28690e8eac497491cb65a84"
+      "sha256": "8c666c7f0edc7a1b48f50fbdde62c1ac2ec94492468647ae8e61ff69da1cf749"
     },
     {
       "name": "checkout",

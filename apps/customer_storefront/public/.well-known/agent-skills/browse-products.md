@@ -4,9 +4,9 @@
 Browse the Lucky Store product catalog with categories, search, and filtering.
 
 ## Endpoints
-- **List all products:** `GET https://lucky-store-six.vercel.app/api/products`
-- **List categories:** `GET https://lucky-store-six.vercel.app/api/categories`
-- **Browse by category:** `GET https://lucky-store-six.vercel.app/category/{slug}`
+- **List all products:** `GET https://luckystore1947.com/api/products`
+- **List categories:** `GET https://luckystore1947.com/api/categories`
+- **Browse by category:** `GET https://luckystore1947.com/category/{slug}`
 
 ## Parameters
 | Parameter | Type | Required | Description |
