@@ -49,14 +49,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
-      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico?v=2', sizes: '48x48' },
+      { url: '/favicon-48x48.png?v=2', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-32x32.png?v=2', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png?v=2', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png?v=2',
   },
   openGraph: {
     type: 'website',
@@ -124,10 +124,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
-        <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
-        <link rel="icon" href="/favicon-48x48.png?v=2" type="image/png" sizes="48x48" />
-        <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
         <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
         <meta name="theme-color" content="#0B0B0D" />
@@ -142,7 +138,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'GroceryStore',
+              '@type': ['WebSite', 'GroceryStore'],
               name: 'Lucky Store',
               url: 'https://luckystore1947.com',
               telephone: '+880 1731-944544',
