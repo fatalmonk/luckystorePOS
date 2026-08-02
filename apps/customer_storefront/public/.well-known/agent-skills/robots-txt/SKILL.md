@@ -1,10 +1,10 @@
 # robots.txt Skill
 
 ## Description
-Crawl rules for AI agents visiting lucky-store-six.vercel.app.
+Crawl rules for AI agents visiting luckystore1947.com.
 
 ## Location
-`https://lucky-store-six.vercel.app/robots.txt`
+`https://luckystore1947.com/robots.txt`
 
 ## Rules Summary
 - **Allowed for search indexing:** GPTBot, OAI-SearchBot, ChatGPT-User, Google-Extended, PerplexityBot, Amazonbot, Applebot
@@ -18,4 +18,4 @@ Crawl rules for AI agents visiting lucky-store-six.vercel.app.
 - `/cart/` — cart page
 
 ## Sitemap
-`https://lucky-store-six.vercel.app/sitemap.xml`
+`https://luckystore1947.com/sitemap.xml`

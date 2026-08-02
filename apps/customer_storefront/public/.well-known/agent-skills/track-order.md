@@ -4,7 +4,7 @@
 Track the status of a placed order by order number.
 
 ## Endpoint
-`GET https://lucky-store-six.vercel.app/order/{orderNumber}`
+`GET https://luckystore1947.com/order/{orderNumber}`
 
 ## Parameters
 | Parameter | Type | Required | Description |

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-static';
 
-const BASE_URL = 'https://lucky-store-six.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luckystore1947.com';
 
 /**
  * RFC 9727 — API Catalog Discovery

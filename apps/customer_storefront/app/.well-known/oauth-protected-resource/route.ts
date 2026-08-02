@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const STOREFRONT_URL = 'https://luckystore1947.com';
+const STOREFRONT_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luckystore1947.com';
 const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 
 /**

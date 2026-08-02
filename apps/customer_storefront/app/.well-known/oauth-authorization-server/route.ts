@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
 const SUPABASE_AUTH = `${SUPABASE_URL}/auth/v1`;
-const STOREFRONT_URL = 'https://luckystore1947.com';
+const STOREFRONT_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luckystore1947.com';
 
 /**
  * RFC 8414 — OAuth 2.0 Authorization Server Metadata
@@ -45,7 +45,7 @@ export async function GET() {
     // auth.md agent registration extension
     // https://workos.com/auth.md
     agent_auth: {
-      skill: `${STOREFRONT_URL}/auth.md`,
+      skill: `${STOREFRONT_URL}/.well-known/auth.md`,
       register_uri: `${STOREFRONT_URL}/auth/register`,
       identity_types_supported: ['identity_assertion', 'anonymous'],
       identity_assertion: {

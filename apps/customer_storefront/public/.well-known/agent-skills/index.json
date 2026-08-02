@@ -1,40 +1,43 @@
 {
   "$schema": "https://raw.githubusercontent.com/cloudflare/agent-skills-discovery-rfc/main/schema.json",
+  "spec_version": "1.0",
+  "version": "1.1.0",
+  "updated_at": "2026-08-02T00:00:00Z",
   "skills": [
     {
       "name": "browse-products",
       "type": "capability",
       "description": "Browse the Lucky Store product catalog with categories, search, and filtering",
       "url": "https://luckystore1947.com/.well-known/agent-skills/browse-products.md",
-      "sha256": "23d30c61b29f8e48d4fad42f88f31193ea3147c8e28690e8eac497491cb65a84"
+      "sha256": "8c666c7f0edc7a1b48f50fbdde62c1ac2ec94492468647ae8e61ff69da1cf749"
     },
     {
       "name": "checkout",
       "type": "capability",
       "description": "Submit a grocery order with cart items, customer details, and delivery information",
       "url": "https://luckystore1947.com/.well-known/agent-skills/checkout.md",
-      "sha256": "a9cc3e1c5394d2289dbc627903b7a50ebe5569b9c0f26f92466db729dc191e95"
+      "sha256": "2d3e91db7ad933f81032799dd47b2e76febffbe704a4cfce49832c1e90743cc6"
     },
     {
       "name": "search-products",
       "type": "capability",
       "description": "Search products by name, category, or price range in the Lucky Store catalog",
       "url": "https://luckystore1947.com/.well-known/agent-skills/search-products.md",
-      "sha256": "d5a8cabb02ec1521c572731647936c479eaa317d353e3947200d8bb2824615c6"
+      "sha256": "38ff4202969d4fc7daa1d383e3c7edf5274a9870fd3f053dfe4f8567e407ead4"
     },
     {
       "name": "track-order",
       "type": "capability",
-      "description": "Track the status of a placed order by order number",
+      "description": "Track a placed order by order number — returns current status, estimated delivery date, and carrier info",
       "url": "https://luckystore1947.com/.well-known/agent-skills/track-order.md",
-      "sha256": "cfe5ff4e1b75485fc8d3962f0ad0e8b4c478edbd6b458ee91287712c8759c29b"
+      "sha256": "c79a71f104eed402cf89251414336e16949a2b94c17375dbdfee75714a100f10"
     },
     {
       "name": "robots-txt",
       "type": "discovery",
       "description": "Crawl rules for AI agents — defines allowed and disallowed paths",
       "url": "https://luckystore1947.com/.well-known/agent-skills/robots-txt/SKILL.md",
-      "sha256": "d01b4d43a1fbaf097d38a90a2cc762842224e3bfa23c1ef2992a1699c2cd3423"
+      "sha256": "19e0350f2fbeafcaced25eae8b73e40452cf0dd003d9f18df595e2bc5755eef4"
     },
     {
       "name": "sitemap",

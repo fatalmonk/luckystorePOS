@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "verify:skills": "node scripts/verify-agent-skills.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "project": "Lucky Store — Customer Storefront",
-  "environment": "staging",
+  "environment": "production",
   "baseUrl": "https://hvmyxyccfnkrbxqbhlnm.supabase.co",
   "endpoints": {
     "featuredProducts": {
