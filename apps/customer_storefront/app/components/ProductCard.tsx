@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
+import { toProductSlug } from '../lib/products/slugify';
 import type { Category } from '../lib/types';
 import { getLocalWishlist, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
 import { useToast } from './Toast';
@@ -140,7 +141,7 @@ export function ProductCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const { showToast } = useToast();
-  const productHref = `/product/${encodeURIComponent(id)}`;
+  const productHref = `/product/${toProductSlug(name, id)}`;
 
   useEffect(() => {
     const list = getLocalWishlist();

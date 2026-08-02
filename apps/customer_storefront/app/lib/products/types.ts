@@ -68,6 +68,8 @@ export interface PaginatedProducts {
 export interface IProductRepository {
   search(criteria: ProductSearchCriteria): Promise<PaginatedProducts>;
   getById(id: ProductId): Promise<Product | null>;
+  /** Look up a product by the first 8 hex chars of its UUID (slug suffix). */
+  getByIdPrefix(prefix: string): Promise<Product | null>;
   getCategories(): Promise<Category[]>;
 }
 

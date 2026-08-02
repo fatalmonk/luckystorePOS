@@ -203,6 +203,45 @@ export class SupabaseProductAdapter implements ProductDataPort {
     return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
   }
 
+  async getByIdPrefix(prefix: string): Promise<Product | null> {
+    // Direct table query — uses index, avoids full RPC scan
+    const { data, error } = await this.supabase
+      .from('items')
+      .select('id, name, price, mrp, category, category_id, stock, description, image_url, created_at, brand')
+      .ilike('id', `${prefix}%`)
+      .eq('is_active', true)
+      .limit(1);
+
+    if (!error && data?.length) {
+      const categories = await this.getCategories();
+      const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
+      const validated = validateProductRow(data[0]);
+      return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
+    }
+
+    // Fallback: RPC scan filtered by prefix (handles column name differences)
+    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_items_pos', {
+      p_store_id: this.storeId,
+      p_query: '',
+      p_category_id: null,
+      p_limit: 1000,
+      p_offset: 0,
+    });
+
+    if (rpcError) throw new Error(`getByIdPrefix RPC fallback failed: ${rpcError.message}`);
+
+    const rows = (rpcData ?? []) as unknown[];
+    const match = rows.find((row: any) =>
+      ((row.id ?? row.item_id) as string)?.replace(/-/g, '').startsWith(prefix)
+    );
+    if (!match) return null;
+
+    const categories = await this.getCategories();
+    const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
+    const validated = validateProductRow(match);
+    return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
+  }
+
   async getCategories(): Promise<Category[]> {
     const { data, error } = await this.supabase
       .from('categories')

@@ -116,6 +116,24 @@ export class CachingProductAdapter implements ProductDataPort {
     return result;
   }
 
+  async getByIdPrefix(prefix: string): Promise<Product | null> {
+    const key = `prefix:${prefix}`;
+    const cached = this.productCache.get(key);
+
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+
+    const result = await this.inner.getByIdPrefix(prefix);
+    this.productCache.set(key, {
+      data: result,
+      expiresAt: Date.now() + this.config.productTtlMs,
+    });
+    evictIfNeeded(this.productCache, this.config.maxProductEntries);
+
+    return result;
+  }
+
   async getCategories(): Promise<Category[]> {
     const key = 'all';
     const cached = this.categoryCache.get(key);

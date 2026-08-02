@@ -2,6 +2,7 @@ import { HomeShell } from './components/HomeShell';
 import { createProductRepository } from './lib/products/index';
 import { supabase } from './lib/supabase';
 import { img, srcSet } from './lib/imageUrl';
+import { toProductSlug } from './lib/products/slugify';
 
 export const revalidate = 60;
 
@@ -31,7 +32,7 @@ export default async function Home() {
       '@type': 'ListItem',
       position: index + 1,
       name: product.name,
-      url: `https://luckystore1947.com/product/${encodeURIComponent(product.id)}`,
+      url: `https://luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
     })),
   };
 

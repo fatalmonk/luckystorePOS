@@ -77,6 +77,10 @@ export class ProductRepository implements IProductRepository {
     return this.adapter.getById(id);
   }
 
+  async getByIdPrefix(prefix: string): Promise<Product | null> {
+    return this.adapter.getByIdPrefix(prefix);
+  }
+
   async getCategories(): Promise<Category[]> {
     return this.adapter.getCategories();
   }
