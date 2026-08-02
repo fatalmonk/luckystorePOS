@@ -6,13 +6,13 @@ const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 // Static pages that actually exist in the production build and are indexable
 const staticRoutes = [
-  { path: '', priority: 1.0, changefreq: 'daily' },
-  { path: '/category', priority: 0.8, changefreq: 'daily' },
-  { path: '/contact', priority: 0.5, changefreq: 'monthly' },
-  { path: '/privacy', priority: 0.3, changefreq: 'monthly' },
-  { path: '/terms', priority: 0.3, changefreq: 'monthly' },
-  { path: '/security-policy', priority: 0.3, changefreq: 'monthly' },
-  { path: '/data-deletion', priority: 0.3, changefreq: 'monthly' },
+  { path: '', priority: 1.0, changefreq: 'daily', lastMod: '2026-08-01T00:00:00Z' },
+  { path: '/category', priority: 0.8, changefreq: 'daily', lastMod: '2026-08-01T00:00:00Z' },
+  { path: '/contact', priority: 0.5, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
+  { path: '/privacy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
+  { path: '/terms', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
+  { path: '/security-policy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
+  { path: '/data-deletion', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
 ] as const;
 
 // Initialize Supabase client
@@ -30,7 +30,7 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
   try {
     const { data, error } = await supabase
       .from('categories')
-      .select('slug, name, category')
+      .select('slug, name, category, updated_at')
       .eq('active', true)
       .eq('store_id', STORE_ID);
 
@@ -43,7 +43,7 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
         .replace(/&/g, 'and')
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-'),
-      updatedAt: new Date().toISOString(),
+      updatedAt: c.updated_at || new Date().toISOString(),
     }));
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
@@ -92,11 +92,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getProducts(),
   ]);
 
-  const now = new Date().toISOString().split('.')[0] + 'Z';
-
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${BASE_URL}${route.path}`,
-    lastModified: now,
+    lastModified: route.lastMod,
     changeFrequency: route.changefreq as any,
     priority: route.priority,
   }));
