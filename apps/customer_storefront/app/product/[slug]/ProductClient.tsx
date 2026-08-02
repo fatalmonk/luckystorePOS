@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { toProductSlug } from '../../lib/products/slugify';
 import { useEffect } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
@@ -72,7 +73,7 @@ function ProductContent({ product }: ProductClientProps) {
             <Breadcrumbs
               items={[
                 { label: product.category, href: `/category/${product.category}` },
-                { label: product.name, href: `/product/${product.id}` },
+                { label: product.name, href: `/product/${toProductSlug(product.name, product.id)}` },
               ]}
             />
           </div>

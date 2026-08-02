@@ -1,4 +1,5 @@
 import type { Product } from '../../lib/types';
+import { toProductSlug } from '../../lib/products/slugify';
 
 interface ProductJsonLdProps {
   product: Product;
@@ -23,7 +24,7 @@ export function ProductJsonLd({ product }: ProductJsonLdProps) {
       availability: product.stock > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
-      url: `https://luckystore.com/product/${product.id}`,
+      url: `https://luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
       seller: {
         '@type': 'Organization',
         name: 'Lucky Store',

@@ -7,6 +7,7 @@ function createFakeAdapter(overrides?: Partial<ProductDataPort>): ProductDataPor
   return {
     search: vi.fn().mockResolvedValue({ products: [], hasMore: false }),
     getById: vi.fn().mockResolvedValue(null),
+    getByIdPrefix: vi.fn().mockResolvedValue(null),
     getCategories: vi.fn().mockResolvedValue([]),
     ...overrides,
   };

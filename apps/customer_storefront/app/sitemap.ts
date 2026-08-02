@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { toProductSlug } from './lib/products/slugify';
 
 const BASE_URL = 'https://luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -67,17 +68,18 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
 }
 
 // Dynamic product pages
-async function getProducts(): Promise<{ id: string; updatedAt: string }[]> {
+async function getProducts(): Promise<{ id: string; name: string; updatedAt: string }[]> {
   try {
     const { data, error } = await supabase
       .from('items')
-      .select('id, updated_at')
+      .select('id, name, updated_at')
       .eq('is_active', true);
 
     if (error) throw error;
 
     return (data || []).map((i: any) => ({
       id: i.id,
+      name: i.name || '',
       updatedAt: i.updated_at || new Date().toISOString(),
     }));
   } catch (error) {
@@ -107,7 +109,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${BASE_URL}/product/${product.id}`,
+    url: `${BASE_URL}/product/${toProductSlug(product.name, product.id)}`,
     lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z',
     changeFrequency: 'daily',
     priority: 0.8,

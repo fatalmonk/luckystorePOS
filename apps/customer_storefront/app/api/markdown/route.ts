@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createProductRepository, createProductId } from '../../lib/products/index';
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
+import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,7 @@ function mdProduct(p: any): string {
   if (p.category) {
     lines.push(`- **Category:** [${p.category}](${BASE_URL}/category/${p.slug || ''})`);
   }
-  lines.push(`- **View:** [Product page](${BASE_URL}/product/${p.id})`);
+  lines.push(`- **View:** [Product page](${BASE_URL}/product/${toProductSlug(p.name, p.id)})`);
   md += lines.join('\n') + '\n\n';
   return md;
 }
@@ -419,8 +420,11 @@ export async function GET(req: NextRequest) {
         markdown += `No category found for slug: ${slug}\n\n[Browse all categories](${BASE_URL}/category)\n`;
       }
     } else if (path.startsWith('/product/')) {
-      const id = path.replace('/product/', '');
-      const product = await repo.getById(createProductId(id));
+      const rawSlug = path.replace('/product/', '');
+      // Support both bare UUIDs and semantic slugs
+      const product = isBareUuid(rawSlug)
+        ? await repo.getById(createProductId(rawSlug))
+        : await repo.getByIdPrefix(extractIdFromSlug(rawSlug));
 
       if (product) {
         markdown = mdHeader(`${product.emoji || '📦'} ${product.name}`);
@@ -428,10 +432,10 @@ export async function GET(req: NextRequest) {
         if (product.description) {
           markdown += `## Description\n\n${product.description}\n\n`;
         }
-        markdown += `---\n\n[Add to cart](${BASE_URL}/product/${product.id}) | [Continue shopping](${BASE_URL})\n`;
+        markdown += `---\n\n[Add to cart](${BASE_URL}/product/${toProductSlug(product.name, product.id)}) | [Continue shopping](${BASE_URL})\n`;
       } else {
         markdown = mdHeader('Product Not Found');
-        markdown += `No product found for ID: ${id}\n\n[Browse products](${BASE_URL})\n`;
+        markdown += `No product found for: ${rawSlug}\n\n[Browse products](${BASE_URL})\n`;
       }
     } else if (path === '/search') {
       const q = searchParams.get('q') || '';

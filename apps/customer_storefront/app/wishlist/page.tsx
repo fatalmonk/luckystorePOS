@@ -8,6 +8,7 @@ import { BottomNav } from '../components/BottomNav';
 import { getLocalWishlist } from '../lib/wishlistHelpers';
 import { createProductRepository, createProductId } from '../lib/products/index';
 import { supabase } from '../lib/supabase';
+import { toProductSlug } from '../lib/products/slugify';
 import { formatBdt } from '../lib/formatPrice';
 import type { Product } from '../lib/types';
 import { Heart, ArrowRight } from '@phosphor-icons/react';
@@ -97,7 +98,7 @@ export default function WishlistPage() {
                 key={product.id}
                 className={`group bg-warm-surface border border-warm-border rounded-[20px] overflow-hidden transition-all duration-300 card-hover ${removedIds.includes(product.id) ? 'opacity-0 scale-95' : ''}`}
               >
-                <Link href={`/product/${product.id}`} className="block">
+                <Link href={`/product/${toProductSlug(product.name, product.id)}`} className="block">
                   <div className="relative w-full aspect-[4/3] bg-warm-bg flex items-center justify-center overflow-hidden">
                     {product.image_url ? (
                       <Image

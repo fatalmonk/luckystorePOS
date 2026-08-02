@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type Keyboard
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useCartActions } from '../hooks/useCartActions';
 import { getDealOfTheWeekProducts, getDiscountPercentage } from '../lib/deals';
+import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { DealCountdown } from './DealCountdown';
 import { ProductCard } from './ProductCard';
@@ -111,7 +112,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <article className={`deal-lead-card flex flex-col justify-between space-y-4 rounded-[22px] p-5 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
-            href={`/product/${encodeURIComponent(leadProduct.id)}`}
+            href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
             aria-label={`View ${leadProduct.name}`}
             className="deal-product-visual relative flex min-h-[280px] items-center justify-center overflow-hidden rounded-[18px] border p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[340px]"
           >
@@ -141,7 +142,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             </span>
             <h3 className="text-lg font-black text-warm-fg sm:text-xl">
               <Link
-                href={`/product/${encodeURIComponent(leadProduct.id)}`}
+                href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
                 className="hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg"
               >
                 {leadProduct.name}
