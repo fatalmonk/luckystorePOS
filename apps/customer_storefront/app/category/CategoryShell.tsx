@@ -50,6 +50,12 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     badge: 'Crispy & Sweet',
     bgImage: responsiveHeroBanner('promo_snacks', 'Snacks'),
   },
+  'biscuits-and-cookies': {
+    title: 'Biscuits & Cookies',
+    subtitle: 'Crunchy, sweet, and savory treats perfect for your tea time.',
+    badge: 'Tea Time Treats',
+    bgImage: responsiveHeroBanner('promo_biscuits', 'Biscuits & Cookies'),
+  },
   'cooking-essentials': {
     title: 'Cooking Essentials',
     subtitle: 'Pure oils, aromatic spices, and finest grains for your daily meals.',
