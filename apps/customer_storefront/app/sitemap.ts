@@ -5,10 +5,14 @@ import { toProductSlug } from './lib/products/slugify';
 const BASE_URL = 'https://luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
-// Static pages that actually exist in the production build and are indexable
+// Dynamic index pages — lastMod derived at runtime from newest DB content
+const dynamicIndexRoutes = [
+  { path: '', priority: 1.0, changefreq: 'daily' },
+  { path: '/category', priority: 0.8, changefreq: 'daily' },
+] as const;
+
+// Truly static pages — content rarely changes; hardcoded dates are appropriate
 const staticRoutes = [
-  { path: '', priority: 1.0, changefreq: 'daily', lastMod: '2026-08-01T00:00:00Z' },
-  { path: '/category', priority: 0.8, changefreq: 'daily', lastMod: '2026-08-01T00:00:00Z' },
   { path: '/contact', priority: 0.5, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
   { path: '/privacy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
   { path: '/terms', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
@@ -94,6 +98,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getProducts(),
   ]);
 
+  // Derive homepage/listing lastMod from the newest content in the DB
+  const allUpdatedAts = [
+    ...categories.map(c => c.updatedAt),
+    ...products.map(p => p.updatedAt),
+  ];
+  const newestUpdatedAt = allUpdatedAts.length
+    ? allUpdatedAts.reduce((a, b) => (a > b ? a : b))
+    : new Date().toISOString();
+  const newestMod = new Date(newestUpdatedAt).toISOString().split('.')[0] + 'Z';
+
+  const dynamicIndexEntries: MetadataRoute.Sitemap = dynamicIndexRoutes.map((route) => ({
+    url: `${BASE_URL}${route.path}`,
+    lastModified: newestMod,
+    changeFrequency: route.changefreq as any,
+    priority: route.priority,
+  }));
+
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${BASE_URL}${route.path}`,
     lastModified: route.lastMod,
@@ -116,6 +137,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   return [
+    ...dynamicIndexEntries,
     ...staticEntries,
     ...categoryEntries,
     ...productEntries,
