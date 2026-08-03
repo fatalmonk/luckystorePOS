@@ -3,11 +3,10 @@
 import React, { useCallback, useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, Tag, List, Sun, Moon } from '@phosphor-icons/react';
+import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, List, Sun, Moon } from '@phosphor-icons/react';
 import { AppDrawer } from '../AppDrawer';
 import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
-import { HeaderFilters } from '../HeaderFilters';
 import { SearchSuggestions } from './SearchSuggestions';
 import { Logo } from '../ui/Logo';
 import { CATEGORY_GROUPS } from '../../lib/types';
@@ -31,11 +30,11 @@ export function Header({ className = '' }: HeaderProps) {
   const searchParams = useSearchParams();
   const isFilterPage = pathname?.startsWith('/category') ?? false;
   const isHomePage = pathname === '/';
-  const showDesktopCategories = isHomePage || isFilterPage;
-  const activeCatalogTheme = isFilterPage ? searchParams.get('theme') : null;
   const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
     pathname?.startsWith(path),
   );
+  const showDesktopCategories = !isDistractionFreePage;
+  const activeCatalogTheme = isFilterPage ? searchParams.get('theme') : null;
   const { theme, toggleTheme } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -385,45 +384,44 @@ export function Header({ className = '' }: HeaderProps) {
         </div>
       </div>
 
-      {/* Category Pills Strip — on filter/catalog routes */}
-      {isFilterPage && (
+      {/* Mobile category/filter strip — replaced by compact category rail */}
+      {!isDistractionFreePage && (
         <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 lg:hidden">
-          <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5">
+          <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5" aria-label="Categories">
             <Link
-              href="/category?theme=deals"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-fg text-warm-accent text-xs font-bold hover:bg-warm-fg transition-colors"
+              href="/category"
+              aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
+              className={`flex-shrink-0 inline-flex h-8 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+                selectedCategory === 'all' && !activeCatalogTheme
+                  ? 'bg-warm-fg text-warm-accent'
+                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+              }`}
             >
-              Deals
+              All
             </Link>
-            <Link
-              href="/category?theme=bestsellers"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-warm-surface text-warm-fg border border-warm-border text-xs font-bold hover:bg-warm-bg transition-colors"
-            >
-              Best Sellers
-            </Link>
-
-            <div className="flex-1 min-w-0 flex items-center">
-              <Suspense
-                fallback={
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-[26px] w-14 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
-                    <div className="h-[26px] w-16 rounded-full bg-white border border-warm-border animate-pulse flex-shrink-0" />
-                  </div>
-                }
-              >
-                <HeaderFilters />
-              </Suspense>
-            </div>
+            {CATEGORY_GROUPS.map((group) => {
+              const isActive = !activeCatalogTheme && selectedCategory === group.slug;
+              return (
+                <Link
+                  key={group.slug}
+                  href={`/category/${group.slug}`}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`flex-shrink-0 inline-flex h-8 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+                    isActive
+                      ? 'bg-warm-fg text-warm-accent'
+                      : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+                  }`}
+                >
+                  {group.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       )}
 
       {showDesktopCategories && !isDistractionFreePage && (
-        <div
-          className={`relative h-14 border-t border-warm-border/60 bg-warm-bg dark:border-transparent ${
-            isFilterPage ? 'hidden md:ml-[72px] md:block' : 'block md:ml-[72px]'
-          }`}
-        >
+        <div className="relative hidden h-14 border-t border-warm-border/60 bg-warm-bg dark:border-transparent md:ml-[72px] lg:flex">
           <nav
             ref={desktopCategoriesRef}
             aria-label="Product categories"
@@ -439,29 +437,6 @@ export function Header({ className = '' }: HeaderProps) {
               }`}
             >
               All
-            </Link>
-            <Link
-              href="/category?theme=deals"
-              aria-current={activeCatalogTheme === 'deals' ? 'page' : undefined}
-              className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                activeCatalogTheme === 'deals'
-                  ? 'bg-warm-fg text-warm-accent'
-                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-              }`}
-            >
-              <Tag aria-hidden="true" size={16} weight="bold" className="text-warm-accent" />
-              Deals
-            </Link>
-            <Link
-              href="/category?theme=bestsellers"
-              aria-current={activeCatalogTheme === 'bestsellers' ? 'page' : undefined}
-              className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                activeCatalogTheme === 'bestsellers'
-                  ? 'bg-warm-fg text-warm-accent'
-                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-              }`}
-            >
-              Best Sellers
             </Link>
             {CATEGORY_GROUPS.map((group) => {
               const isActive = !activeCatalogTheme && selectedCategory === group.slug;
@@ -509,7 +484,7 @@ export function Header({ className = '' }: HeaderProps) {
         }
       `}</style>
     </header>
-    <div className={hasCategoryBar ? 'h-[112px]' : 'h-14'} aria-hidden="true" />
+    <div className={showDesktopCategories ? 'h-[112px]' : 'h-14'} aria-hidden="true" />
     </>
   );
 }

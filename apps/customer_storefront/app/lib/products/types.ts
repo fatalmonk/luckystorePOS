@@ -41,6 +41,7 @@ export interface Product {
   category_id?: string;
   stock: number;
   description: string;
+  nutrition?: string;
   imageUrl?: string;
   image_url?: string;
   createdAt?: Date;
