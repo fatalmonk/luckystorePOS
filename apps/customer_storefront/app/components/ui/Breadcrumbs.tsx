@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { JsonLd } from '../seo/JsonLd';
 
 export interface BreadcrumbItem {
   label: string;
@@ -22,16 +23,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      item: `https://luckystore.com${item.href}`,
+      item: `https://luckystore1947.com${item.href}`,
     })),
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
       <nav aria-label="Breadcrumb" className="py-2.5 px-4 text-xs font-semibold text-warm-muted">
         <ol className="flex items-center gap-1.5 flex-wrap">
           {allItems.map((item, index) => {

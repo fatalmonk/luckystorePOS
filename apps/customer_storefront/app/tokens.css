@@ -13,6 +13,9 @@
   --color-border: #E8E4DC;
   --color-border-light: #FDFBF7;
 
+  /* Layout */
+  --bottom-nav-height: 60px;
+
   /* Accent - Lucky Store Saffron palette */
   --color-accent: #f0c444;
   --color-accent-hover: #e0b434;
@@ -327,15 +330,17 @@ body {
   outline-offset: 2px;
 }
 
-/* Quantity pulse — fires when qty value changes */
-@keyframes qtyPulse {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.25); }
-  100% { transform: scale(1); }
-}
+/* Quantity pulse — fires when qty value changes, only for users who prefer motion */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes qtyPulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
 
-.qty-pulse {
-  animation: qtyPulse 0.3s var(--ease-out);
+  .qty-pulse {
+    animation: qtyPulse 0.3s var(--ease-out);
+  }
 }
 
 /* Reduced motion — non-destructive accessibility rules */

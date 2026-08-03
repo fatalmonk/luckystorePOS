@@ -1,5 +1,6 @@
-import type { Product } from '../../lib/types';
+import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
+import { JsonLd } from './JsonLd';
 
 interface ProductJsonLdProps {
   product: Product;
@@ -11,7 +12,7 @@ export function ProductJsonLd({ product }: ProductJsonLdProps) {
     '@type': 'Product',
     name: product.name,
     image: product.image_url ? [product.image_url] : undefined,
-    description: product.description || `${product.name} available at Lucky Store POS`,
+    description: product.description || `${product.name} available at Lucky Store`,
     sku: product.id,
     brand: {
       '@type': 'Brand',
@@ -32,10 +33,5 @@ export function ProductJsonLd({ product }: ProductJsonLdProps) {
     },
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <JsonLd data={jsonLd} />;
 }

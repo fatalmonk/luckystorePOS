@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { toProductSlug } from '../../lib/products/slugify';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
@@ -14,16 +14,20 @@ import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { ProductJsonLd } from '../../components/seo/ProductJsonLd';
 import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { formatBdt } from '../../lib/formatPrice';
-import type { Product } from '../../lib/types';
+import type { Product } from '../../lib/products/types';
+import { TrustStrip } from '../../components/product/TrustStrip';
+import { ProductCarousel } from '../../components/product/ProductCarousel';
 
 interface ProductClientProps {
   product: Product;
+  crossSell: Product[];
 }
 
-function ProductContent({ product }: ProductClientProps) {
+function ProductContent({ product, crossSell }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
+  const [imageError, setImageError] = useState(false);
 
   // Record product view post-mount
   useEffect(() => {
@@ -36,10 +40,10 @@ function ProductContent({ product }: ProductClientProps) {
 
   const stockStatus =
     product.stock <= 0
-      ? { text: 'Out of Stock', color: 'text-red-600', bg: 'bg-red-50' }
+      ? { text: 'Out of Stock', color: 'text-warm-danger', bg: 'bg-warm-danger-bg', aria: 'Out of stock' }
       : product.stock <= 5
-      ? { text: `Only ${product.stock} left`, color: 'text-amber-700', bg: 'bg-amber-50' }
-      : { text: 'In Stock', color: 'text-green-700', bg: 'bg-green-50' };
+      ? { text: `Only ${product.stock} left`, color: 'text-warm-warning', bg: 'bg-warm-warning-bg', aria: `Low stock, only ${product.stock} left` }
+      : { text: 'In Stock', color: 'text-warm-success', bg: 'bg-warm-success-bg', aria: 'In stock' };
 
   const handleAdd = () => {
     if (product.stock <= 0) {
@@ -58,22 +62,21 @@ function ProductContent({ product }: ProductClientProps) {
     }
   };
 
-  const taka = Math.floor(product.price);
-  const paisa = Math.round((product.price % 1) * 100).toString().padStart(2, '0');
+  const productUrl = `/product/${toProductSlug(product.name, product.id)}`;
 
   return (
     <>
       <ProductJsonLd product={product} />
       <Header />
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-12">
+      <main className="flex-1 pb-28 md:pb-12">
         <div className="max-w-3xl mx-auto bg-warm-surface min-h-full rounded-t-2xl mt-2">
           {/* Breadcrumb Navigation */}
           <div className="pt-2">
             <Breadcrumbs
               items={[
                 { label: product.category, href: `/category/${product.category}` },
-                { label: product.name, href: `/product/${toProductSlug(product.name, product.id)}` },
+                { label: product.name, href: productUrl },
               ]}
             />
           </div>
@@ -81,23 +84,27 @@ function ProductContent({ product }: ProductClientProps) {
           {/* Hero Section */}
           <div className="px-4 pt-4 pb-5 sm:px-6 lg:px-8">
             <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-bg overflow-hidden mb-6">
-              {product.image_url ? (
+              {product.image_url && !imageError ? (
                 <Image
                   src={product.image_url}
                   alt={product.name}
                   fill
+                  priority
                   sizes="(max-width: 768px) 100vw, 360px"
                   className="w-full h-full object-contain p-6 sm:p-8"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const placeholder = e.currentTarget.parentElement?.querySelector('[data-placeholder]');
-                    if (placeholder) placeholder.classList.remove('hidden');
-                  }}
+                  onError={() => setImageError(true)}
                 />
               ) : null}
-              <div data-placeholder className={`absolute inset-0 grid place-items-center text-[100px] ${product.image_url ? 'hidden' : ''}`}>
-                {product.emoji}
-              </div>
+              {(!product.image_url || imageError) && (
+                <div
+                  data-placeholder
+                  className="absolute inset-0 grid place-items-center text-8xl"
+                  aria-label={product.name}
+                  role="img"
+                >
+                  <span aria-hidden="true">{product.emoji}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-start justify-between gap-3">
@@ -107,18 +114,25 @@ function ProductContent({ product }: ProductClientProps) {
                 </h1>
                 <p className="text-sm text-warm-muted">{product.unit}</p>
               </div>
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${stockStatus.bg} ${stockStatus.color}`}>
-                {stockStatus.text}
-              </span>
+              <div aria-live="polite" aria-atomic="true" className="shrink-0">
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${stockStatus.bg} ${stockStatus.color}`}
+                  aria-label={stockStatus.aria}
+                >
+                  {stockStatus.text}
+                </span>
+              </div>
             </div>
 
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold tracking-tight text-warm-fg">৳{taka}</span>
-              <span className="text-lg font-extrabold text-warm-fg">{paisa}</span>
+              <span className="text-4xl font-extrabold tracking-tight text-warm-fg">
+                {formatBdt(product.price)}
+              </span>
             </div>
 
             {/* Action Area — Desktop & Inline */}
             <div className="mt-6">
+              <TrustStrip className="mb-4" />
               {qtyInCart > 0 ? (
                 <div className="flex items-center gap-2">
                   <button
@@ -128,7 +142,11 @@ function ProductContent({ product }: ProductClientProps) {
                   >
                     −
                   </button>
-                  <QtyNumber qty={qtyInCart} className="font-bold text-sm min-w-[28px] text-center" />
+                  <QtyNumber
+                    qty={qtyInCart}
+                    className="font-bold text-sm min-w-[28px] text-center"
+                    aria-label={`Quantity ${qtyInCart} in cart`}
+                  />
                   <button
                     onClick={() => handleUpdateQty(1)}
                     disabled={qtyInCart >= product.stock}
@@ -142,7 +160,7 @@ function ProductContent({ product }: ProductClientProps) {
                   </span>
                 </div>
               ) : product.stock <= 0 ? (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <div className="flex-1">
                     <WishlistButton productId={product.id} productName={product.name} />
                   </div>
@@ -166,7 +184,7 @@ function ProductContent({ product }: ProductClientProps) {
 
           {/* Description */}
           <div className="border-t border-warm-border px-4 py-5 sm:px-6 lg:px-8">
-            <h2 className="text-[15px] font-bold mb-2 text-warm-fg">Description</h2>
+            <h2 className="text-sm font-bold mb-2 text-warm-fg">Description</h2>
             <p className="text-sm text-warm-muted leading-relaxed">
               {product.description || `Fresh ${product.name} delivered to your door.`}
             </p>
@@ -174,33 +192,41 @@ function ProductContent({ product }: ProductClientProps) {
 
           {product.nutrition && (
             <div className="border-t border-warm-border px-4 py-5 sm:px-6 lg:px-8">
-              <h2 className="text-[15px] font-bold mb-2 text-warm-fg">Nutrition per 100ml</h2>
+              <h2 className="text-sm font-bold mb-2 text-warm-fg">Nutrition per 100ml</h2>
               <p className="text-sm text-warm-muted leading-relaxed">{product.nutrition}</p>
             </div>
           )}
+
+          <ProductCarousel title="More to explore" products={crossSell} />
         </div>
       </main>
 
       {/* Sticky Mobile Add-to-Cart Bar */}
-      <div className="fixed bottom-[60px] left-0 right-0 z-40 bg-warm-surface/95 backdrop-blur-md border-t border-warm-border p-3 px-4 flex items-center justify-between shadow-lg md:hidden">
+      <div className="fixed bottom-[var(--bottom-nav-height)] left-0 right-0 z-40 bg-warm-surface/95 backdrop-blur-md border-t border-warm-border p-3 px-4 flex items-center justify-between shadow-lg md:hidden">
         <div className="flex flex-col">
           <span className="text-xs font-bold text-warm-fg line-clamp-1">{product.name}</span>
           <span className="text-sm font-black text-warm-fg">{formatBdt(product.price)}</span>
         </div>
         <div>
           {qtyInCart > 0 ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => handleUpdateQty(-1)}
-                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-sm"
+                className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-base active:scale-95"
+                aria-label="Decrease quantity"
               >
                 −
               </button>
-              <QtyNumber qty={qtyInCart} className="font-bold text-xs min-w-[20px] text-center" />
+              <QtyNumber
+                qty={qtyInCart}
+                className="font-bold text-sm min-w-[24px] text-center"
+                aria-label={`Quantity ${qtyInCart} in cart`}
+              />
               <button
                 onClick={() => handleUpdateQty(1)}
                 disabled={qtyInCart >= product.stock}
-                className="w-9 h-9 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-sm disabled:opacity-50"
+                className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-base active:scale-95 disabled:opacity-50"
+                aria-label="Increase quantity"
               >
                 +
               </button>
@@ -209,7 +235,7 @@ function ProductContent({ product }: ProductClientProps) {
             <button
               onClick={handleAdd}
               disabled={product.stock <= 0}
-              className="px-5 py-2.5 rounded-full bg-[#f0c444] text-[#0B0B0D] font-extrabold text-xs shadow-sm hover:opacity-90 disabled:opacity-50"
+              className="px-5 py-2.5 h-11 min-h-[44px] rounded-full bg-warm-accent text-warm-accent-text font-extrabold text-xs shadow-sm hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
             >
               {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
@@ -222,7 +248,6 @@ function ProductContent({ product }: ProductClientProps) {
   );
 }
 
-export default function ProductClient({ product }: ProductClientProps) {
-  return <ProductContent product={product} />;
+export default function ProductClient({ product, crossSell }: ProductClientProps) {
+  return <ProductContent product={product} crossSell={crossSell} />;
 }
-

@@ -1,6 +1,6 @@
 'use client'; // cart modal dialog with useRef, useEffect, router, and cart context
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -23,11 +23,6 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [closing, setClosing] = useState(false);
 
-  const requestClose = useCallback(() => {
-    if (!dialogRef.current || closing) return;
-    setClosing(true);
-  }, [closing]);
-
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);
     showToast(`Removed ${itemName} from cart`, { label: 'Undo', onClick: undoRemove }, 4000);
@@ -39,11 +34,11 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
 
     if (open) {
       setClosing(false);
-      dialog.showModal();
+      if (!dialog.open) dialog.showModal();
     } else if (dialog.open) {
-      requestClose();
+      setClosing(true);
     }
-  }, [open, requestClose]);
+  }, [open]);
 
   useEffect(() => {
     if (!closing) return;
@@ -58,7 +53,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === dialogRef.current) {
-      requestClose();
+      onClose();
     }
   };
 
@@ -105,7 +100,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
             Cart <span className="text-warm-muted font-semibold text-sm ml-1">({totalItems})</span>
           </h3>
           <button
-            onClick={requestClose}
+            onClick={onClose}
             className="w-11 h-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm"
             aria-label="Close cart"
           >
@@ -120,7 +115,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
               <p className="text-warm-muted text-sm">Your cart is empty.</p>
               <Link
                 href="/category"
-                onClick={requestClose}
+                onClick={onClose}
                 className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-warm-accent px-5 py-2.5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover"
               >
                 Browse groceries
@@ -152,7 +147,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
-                      className="text-xs text-red-500 mt-0.5 inline-flex items-center gap-1 hover:text-red-600 transition-colors min-h-[28px] px-0.5"
+                      className="text-xs text-warm-danger mt-0.5 inline-flex items-center gap-1 hover:text-warm-danger-dark transition-colors min-h-[28px] px-0.5"
                       aria-label={`Remove ${item.name}`}
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -195,7 +190,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
               <p className="text-xl font-extrabold">{formatBdt(total)}</p>
             </div>
             <Button
-              onClick={() => { requestClose(); router.push('/checkout'); }}
+              onClick={() => { onClose(); router.push('/checkout'); }}
               className="flex-0 w-[140px]"
               data-testid="sheet-checkout-btn"
             >
