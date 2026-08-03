@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import React, { Suspense } from 'react';
 import { Header } from '../components/updated/Header';
 import { Footer } from '../components/updated/Footer';
 import { BottomNav } from '../components/BottomNav';
 import { CatalogLayout } from '../components/CatalogLayout';
+import { CategoryGrid } from '../components/CategoryGrid';
+import { CategoryGridSkeleton } from '../components/CategoryGridSkeleton';
 import { HeroBanner } from '../components/updated/HeroBanner';
 import type { Product, Category, CategoryGroup } from '../lib/types';
 import { img, srcSet, responsiveHeroBanner } from '../lib/imageUrl';
@@ -102,10 +105,13 @@ export function CategoryShell({
   return (
     <>
       <Header />
-      <main className="flex-1 overflow-x-hidden pb-16">
-        <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-          {/* Render compact banner ONLY for specific category/group pages, never on all-products */}
-          {!isAllProducts && (
+      <main className={`flex-1 overflow-x-hidden pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
+        {isAllProducts ? (
+          <Suspense fallback={<CategoryGridSkeleton />}>
+            <CategoryGrid searchParams={searchParams} />
+          </Suspense>
+        ) : (
+          <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
             <div className="space-y-4">
               {parentGroup && !group && (
                 <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
@@ -131,20 +137,19 @@ export function CategoryShell({
                 ]}
               />
             </div>
-          )}
 
-          {/* Direct Catalog Layout */}
-          <CatalogLayout
-            products={products}
-            categorySlug={categorySlug}
-            group={group}
-            parentGroup={parentGroup}
-            categories={categories}
-            theme={theme}
-            sort={sort}
-            searchParams={searchParams}
-          />
-        </div>
+            <CatalogLayout
+              products={products}
+              categorySlug={categorySlug}
+              group={group}
+              parentGroup={parentGroup}
+              categories={categories}
+              theme={theme}
+              sort={sort}
+              searchParams={searchParams}
+            />
+          </div>
+        )}
         <Footer />
       </main>
       <BottomNav />
