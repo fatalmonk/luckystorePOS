@@ -44,7 +44,24 @@ export function HomeShell({
   freshProducts = [],
   nestleProducts = [],
 }: HomeShellProps) {
-  if (inStock.length === 0) return null;
+  if (inStock.length === 0) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+          <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-20">
+            <h1 className="text-2xl font-black">Lucky Store is stocking up</h1>
+            <p className="mt-2 text-sm text-warm-muted">Please check back soon.</p>
+            <Link href="/category" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-warm-accent px-5 py-2 text-sm font-extrabold text-warm-accent-text">
+              Browse categories →
+            </Link>
+          </div>
+        </main>
+        <Footer />
+        <BottomNav />
+      </>
+    );
+  }
 
   return (
     <>
@@ -84,7 +101,7 @@ export function HomeShell({
               id="taste-nestle"
               title="Taste The Goodness of Nestlé"
               subtitle="Baby food, dairy & everyday nutrition."
-              products={nestleProducts.length > 0 ? nestleProducts.slice(0, 9) : inStock.slice(0, 9)}
+              products={nestleProducts.slice(0, 9)}
               ctaHref="/category"
             />
             <ThemedProductRail

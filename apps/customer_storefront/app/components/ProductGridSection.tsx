@@ -48,7 +48,7 @@ export function ProductGridSection({
         <Link
           href={ctaHref}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-muted transition-colors hover:bg-warm-bg hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-          aria-label={ctaLabel}
+          aria-label={`${ctaLabel} — ${title}`}
         >
           <CaretRight size={18} weight="bold" aria-hidden="true" />
         </Link>

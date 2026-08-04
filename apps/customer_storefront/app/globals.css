@@ -400,9 +400,6 @@
   }
 
   .home-trust-strip {
-    --color-foreground: var(--color-foreground);
-    --color-muted: var(--color-muted);
-    --color-border: var(--color-border);
     overflow: hidden;
     border-radius: var(--radius-lg);
     background: var(--color-surface);

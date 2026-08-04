@@ -59,9 +59,20 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
 };
 
 function scoreProduct(product: Product, groups: readonly string[]): number {
-  const category = product.category?.toLowerCase().trim();
-  if (!category || groups.length === 0) return 0;
-  return groups.includes(category) ? 1 : 0;
+  const rawCategory = product.category?.toLowerCase().trim();
+  if (!rawCategory || groups.length === 0) return 0;
+
+  const normalizedGroups = groups.map((g) => g.toLowerCase().trim());
+  if (normalizedGroups.includes(rawCategory)) return 1;
+
+  // Resolve slug/subcategory to canonical group, then match by normalized slug
+  const group = getCategoryGroup(rawCategory);
+  if (group) {
+    const canon = group.slug.toLowerCase().trim().replace(/[-\s&]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (normalizedGroups.some((g) => canon === g.replace(/[-\s&]+/g, ' ').replace(/\s+/g, ' ').trim())) return 1;
+  }
+
+  return 0;
 }
 
 function formatSavings(amount: number): string {
