@@ -201,7 +201,7 @@ export function HeroBanner({
             <button
               key={i}
               onClick={() => goTo(i)}
-              className="min-h-11 min-w-11 rounded-full transition-all duration-300"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-full transition-all duration-300"
               aria-label={`Slide ${i + 1}`}
             >
               <span
