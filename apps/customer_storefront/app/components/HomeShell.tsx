@@ -101,7 +101,7 @@ export function HomeShell({
               id="taste-nestle"
               title="Taste The Goodness of Nestlé"
               subtitle="Baby food, dairy & everyday nutrition."
-              products={nestleProducts}
+              products={nestleProducts.slice(0, 9)}
               ctaHref="/category"
             />
             <ThemedProductRail

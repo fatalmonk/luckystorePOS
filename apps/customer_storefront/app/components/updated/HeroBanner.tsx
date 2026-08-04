@@ -196,18 +196,22 @@ export function HeroBanner({
 
       {/* Dot indicators */}
       {slides.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-2 py-1.5 sm:bottom-3">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-2 py-1.5 sm:bottom-3">
           {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
-              className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                i === current
-                  ? 'bg-warm-fg w-5'
-                  : 'bg-warm-fg/30 hover:bg-warm-fg/50'
-              }`}
+              className="min-h-11 min-w-11 rounded-full transition-all duration-300"
               aria-label={`Slide ${i + 1}`}
-            />
+            >
+              <span
+                className={`block h-3 w-3 rounded-full transition-all duration-300 ${
+                  i === current
+                    ? 'bg-warm-fg w-5'
+                    : 'bg-warm-fg/30 hover:bg-warm-fg/50'
+                }`}
+              />
+            </button>
           ))}
         </div>
       )}

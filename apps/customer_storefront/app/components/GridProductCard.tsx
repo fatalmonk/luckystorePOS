@@ -73,7 +73,7 @@ export function GridProductCard({ product, index = 0, brandOverlay, offerBadge }
 
         {/* Brand overlay badge (e.g. brightfarms) */}
         {brandOverlay && (
-          <div className="absolute bottom-2 left-2 z-10 rounded-md bg-[#16A34A] px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+          <div className="pointer-events-none absolute bottom-2 left-2 z-10 rounded-md bg-[#16A34A] px-2 py-1 text-[10px] font-bold text-white shadow-sm">
             {brandOverlay}
           </div>
         )}

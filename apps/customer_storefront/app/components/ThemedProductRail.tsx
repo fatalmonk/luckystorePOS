@@ -65,11 +65,11 @@ function scoreProduct(product: Product, groups: readonly string[]): number {
   const normalizedGroups = groups.map((g) => g.toLowerCase().trim());
   if (normalizedGroups.includes(rawCategory)) return 1;
 
-  // If category is a slug, resolve to its group and match by slug or label
+  // Resolve slug/subcategory to canonical group, then match by normalized slug
   const group = getCategoryGroup(rawCategory);
   if (group) {
-    if (normalizedGroups.includes(group.slug)) return 1;
-    if (normalizedGroups.includes(group.label.toLowerCase().trim())) return 1;
+    const canon = group.slug.toLowerCase().trim().replace(/[-\s&]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (normalizedGroups.some((g) => canon === g.replace(/[-\s&]+/g, ' ').replace(/\s+/g, ' ').trim())) return 1;
   }
 
   return 0;
