@@ -31,7 +31,7 @@ const supabase = createClient(
 );
 
 // Dynamic category pages
-async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
+async function getCategories(): Promise<{ slug: string }[]> {
   try {
     const { data, error } = await supabase
       .from('categories')
@@ -48,7 +48,6 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
         .replace(/&/g, 'and')
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-'),
-      updatedAt: new Date().toISOString(),
     }));
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
@@ -67,7 +66,7 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
       'electronics',
       'baking-needs',
       'baby-care',
-    ].map((slug) => ({ slug, updatedAt: new Date().toISOString() }));
+    ].map((slug) => ({ slug }));
   }
 }
 
@@ -98,13 +97,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getProducts(),
   ]);
 
-  // Derive homepage/listing lastMod from the newest content in the DB
-  const allUpdatedAts = [
-    ...categories.map(c => c.updatedAt),
-    ...products.map(p => p.updatedAt),
-  ];
-  const newestUpdatedAt = allUpdatedAts.length
-    ? allUpdatedAts.reduce((a, b) => (a > b ? a : b))
+  // Derive homepage/listing lastMod from the newest *real* product timestamp only.
+  // Category pages have no updated_at column, so we exclude them to avoid
+  // every build appearing as "just modified" and triggering unnecessary crawler re-fetches.
+  const productUpdatedAts = products.map(p => p.updatedAt).filter(Boolean);
+  const newestUpdatedAt = productUpdatedAts.length
+    ? productUpdatedAts.reduce((a, b) => (a > b ? a : b))
     : new Date().toISOString();
   const newestMod = new Date(newestUpdatedAt).toISOString().split('.')[0] + 'Z';
 
@@ -124,7 +122,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
     url: `${BASE_URL}/category/${cat.slug}`,
-    lastModified: new Date(cat.updatedAt).toISOString().split('.')[0] + 'Z',
+    // lastModified intentionally omitted: no updated_at column on categories table.
+    // Omitting is spec-compliant and prevents false "just updated" signals to crawlers.
     changeFrequency: 'daily',
     priority: 0.9,
   }));
