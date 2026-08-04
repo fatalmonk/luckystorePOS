@@ -126,7 +126,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const rows = (data ?? []) as unknown[];
     const hasMore = rows.length > limit;
     const products: Product[] = [];
-    for (const row of rows.slice(0, limit)) {
+    for (const row of rows) {
+      if (products.length === limit) break;
       const validated = tryValidateProductRow(row);
       if (!validated) continue;
       products.push(mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap));
@@ -167,7 +168,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
 
     const hasMore = merged.length > limit;
     const products: Product[] = [];
-    for (const row of merged.slice(0, limit)) {
+    for (const row of merged) {
+      if (products.length === limit) break;
       const validated = tryValidateProductRow(row);
       if (!validated) continue;
       products.push(mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap));
