@@ -33,6 +33,17 @@ export default async function Home() {
 
   const inStock = products.filter((p) => p.stock > 0);
 
+  if (inStock.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 text-center">
+        <div>
+          <h1 className="text-2xl font-black">Lucky Store is stocking up</h1>
+          <p className="mt-2 text-sm text-warm-muted">All items are currently out of stock. Please check back soon.</p>
+        </div>
+      </div>
+    );
+  }
+
   const onSale = inStock.filter((p) => p.originalPrice != null && p.originalPrice > p.price);
   const withBadge = inStock.filter((p) => p.badge);
   const dealsPool = onSale.length >= 4 ? onSale : withBadge.length >= 4 ? withBadge : inStock;

@@ -34,7 +34,7 @@ export function GoogleMapEmbed({
 
   useEffect(() => {
     const key = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!key || !key.trim() || key.includes('YOUR_API_KEY')) {
+    if (!key || !key.trim() || key.includes('YOUR_API_KEY') || key.includes('your-api-key')) {
       setError('Google Maps API key missing or invalid. Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.');
       return;
     }

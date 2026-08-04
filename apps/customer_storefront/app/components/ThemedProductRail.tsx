@@ -59,9 +59,20 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
 };
 
 function scoreProduct(product: Product, groups: readonly string[]): number {
-  const category = product.category?.toLowerCase().trim();
-  if (!category || groups.length === 0) return 0;
-  return groups.includes(category) ? 1 : 0;
+  const rawCategory = product.category?.toLowerCase().trim();
+  if (!rawCategory || groups.length === 0) return 0;
+
+  const normalizedGroups = groups.map((g) => g.toLowerCase().trim());
+  if (normalizedGroups.includes(rawCategory)) return 1;
+
+  // If category is a slug, resolve to its group and match by slug or label
+  const group = getCategoryGroup(rawCategory);
+  if (group) {
+    if (normalizedGroups.includes(group.slug)) return 1;
+    if (normalizedGroups.includes(group.label.toLowerCase().trim())) return 1;
+  }
+
+  return 0;
 }
 
 function formatSavings(amount: number): string {

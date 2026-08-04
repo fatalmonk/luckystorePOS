@@ -39,39 +39,41 @@ export function GridProductCard({ product, index = 0, brandOverlay, offerBadge }
       data-testid="grid-product-card"
     >
       {/* Image well — reference uses #f8f8f8 */}
-      <Link
-        href={productHref}
-        aria-label={`View ${product.name}`}
-        className="relative aspect-square w-full overflow-hidden bg-[#f8f8f8] p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
-      >
-        {product.image_url && !imageLoaded && !imageError && (
-          <div className="absolute inset-3 animate-pulse rounded-xl bg-warm-border/50" aria-hidden="true" />
-        )}
-        {product.image_url && !imageError ? (
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 33vw, 200px"
-            className="object-contain p-2"
-            priority={index === 0}
-            loading={index === 0 ? undefined : 'lazy'}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageLoaded(true);
-              setImageError(true);
-            }}
-          />
-        ) : null}
-        {(!product.image_url || imageError) && (
-          <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
-            <CategoryPlaceholder category={product.category as Category} />
-          </div>
-        )}
+      <div className="relative aspect-square w-full overflow-hidden bg-[#f8f8f8] p-2">
+        <Link
+          href={productHref}
+          aria-label={`View ${product.name}`}
+          className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
+        >
+          {product.image_url && !imageLoaded && !imageError && (
+            <div className="absolute inset-3 animate-pulse rounded-xl bg-warm-border/50" aria-hidden="true" />
+          )}
+          {product.image_url && !imageError ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 33vw, 200px"
+              className="object-contain p-2"
+              priority={index === 0}
+              loading={index === 0 ? undefined : 'lazy'}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => {
+                setImageLoaded(true);
+                setImageError(true);
+              }}
+            />
+          ) : null}
+          {(!product.image_url || imageError) && (
+            <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
+              <CategoryPlaceholder category={product.category as Category} />
+            </div>
+          )}
+        </Link>
 
         {/* Brand overlay badge (e.g. brightfarms) */}
         {brandOverlay && (
-          <div className="absolute bottom-2 left-2 rounded-md bg-[#16A34A] px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+          <div className="absolute bottom-2 left-2 z-10 rounded-md bg-[#16A34A] px-2 py-1 text-[10px] font-bold text-white shadow-sm">
             {brandOverlay}
           </div>
         )}
@@ -136,7 +138,7 @@ export function GridProductCard({ product, index = 0, brandOverlay, offerBadge }
             </button>
           )}
         </div>
-      </Link>
+      </div>
 
       {/* Content */}
       <div className="flex flex-col gap-1 p-3 pt-2">

@@ -125,7 +125,7 @@ export function Footer() {
               Get directions
             </a>
             <a
-              href="tel:+880****4544"
+              href="tel:+8801731944544"
               className={`mt-1 inline-flex min-h-11 items-center text-sm font-bold text-warm-accent sm:text-xs ${footerFocus}`}
             >
               +880 1731-944544
