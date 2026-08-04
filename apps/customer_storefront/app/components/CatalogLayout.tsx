@@ -91,13 +91,22 @@ export function CatalogLayout({
 
   // Extract active query params
   const activePriceParam = (urlParams.get('price') || searchParams?.price || '') as string;
-  const activePrices = activePriceParam ? activePriceParam.split(',') : [];
+  const activePrices = useMemo(
+    () => (activePriceParam ? activePriceParam.split(',') : []),
+    [activePriceParam],
+  );
 
   const activeAvailParam = (urlParams.get('availability') || searchParams?.availability || '') as string;
-  const activeAvailabilities = activeAvailParam ? activeAvailParam.split(',') : [];
+  const activeAvailabilities = useMemo(
+    () => (activeAvailParam ? activeAvailParam.split(',') : []),
+    [activeAvailParam],
+  );
 
   const activeBrandParam = (urlParams.get('brand') || searchParams?.brand || '') as string;
-  const activeBrands = activeBrandParam ? activeBrandParam.split(',') : [];
+  const activeBrands = useMemo(
+    () => (activeBrandParam ? activeBrandParam.split(',') : []),
+    [activeBrandParam],
+  );
 
   const activeSort = (urlParams.get('sort') || sort || 'best') as string;
   const searchQuery = (urlParams.get('q') || searchParams?.q || '') as string;

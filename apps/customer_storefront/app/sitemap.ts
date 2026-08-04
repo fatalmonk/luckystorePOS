@@ -35,7 +35,7 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
   try {
     const { data, error } = await supabase
       .from('categories')
-      .select('slug, name, category, updated_at')
+      .select('slug, name, category')
       .eq('active', true)
       .eq('store_id', STORE_ID);
 
@@ -48,7 +48,7 @@ async function getCategories(): Promise<{ slug: string; updatedAt: string }[]> {
         .replace(/&/g, 'and')
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-'),
-      updatedAt: c.updated_at || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }));
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
