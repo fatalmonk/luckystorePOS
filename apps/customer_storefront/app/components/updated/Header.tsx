@@ -496,7 +496,7 @@ export function Header({ className = '' }: HeaderProps) {
       className={
         showDesktopCategories
           ? 'h-[112px]'
-          : 'h-14 lg:h-[112px]'
+          : 'h-14'
       }
       aria-hidden="true"
     />

@@ -128,6 +128,15 @@ export function GoogleMapEmbed({
         'm-2 sm:m-3 px-3 py-1.5 sm:px-4 sm:py-2 bg-warm-surface text-warm-fg font-semibold text-[11px] sm:text-xs rounded-xl shadow-warm-sm border border-warm-border hover:bg-warm-bg focus:outline-none cursor-pointer transition-all touch-manipulation';
       map.controls[google.maps.ControlPosition.TOP_RIGHT].push(locationButton);
 
+      // Type-safe marker removal for both AdvancedMarkerElement and legacy Marker
+      const removeMarker = (m: any) => {
+        if (m && typeof m.map !== 'undefined') {
+          m.map = null; // AdvancedMarkerElement
+        } else if (m && typeof m.setMap === 'function') {
+          m.setMap(null); // legacy Marker
+        }
+      };
+
       let currentPlaceMarkers: any[] = [];
 
       locationButton.addEventListener('click', () => {
@@ -143,8 +152,8 @@ export function GoogleMapEmbed({
               lng: position.coords.longitude,
             };
 
-            // Remove existing current place markers
-            currentPlaceMarkers.forEach((m) => m.setMap(null));
+            // Remove existing current place markers (type-safe for mixed marker types)
+            currentPlaceMarkers.forEach(removeMarker);
             currentPlaceMarkers = [];
 
             // Add user location marker
@@ -300,19 +309,23 @@ export function GoogleMapEmbed({
           .replace(/,?\s*Bangladesh/gi, '')
           .trim();
 
-        // Address with Icon
+        // Address with Icon — built via DOM (no innerHTML interpolation)
         const addressRow = document.createElement('div');
         addressRow.className = 'flex items-start gap-2 text-xs sm:text-sm text-warm-muted font-medium leading-relaxed mb-1.5';
-        addressRow.innerHTML = `
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-warm-muted/70 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          <span class="break-words">${displayAddress}</span>
-        `;
+        const addrSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        addrSvg.setAttribute('class', 'w-4 h-4 sm:w-5 sm:h-5 text-warm-muted/70 shrink-0 mt-0.5');
+        addrSvg.setAttribute('fill', 'none');
+        addrSvg.setAttribute('stroke', 'currentColor');
+        addrSvg.setAttribute('viewBox', '0 0 24 24');
+        addrSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>';
+        const addrSpan = document.createElement('span');
+        addrSpan.className = 'break-words';
+        addrSpan.textContent = displayAddress;
+        addressRow.appendChild(addrSvg);
+        addressRow.appendChild(addrSpan);
         content.appendChild(addressRow);
 
-        // Website Row with Icon
+        // Website Row with Icon — built via DOM (no innerHTML interpolation)
         if (websiteUrl) {
           const websiteRow = document.createElement('a');
           websiteRow.href = websiteUrl;
@@ -320,13 +333,17 @@ export function GoogleMapEmbed({
           websiteRow.rel = 'noopener noreferrer';
           websiteRow.className =
             'flex items-center gap-2 py-1 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 active:text-blue-700 transition-colors group mb-1.5 touch-manipulation';
+          const webSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          webSvg.setAttribute('class', 'w-4 h-4 sm:w-5 sm:h-5 text-blue-500 group-hover:text-blue-700 shrink-0');
+          webSvg.setAttribute('fill', 'none');
+          webSvg.setAttribute('stroke', 'currentColor');
+          webSvg.setAttribute('viewBox', '0 0 24 24');
+          webSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>';
+          const webSpan = document.createElement('span');
           const displayDomain = websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-          websiteRow.innerHTML = `
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 group-hover:text-blue-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-            </svg>
-            <span>${displayDomain} ↗</span>
-          `;
+          webSpan.textContent = displayDomain + ' ↗';
+          websiteRow.appendChild(webSvg);
+          websiteRow.appendChild(webSpan);
           content.appendChild(websiteRow);
         }
 
