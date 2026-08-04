@@ -8,7 +8,7 @@ test.describe('Search suggestions and catalog filters', () => {
     if (viewport && viewport.width < 768) {
       await page.getByRole('button', { name: 'Open search' }).click();
     } else {
-      await page.getByRole('textbox', { name: 'Search products' }).focus();
+      await page.getByRole('textbox', { name: 'Search products' }).first().focus();
     }
 
     const suggestions = page.getByRole('region', { name: 'Search suggestions' });
