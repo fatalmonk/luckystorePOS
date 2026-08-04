@@ -3,12 +3,65 @@ import { createProductRepository } from './lib/products/index';
 import { supabase } from './lib/supabase';
 import { img, srcSet } from './lib/imageUrl';
 import { toProductSlug } from './lib/products/slugify';
+import { getCategoryGroup } from './lib/types';
+import type { Product } from './lib/types';
+
+/** Filter in-stock products whose category belongs to any of the given group slugs. */
+function filterByGroups(products: Product[], groupSlugs: string[]): Product[] {
+  return products.filter((p) => {
+    const group = getCategoryGroup(p.category ?? '');
+    return group ? groupSlugs.includes(group.slug) : false;
+  });
+}
 
 export const revalidate = 60;
 
 export default async function Home() {
   const { repo } = createProductRepository(supabase);
   const [{ products }, categories] = await Promise.all([repo.search({}), repo.getCategories()]);
+
+  if (!products || products.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 text-center">
+        <div>
+          <h1 className="text-2xl font-black">Lucky Store is stocking up</h1>
+          <p className="mt-2 text-sm text-warm-muted">Please check back soon.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const inStock = products.filter((p) => p.stock > 0);
+
+  const onSale = inStock.filter((p) => p.originalPrice != null && p.originalPrice > p.price);
+  const withBadge = inStock.filter((p) => p.badge);
+  const dealsPool = onSale.length >= 4 ? onSale : withBadge.length >= 4 ? withBadge : inStock;
+
+  const morningProducts = filterByGroups(inStock, [
+    'dairy-and-eggs', 'breakfast', 'tea-&-coffee', 'biscuits-and-cookies', 'cereals', 'chocolates-and-candies',
+  ])
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 8);
+
+  const pantryProducts = filterByGroups(inStock, [
+    'rice-and-grain', 'cooking-essentials', 'spices', 'oil-and-ghee',
+  ])
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 8);
+
+  const featuredProducts = inStock.slice(0, 6);
+
+  const freshProducts = filterByGroups(inStock, ['dairy-and-eggs', 'ice-cream', 'cold-beverages'])
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 9);
+
+  const nestleProducts = inStock
+    .filter((p) => p.name.toLowerCase().includes('nestle') || p.brand?.toLowerCase().includes('nestle'))
+    .slice(0, 9);
+
+  const campaignProducts = filterByGroups(inStock, ['tea-&-coffee', 'breakfast'])
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 8);
 
   // Preload primary campaign hero image (LCP element)
   const primaryHeroAvif = img('/banners/promo_welcome_v2_1200.avif');
@@ -23,7 +76,6 @@ export default async function Home() {
     name: 'Lucky Store',
     alternateName: 'Lucky Store Chittagong',
   };
-  const featuredProducts = products.filter((product) => product.stock > 0).slice(0, 6);
   const productListJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -55,7 +107,17 @@ export default async function Home() {
         type="image/avif"
         fetchPriority="high"
       />
-      <HomeShell products={products} categories={categories} />
+      <HomeShell
+        inStock={inStock}
+        categories={categories}
+        dealsProducts={dealsPool}
+        morningProducts={morningProducts}
+        pantryProducts={pantryProducts}
+        featuredProducts={featuredProducts}
+        campaignProducts={campaignProducts}
+        freshProducts={freshProducts}
+        nestleProducts={nestleProducts}
+      />
     </>
   );
 }

@@ -8,16 +8,44 @@ import { BottomNav } from './BottomNav';
 import { FaqJsonLd } from './seo/FaqJsonLd';
 import { CartStorageNotice } from './CartStorageNotice';
 import { CategorySingleCarousel } from './CategorySingleCarousel';
-import { DeliveryParallax } from './parallax/DeliveryParallax';
+import { CategoryQuickGrid } from './CategoryQuickGrid';
+import { ThemedProductRail } from './ThemedProductRail';
+import { ProductGridSection } from './ProductGridSection';
 import { HeritageParallax } from './parallax/HeritageParallax';
 import type { Product, Category } from '../lib/types';
 
-interface HomeShellProps {
-  products: Product[];
-  categories?: { id: string; slug: Category; name: string; emoji: string }[];
+export interface CategoryItem {
+  id: string;
+  slug: Category;
+  name: string;
+  emoji: string;
 }
 
-export function HomeShell({ products }: HomeShellProps) {
+export interface HomeShellProps {
+  inStock: Product[];
+  categories?: CategoryItem[];
+  dealsProducts: Product[];
+  morningProducts: Product[];
+  pantryProducts: Product[];
+  featuredProducts: Product[];
+  campaignProducts: Product[];
+  freshProducts?: Product[];
+  nestleProducts?: Product[];
+}
+
+export function HomeShell({
+  inStock,
+  categories = [],
+  dealsProducts,
+  morningProducts,
+  pantryProducts,
+  featuredProducts,
+  campaignProducts,
+  freshProducts = [],
+  nestleProducts = [],
+}: HomeShellProps) {
+  if (inStock.length === 0) return null;
+
   return (
     <>
       <h1 className="sr-only">Lucky Store 1947 — Online Grocery Delivery in Chittagong</h1>
@@ -27,8 +55,48 @@ export function HomeShell({ products }: HomeShellProps) {
       <main className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-20 sm:pt-7 lg:pb-24">
           <div className="space-y-4 sm:space-y-5">
-            <CampaignGrid />
-            <DeliveryParallax />
+            <CategoryQuickGrid categories={categories} />
+            <ThemedProductRail
+              id="morning-essentials"
+              products={morningProducts}
+              title="Morning Essentials"
+              subtitle="Start your day with fresh dairy, breakfast & more."
+              theme="morning"
+              ctaLabel="Shop all"
+              ctaHref="/category"
+            />
+            <ProductGridSection
+              id="monthly-bazar"
+              title="Monthly Bazar Up to 50% Off"
+              subtitle="Fresh, grocery & household essentials."
+              products={dealsProducts.slice(0, 9)}
+              ctaHref="/category?theme=deals"
+            />
+            <ProductGridSection
+              id="fresh-picks"
+              title="Fresh Picks Up to 30% Off"
+              subtitle="Fruits, vegetables & farm-fresh daily."
+              products={freshProducts.length > 0 ? freshProducts.slice(0, 9) : inStock.slice(0, 9)}
+              brandOverlay="brightfarms"
+              ctaHref="/category"
+            />
+            <ProductGridSection
+              id="taste-nestle"
+              title="Taste The Goodness of Nestlé"
+              subtitle="Baby food, dairy & everyday nutrition."
+              products={nestleProducts.length > 0 ? nestleProducts.slice(0, 9) : inStock.slice(0, 9)}
+              ctaHref="/category"
+            />
+            <ThemedProductRail
+              id="pantry-staples"
+              products={pantryProducts}
+              title="Pantry Staples"
+              subtitle="Rice, grains, spices, oil & everyday cooking essentials."
+              theme="pantry"
+              ctaLabel="Shop pantry"
+              ctaHref="/category"
+            />
+            <CampaignGrid products={campaignProducts} />
 
             <section aria-label="Why shop with Lucky Store" className="home-trust-strip">
               <dl className="grid grid-cols-1 divide-y divide-warm-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
@@ -49,56 +117,40 @@ export function HomeShell({ products }: HomeShellProps) {
           </div>
 
           <div className="mt-14 space-y-16 sm:mt-20 sm:space-y-20 lg:mt-24 lg:space-y-24">
-            <FeaturedProducts products={products} />
-            <DealOfTheWeek products={products} />
-            <CategorySingleCarousel products={products} />
+            <FeaturedProducts products={featuredProducts} />
+            <DealOfTheWeek products={inStock} />
+            <CategorySingleCarousel products={inStock} />
           </div>
 
           <HeritageParallax />
 
-          <section id="how-it-works" aria-labelledby="how-it-works-title" className="home-process mt-16 sm:mt-20 lg:mt-24">
-            <div className="max-w-2xl">
-              <p className="home-section-kicker">Order in three simple steps</p>
-              <h2 id="how-it-works-title" className="home-section-title">
-                From cart to doorstep
-              </h2>
-              <p className="home-section-description">
-                Shop online, review your order, and choose local delivery in Chittagong.
-              </p>
-            </div>
+          <section id="how-it-works" aria-labelledby="how-it-works-title" className="home-process mt-10 sm:mt-20 lg:mt-24">
+            <h2 id="how-it-works-title" className="home-section-title text-lg sm:text-3xl">Order in 3 steps</h2>
 
-            <ol className="mt-7 grid gap-3 sm:grid-cols-3">
-              <li className="home-process-step">
+            <ol className="mt-4 flex gap-2 overflow-x-auto pb-2 sm:mt-7 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible">
+              <li className="home-process-step w-[72vw] shrink-0 sm:w-auto">
                 <span className="home-process-number" aria-hidden="true">01</span>
-                <h3>Choose your groceries</h3>
-                <p>Browse available products and add what you need.</p>
+                <h3 className="text-sm">Choose groceries</h3>
+                <p className="text-xs">Browse and add what you need.</p>
               </li>
-              <li className="home-process-step">
+              <li className="home-process-step w-[72vw] shrink-0 sm:w-auto">
                 <span className="home-process-number" aria-hidden="true">02</span>
-                <h3>Review your order</h3>
-                <p>Check quantities, delivery details, and your total before ordering.</p>
+                <h3 className="text-sm">Review order</h3>
+                <p className="text-xs">Check items, details, and total.</p>
               </li>
-              <li className="home-process-step">
+              <li className="home-process-step w-[72vw] shrink-0 sm:w-auto">
                 <span className="home-process-number" aria-hidden="true">03</span>
-                <h3>Get local delivery</h3>
-                <p>We prepare your order and bring it to your Chittagong address.</p>
+                <h3 className="text-sm">Get delivery</h3>
+                <p className="text-xs">We bring it to your address.</p>
               </li>
             </ol>
 
-            <div className="home-process-cta mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-base font-extrabold text-warm-fg">Ready to shop?</p>
-                <p className="mt-1 text-xs leading-5 text-warm-muted">
-                  Browse groceries · Review before ordering · Pay cash on delivery
-                </p>
-              </div>
-              <Link
-                href="/category"
-                className="home-primary-action inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 py-2.5 text-sm font-extrabold"
-              >
-                Start shopping →
-              </Link>
-            </div>
+            <Link
+              href="/category"
+              className="home-primary-action mt-4 inline-flex min-h-10 items-center justify-center rounded-full px-5 py-2 text-sm font-extrabold sm:mt-5 sm:min-h-11 sm:py-2.5"
+            >
+              Start shopping →
+            </Link>
           </section>
         </div>
       </main>

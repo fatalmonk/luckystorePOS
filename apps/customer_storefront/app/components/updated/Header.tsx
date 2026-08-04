@@ -11,6 +11,7 @@ import { SearchSuggestions } from './SearchSuggestions';
 import { Logo } from '../ui/Logo';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { useTheme } from '../providers/ThemeProvider';
+import { getCategoryIcon } from '../icons/CategoryIcons';
 
 export interface HeaderProps {
   className?: string;
@@ -144,7 +145,7 @@ export function Header({ className = '' }: HeaderProps) {
   // Early return for mobile search overlay state
   if (isMobileSearchOpen) {
     return (
-      <header className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border p-3 shadow-warm-md ${className}`}>
+      <header id="mobile-search-header" className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border p-3 shadow-warm-md ${className}`}>
         <div className="flex items-center gap-2 relative w-full" ref={searchRef}>
           <button
             type="button"
@@ -153,6 +154,8 @@ export function Header({ className = '' }: HeaderProps) {
               setShowSuggestions(false);
             }}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-expanded="true"
+            aria-controls="mobile-search-header"
             aria-label="Close search"
           >
             <ArrowLeft weight="bold" size={18} aria-hidden="true" />
@@ -226,7 +229,7 @@ export function Header({ className = '' }: HeaderProps) {
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -269,7 +272,10 @@ export function Header({ className = '' }: HeaderProps) {
                       selectedCategory === 'all' ? 'bg-warm-fg text-warm-accent' : 'text-warm-fg hover:bg-warm-bg'
                     }`}
                   >
-                    📦 All Categories
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-warm-accent">{getCategoryIcon('all', 16)}</span>
+                      All Categories
+                    </span>
                   </button>
                   <div className="my-1 border-t border-warm-border/40" />
                   <div className="max-h-60 overflow-y-auto scrollbar-hide space-y-0.5">
@@ -286,7 +292,7 @@ export function Header({ className = '' }: HeaderProps) {
                           selectedCategory === g.slug ? 'bg-warm-fg text-warm-accent font-bold' : 'text-warm-fg hover:bg-warm-bg'
                         }`}
                       >
-                        <span>{g.emoji}</span>
+                        <span className="text-warm-accent">{getCategoryIcon(g.slug, 16)}</span>
                         <span>{g.label}</span>
                       </button>
                     ))}
@@ -304,14 +310,14 @@ export function Header({ className = '' }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="Search 500+ groceries, daily essentials, brands..."
-                className="h-10 w-full bg-transparent pl-3.5 pr-10 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted lg:h-11"
+                className="h-10 w-full bg-transparent pl-4 pr-20 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted lg:h-11 lg:pr-24"
                 aria-label="Search products"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent lg:h-11 lg:w-11"
+                  className="absolute right-11 top-0 flex h-10 w-10 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent lg:right-12 lg:h-11 lg:w-11"
                   aria-label="Clear search"
                 >
                   <X weight="bold" size={14} aria-hidden="true" />
@@ -355,6 +361,8 @@ export function Header({ className = '' }: HeaderProps) {
               setIsMobileSearchOpen(true);
               setShowSuggestions(true);
             }}
+            aria-expanded={isMobileSearchOpen}
+            aria-controls="mobile-search-header"
             aria-label="Open search"
           >
             <MagnifyingGlass weight="bold" size={24} aria-hidden="true" />
@@ -364,7 +372,7 @@ export function Header({ className = '' }: HeaderProps) {
           <button
             type="button"
             onClick={toggleTheme}
-            className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
@@ -380,18 +388,18 @@ export function Header({ className = '' }: HeaderProps) {
           </Link>
 
           {/* Cart Drawer Button */}
-          <HeaderCartButton iconSize={26} />
+          <HeaderCartButton />
         </div>
       </div>
 
       {/* Mobile category/filter strip — replaced by compact category rail */}
       {!isDistractionFreePage && (
         <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 lg:hidden">
-          <nav className="flex flex-nowrap items-center overflow-x-auto h-[38px] gap-1.5 scrollbar-hide py-0.5" aria-label="Categories">
+          <nav className="flex flex-nowrap items-center overflow-x-auto h-[44px] gap-1.5 scrollbar-hide py-0.5" aria-label="Categories">
             <Link
               href="/category"
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-              className={`flex-shrink-0 inline-flex h-8 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
                   ? 'bg-warm-fg text-warm-accent'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -406,7 +414,7 @@ export function Header({ className = '' }: HeaderProps) {
                   key={group.slug}
                   href={`/category/${group.slug}`}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`flex-shrink-0 inline-flex h-8 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+                  className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                     isActive
                       ? 'bg-warm-fg text-warm-accent'
                       : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -484,7 +492,14 @@ export function Header({ className = '' }: HeaderProps) {
         }
       `}</style>
     </header>
-    <div className={showDesktopCategories ? 'h-[112px]' : 'h-14'} aria-hidden="true" />
+    <div
+      className={
+        showDesktopCategories
+          ? 'h-[112px]'
+          : 'h-14'
+      }
+      aria-hidden="true"
+    />
     </>
   );
 }

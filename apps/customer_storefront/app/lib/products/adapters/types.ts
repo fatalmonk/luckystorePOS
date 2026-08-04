@@ -68,3 +68,23 @@ export function validateCategoryRow(row: unknown): CategoryRow {
   }
   return result.data;
 }
+
+/**
+ * Non-throwing validator for list-rendering paths.
+ * Returns null (and logs a warning) instead of crashing SSR on a single bad row.
+ * Use validateProductRow where strict enforcement is required.
+ */
+export function tryValidateProductRow(row: unknown): ProductRow | null {
+  const result = ProductRowSchema.safeParse(row);
+  if (!result.success) {
+    console.warn('[products] Row failed validation, skipping:', {
+      issues: result.error.format(),
+      rowPreview:
+        typeof row === 'object' && row !== null
+          ? { name: (row as any).name, price: (row as any).price, id: (row as any).id ?? (row as any).item_id }
+          : row,
+    });
+    return null;
+  }
+  return result.data;
+}

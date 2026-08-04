@@ -5,6 +5,7 @@ import React, { type CSSProperties, type KeyboardEvent, useMemo, useRef } from '
 import { selectCategoryCarousel } from '../lib/categoryCarousel';
 import type { Product } from '../lib/types';
 import { MarketPanel } from './ui/MarketSurface';
+import { getCategoryIcon } from './icons/CategoryIcons';
 
 export function CategorySingleCarousel({ products }: { products: Product[] }) {
   const railRef = useRef<HTMLDivElement>(null);
@@ -68,7 +69,7 @@ export function CategorySingleCarousel({ products }: { products: Product[] }) {
             className="category-cyber-card group"
             style={{ '--category-index': index } as CSSProperties}
           >
-            <span className="category-cyber-icon" aria-hidden="true">{category.emoji}</span>
+            <span className="category-cyber-icon" aria-hidden="true">{getCategoryIcon(category.slug, 24)}</span>
             <span className="category-cyber-pill">Shop aisle</span>
             <span className="mt-auto block">
               <span className="block text-lg font-black tracking-[-0.025em] text-white">

@@ -179,26 +179,6 @@
       linear-gradient(135deg, var(--color-campaign-surface-raised), var(--color-campaign-surface));
   }
 
-  .campaign-hero-backdrop {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
-
-  .campaign-hero-backdrop img {
-    opacity: 0.85;
-    filter: saturate(1.02) contrast(1.02);
-  }
-
-  .campaign-hero-backdrop::after {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, rgba(11, 11, 13, 0.55) 0%, rgba(11, 11, 13, 0.35) 40%, rgba(11, 11, 13, 0.15) 100%),
-      linear-gradient(180deg, rgba(11, 11, 13, 0.05), rgba(11, 11, 13, 0.30));
-    content: '';
-  }
-
   .campaign-hero::before {
     position: absolute;
     inset: 0 auto 0 0;
@@ -321,12 +301,12 @@
   .campaign-reel {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: min(82%, 29rem);
-    gap: 1rem;
+    grid-auto-columns: min(76%, 26rem);
+    gap: 0.75rem;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
-    padding: 0.5rem 0.75rem 1rem;
-    scroll-padding-inline: 0.75rem;
+    padding: 0.25rem 0.25rem 0.75rem;
+    scroll-padding-inline: 0.25rem;
     scroll-snap-type: inline mandatory;
     transform-style: preserve-3d;
   }
@@ -339,7 +319,7 @@
   }
 
   .campaign-card-link {
-    min-height: 14rem;
+    min-height: 11rem;
     border: 1px solid var(--color-campaign-border);
     box-shadow: var(--shadow-campaign-card);
     transform: translateZ(0);
@@ -347,25 +327,6 @@
       border-color 280ms var(--ease-drawer),
       box-shadow 280ms var(--ease-drawer),
       transform 280ms var(--ease-drawer);
-  }
-
-  .campaign-card-link::after {
-    position: absolute;
-    inset: -100% 45%;
-    z-index: 4;
-    width: 18%;
-    background: linear-gradient(90deg, transparent, rgba(240, 196, 68, 0.16), transparent);
-    content: '';
-    pointer-events: none;
-    transform: rotate(18deg);
-  }
-
-  .campaign-card-link:hover {
-    border-color: rgba(240, 196, 68, 0.56);
-    box-shadow:
-      var(--shadow-campaign-card),
-      0 0 40px rgba(240, 196, 68, 0.12);
-    transform: perspective(900px) rotateX(0.7deg) rotateY(-0.9deg);
   }
 
   @media (min-width: 640px) {
@@ -376,6 +337,14 @@
     .campaign-card-link {
       min-height: 18rem;
     }
+  }
+
+  .campaign-card-link:hover {
+    border-color: rgba(240, 196, 68, 0.56);
+    box-shadow:
+      var(--shadow-campaign-card),
+      0 0 40px rgba(240, 196, 68, 0.12);
+    transform: perspective(900px) rotateX(0.7deg) rotateY(-0.9deg);
   }
 
   @media (min-width: 1024px) {
@@ -431,17 +400,13 @@
   }
 
   .home-trust-strip {
-    --color-foreground: #f7f4ec;
-    --color-muted: rgba(247, 244, 236, 0.62);
-    --color-border: rgba(255, 255, 255, 0.11);
+    --color-foreground: var(--color-foreground);
+    --color-muted: var(--color-muted);
+    --color-border: var(--color-border);
     overflow: hidden;
     border-radius: var(--radius-lg);
-    background: rgba(11, 11, 13, 0.88);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 16px 40px rgba(11, 11, 13, 0.18);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-rest);
   }
 
   .home-trust-fact {
@@ -451,10 +416,10 @@
 
   .home-trust-fact::before {
     position: absolute;
-    top: 1.35rem;
+    top: 1.25rem;
     left: 1.15rem;
-    width: 0.45rem;
-    height: 0.45rem;
+    width: 0.5rem;
+    height: 0.5rem;
     background: var(--color-accent);
     border-radius: 9999px;
     content: '';

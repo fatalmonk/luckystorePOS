@@ -95,7 +95,7 @@ export function HeroBanner({
       role="region"
       aria-roledescription="carousel"
       aria-label="Featured categories"
-      className={`w-full mb-6 rounded-[24px] overflow-hidden relative h-36 xs:h-44 sm:h-52 lg:h-60 aspect-[2.5/1] sm:aspect-[3/1] lg:aspect-[3.5/1] max-h-[260px] sm:max-h-[300px] flex flex-col justify-center p-6 border border-warm-border dark:border-transparent shadow-warm-sm transition-shadow duration-300 ${
+      className={`w-full mb-6 rounded-[24px] overflow-hidden relative h-24 xs:h-28 sm:h-52 lg:h-60 aspect-[2.5/1] sm:aspect-[3/1] lg:aspect-[3.5/1] max-h-[132px] xs:max-h-[152px] sm:max-h-[300px] flex flex-col justify-center p-4 sm:p-6 border border-warm-border dark:border-transparent shadow-warm-sm transition-shadow duration-300 ${
         hasBgImage ? '' : `bg-gradient-to-r ${bgGradient}`
       }`}
       onTouchStart={handleTouchStart}
@@ -158,7 +158,7 @@ export function HeroBanner({
             </p>
           )}
           {slide.title && (
-            <TitleTag className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black leading-none font-display tracking-tight text-white drop-shadow-md">
+            <TitleTag className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black leading-none font-display tracking-tight text-white drop-shadow-md">
               {slide.title}
             </TitleTag>
           )}
@@ -172,10 +172,10 @@ export function HeroBanner({
 
       {/* Slider nav buttons — top right */}
       {slides.length > 1 && (
-        <div className="absolute top-3 right-3 z-20 flex gap-1.5">
+        <div className="absolute top-2 right-2 z-20 flex gap-1.5 sm:top-3 sm:right-3">
           <button
             onClick={() => goTo((current - 1 + slides.length) % slides.length)}
-            className="w-7 h-7 rounded-full bg-warm-surface/80 backdrop-blur-sm border border-warm-border/50 flex items-center justify-center text-warm-fg hover:bg-warm-surface hover:scale-105 active:scale-95 transition-all duration-200 shadow-warm-sm"
+            className="min-h-11 min-w-11 rounded-full bg-warm-surface/80 backdrop-blur-sm border border-warm-border/50 flex items-center justify-center text-warm-fg hover:bg-warm-surface hover:scale-105 active:scale-95 transition-all duration-200 shadow-warm-sm p-2"
             aria-label="Previous slide"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -184,7 +184,7 @@ export function HeroBanner({
           </button>
           <button
             onClick={() => goTo((current + 1) % slides.length)}
-            className="w-7 h-7 rounded-full bg-warm-surface/80 backdrop-blur-sm border border-warm-border/50 flex items-center justify-center text-warm-fg hover:bg-warm-surface hover:scale-105 active:scale-95 transition-all duration-200 shadow-warm-sm"
+            className="min-h-11 min-w-11 rounded-full bg-warm-surface/80 backdrop-blur-sm border border-warm-border/50 flex items-center justify-center text-warm-fg hover:bg-warm-surface hover:scale-105 active:scale-95 transition-all duration-200 shadow-warm-sm p-2"
             aria-label="Next slide"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -196,12 +196,12 @@ export function HeroBanner({
 
       {/* Dot indicators */}
       {slides.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 sm:bottom-3">
           {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`min-h-11 min-w-3 rounded-full transition-all duration-300 ${
                 i === current
                   ? 'bg-warm-fg w-5'
                   : 'bg-warm-fg/30 hover:bg-warm-fg/50'

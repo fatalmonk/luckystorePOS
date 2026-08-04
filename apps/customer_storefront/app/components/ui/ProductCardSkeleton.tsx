@@ -34,12 +34,27 @@ export function ProductCardSkeleton() {
   );
 }
 
-export function ProductGridSkeleton({ count = 10 }: { count?: number }) {
+export function ProductGridSkeleton({ count = 9 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5 lg:gap-4">
       {Array.from({ length: count }).map((_, i) => (
         <ProductCardSkeleton key={i} />
       ))}
+    </div>
+  );
+}
+
+export function GridSectionSkeleton() {
+  return (
+    <div className="py-1 animate-pulse">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="space-y-1.5">
+          <div className="h-6 bg-warm-border/50 rounded-md w-48" />
+          <div className="h-3.5 bg-warm-border/40 rounded w-32" />
+        </div>
+        <div className="h-9 w-9 rounded-full bg-warm-border/50" />
+      </div>
+      <ProductGridSkeleton count={9} />
     </div>
   );
 }

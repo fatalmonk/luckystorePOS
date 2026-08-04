@@ -12,6 +12,7 @@ import { QtyNumber } from './ui/QtyNumber';
 import { getOrCreateFingerprint, WishlistButton } from './WishlistButton';
 import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
+import { CategoryPlaceholder as SharedCategoryPlaceholder } from './CategoryPlaceholder';
 
 function CategoryPlaceholder({ category }: { category: Category }) {
   const baseClasses = "w-12 h-12 text-warm-muted";
@@ -264,7 +265,7 @@ export function ProductCard({
         ) : null}
         {(!image_url || imageError) && (
           <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
-            <CategoryPlaceholder category={category} />
+            <SharedCategoryPlaceholder category={category} />
           </div>
         )}
       </Link>

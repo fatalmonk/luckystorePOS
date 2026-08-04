@@ -11,9 +11,11 @@ interface HeaderCartButtonProps {
   iconSize?: number;
 }
 
-export function HeaderCartButton({ compact = false, iconSize = 22 }: HeaderCartButtonProps) {
+export function HeaderCartButton({ compact = false, iconSize }: HeaderCartButtonProps) {
   const { totalItems, total, isLoaded } = useCartContext();
   const { open } = useCartSheet();
+
+  const iconPx = iconSize ?? 20;
 
   return (
     <button
@@ -24,13 +26,13 @@ export function HeaderCartButton({ compact = false, iconSize = 22 }: HeaderCartB
           ? 'min-h-11 min-w-11'
           : `${
               isLoaded && totalItems > 0
-                ? 'min-h-9 gap-1.5 px-2.5 text-xs font-extrabold'
-                : 'h-9 w-9'
-            } md:min-h-11 md:min-w-11 md:px-3 md:py-2.5`
+                ? 'h-11 gap-1.5 px-3 text-xs font-extrabold'
+                : 'h-11 w-11'
+            }`
       }`}
       aria-label={`Cart ${isLoaded && totalItems > 0 ? `(${totalItems} items, ${formatBdt(total)})` : '(empty)'}`}
     >
-      <ShoppingCartSimple weight="bold" size={iconSize} aria-hidden="true" />
+      <ShoppingCartSimple weight="bold" size={iconPx} aria-hidden="true" />
       {!compact && isLoaded && totalItems > 0 && (
         <span className="font-extrabold tracking-tight">{formatBdt(total)}</span>
       )}
