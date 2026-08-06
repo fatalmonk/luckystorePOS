@@ -8,14 +8,14 @@ describe('Footer', () => {
     render(<Footer />);
 
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Need help with an order?' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'All groceries' })).toHaveAttribute('href', '/category');
-    expect(screen.getByRole('link', { name: 'How it works' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: 'LUCKY STORE' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'GROCERIES' })).toHaveAttribute('href', '/category');
+    expect(screen.getByRole('link', { name: 'WEEKLY DEALS' })).toHaveAttribute(
       'href',
-      '/#how-it-works',
+      '/category?theme=deals',
     );
-    expect(screen.getByRole('link', { name: 'Contact us' })).toHaveAttribute('href', '/contact');
-    expect(screen.getByRole('link', { name: 'WhatsApp ↗' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'CONTACT' })).toHaveAttribute('href', '/contact');
+    expect(screen.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute(
       'rel',
       'noopener noreferrer',
     );

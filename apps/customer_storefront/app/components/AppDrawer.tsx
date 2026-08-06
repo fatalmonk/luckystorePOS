@@ -2,10 +2,11 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { X, House, ShoppingCart, Tag, Fire, Storefront, MapPin, Phone, Heart, Question } from '@phosphor-icons/react';
+import { X, House, ShoppingCart, Tag, Fire, Storefront, MapPin, Phone, Heart, Question, Sun, Moon } from '@phosphor-icons/react';
 import { CATEGORY_GROUPS } from '../lib/types';
 import { lockBodyScroll } from '../lib/bodyScrollLock';
 import { Logo } from './ui/Logo';
+import { useTheme } from './providers/ThemeProvider';
 
 interface AppDrawerProps {
   open: boolean;
@@ -20,6 +21,7 @@ const TOP_LINKS = [
 ];
 
 export function AppDrawer({ open, onClose }: AppDrawerProps) {
+  const { theme, toggleTheme } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -172,6 +174,14 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
             </Link>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun weight="bold" size={16} aria-hidden="true" /> : <Moon weight="bold" size={16} aria-hidden="true" />}
+            </button>
             <Link
               href="/wishlist"
               onClick={onClose}

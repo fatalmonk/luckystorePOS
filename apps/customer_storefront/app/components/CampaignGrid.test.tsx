@@ -1,9 +1,53 @@
 import React from 'react';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CampaignGrid } from './CampaignGrid';
+import { ToastProvider } from './Toast';
+import { CartProvider } from './CartProvider';
+import type { Product } from '../lib/types';
 
 const scrollBy = vi.fn();
+
+const mockProducts: Product[] = [
+  {
+    id: 'tea-1',
+    name: 'Premium Black Tea',
+    emoji: '🍵',
+    price: 120,
+    unit: 'box',
+    category: 'tea',
+    stock: 10,
+    description: 'Organic black tea',
+  },
+  {
+    id: 'coffee-1',
+    name: 'Instant Coffee',
+    emoji: '☕',
+    price: 250,
+    unit: 'jar',
+    category: 'coffee',
+    stock: 8,
+    description: 'Instant coffee',
+  },
+  {
+    id: 'milk-1',
+    name: 'Fresh Milk',
+    emoji: '🥛',
+    price: 80,
+    unit: 'liter',
+    category: 'milk',
+    stock: 15,
+    description: 'Fresh milk',
+  },
+];
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(
+    <CartProvider>
+      <ToastProvider>{ui}</ToastProvider>
+    </CartProvider>
+  );
+}
 
 describe('CampaignGrid', () => {
   beforeEach(() => {
@@ -12,74 +56,46 @@ describe('CampaignGrid', () => {
     Element.prototype.scrollBy = scrollBy;
   });
 
-  it('gives the hero a clear story, destinations, and decorative imagery', () => {
-    render(<CampaignGrid />);
+  it('gives the hero a clear story, destinations, and healthy living rail', () => {
+    renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const title = screen.getByRole('heading', {
-      name: 'Groceries you know, delivered across Chittagong.',
+      name: 'Save Money. Live Better.',
     });
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 
-    const destinations = [
-      ['Browse groceries', '/category'],
-      ['Explore everyday groceries', '/category'],
-      ['Shop Buldak ramen deals', '/search?q=buldak'],
-      ['Shop dairy and eggs', '/category/dairy-and-eggs'],
-      ['Shop tea and coffee', '/category/tea-&-coffee'],
-    ] as const;
-
-    for (const [name, href] of destinations) {
-      expect(within(hero!).getByRole('link', { name })).toHaveAttribute('href', href);
-    }
-
-    const images = hero!.querySelectorAll('img');
-    expect(images).toHaveLength(5);
-    for (const image of images) {
-      expect(image).toHaveAttribute('alt', '');
-    }
-
-    expect(images[2]).toHaveAttribute(
-      'srcset',
-      expect.stringContaining('promo_buldak_1200.webp 1024w'),
+    expect(within(hero!).getByRole('link', { name: 'Shop organic goods' })).toHaveAttribute(
+      'href',
+      '/category?search=organic',
     );
-    expect(images[3]).toHaveAttribute('srcset', expect.stringContaining('promo_dairy_600.webp'));
-    expect(images[3]).not.toHaveAttribute('srcset', expect.stringContaining('promo_dairy_1200.webp'));
-    expect(images[4]).toHaveAttribute('srcset', expect.stringContaining('promo_tea_coffee_1200.webp'));
-    expect(within(hero!).queryByText('Local delivery')).not.toBeInTheDocument();
+
+    expect(within(hero!).getByText('Healthy Living')).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Healthy Living products' }),
+    ).toBeInTheDocument();
+    expect(within(hero!).getByText('Pure, organic food & wholesome natural groceries.')).toBeInTheDocument();
+
     expect(within(hero!).getByText('Stocked daily')).toBeInTheDocument();
-    expect(within(hero!).queryByRole('link', { name: 'How ordering works' })).not.toBeInTheDocument();
-    expect(within(hero!).queryByText(/Local Reviews/i)).not.toBeInTheDocument();
   });
 
-  it('offers named reel controls and keyboard scrolling', () => {
-    render(<CampaignGrid />);
+  it('offers named tea & coffee rail scroll controls', () => {
+    renderWithProviders(<CampaignGrid products={mockProducts} />);
 
-    const reel = screen.getByRole('region', { name: 'Featured campaign carousel' });
-    expect(reel).toHaveAttribute('tabindex', '0');
-    expect(reel).not.toHaveAttribute('aria-describedby');
-    expect(screen.queryByText('Scroll, swipe, or use the arrow keys.')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Previous campaign' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: 'Next campaign' })).toHaveLength(1);
-
-    Object.defineProperty(reel, 'clientWidth', { configurable: true, value: 500 });
-    fireEvent.keyDown(reel, { key: 'ArrowRight' });
-    expect(scrollBy).toHaveBeenCalledWith({ left: 360, behavior: 'smooth' });
-
-    fireEvent.click(screen.getAllByRole('button', { name: 'Previous campaign' })[0]);
-    expect(scrollBy).toHaveBeenLastCalledWith({ left: -360, behavior: 'smooth' });
+    const allPrev = screen.getAllByRole('button', { name: 'Previous products' });
+    const allNext = screen.getAllByRole('button', { name: 'Next products' });
+    expect(allPrev.length).toBeGreaterThanOrEqual(1);
+    expect(allNext.length).toBeGreaterThanOrEqual(1);
   });
 
   it('uses shared semantic campaign roles and readable functional type', () => {
-    render(<CampaignGrid />);
+    renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const hero = screen
-      .getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' })
+      .getByRole('heading', { name: 'Save Money. Live Better.' })
       .closest('section')!;
 
     expect(hero).toHaveClass('campaign-hero');
-    expect(hero.querySelectorAll('.campaign-card-content')).toHaveLength(4);
-    expect(hero.querySelectorAll('.campaign-kicker')).toHaveLength(6);
-    expect(hero.querySelectorAll('.campaign-card-action')).toHaveLength(4);
+    expect(hero.querySelectorAll('.campaign-kicker')).toHaveLength(1);
   });
 });

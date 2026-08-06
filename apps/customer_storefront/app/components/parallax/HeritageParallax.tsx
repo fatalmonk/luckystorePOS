@@ -15,14 +15,14 @@ export function HeritageParallax() {
           />
 
           <div className="max-w-xl">
-            <p className="campaign-kicker">Chittagong · Since 1947</p>
+            <p className="campaign-kicker !text-white">Chittagong · Since 1947</p>
             <h2
               id="heritage-parallax-title"
-              className="campaign-on-image mt-3 max-w-[12ch] text-balance font-display text-[2.35rem] font-black leading-[0.98] tracking-[-0.035em] sm:text-5xl lg:text-[3.75rem]"
+              className="campaign-on-image mt-3 max-w-[12ch] text-balance font-display text-[2.35rem] font-black leading-[0.98] tracking-[-0.035em] sm:text-5xl lg:text-[3.75rem] !text-white"
             >
               A Chittagong grocery store since 1947.
             </h2>
-            <p className="campaign-on-image-muted mt-4 max-w-lg text-sm leading-6 sm:text-base sm:leading-7">
+            <p className="campaign-on-image-muted mt-4 max-w-lg text-sm leading-6 sm:text-base sm:leading-7 !text-white/80">
               Lucky Store has served local shoppers since 1947. Now you can browse
               groceries online, order for local delivery, and pay cash when it arrives.
             </p>
@@ -34,9 +34,6 @@ export function HeritageParallax() {
               >
                 Shop groceries →
               </Link>
-              <p className="campaign-on-image-muted text-xs font-bold leading-5">
-                Local delivery · Cash on arrival
-              </p>
             </div>
           </div>
         </section>

@@ -5,11 +5,11 @@ test.describe('Storefront homepage shell audit', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' }),
+      page.getByRole('heading', { name: 'Save Money. Live Better.' }),
     ).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Featured groceries' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Morning Essentials' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Find what you need by aisle.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'From cart to doorstep' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'A Chittagong grocery store since 1947.' })).toBeVisible();
 
     const header = page.getByRole('banner');
     const viewportWidth = test.info().project.use.viewport?.width ?? 1280;
@@ -24,7 +24,7 @@ test.describe('Storefront homepage shell audit', () => {
       header.getByRole('link', { name: 'Lucky Store 1947' }),
       header.getByRole('button', { name: /Switch to (dark|light) mode/ }),
       header.getByRole('link', { name: 'Wishlist' }),
-      header.getByRole('button', { name: /^Cart/ }),
+      header.getByRole('button', { name: /^Cart \(/ }),
     ];
     for (const control of headerControls) {
       const box = await control.boundingBox();
@@ -40,11 +40,11 @@ test.describe('Storefront homepage shell audit', () => {
 
     const footer = page.getByRole('contentinfo');
     await expect(footer).toBeVisible();
-    await expect(footer.getByRole('link', { name: 'All groceries' })).toHaveAttribute(
+    await expect(footer.getByRole('navigation', { name: 'Main Navigation' }).getByRole('link', { name: 'GROCERIES' })).toHaveAttribute(
       'href',
       '/category',
     );
-    await expect(footer.getByRole('link', { name: 'Contact us' })).toHaveAttribute(
+    await expect(footer.getByRole('navigation', { name: 'Secondary Navigation' }).getByRole('link', { name: 'CONTACT' })).toHaveAttribute(
       'href',
       '/contact',
     );

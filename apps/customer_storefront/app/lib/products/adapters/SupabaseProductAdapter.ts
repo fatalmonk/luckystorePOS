@@ -20,6 +20,7 @@ import { createProductId } from '../types';
 import {
   validateProductRow,
   validateCategoryRow,
+  tryValidateProductRow,
   type ProductRow,
   type CategoryRow,
 } from './types';
@@ -46,8 +47,9 @@ function mapRowToProduct(
   const categoryEmoji = categoryEmojiMap.get(row.category_id ?? '') ?? categoryEmojiMap.get(categorySlug);
   const emoji = emojiResolver.resolve(categorySlug, categoryEmoji);
 
-  // Parse brand from name
-  const brand = row.brand ?? brandParser.parse(row.name);
+  // Parse brand from name or normalize DB brand (e.g. Nescafe -> Nestle)
+  const dbBrand = row.brand ? (brandParser.parse(row.brand) ?? row.brand) : undefined;
+  const brand = dbBrand ?? brandParser.parse(row.name);
 
   return {
     id,
@@ -73,12 +75,17 @@ function mapRowToProduct(
 /**
  * Maps a raw Supabase row to domain Category.
  */
-function mapRowToCategory(row: CategoryRow): Category {
+function mapRowToCategory(row: CategoryRow, emojiResolver?: EmojiResolver): Category {
+  const slug = row.slug ?? row.name.toLowerCase().replace(/\s+/g, '-');
+  const emoji = emojiResolver
+    ? emojiResolver.resolve(row.name || slug, row.emoji)
+    : (row.emoji && row.emoji !== '📦' ? row.emoji : '🍿');
+
   return {
     id: row.id,
-    slug: row.slug ?? row.name.toLowerCase().replace(/\s+/g, '-'),
+    slug,
     name: row.name,
-    emoji: row.emoji ?? '📦',
+    emoji,
     parentId: row.parent_id ?? null,
     parent_id: row.parent_id ?? null,
   };
@@ -124,12 +131,13 @@ export class SupabaseProductAdapter implements ProductDataPort {
 
     const rows = (data ?? []) as unknown[];
     const hasMore = rows.length > limit;
-    const products = rows
-      .slice(0, limit)
-      .map(row => {
-        const validated = validateProductRow(row);
-        return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
-      });
+    const products: Product[] = [];
+    for (const row of rows) {
+      if (products.length === limit) break;
+      const validated = tryValidateProductRow(row);
+      if (!validated) continue;
+      products.push(mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap));
+    }
 
     return { products, hasMore };
   }
@@ -165,12 +173,13 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
 
     const hasMore = merged.length > limit;
-    const products = merged
-      .slice(0, limit)
-      .map(row => {
-        const validated = validateProductRow(row);
-        return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
-      });
+    const products: Product[] = [];
+    for (const row of merged) {
+      if (products.length === limit) break;
+      const validated = tryValidateProductRow(row);
+      if (!validated) continue;
+      products.push(mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap));
+    }
 
     return { products, hasMore };
   }
@@ -199,7 +208,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const categories = await this.getCategories();
     const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
 
-    const validated = validateProductRow(match);
+    const validated = tryValidateProductRow(match);
+    if (!validated) return null;
     return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
   }
 
@@ -215,7 +225,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
     if (!error && data?.length) {
       const categories = await this.getCategories();
       const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
-      const validated = validateProductRow(data[0]);
+      const validated = tryValidateProductRow(data[0]);
+      if (!validated) return null;
       return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
     }
 
@@ -238,7 +249,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
 
     const categories = await this.getCategories();
     const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
-    const validated = validateProductRow(match);
+    const validated = tryValidateProductRow(match);
+    if (!validated) return null;
     return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
   }
 
@@ -256,7 +268,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const rows = (data ?? []) as unknown[];
     return rows.map(row => {
       const validated = validateCategoryRow(row);
-      return mapRowToCategory(validated);
+      return mapRowToCategory(validated, this.emojiResolver);
     });
   }
 }

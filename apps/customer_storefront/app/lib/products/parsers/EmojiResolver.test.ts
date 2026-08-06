@@ -35,6 +35,11 @@ describe('WordMatchEmojiResolver', () => {
     expect(resolver.resolve('Bakery')).toBe('🥐');
   });
 
+  it('resolves hyphenated and ampersand category names like chips-and-pretzels', () => {
+    expect(resolver.resolve('chips-and-pretzels')).toBe('🍟');
+    expect(resolver.resolve('Chips & Pretzels')).toBe('🍟');
+  });
+
   it('accepts custom icon map', () => {
     const custom = new WordMatchEmojiResolver({ custom: '🎉' });
     expect(custom.resolve('custom items')).toBe('🎉');
