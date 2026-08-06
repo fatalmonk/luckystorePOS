@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag } from '@phosphor-icons/react';
 import { ProductCard } from './ProductCard';
 import { useCartActions } from '../hooks/useCartActions';
-import { CATEGORY_GROUPS } from '../lib/types';
+import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
 import { WordMatchEmojiResolver } from '../lib/products/parsers/EmojiResolver';
 
@@ -373,7 +373,8 @@ export function CatalogLayout({
 
       {/* Sub-categories Thumbnail Strip/Grid */}
       {(() => {
-        const targetParentId = (currentCatObj as any)?.parent_id || (currentCatObj as any)?.id;
+        const currentCategory = categories.find((c) => c.slug === categorySlug);
+        const targetParentId = (currentCategory as any)?.parent_id || currentCategory?.id;
         const subCats = categories.filter((c) => {
           if (c.slug === group?.slug || c.slug === parentGroup?.slug) return false;
           if (targetParentId && (c as any).parent_id) {

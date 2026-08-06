@@ -3,7 +3,7 @@ import { createProductRepository } from '../../lib/products/index';
 import { getCachedCategories } from '../../lib/products/getCachedCategories';
 import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
-import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS } from '../../lib/types';
+import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS, normalizeCategorySlug } from '../../lib/types';
 import type { Category, Product, CategoryGroup } from '../../lib/types';
 import type { Metadata } from 'next';
 
