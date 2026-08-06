@@ -9,9 +9,9 @@ test('the homepage remains useful while product images are slow', async ({ page 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   await expect(
-    page.getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' }),
+    page.getByRole('heading', { name: 'Save Money. Live Better.' }),
   ).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Browse groceries' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Shop pantry staples/i })).toBeVisible();
   await expect(page.locator('[data-testid="product-image-loading"]').first()).toBeVisible();
 });
 
@@ -33,8 +33,10 @@ test('search still routes when recent-search storage fails', async ({ page }) =>
   await page.goto('/search');
   await expect(page.getByRole('status')).toContainText('Search still works normally.');
   await page.getByPlaceholder('Search groceries, brands, essentials...').fill('Milk');
-  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/category\?q=Milk$/);
+  // Give the filter page a moment to settle if JS hydration races with the URL check.
+  await expect(page.locator('main')).toContainText('Milk');
 });
 
 test('cart changes remain usable when cart storage fails', async ({ page }) => {

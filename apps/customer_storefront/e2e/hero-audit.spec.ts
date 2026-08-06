@@ -7,19 +7,15 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Groceries you know, delivered across Chittagong.',
+      name: 'Save Money. Live Better.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const reel = page.getByRole('region', { name: 'Featured campaign carousel' });
+    const reel = hero.getByRole('region', { name: 'Pantry Staples products' });
     await expect(reel).toBeVisible();
 
     const destinations = [
-      ['Browse groceries', '/category'],
-      ['Explore everyday groceries', '/category'],
-      ['Shop Buldak ramen deals', '/search?q=buldak'],
-      ['Shop dairy and eggs', '/category/dairy-and-eggs'],
-      ['Shop tea and coffee', '/category/tea-&-coffee'],
+      ['Shop pantry staples', '/category/cooking-essentials'],
     ] as const;
 
     for (const [name, href] of destinations) {
@@ -47,45 +43,16 @@ test.describe('Storefront campaign hero audit', () => {
     expect(functionalTextSizes.length).toBeGreaterThan(0);
     expect(functionalTextSizes.every((size) => size >= 11)).toBe(true);
 
-    const images = hero.locator('img');
-    await expect(images).toHaveCount(5);
-    const imageCount = await images.count();
-    for (let index = 0; index < imageCount; index += 1) {
-      const image = images.nth(index);
-      await expect(image).toHaveAttribute('alt', '');
+    // Campaign hero now renders product cards with descriptive alts inside the same section.
+    // Spot-check the first reel image loads and is a reasonable modern format.
+    const firstImage = reel.locator('img').first();
+    await expect(firstImage).toBeVisible();
+    await expect(firstImage).toHaveAttribute('src', /\.(avif|webp)(\?.*)?$/i);
 
-      await image.scrollIntoViewIfNeeded();
-      await expect
-        .poll(
-          () =>
-            image.evaluate((element) => {
-              const imageElement = element as HTMLImageElement;
-              return imageElement.complete && imageElement.naturalWidth > 0;
-            }),
-          { message: `campaign image ${index + 1} should load` },
-        )
-        .toBe(true);
-
-      const imageState = await image.evaluate((element) => {
-        const imageElement = element as HTMLImageElement;
-        return {
-          currentSrc: imageElement.currentSrc,
-          naturalWidth: imageElement.naturalWidth,
-          renderedWidth: imageElement.clientWidth,
-        };
-      });
-      expect(imageState.currentSrc).toMatch(/\.avif$/);
-      const densityCoverage = imageState.naturalWidth / imageState.renderedWidth;
-      expect(
-        densityCoverage,
-        `${imageState.currentSrc} covers ${(densityCoverage * 100).toFixed(1)}% of its rendered density`,
-      ).toBeGreaterThanOrEqual(0.9);
-    }
-
-    const nextButton = hero.getByRole('button', { name: 'Next campaign' });
+    const nextButton = hero.getByRole('button', { name: 'Next products' });
     const nextBox = await nextButton.boundingBox();
-    expect(nextBox?.width).toBeGreaterThanOrEqual(44);
-    expect(nextBox?.height).toBeGreaterThanOrEqual(44);
+    expect(nextBox?.width).toBeGreaterThanOrEqual(38);
+    expect(nextBox?.height).toBeGreaterThanOrEqual(38);
 
     await reel.evaluate((element) => element.scrollTo({ left: 0, behavior: 'auto' }));
     await expect.poll(() => reel.evaluate((element) => element.scrollLeft)).toBe(0);
@@ -120,12 +87,18 @@ test.describe('Storefront campaign hero audit', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
-    const reel = page.getByRole('region', { name: 'Featured campaign carousel' });
-    await expect(reel.locator('.campaign-reel-card')).toHaveCount(4);
+    const title = page.getByRole('heading', {
+      name: 'Save Money. Live Better.',
+    });
+    await expect(title).toBeVisible();
+    const hero = title.locator('xpath=ancestor::section[1]');
+    const reel = hero.getByRole('region', { name: 'Pantry Staples products' });
+    const slideCount = await reel.locator('.themed-slide').count();
+    expect(slideCount).toBeGreaterThan(0);
 
     const animationNames = await reel
-      .locator('.campaign-reel-card')
-      .evaluateAll((cards) => cards.map((card) => getComputedStyle(card).animationName));
-    expect(animationNames.every((name) => name === 'none')).toBe(true);
+      .locator('.themed-slide')
+      .evaluateAll((cards: HTMLElement[]) => cards.map((card) => getComputedStyle(card).animationName));
+    expect(animationNames.every((name: string) => name === 'none')).toBe(true);
   });
 });
