@@ -121,18 +121,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Action Link & Stay Connected (Social Links) - Same Line */}
+        {/* Stay Connected (Left) & Shop Groceries Online (Right) - Same Line */}
         <div className="mt-12 flex flex-col gap-6 border-t border-warm-border/30 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <Link
-            href="/category"
-            className={`group inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
-          >
-            <span>Shop groceries online</span>
-            <span className="font-display text-base transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-              ↗
-            </span>
-          </Link>
-
           <div className="flex items-center gap-4">
             <span className="font-body text-xs font-medium text-warm-muted">Stay connected</span>
             <div className="flex items-center gap-2">
@@ -151,6 +141,16 @@ export function Footer() {
               ))}
             </div>
           </div>
+
+          <Link
+            href="/category"
+            className={`group inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+          >
+            <span>Shop groceries online</span>
+            <span className="font-display text-base transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+              ↗
+            </span>
+          </Link>
         </div>
 
         {/* Legal Bottom Bar */}
