@@ -14,7 +14,7 @@ export const ProductRowSchema = z.object({
   name: z.string(),
   price: z.number().or(z.string().transform(Number)),
   mrp: z.number().or(z.string().transform(Number)).optional().nullable(),
-  category: z.string(),
+  category: z.string().optional().nullable().transform((c) => c?.trim() || ''),
   category_id: z.string().optional().nullable(),
   stock: z.number().or(z.string().transform(Number)).optional().nullable(),
   qty_on_hand: z.number().or(z.string().transform(Number)).optional().nullable(),
@@ -65,6 +65,26 @@ export function validateCategoryRow(row: unknown): CategoryRow {
   const result = CategoryRowSchema.safeParse(row);
   if (!result.success) {
     throw new SchemaMismatchError('Invalid category row', result.error);
+  }
+  return result.data;
+}
+
+/**
+ * Non-throwing validator for list-rendering paths.
+ * Returns null (and logs a warning) instead of crashing SSR on a single bad row.
+ * Use validateProductRow where strict enforcement is required.
+ */
+export function tryValidateProductRow(row: unknown): ProductRow | null {
+  const result = ProductRowSchema.safeParse(row);
+  if (!result.success) {
+    console.warn('[products] Row failed validation, skipping:', {
+      issues: result.error.format(),
+      rowPreview:
+        typeof row === 'object' && row !== null
+          ? { name: (row as any).name, price: (row as any).price, id: (row as any).id ?? (row as any).item_id }
+          : row,
+    });
+    return null;
   }
   return result.data;
 }

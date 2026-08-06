@@ -1,6 +1,6 @@
 'use client'; // toast context provider with useState, useCallback, and auto-dismiss timers
 
-import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 
 interface ToastAction {
   label: string;

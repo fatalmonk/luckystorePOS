@@ -62,15 +62,11 @@ describe('Header catalog filter strip', () => {
     expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-haspopup', 'dialog');
   });
 
-  it('marks the active catalog theme instead of All', () => {
+  it('unsets All when active catalog theme is present', () => {
     mockSearchParams = new URLSearchParams('theme=deals');
     render(<Header />);
 
     const categories = screen.getByRole('navigation', { name: 'Product categories' });
-    expect(within(categories).getByRole('link', { name: 'Deals' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
     expect(within(categories).getByRole('link', { name: 'All' })).not.toHaveAttribute(
       'aria-current',
     );

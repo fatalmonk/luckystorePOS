@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { EnvelopeSimple, PhoneCall, MapPin, PaperPlaneTilt, CheckCircle, Warning } from '@phosphor-icons/react';
+import { PaperPlaneTilt, CheckCircle, Warning } from '@phosphor-icons/react';
+import { GoogleMapEmbed } from './GoogleMapEmbed';
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -47,96 +48,18 @@ export function ContactForm() {
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto">
-      {/* Top Section: How Can We Help You? & Map */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Contact Information */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="space-y-3">
-            <span className="inline-block px-3 py-1 rounded-full bg-warm-accent/20 text-warm-fg text-xs font-black uppercase tracking-wider">
-              Get In Touch
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-warm-fg tracking-tight">
-              How Can We Help You?
-            </h1>
-            <p className="text-sm text-warm-muted leading-relaxed max-w-lg">
-              Have questions about an order, delivery times, or product availability? Reach out to Chittagong&apos;s trusted grocery store since 1947. Our team is here to assist you 7 days a week.
-            </p>
-          </div>
-
-          {/* Contact Details List */}
-          <div className="space-y-5 pt-2">
-            {/* Address */}
-            <div className="flex items-start gap-4 p-4 rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-warm-accent/20 border border-warm-accent/40 flex items-center justify-center text-warm-fg shrink-0">
-                <MapPin weight="fill" size={24} className="text-warm-fg" aria-hidden="true" />
-              </div>
-              <div className="space-y-0.5">
-                <h3 className="text-sm font-extrabold text-warm-fg">Address</h3>
-                <p className="text-xs text-warm-muted leading-relaxed font-semibold">
-                  665 Percival Hill Road, Emdad Park Chittagong, Bangladesh
-                </p>
-                <a
-                  href="https://maps.app.goo.gl/tfiRABoc1WsKEt619"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-warm-fg hover:text-warm-muted transition-colors underline underline-offset-2 mt-1"
-                >
-                  View on Google Maps ↗
-                </a>
-              </div>
-            </div>
-
-            {/* Phone */}
-            <div className="flex items-start gap-4 p-4 rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-warm-accent/20 border border-warm-accent/40 flex items-center justify-center text-warm-fg shrink-0">
-                <PhoneCall weight="fill" size={24} className="text-warm-fg" aria-hidden="true" />
-              </div>
-              <div className="space-y-0.5">
-                <h3 className="text-sm font-extrabold text-warm-fg">Phone Hotline</h3>
-                <a href="tel:+8801731944544" className="text-xs text-warm-muted font-semibold hover:text-warm-fg transition-colors block">
-                  +8801731944544 <span className="text-warm-fg font-bold">(Main Hotline)</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="flex items-start gap-4 p-4 rounded-[20px] bg-warm-surface border border-warm-border/60 shadow-warm-sm hover:shadow-warm-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-warm-accent/20 border border-warm-accent/40 flex items-center justify-center text-warm-fg shrink-0">
-                <EnvelopeSimple weight="fill" size={24} className="text-warm-fg" aria-hidden="true" />
-              </div>
-              <div className="space-y-0.5">
-                <h3 className="text-sm font-extrabold text-warm-fg">E-mail Us</h3>
-                <a href="mailto:hello@luckystore1947.com" className="text-xs text-warm-muted font-semibold hover:text-warm-fg transition-colors block">
-                  hello@luckystore1947.com
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Google Maps Embed Card */}
-        <div className="lg:col-span-6 h-full min-h-[380px] sm:min-h-[440px] rounded-[28px] overflow-hidden border border-warm-border/80 shadow-warm-md relative bg-warm-surface group">
-          <iframe
-            title="Lucky Store Chittagong Location"
-            src="https://maps.google.com/maps?q=665+Percival+Hill+Road,+Emdad+Park,+Chittagong,+Bangladesh&t=&z=16&ie=UTF8&iwloc=B&output=embed"
-            width="100%"
-            height="100%"
-            style={{ border: 0, minHeight: '380px' }}
-            allowFullScreen={false}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="w-full h-full rounded-[28px]"
-          />
-          <a
-            href="https://maps.app.goo.gl/tfiRABoc1WsKEt619"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute bottom-5 right-5 bg-warm-fg text-warm-accent px-4 py-2.5 rounded-full text-xs font-extrabold shadow-xl hover:bg-warm-fg-strong hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 z-10 border border-warm-accent/40"
-          >
-            <span>Open in Google Maps</span>
-            <span>↗</span>
-          </a>
-        </div>
+      {/* Full Viewport Embedded Map */}
+      <div className="w-full h-[450px] sm:h-[280px] md:h-[320px] lg:h-[550px] rounded-[28px] overflow-hidden border border-warm-border/80 shadow-warm-md relative bg-warm-surface group">
+        <GoogleMapEmbed placeId="ChIJH4nhmJAnrTARgEupScnGdJI" />
+        <a
+          href="https://maps.app.goo.gl/Yd3mAphotMJiVPM97"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 bg-warm-fg text-warm-accent px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full text-xs font-extrabold shadow-xl hover:bg-warm-fg-strong hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 z-10 border border-warm-accent/40"
+        >
+          <span>Open in Google Maps</span>
+          <span>↗</span>
+        </a>
       </div>
 
       {/* Form Section: Fill Up The Form If You Have Any Question */}
@@ -152,7 +75,11 @@ export function ContactForm() {
 
         {/* Success Alert */}
         {status === 'success' && (
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs font-bold flex items-center gap-2">
+          <div
+            role="alert"
+            aria-live="polite"
+            className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs font-bold flex items-center gap-2"
+          >
             <CheckCircle weight="fill" size={18} className="shrink-0 text-emerald-600" />
             <span>Thank you! Your message has been received. We will get back to you shortly.</span>
           </div>
@@ -160,7 +87,11 @@ export function ContactForm() {
 
         {/* Error Alert */}
         {status === 'error' && (
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 text-xs font-bold flex items-center gap-2">
+          <div
+            role="alert"
+            aria-live="polite"
+            className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 text-xs font-bold flex items-center gap-2"
+          >
             <Warning weight="fill" size={18} className="shrink-0 text-red-500" />
             <span>{errorMessage}</span>
           </div>
@@ -281,6 +212,47 @@ export function ContactForm() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* About Section */}
+      <div id="about" className="scroll-mt-24 bg-warm-surface border border-warm-border/80 rounded-[28px] p-6 sm:p-10 shadow-warm-sm space-y-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-warm-fg tracking-tight">
+            About Lucky Store 1947
+          </h2>
+          <p className="text-xs sm:text-sm text-warm-muted leading-relaxed mt-2">
+            Founded in 1947 in Chittagong, Lucky Store has been serving generations of families with authentic, premium-quality groceries, cooking essentials, fresh produce, and everyday items. We combine traditional market trust with modern fast home delivery across Chittagong city.
+          </p>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div id="faq" className="scroll-mt-24 bg-warm-surface border border-warm-border/80 rounded-[28px] p-6 sm:p-10 shadow-warm-sm space-y-6">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-warm-fg tracking-tight">
+            Frequently Asked Questions (FAQ)
+          </h2>
+          <p className="text-xs sm:text-sm text-warm-muted mt-1">
+            Quick answers to common questions about grocery delivery, payments, and returns.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
+            <h3 className="text-sm font-bold text-warm-fg">Does Lucky Store offer home delivery for online grocery in Chittagong?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">Yes! We deliver fresh groceries, oil, rice, and daily bazaar items across Chittagong city directly to your doorstep.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
+            <h3 className="text-sm font-bold text-warm-fg">Can I pay when my grocery order arrives?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">Yes, Cash on Delivery (COD) is available for all Chittagong city orders.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
+            <h3 className="text-sm font-bold text-warm-fg">What if an item in my order is damaged or missing?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">We offer free instant returns and replacement upon delivery if any product is missing or damaged.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

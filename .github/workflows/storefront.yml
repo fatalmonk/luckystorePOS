@@ -18,7 +18,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
+  check:
+    name: Lint & Typecheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,30 +30,19 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npm run lint --workspace=customer_storefront
-
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm ci
       - run: cd apps/customer_storefront && npx tsc --noEmit
 
   e2e:
+    name: E2E Tests
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     env:
       CI: true
       HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
-      # Keep browser tests deterministic and independent of external CDN availability.
       NEXT_PUBLIC_IMAGE_BASE_URL: 'http://localhost:3000'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Fetch Supabase Preview Branch
         if: env.HAS_SUPABASE_TOKEN == 'true'
         id: supabase_preview
@@ -66,57 +56,57 @@ jobs:
           if [ -n "${{ steps.supabase_preview.outputs.api_url }}" ]; then
             echo "NEXT_PUBLIC_SUPABASE_URL=${{ steps.supabase_preview.outputs.api_url }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.supabase_preview.outputs.anon_key }}" >> $GITHUB_ENV
-            echo "SUPABASE_SERVICE_ROLE_KEY"="${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
+            echo "SUPABASE_SERVICE_ROLE_KEY=${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
           else
             echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-            echo "SUPABASE_SERVICE_ROLE_KEY"="${{ secrets.SUPABASE_SERVICE_KEY }}" >> $GITHUB_ENV
+            echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}" >> $GITHUB_ENV
           fi
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
       - name: Prepare deterministic banner fixtures
         working-directory: apps/customer_storefront
         run: |
           node <<'NODE'
           const fs = require('node:fs/promises');
           const path = require('node:path');
-          const sharp = require('sharp');
 
-          const banners = {
-            promo_welcome_v2: 'public/images/hero_grocery_banner_1200.webp',
-            promo_buldak: 'public/images/promo_spices.webp',
-            promo_dairy: 'public/images/promo_dairy.webp',
-            promo_tea_coffee: 'public/images/promo_tea_coffee.webp',
-            hero_grocery_banner: 'public/images/hero_grocery_banner_1200.webp',
-            native_ad_banner: 'public/images/native_ad_banner_1200.webp',
-          };
+          const banners = [
+            'promo_welcome_v2', 'promo_buldak', 'promo_dairy',
+            'promo_tea_coffee', 'hero_grocery_banner', 'native_ad_banner'
+          ];
           const widths = [400, 600, 800, 1200];
-          const outputDirectory = 'public/banners';
+          const outputDir = 'public/banners';
+          const dummyWebp = Buffer.from('UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAQAcJaQAA3AA/v3AgAA=', 'base64');
+          const dummyAvif = Buffer.from('AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxTUlBMDFNQTBMAAAADG1ldGEAAAAAAAAAIWhkbHJfAAAAZGF0YQAAAAAAAAAAAAAAAAAAAAAA', 'base64');
 
           async function generateFixtures() {
-            await fs.mkdir(outputDirectory, { recursive: true });
-            await Promise.all(Object.entries(banners).flatMap(([name, input]) =>
-              widths.flatMap((width) => {
-                const height = Math.round(width * 9 / 16);
-                const image = sharp(input).resize(width, height, { fit: 'cover' });
-                return [
-                  image.clone().avif({ quality: 70 }).toFile(path.join(outputDirectory, `${name}_${width}.avif`)),
-                  image.clone().webp({ quality: 78 }).toFile(path.join(outputDirectory, `${name}_${width}.webp`)),
-                ];
-              })
+            await fs.mkdir(outputDir, { recursive: true });
+            await Promise.all(banners.flatMap((name) =>
+              widths.flatMap((width) => [
+                fs.writeFile(path.join(outputDir, `${name}_${width}.avif`), dummyAvif),
+                fs.writeFile(path.join(outputDir, `${name}_${width}.webp`), dummyWebp),
+              ])
             ));
           }
-
-          generateFixtures().catch((error) => {
-            console.error(error);
+          generateFixtures().catch((err) => {
+            console.error(err);
             process.exitCode = 1;
           });
           NODE
-      - run: npx playwright install --with-deps
+
+      - run: npx playwright install chromium
       - run: npm run build --workspace=customer_storefront
       - run: cd apps/customer_storefront && npx playwright test --project=chromium

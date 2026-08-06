@@ -35,12 +35,35 @@ const notoBengali = Noto_Sans_Bengali({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Lucky Store | Online Grocery Delivery in Chittagong',
+    default: 'Lucky Store — Save Money. Live Better. | Online Grocery Chittagong',
     template: '%s | Lucky Store',
   },
   description:
-    'Shop groceries, pantry staples, snacks, dairy, and household essentials online from Lucky Store, serving Chittagong since 1947.',
-  keywords: ['grocery', 'supermarket', 'Chittagong', 'Bangladesh', 'Lucky Store', 'online grocery'],
+    'Online grocery Chittagong. Daily shop for Oil, Chal, pantry staples & daily bazaar items. Free return & home delivery. Save Money. Live Better.',
+  keywords: [
+    'online grocery chittagong',
+    'grocery stores chittagong',
+    'grocery price chittagong',
+    'bangladesh online grocery',
+    'bangladesh bazaar',
+    'best bazaar',
+    'daily bazaar',
+    'daily shop',
+    'bd shop',
+    'online shop',
+    'home shop',
+    'Oil',
+    'Chal',
+    'free return',
+    'chittagong online grocery',
+    'grocery shop near me',
+    'free home delivery',
+    'discount grocery',
+    'fresh grocery',
+    'organic grocery',
+    'Lucky Store',
+    'Chittagong grocery',
+  ],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
   metadataBase: new URL('https://luckystore1947.com'),
@@ -62,16 +85,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_BD',
     url: '/',
-    siteName: 'Lucky Store',
-    title: 'Lucky Store — Online Grocery Delivery in Chittagong',
+    siteName: 'Lucky Store 1947',
+    title: 'Lucky Store — Save Money. Live Better. | Online Grocery Chittagong',
     description:
-      'Shop groceries and household essentials online from Lucky Store, serving Chittagong since 1947.',
+      'Daily bazaar BD shop for Oil, Chal & grocery essentials. Best grocery price Chittagong, free return & home delivery.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
         width: 1200,
         height: 630,
-        alt: 'Lucky Store — Your Friendly Neighborhood Grocery in Chittagong',
+        alt: 'Lucky Store — Online Grocery Chittagong, Bangladesh Bazaar & Daily Shop',
       },
     ],
   },
@@ -82,13 +105,13 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store — Online Grocery Delivery in Chittagong',
+    title: 'Lucky Store — Save Money. Live Better. | Online Grocery Chittagong',
     description:
-      'Shop groceries and household essentials online from Lucky Store, serving Chittagong since 1947.',
+      'Online grocery Chittagong. Daily shop for Oil, Chal & grocery essentials. Best grocery price & free return.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
-        alt: 'Lucky Store — Your Friendly Neighborhood Grocery in Chittagong',
+        alt: 'Lucky Store — Online Grocery Chittagong',
       },
     ],
     creator: '@luckystore1947',
@@ -139,13 +162,20 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': ['WebSite', 'GroceryStore'],
-              name: 'Lucky Store',
+              name: 'Lucky Store — Online Grocery Chittagong',
+              alternateName: ['Lucky Store Chittagong', 'Bangladesh Online Grocery', 'Daily Bazaar BD Shop', 'Chittagong Online Shop'],
+              description: 'Best Bangladesh online grocery & daily bazaar in Chittagong. Shop Oil, Chal (Rice), daily shop items, best grocery price Chittagong & free return.',
               url: 'https://luckystore1947.com',
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               priceRange: '$$',
               currenciesAccepted: 'BDT',
               paymentAccepted: 'Cash',
+              areaServed: {
+                '@type': 'City',
+                name: 'Chittagong',
+                addressCountry: 'BD',
+              },
               openingHours: [
                 'Mo-Sa 08:00-22:00',
                 'Su 09:00-21:00',

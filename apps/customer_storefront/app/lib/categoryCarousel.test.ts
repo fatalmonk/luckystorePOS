@@ -34,12 +34,12 @@ describe('selectCategoryCarousel', () => {
     const categories = selectCategoryCarousel(products);
 
     expect(categories.map((category) => category.slug)).toEqual([
-      'dairy-and-eggs',
       'tea-&-coffee',
+      'breakfast',
       'baking-needs',
       'air-freshner',
     ]);
-    expect(categories.find((category) => category.slug === 'dairy-and-eggs')?.itemCount).toBe(2);
+    expect(categories.find((category) => category.slug === 'breakfast')?.itemCount).toBe(1);
     expect(categories.find((category) => category.slug === 'tea-&-coffee')?.itemCount).toBe(1);
   });
 });

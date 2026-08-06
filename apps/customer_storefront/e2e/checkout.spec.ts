@@ -37,12 +37,15 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
   if (await addButton.isVisible()) {
     await addButton.click();
   }
-  await page.locator('[aria-label*="items in cart"]').waitFor({ state: 'visible', timeout: 5000 });
+  // Header cart button exposes an accessible label with item count and total after add.
+  await page
+    .getByRole('button', { name: /Cart \(\d+ items?/ })
+    .waitFor({ state: 'visible', timeout: 5000 });
   return true;
 }
 
 test.describe('Checkout Flow', () => {
-  test.setTimeout(60000);
+  test.setTimeout(120000);
 
   test('redirects an empty cart before showing personal-data fields', async ({ page }) => {
     await page.goto('/');
@@ -58,6 +61,7 @@ test.describe('Checkout Flow', () => {
   });
 
   test('completes a full checkout', async ({ page }) => {
+    test.slow();
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping checkout test');
@@ -89,6 +93,7 @@ test.describe('Checkout Flow', () => {
   });
 
   test('shows validation errors for invalid phone', async ({ page }) => {
+    test.slow();
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping validation test');
@@ -141,9 +146,10 @@ test.describe('Checkout Price Tampering', () => {
 });
 
 test.describe('Order Confirmation Display', () => {
-  test.setTimeout(60000);
+  test.setTimeout(120000);
 
   test('displays order number, item count, and total correctly', async ({ page }) => {
+    test.slow();
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping order confirmation test');

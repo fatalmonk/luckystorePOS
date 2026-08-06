@@ -3,7 +3,7 @@ import { createProductRepository } from '../../lib/products/index';
 import { getCachedCategories } from '../../lib/products/getCachedCategories';
 import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
-import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS } from '../../lib/types';
+import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS, normalizeCategorySlug } from '../../lib/types';
 import type { Category, Product, CategoryGroup } from '../../lib/types';
 import type { Metadata } from 'next';
 
@@ -80,16 +80,20 @@ export default async function CategorySlugPage({
   const isValidCat = !!currentCatObj;
   const currentCat = isValidCat || group ? categorySlug : 'all';
 
-  const searchTerm = getSingleParam(resolvedSearch.q);
+  const searchTerm = getSingleParam(resolvedSearch.q) || getSingleParam(resolvedSearch.search);
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
   let products: Product[] = [];
   try {
-    const activeGroup = group || parentGroup;
-    if (activeGroup) {
+    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(categorySlug);
+    if (isGroupRoot) {
+      // Visiting the group page itself (e.g. /category/personal-care) -> aggregate all subcategories
       const subCatIds = categories
-        .filter((c) => activeGroup.subCategories.includes(c.slug))
+        .filter((c) => {
+          const normC = normalizeCategorySlug(c.slug);
+          return group!.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
+        })
         .map((c) => c.id);
       const result = await repo.search({
         query: searchTerm || undefined,
@@ -97,17 +101,21 @@ export default async function CategorySlugPage({
         limit: 500,
       });
       products = result.products as any[];
-    } else if (currentCat !== 'all') {
-      const catId = currentCatObj?.id;
+    } else if (currentCatObj) {
+      // Visiting a specific subcategory (e.g. /category/facial) -> fetch only products for this subcategory
       const result = await repo.search({
         query: searchTerm || undefined,
-        categoryId: catId,
+        categoryId: currentCatObj.id,
         limit: 200,
       });
       products = result.products as any[];
     } else {
+      // Find matching category by normalized slug/name if present
+      const normTarget = normalizeCategorySlug(categorySlug);
+      const matchedCat = categories.find((c) => normalizeCategorySlug(c.slug) === normTarget || normalizeCategorySlug(c.name) === normTarget);
       const result = await repo.search({
-        query: searchTerm || undefined,
+        query: searchTerm || (matchedCat ? undefined : categorySlug.replace(/-/g, ' ')),
+        categoryId: matchedCat?.id,
         limit: 200,
       });
       products = result.products as any[];
