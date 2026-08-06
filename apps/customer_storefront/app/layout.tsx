@@ -176,15 +176,6 @@ export default function RootLayout({
                 name: 'Chittagong',
                 addressCountry: 'BD',
               },
-              hasOfferCatalog: {
-                '@type': 'OfferCatalog',
-                name: 'Bangladesh Online Grocery & Daily Bazaar Catalog',
-                itemListElement: [
-                  { '@type': 'OfferCatalog', name: 'Pantry Staples & Cooking Essentials', url: 'https://luckystore1947.com/category/cooking-essentials' },
-                  { '@type': 'OfferCatalog', name: 'Snacks, Beverages & Dairy', url: 'https://luckystore1947.com/category/snacks' },
-                  { '@type': 'OfferCatalog', name: 'Personal Care & Cleaning Supplies', url: 'https://luckystore1947.com/category/personal-care' },
-                ],
-              },
               openingHours: [
                 'Mo-Sa 08:00-22:00',
                 'Su 09:00-21:00',

@@ -157,7 +157,7 @@ export function PartnerLogoMarquee() {
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[var(--color-surface,#fff)] to-transparent sm:w-32" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[var(--color-surface,#fff)] to-transparent sm:w-32" />
 
-        <div className="partner-marquee-track flex items-center gap-12 sm:gap-16 lg:gap-24">
+        <div className="partner-marquee-track flex items-center gap-12 sm:gap-16 lg:gap-24 focus-within:[animation-play-state:paused] hover:[animation-play-state:paused]">
           {/* Primary interactive track */}
           {storeAssociatedBrands.map((brand, index) => (
             <Link

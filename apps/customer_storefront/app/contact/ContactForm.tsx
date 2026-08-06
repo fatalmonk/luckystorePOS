@@ -213,6 +213,35 @@ export function ContactForm() {
           </div>
         </form>
       </div>
+
+      {/* FAQ Section */}
+      <div id="faq" className="scroll-mt-24 bg-warm-surface border border-warm-border/80 rounded-[28px] p-6 sm:p-10 shadow-warm-sm space-y-6">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-warm-fg tracking-tight">
+            Frequently Asked Questions (FAQ)
+          </h2>
+          <p className="text-xs sm:text-sm text-warm-muted mt-1">
+            Quick answers to common questions about grocery delivery, payments, and returns.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
+            <h3 className="text-sm font-bold text-warm-fg">Does Lucky Store offer home delivery for online grocery in Chittagong?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">Yes! We deliver fresh groceries, oil, rice, and daily bazaar items across Chittagong city directly to your doorstep.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
+            <h3 className="text-sm font-bold text-warm-fg">Can I pay when my grocery order arrives?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">Yes, Cash on Delivery (COD) is available for all Chittagong city orders.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
+            <h3 className="text-sm font-bold text-warm-fg">What if an item in my order is damaged or missing?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">We offer free instant returns and replacement upon delivery if any product is missing or damaged.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

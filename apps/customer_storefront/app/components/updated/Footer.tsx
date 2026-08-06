@@ -47,7 +47,7 @@ const col2Links = [
   { label: 'TRACK ORDER', href: '/order' },
   { label: 'PRIVACY & TERMS', href: '/privacy' },
   { label: 'SECURITY POLICY', href: '/security-policy' },
-  { label: 'FAQ', href: '/contact' },
+  { label: 'FAQ', href: '/contact#faq' },
 ];
 
 export function Footer() {
