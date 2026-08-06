@@ -98,16 +98,35 @@ jobs:
           const widths = [400, 600, 800, 1200];
           const outputDirectory = 'public/banners';
 
+          async function fileExists(filePath) {
+            try {
+              await fs.access(filePath);
+              return true;
+            } catch {
+              return false;
+            }
+          }
+
           async function generateFixtures() {
             await fs.mkdir(outputDirectory, { recursive: true });
             await Promise.all(Object.entries(banners).flatMap(([name, input]) =>
-              widths.flatMap((width) => {
+              widths.map(async (width) => {
                 const height = Math.round(width * 9 / 16);
-                const image = sharp(input).resize(width, height, { fit: 'cover' });
-                return [
+                const exists = await fileExists(input);
+                const image = exists
+                  ? sharp(input).resize(width, height, { fit: 'cover' })
+                  : sharp({
+                      create: {
+                        width,
+                        height,
+                        channels: 4,
+                        background: { r: 11, g: 11, b: 13, alpha: 1 },
+                      },
+                    });
+                await Promise.all([
                   image.clone().avif({ quality: 70 }).toFile(path.join(outputDirectory, `${name}_${width}.avif`)),
                   image.clone().webp({ quality: 78 }).toFile(path.join(outputDirectory, `${name}_${width}.webp`)),
-                ];
+                ]);
               })
             ));
           }
