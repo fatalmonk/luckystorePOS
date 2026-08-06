@@ -86,10 +86,10 @@ export default async function CategorySlugPage({
 
   let products: Product[] = [];
   try {
-    const activeGroup = group || parentGroup;
-    if (activeGroup) {
+    if (group && group.slug === categorySlug) {
+      // Visiting the group page itself (e.g. /category/personal-care) -> aggregate all subcategories
       const subCatIds = categories
-        .filter((c) => activeGroup.subCategories.includes(c.slug))
+        .filter((c) => group!.subCategories.includes(c.slug))
         .map((c) => c.id);
       const result = await repo.search({
         query: searchTerm || undefined,
@@ -97,11 +97,11 @@ export default async function CategorySlugPage({
         limit: 500,
       });
       products = result.products as any[];
-    } else if (currentCat !== 'all') {
-      const catId = currentCatObj?.id;
+    } else if (currentCatObj) {
+      // Visiting a specific subcategory (e.g. /category/facial) -> fetch only products for this subcategory
       const result = await repo.search({
         query: searchTerm || undefined,
-        categoryId: catId,
+        categoryId: currentCatObj.id,
         limit: 200,
       });
       products = result.products as any[];

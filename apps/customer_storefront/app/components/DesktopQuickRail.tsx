@@ -63,7 +63,7 @@ export function DesktopQuickRail() {
   ];
 
   return (
-    <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-[72px] border-r border-warm-border/70 bg-warm-bg dark:border-transparent md:flex">
+    <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-[72px] border-r border-transparent bg-warm-bg dark:border-transparent md:flex">
       <nav aria-label="Quick links" className="flex w-full flex-col items-center px-1 py-0">
         {links.map(({ href, label, icon: IconComponent, active }) => (
           <Link

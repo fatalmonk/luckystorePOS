@@ -29,6 +29,19 @@ describe('RuleBasedBrandParser', () => {
     expect(custom.parse('Polar Widget')).toBeUndefined();
   });
 
+  it('maps Nestle sub-brands (Maggi, Nescafe, KitKat, Nido, Coffee Mate, Milo, Koko Crunch, Nestlé Gold) to Nestle', () => {
+    expect(parser.parse('Maggi 2-Minute Noodles')).toBe('Nestle');
+    expect(parser.parse('Nescafe Classic Coffee 100g')).toBe('Nestle');
+    expect(parser.parse('Nescafé 3 in 1')).toBe('Nestle');
+    expect(parser.parse('KitKat 4-Finger Bar')).toBe('Nestle');
+    expect(parser.parse('Kit Kat Chunky')).toBe('Nestle');
+    expect(parser.parse('Nido Fortified Milk Powder 1kg')).toBe('Nestle');
+    expect(parser.parse('Nestle Coffee Mate Creamer 450g')).toBe('Nestle');
+    expect(parser.parse('Milo Chocolate Malt Drink 400g')).toBe('Nestle');
+    expect(parser.parse('Koko Crunch Chocolate Cereal')).toBe('Nestle');
+    expect(parser.parse('Nestlé Gold Cornflakes 300g')).toBe('Nestle');
+  });
+
   it('handles whitespace-padded names', () => {
     expect(parser.parse('  Polar  Ice Cream  ')).toBe('Polar');
   });

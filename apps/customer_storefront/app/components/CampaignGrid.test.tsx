@@ -56,27 +56,26 @@ describe('CampaignGrid', () => {
     Element.prototype.scrollBy = scrollBy;
   });
 
-  it('gives the hero a clear story, destinations, and tea & coffee rail', () => {
+  it('gives the hero a clear story, destinations, and healthy living rail', () => {
     renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const title = screen.getByRole('heading', {
-      name: 'Groceries you know, delivered across Chittagong.',
+      name: 'Save Money. Live Better.',
     });
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 
-    expect(within(hero!).getByRole('link', { name: 'Browse groceries' })).toHaveAttribute(
+    expect(within(hero!).getByRole('link', { name: 'Shop organic goods' })).toHaveAttribute(
       'href',
-      '/category',
+      '/category?search=organic',
     );
 
-    expect(within(hero!).getByText('Tea & Coffee')).toBeInTheDocument();
+    expect(within(hero!).getByText('Healthy Living')).toBeInTheDocument();
     expect(
-      screen.getByRole('region', { name: 'Tea & Coffee products' }),
+      screen.getByRole('region', { name: 'Healthy Living products' }),
     ).toBeInTheDocument();
-    expect(within(hero!).getByText('Your everyday cup—tea, coffee, and familiar favorites.')).toBeInTheDocument();
+    expect(within(hero!).getByText('Pure, organic food & wholesome natural groceries.')).toBeInTheDocument();
 
-    expect(within(hero!).queryByText('Local delivery')).not.toBeInTheDocument();
     expect(within(hero!).getByText('Stocked daily')).toBeInTheDocument();
   });
 
@@ -93,7 +92,7 @@ describe('CampaignGrid', () => {
     renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const hero = screen
-      .getByRole('heading', { name: 'Groceries you know, delivered across Chittagong.' })
+      .getByRole('heading', { name: 'Save Money. Live Better.' })
       .closest('section')!;
 
     expect(hero).toHaveClass('campaign-hero');

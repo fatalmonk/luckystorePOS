@@ -408,31 +408,69 @@
 
   .home-trust-fact {
     position: relative;
-    padding: 1rem 1.25rem 1rem 2.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    aspect-ratio: 1 / 1;
+    padding: 0.75rem 0.5rem;
+  }
+  @media (min-width: 640px) {
+    .home-trust-fact {
+      aspect-ratio: auto;
+      padding: 1.15rem 1.25rem 1.15rem 2.25rem;
+      align-items: flex-start;
+      text-align: left;
+    }
   }
 
   .home-trust-fact::before {
-    position: absolute;
-    top: 1.25rem;
-    left: 1.15rem;
-    width: 0.5rem;
-    height: 0.5rem;
+    position: static;
+    margin-bottom: 0.4rem;
+    width: 0.45rem;
+    height: 0.45rem;
     background: var(--color-accent);
     border-radius: 9999px;
     content: '';
+    shrink: 0;
+  }
+  @media (min-width: 640px) {
+    .home-trust-fact::before {
+      position: absolute;
+      top: 1.35rem;
+      left: 1.15rem;
+      margin-bottom: 0;
+      width: 0.5rem;
+      height: 0.5rem;
+    }
   }
 
   .home-trust-fact dt {
     color: var(--color-foreground);
     font-size: 0.8125rem;
     font-weight: 800;
-    line-height: 1.25rem;
+    line-height: 1.2;
+  }
+  @media (min-width: 640px) {
+    .home-trust-fact dt {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
   }
 
   .home-trust-fact dd {
     color: var(--color-muted);
-    font-size: 0.75rem;
-    line-height: 1.125rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    margin-top: 0.2rem;
+  }
+  @media (min-width: 640px) {
+    .home-trust-fact dd {
+      font-size: 0.75rem;
+      line-height: 1.125rem;
+      margin-top: 0.125rem;
+    }
   }
 
   .home-section-kicker {
@@ -742,6 +780,66 @@
     background: var(--color-accent);
   }
 
+  .deal-product-reel {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 0.25rem 0.125rem 0.75rem;
+    scroll-padding-inline: 0.125rem;
+    scroll-snap-type: inline mandatory;
+  }
+
+  .deal-product-reel:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+  }
+
+  .deal-product-slide {
+    flex: 0 0 min(76vw, 15rem);
+    scroll-snap-align: start;
+  }
+
+  .deal-rail-control {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full, 9999px);
+    color: var(--color-foreground);
+    background: var(--color-surface);
+    transition: border-color 180ms ease, background-color 180ms ease, opacity 180ms ease;
+  }
+
+  .deal-rail-control:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    background: var(--color-accent-muted);
+  }
+
+  .deal-rail-control:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .deal-rail-control:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+
+  @media (min-width: 640px) {
+    .deal-product-slide {
+      flex-basis: calc((100% - 0.75rem) / 2);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .deal-product-slide {
+      flex-basis: calc((100% - 1.5rem) / 3);
+    }
+  }
+
   .product-badge-warning {
     color: var(--color-campaign-on-image);
     background: var(--color-warning-surface);
@@ -805,8 +903,12 @@
     outline-offset: 3px;
   }
 
-  .site-footer {
-    background: var(--color-campaign-surface);
+  .site-footer-text {
+    color: var(--color-campaign-on-image);
+  }
+
+  .site-footer-muted {
+    color: var(--color-campaign-on-image-muted);
   }
 
   .site-footer-lead,
@@ -1035,3 +1137,24 @@ html.theme-transitioning .glass {
 [data-theme="dark"] [class*="border-white/"] {
   border-color: rgba(255, 255, 255, 0.08);
 }
+
+@keyframes marquee-slide {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.partner-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-slide 28s linear infinite;
+  will-change: transform;
+}
+
+.partner-marquee-track:hover {
+  animation-play-state: paused;
+}
+

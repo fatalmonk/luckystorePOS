@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { CATEGORY_GROUPS, type Category } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
@@ -17,7 +18,8 @@ function normalizeCategoryName(name: string): string {
 }
 
 export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
-  const topGroups = CATEGORY_GROUPS.slice(0, 8);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const visibleGroups = isExpanded ? CATEGORY_GROUPS : CATEGORY_GROUPS.slice(0, 8);
 
   const getCategoryHref = (groupSlug: string) => {
     const match = categories?.find(
@@ -36,7 +38,7 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
       </div>
 
       <div className="grid grid-cols-4 gap-3 sm:gap-4">
-        {topGroups.map((group) => (
+        {visibleGroups.map((group) => (
           <Link
             key={group.slug}
             href={getCategoryHref(group.slug)}
@@ -59,13 +61,16 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
       </div>
 
       <div className="mt-4 flex justify-center sm:mt-5">
-        <Link
-          href="/category"
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
           className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-extrabold text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
         >
           <svg
             aria-hidden="true"
-            className="h-4 w-4 text-warm-muted"
+            className={`h-4 w-4 text-warm-muted transition-transform duration-300 ${
+              isExpanded ? 'rotate-180' : ''
+            }`}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -75,8 +80,8 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
           >
             <path d="m6 9 6 6 6-6" />
           </svg>
-          View all categories
-        </Link>
+          {isExpanded ? 'Show less categories' : 'View all categories'}
+        </button>
       </div>
     </section>
   );

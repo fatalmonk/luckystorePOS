@@ -105,8 +105,8 @@ export function CategoryShell({
   return (
     <>
       <Header />
-      <main className={`flex-1 overflow-x-hidden pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
-        {isAllProducts ? (
+      <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
+        {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (
           <Suspense fallback={<CategoryGridSkeleton />}>
             <CategoryGrid searchParams={searchParams} />
           </Suspense>

@@ -9,6 +9,7 @@ import { ProductCard } from './ProductCard';
 import { useCartActions } from '../hooks/useCartActions';
 import { CATEGORY_GROUPS } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
+import { WordMatchEmojiResolver } from '../lib/products/parsers/EmojiResolver';
 
 const CartFlyAnimation = dynamic(
   () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
@@ -370,6 +371,56 @@ export function CatalogLayout({
         </div>
       </div>
 
+      {/* Sub-categories Thumbnail Strip/Grid */}
+      {(() => {
+        const subCats = categories.filter((c) => {
+          // Exclude self/parent category slug from subcategories thumbnails
+          if (c.slug === categorySlug || c.slug === group?.slug || c.slug === parentGroup?.slug) return false;
+          if (group) return group.subCategories.includes(c.slug);
+          if (parentGroup) return parentGroup.subCategories.includes(c.slug);
+          return false;
+        });
+
+        if (subCats.length === 0) return null;
+
+        return (
+          <div className="bg-warm-surface border border-warm-border dark:border-transparent rounded-[20px] p-4 shadow-warm-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">
+                Explore Sub-categories
+              </span>
+              <span className="text-xs text-warm-muted font-bold">
+                {subCats.length} sub-categories
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              {subCats.map((sub) => {
+                const isActive = categorySlug === sub.slug;
+                const displayEmoji = sub.emoji && sub.emoji !== '📦' ? sub.emoji : new WordMatchEmojiResolver().resolve(sub.name || sub.slug);
+                return (
+                  <Link
+                    key={sub.id}
+                    href={`/category/${sub.slug}`}
+                    className={`group relative flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent min-h-[90px] ${
+                      isActive
+                        ? 'border-warm-accent bg-warm-fg text-warm-accent shadow-warm-sm font-black'
+                        : 'border-warm-border/70 bg-warm-bg text-warm-fg hover:border-warm-accent hover:bg-warm-surface'
+                    }`}
+                  >
+                    <span className="text-3xl transition-transform group-hover:scale-110" aria-hidden="true">
+                      {displayEmoji}
+                    </span>
+                    <span className={`text-xs font-extrabold leading-tight truncate max-w-full ${isActive ? 'text-warm-accent' : 'text-warm-fg'}`}>
+                      {sub.name}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Active Filter Chips Bar */}
       {totalActiveFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-1">
@@ -423,7 +474,7 @@ export function CatalogLayout({
       {/* Catalog Main Layout Grid: Left Sticky Sidebar (Desktop) + Right Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Desktop Sticky Sidebar */}
-        <aside className="hidden md:block md:col-span-3 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar bg-warm-surface border border-warm-border dark:border-transparent rounded-[24px] p-5 shadow-warm-sm space-y-6">
+        <aside className="hidden md:block md:col-span-3 sticky top-[120px] z-20 max-h-[calc(100vh-8.5rem)] overflow-y-auto custom-scrollbar bg-warm-surface border border-warm-border dark:border-transparent rounded-[24px] p-5 shadow-warm-sm space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-warm-border dark:border-transparent">
             <h2 className="font-extrabold text-sm text-warm-fg flex items-center gap-1.5">
               <Funnel weight="bold" size={16} /> Filters
@@ -439,41 +490,36 @@ export function CatalogLayout({
             )}
           </div>
 
-          {/* Categories Sidebar List */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Categories</h3>
-            <div className="space-y-1">
-              <Link
-                href="/category"
-                className={`flex items-center justify-between py-1.5 px-3 rounded-xl text-xs font-bold transition-all ${
-                  categorySlug === 'all'
-                    ? 'bg-warm-fg text-warm-accent shadow-sm'
-                    : 'text-warm-fg hover:bg-warm-bg'
-                }`}
-              >
-                <span>All Products</span>
-              </Link>
-              {CATEGORY_GROUPS.map((g) => (
-                <Link
-                  key={g.slug}
-                  href={`/category/${g.slug}`}
-                  className={`flex items-center justify-between py-1.5 px-3 rounded-xl text-xs font-bold transition-all ${
-                    categorySlug === g.slug || group?.slug === g.slug || parentGroup?.slug === g.slug
-                      ? 'bg-warm-fg text-warm-accent shadow-sm'
-                      : 'text-warm-fg hover:bg-warm-bg'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span>{g.emoji}</span>
-                    <span>{g.label}</span>
-                  </span>
-                </Link>
-              ))}
+
+
+          {/* Brand Filter (conditional) */}
+          {availableBrands.length > 1 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h3>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-hide">
+                {availableBrands.map((b) => (
+                  <label
+                    key={b}
+                    className="flex items-center justify-between cursor-pointer text-xs font-semibold text-warm-fg py-1 px-1 rounded-lg hover:bg-warm-bg transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={activeBrands.includes(b)}
+                        onChange={() => toggleBrandFilter(b)}
+                        className="w-4 h-4 rounded border-2 border-warm-border text-warm-fg accent-warm-fg focus:ring-1 focus:ring-warm-accent cursor-pointer"
+                      />
+                      <span>{b}</span>
+                    </div>
+                    <span className="text-[10px] text-warm-muted font-bold">({brandCounts[b]})</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Price Range Filter */}
-          <div className="space-y-2 pt-2 border-t border-warm-border/40">
+          <div className={`space-y-2 ${availableBrands.length > 1 ? 'pt-2 border-t border-warm-border/40' : ''}`}>
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Price Range</h3>
             <div className="space-y-1.5">
               {PRICE_OPTIONS.map((opt) => (
@@ -513,32 +559,6 @@ export function CatalogLayout({
               ))}
             </div>
           </div>
-
-          {/* Brand Filter (conditional) */}
-          {availableBrands.length > 1 && (
-            <div className="space-y-2 pt-2 border-t border-warm-border/40">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h3>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-hide">
-                {availableBrands.map((b) => (
-                  <label
-                    key={b}
-                    className="flex items-center justify-between cursor-pointer text-xs font-semibold text-warm-fg py-1 px-1 rounded-lg hover:bg-warm-bg transition-colors"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <input
-                        type="checkbox"
-                        checked={activeBrands.includes(b)}
-                        onChange={() => toggleBrandFilter(b)}
-                        className="w-4 h-4 rounded border-2 border-warm-border text-warm-fg accent-warm-fg focus:ring-1 focus:ring-warm-accent cursor-pointer"
-                      />
-                      <span>{b}</span>
-                    </div>
-                    <span className="text-[10px] text-warm-muted font-bold">({brandCounts[b]})</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
         </aside>
 
         {/* Products Grid Area */}
@@ -630,6 +650,29 @@ export function CatalogLayout({
 
             {/* Sheet Body (Scrollable) */}
             <div className="p-5 overflow-y-auto space-y-6 flex-1">
+              {/* Mobile Brand Filter */}
+              {availableBrands.length > 1 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {availableBrands.map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => toggleBrandFilter(b)}
+                        className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
+                          activeBrands.includes(b)
+                            ? 'bg-warm-fg text-warm-accent border-warm-fg'
+                            : 'bg-warm-bg text-warm-fg border-warm-border/60'
+                        }`}
+                      >
+                        {b} ({brandCounts[b]})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Mobile Price Filter */}
               <div className="space-y-2">
                 <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Price Range</h4>
@@ -653,7 +696,7 @@ export function CatalogLayout({
 
               {/* Mobile Availability Filter */}
               <div className="space-y-2">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Availability</h4>
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Stock Status</h4>
                 <div className="grid grid-cols-3 gap-2">
                   {AVAILABILITY_OPTIONS.map((opt) => (
                     <button
@@ -671,29 +714,6 @@ export function CatalogLayout({
                   ))}
                 </div>
               </div>
-
-              {/* Mobile Brand Filter */}
-              {availableBrands.length > 1 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {availableBrands.map((b) => (
-                      <button
-                        key={b}
-                        type="button"
-                        onClick={() => toggleBrandFilter(b)}
-                        className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
-                          activeBrands.includes(b)
-                            ? 'bg-warm-fg text-warm-accent border-warm-fg'
-                            : 'bg-warm-bg text-warm-fg border-warm-border/60'
-                        }`}
-                      >
-                        {b} ({brandCounts[b]})
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Sheet Footer */}

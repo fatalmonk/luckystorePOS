@@ -220,7 +220,7 @@ export function Header({ className = '' }: HeaderProps) {
       <header
         data-desktop-shell={isDistractionFreePage ? 'false' : 'true'}
         data-desktop-categories={hasCategoryBar ? 'true' : 'false'}
-        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-warm-border bg-warm-bg dark:border-transparent ${className}`}
+        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-warm-bg dark:border-transparent ${className}`}
       >
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:max-w-none md:px-4">
@@ -429,7 +429,7 @@ export function Header({ className = '' }: HeaderProps) {
       )}
 
       {showDesktopCategories && !isDistractionFreePage && (
-        <div className="relative hidden h-14 border-t border-warm-border/60 bg-warm-bg dark:border-transparent md:ml-[72px] lg:flex">
+        <div className="relative hidden h-14 border-t border-transparent bg-warm-bg dark:border-transparent md:ml-[72px] lg:flex">
           <nav
             ref={desktopCategoriesRef}
             aria-label="Product categories"

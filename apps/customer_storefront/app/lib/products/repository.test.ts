@@ -18,14 +18,14 @@ const fakeEmojiResolver: EmojiResolver = { resolve: () => '📦' };
 
 describe('ProductRepository', () => {
   describe('search', () => {
-    it('enforces max page size of 100', async () => {
+    it('enforces max page size of 500', async () => {
       const adapter = createFakeAdapter();
       const repo = new ProductRepository(adapter, fakeBrandParser, fakeEmojiResolver);
 
-      await repo.search({ limit: 500 });
+      await repo.search({ limit: 600 });
 
       expect(adapter.search).toHaveBeenCalledWith(
-        expect.objectContaining({ limit: 100 })
+        expect.objectContaining({ limit: 500 })
       );
     });
 

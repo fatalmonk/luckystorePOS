@@ -48,9 +48,10 @@ export class WordMatchEmojiResolver implements EmojiResolver {
       pest: '🐀',
       toy: '🧸',
       game: '🎮',
-      baby: '👶',
       snack: '🍿',
-      chip: '🍪',
+      chip: '🍟',
+      chips: '🍟',
+      pretzels: '🍟',
       biscuit: '🍪',
       cookies: '🍪',
       chocolates: '🍫',
@@ -82,13 +83,14 @@ export class WordMatchEmojiResolver implements EmojiResolver {
   }
 
   resolve(categoryName: string, dbEmoji?: string | null): string {
-    // First, trust the database if it's valid
+    // First, trust the database if it's valid and not generic fallback box
     if (dbEmoji && dbEmoji.trim() && dbEmoji !== '📦') {
       return dbEmoji;
     }
 
-    // Fall back to word matching
-    const words = categoryName.toLowerCase().trim().split(/\s+/);
+    // Fall back to word matching (normalize hyphens, ampersands, underscores)
+    const normalized = categoryName.toLowerCase().trim().replace(/[-_&]+/g, ' ');
+    const words = normalized.split(/\s+/);
     for (const word of words) {
       if (this.iconMap[word]) {
         return this.iconMap[word];
