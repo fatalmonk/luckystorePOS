@@ -86,10 +86,14 @@ export default async function CategorySlugPage({
 
   let products: Product[] = [];
   try {
-    if (group && group.slug === categorySlug) {
+    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(categorySlug);
+    if (isGroupRoot) {
       // Visiting the group page itself (e.g. /category/personal-care) -> aggregate all subcategories
       const subCatIds = categories
-        .filter((c) => group!.subCategories.includes(c.slug))
+        .filter((c) => {
+          const normC = normalizeCategorySlug(c.slug);
+          return group!.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
+        })
         .map((c) => c.id);
       const result = await repo.search({
         query: searchTerm || undefined,
@@ -102,6 +106,13 @@ export default async function CategorySlugPage({
       const result = await repo.search({
         query: searchTerm || undefined,
         categoryId: currentCatObj.id,
+        limit: 200,
+      });
+      products = result.products as any[];
+    } else if (group) {
+      // Recognized static subcategory without exact DB category row -> filter by slug term
+      const result = await repo.search({
+        query: searchTerm || categorySlug.replace(/-/g, ' '),
         limit: 200,
       });
       products = result.products as any[];

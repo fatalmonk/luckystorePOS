@@ -63,6 +63,7 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
       <div className="mt-4 flex justify-center sm:mt-5">
         <button
           type="button"
+          aria-expanded={isExpanded}
           onClick={() => setIsExpanded((prev) => !prev)}
           className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-extrabold text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
         >

@@ -373,11 +373,15 @@ export function CatalogLayout({
 
       {/* Sub-categories Thumbnail Strip/Grid */}
       {(() => {
+        const targetParentId = (currentCatObj as any)?.parent_id || (currentCatObj as any)?.id;
         const subCats = categories.filter((c) => {
-          // Exclude self/parent category slug from subcategories thumbnails
-          if (c.slug === categorySlug || c.slug === group?.slug || c.slug === parentGroup?.slug) return false;
-          if (group) return group.subCategories.includes(c.slug);
-          if (parentGroup) return parentGroup.subCategories.includes(c.slug);
+          if (c.slug === group?.slug || c.slug === parentGroup?.slug) return false;
+          if (targetParentId && (c as any).parent_id) {
+            return (c as any).parent_id === targetParentId;
+          }
+          const normC = normalizeCategorySlug(c.slug);
+          if (group) return group.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
+          if (parentGroup) return parentGroup.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
           return false;
         });
 

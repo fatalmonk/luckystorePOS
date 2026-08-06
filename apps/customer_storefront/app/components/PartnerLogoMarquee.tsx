@@ -55,6 +55,12 @@ const storeAssociatedBrands: StoreBrand[] = [
     imageSrc: '/images/brands/radhuni.webp',
   },
   {
+    name: 'Square',
+    category: 'Consumer Goods & Toiletries',
+    searchQuery: 'square',
+    imageSrc: '/images/brands/square.webp',
+  },
+  {
     name: 'Teer',
     category: 'Edible Oil & Staples',
     searchQuery: 'teer',
@@ -141,8 +147,6 @@ const storeAssociatedBrands: StoreBrand[] = [
 ];
 
 export function PartnerLogoMarquee() {
-  const doubleBrands = [...storeAssociatedBrands, ...storeAssociatedBrands];
-
   return (
     <section
       aria-label="Official brands at Lucky Store"
@@ -154,9 +158,10 @@ export function PartnerLogoMarquee() {
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[var(--color-surface,#fff)] to-transparent sm:w-32" />
 
         <div className="partner-marquee-track flex items-center gap-12 sm:gap-16 lg:gap-24">
-          {doubleBrands.map((brand, index) => (
+          {/* Primary interactive track */}
+          {storeAssociatedBrands.map((brand, index) => (
             <Link
-              key={`${brand.name}-${index}`}
+              key={`primary-${brand.name}-${index}`}
               href={`/category?search=${brand.searchQuery}`}
               className="flex h-16 w-40 shrink-0 items-center justify-center transition-all duration-300 hover:scale-110 sm:h-20 sm:w-52 lg:h-24 lg:w-60"
               title={`Shop ${brand.name} — ${brand.category}`}
@@ -172,6 +177,30 @@ export function PartnerLogoMarquee() {
               </div>
             </Link>
           ))}
+
+          {/* Duplicated visual loop track (aria-hidden and non-focusable for screen readers & keyboard) */}
+          <div className="flex items-center gap-12 sm:gap-16 lg:gap-24" aria-hidden="true">
+            {storeAssociatedBrands.map((brand, index) => (
+              <Link
+                key={`duplicate-${brand.name}-${index}`}
+                href={`/category?search=${brand.searchQuery}`}
+                tabIndex={-1}
+                aria-hidden="true"
+                className="flex h-16 w-40 shrink-0 items-center justify-center transition-all duration-300 hover:scale-110 sm:h-20 sm:w-52 lg:h-24 lg:w-60"
+                title={`Shop ${brand.name} — ${brand.category}`}
+              >
+                <div className="relative flex h-full w-full items-center justify-center p-2">
+                  <Image
+                    src={brand.imageSrc}
+                    alt=""
+                    width={240}
+                    height={90}
+                    className="max-h-full max-w-full object-contain transition-all duration-300 drop-shadow-sm dark:brightness-110"
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -164,12 +164,14 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
                   <div className="flex-1">
                     <WishlistButton productId={product.id} productName={product.name} />
                   </div>
-                  <Link
-                    href={`/category/${product.category}`}
-                    className="h-12 px-5 rounded-full bg-warm-bg text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
-                  >
-                    See Similar Items →
-                  </Link>
+                  {product.category && (
+                    <Link
+                      href={`/category/${encodeURIComponent(product.category)}`}
+                      className="h-12 px-5 rounded-full bg-warm-bg text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
+                    >
+                      See Similar Items →
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <button

@@ -94,12 +94,7 @@ export default async function Home() {
       });
 
   const nestleProducts = shuffleProducts(
-    Array.from(
-      new Set([
-        ...nestleMatches.filter((p) => p.stock > 0),
-        ...nestleMatches,
-      ])
-    )
+    nestleMatches.filter((p) => p.stock > 0)
   ).slice(0, 15);
 
   const snacksProducts = shuffleProducts(
@@ -109,7 +104,7 @@ export default async function Home() {
   ).slice(0, 15);
 
   const personalCareProducts = shuffleProducts(
-    filterByGroups(inStock, ['personal-care', 'cleaning-supplies'])
+    filterByGroups(inStock, ['personal-care'])
   ).slice(0, 15);
 
   const organicCandidate = inStock.filter(
@@ -173,14 +168,14 @@ export default async function Home() {
         inStock={inStock}
         categories={categories}
         dealsProducts={dealsPool}
-        morningProducts={morningProducts.length > 0 ? morningProducts : inStock.slice(0, 15)}
-        pantryProducts={pantryProducts.length > 0 ? pantryProducts : inStock.slice(0, 15)}
+        morningProducts={morningProducts}
+        pantryProducts={pantryProducts}
         featuredProducts={featuredProducts}
-        campaignProducts={campaignProducts.length > 0 ? campaignProducts : inStock.slice(0, 15)}
-        freshProducts={freshProducts.length > 0 ? freshProducts : inStock.slice(0, 15)}
-        personalCareProducts={personalCareProducts.length > 0 ? personalCareProducts : inStock.slice(0, 15)}
-        nestleProducts={nestleProducts.length > 0 ? nestleProducts : inStock.slice(0, 15)}
-        snacksProducts={snacksProducts.length > 0 ? snacksProducts : inStock.slice(0, 15)}
+        campaignProducts={campaignProducts}
+        freshProducts={freshProducts}
+        personalCareProducts={personalCareProducts}
+        nestleProducts={nestleProducts}
+        snacksProducts={snacksProducts}
       />
     </>
   );

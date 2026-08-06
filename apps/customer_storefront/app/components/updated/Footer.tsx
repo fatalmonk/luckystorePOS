@@ -47,7 +47,7 @@ const col2Links = [
   { label: 'TRACK ORDER', href: '/order' },
   { label: 'PRIVACY & TERMS', href: '/privacy' },
   { label: 'SECURITY POLICY', href: '/security-policy' },
-  { label: 'FAQ', href: '/contact#faq' },
+  { label: 'FAQ', href: '/contact' },
 ];
 
 export function Footer() {
@@ -94,7 +94,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className={`font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
+                      className={`inline-flex min-h-11 items-center font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
                     >
                       {link.label}
                     </Link>
@@ -111,7 +111,7 @@ export function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className={`font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
+                        className={`inline-flex min-h-11 items-center font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
                       >
                         {link.label}
                       </Link>
@@ -150,7 +150,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 aria-label={social.label}
                 title={social.label}
-                className={`text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
               >
                 {social.icon}
               </a>

@@ -71,8 +71,7 @@
   /* Demo exact shadows */
   --shadow-warm-rest: var(--shadow-rest);
   --shadow-warm-hover: var(--shadow-hover);
-  --shadow-market-panel: 0 24px 60px rgba(0, 0, 0, 0.34), 0 6px 16px rgba(0, 0, 0, 0.20);
-  --color-market-edge: rgba(245, 240, 235, 0.18);
+  --color-badge-dark-fg: #ffffff;
 
   /* Glassmorphism */
   --glass-bg: rgba(250, 248, 245, 0.82);

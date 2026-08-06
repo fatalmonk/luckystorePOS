@@ -33,6 +33,13 @@ interface CampaignGridProps {
 }
 
 export function CampaignGrid({ products }: CampaignGridProps) {
+  const isOrganic = products.some(
+    (p) =>
+      p.name.toLowerCase().includes('organic') ||
+      p.description?.toLowerCase().includes('organic') ||
+      p.category?.toLowerCase().includes('organic'),
+  );
+
   return (
     <MarketPanel
       aria-labelledby="campaign-hero-title"
@@ -69,11 +76,11 @@ export function CampaignGrid({ products }: CampaignGridProps) {
           <ThemedProductRail
             id="campaign-organic-goods"
             products={products}
-            title="Healthy Living"
-            subtitle="Pure, organic food & wholesome natural groceries."
+            title={isOrganic ? 'Healthy Living' : 'Pantry Staples'}
+            subtitle={isOrganic ? 'Pure, organic food & wholesome natural groceries.' : 'Rice, grains, spices, oil & everyday cooking essentials.'}
             theme="pantry"
-            ctaLabel="Shop organic goods"
-            ctaHref="/category?search=organic"
+            ctaLabel={isOrganic ? 'Shop organic goods' : 'Shop pantry staples'}
+            ctaHref={isOrganic ? '/category?search=organic' : '/category/cooking-essentials'}
           />
         </div>
       </div>

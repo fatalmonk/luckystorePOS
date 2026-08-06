@@ -101,20 +101,20 @@ export function HomeShell({
               title="Morning Essentials"
               subtitle="Start your day with fresh dairy, breakfast & more."
               products={morningProducts.slice(0, 15)}
-              ctaHref="/category?theme=morning"
+              ctaHref="/category/breakfast"
             />
             <ProductGridSection
               id="pantry-staples"
               title="Pantry Staples"
               subtitle="Rice, grains, spices, oil & everyday cooking essentials."
               products={pantryProducts.slice(0, 15)}
-              ctaHref="/category/rice-and-grain"
+              ctaHref="/category/cooking-essentials"
             />
             <ProductGridSection
               id="snacks"
               title="Snacks & Munchies"
               subtitle="Find your favorite chips, ice-creams, chocolates, beverages & quick bites."
-              products={snacksProducts.length > 0 ? snacksProducts.slice(0, 15) : dealsProducts.slice(0, 15)}
+              products={snacksProducts.slice(0, 15)}
               ctaHref="/category/snacks"
             />
 
@@ -126,7 +126,7 @@ export function HomeShell({
               id="personal-care"
               title="Personal Care"
               subtitle="Skincare, hair care, oral care & personal grooming essentials."
-              products={personalCareProducts.length > 0 ? personalCareProducts.slice(0, 15) : (freshProducts.length > 0 ? freshProducts.slice(0, 15) : inStock.slice(0, 15))}
+              products={personalCareProducts.slice(0, 15)}
               ctaHref="/category/personal-care"
             />
             <ProductGridSection

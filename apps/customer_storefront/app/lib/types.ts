@@ -151,17 +151,17 @@ export function getCategoryGroup(slug: string): CategoryGroup | undefined {
 /** Check if a slug is a category group */
 export function isCategoryGroup(slug: string): boolean {
   if (!slug) return false;
-  const normSlug = slug.toLowerCase().trim();
-  return CATEGORY_GROUPS.some((g) => g.slug === normSlug || g.subCategories.includes(normSlug));
+  const normSlug = normalizeCategorySlug(slug);
+  return CATEGORY_GROUPS.some((g) => normalizeCategorySlug(g.slug) === normSlug || g.subCategories.some((sub) => normalizeCategorySlug(sub) === normSlug));
 }
 
 /** Find parent group for a sub-category slug */
 export function getParentGroup(subSlug: string): CategoryGroup | undefined {
   if (!subSlug) return undefined;
-  const normSlug = subSlug.toLowerCase().trim();
-  const exactGroup = CATEGORY_GROUPS.find((g) => g.slug === normSlug);
+  const normSlug = normalizeCategorySlug(subSlug);
+  const exactGroup = CATEGORY_GROUPS.find((g) => normalizeCategorySlug(g.slug) === normSlug);
   if (exactGroup) return exactGroup;
-  return CATEGORY_GROUPS.find((g) => g.subCategories.includes(normSlug));
+  return CATEGORY_GROUPS.find((g) => g.subCategories.some((sub) => normalizeCategorySlug(sub) === normSlug));
 }
 
 export interface CartItem extends Product {

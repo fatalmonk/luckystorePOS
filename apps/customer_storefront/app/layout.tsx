@@ -180,9 +180,9 @@ export default function RootLayout({
                 '@type': 'OfferCatalog',
                 name: 'Bangladesh Online Grocery & Daily Bazaar Catalog',
                 itemListElement: [
-                  { '@type': 'OfferCatalog', name: 'Best Bazaar Prices on Chal (Rice), Cooking Oil & Pantry Staples' },
-                  { '@type': 'OfferCatalog', name: 'Dairy, Beverages, Snacks & Daily Shop Essentials' },
-                  { '@type': 'OfferCatalog', name: 'Online Shop Home Delivery in Chittagong with Free Return' },
+                  { '@type': 'OfferCatalog', name: 'Pantry Staples & Cooking Essentials', url: 'https://luckystore1947.com/category/cooking-essentials' },
+                  { '@type': 'OfferCatalog', name: 'Snacks, Beverages & Dairy', url: 'https://luckystore1947.com/category/snacks' },
+                  { '@type': 'OfferCatalog', name: 'Personal Care & Cleaning Supplies', url: 'https://luckystore1947.com/category/personal-care' },
                 ],
               },
               openingHours: [

@@ -433,7 +433,7 @@
     background: var(--color-accent);
     border-radius: 9999px;
     content: '';
-    shrink: 0;
+    flex-shrink: 0;
   }
   @media (min-width: 640px) {
     .home-trust-fact::before {
@@ -1143,18 +1143,29 @@ html.theme-transitioning .glass {
     transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(calc(-50% - 1.5rem), 0, 0);
   }
 }
 
-.partner-marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee-slide 28s linear infinite;
-  will-change: transform;
+@media (prefers-reduced-motion: no-preference) {
+  .partner-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-slide 28s linear infinite;
+    will-change: transform;
+  }
 }
 
-.partner-marquee-track:hover {
+@media (prefers-reduced-motion: reduce) {
+  .partner-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: none;
+  }
+}
+
+.partner-marquee-track:hover,
+.partner-marquee-track:focus-within {
   animation-play-state: paused;
 }
 

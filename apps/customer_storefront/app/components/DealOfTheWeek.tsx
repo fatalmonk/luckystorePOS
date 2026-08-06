@@ -68,6 +68,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       window.cancelAnimationFrame(frame);
       if (scrollRafId.current !== null) {
         window.cancelAnimationFrame(scrollRafId.current);
+        scrollRafId.current = null;
       }
       resizeObserver?.disconnect();
       window.removeEventListener('resize', updateScrollControls);

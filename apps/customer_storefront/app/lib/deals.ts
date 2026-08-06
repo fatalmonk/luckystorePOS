@@ -33,7 +33,7 @@ export function getDealOfTheWeekProducts(products: Product[], limit?: number): D
   }
 
   const leadProduct = discountedInStock[0].product;
-  const items = limit ? discountedInStock.slice(1, limit) : discountedInStock.slice(1);
+  const items = limit !== undefined ? discountedInStock.slice(1, 1 + limit) : discountedInStock.slice(1);
   const supportingProducts = items.map((item) => item.product);
 
   return {

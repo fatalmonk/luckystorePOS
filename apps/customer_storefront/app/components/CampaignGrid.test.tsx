@@ -17,7 +17,7 @@ const mockProducts: Product[] = [
     unit: 'box',
     category: 'tea',
     stock: 10,
-    description: 'Premium black tea',
+    description: 'Organic black tea',
   },
   {
     id: 'coffee-1',

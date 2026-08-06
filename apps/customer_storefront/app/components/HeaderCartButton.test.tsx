@@ -9,7 +9,7 @@ vi.mock('./CartProvider', () => ({
 }));
 
 describe('HeaderCartButton', () => {
-  it('uses a clear, centered 22px cart mark', () => {
+  it('uses a clear, centered 20px cart mark', () => {
     render(<HeaderCartButton />);
 
     const button = screen.getByRole('button', { name: 'Cart (empty)' });

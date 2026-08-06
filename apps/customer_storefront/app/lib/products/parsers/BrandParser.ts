@@ -30,7 +30,7 @@ export class RuleBasedBrandParser implements BrandParser {
       'Bisk', 'Olympic', 'Haque', 'Bombay',
     ];
 
-    this.brandAliases = brandAliases ?? {
+    const defaultAliases: Record<string, Brand> = {
       nescafe: 'Nestle',
       nescafé: 'Nestle',
       maggi: 'Nestle',
@@ -49,6 +49,12 @@ export class RuleBasedBrandParser implements BrandParser {
       nestle: 'Nestle',
       nestlé: 'Nestle',
     };
+
+    const sourceAliases = brandAliases ?? defaultAliases;
+    this.brandAliases = {};
+    for (const [key, value] of Object.entries(sourceAliases)) {
+      this.brandAliases[key.toLowerCase().trim()] = value;
+    }
   }
 
   parse(productNameOrBrand: string): Brand | undefined {
