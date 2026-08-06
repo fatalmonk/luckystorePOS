@@ -64,6 +64,8 @@ test.describe('Storefront visual audit evidence', () => {
       animations: 'disabled',
     });
 
+    // Force explicit light mode start state before toggling
+    await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
     const themeToggle = page.getByRole('button', { name: /Switch to dark mode|Switch to light mode/ });
     await themeToggle.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -75,7 +77,7 @@ test.describe('Storefront visual audit evidence', () => {
   });
 
   test('keeps local Core Web Vitals within good thresholds', async ({ page }) => {
-    test.skip(true, 'LCP threshold needs asset/hero optimization before enforcing');
+    test.fixme(true, 'LCP threshold needs asset/hero optimization before enforcing');
 
     await page.addInitScript(() => {
       const metrics = { lcp: 0, cls: 0 };

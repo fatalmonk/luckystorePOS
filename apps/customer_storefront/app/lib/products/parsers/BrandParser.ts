@@ -51,16 +51,16 @@ export class RuleBasedBrandParser implements BrandParser {
     };
 
     const sourceAliases = brandAliases ?? defaultAliases;
-    this.brandAliases = {};
+    this.brandAliases = Object.create(null);
     for (const [key, value] of Object.entries(sourceAliases)) {
-      this.brandAliases[key.toLowerCase().trim()] = value;
+      this.brandAliases[key.toLowerCase().trim().replace(/\s+/g, ' ')] = value;
     }
   }
 
   parse(productNameOrBrand: string): Brand | undefined {
     if (!productNameOrBrand) return undefined;
     
-    const cleanStr = productNameOrBrand.trim().toLowerCase();
+    const cleanStr = productNameOrBrand.trim().toLowerCase().replace(/\s+/g, ' ');
     
     // Check multi-word or single-word prefix against brandAliases keys
     for (const [aliasKey, targetBrand] of Object.entries(this.brandAliases)) {
@@ -71,7 +71,7 @@ export class RuleBasedBrandParser implements BrandParser {
     
     // Check first word against aliases
     const firstWord = cleanStr.split(/\s+/)[0];
-    if (this.brandAliases[firstWord]) {
+    if (Object.prototype.hasOwnProperty.call(this.brandAliases, firstWord)) {
       return this.brandAliases[firstWord];
     }
     

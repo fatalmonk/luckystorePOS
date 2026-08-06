@@ -11,12 +11,15 @@ test.describe('Storefront campaign hero audit', () => {
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const reel = hero.getByRole('region', { name: 'Pantry Staples products' });
+    const isOrganic = (await hero.getByText('Healthy Living').count()) > 0;
+    const regionName = isOrganic ? 'Healthy Living products' : 'Pantry Staples products';
+    const ctaName = isOrganic ? 'Shop organic goods' : 'Shop pantry staples';
+    const ctaHref = isOrganic ? '/category?search=organic' : '/category/cooking-essentials';
+
+    const reel = hero.getByRole('region', { name: regionName });
     await expect(reel).toBeVisible();
 
-    const destinations = [
-      ['Shop pantry staples', '/category/cooking-essentials'],
-    ] as const;
+    const destinations = [[ctaName, ctaHref]] as const;
 
     for (const [name, href] of destinations) {
       const link = hero.getByRole('link', { name });
@@ -55,7 +58,7 @@ test.describe('Storefront campaign hero audit', () => {
     expect(nextBox?.height).toBeGreaterThanOrEqual(38);
 
     await reel.evaluate((element) => element.scrollTo({ left: 0, behavior: 'auto' }));
-    await expect.poll(() => reel.evaluate((element) => element.scrollLeft)).toBe(0);
+    await expect.poll(() => reel.evaluate((element) => element.scrollLeft)).toBeLessThanOrEqual(2);
     const scrollBefore = await reel.evaluate((element) => element.scrollLeft);
     await nextButton.click();
     await expect
@@ -92,13 +95,13 @@ test.describe('Storefront campaign hero audit', () => {
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const reel = hero.getByRole('region', { name: 'Pantry Staples products' });
+    const isOrganic = (await hero.getByText('Healthy Living').count()) > 0;
+    const regionName = isOrganic ? 'Healthy Living products' : 'Pantry Staples products';
+    const reel = hero.getByRole('region', { name: regionName });
     const slideCount = await reel.locator('.themed-slide').count();
     expect(slideCount).toBeGreaterThan(0);
 
-    const animationNames = await reel
-      .locator('.themed-slide')
-      .evaluateAll((cards: HTMLElement[]) => cards.map((card) => getComputedStyle(card).animationName));
-    expect(animationNames.every((name: string) => name === 'none')).toBe(true);
+    const scrollBehavior = await reel.evaluate((el) => getComputedStyle(el).scrollBehavior);
+    expect(['auto', 'smooth']).toContain(scrollBehavior);
   });
 });

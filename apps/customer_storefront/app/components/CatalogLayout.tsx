@@ -665,6 +665,7 @@ export function CatalogLayout({
                         key={b}
                         type="button"
                         onClick={() => toggleBrandFilter(b)}
+                        aria-pressed={activeBrands.includes(b)}
                         className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
                           activeBrands.includes(b)
                             ? 'bg-warm-fg text-warm-accent border-warm-fg'

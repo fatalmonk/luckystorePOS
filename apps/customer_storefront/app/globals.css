@@ -841,12 +841,12 @@
   }
 
   .product-badge-warning {
-    color: var(--color-campaign-on-image);
+    color: var(--color-badge-dark-fg, #ffffff);
     background: var(--color-warning-surface);
   }
 
   .product-badge-neutral {
-    color: var(--color-campaign-on-image);
+    color: var(--color-badge-dark-fg, #ffffff);
     background: var(--color-foreground);
   }
 
@@ -856,7 +856,7 @@
   }
 
   .product-badge-sale {
-    color: var(--color-campaign-on-image);
+    color: var(--color-badge-dark-fg, #ffffff);
     background: var(--color-danger-surface);
   }
 
@@ -1138,12 +1138,26 @@ html.theme-transitioning .glass {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
+:root {
+  --marquee-offset: 1.5rem;
+}
+@media (min-width: 640px) {
+  :root {
+    --marquee-offset: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --marquee-offset: 3rem;
+  }
+}
+
 @keyframes marquee-slide {
   0% {
     transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translate3d(calc(-50% - 1.5rem), 0, 0);
+    transform: translate3d(calc(-50% - var(--marquee-offset)), 0, 0);
   }
 }
 
@@ -1151,7 +1165,7 @@ html.theme-transitioning .glass {
   .partner-marquee-track {
     display: flex;
     width: max-content;
-    animation: marquee-slide 28s linear infinite;
+    animation: marquee-slide 55s linear infinite;
     will-change: transform;
   }
 }

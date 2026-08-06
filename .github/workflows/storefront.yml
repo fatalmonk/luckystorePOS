@@ -90,17 +90,21 @@ jobs:
           const widths = [400, 600, 800, 1200];
           const outputDir = 'public/banners';
           const dummyWebp = Buffer.from('UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAQAcJaQAA3AA/v3AgAA=', 'base64');
+          const dummyAvif = Buffer.from('AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxTUlBMDFNQTBMAAAADG1ldGEAAAAAAAAAIWhkbHJfAAAAZGF0YQAAAAAAAAAAAAAAAAAAAAAA', 'base64');
 
           async function generateFixtures() {
             await fs.mkdir(outputDir, { recursive: true });
             await Promise.all(banners.flatMap((name) =>
               widths.flatMap((width) => [
-                fs.writeFile(path.join(outputDir, `${name}_${width}.avif`), dummyWebp),
+                fs.writeFile(path.join(outputDir, `${name}_${width}.avif`), dummyAvif),
                 fs.writeFile(path.join(outputDir, `${name}_${width}.webp`), dummyWebp),
               ])
             ));
           }
-          generateFixtures().catch(console.error);
+          generateFixtures().catch((err) => {
+            console.error(err);
+            process.exitCode = 1;
+          });
           NODE
 
       - run: npx playwright install chromium

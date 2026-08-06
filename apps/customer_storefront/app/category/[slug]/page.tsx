@@ -80,7 +80,7 @@ export default async function CategorySlugPage({
   const isValidCat = !!currentCatObj;
   const currentCat = isValidCat || group ? categorySlug : 'all';
 
-  const searchTerm = getSingleParam(resolvedSearch.q);
+  const searchTerm = getSingleParam(resolvedSearch.q) || getSingleParam(resolvedSearch.search);
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
@@ -109,16 +109,13 @@ export default async function CategorySlugPage({
         limit: 200,
       });
       products = result.products as any[];
-    } else if (group) {
-      // Recognized static subcategory without exact DB category row -> filter by slug term
-      const result = await repo.search({
-        query: searchTerm || categorySlug.replace(/-/g, ' '),
-        limit: 200,
-      });
-      products = result.products as any[];
     } else {
+      // Find matching category by normalized slug/name if present
+      const normTarget = normalizeCategorySlug(categorySlug);
+      const matchedCat = categories.find((c) => normalizeCategorySlug(c.slug) === normTarget || normalizeCategorySlug(c.name) === normTarget);
       const result = await repo.search({
-        query: searchTerm || undefined,
+        query: searchTerm || (matchedCat ? undefined : categorySlug.replace(/-/g, ' ')),
+        categoryId: matchedCat?.id,
         limit: 200,
       });
       products = result.products as any[];

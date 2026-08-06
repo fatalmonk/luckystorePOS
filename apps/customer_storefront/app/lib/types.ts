@@ -143,8 +143,7 @@ export function getCategoryGroup(slug: string): CategoryGroup | undefined {
   const normSlug = normalizeCategorySlug(slug);
   return (
     CATEGORY_GROUPS.find((g) => normalizeCategorySlug(g.slug) === normSlug) ||
-    CATEGORY_GROUPS.find((g) => normalizeCategorySlug(g.label) === normSlug) ||
-    CATEGORY_GROUPS.find((g) => g.subCategories.some((sub) => normalizeCategorySlug(sub) === normSlug))
+    CATEGORY_GROUPS.find((g) => normalizeCategorySlug(g.label) === normSlug)
   );
 }
 

@@ -214,6 +214,18 @@ export function ContactForm() {
         </form>
       </div>
 
+      {/* About Section */}
+      <div id="about" className="scroll-mt-24 bg-warm-surface border border-warm-border/80 rounded-[28px] p-6 sm:p-10 shadow-warm-sm space-y-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-warm-fg tracking-tight">
+            About Lucky Store 1947
+          </h2>
+          <p className="text-xs sm:text-sm text-warm-muted leading-relaxed mt-2">
+            Founded in 1947 in Chittagong, Lucky Store has been serving generations of families with authentic, premium-quality groceries, cooking essentials, fresh produce, and everyday items. We combine traditional market trust with modern fast home delivery across Chittagong city.
+          </p>
+        </div>
+      </div>
+
       {/* FAQ Section */}
       <div id="faq" className="scroll-mt-24 bg-warm-surface border border-warm-border/80 rounded-[28px] p-6 sm:p-10 shadow-warm-sm space-y-6">
         <div>

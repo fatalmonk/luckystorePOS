@@ -33,12 +33,13 @@ interface CampaignGridProps {
 }
 
 export function CampaignGrid({ products }: CampaignGridProps) {
-  const isOrganic = products.some(
+  const organicMatches = products.filter(
     (p) =>
       p.name.toLowerCase().includes('organic') ||
       p.description?.toLowerCase().includes('organic') ||
       p.category?.toLowerCase().includes('organic'),
   );
+  const isOrganic = organicMatches.length > 0;
 
   return (
     <MarketPanel
@@ -75,7 +76,7 @@ export function CampaignGrid({ products }: CampaignGridProps) {
         <div className="campaign-rail min-w-0">
           <ThemedProductRail
             id="campaign-organic-goods"
-            products={products}
+            products={isOrganic ? organicMatches : products}
             title={isOrganic ? 'Healthy Living' : 'Pantry Staples'}
             subtitle={isOrganic ? 'Pure, organic food & wholesome natural groceries.' : 'Rice, grains, spices, oil & everyday cooking essentials.'}
             theme="pantry"

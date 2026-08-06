@@ -38,16 +38,14 @@ const col1Links = [
   { label: 'GROCERIES', href: '/category' },
   { label: 'WEEKLY DEALS', href: '/category?theme=deals' },
   { label: 'NEW ARRIVALS', href: '/category?theme=new' },
-  { label: 'CATEGORIES', href: '/category' },
-  { label: 'ABOUT US', href: '/contact' },
+  { label: 'COOKING ESSENTIALS', href: '/category/cooking-essentials' },
 ];
 
 const col2Links = [
+  { label: 'ABOUT US', href: '/contact#about' },
   { label: 'CONTACT', href: '/contact' },
-  { label: 'TRACK ORDER', href: '/order' },
-  { label: 'PRIVACY & TERMS', href: '/privacy' },
-  { label: 'SECURITY POLICY', href: '/security-policy' },
   { label: 'FAQ', href: '/contact#faq' },
+  { label: 'WISHLIST', href: '/wishlist' },
 ];
 
 export function Footer() {
@@ -86,15 +84,15 @@ export function Footer() {
           </div>
 
           {/* Center & Right Navigation Grid */}
-          <div className="grid grid-cols-2 gap-8 md:col-span-2 md:gap-12 lg:gap-16">
+          <div className="grid grid-cols-2 gap-4 sm:gap-8 md:col-span-2 md:gap-12 lg:gap-16">
             {/* Nav Column 1 */}
             <nav aria-label="Main Navigation">
-              <ul className="space-y-4">
+              <ul className="space-y-3 sm:space-y-4">
                 {col1Links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className={`inline-flex min-h-11 items-center font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
+                      className={`inline-flex min-h-10 items-center font-display text-sm font-bold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:min-h-11 sm:text-base lg:text-lg ${footerFocus}`}
                     >
                       {link.label}
                     </Link>
@@ -105,12 +103,12 @@ export function Footer() {
 
             {/* Nav Column 2 */}
             <nav aria-label="Secondary Navigation">
-              <ul className="space-y-4">
+              <ul className="space-y-3 sm:space-y-4">
                 {col2Links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className={`inline-flex min-h-11 items-center font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
+                      className={`inline-flex min-h-10 items-center font-display text-sm font-bold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:min-h-11 sm:text-base lg:text-lg ${footerFocus}`}
                     >
                       {link.label}
                     </Link>
@@ -122,8 +120,8 @@ export function Footer() {
         </div>
 
         {/* Stay Connected (Left) & Shop Groceries Online (Right) - Same Line */}
-        <div className="mt-12 flex flex-col gap-6 border-t border-warm-border/30 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mt-10 flex flex-col gap-5 border-t border-warm-border/30 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <span className="font-body text-xs font-medium text-warm-muted">Stay connected</span>
             <div className="flex items-center gap-2">
               {socialLinks.map((social) => (
@@ -134,7 +132,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label={social.label}
                   title={social.label}
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-warm-fg transition-colors hover:text-warm-accent sm:h-11 sm:w-11 ${footerFocus}`}
                 >
                   {social.icon}
                 </a>
@@ -154,20 +152,24 @@ export function Footer() {
         </div>
 
         {/* Legal Bottom Bar */}
-        <div className="mt-8 border-t border-warm-border/30 pt-6">
-          <div className="flex flex-col gap-3 font-body text-[11px] font-semibold uppercase tracking-wider text-warm-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 border-t border-warm-border/30 pt-6 sm:mt-8">
+          <div className="flex flex-col items-center justify-center text-center gap-3 font-body text-[12px] font-medium tracking-wider text-warm-muted sm:flex-row sm:justify-between sm:text-[10px]">
             <p>
-              COPYRIGHT {new Date().getFullYear()} LUCKY STORE – ALL RIGHTS RESERVED
+              © Lucky Store - Est. 1947
             </p>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[9px] sm:text-[9.5px]">
               <Link href="/privacy" className={`hover:text-warm-accent ${footerFocus}`}>
-                PRIVACY &amp; TERMS
+                PRIVACY POLICY
               </Link>
-              <span>|</span>
+              <span aria-hidden="true">|</span>
+              <Link href="/terms" className={`hover:text-warm-accent ${footerFocus}`}>
+                TERMS OF SERVICE
+              </Link>
+              <span aria-hidden="true">|</span>
               <Link href="/security-policy" className={`hover:text-warm-accent ${footerFocus}`}>
-                SECURITY
+                SECURITY POLICY
               </Link>
-              <span>|</span>
+              <span aria-hidden="true">|</span>
               <span>CHITTAGONG, BANGLADESH</span>
             </div>
           </div>

@@ -73,6 +73,14 @@ describe('deals logic', () => {
     expect(result?.supportingProducts.map((p) => p.id)).toEqual(['p4', 'p1', 'p5']); // ranked discounts; p3 excluded because stock 0
   });
 
+  it('respects limit parameter for supporting products', () => {
+    const result = getDealOfTheWeekProducts(mockProducts, 2);
+    expect(result).not.toBeNull();
+    expect(result?.leadProduct.id).toBe('p2');
+    expect(result?.supportingProducts.map((p) => p.id)).toEqual(['p4', 'p1']);
+    expect(result?.supportingProducts).toHaveLength(2);
+  });
+
   it('returns null if no in-stock discounted products exist', () => {
     const noDeals: Product[] = [
       {
