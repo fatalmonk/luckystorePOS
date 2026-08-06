@@ -103,58 +103,53 @@ export function Footer() {
               </ul>
             </nav>
 
-            {/* Nav Column 2 & Action CTA */}
-            <div className="flex flex-col justify-between space-y-8">
-              <nav aria-label="Secondary Navigation">
-                <ul className="space-y-4">
-                  {col2Links.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className={`inline-flex min-h-11 items-center font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-
-              {/* Action Link: Shop online ↗ */}
-              <div className="pt-2">
-                <div className="border-b border-warm-border/40 pb-2">
-                  <Link
-                    href="/category"
-                    className={`group inline-flex w-full items-center justify-between font-body text-sm font-semibold tracking-wide text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
-                  >
-                    <span>Shop groceries online</span>
-                    <span className="font-display text-base transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                      ↗
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            {/* Nav Column 2 */}
+            <nav aria-label="Secondary Navigation">
+              <ul className="space-y-4">
+                {col2Links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className={`inline-flex min-h-11 items-center font-display text-base font-extrabold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:text-lg ${footerFocus}`}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
         </div>
 
-        {/* Stay Connected (Social Links) */}
-        <div className="mt-12 space-y-3 pt-6 md:mt-16">
-          <p className="font-body text-xs font-medium text-warm-muted">Stay connected</p>
+        {/* Action Link & Stay Connected (Social Links) - Same Line */}
+        <div className="mt-12 flex flex-col gap-6 border-t border-warm-border/30 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            href="/category"
+            className={`group inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+          >
+            <span>Shop groceries online</span>
+            <span className="font-display text-base transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+              ↗
+            </span>
+          </Link>
+
           <div className="flex items-center gap-4">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={social.label}
-                title={social.label}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
-              >
-                {social.icon}
-              </a>
-            ))}
+            <span className="font-body text-xs font-medium text-warm-muted">Stay connected</span>
+            <div className="flex items-center gap-2">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  title={social.label}
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+                >
+                  {social.icon}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 
