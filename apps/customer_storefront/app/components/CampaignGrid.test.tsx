@@ -11,33 +11,43 @@ const scrollBy = vi.fn();
 const mockProducts: Product[] = [
   {
     id: 'tea-1',
-    name: 'Premium Black Tea',
+    name: 'Organic Black Tea',
     emoji: '🍵',
     price: 120,
     unit: 'box',
-    category: 'tea',
+    category: 'organic-tea',
     stock: 10,
     description: 'Organic black tea',
   },
   {
     id: 'coffee-1',
-    name: 'Instant Coffee',
+    name: 'Organic Coffee',
     emoji: '☕',
     price: 250,
     unit: 'jar',
-    category: 'coffee',
+    category: 'organic-coffee',
     stock: 8,
-    description: 'Instant coffee',
+    description: 'Organic coffee',
   },
   {
     id: 'milk-1',
-    name: 'Fresh Milk',
+    name: 'Organic Fresh Milk',
     emoji: '🥛',
     price: 80,
     unit: 'liter',
-    category: 'milk',
+    category: 'organic-milk',
     stock: 15,
-    description: 'Fresh milk',
+    description: 'Organic milk',
+  },
+  {
+    id: 'honey-1',
+    name: 'Organic Raw Honey',
+    emoji: '🍯',
+    price: 350,
+    unit: 'jar',
+    category: 'organic-honey',
+    stock: 12,
+    description: 'Pure organic raw honey',
   },
 ];
 
@@ -53,7 +63,9 @@ describe('CampaignGrid', () => {
   beforeEach(() => {
     scrollBy.mockReset();
     vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
-    Element.prototype.scrollBy = scrollBy;
+    if (typeof Element !== 'undefined') {
+      Element.prototype.scrollBy = scrollBy;
+    }
   });
 
   it('gives the hero a clear story, destinations, and healthy living rail', () => {
