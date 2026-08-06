@@ -39,7 +39,7 @@ export function CampaignGrid({ products }: CampaignGridProps) {
       p.description?.toLowerCase().includes('organic') ||
       p.category?.toLowerCase().includes('organic'),
   );
-  const isOrganic = organicMatches.length > 0;
+  const isOrganic = organicMatches.length >= 4;
 
   return (
     <MarketPanel

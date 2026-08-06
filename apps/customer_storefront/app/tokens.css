@@ -72,6 +72,7 @@
   --shadow-warm-rest: var(--shadow-rest);
   --shadow-warm-hover: var(--shadow-hover);
   --color-badge-dark-fg: #ffffff;
+  --color-badge-neutral-fg: #0B0B0D;
 
   /* Glassmorphism */
   --glass-bg: rgba(250, 248, 245, 0.82);
@@ -148,6 +149,9 @@
   --shadow-campaign-card: 0 24px 60px rgba(0, 0, 0, 0.42);
   --shadow-market-panel: 0 24px 60px rgba(0, 0, 0, 0.34), 0 6px 16px rgba(0, 0, 0, 0.20);
   --color-market-edge: rgba(245, 240, 235, 0.18);
+
+  /* Badge overrides for dark mode — ensure sufficient contrast */
+  --color-badge-neutral-fg: #f5f0eb;
 
   --shadow-rest: 0 4px 24px rgba(0, 0, 0, 0.20), 0 1px 2px rgba(0, 0, 0, 0.12);
   --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.30), 0 4px 8px rgba(0, 0, 0, 0.18);

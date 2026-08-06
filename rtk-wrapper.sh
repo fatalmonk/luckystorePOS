@@ -4,6 +4,8 @@
 
 # Log file (user‑specific, hidden)
 LOG_FILE="$HOME/.rtk/session.log"
+# Ensure the directory exists before writing logs
+mkdir -p "${HOME}/.rtk"
 
 time=$(date --iso-8601=seconds)
 cmd="rtk $*"

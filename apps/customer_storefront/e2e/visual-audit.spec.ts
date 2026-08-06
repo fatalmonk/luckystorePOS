@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Storefront visual audit evidence', () => {
-  test('captures the complete homepage with clean runtime text sizing', async ({ page }, testInfo) => {
+  test('captures the complete homepage with clean runtime text sizing', async ({ page, context }, testInfo) => {
+    // Initialize light mode via localStorage before page load — the correct approach
+    // so the theme toggle state is consistent with what the UI reads.
+    await context.addInitScript(() => {
+      localStorage.setItem('lucky-theme', 'light');
+    });
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'error') consoleErrors.push(message.text());
@@ -64,8 +69,7 @@ test.describe('Storefront visual audit evidence', () => {
       animations: 'disabled',
     });
 
-    // Force explicit light mode start state before toggling
-    await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+    // Theme toggle: switch from the initialized light mode to dark mode
     const themeToggle = page.getByRole('button', { name: /Switch to dark mode|Switch to light mode/ });
     await themeToggle.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');

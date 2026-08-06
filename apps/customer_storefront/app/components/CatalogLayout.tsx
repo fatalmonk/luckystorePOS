@@ -688,6 +688,7 @@ export function CatalogLayout({
                       key={opt.value}
                       type="button"
                       onClick={() => togglePriceFilter(opt.value)}
+                      aria-pressed={activePrices.includes(opt.value)}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left ${
                         activePrices.includes(opt.value)
                           ? 'bg-warm-fg text-warm-accent border-warm-fg'
@@ -709,6 +710,7 @@ export function CatalogLayout({
                       key={opt.value}
                       type="button"
                       onClick={() => toggleAvailFilter(opt.value)}
+                      aria-pressed={activeAvailabilities.includes(opt.value)}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
                         activeAvailabilities.includes(opt.value)
                           ? 'bg-warm-fg text-warm-accent border-warm-fg'

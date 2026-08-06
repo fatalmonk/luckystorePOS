@@ -846,7 +846,7 @@
   }
 
   .product-badge-neutral {
-    color: var(--color-badge-dark-fg, #ffffff);
+    color: var(--color-badge-neutral-fg);
     background: var(--color-foreground);
   }
 

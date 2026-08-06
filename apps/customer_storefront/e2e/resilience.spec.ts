@@ -35,6 +35,7 @@ test('search still routes when recent-search storage fails', async ({ page }) =>
   await page.getByPlaceholder('Search groceries, brands, essentials...').fill('Milk');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/(\/category|\/search)\?.*q=Milk/);
+  await expect(page.locator('main')).toContainText('Milk', { ignoreCase: true });
 });
 
 test('cart changes remain usable when cart storage fails', async ({ page }) => {
