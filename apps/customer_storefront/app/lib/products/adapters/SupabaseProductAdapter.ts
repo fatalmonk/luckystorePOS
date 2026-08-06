@@ -47,8 +47,9 @@ function mapRowToProduct(
   const categoryEmoji = categoryEmojiMap.get(row.category_id ?? '') ?? categoryEmojiMap.get(categorySlug);
   const emoji = emojiResolver.resolve(categorySlug, categoryEmoji);
 
-  // Parse brand from name
-  const brand = row.brand ?? brandParser.parse(row.name);
+  // Parse brand from name or normalize DB brand (e.g. Nescafe -> Nestle)
+  const dbBrand = row.brand ? (brandParser.parse(row.brand) ?? row.brand) : undefined;
+  const brand = dbBrand ?? brandParser.parse(row.name);
 
   return {
     id,
@@ -74,12 +75,17 @@ function mapRowToProduct(
 /**
  * Maps a raw Supabase row to domain Category.
  */
-function mapRowToCategory(row: CategoryRow): Category {
+function mapRowToCategory(row: CategoryRow, emojiResolver?: EmojiResolver): Category {
+  const slug = row.slug ?? row.name.toLowerCase().replace(/\s+/g, '-');
+  const emoji = emojiResolver
+    ? emojiResolver.resolve(row.name || slug, row.emoji)
+    : (row.emoji && row.emoji !== '📦' ? row.emoji : '🍿');
+
   return {
     id: row.id,
-    slug: row.slug ?? row.name.toLowerCase().replace(/\s+/g, '-'),
+    slug,
     name: row.name,
-    emoji: row.emoji ?? '📦',
+    emoji,
     parentId: row.parent_id ?? null,
     parent_id: row.parent_id ?? null,
   };
@@ -262,7 +268,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const rows = (data ?? []) as unknown[];
     return rows.map(row => {
       const validated = validateCategoryRow(row);
-      return mapRowToCategory(validated);
+      return mapRowToCategory(validated, this.emojiResolver);
     });
   }
 }

@@ -1,4 +1,4 @@
-import { SVGProps } from 'react';
+import React, { SVGProps } from 'react';
 
 interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -53,6 +53,16 @@ export function SnackIcon(props: IconProps) {
       <path d="M6 12c0-4 3-7 6-7s6 3 6 7" />
       <circle cx="9" cy="12" r="1" fill="currentColor" stroke="none" />
       <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none" />
+    </Icon>
+  );
+}
+
+export function ChipsPretzelsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 3l3 2 3-2 3 2 3-2v18l-3-2-3 2-3-2-3 2V3z" />
+      <path d="M9 10c1.5-1 4.5-1 6 0" />
+      <path d="M9 14c1.5 1 4.5 1 6 0" />
     </Icon>
   );
 }
@@ -278,6 +288,7 @@ export function getCategoryIcon(slug: string, size = 20) {
     case 'ice-cream': return <IceCreamIcon size={size} />;
     case 'cold-beverages': return <BeverageIcon size={size} />;
     case 'chips-and-pretzels':
+    case 'chips-pretzels': return <ChipsPretzelsIcon size={size} />;
     case 'snacks': return <SnackIcon size={size} />;
     case 'condiments': return <CondimentIcon size={size} />;
     case 'energy-boosters': return <EnergyIcon size={size} />;

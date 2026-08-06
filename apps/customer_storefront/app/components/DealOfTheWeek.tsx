@@ -23,7 +23,7 @@ interface DealOfTheWeekProps {
 }
 
 export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
-  const selection = useMemo(() => getDealOfTheWeekProducts(products), [products]);
+  const selection = useMemo(() => getDealOfTheWeekProducts(products, 8), [products]);
   const supportingProducts = useMemo(() => selection?.supportingProducts ?? [], [selection]);
   const discountedProductCount = useMemo(
     () => products.filter((product) => product.originalPrice && product.originalPrice > product.price).length,
@@ -31,6 +31,8 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   );
   const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
   const dealRailRef = useRef<HTMLDivElement>(null);
+  const addBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const scrollRafId = useRef<number | null>(null);
   const [canScrollPrevious, setCanScrollPrevious] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
@@ -42,6 +44,14 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     setCanScrollPrevious(rail.scrollLeft > 2);
     setCanScrollNext(rail.scrollLeft < maximumScroll - 2);
   }, []);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRafId.current !== null) return;
+    scrollRafId.current = window.requestAnimationFrame(() => {
+      updateScrollControls();
+      scrollRafId.current = null;
+    });
+  }, [updateScrollControls]);
 
   useEffect(() => {
     const rail = dealRailRef.current;
@@ -56,6 +66,10 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     window.addEventListener('resize', updateScrollControls);
     return () => {
       window.cancelAnimationFrame(frame);
+      if (scrollRafId.current !== null) {
+        window.cancelAnimationFrame(scrollRafId.current);
+        scrollRafId.current = null;
+      }
       resizeObserver?.disconnect();
       window.removeEventListener('resize', updateScrollControls);
     };
@@ -211,103 +225,38 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
               aria-label="More weekly deals"
               tabIndex={0}
               onKeyDown={handleDealRailKeyDown}
-              onScroll={updateScrollControls}
+              onScroll={handleScroll}
               className="deal-product-reel scrollbar-hide"
             >
-              {supportingProducts.map((product) => {
-                let addBtnRef: HTMLButtonElement | null = null;
-                return (
-                  <div key={product.id} className="deal-product-slide text-warm-fg">
-                    <ProductCard
-                      id={product.id}
-                      emoji={product.emoji}
-                      name={product.name}
-                      price={product.price}
-                      originalPrice={product.originalPrice}
-                      badge={product.badge}
-                      unit={product.unit}
-                      stock={product.stock}
-                      category={product.category}
-                      image_url={product.image_url}
-                      qtyInCart={getQtyInCart(product.id)}
-                      theme="deals"
-                      onAdd={() => handleAddToCart(product, addBtnRef)}
-                      onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                      onAddRef={(el) => {
-                        addBtnRef = el;
-                      }}
-                    />
-                  </div>
-                );
-              })}
+              {supportingProducts.map((product) => (
+                <div key={product.id} className="deal-product-slide text-warm-fg">
+                  <ProductCard
+                    id={product.id}
+                    emoji={product.emoji}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    badge={product.badge}
+                    unit={product.unit}
+                    stock={product.stock}
+                    category={product.category}
+                    image_url={product.image_url}
+                    qtyInCart={getQtyInCart(product.id)}
+                    theme="deals"
+                    onAdd={() => handleAddToCart(product, addBtnRefs.current[product.id] ?? null)}
+                    onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
+                    onAddRef={(el) => {
+                      addBtnRefs.current[product.id] = el;
+                    }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
       <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
-
-      <style>{`
-        .deal-product-reel {
-          display: flex;
-          gap: 0.75rem;
-          overflow-x: auto;
-          overscroll-behavior-inline: contain;
-          padding: 0.25rem 0.125rem 0.75rem;
-          scroll-padding-inline: 0.125rem;
-          scroll-snap-type: inline mandatory;
-        }
-
-        .deal-product-reel:focus-visible {
-          outline: 2px solid var(--color-accent);
-          outline-offset: 4px;
-        }
-
-        .deal-product-slide {
-          flex: 0 0 min(76vw, 15rem);
-          scroll-snap-align: start;
-        }
-
-        .deal-rail-control {
-          display: grid;
-          width: 2.75rem;
-          height: 2.75rem;
-          flex: 0 0 auto;
-          place-items: center;
-          border: 1px solid var(--color-border);
-          border-radius: 9999px;
-          color: var(--color-foreground);
-          background: var(--color-surface);
-          transition: border-color 180ms ease, background-color 180ms ease, opacity 180ms ease;
-        }
-
-        .deal-rail-control:hover:not(:disabled) {
-          border-color: var(--color-accent);
-          background: var(--color-accent-muted);
-        }
-
-        .deal-rail-control:focus-visible {
-          outline: 2px solid var(--color-accent);
-          outline-offset: 2px;
-        }
-
-        .deal-rail-control:disabled {
-          cursor: default;
-          opacity: 0.35;
-        }
-
-        @media (min-width: 640px) {
-          .deal-product-slide {
-            flex-basis: calc((100% - 0.75rem) / 2);
-          }
-        }
-
-        @media (min-width: 1280px) {
-          .deal-product-slide {
-            flex-basis: calc((100% - 1.5rem) / 3);
-          }
-        }
-      `}</style>
     </MarketPanel>
   );
 }

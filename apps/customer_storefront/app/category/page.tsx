@@ -32,7 +32,7 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
     redirect(queryString ? `/category/${catParam}?${queryString}` : `/category/${catParam}`);
   }
 
-  const searchTerm = getSingleParam(resolvedParams.q);
+  const searchTerm = getSingleParam(resolvedParams.q) || getSingleParam(resolvedParams.search);
   const theme = getSingleParam(resolvedParams.theme);
   const sort = getSingleParam(resolvedParams.sort) || 'best';
   const categories = await getCachedCategories();

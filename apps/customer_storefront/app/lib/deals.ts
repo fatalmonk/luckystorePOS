@@ -19,7 +19,7 @@ export function getDiscountPercentage(product: Product): number {
  * Selects the lead product (highest discount percentage in stock) and every
  * remaining discounted product in the same ranked order.
  */
-export function getDealOfTheWeekProducts(products: Product[]): DealOfTheWeekSelection | null {
+export function getDealOfTheWeekProducts(products: Product[], limit?: number): DealOfTheWeekSelection | null {
   const discountedInStock = products
     .filter((p) => p.stock > 0 && p.originalPrice && p.originalPrice > p.price)
     .map((p) => ({
@@ -33,7 +33,8 @@ export function getDealOfTheWeekProducts(products: Product[]): DealOfTheWeekSele
   }
 
   const leadProduct = discountedInStock[0].product;
-  const supportingProducts = discountedInStock.slice(1).map((item) => item.product);
+  const items = limit !== undefined ? discountedInStock.slice(1, 1 + limit) : discountedInStock.slice(1);
+  const supportingProducts = items.map((item) => item.product);
 
   return {
     leadProduct,

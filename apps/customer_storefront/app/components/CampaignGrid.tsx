@@ -33,25 +33,33 @@ interface CampaignGridProps {
 }
 
 export function CampaignGrid({ products }: CampaignGridProps) {
+  const organicMatches = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes('organic') ||
+      p.description?.toLowerCase().includes('organic') ||
+      p.category?.toLowerCase().includes('organic'),
+  );
+  const isOrganic = organicMatches.length >= 4;
+
   return (
     <MarketPanel
       aria-labelledby="campaign-hero-title"
-      tone="night"
-      className="campaign-hero relative left-1/2 w-screen max-w-none -translate-x-1/2 rounded-none border-x-0 lg:w-[calc(100vw-72px)]"
+      tone="accent"
+      className="campaign-hero relative w-full overflow-hidden rounded-3xl border border-warm-accent/20 bg-gradient-to-br from-warm-accent-muted/40 via-warm-surface to-warm-accent-muted/20 p-5 shadow-sm sm:p-8 lg:p-10"
     >
       <span className="campaign-spine" aria-hidden="true">Everyday</span>
-      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] gap-5 px-4 py-6 sm:gap-9 sm:px-8 sm:py-12 lg:grid-cols-[minmax(280px,0.76fr)_minmax(0,1.5fr)] lg:items-center lg:gap-12 lg:px-12 lg:py-16 xl:px-16">
+      <div className="relative z-10 mx-auto grid w-full gap-5 lg:grid-cols-[minmax(280px,0.76fr)_minmax(0,1.5fr)] lg:items-center lg:gap-10">
         <div className="campaign-copy max-w-xl">
           <p className="campaign-kicker">Chittagong · Since 1947</p>
           <h2
             id="campaign-hero-title"
             className="campaign-headline campaign-display mt-2 text-balance text-[1.55rem] font-black leading-[1.05] tracking-[-0.04em] sm:text-[2.5rem] lg:text-5xl"
           >
-            Groceries you know, delivered across Chittagong.
+            Save Money. Live Better.
           </h2>
           <p className="campaign-on-image-muted mt-3 max-w-lg text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7">
             Shop pantry staples, snacks, dairy, household essentials, and more from
-            Lucky Store—serving Chittagong since 1947.
+            Lucky Store—we curate the best deals, so that you don&apos;t have to.
           </p>
 
           <div className="campaign-status-row mt-3 flex flex-wrap gap-2 sm:mt-5" aria-label="Store service status">
@@ -63,27 +71,17 @@ export function CampaignGrid({ products }: CampaignGridProps) {
               Stocked daily
             </span>
           </div>
-
-          <div className="campaign-actions mt-5 flex flex-wrap gap-3 sm:mt-7">
-            <Link
-              href="/category"
-              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-warm-accent px-5 py-2.5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover ${campaignFocusRing}`}
-            >
-              Browse groceries
-              <ArrowIcon direction="right" />
-            </Link>
-          </div>
         </div>
 
         <div className="campaign-rail min-w-0">
           <ThemedProductRail
-            id="campaign-tea-coffee"
-            products={products}
-            title="Tea & Coffee"
-            subtitle="Your everyday cup—tea, coffee, and familiar favorites."
-            theme="morning"
-            ctaLabel="Shop tea & coffee"
-            ctaHref="/category/tea-&-coffee"
+            id="campaign-organic-goods"
+            products={isOrganic ? organicMatches : products}
+            title={isOrganic ? 'Healthy Living' : 'Pantry Staples'}
+            subtitle={isOrganic ? 'Pure, organic food & wholesome natural groceries.' : 'Rice, grains, spices, oil & everyday cooking essentials.'}
+            theme="pantry"
+            ctaLabel={isOrganic ? 'Shop organic goods' : 'Shop pantry staples'}
+            ctaHref={isOrganic ? '/category?search=organic' : '/category/cooking-essentials'}
           />
         </div>
       </div>

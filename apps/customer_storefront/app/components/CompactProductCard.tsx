@@ -34,7 +34,7 @@ export function CompactProductCard({ product, index = 0, offerBadge }: CompactPr
   return (
     <article
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-[18px] border border-warm-border bg-warm-surface shadow-warm-rest transition-all hover:shadow-warm-hover"
-      data-testid="compact-product-card"
+      data-testid="product-card"
     >
       {/* Image */}
       <Link

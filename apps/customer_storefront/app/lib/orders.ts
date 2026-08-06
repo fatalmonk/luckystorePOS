@@ -80,20 +80,22 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
     channel = supabase.channel(`store-notifications:${STORE_ID}`);
     channel.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        channel!.send({
-          type: 'broadcast',
-          event: 'new-delivery-order',
-          payload: {
-            id: (result as any).id,
-            orderNumber: (result as any).order_number || data.orderNumber,
-            customerName: data.customerName,
-            customerPhone: data.customerPhone,
-            customerAddress: data.customerAddress,
-            total: data.total,
-            itemsCount: data.items.length,
-            storeId: STORE_ID,
-          },
-        }).then(() => {
+        Promise.resolve(
+          channel!.send({
+            type: 'broadcast',
+            event: 'new-delivery-order',
+            payload: {
+              id: (result as any).id,
+              orderNumber: (result as any).order_number || data.orderNumber,
+              customerName: data.customerName,
+              customerPhone: data.customerPhone,
+              customerAddress: data.customerAddress,
+              total: data.total,
+              itemsCount: data.items.length,
+              storeId: STORE_ID,
+            },
+          })
+        ).then(() => {
           clearTimeout(cleanupTimer);
           if (channel) {
             const ch = channel;

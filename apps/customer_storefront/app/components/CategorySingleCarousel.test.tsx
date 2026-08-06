@@ -39,9 +39,9 @@ describe('CategorySingleCarousel', () => {
 
     const rail = screen.getByRole('region', { name: 'Shop by category' });
     expect(rail).toHaveAttribute('tabindex', '0');
-    expect(screen.getByRole('link', { name: /Dairy & Eggs 2 items/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Breakfast 1 item/ })).toHaveAttribute(
       'href',
-      '/category/dairy-and-eggs',
+      '/category/breakfast',
     );
     expect(screen.getByRole('link', { name: /Tea & Coffee 1 item/ })).toHaveAttribute(
       'href',
