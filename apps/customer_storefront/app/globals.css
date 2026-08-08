@@ -836,6 +836,14 @@
     background: var(--color-warning-surface);
   }
 
+  .product-image-on-well {
+    mix-blend-mode: multiply;
+  }
+
+  [data-theme="dark"] .product-image-on-well {
+    mix-blend-mode: normal;
+  }
+
   .product-badge-neutral {
     color: var(--color-badge-neutral-fg);
     background: var(--color-foreground);
