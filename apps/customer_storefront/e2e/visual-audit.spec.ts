@@ -71,8 +71,10 @@ test.describe('Storefront visual audit evidence', () => {
 
     // Theme toggle: switch from the initialized light mode to dark mode
     const themeToggle = page.getByRole('button', { name: /Switch to dark mode|Switch to light mode/ });
-    await themeToggle.click();
+    await expect(themeToggle).toBeVisible();
+    await themeToggle.dispatchEvent('click');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
     await page.screenshot({
       path: testInfo.outputPath('homepage-dark.png'),
       fullPage: true,

@@ -5,14 +5,25 @@ export interface DealOfTheWeekSelection {
   supportingProducts: Product[];
 }
 
+export const MIN_DISCOUNT_BADGE_PERCENT = 10;
+
 /**
  * Calculates discount percentage for a product.
  */
-export function getDiscountPercentage(product: Product): number {
+export function getDiscountPercentage(product: Pick<Product, 'price' | 'originalPrice'>): number {
   if (!product.originalPrice || product.originalPrice <= product.price) {
     return 0;
   }
-  return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  return Math.floor(((product.originalPrice - product.price) / product.originalPrice) * 100);
+}
+
+/**
+ * Returns a customer-facing percentage only when the saving clears the
+ * storefront's minimum meaningful-discount threshold.
+ */
+export function getDiscountBadgePercentage(product: Pick<Product, 'price' | 'originalPrice'>): number | null {
+  const discountPercentage = getDiscountPercentage(product);
+  return discountPercentage >= MIN_DISCOUNT_BADGE_PERCENT ? discountPercentage : null;
 }
 
 /**
@@ -21,7 +32,7 @@ export function getDiscountPercentage(product: Product): number {
  */
 export function getDealOfTheWeekProducts(products: Product[], limit?: number): DealOfTheWeekSelection | null {
   const discountedInStock = products
-    .filter((p) => p.stock > 0 && p.originalPrice && p.originalPrice > p.price)
+    .filter((p) => p.stock > 0 && getDiscountBadgePercentage(p) !== null)
     .map((p) => ({
       product: p,
       discountPercent: getDiscountPercentage(p),

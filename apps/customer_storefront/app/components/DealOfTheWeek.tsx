@@ -5,7 +5,7 @@ import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useCartActions } from '../hooks/useCartActions';
-import { getDealOfTheWeekProducts, getDiscountPercentage } from '../lib/deals';
+import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { DealCountdown } from './DealCountdown';
@@ -26,7 +26,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   const selection = useMemo(() => getDealOfTheWeekProducts(products, 8), [products]);
   const supportingProducts = useMemo(() => selection?.supportingProducts ?? [], [selection]);
   const discountedProductCount = useMemo(
-    () => products.filter((product) => product.originalPrice && product.originalPrice > product.price).length,
+    () => products.filter((product) => getDiscountBadgePercentage(product) !== null).length,
     [products],
   );
   const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
@@ -97,7 +97,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   }
 
   const { leadProduct } = selection;
-  const leadDiscount = getDiscountPercentage(leadProduct);
+  const leadDiscount = getDiscountBadgePercentage(leadProduct);
 
   const getQtyInCart = (productId: string) => {
     const item = cart.find((c) => c.id === productId);
@@ -107,16 +107,15 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
   return (
     <MarketPanel
       aria-labelledby="weekly-deal-title"
-      tone="accent"
+      tone="night"
       className="deal-panel space-y-7 p-5 sm:p-7"
     >
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <p className="home-section-kicker">Save this week</p>
-          <h2 id="weekly-deal-title" className="home-section-title">
+          <h2 id="weekly-deal-title" className="text-2xl font-black tracking-tight text-white sm:text-3xl">
             This week&apos;s best deal
           </h2>
-          <p className="home-section-description">
+          <p className="mt-2 max-w-2xl text-sm text-[#d7d0c7]">
             Our biggest featured saving, with more discounted products alongside it.
           </p>
         </div>
@@ -131,7 +130,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             className="deal-product-visual relative flex min-h-[280px] items-center justify-center overflow-hidden rounded-[18px] border p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[340px]"
           >
             <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
-              {leadDiscount}% OFF
+              {leadDiscount}% off
             </span>
             <div className="relative h-[260px] w-full sm:h-[320px]">
               <ProductImage
@@ -184,7 +183,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         {supportingProducts.length > 0 && (
           <div className="min-w-0 space-y-4 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-extrabold text-warm-fg">More deals</h3>
+              <h3 className="text-sm font-extrabold text-white">More deals</h3>
               <div className="flex items-center gap-3">
                 <Link
                   href="/category?theme=deals"
@@ -232,7 +231,6 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    badge={product.badge}
                     unit={product.unit}
                     stock={product.stock}
                     category={product.category}

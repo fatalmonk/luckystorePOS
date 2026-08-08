@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { formatBdt } from '../lib/formatPrice';
+import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { useCartActions } from '../hooks/useCartActions';
@@ -12,27 +13,28 @@ import { ProductImage } from './product/ProductImage';
 export interface CompactProductCardProps {
   product: Product;
   index?: number;
-  offerBadge?: string;
 }
 
-export function CompactProductCard({ product, index = 0, offerBadge }: CompactProductCardProps) {
+export function CompactProductCard({ product, index = 0 }: CompactProductCardProps) {
   const { cart, handleAddToCart, handleUpdateQty } = useCartActions();
   const [btnEl, setBtnEl] = useState<HTMLButtonElement | null>(null);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
   const productHref = `/product/${toProductSlug(product.name, product.id)}`;
   const onSale = product.originalPrice != null && product.originalPrice > product.price;
+  const discountPercentage = getDiscountBadgePercentage(product);
+  const outOfStock = product.stock <= 0;
 
   return (
     <article
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[18px] border border-warm-border bg-warm-surface shadow-warm-rest transition-all hover:shadow-warm-hover"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-warm-lg border border-warm-border bg-warm-surface transition-shadow hover:shadow-warm-rest"
       data-testid="product-card"
     >
       {/* Image */}
       <Link
         href={productHref}
         aria-label={`View ${product.name}`}
-        className="relative aspect-square w-full overflow-hidden bg-[#f8f8f8] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
+        className="relative aspect-square w-full overflow-hidden border-b border-warm-image-well-border bg-warm-image-well p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
         <ProductImage
           src={product.image_url}
@@ -43,12 +45,38 @@ export function CompactProductCard({ product, index = 0, offerBadge }: CompactPr
           priority={index === 0}
           showLoadingState
         />
+        {discountPercentage !== null && (
+          <span className="absolute left-2 top-2 z-10 rounded-warm-sm bg-warm-accent px-2 py-1 text-xs font-black text-warm-accent-text">
+            {discountPercentage}% off
+          </span>
+        )}
       </Link>
 
-      {/* Add / Qty button */}
-      <div className="absolute right-2 top-2 z-10">
-        {qtyInCart > 0 ? (
-          <div className="flex flex-col items-center gap-1 rounded-full border border-warm-border bg-warm-surface p-1 shadow-warm-sm">
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        <div className="min-h-[3.75rem]">
+          <Link
+            href={productHref}
+            className="line-clamp-2 rounded-warm-sm text-xs font-semibold leading-4 text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:text-sm sm:leading-5"
+          >
+            {product.name}
+          </Link>
+          <p className="mt-1 text-xs text-warm-muted">{product.unit}</p>
+        </div>
+
+        <div className="flex min-h-6 items-baseline gap-1.5">
+          <span className="font-mono text-base font-bold text-warm-fg sm:text-lg">
+            {formatBdt(product.price)}
+          </span>
+          {onSale && (
+            <span className="font-mono text-xs text-warm-muted line-through">
+              {formatBdt(product.originalPrice)}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-auto pt-1">
+          {qtyInCart > 0 ? (
+            <div className="flex h-11 items-center justify-between rounded-warm-md border border-warm-border bg-warm-bg px-1">
             <button
               type="button"
               onClick={(e) => {
@@ -56,7 +84,7 @@ export function CompactProductCard({ product, index = 0, offerBadge }: CompactPr
                 e.stopPropagation();
                 handleUpdateQty(product.id, -1);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="flex h-9 w-9 items-center justify-center rounded-warm-sm text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label={`Remove one ${product.name}`}
             >
               −
@@ -71,13 +99,13 @@ export function CompactProductCard({ product, index = 0, offerBadge }: CompactPr
                 e.stopPropagation();
                 handleUpdateQty(product.id, 1);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="flex h-9 w-9 items-center justify-center rounded-warm-sm text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label={`Add another ${product.name}`}
             >
               +
             </button>
           </div>
-        ) : (
+          ) : (
           <button
             ref={setBtnEl}
             type="button"
@@ -87,59 +115,13 @@ export function CompactProductCard({ product, index = 0, offerBadge }: CompactPr
               handleAddToCart(product, btnEl);
             }}
             disabled={product.stock <= 0}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg shadow-warm-sm transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
-            aria-label={`Add ${product.name} to cart`}
+            className="h-11 w-full rounded-warm-md bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted"
+            aria-label={outOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}
           >
-            <svg
-              aria-hidden="true"
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            {outOfStock ? 'Out of stock' : 'Add'}
           </button>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-col gap-1 p-3 pt-2">
-        {/* Offer badge */}
-        <div className="h-6">
-          {offerBadge || product.badge ? (
-            <span className="inline-block rounded-full bg-[#f8bbd0] px-2 py-0.5 text-[10px] font-extrabold text-[#880e4f] sm:text-xs">
-              {offerBadge || product.badge}
-            </span>
-          ) : onSale ? (
-            <span className="inline-block rounded-full bg-[#f8bbd0] px-2 py-0.5 text-[10px] font-extrabold text-[#880e4f] sm:text-xs">
-              Save {formatBdt(product.originalPrice! - product.price)}
-            </span>
-          ) : null}
-        </div>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-base font-black text-warm-fg sm:text-lg">
-            {formatBdt(product.price)}
-          </span>
-          {onSale && (
-            <span className="text-xs text-warm-muted line-through">
-              {formatBdt(product.originalPrice)}
-            </span>
           )}
         </div>
-
-        {/* Name */}
-        <Link
-          href={productHref}
-          className="line-clamp-2 text-xs font-semibold leading-4 text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:text-sm sm:leading-5"
-        >
-          {product.name} {product.unit && <span className="text-warm-muted">· {product.unit}</span>}
-        </Link>
       </div>
     </article>
   );

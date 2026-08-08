@@ -382,6 +382,14 @@ export function Header({ className = '' }: HeaderProps) {
           >
             {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
           </button>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun weight="bold" size={18} aria-hidden="true" /> : <Moon weight="bold" size={18} aria-hidden="true" />}
+          </button>
 
           {/* Wishlist Link */}
           <Link

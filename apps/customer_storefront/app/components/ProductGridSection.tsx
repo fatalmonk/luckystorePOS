@@ -15,8 +15,6 @@ export interface ProductGridSectionProps {
   ctaHref?: string;
   /** Optional brand overlay rendered on each card image (e.g. "brightfarms") */
   brandOverlay?: string;
-  /** Force a specific offer badge copy on every card */
-  offerBadge?: string;
 }
 
 export function ProductGridSection({
@@ -27,7 +25,6 @@ export function ProductGridSection({
   ctaLabel = 'See all',
   ctaHref = '/category',
   brandOverlay,
-  offerBadge,
 }: ProductGridSectionProps) {
   if (products.length === 0) return null;
 
@@ -66,7 +63,6 @@ export function ProductGridSection({
               product={product}
               index={index}
               brandOverlay={brandOverlay}
-              offerBadge={offerBadge}
             />
           </div>
         ))}

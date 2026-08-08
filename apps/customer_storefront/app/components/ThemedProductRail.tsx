@@ -76,11 +76,6 @@ function scoreProduct(product: Product, groups: readonly string[]): number {
   return 0;
 }
 
-function formatSavings(amount: number): string {
-  const rounded = Math.round(amount);
-  return `৳${rounded.toLocaleString('en-BD')}`;
-}
-
 export function ThemedProductRail({
   products,
   title,
@@ -204,13 +199,6 @@ export function ThemedProductRail({
             <CompactProductCard
               product={product}
               index={index}
-              offerBadge={
-                product.badge
-                  ? product.badge
-                  : product.originalPrice != null && product.originalPrice > product.price
-                    ? `Save ${formatSavings(product.originalPrice - product.price)}`
-                    : undefined
-              }
             />
           </div>
         ))}

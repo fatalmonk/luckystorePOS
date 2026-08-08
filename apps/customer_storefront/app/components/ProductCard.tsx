@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
+import { formatBdt } from '../lib/formatPrice';
+import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Category } from '../lib/types';
-import { getLocalWishlist, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
+import { getLocalWishlist, getOrCreateFingerprint, saveLocalWishlist, toggleWishlistItemServer } from '../lib/wishlistHelpers';
 import { useToast } from './Toast';
 import { QtyNumber } from './ui/QtyNumber';
-import { getOrCreateFingerprint, WishlistButton } from './WishlistButton';
 import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
 import { ProductImage } from './product/ProductImage';
@@ -19,7 +19,6 @@ interface ProductCardProps {
   name: string;
   price: number;
   originalPrice?: number;
-  badge?: string;
   brand?: string;
   unit: string;
   stock: number;
@@ -39,7 +38,6 @@ export function ProductCard({
   name,
   price,
   originalPrice,
-  badge,
   brand,
   unit,
   stock,
@@ -56,7 +54,7 @@ export function ProductCard({
   const stockLow = stock === 1;
   const outOfStock = stock <= 0;
   const onSale = originalPrice !== undefined && originalPrice > price;
-  const savings = onSale ? originalPrice! - price : 0;
+  const discountPercentage = getDiscountBadgePercentage({ price, originalPrice });
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [announcement, setAnnouncement] = useState('');
@@ -120,9 +118,9 @@ export function ProductCard({
           <span className="product-badge-accent rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide">
             Best seller
           </span>
-        ) : badge ? (
+        ) : discountPercentage !== null ? (
           <span className="product-badge-sale rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide">
-            {badge}
+            {discountPercentage}% off
           </span>
         ) : showBrandBadge && brand ? (
           <span className="rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide bg-warm-accent/20 text-warm-fg border border-warm-accent/40 backdrop-blur-sm">
@@ -152,7 +150,7 @@ export function ProductCard({
       <Link
         href={productHref}
         aria-label={`View ${name}`}
-        className="relative w-full aspect-[4/3] bg-warm-surface overflow-hidden flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
+        className="relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
         <ProductImage
           src={image_url}
@@ -165,38 +163,26 @@ export function ProductCard({
         />
       </Link>
 
-      {/* Content — refined editorial layout with consistent heights */}
+      {/* Content — one consistent commerce hierarchy */}
       <div className="p-3.5 flex flex-col flex-1 justify-between gap-1.5">
         <div className="flex flex-col gap-1">
-          {/* Price block: prominent, clean */}
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(price)}</span>
-            {onSale && (
-              <span className="font-mono text-xs text-warm-muted line-through">{formatBdt(originalPrice)}</span>
-            )}
-          </div>
-
-          {/* Reserved slot for sale savings to align all cards vertically */}
-          <div className="h-3.5 flex items-center">
-            {onSale ? (
-              <p className="product-savings text-xs font-bold leading-none">
-                Save {formatBdt(savings)}
-              </p>
-            ) : null}
-          </div>
-
-          <p className="text-xs leading-none text-warm-dim">
-            {formatUnitPrice(price, unit)}
-          </p>
-
           <Link
             href={productHref}
             className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
-            <h3 className="min-h-[3.75rem] break-words text-sm font-semibold leading-5 text-warm-fg font-body">
+            <h3 className="min-h-10 break-words text-sm font-semibold leading-5 text-warm-fg font-body">
               {name}
             </h3>
           </Link>
+
+          <p className="text-xs leading-none text-warm-dim">{unit}</p>
+
+          <div className="mt-1 flex min-h-6 items-baseline gap-1.5">
+            <span className="font-mono text-lg font-bold text-warm-fg">{formatBdt(price)}</span>
+            {onSale && (
+              <span className="font-mono text-xs text-warm-muted line-through">{formatBdt(originalPrice)}</span>
+            )}
+          </div>
         </div>
 
         <div className="mt-auto pt-2">
@@ -227,9 +213,14 @@ export function ProductCard({
               </button>
             </div>
           ) : outOfStock ? (
-            <div onClick={(e) => e.stopPropagation()} className="w-full">
-              <WishlistButton productId={id} productName={name} />
-            </div>
+            <button
+              type="button"
+              disabled
+              className="h-11 w-full cursor-not-allowed rounded-warm-md border border-warm-border bg-warm-bg px-3 text-xs font-bold text-warm-muted"
+              aria-label={`${name} is out of stock`}
+            >
+              Out of stock
+            </button>
           ) : (
             <button
               ref={onAddRef}
@@ -239,7 +230,7 @@ export function ProductCard({
                 onAdd(e.currentTarget);
               }}
               disabled={stock <= 0}
-              className="h-11 w-full rounded-full bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors duration-300 hover:bg-warm-accent-hover active:scale-[0.96] disabled:bg-warm-border disabled:text-warm-muted sm:px-3"
+              className="h-11 w-full rounded-warm-md bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors hover:bg-warm-accent-hover active:scale-[0.96] sm:px-3"
               aria-label={`Add ${name} to cart`}
             >
               <span className="market-card-add-label-full">Add to Cart</span>

@@ -2,6 +2,16 @@ import { createWishlistItem, deleteWishlistItem, fetchWishlistItems } from './wi
 
 const LOCAL_KEY = 'lucky_wishlist_ids';
 
+export function getOrCreateFingerprint(): string {
+  if (typeof window === 'undefined') return '';
+  let fingerprint = localStorage.getItem('lucky_store_fp');
+  if (!fingerprint) {
+    fingerprint = crypto.randomUUID();
+    localStorage.setItem('lucky_store_fp', fingerprint);
+  }
+  return fingerprint;
+}
+
 export function getLocalWishlist(): string[] {
   if (typeof window === 'undefined') return [];
   try {
