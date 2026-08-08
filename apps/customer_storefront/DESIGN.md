@@ -18,6 +18,10 @@ colors:
   dim-dark: "#8f877d"
   border: "#E8E4DC"
   border-dark: "rgba(245, 240, 235, 0.12)"
+  image-well: "#F7F1E8"
+  image-well-dark: "#2F2923"
+  image-well-border: "#E8E0D4"
+  image-well-border-dark: "rgba(245, 240, 235, 0.10)"
   success: "#16A34A"
   warning: "#b45309"
   danger: "#E34234"
@@ -111,6 +115,7 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 ### Neutral
 - **Warm Paper** (`#FDFBF7`): Default light-mode page background. Warmer than pure white to reduce glare and reinforce the physical-store metaphor.
 - **Surface White** (`#ffffff`): Cards, inputs, modals, and raised containers in light mode.
+- **Image Well** (`#F7F1E8` light / `#2F2923` dark): Product and category image backgrounds. It is warmer than pure white in light mode and visibly lifted from deep-night page ground in dark mode.
 - **Foreground** (`#0B0B0D`): Body text and icons in light mode.
 - **Muted** (`#525252`): Secondary text, placeholders, and subdued labels.
 - **Dim** (`#525252` light / `#8f877d` dark): Tertiary text and non-interactive metadata.
@@ -131,6 +136,8 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 
 **The Warm Ground Rule.** Page backgrounds are warm paper in light mode and deep night in dark mode; avoid pure `#FFFFFF` page fills or `#1A1A1A` dark fills.
 
+**The Image Well Rule.** Product photography and fallback art sit on `--color-image-well` with `--color-image-well-border`, not on ad hoc white wells. Dark mode image wells stay warm and distinct from the page ground.
+
 **The Banner Shape Rule.** Hero, promo, and campaign banners are always landscape (16:9 or 21:9). Never place a 1:1 image inside a wide banner container.
 
 ## Typography
@@ -142,17 +149,19 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 The pairing is warm but modern. Bricolage gives display moments a friendly, human character without drifting into novelty. Manrope carries the bulk of the reading and UI. Geist Mono is reserved for prices, order IDs, and small technical labels.
 
 ### Hierarchy
-- **Display** (500, `clamp(1.25rem, 2vw + 0.5rem, 1.875rem)`, line-height 1.1): Section and page headlines; used sparingly on mobile.
-- **Headline / H2** (600, `clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)`, line-height 1.2): Card titles, modal titles, campaign headers.
-- **Title / H3** (600, `clamp(0.9375rem, 0.8vw + 0.5rem, 1.125rem)`, line-height 1.3): Product names, filter group titles.
-- **Body** (400, `clamp(0.875rem, 0.5vw + 0.5rem, 1rem)`, line-height 1.5): Descriptions, form copy, support text. Max line length 65–75ch when in reading passages.
-- **Small** (400, `clamp(0.75rem, 0.3vw + 0.5rem, 0.875rem)`, line-height 1.4): Captions, metadata, timestamps, footer links.
-- **Label** (600, `clamp(0.6875rem, 0.2vw + 0.5rem, 0.75rem)`, line-height 1.3, uppercase optional): Badges, tags, prices per unit.
+- **Hero display** (500, `clamp(1.25rem, 2vw + 0.5rem, 1.875rem)`, line-height 1.1): Homepage hero and major campaign headlines.
+- **Section heading** (600, `clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)`, line-height 1.2): Homepage rails, panels, modal titles, and campaign headers.
+- **Product title** (600, `clamp(0.9375rem, 0.8vw + 0.5rem, 1.125rem)`, line-height 1.3): Product names and purchasable item headings.
+- **Price** (700, product-card local scale, line-height 1.1): Selling price. It must read stronger than unit, MRP, or metadata.
+- **Supporting/meta text** (400, `clamp(0.75rem, 0.3vw + 0.5rem, 0.875rem)`, line-height 1.4): Captions, units, timestamps, footer links, and subdued merchandising copy.
+- **Navigation/control text** (600, `clamp(0.6875rem, 0.2vw + 0.5rem, 0.75rem)`, line-height 1.3): Badges, tags, tabs, chips, category controls, and utility metadata.
 
 ### Named rules
 **The One Display Font Rule.** Bricolage is the only display face. Do not introduce a second display serif or decorative face.
 
 **The Bengali Fallback Rule.** Every type stack ends with Noto Sans Bengali so localized strings degrade gracefully without changing weight or rhythm.
+
+**The Commerce Type Rule.** Heritage influence stays mild. Product names, prices, units, and controls remain utilitarian; uppercase is reserved for small labels, sale tags, and utility metadata.
 
 ## Layout
 
@@ -204,6 +213,8 @@ The form language is softly rounded and friendly, matching the neighborhood-stor
 ### Named rules
 **The Family Radius Rule.** Surfaces sharing a parent container use the same radius family (sm/md/lg/xl) so adjacent shapes harmonize.
 
+**The Radius Contract.** Small utility controls use `--radius-sm`; buttons, inputs, and standard cards use `--radius-md`; product cards use `--radius-lg`; feature panels, sheets, and modals use `--radius-xl`; chips and status pills may use full radius. Avoid arbitrary `rounded-2xl` or `rounded-3xl` in touched storefront code unless a documented component requires it.
+
 ## Components
 
 ### Buttons
@@ -232,6 +243,11 @@ The form language is softly rounded and friendly, matching the neighborhood-stor
 - **Header:** Logo left, search center/flex, cart and theme toggle right. Sticky, warm-bg with glassmorphism on scroll (`--glass-bg`).
 - **Bottom nav (mobile):** 5-item icon bar with labels, saffron active state, subtle top border.
 - **Active states:** Saffron for primary selection; muted for inactive.
+
+### Icons
+- **General UI:** Use the existing `@phosphor-icons/react` package for controls and navigation. Do not add a second icon package for storefront UI.
+- **Category icons:** Known categories use the custom category-family SVGs; mapped families use the closest custom category SVG; unknown categories use a neutral generic category glyph.
+- **Fallbacks:** Emoji fields may remain for compatibility with data contracts, but rendered storefront UI should not use emoji as design.
 
 ### Sheets and modals
 - **Sheets:** Slide from bottom on mobile, from right on desktop. 24px top radius on mobile bottom sheet. Close via swipe/drag or backdrop tap.
