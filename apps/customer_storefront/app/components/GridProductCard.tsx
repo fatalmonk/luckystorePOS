@@ -41,7 +41,7 @@ export function GridProductCard({ product, index = 0, brandOverlay }: GridProduc
           alt={product.name}
           category={product.category}
           sizes="(max-width: 640px) 33vw, 200px"
-          imageClassName="object-contain p-2"
+          imageClassName="product-image-on-well object-contain p-2"
           priority={index === 0}
           showLoadingState
         />
