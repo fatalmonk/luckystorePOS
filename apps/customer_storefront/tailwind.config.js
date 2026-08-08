@@ -16,6 +16,8 @@ module.exports = {
           dim: 'var(--color-dim)',
           border: 'var(--color-border)',
           'border-light': 'var(--color-border-light)',
+          'image-well': 'var(--color-image-well)',
+          'image-well-border': 'var(--color-image-well-border)',
           accent: 'var(--color-accent)',
           'accent-hover': 'var(--color-accent-hover)',
           'accent-ghost': 'var(--color-accent-ghost)',
