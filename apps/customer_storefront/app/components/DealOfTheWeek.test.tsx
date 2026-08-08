@@ -8,17 +8,8 @@ const scrollBy = vi.fn();
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 vi.mock('./DealCountdown', () => ({ DealCountdown: () => <span>Countdown</span> }));
-vi.mock('./ProductCard', () => ({
-  ProductCard: ({ name }: { name: string }) => <article data-testid="deal-product">{name}</article>,
-}));
-vi.mock('../hooks/useCartActions', () => ({
-  useCartActions: () => ({
-    cart: [],
-    flyItems: [],
-    handleAddToCart: vi.fn(),
-    handleUpdateQty: vi.fn(),
-    handleFlyComplete: vi.fn(),
-  }),
+vi.mock('./GridProductCard', () => ({
+  GridProductCard: ({ product }: { product: Product }) => <article data-testid="deal-product">{product.name}</article>,
 }));
 
 function product(id: string, discount: number): Product {

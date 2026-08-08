@@ -21,16 +21,30 @@ interface CartFlyAnimationProps {
  */
 export function CartFlyAnimation({ items, onComplete }: CartFlyAnimationProps) {
   const [mounted, setMounted] = useState(false);
+  const [eventItems, setEventItems] = useState<FlyItem[]>([]);
+
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleFlyEvent = (event: Event) => {
+      const detail = (event as CustomEvent<FlyItem>).detail;
+      if (detail) {
+        setEventItems((prev) => [...prev, detail]);
+      }
+    };
+
+    window.addEventListener('lucky-store:cart-fly', handleFlyEvent);
+    return () => window.removeEventListener('lucky-store:cart-fly', handleFlyEvent);
   }, []);
 
   if (!mounted) return null;
 
   return createPortal(
     <>
-      {items.map((item) => {
+      {[...items, ...eventItems].map((item) => {
         // Target: cart icon area (top-right, approx header position)
         const targetX = typeof window !== 'undefined' ? window.innerWidth - 50 : 0;
         const targetY = 30;
@@ -47,7 +61,10 @@ export function CartFlyAnimation({ items, onComplete }: CartFlyAnimationProps) {
               '--fly-x': `${flyX}px`,
               '--fly-y': `${flyY}px`,
             } as React.CSSProperties}
-            onAnimationEnd={() => onComplete(item.id)}
+            onAnimationEnd={() => {
+              onComplete(item.id);
+              setEventItems((prev) => prev.filter((eventItem) => eventItem.id !== item.id));
+            }}
           >
             <ShoppingBag size={20} weight="fill" aria-hidden="true" />
           </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 interface QtyNumberProps {
@@ -18,6 +19,7 @@ export function QtyNumber({ qty, className = '', 'aria-label': ariaLabel }: QtyN
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
     const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(mql.matches);
     const listener = (e: MediaQueryListEvent) => setReducedMotion(e.matches);

@@ -4,12 +4,11 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
-import { useCartActions } from '../hooks/useCartActions';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { DealCountdown } from './DealCountdown';
-import { ProductCard } from './ProductCard';
+import { GridProductCard } from './GridProductCard';
 import { MarketPanel } from './ui/MarketSurface';
 import { ProductImage } from './product/ProductImage';
 
@@ -29,9 +28,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     () => products.filter((product) => getDiscountBadgePercentage(product) !== null).length,
     [products],
   );
-  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
   const dealRailRef = useRef<HTMLDivElement>(null);
-  const addBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const scrollRafId = useRef<number | null>(null);
   const [canScrollPrevious, setCanScrollPrevious] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
@@ -98,11 +95,6 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
 
   const { leadProduct } = selection;
   const leadDiscount = getDiscountBadgePercentage(leadProduct);
-
-  const getQtyInCart = (productId: string) => {
-    const item = cart.find((c) => c.id === productId);
-    return item?.qty || 0;
-  };
 
   return (
     <MarketPanel
@@ -225,24 +217,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             >
               {supportingProducts.map((product) => (
                 <div key={product.id} className="deal-product-slide text-warm-fg">
-                  <ProductCard
-                    id={product.id}
-                    emoji={product.emoji}
-                    name={product.name}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
-                    unit={product.unit}
-                    stock={product.stock}
-                    category={product.category}
-                    image_url={product.image_url}
-                    qtyInCart={getQtyInCart(product.id)}
-                    theme="deals"
-                    onAdd={() => handleAddToCart(product, addBtnRefs.current[product.id] ?? null)}
-                    onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                    onAddRef={(el) => {
-                      addBtnRefs.current[product.id] = el;
-                    }}
-                  />
+                  <GridProductCard product={product} />
                 </div>
               ))}
             </div>
@@ -250,7 +225,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         )}
       </div>
 
-      <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
+      <CartFlyAnimation items={[]} onComplete={() => undefined} />
     </MarketPanel>
   );
 }

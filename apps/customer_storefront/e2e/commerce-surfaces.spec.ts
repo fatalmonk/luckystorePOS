@@ -36,7 +36,7 @@ test.describe('Storefront commerce surfaces', () => {
     expect(addBox!.y).toBeGreaterThan(priceBox!.y);
     expect(addBox!.height).toBeGreaterThanOrEqual(44);
 
-    const weeklyDeal = page.locator('.deal-panel');
+    const weeklyDeal = page.locator('.deal-panel').first();
     await expect(weeklyDeal).toBeVisible();
     await expect(weeklyDeal).toHaveCSS('background-color', 'rgb(255, 248, 225)');
     await expect(weeklyDeal.getByRole('heading', { name: "This week's best deal" })).toBeVisible();
@@ -50,7 +50,7 @@ test.describe('Storefront commerce surfaces', () => {
 
     await page.getByRole('button', { name: 'Switch to dark mode' }).dispatchEvent('click');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(card).toHaveCSS('background-color', 'rgb(36, 30, 26)');
+    await expect(card).toHaveCSS('background-color', 'rgba(17, 17, 20, 0.72)');
     await expect(weeklyDeal).toHaveCSS('background-color', 'rgb(11, 11, 13)');
 
     await page.screenshot({
