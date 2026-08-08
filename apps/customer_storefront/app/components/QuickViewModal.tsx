@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect } from 'react';
+import { WarningCircle, X } from '@phosphor-icons/react';
 import type { Product } from '../lib/types';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
 import { QtyNumber } from './ui/QtyNumber';
 import { WishlistButton } from './WishlistButton';
+import { ProductImage } from './product/ProductImage';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -17,7 +18,6 @@ interface QuickViewModalProps {
 export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
   const { cart, addToCart, updateQty } = useCartContext();
   const { showToast } = useToast();
-  const [imageError, setImageError] = useState(false);
 
   // Close on Escape key press
   useEffect(() => {
@@ -72,24 +72,20 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
           className="absolute top-4 right-4 w-9 h-9 rounded-full bg-warm-bg text-warm-fg flex items-center justify-center hover:bg-warm-border transition-colors border border-warm-border"
           aria-label="Close modal"
         >
-          ✕
+          <X size={18} weight="bold" aria-hidden="true" />
         </button>
 
         <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start pt-2">
           {/* Image */}
-          <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-2xl bg-white overflow-hidden flex items-center justify-center border border-warm-border shrink-0">
-            {product.image_url && !imageError ? (
-              <Image
-                src={product.image_url}
-                alt={product.name}
-                fill
-                sizes="192px"
-                className="object-contain p-4"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <span className="text-6xl">{product.emoji}</span>
-            )}
+          <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-2xl bg-warm-image-well overflow-hidden flex items-center justify-center border border-warm-image-well-border shrink-0">
+            <ProductImage
+              src={product.image_url}
+              alt={product.name}
+              category={product.category}
+              sizes="192px"
+              imageClassName="object-contain p-4"
+              iconSize={52}
+            />
           </div>
 
           {/* Details */}
@@ -100,8 +96,9 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                   {product.category}
                 </span>
                 {stockLow && (
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#E65100] text-white">
-                    ⚡ Only {product.stock} left!
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-[#E65100] text-white">
+                    <WarningCircle size={12} weight="fill" aria-hidden="true" />
+                    Only {product.stock} left
                   </span>
                 )}
                 {outOfStock && (

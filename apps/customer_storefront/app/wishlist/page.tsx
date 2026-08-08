@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 import { getLocalWishlist } from '../lib/wishlistHelpers';
@@ -12,6 +11,7 @@ import { toProductSlug } from '../lib/products/slugify';
 import { formatBdt } from '../lib/formatPrice';
 import type { Product } from '../lib/types';
 import { Heart, ArrowRight } from '@phosphor-icons/react';
+import { ProductImage } from '../components/product/ProductImage';
 
 export default function WishlistPage() {
   const [items, setItems] = useState<Product[]>([]);
@@ -100,17 +100,13 @@ export default function WishlistPage() {
               >
                 <Link href={`/product/${toProductSlug(product.name, product.id)}`} className="block">
                   <div className="relative w-full aspect-[4/3] bg-warm-bg flex items-center justify-center overflow-hidden">
-                    {product.image_url ? (
-                      <Image
-                        src={product.image_url}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 640px) 50vw, 25vw"
-                        className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.06]"
-                      />
-                    ) : (
-                      <span className="text-4xl opacity-40">{product.emoji}</span>
-                    )}
+                    <ProductImage
+                      src={product.image_url}
+                      alt={product.name}
+                      category={product.category}
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      imageClassName="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.06]"
+                    />
                     <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-warm-surface/60 to-transparent pointer-events-none" />
                   </div>
                   <div className="p-3.5">

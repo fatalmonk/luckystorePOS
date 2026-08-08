@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { toProductSlug } from '../../lib/products/slugify';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
@@ -17,6 +16,7 @@ import { formatBdt } from '../../lib/formatPrice';
 import type { Product } from '../../lib/products/types';
 import { TrustStrip } from '../../components/product/TrustStrip';
 import { ProductCarousel } from '../../components/product/ProductCarousel';
+import { ProductImage } from '../../components/product/ProductImage';
 
 interface ProductClientProps {
   product: Product;
@@ -27,7 +27,6 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
-  const [imageError, setImageError] = useState(false);
 
   // Record product view post-mount
   useEffect(() => {
@@ -84,27 +83,15 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
           {/* Hero Section */}
           <div className="px-4 pt-4 pb-5 sm:px-6 lg:px-8">
             <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-bg overflow-hidden mb-6">
-              {product.image_url && !imageError ? (
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 360px"
-                  className="w-full h-full object-contain p-6 sm:p-8"
-                  onError={() => setImageError(true)}
-                />
-              ) : null}
-              {(!product.image_url || imageError) && (
-                <div
-                  data-placeholder
-                  className="absolute inset-0 grid place-items-center text-8xl"
-                  aria-label={product.name}
-                  role="img"
-                >
-                  <span aria-hidden="true">{product.emoji}</span>
-                </div>
-              )}
+              <ProductImage
+                src={product.image_url}
+                alt={product.name}
+                category={product.category}
+                sizes="(max-width: 768px) 100vw, 360px"
+                imageClassName="w-full h-full object-contain p-6 sm:p-8"
+                priority
+                iconSize={64}
+              />
             </div>
 
             <div className="flex items-start justify-between gap-3">

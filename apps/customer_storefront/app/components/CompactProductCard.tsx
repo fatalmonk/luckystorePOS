@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { formatBdt } from '../lib/formatPrice';
 import { toProductSlug } from '../lib/products/slugify';
-import type { Category, Product } from '../lib/types';
+import type { Product } from '../lib/types';
 import { useCartActions } from '../hooks/useCartActions';
-import { CategoryPlaceholder } from './CategoryPlaceholder';
+import { ProductImage } from './product/ProductImage';
 
 export interface CompactProductCardProps {
   product: Product;
@@ -18,18 +17,11 @@ export interface CompactProductCardProps {
 
 export function CompactProductCard({ product, index = 0, offerBadge }: CompactProductCardProps) {
   const { cart, handleAddToCart, handleUpdateQty } = useCartActions();
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [btnEl, setBtnEl] = useState<HTMLButtonElement | null>(null);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
   const productHref = `/product/${toProductSlug(product.name, product.id)}`;
   const onSale = product.originalPrice != null && product.originalPrice > product.price;
-
-  useEffect(() => {
-    setImageError(false);
-    setImageLoaded(false);
-  }, [product.image_url]);
 
   return (
     <article
@@ -42,30 +34,15 @@ export function CompactProductCard({ product, index = 0, offerBadge }: CompactPr
         aria-label={`View ${product.name}`}
         className="relative aspect-square w-full overflow-hidden bg-[#f8f8f8] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
-        {product.image_url && !imageLoaded && !imageError && (
-          <div className="absolute inset-3 animate-pulse rounded-xl bg-warm-border/50" aria-hidden="true" />
-        )}
-        {product.image_url && !imageError ? (
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 40vw, 200px"
-            className="object-contain p-2"
-            priority={index === 0}
-            loading={index === 0 ? undefined : 'lazy'}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageLoaded(true);
-              setImageError(true);
-            }}
-          />
-        ) : null}
-        {(!product.image_url || imageError) && (
-          <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
-            <CategoryPlaceholder category={product.category as Category} />
-          </div>
-        )}
+        <ProductImage
+          src={product.image_url}
+          alt={product.name}
+          category={product.category}
+          sizes="(max-width: 640px) 40vw, 200px"
+          imageClassName="object-contain p-2"
+          priority={index === 0}
+          showLoadingState
+        />
       </Link>
 
       {/* Add / Qty button */}

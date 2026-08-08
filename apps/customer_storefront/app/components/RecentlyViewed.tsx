@@ -5,6 +5,7 @@ import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { ProductCard } from './ProductCard';
 import { useCartActions } from '../hooks/useCartActions';
 import type { Product } from '../lib/types';
+import { Eye } from '@phosphor-icons/react';
 
 interface RecentlyViewedProps {
   products: Product[];
@@ -40,7 +41,7 @@ export function RecentlyViewed({ products, currentProductId }: RecentlyViewedPro
       <div className="flex items-center justify-between pb-3 border-b border-warm-border">
         <div>
           <h2 className="text-base sm:text-lg font-extrabold tracking-tight text-warm-fg flex items-center gap-2">
-            <span>👁️</span> Recently Viewed
+            <Eye size={20} weight="bold" aria-hidden="true" /> Recently Viewed
           </h2>
           <p className="text-xs text-warm-muted mt-0.5">Items you looked at earlier</p>
         </div>

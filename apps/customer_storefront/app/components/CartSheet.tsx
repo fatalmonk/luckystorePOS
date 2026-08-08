@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { X } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
 import { Button } from './ui/Button';
 import { QtyNumber } from './ui/QtyNumber';
 import { formatBdt } from '../lib/formatPrice';
+import { ProductImage } from './product/ProductImage';
 
 interface CartSheetProps {
   open: boolean;
@@ -128,19 +128,16 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   key={item.id}
                   className="flex items-center gap-3 py-2.5 px-1 rounded-xl hover:bg-warm-bg/50 transition-colors"
                 >
-                  {/* Product image or emoji fallback */}
-                  <div className="w-12 h-12 rounded-xl bg-warm-bg overflow-hidden flex-shrink-0 grid place-items-center relative">
-                    {item.image_url ? (
-                      <Image
-                        src={item.image_url}
-                        alt={item.name}
-                        fill
-                        sizes="48px"
-                        className="object-contain p-1"
-                      />
-                    ) : (
-                      <span className="text-xl">{item.emoji}</span>
-                    )}
+                  {/* Product image or deterministic category fallback */}
+                  <div className="w-12 h-12 rounded-xl bg-warm-image-well overflow-hidden flex-shrink-0 grid place-items-center relative">
+                    <ProductImage
+                      src={item.image_url}
+                      alt={item.name}
+                      category={item.category}
+                      sizes="48px"
+                      imageClassName="object-contain p-1"
+                      iconSize={20}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[13px] truncate text-warm-fg">{item.name}</p>

@@ -1,6 +1,7 @@
 export interface Product {
   id: string;
   name: string;
+  /** Compatibility-only data field. Storefront presentation must not render emoji. */
   emoji: string;
   price: number;
   originalPrice?: number;
@@ -21,6 +22,7 @@ export type Category = string;
 export interface CategoryGroup {
   slug: string;
   label: string;
+  /** Compatibility-only data field. Use CategoryIcon for storefront presentation. */
   emoji: string;
   subCategories: Category[];
 }
@@ -190,5 +192,4 @@ export type OrderStatus =
   | 'out_for_delivery'
   | 'delivered'
   | 'cancelled';
-
 

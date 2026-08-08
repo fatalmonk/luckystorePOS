@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 import { useCartContext } from '../components/CartProvider';
@@ -12,6 +11,7 @@ import { QtyNumber } from '../components/ui/QtyNumber';
 import { PriceDisplay } from '../components/PriceDisplay';
 import { EmptyCartIcon } from '../components/icons';
 import { formatBdt } from '../lib/formatPrice';
+import { ProductImage } from '../components/product/ProductImage';
 
 const PROMO_CODES: Record<string, { label: string; amount: number; minSubtotal: number }> = {
   FREE500: { label: 'FREE500', amount: 40, minSubtotal: 500 },
@@ -91,17 +91,14 @@ function CartContent() {
                     className="bg-warm-surface border border-warm-border rounded-[16px] p-3.5 flex items-center gap-3.5"
                   >
                     <div className="w-[60px] h-[60px] rounded-xl bg-warm-bg overflow-hidden flex-shrink-0 grid place-items-center relative">
-                      {item.image_url ? (
-                        <Image
-                          src={item.image_url}
-                          alt={item.name}
-                          fill
-                          sizes="60px"
-                          className="object-contain p-1.5"
-                        />
-                      ) : (
-                        <span className="text-2xl">{item.emoji}</span>
-                      )}
+                      <ProductImage
+                        src={item.image_url}
+                        alt={item.name}
+                        category={item.category}
+                        sizes="60px"
+                        imageClassName="object-contain p-1.5"
+                        iconSize={24}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-[13px] mb-0.5 truncate text-warm-fg">{item.name}</p>

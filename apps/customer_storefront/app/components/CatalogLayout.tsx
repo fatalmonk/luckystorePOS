@@ -4,12 +4,12 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag } from '@phosphor-icons/react';
+import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag, MagnifyingGlass } from '@phosphor-icons/react';
 import { ProductCard } from './ProductCard';
 import { useCartActions } from '../hooks/useCartActions';
 import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
-import { WordMatchEmojiResolver } from '../lib/products/parsers/EmojiResolver';
+import { getCategoryIcon } from './icons/CategoryIcons';
 
 const CartFlyAnimation = dynamic(
   () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
@@ -401,7 +401,6 @@ export function CatalogLayout({
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {subCats.map((sub) => {
                 const isActive = categorySlug === sub.slug;
-                const displayEmoji = sub.emoji && sub.emoji !== '📦' ? sub.emoji : new WordMatchEmojiResolver().resolve(sub.name || sub.slug);
                 return (
                   <Link
                     key={sub.id}
@@ -412,8 +411,8 @@ export function CatalogLayout({
                         : 'border-warm-border/70 bg-warm-bg text-warm-fg hover:border-warm-accent hover:bg-warm-surface'
                     }`}
                   >
-                    <span className="text-3xl transition-transform group-hover:scale-110" aria-hidden="true">
-                      {displayEmoji}
+                    <span className="transition-transform group-hover:scale-110" aria-hidden="true">
+                      {getCategoryIcon(sub.slug || sub.name, 28)}
                     </span>
                     <span className={`text-xs font-extrabold leading-tight truncate max-w-full ${isActive ? 'text-warm-accent' : 'text-warm-fg'}`}>
                       {sub.name}
@@ -570,7 +569,7 @@ export function CatalogLayout({
         <section aria-label="Product catalog" className="md:col-span-9 space-y-6">
           {filtered.length === 0 ? (
             <div className="bg-warm-surface border border-warm-border/60 rounded-[24px] p-12 text-center space-y-3">
-              <span className="text-4xl">🔍</span>
+              <MagnifyingGlass className="mx-auto text-warm-muted" size={36} weight="bold" aria-hidden="true" />
               <h3 className="text-lg font-bold text-warm-fg">No products match your filters</h3>
               <p className="text-xs text-warm-muted max-w-sm mx-auto">
                 Try clearing some of your price or availability filters to view more products.

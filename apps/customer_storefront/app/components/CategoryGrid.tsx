@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, MagnifyingGlass, Fire, Star, Package } from '@phosphor-icons/react/dist/ssr';
 import { CATEGORY_GROUPS, type CategoryGroup } from '../lib/types';
+import { getCategoryIcon } from './icons/CategoryIcons';
 
 interface CategoryGridProps {
   searchParams?: Record<string, string | string[] | undefined>;
@@ -36,8 +37,8 @@ function CategoryTile({ group }: { group: CategoryGroup }) {
       href={`/category/${group.slug}`}
       className="group relative flex flex-col items-center justify-center gap-3 rounded-2xl border border-warm-border/60 bg-warm-surface p-4 shadow-warm-sm transition-all duration-200 hover:-translate-y-1 hover:border-warm-accent hover:shadow-warm-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent active:scale-[0.96] min-h-[120px] sm:min-h-[140px]"
     >
-      <span className="text-4xl sm:text-5xl" aria-hidden="true">
-        {group.emoji}
+      <span className="text-warm-fg" aria-hidden="true">
+        {getCategoryIcon(group.slug, 36)}
       </span>
       <span className="text-center text-xs font-extrabold leading-tight text-warm-fg sm:text-sm">
         {group.label}

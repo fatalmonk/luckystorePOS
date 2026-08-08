@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
@@ -12,6 +11,7 @@ import type { Product } from '../lib/types';
 import { DealCountdown } from './DealCountdown';
 import { ProductCard } from './ProductCard';
 import { MarketPanel } from './ui/MarketSurface';
+import { ProductImage } from './product/ProductImage';
 
 const CartFlyAnimation = dynamic(
   () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
@@ -133,21 +133,17 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
               {leadDiscount}% OFF
             </span>
-            {leadProduct.image_url ? (
-              <div className="relative h-[260px] w-full sm:h-[320px]">
-                <Image
-                  src={leadProduct.image_url}
-                  alt={leadProduct.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
-                  className="object-contain"
-                />
-              </div>
-            ) : (
-              <span className="text-8xl sm:text-9xl" aria-hidden="true">
-                {leadProduct.emoji}
-              </span>
-            )}
+            <div className="relative h-[260px] w-full sm:h-[320px]">
+              <ProductImage
+                src={leadProduct.image_url}
+                alt={leadProduct.name}
+                category={leadProduct.category}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
+                imageClassName="object-contain"
+                priority
+                iconSize={64}
+              />
+            </div>
           </Link>
 
           <div className="space-y-2">
