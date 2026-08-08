@@ -7,7 +7,6 @@ import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
 import { QtyNumber } from './ui/QtyNumber';
-import { WishlistButton } from './WishlistButton';
 import { ProductImage } from './product/ProductImage';
 
 interface QuickViewModalProps {
@@ -148,7 +147,14 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                   </button>
                 </div>
               ) : outOfStock ? (
-                <WishlistButton productId={product.id} productName={product.name} />
+                <button
+                  type="button"
+                  disabled
+                  className="h-11 w-full cursor-not-allowed rounded-warm-md border border-warm-border bg-warm-bg px-3 text-sm font-bold text-warm-muted"
+                  aria-label={`${product.name} is out of stock`}
+                >
+                  Out of stock
+                </button>
               ) : (
                 <button
                   onClick={handleAdd}

@@ -102,8 +102,8 @@
     overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: #ffffff;
-    box-shadow: var(--shadow-rest);
+    background: var(--color-surface);
+    box-shadow: none;
     transition:
       border-color 220ms var(--ease-drawer),
       box-shadow 220ms var(--ease-drawer);
@@ -115,12 +115,8 @@
     --color-muted: rgba(247, 244, 236, 0.68);
     --color-dim: rgba(247, 244, 236, 0.52);
     --color-border: rgba(255, 255, 255, 0.11);
-    background:
-      radial-gradient(circle at 100% 0%, rgba(240, 196, 68, 0.10), transparent 35%),
-      rgba(11, 11, 13, 0.96);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 18px 44px rgba(11, 11, 13, 0.16);
+    background: var(--color-surface);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .market-product-card::before {
@@ -145,11 +141,7 @@
 
   .market-product-card[data-interactive]:hover {
     border-color: var(--color-accent);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.10),
-      0 0 0 1px rgba(240, 196, 68, 0.10),
-      0 22px 54px rgba(11, 11, 13, 0.25),
-      0 0 32px rgba(240, 196, 68, 0.10);
+    box-shadow: var(--shadow-rest);
   }
 
   .market-card-add-label-full {
@@ -461,7 +453,7 @@
 
   .home-trust-fact dd {
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     line-height: 1.2;
     margin-top: 0.2rem;
   }
@@ -751,7 +743,8 @@
   }
 
   .deal-panel {
-    background: var(--color-accent-muted);
+    background: #0B0B0D;
+    box-shadow: 0 12px 32px rgba(11, 11, 13, 0.16);
   }
 
   .deal-lead-card,
@@ -765,8 +758,8 @@
   }
 
   .deal-discount {
-    color: var(--color-campaign-on-image);
-    background: var(--color-danger-surface);
+    color: var(--color-accent-text);
+    background: var(--color-accent);
   }
 
   .deal-countdown {
@@ -1182,4 +1175,3 @@ html.theme-transitioning .glass {
 .partner-marquee-track:focus-within {
   animation-play-state: paused;
 }
-

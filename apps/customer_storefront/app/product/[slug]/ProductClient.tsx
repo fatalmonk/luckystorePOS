@@ -7,7 +7,6 @@ import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { useToast } from '../../components/Toast';
 import { useCartContext } from '../../components/CartProvider';
-import { WishlistButton } from '../../components/WishlistButton';
 import { QtyNumber } from '../../components/ui/QtyNumber';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { ProductJsonLd } from '../../components/seo/ProductJsonLd';
@@ -148,9 +147,14 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
                 </div>
               ) : product.stock <= 0 ? (
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="flex-1">
-                    <WishlistButton productId={product.id} productName={product.name} />
-                  </div>
+                  <button
+                    type="button"
+                    disabled
+                    className="h-12 flex-1 cursor-not-allowed rounded-warm-md border border-warm-border bg-warm-bg px-5 text-sm font-bold text-warm-muted"
+                    aria-label={`${product.name} is out of stock`}
+                  >
+                    Out of stock
+                  </button>
                   {product.category && (
                     <Link
                       href={`/category/${encodeURIComponent(product.category)}`}

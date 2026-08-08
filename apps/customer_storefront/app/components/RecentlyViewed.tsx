@@ -62,7 +62,6 @@ export function RecentlyViewed({ products, currentProductId }: RecentlyViewedPro
             name={product.name}
             price={product.price}
             originalPrice={product.originalPrice}
-            badge={product.badge}
             unit={product.unit}
             stock={product.stock}
             category={product.category}

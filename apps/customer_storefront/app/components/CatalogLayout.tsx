@@ -593,7 +593,6 @@ export function CatalogLayout({
                       name={product.name}
                       price={product.price}
                       originalPrice={product.originalPrice}
-                      badge={product.badge}
                       brand={product.brand}
                       unit={product.unit}
                       stock={product.stock}

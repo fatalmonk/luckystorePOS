@@ -153,11 +153,11 @@ export function Footer() {
 
         {/* Legal Bottom Bar */}
         <div className="mt-6 border-t border-warm-border/30 pt-6 sm:mt-8">
-          <div className="flex flex-col items-center justify-center text-center gap-3 font-body text-[12px] font-medium tracking-wider text-warm-muted sm:flex-row sm:justify-between sm:text-[10px]">
+          <div className="flex flex-col items-center justify-center text-center gap-3 font-body text-xs font-medium tracking-wider text-warm-muted sm:flex-row sm:justify-between">
             <p>
               © Lucky Store - Est. 1947
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[9px] sm:text-[9.5px]">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs">
               <Link href="/privacy" className={`hover:text-warm-accent ${footerFocus}`}>
                 PRIVACY POLICY
               </Link>

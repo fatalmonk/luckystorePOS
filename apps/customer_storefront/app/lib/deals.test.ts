@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { getDiscountPercentage, getDealOfTheWeekProducts, getNextSundayDeadline } from './deals';
+import {
+  getDiscountBadgePercentage,
+  getDiscountPercentage,
+  getDealOfTheWeekProducts,
+  getNextSundayDeadline,
+} from './deals';
 import type { Product } from './types';
 
 const mockProducts: Product[] = [
@@ -66,11 +71,23 @@ describe('deals logic', () => {
     expect(getDiscountPercentage(mockProducts[1])).toBe(50);
   });
 
+  it('shows a percentage badge only at the 10% boundary or above', () => {
+    const productAt = (price: number): Product => ({
+      ...mockProducts[0],
+      price,
+      originalPrice: 100,
+    });
+
+    expect(getDiscountBadgePercentage(productAt(90.01))).toBeNull();
+    expect(getDiscountBadgePercentage(productAt(90))).toBe(10);
+    expect(getDiscountBadgePercentage(productAt(89.99))).toBe(10);
+  });
+
   it('selects highest-discount in-stock product as lead, excludes out of stock', () => {
     const result = getDealOfTheWeekProducts(mockProducts);
     expect(result).not.toBeNull();
     expect(result?.leadProduct.id).toBe('p2'); // 50% discount
-    expect(result?.supportingProducts.map((p) => p.id)).toEqual(['p4', 'p1', 'p5']); // ranked discounts; p3 excluded because stock 0
+    expect(result?.supportingProducts.map((p) => p.id)).toEqual(['p4', 'p1']); // ranked discounts; out-of-stock and sub-10% products excluded
   });
 
   it('respects limit parameter for supporting products', () => {
