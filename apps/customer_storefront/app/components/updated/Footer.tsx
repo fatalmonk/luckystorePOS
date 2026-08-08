@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Logo } from '../ui/Logo';
 
 const footerFocus =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-surface';
@@ -55,12 +56,10 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.3fr_1fr_1fr] md:gap-12 lg:gap-20">
           {/* Left Column: Brand & Direct Contact */}
           <div className="space-y-6">
-            <h2 className="font-display text-2xl font-black uppercase tracking-widest text-warm-fg sm:text-3xl">
-              LUCKY STORE
-            </h2>
+            <Logo className="[&_img]:!h-10 sm:[&_img]:!h-12" />
 
             <p className="max-w-sm font-body text-sm leading-relaxed text-warm-muted">
-              Do you have any questions, suggestions, or just want to say hello? We are here to help.
+              Daily groceries, pantry staples, snacks, dairy, and household essentials for Chittagong homes.
             </p>
 
             <div className="space-y-1.5 pt-2">
@@ -119,7 +118,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Stay Connected (Left) & Shop Groceries Online (Right) - Same Line */}
         <div className="mt-10 flex flex-col gap-5 border-t border-warm-border/30 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <span className="font-body text-xs font-medium text-warm-muted">Stay connected</span>
@@ -142,12 +140,9 @@ export function Footer() {
 
           <Link
             href="/category"
-            className={`group inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+            className={`inline-flex min-h-11 w-max items-center justify-center rounded-warm-md bg-warm-accent px-5 py-2.5 font-body text-sm font-extrabold tracking-wide text-warm-accent-text transition-colors hover:bg-warm-accent-hover ${footerFocus}`}
           >
             <span>Shop groceries online</span>
-            <span className="font-display text-base transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-              ↗
-            </span>
           </Link>
         </div>
 

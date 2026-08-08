@@ -2,13 +2,15 @@ import { test, expect, Page } from '@playwright/test';
 
 async function openFirstOutOfStockProduct(page: Page): Promise<Page | null> {
   await page.goto('/');
-  await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
+  await expect(page.getByTestId('grid-product-card').first()).toBeVisible({ timeout: 10000 });
 
-  const productCards = page.locator('[data-testid="product-card"]');
-  const count = await productCards.count();
-  expect(count).toBeGreaterThan(0);
+  const outOfStockButton = page.getByRole('button', { name: / is out of stock$/ }).first();
+  if ((await outOfStockButton.count()) === 0) {
+    return null;
+  }
 
-  await productCards.first().locator('h3').click();
+  const productCard = outOfStockButton.locator('xpath=ancestor::article[1]');
+  await productCard.getByRole('link', { name: /^View / }).click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 
@@ -26,64 +28,31 @@ async function openFirstOutOfStockProduct(page: Page): Promise<Page | null> {
   }
 }
 
-test.describe('Wishlist Flow', () => {
+test.describe('Out-of-stock product flow', () => {
   test.setTimeout(60000);
 
-  test('adds out-of-stock product to wishlist', async ({ page }) => {
+  test('renders out-of-stock product detail without Notify me behavior', async ({ page }) => {
     const productPage = await openFirstOutOfStockProduct(page);
     if (!productPage) {
-      test.skip(true, 'First product is in stock, skipping wishlist test');
+      test.skip(true, 'No out-of-stock product is visible on the homepage');
       return;
     }
 
-    const wishlistButton = page.locator('main button:has-text("Notify Me When Back")');
-    await expect(wishlistButton).toBeVisible();
-    await wishlistButton.click();
-
-    // Phone input should appear
-    const phoneInput = page.locator('input[type="tel"]');
-    await expect(phoneInput).toBeVisible();
-
-    // Enter phone and save — assert the API call succeeds so a 500
-    // (missing SUPABASE_SERVICE_ROLE_KEY, RLS, FK violation, etc.) surfaces
-    // as a real error instead of a silent button-timeout.
-    await phoneInput.fill('+880 1712345678');
-    const [saveResponse] = await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/api/wishlist') && r.request().method() === 'POST', { timeout: 10000 }),
-      page.click('button:has-text("Save")'),
-    ]);
-    expect(saveResponse.ok(), `POST /api/wishlist failed: ${saveResponse.status()}`).toBe(true);
-
-    // Should show saved state
-    await expect(page.locator('button:has-text("On Wishlist")')).toBeVisible();
+    await expect(page.locator('main button:has-text("Out of stock")')).toBeDisabled();
+    await expect(page.getByText(/Notify me|Notify Me When Back|On Wishlist/i)).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /See Similar Items/i })).toBeVisible();
   });
 
-  test('shows duplicate wishlist message', async ({ page }) => {
+  test('renders out-of-stock product card as disabled', async ({ page }) => {
     const productPage = await openFirstOutOfStockProduct(page);
     if (!productPage) {
-      test.skip(true, 'First product is in stock, skipping duplicate wishlist test');
+      test.skip(true, 'No out-of-stock product is visible on the homepage');
       return;
     }
 
-    const wishlistButton = page.locator('main button:has-text("Notify Me When Back")');
-    await wishlistButton.click();
-    const phoneInput = page.locator('input[type="tel"]');
-    await expect(phoneInput).toBeVisible();
-    await phoneInput.fill('+880 1712345678');
-    const [saveResponse] = await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/api/wishlist') && r.request().method() === 'POST', { timeout: 10000 }),
-      page.click('button:has-text("Save")'),
-    ]);
-    expect(saveResponse.ok(), `POST /api/wishlist failed: ${saveResponse.status()}`).toBe(true);
-    await expect(page.locator('button:has-text("On Wishlist")')).toBeVisible();
-
-    // Try adding again (reload and click saved button)
-    await page.reload();
-    const savedButton = page.locator('button:has-text("On Wishlist")');
-    await expect(savedButton).toBeVisible();
-    await savedButton.click();
-
-    // Should show already on wishlist toast
-    await expect(page.locator('text=Already on your wishlist')).toBeVisible();
+    await page.goBack();
+    const outOfStockButton = page.getByRole('button', { name: / is out of stock$/ }).first();
+    await expect(outOfStockButton).toBeDisabled();
+    await expect(page.getByText(/Notify me|Notify Me When Back/i)).toHaveCount(0);
   });
 });

@@ -17,7 +17,10 @@ test.describe('Storefront visual audit evidence', () => {
       .getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' })
       .waitFor();
     await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
-    const footerLogo = page.getByRole('img', { name: 'Lucky Store 1947' });
+    const footerLogo = page
+      .getByRole('contentinfo')
+      .getByRole('img', { name: 'Lucky Store 1947' })
+      .filter({ visible: true });
     await expect
       .poll(() =>
         footerLogo.evaluate((image) => (image as HTMLImageElement).naturalWidth),
@@ -70,7 +73,9 @@ test.describe('Storefront visual audit evidence', () => {
     });
 
     // Theme toggle: switch from the initialized light mode to dark mode
-    const themeToggle = page.getByRole('button', { name: /Switch to dark mode|Switch to light mode/ });
+    const themeToggle = page
+      .getByRole('button', { name: /Switch to dark mode|Switch to light mode/ })
+      .filter({ visible: true });
     await expect(themeToggle).toBeVisible();
     await themeToggle.dispatchEvent('click');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');

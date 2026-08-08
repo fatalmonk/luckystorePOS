@@ -4,9 +4,9 @@ const canMutatePreview = process.env.E2E_CAN_MUTATE === 'true';
 
 async function openFirstProduct(page: Page) {
   await page.goto('/');
-  await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
-  const firstProduct = page.locator('[data-testid="product-card"]').first();
-  await firstProduct.locator('h3').click();
+  const firstProduct = page.getByTestId('grid-product-card').first();
+  await expect(firstProduct).toBeVisible({ timeout: 10000 });
+  await firstProduct.getByRole('link', { name: /^View / }).click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 }
@@ -14,17 +14,17 @@ async function openFirstProduct(page: Page) {
 async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
   // Scope to the main product detail area to avoid the hidden mobile sticky bar button
   const addButton = page.locator('main button:has-text("Add to Cart")');
-  const wishlistButton = page.locator('main button:has-text("Notify Me When Back")');
+  const outOfStockButton = page.locator('main button:has-text("Out of stock")');
   const alreadyInCart = page.locator('main button[aria-label="Increase quantity"]');
 
   try {
     return await Promise.race([
       addButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'in-stock' as const),
       alreadyInCart.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'in-stock' as const),
-      wishlistButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'out-of-stock' as const),
+      outOfStockButton.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'out-of-stock' as const),
     ]);
   } catch {
-    throw new Error('Product page did not render Add to Cart or Notify Me When Back within 10s');
+    throw new Error('Product page did not render Add to Cart or Out of stock within 10s');
   }
 }
 
@@ -122,7 +122,7 @@ test.describe('Checkout Price Tampering', () => {
   test('rejects tampered total with 400', async ({ page, request }) => {
     // First, get a valid product from the storefront
     await page.goto('/');
-    await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
+    await expect(page.getByTestId('grid-product-card').first()).toBeVisible({ timeout: 10000 });
 
     // Intercept the checkout API call to inspect the response
     // Instead of going through the UI, we'll directly POST with a tampered body

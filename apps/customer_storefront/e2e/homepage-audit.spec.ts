@@ -7,9 +7,10 @@ test.describe('Storefront homepage shell audit', () => {
     await expect(
       page.getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' }),
     ).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Morning Essentials' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Find what you need by aisle.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'A Chittagong grocery store since 1947.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Daily Essentials' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Shop by routine' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Serving Chittagong since 1947.' })).toBeVisible();
 
     const header = page.getByRole('banner');
     const viewportWidth = test.info().project.use.viewport?.width ?? 1280;
@@ -22,10 +23,12 @@ test.describe('Storefront homepage shell audit', () => {
 
     const headerControls = [
       header.getByRole('link', { name: 'Lucky Store 1947' }),
-      header.getByRole('button', { name: /Switch to (dark|light) mode/ }),
-      header.getByRole('link', { name: 'Wishlist' }),
+      header.getByRole('button', { name: /Switch to (dark|light) mode/ }).filter({ visible: true }),
       header.getByRole('button', { name: /^Cart \(/ }),
     ];
+    if (viewportWidth >= 768) {
+      headerControls.push(header.getByRole('link', { name: 'Wishlist' }));
+    }
     for (const control of headerControls) {
       const box = await control.boundingBox();
       expect(box?.height).toBeGreaterThanOrEqual(44);
@@ -83,16 +86,12 @@ test.describe('Storefront homepage shell audit', () => {
     await page.goto('/');
 
     const header = page.getByRole('banner');
-    const openSearch = header.getByRole('button', { name: 'Open search' });
-    const searchBox = await openSearch.boundingBox();
+    const mobileSearch = header.locator('form').first();
+    await expect(header.getByPlaceholder('Search groceries')).toBeVisible();
+    const searchBox = await mobileSearch.boundingBox();
     expect(searchBox?.width).toBeGreaterThanOrEqual(44);
     expect(searchBox?.height).toBeGreaterThanOrEqual(44);
 
-    await openSearch.click();
-    await expect(page.getByRole('textbox', { name: 'Search products' })).toBeFocused();
-    await expect(page.getByRole('button', { name: 'Close search' })).toBeVisible();
-
-    await page.getByRole('button', { name: 'Close search' }).click();
     const primaryNavigation = page.getByRole('navigation', { name: 'Primary navigation' });
     await expect(primaryNavigation).toBeVisible();
     await expect(primaryNavigation.getByRole('link')).toHaveCount(4);

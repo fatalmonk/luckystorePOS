@@ -5,11 +5,11 @@ test.describe('Search suggestions and catalog filters', () => {
     await page.goto('/category');
 
     const viewport = page.viewportSize();
-    if (viewport && viewport.width < 768) {
-      await page.getByRole('button', { name: 'Open search' }).click();
-    } else {
-      await page.getByRole('textbox', { name: 'Search products' }).first().focus();
-    }
+    const header = page.getByRole('banner');
+    const searchInput = (viewport && viewport.width < 768
+      ? header.getByPlaceholder('Search groceries')
+      : header.getByPlaceholder('Search 500+ groceries, daily essentials, brands...')).filter({ visible: true });
+    await searchInput.click();
 
     const suggestions = page.getByRole('region', { name: 'Search suggestions' });
     await expect(suggestions).toBeVisible();
