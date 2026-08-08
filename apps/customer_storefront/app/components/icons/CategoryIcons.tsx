@@ -1,6 +1,6 @@
 import React, { SVGProps } from 'react';
 
-interface IconProps extends SVGProps<SVGSVGElement> {
+export interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
 
@@ -273,6 +273,19 @@ export function BabyCareIcon(props: IconProps) {
   );
 }
 
+export function NoodlesIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 11h14" />
+      <path d="M6 11v2a6 6 0 0 0 12 0v-2" />
+      <path d="M8 7c0-1 1-1 1-2s-1-1-1-2" />
+      <path d="M12 7c0-1 1-1 1-2s-1-1-1-2" />
+      <path d="M16 7c0-1 1-1 1-2s-1-1-1-2" />
+      <path d="M8 19h8" />
+    </Icon>
+  );
+}
+
 export function DefaultCategoryIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -283,33 +296,99 @@ export function DefaultCategoryIcon(props: IconProps) {
   );
 }
 
-export function getCategoryIcon(slug: string, size = 20) {
-  switch (slug) {
-    case 'ice-cream': return <IceCreamIcon size={size} />;
-    case 'cold-beverages': return <BeverageIcon size={size} />;
-    case 'chips-and-pretzels':
-    case 'chips-pretzels': return <ChipsPretzelsIcon size={size} />;
-    case 'snacks': return <SnackIcon size={size} />;
-    case 'condiments': return <CondimentIcon size={size} />;
-    case 'energy-boosters': return <EnergyIcon size={size} />;
-    case 'biscuits-and-cookies': return <BiscuitIcon size={size} />;
-    case 'chocolates-and-candies': return <ChocolateIcon size={size} />;
-    case 'dairy-and-eggs': return <DairyIcon size={size} />;
-    case 'rice-and-grain': return <RiceIcon size={size} />;
-    case 'spices': return <SpiceIcon size={size} />;
-    case 'oil-and-ghee': return <OilIcon size={size} />;
-    case 'cereals': return <CerealIcon size={size} />;
-    case 'personal-care': return <PersonalCareIcon size={size} />;
-    case 'cooking-essentials': return <CookingEssentialIcon size={size} />;
-    case 'breakfast': return <BreakfastIcon size={size} />;
-    case 'tea-&-coffee':
-    case 'tea-and-coffee': return <TeaCoffeeIcon size={size} />;
-    case 'baking-needs': return <BakingIcon size={size} />;
-    case 'electronics': return <ElectronicsIcon size={size} />;
-    case 'cleaning-supplies': return <CleaningIcon size={size} />;
-    case 'pest-control': return <PestControlIcon size={size} />;
-    case 'air-freshner': return <AirFreshenerIcon size={size} />;
-    case 'baby-care': return <BabyCareIcon size={size} />;
-    default: return <DefaultCategoryIcon size={size} />;
+type CategoryIconComponent = (props: IconProps) => React.ReactElement;
+
+const CATEGORY_ICON_MAP: Record<string, CategoryIconComponent> = {
+  'air-freshener': AirFreshenerIcon,
+  'air-freshner': AirFreshenerIcon,
+  'baby-care': BabyCareIcon,
+  'baking-needs': BakingIcon,
+  beverages: BeverageIcon,
+  breakfast: BreakfastIcon,
+  'biscuits-and-cookies': BiscuitIcon,
+  cereals: CerealIcon,
+  'chips-and-pretzels': ChipsPretzelsIcon,
+  'chips-pretzels': ChipsPretzelsIcon,
+  'chocolates-and-candies': ChocolateIcon,
+  'cleaning-supplies': CleaningIcon,
+  'cold-beverages': BeverageIcon,
+  condiments: CondimentIcon,
+  'cooking-essentials': CookingEssentialIcon,
+  'dairy-and-eggs': DairyIcon,
+  electronics: ElectronicsIcon,
+  'energy-boosters': EnergyIcon,
+  'ice-cream': IceCreamIcon,
+  noodles: NoodlesIcon,
+  'oil-and-ghee': OilIcon,
+  'personal-care': PersonalCareIcon,
+  'pest-control': PestControlIcon,
+  'rice-and-grain': RiceIcon,
+  snacks: SnackIcon,
+  spices: SpiceIcon,
+  'tea-and-coffee': TeaCoffeeIcon,
+};
+
+const CATEGORY_KEYWORDS: Array<[readonly string[], string]> = [
+  [['tea', 'coffee'], 'tea-and-coffee'],
+  [['beverage', 'drink', 'juice', 'water'], 'beverages'],
+  [['biscuit', 'cookie'], 'biscuits-and-cookies'],
+  [['chocolate', 'candy'], 'chocolates-and-candies'],
+  [['chip', 'pretzel', 'chanachur'], 'chips-and-pretzels'],
+  [['snack'], 'snacks'],
+  [['ice', 'cream'], 'ice-cream'],
+  [['dairy', 'milk', 'egg'], 'dairy-and-eggs'],
+  [['rice', 'grain', 'flour'], 'rice-and-grain'],
+  [['oil', 'ghee'], 'oil-and-ghee'],
+  [['spice', 'masala', 'salt', 'sugar'], 'spices'],
+  [['cooking', 'packaged'], 'cooking-essentials'],
+  [['breakfast'], 'breakfast'],
+  [['cereal'], 'cereals'],
+  [['baking', 'bakery', 'bread', 'cake'], 'baking-needs'],
+  [['clean', 'cleaning', 'household', 'home'], 'cleaning-supplies'],
+  [['personal', 'skin', 'oral', 'dental', 'hair', 'grooming', 'fragrance'], 'personal-care'],
+  [['baby'], 'baby-care'],
+  [['pest'], 'pest-control'],
+  [['freshener', 'freshner'], 'air-freshner'],
+  [['electronic', 'mobile'], 'electronics'],
+  [['energy', 'malt'], 'energy-boosters'],
+  [['noodle'], 'noodles'],
+  [['condiment', 'sauce', 'pickle'], 'condiments'],
+];
+
+function normalizeCategory(category: string): string {
+  return category
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function resolveCategoryIcon(category: string): {
+  Icon: CategoryIconComponent;
+  isKnown: boolean;
+} {
+  const normalized = normalizeCategory(category);
+  const directIcon = CATEGORY_ICON_MAP[normalized];
+  if (directIcon) return { Icon: directIcon, isKnown: true };
+
+  const words = new Set(normalized.split('-').filter(Boolean));
+  const keywordMatch = CATEGORY_KEYWORDS.find(([keywords]) =>
+    keywords.some((keyword) => words.has(keyword)),
+  );
+  if (keywordMatch) {
+    return { Icon: CATEGORY_ICON_MAP[keywordMatch[1]], isKnown: true };
   }
+
+  return { Icon: DefaultCategoryIcon, isKnown: false };
+}
+
+export function CategoryIcon({ category, ...props }: IconProps & { category: string }) {
+  const { Icon: ResolvedIcon } = resolveCategoryIcon(category);
+  return <ResolvedIcon {...props} />;
+}
+
+/** Compatibility helper for existing callers. */
+export function getCategoryIcon(category: string, size = 20) {
+  return <CategoryIcon category={category} size={size} />;
 }

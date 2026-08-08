@@ -6,6 +6,7 @@ import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { CompactProductCard } from './CompactProductCard';
 import type { Product } from '../lib/types';
 import { getCategoryGroup } from '../lib/types';
+import { getCategoryIcon } from './icons/CategoryIcons';
 
 export interface ThemedProductRailProps {
   products: Product[];
@@ -23,7 +24,7 @@ interface ThemeStyle {
   bg: string;
   darkBg: string;
   accent: string;
-  emoji: string;
+  iconSlug: string;
   groups: readonly string[];
 }
 
@@ -32,28 +33,28 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
     bg: 'bg-gradient-to-br from-[#FFFBF0] to-[#FDFBF7]',
     darkBg: 'dark:bg-gradient-to-br dark:from-[#241e1a] dark:to-[#0B0B0D]',
     accent: '#f0c444',
-    emoji: '🥛',
+    iconSlug: 'breakfast',
     groups: ['dairy & eggs', 'breakfast', 'tea & coffee', 'biscuits & cookies', 'cereals', 'chocolates & candies'],
   },
   pantry: {
     bg: 'bg-gradient-to-br from-[#FFFBF0] to-[#FDFBF7]',
     darkBg: 'dark:bg-gradient-to-br dark:from-[#241e1a] dark:to-[#0B0B0D]',
     accent: '#f0c444',
-    emoji: '🍚',
+    iconSlug: 'rice-and-grain',
     groups: ['rice & grain', 'cooking essentials', 'spices', 'oil & ghee'],
   },
   household: {
     bg: 'bg-gradient-to-br from-[#FFFBF0] to-[#FDFBF7]',
     darkBg: 'dark:bg-gradient-to-br dark:from-[#241e1a] dark:to-[#0B0B0D]',
     accent: '#f0c444',
-    emoji: '🧼',
+    iconSlug: 'cleaning-supplies',
     groups: ['cleaning supplies', 'personal care', 'air freshner', 'pest control'],
   },
   deals: {
     bg: 'bg-gradient-to-br from-[#FFF0E8] to-[#FDFBF7]',
     darkBg: 'dark:bg-gradient-to-br dark:from-[#2a1f1a] dark:to-[#0B0B0D]',
     accent: '#e76f51',
-    emoji: '🛒',
+    iconSlug: 'snacks',
     groups: [],
   },
 };
@@ -160,8 +161,8 @@ export function ThemedProductRail({
 
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div className="max-w-[70%]">
-          <span className="text-2xl sm:text-3xl" aria-hidden="true">
-            {themeStyle.emoji}
+          <span className="text-warm-fg" aria-hidden="true">
+            {getCategoryIcon(themeStyle.iconSlug, 28)}
           </span>
           <h2
             id={`themed-title-${id}`}

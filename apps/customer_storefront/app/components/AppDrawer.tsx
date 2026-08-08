@@ -7,6 +7,7 @@ import { CATEGORY_GROUPS } from '../lib/types';
 import { lockBodyScroll } from '../lib/bodyScrollLock';
 import { Logo } from './ui/Logo';
 import { useTheme } from './providers/ThemeProvider';
+import { getCategoryIcon } from './icons/CategoryIcons';
 
 interface AppDrawerProps {
   open: boolean;
@@ -139,7 +140,9 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
                   onClick={onClose}
                   className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 >
-                  <span className="text-base leading-none shrink-0" aria-hidden="true">{group.emoji}</span>
+                  <span className="shrink-0 text-warm-muted" aria-hidden="true">
+                    {getCategoryIcon(group.slug, 18)}
+                  </span>
                   <span className="truncate">{group.label}</span>
                 </Link>
               </li>

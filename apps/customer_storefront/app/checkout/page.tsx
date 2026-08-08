@@ -3,13 +3,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { Money, WarningCircle } from '@phosphor-icons/react';
 import { Header } from '../components/updated/Header';
 import { useToast } from '../components/Toast';
 import { useCartContext } from '../components/CartProvider';
 import { Button } from '../components/ui/Button';
 import { Input, TextArea } from '../components/ui/Input';
 import { formatBdt } from '../lib/formatPrice';
+import { ProductImage } from '../components/product/ProductImage';
 
 const STEPS = [
   { id: 1, label: 'Your Info' },
@@ -328,7 +329,7 @@ function CheckoutContent() {
                   {/* Submit error banner */}
                   {submitError && (
                     <div className="bg-red-50 border border-red-200 rounded-[14px] p-4 mb-4 flex items-start gap-3">
-                      <span className="text-red-500 text-lg flex-shrink-0" aria-hidden="true">⚠️</span>
+                      <WarningCircle className="shrink-0 text-red-500" size={20} weight="fill" aria-hidden="true" />
                       <div>
                         <p className="text-sm font-bold text-red-700">Order couldn&apos;t be placed</p>
                         <p className="text-xs text-red-600 mt-0.5">{submitError}</p>
@@ -342,17 +343,14 @@ function CheckoutContent() {
                     {cart.map((item) => (
                       <div key={item.id} className="flex items-center gap-3 py-2 border-b border-warm-border last:border-0">
                         <div className="w-10 h-10 rounded-lg bg-warm-bg overflow-hidden flex-shrink-0 grid place-items-center relative">
-                          {item.image_url ? (
-                            <Image
-                              src={item.image_url}
-                              alt={item.name}
-                              fill
-                              sizes="40px"
-                              className="object-contain p-1"
-                            />
-                          ) : (
-                            <span className="text-lg">{item.emoji}</span>
-                          )}
+                          <ProductImage
+                            src={item.image_url}
+                            alt={item.name}
+                            category={item.category}
+                            sizes="40px"
+                            imageClassName="object-contain p-1"
+                            iconSize={18}
+                          />
                         </div>
                         <div className="flex-1">
                           <p className="font-semibold text-[13px] text-warm-fg">{item.name}</p>
@@ -409,7 +407,7 @@ function CheckoutContent() {
                       <span>{formatBdt(total)}</span>
                     </div>
                     <p className="text-xs text-warm-muted mt-2 flex items-center gap-1">
-                      <span aria-hidden="true">💵</span> Cash on Delivery — pay when you receive
+                      <Money size={16} weight="bold" aria-hidden="true" /> Cash on Delivery — pay when you receive
                     </p>
                   </div>
 

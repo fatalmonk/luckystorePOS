@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CATEGORY_GROUPS } from '../lib/types';
+import { getCategoryIcon } from './icons/CategoryIcons';
 
 const FEATURED_CATEGORY_SLUGS = [
   'cooking-essentials',
@@ -35,7 +36,9 @@ export function ThemedShortcuts() {
               className="group flex min-h-16 items-center justify-between gap-3 border-b border-warm-border py-3 text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg"
             >
               <span className="flex min-w-0 items-center gap-2.5">
-                <span className="text-2xl" aria-hidden="true">{group.emoji}</span>
+                <span className="text-warm-muted" aria-hidden="true">
+                  {getCategoryIcon(group.slug, 24)}
+                </span>
                 <span className="text-sm font-extrabold leading-5 sm:text-base">{group.label}</span>
               </span>
               <span className="text-warm-muted transition-transform group-hover:translate-x-1" aria-hidden="true">

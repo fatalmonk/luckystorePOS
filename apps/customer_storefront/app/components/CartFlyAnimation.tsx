@@ -1,11 +1,11 @@
-'use client'; // flying emoji animation using createPortal and window dimensions
+'use client'; // flying cart-glyph animation using createPortal and window dimensions
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { ShoppingBag } from '@phosphor-icons/react';
 
 interface FlyItem {
   id: string;
-  emoji: string;
   startX: number;
   startY: number;
 }
@@ -16,7 +16,7 @@ interface CartFlyAnimationProps {
 }
 
 /**
- * Renders flying emoji/image elements that animate from the product card
+ * Renders a consistent cart glyph that animates from the product card
  * to the cart icon position (top-right of viewport).
  */
 export function CartFlyAnimation({ items, onComplete }: CartFlyAnimationProps) {
@@ -40,7 +40,7 @@ export function CartFlyAnimation({ items, onComplete }: CartFlyAnimationProps) {
         return (
           <div
             key={item.id}
-            className="fly-to-cart text-3xl"
+            className="fly-to-cart flex h-9 w-9 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-warm-md"
             style={{
               left: item.startX,
               top: item.startY,
@@ -49,7 +49,7 @@ export function CartFlyAnimation({ items, onComplete }: CartFlyAnimationProps) {
             } as React.CSSProperties}
             onAnimationEnd={() => onComplete(item.id)}
           >
-            {item.emoji}
+            <ShoppingBag size={20} weight="fill" aria-hidden="true" />
           </div>
         );
       })}

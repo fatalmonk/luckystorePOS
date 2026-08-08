@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { formatBdt, formatUnitPrice } from '../lib/formatPrice';
@@ -12,7 +11,7 @@ import { QtyNumber } from './ui/QtyNumber';
 import { getOrCreateFingerprint, WishlistButton } from './WishlistButton';
 import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
-import { CategoryPlaceholder } from './CategoryPlaceholder';
+import { ProductImage } from './product/ProductImage';
 
 interface ProductCardProps {
   id: string;
@@ -37,7 +36,6 @@ interface ProductCardProps {
 
 export function ProductCard({
   id,
-  emoji,
   name,
   price,
   originalPrice,
@@ -61,8 +59,6 @@ export function ProductCard({
   const savings = onSale ? originalPrice! - price : 0;
 
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const { showToast } = useToast();
   const productHref = `/product/${toProductSlug(name, id)}`;
@@ -73,11 +69,6 @@ export function ProductCard({
     const timer = setTimeout(() => setIsWishlisted(isPresent), 0);
     return () => clearTimeout(timer);
   }, [id]);
-
-  useEffect(() => {
-    setImageError(false);
-    setImageLoaded(false);
-  }, [image_url]);
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -163,34 +154,15 @@ export function ProductCard({
         aria-label={`View ${name}`}
         className="relative w-full aspect-[4/3] bg-warm-surface overflow-hidden flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
-        {image_url && !imageLoaded && !imageError && (
-          <div
-            data-testid="product-image-loading"
-            className="absolute inset-3 animate-pulse rounded-xl bg-warm-border/50"
-            aria-hidden="true"
-          />
-        )}
-        {image_url && !imageError ? (
-          <Image
-            src={image_url}
-            alt={name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-contain p-2"
-            priority={priority}
-            loading={priority ? undefined : 'lazy'}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageLoaded(true);
-              setImageError(true);
-            }}
-          />
-        ) : null}
-        {(!image_url || imageError) && (
-          <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-4 opacity-30">
-            <CategoryPlaceholder category={category} />
-          </div>
-        )}
+        <ProductImage
+          src={image_url}
+          alt={name}
+          category={category}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          imageClassName="object-contain p-2"
+          priority={priority}
+          showLoadingState
+        />
       </Link>
 
       {/* Content — refined editorial layout with consistent heights */}

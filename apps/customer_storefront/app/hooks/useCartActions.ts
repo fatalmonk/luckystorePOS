@@ -7,7 +7,6 @@ import type { Product } from '../lib/types';
 
 interface FlyItem {
   id: string;
-  emoji: string;
   startX: number;
   startY: number;
 }
@@ -26,7 +25,6 @@ export function useCartActions() {
         ...prev,
         {
           id: `${product.id}-${Date.now()}`,
-          emoji: product.emoji,
           startX: rect.left + rect.width / 2,
           startY: rect.top + rect.height / 2,
         },

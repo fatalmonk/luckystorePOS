@@ -6,8 +6,18 @@ import Link from 'next/link';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
 import { MagnifyingGlass, Clock, Fire, X } from '@phosphor-icons/react';
+import { getCategoryIcon } from '../components/icons/CategoryIcons';
 
 const POPULAR_SEARCHES = ['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bread', 'Ice Cream', 'Snacks', 'Tea & Coffee'];
+
+const CATEGORY_SHORTCUTS = [
+  { href: '/category/cooking-essentials', label: 'Cooking Essentials', icon: 'cooking-essentials' },
+  { href: '/category/snacks', label: 'Snacks & Biscuits', icon: 'snacks' },
+  { href: '/category/dairy-&-eggs', label: 'Dairy & Eggs', icon: 'dairy-and-eggs' },
+  { href: '/category/ice-cream', label: 'Ice Cream', icon: 'ice-cream' },
+  { href: '/category/beverages', label: 'Beverages', icon: 'beverages' },
+  { href: '/category/personal-care', label: 'Personal Care', icon: 'personal-care' },
+] as const;
 
 export function SearchClientPage() {
   const router = useRouter();
@@ -149,48 +159,18 @@ export function SearchClientPage() {
             <span>Browse Categories</span>
           </div>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            <Link
-              href="/category/cooking-essentials"
-              className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
-            >
-              <span className="text-2xl">🌾</span>
-              <span className="text-xs font-bold text-warm-fg">Cooking Essentials</span>
-            </Link>
-            <Link
-              href="/category/snacks"
-              className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
-            >
-              <span className="text-2xl">🍪</span>
-              <span className="text-xs font-bold text-warm-fg">Snacks & Biscuits</span>
-            </Link>
-            <Link
-              href="/category/dairy-&-eggs"
-              className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
-            >
-              <span className="text-2xl">🥛</span>
-              <span className="text-xs font-bold text-warm-fg">Dairy & Eggs</span>
-            </Link>
-            <Link
-              href="/category/ice-cream"
-              className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
-            >
-              <span className="text-2xl">🍦</span>
-              <span className="text-xs font-bold text-warm-fg">Ice Cream</span>
-            </Link>
-            <Link
-              href="/category/beverages"
-              className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
-            >
-              <span className="text-2xl">🧃</span>
-              <span className="text-xs font-bold text-warm-fg">Beverages</span>
-            </Link>
-            <Link
-              href="/category/personal-care"
-              className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
-            >
-              <span className="text-2xl">🧼</span>
-              <span className="text-xs font-bold text-warm-fg">Personal Care</span>
-            </Link>
+            {CATEGORY_SHORTCUTS.map((shortcut) => (
+              <Link
+                key={shortcut.href}
+                href={shortcut.href}
+                className="p-3 rounded-2xl bg-warm-surface border border-warm-border/60 hover:border-warm-accent transition-all flex items-center gap-2"
+              >
+                <span className="text-warm-muted" aria-hidden="true">
+                  {getCategoryIcon(shortcut.icon, 24)}
+                </span>
+                <span className="text-xs font-bold text-warm-fg">{shortcut.label}</span>
+              </Link>
+            ))}
           </div>
         </section>
       </main>

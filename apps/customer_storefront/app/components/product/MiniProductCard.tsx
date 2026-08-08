@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
-import { useState } from 'react';
 import { formatBdt } from '../../lib/formatPrice';
 import { toProductSlug } from '../../lib/products/slugify';
 import { useCartContext } from '../CartProvider';
 import { useToast } from '../Toast';
 import { QtyNumber } from '../ui/QtyNumber';
 import type { Product } from '../../lib/products/types';
+import { ProductImage } from './ProductImage';
 
 interface MiniProductCardProps {
   product: Product;
@@ -18,10 +17,9 @@ interface MiniProductCardProps {
  * Compact cross-sell product card with quick-add.
  * - Plus button expands into quantity stepper when the product is in cart.
  * - Respects stock state (disabled/muted when out of stock).
- * - Falls back to emoji placeholder on image error.
+ * - Uses the shared deterministic product fallback on image error.
  */
 export function MiniProductCard({ product }: MiniProductCardProps) {
-  const [imageError, setImageError] = useState(false);
   const { cart, addToCart, updateQty } = useCartContext();
   const { showToast } = useToast();
   const href = `/product/${toProductSlug(product.name, product.id)}`;
@@ -95,21 +93,14 @@ export function MiniProductCard({ product }: MiniProductCardProps) {
       )}
 
       <div className="relative mb-2 aspect-square w-full overflow-hidden rounded-warm-md bg-warm-bg">
-        {product.image_url && !imageError ? (
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            sizes="140px"
-            className="object-contain p-2"
-            loading="lazy"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-4xl" aria-hidden="true">
-            {product.emoji}
-          </div>
-        )}
+        <ProductImage
+          src={product.image_url}
+          alt={product.name}
+          category={product.category}
+          sizes="140px"
+          imageClassName="object-contain p-2"
+          iconSize={32}
+        />
       </div>
 
       <div className="flex flex-col gap-0.5">
