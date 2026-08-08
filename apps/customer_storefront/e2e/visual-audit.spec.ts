@@ -14,7 +14,7 @@ test.describe('Storefront visual audit evidence', () => {
 
     await page.goto('/');
     await page
-      .getByRole('heading', { name: 'Save Money. Live Better.' })
+      .getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' })
       .waitFor();
     await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const footerLogo = page.getByRole('img', { name: 'Lucky Store 1947' });
@@ -109,7 +109,7 @@ test.describe('Storefront visual audit evidence', () => {
 
     await page.goto('/');
     await page
-      .getByRole('heading', { name: 'Save Money. Live Better.' })
+      .getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' })
       .waitFor();
     await page.waitForTimeout(1000);
 

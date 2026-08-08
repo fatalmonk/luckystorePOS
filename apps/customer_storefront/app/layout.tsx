@@ -35,18 +35,17 @@ const notoBengali = Noto_Sans_Bengali({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Lucky Store — Save Money. Live Better. | Online Grocery Chittagong',
+    default: 'Lucky Store | Online Grocery in Chattogram',
     template: '%s | Lucky Store',
   },
   description:
-    'Online grocery Chittagong. Daily shop for Oil, Chal, pantry staples & daily bazaar items. Free return & home delivery. Save Money. Live Better.',
+    'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
   keywords: [
-    'online grocery chittagong',
-    'grocery stores chittagong',
-    'grocery price chittagong',
+    'online grocery chattogram',
+    'grocery stores chattogram',
+    'grocery prices chattogram',
     'bangladesh online grocery',
     'bangladesh bazaar',
-    'best bazaar',
     'daily bazaar',
     'daily shop',
     'bd shop',
@@ -54,15 +53,15 @@ export const metadata: Metadata = {
     'home shop',
     'Oil',
     'Chal',
-    'free return',
-    'chittagong online grocery',
+    'local delivery',
+    'chattogram online grocery',
     'grocery shop near me',
-    'free home delivery',
+    'cash on delivery',
     'discount grocery',
     'fresh grocery',
     'organic grocery',
     'Lucky Store',
-    'Chittagong grocery',
+    'Chattogram grocery',
   ],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
@@ -86,15 +85,15 @@ export const metadata: Metadata = {
     locale: 'en_BD',
     url: '/',
     siteName: 'Lucky Store 1947',
-    title: 'Lucky Store — Save Money. Live Better. | Online Grocery Chittagong',
+    title: 'Lucky Store | Online Grocery in Chattogram',
     description:
-      'Daily bazaar BD shop for Oil, Chal & grocery essentials. Best grocery price Chittagong, free return & home delivery.',
+      'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
         width: 1200,
         height: 630,
-        alt: 'Lucky Store — Online Grocery Chittagong, Bangladesh Bazaar & Daily Shop',
+        alt: 'Lucky Store online grocery in Chattogram',
       },
     ],
   },
@@ -105,13 +104,13 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store — Save Money. Live Better. | Online Grocery Chittagong',
+    title: 'Lucky Store | Online Grocery in Chattogram',
     description:
-      'Online grocery Chittagong. Daily shop for Oil, Chal & grocery essentials. Best grocery price & free return.',
+      'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
-        alt: 'Lucky Store — Online Grocery Chittagong',
+        alt: 'Lucky Store online grocery in Chattogram',
       },
     ],
     creator: '@luckystore1947',
@@ -162,9 +161,9 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': ['WebSite', 'GroceryStore'],
-              name: 'Lucky Store — Online Grocery Chittagong',
-              alternateName: ['Lucky Store Chittagong', 'Bangladesh Online Grocery', 'Daily Bazaar BD Shop', 'Chittagong Online Shop'],
-              description: 'Best Bangladesh online grocery & daily bazaar in Chittagong. Shop Oil, Chal (Rice), daily shop items, best grocery price Chittagong & free return.',
+              name: 'Lucky Store — Online Grocery Chattogram',
+              alternateName: ['Lucky Store Chattogram', 'Bangladesh Online Grocery', 'Daily Bazaar BD Shop', 'Chattogram Online Shop'],
+              description: 'Lucky Store offers pantry staples, snacks, dairy, and household essentials with local delivery and cash on delivery in Chattogram.',
               url: 'https://luckystore1947.com',
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
@@ -173,7 +172,7 @@ export default function RootLayout({
               paymentAccepted: 'Cash',
               areaServed: {
                 '@type': 'City',
-                name: 'Chittagong',
+                name: 'Chattogram',
                 addressCountry: 'BD',
               },
               openingHours: [
@@ -183,7 +182,7 @@ export default function RootLayout({
               address: {
                 '@type': 'PostalAddress',
                 streetAddress: '665 Percival Hill Road, Emdad Park',
-                addressLocality: 'Chittagong',
+                addressLocality: 'Chattogram',
                 addressRegion: 'Chattogram Division',
                 postalCode: '4203',
                 addressCountry: 'BD',
