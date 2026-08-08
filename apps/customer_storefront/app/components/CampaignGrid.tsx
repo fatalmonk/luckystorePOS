@@ -71,6 +71,9 @@ export function CampaignGrid({ products }: CampaignGridProps) {
               Stocked daily
             </span>
           </div>
+          <Link href="/category" className={`mt-4 inline-flex min-h-11 items-center rounded-warm-md bg-warm-accent px-5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover ${campaignFocusRing}`}>
+            Shop groceries
+          </Link>
         </div>
 
         <div className="campaign-rail min-w-0">
