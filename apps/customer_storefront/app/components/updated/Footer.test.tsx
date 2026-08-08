@@ -8,7 +8,7 @@ describe('Footer', () => {
     render(<Footer />);
 
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'LUCKY STORE' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Lucky Store 1947' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'GROCERIES' })).toHaveAttribute('href', '/category');
     expect(screen.getByRole('link', { name: 'WEEKLY DEALS' })).toHaveAttribute(
       'href',

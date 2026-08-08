@@ -173,7 +173,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Previous products"
             onClick={() => scroll(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretLeft size={18} weight="bold" />
           </button>
@@ -181,7 +181,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Next products"
             onClick={() => scroll(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretRight size={18} weight="bold" />
           </button>
@@ -225,7 +225,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Previous products"
             onClick={() => scroll(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretLeft size={18} weight="bold" />
           </button>
@@ -233,7 +233,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Next products"
             onClick={() => scroll(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretRight size={18} weight="bold" />
           </button>

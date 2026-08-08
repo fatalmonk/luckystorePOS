@@ -103,7 +103,7 @@ export function HeroBanner({
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Background images — smooth crossfade */}
+      {/* Background images */}
       {slides.map((s, i) => {
         const imgVal = typeof s.image === 'string' ? null : s.image;
         const src = getSlideImage(s);
@@ -129,7 +129,7 @@ export function HeroBanner({
               fetchPriority={isLcp ? 'high' : 'low'}
               loading={isLcp ? 'eager' : 'lazy'}
               decoding="async"
-              className={`absolute inset-0 w-full h-full hero-banner-parallax-img ${
+              className={`absolute inset-0 w-full h-full ${
                 s.objectFit === 'contain' ? 'object-contain' : 'object-cover'
               }`}
               style={{
@@ -144,10 +144,6 @@ export function HeroBanner({
       {hasBgImage && !slide.hideOverlay && (
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent z-[1]" />
       )}
-
-      {/* Brand warm decorative glows */}
-      <div className="absolute -top-8 -right-8 w-32 h-32 bg-warm-accent/10 rounded-full blur-xl z-[1] pointer-events-none" />
-      <div className="absolute -bottom-10 right-10 w-40 h-40 bg-warm-accent/10 rounded-full blur-2xl z-[1] pointer-events-none" />
 
       {/* Content — left aligned text, CTA button right-aligned on mobile */}
       {!slide.hideText && (slide.title || slide.subtitle || slide.badge) && (

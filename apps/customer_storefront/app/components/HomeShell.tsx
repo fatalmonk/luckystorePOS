@@ -9,7 +9,6 @@ import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { ProductGridSection } from './ProductGridSection';
 import { HeritageParallax } from './parallax/HeritageParallax';
-import { PartnerLogoMarquee } from './PartnerLogoMarquee';
 import type { Product, Category } from '../lib/types';
 
 export interface CategoryItem {
@@ -133,7 +132,6 @@ export function HomeShell({
           <HeritageParallax />
         </div>
       </main>
-      <PartnerLogoMarquee />
       <Footer />
       <BottomNav />
     </>

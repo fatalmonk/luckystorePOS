@@ -47,7 +47,9 @@ export function Header({ className = '' }: HeaderProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [popularSearches] = useState<string[]>(['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bread']);
 
-  const searchRef = useRef<HTMLDivElement>(null);
+  const mobileOverlaySearchRef = useRef<HTMLDivElement>(null);
+  const mobileInlineSearchRef = useRef<HTMLFormElement>(null);
+  const desktopSearchRef = useRef<HTMLDivElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const desktopCategoriesRef = useRef<HTMLElement>(null);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
@@ -82,10 +84,16 @@ export function Header({ className = '' }: HeaderProps) {
   // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isInsideSearch =
+        mobileOverlaySearchRef.current?.contains(target) ||
+        mobileInlineSearchRef.current?.contains(target) ||
+        desktopSearchRef.current?.contains(target);
+
+      if (!isInsideSearch) {
         setShowSuggestions(false);
       }
-      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(target)) {
         setIsCategoryDropdownOpen(false);
       }
     };
@@ -146,7 +154,7 @@ export function Header({ className = '' }: HeaderProps) {
   if (isMobileSearchOpen) {
     return (
       <header id="mobile-search-header" className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border p-3 shadow-warm-md ${className}`}>
-        <div className="flex items-center gap-2 relative w-full" ref={searchRef}>
+        <div className="flex items-center gap-2 relative w-full" ref={mobileOverlaySearchRef}>
           <button
             type="button"
             onClick={() => {
@@ -237,31 +245,49 @@ export function Header({ className = '' }: HeaderProps) {
             <List weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo ml-1 translate-y-0.5 [&_img]:!h-10 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
+          <Logo className="header-brand-logo ml-0.5 translate-y-0.5 [&_img]:!h-7 xs:[&_img]:!h-8 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
         </div>
 
         {/* Mobile Search */}
-        <form onSubmit={handleSearchSubmit} className="mx-2 flex min-w-0 flex-1 items-center rounded-full border border-warm-border bg-warm-surface shadow-warm-sm md:hidden">
+        <form
+          ref={mobileInlineSearchRef}
+          onSubmit={handleSearchSubmit}
+          className="relative mx-2 flex min-h-11 min-w-0 flex-1 items-center rounded-full border border-warm-border bg-warm-surface shadow-warm-sm md:hidden"
+        >
           <input
             name="q"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
             placeholder="Search groceries"
-            className="h-10 min-w-0 flex-1 bg-transparent pl-3 pr-1 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted"
+            className="h-11 min-w-0 flex-1 bg-transparent pl-3 pr-1 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted"
             aria-label="Search products"
           />
           <button
             type="submit"
-            className="mr-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-label="Submit search"
           >
             <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
           </button>
+          {showSuggestions && (
+            <SearchSuggestions
+              query={searchQuery}
+              recentSearches={recentSearches}
+              popularSearches={popularSearches}
+              onSelect={(term: string) => {
+                setSearchQuery(term);
+                setShowSuggestions(false);
+                router.push(`/category?q=${encodeURIComponent(term)}`);
+              }}
+              onClose={() => setShowSuggestions(false)}
+            />
+          )}
         </form>
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
-        <div className="relative hidden max-w-[460px] flex-1 md:block" ref={searchRef}>
+        <div className="relative hidden max-w-[460px] flex-1 md:block" ref={desktopSearchRef}>
           <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-all duration-300">
             {/* Category Dropdown Toggle */}
             <div className="relative shrink-0 border-r border-warm-border hidden" ref={categoryDropdownRef}>
@@ -385,7 +411,7 @@ export function Header({ className = '' }: HeaderProps) {
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun weight="bold" size={18} aria-hidden="true" /> : <Moon weight="bold" size={18} aria-hidden="true" />}

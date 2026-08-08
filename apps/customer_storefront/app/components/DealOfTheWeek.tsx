@@ -112,10 +112,10 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     >
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h2 id="weekly-deal-title" className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+          <h2 id="weekly-deal-title" className="deal-panel-title text-2xl font-black tracking-tight sm:text-3xl">
             This week&apos;s best deal
           </h2>
-          <p className="mt-2 max-w-2xl text-sm text-[#d7d0c7]">
+          <p className="deal-panel-copy mt-2 max-w-2xl text-sm">
             Our biggest featured saving, with more discounted products alongside it.
           </p>
         </div>
@@ -183,7 +183,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         {supportingProducts.length > 0 && (
           <div className="min-w-0 space-y-4 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-extrabold text-white">More deals</h3>
+              <h3 className="deal-panel-title text-sm font-extrabold">More deals</h3>
               <div className="flex items-center gap-3">
                 <Link
                   href="/category?theme=deals"

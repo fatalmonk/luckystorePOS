@@ -4,13 +4,13 @@ test.describe('Product detail navigation', () => {
   test('exposes a semantic product link and keeps cart actions isolated', async ({ page }) => {
     await page.goto('/');
 
-    const firstCard = page.locator('[data-testid="product-card"]').first();
+    const firstCard = page.getByTestId('grid-product-card').first();
     await expect(firstCard).toBeVisible();
 
-    const title = (await firstCard.locator('h3').textContent())?.trim();
+    const titleLink = firstCard.locator('a').nth(1);
+    const title = (await titleLink.textContent())?.trim();
     expect(title).toBeTruthy();
 
-    const titleLink = firstCard.getByRole('link', { name: title!, exact: true });
     await expect(titleLink).toHaveAttribute('href', /^\/product\/[^/]+$/);
 
     const homepageUrl = page.url();

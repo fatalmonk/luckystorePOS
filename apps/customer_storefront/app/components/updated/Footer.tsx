@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Logo } from '../ui/Logo';
 
 const footerFocus =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-surface';
@@ -50,24 +51,22 @@ const col2Links = [
 
 export function Footer() {
   return (
-    <footer className="site-footer mt-12 w-full border-t border-warm-border/30 px-5 pb-24 pt-10 font-body text-xs sm:px-8 sm:pb-8 sm:pt-14 lg:px-12">
+    <footer className="site-footer mt-10 w-full border-t border-warm-border/30 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-8 font-body text-xs sm:mt-12 sm:px-8 sm:pb-8 sm:pt-14 lg:px-12">
       <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.3fr_1fr_1fr] md:gap-12 lg:gap-20">
+        <div className="grid grid-cols-1 gap-7 md:grid-cols-[1.3fr_1fr_1fr] md:gap-12 lg:gap-20">
           {/* Left Column: Brand & Direct Contact */}
-          <div className="space-y-6">
-            <h2 className="font-display text-2xl font-black uppercase tracking-widest text-warm-fg sm:text-3xl">
-              LUCKY STORE
-            </h2>
+          <div className="space-y-4 text-center sm:space-y-6 sm:text-left">
+            <Logo className="justify-center sm:justify-start [&_img]:!h-9 sm:[&_img]:!h-12" />
 
-            <p className="max-w-sm font-body text-sm leading-relaxed text-warm-muted">
-              Do you have any questions, suggestions, or just want to say hello? We are here to help.
+            <p className="mx-auto max-w-[18rem] font-body text-[13px] leading-6 text-warm-muted sm:mx-0 sm:max-w-sm sm:text-sm">
+              Daily groceries, pantry staples, snacks, dairy, and household essentials for Chittagong homes.
             </p>
 
-            <div className="space-y-1.5 pt-2">
+            <div className="space-y-1 pt-1 sm:space-y-1.5 sm:pt-2">
               <div>
                 <a
                   href="tel:+8801731944544"
-                  className={`inline-block border-b border-warm-fg/40 font-body text-sm font-medium tracking-wide text-warm-fg transition-colors hover:border-warm-accent hover:text-warm-accent ${footerFocus}`}
+                  className={`inline-flex min-h-8 items-center border-b border-warm-fg/40 font-body text-[13px] font-medium tracking-wide text-warm-fg transition-colors hover:border-warm-accent hover:text-warm-accent sm:text-sm ${footerFocus}`}
                 >
                   +880 1731 944544
                 </a>
@@ -75,7 +74,7 @@ export function Footer() {
               <div>
                 <a
                   href="mailto:hello@luckystore1947.com"
-                  className={`inline-block border-b border-warm-fg/40 font-body text-sm font-medium tracking-wide text-warm-fg transition-colors hover:border-warm-accent hover:text-warm-accent ${footerFocus}`}
+                  className={`inline-flex min-h-8 items-center border-b border-warm-fg/40 font-body text-[13px] font-medium tracking-wide text-warm-fg transition-colors hover:border-warm-accent hover:text-warm-accent sm:text-sm ${footerFocus}`}
                 >
                   hello@luckystore1947.com
                 </a>
@@ -84,15 +83,15 @@ export function Footer() {
           </div>
 
           {/* Center & Right Navigation Grid */}
-          <div className="grid grid-cols-2 gap-4 sm:gap-8 md:col-span-2 md:gap-12 lg:gap-16">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-0 border-y border-warm-border/30 py-4 sm:gap-8 sm:border-y-0 sm:py-0 md:col-span-2 md:gap-12 lg:gap-16">
             {/* Nav Column 1 */}
             <nav aria-label="Main Navigation">
-              <ul className="space-y-3 sm:space-y-4">
+              <ul className="space-y-1 sm:space-y-4">
                 {col1Links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className={`inline-flex min-h-10 items-center font-display text-sm font-bold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:min-h-11 sm:text-base lg:text-lg ${footerFocus}`}
+                      className={`inline-flex min-h-11 items-center font-display text-[13px] font-bold uppercase leading-4 tracking-[0.08em] text-warm-fg transition-colors hover:text-warm-accent sm:text-base sm:tracking-wider lg:text-lg ${footerFocus}`}
                     >
                       {link.label}
                     </Link>
@@ -103,12 +102,12 @@ export function Footer() {
 
             {/* Nav Column 2 */}
             <nav aria-label="Secondary Navigation">
-              <ul className="space-y-3 sm:space-y-4">
+              <ul className="space-y-1 sm:space-y-4">
                 {col2Links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className={`inline-flex min-h-10 items-center font-display text-sm font-bold uppercase tracking-wider text-warm-fg transition-colors hover:text-warm-accent sm:min-h-11 sm:text-base lg:text-lg ${footerFocus}`}
+                      className={`inline-flex min-h-11 items-center font-display text-[13px] font-bold uppercase leading-4 tracking-[0.08em] text-warm-fg transition-colors hover:text-warm-accent sm:text-base sm:tracking-wider lg:text-lg ${footerFocus}`}
                     >
                       {link.label}
                     </Link>
@@ -119,9 +118,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Stay Connected (Left) & Shop Groceries Online (Right) - Same Line */}
-        <div className="mt-10 flex flex-col gap-5 border-t border-warm-border/30 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+        <div className="mt-6 flex flex-col gap-5 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:border-t sm:border-warm-border/30 sm:pt-6">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start sm:gap-4">
             <span className="font-body text-xs font-medium text-warm-muted">Stay connected</span>
             <div className="flex items-center gap-2">
               {socialLinks.map((social) => (
@@ -142,35 +140,32 @@ export function Footer() {
 
           <Link
             href="/category"
-            className={`group inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-warm-fg transition-colors hover:text-warm-accent ${footerFocus}`}
+            className={`inline-flex min-h-12 w-full items-center justify-center rounded-warm-md bg-warm-accent px-5 py-2.5 text-center font-body text-sm font-extrabold tracking-wide text-warm-accent-text transition-colors hover:bg-warm-accent-hover sm:min-h-11 sm:w-max ${footerFocus}`}
           >
             <span>Shop groceries online</span>
-            <span className="font-display text-base transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-              ↗
-            </span>
           </Link>
         </div>
 
         {/* Legal Bottom Bar */}
-        <div className="mt-6 border-t border-warm-border/30 pt-6 sm:mt-8">
-          <div className="flex flex-col items-center justify-center text-center gap-3 font-body text-xs font-medium tracking-wider text-warm-muted sm:flex-row sm:justify-between">
+        <div className="mt-5 border-t border-warm-border/30 pt-4 sm:mt-8 sm:pt-6">
+          <div className="flex flex-col items-center justify-center gap-2 text-center font-body text-xs font-medium tracking-wider text-warm-muted sm:flex-row sm:justify-between sm:gap-3">
             <p>
               © Lucky Store - Est. 1947
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs">
-              <Link href="/privacy" className={`hover:text-warm-accent ${footerFocus}`}>
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0 text-xs">
+              <Link href="/privacy" className={`inline-flex min-h-9 items-center hover:text-warm-accent ${footerFocus}`}>
                 PRIVACY POLICY
               </Link>
-              <span aria-hidden="true">|</span>
-              <Link href="/terms" className={`hover:text-warm-accent ${footerFocus}`}>
+              <span className="hidden sm:inline" aria-hidden="true">|</span>
+              <Link href="/terms" className={`inline-flex min-h-9 items-center hover:text-warm-accent ${footerFocus}`}>
                 TERMS OF SERVICE
               </Link>
-              <span aria-hidden="true">|</span>
-              <Link href="/security-policy" className={`hover:text-warm-accent ${footerFocus}`}>
+              <span className="hidden sm:inline" aria-hidden="true">|</span>
+              <Link href="/security-policy" className={`inline-flex min-h-9 items-center hover:text-warm-accent ${footerFocus}`}>
                 SECURITY POLICY
               </Link>
-              <span aria-hidden="true">|</span>
-              <span>CHITTAGONG, BANGLADESH</span>
+              <span className="hidden sm:inline" aria-hidden="true">|</span>
+              <span className="inline-flex min-h-9 items-center">CHITTAGONG, BANGLADESH</span>
             </div>
           </div>
         </div>
