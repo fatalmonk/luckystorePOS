@@ -1,5 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
+const canMutatePreview = process.env.E2E_CAN_MUTATE === 'true';
+
 async function openFirstProduct(page: Page) {
   await page.goto('/');
   await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
@@ -61,7 +63,7 @@ test.describe('Checkout Flow', () => {
   });
 
   test('completes a full checkout', async ({ page }) => {
-    test.slow();
+    test.skip(!canMutatePreview, 'Order creation requires an isolated Supabase preview branch');
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping checkout test');
@@ -93,7 +95,6 @@ test.describe('Checkout Flow', () => {
   });
 
   test('shows validation errors for invalid phone', async ({ page }) => {
-    test.slow();
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping validation test');
@@ -149,7 +150,7 @@ test.describe('Order Confirmation Display', () => {
   test.setTimeout(120000);
 
   test('displays order number, item count, and total correctly', async ({ page }) => {
-    test.slow();
+    test.skip(!canMutatePreview, 'Order creation requires an isolated Supabase preview branch');
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping order confirmation test');
