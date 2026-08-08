@@ -7,7 +7,7 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Save Money. Live Better.',
+      name: 'Daily groceries from a store Chittagong knows.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
@@ -91,7 +91,7 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Save Money. Live Better.',
+      name: 'Daily groceries from a store Chittagong knows.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');

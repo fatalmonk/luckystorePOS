@@ -19,7 +19,7 @@ export interface GoogleMapEmbedProps {
 export function GoogleMapEmbed({
   placeId = 'ChIJH4nhmJAnrTARgEupScnGdJI',
   address = 'Emdad Park, 665 Percival Hill Road, Chittagong',
-  tagline = 'Save Money. Live Better.',
+  tagline = 'Serving Chittagong since 1947.',
   logoUrl = '/logo-main.png',
   phone = '+8801731944544',
   email = 'hello@luckystore1947.com',

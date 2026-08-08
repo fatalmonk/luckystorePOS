@@ -184,9 +184,9 @@ export default async function Home() {
     '@type': 'WebSite',
     '@id': 'https://luckystore1947.com/#website',
     url: 'https://luckystore1947.com/',
-    name: 'Lucky Store — Online Grocery Chittagong',
-    alternateName: ['Lucky Store Daily Bazaar', 'BD Shop Online Grocery', 'Chittagong Online Shop'],
-    description: 'Best Bangladesh online grocery & daily bazaar in Chittagong. Formalin free Meat, Oil, Chal, best grocery price Chittagong & free returns.',
+    name: 'Lucky Store — Online Grocery Chattogram',
+    alternateName: ['Lucky Store Daily Bazaar', 'BD Shop Online Grocery', 'Chattogram Online Shop'],
+    description: 'Lucky Store offers pantry staples, snacks, dairy, and household essentials with local delivery and cash on delivery in Chattogram.',
   };
   const productListJsonLd = {
     '@context': 'https://schema.org',

@@ -72,7 +72,7 @@ describe('CampaignGrid', () => {
     renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const title = screen.getByRole('heading', {
-      name: 'Save Money. Live Better.',
+      name: 'Daily groceries from a store Chittagong knows.',
     });
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
@@ -89,6 +89,10 @@ describe('CampaignGrid', () => {
     expect(within(hero!).getByText('Pure, organic food & wholesome natural groceries.')).toBeInTheDocument();
 
     expect(within(hero!).getByText('Stocked daily')).toBeInTheDocument();
+    expect(within(hero!).getByRole('link', { name: 'Shop groceries' })).toHaveAttribute(
+      'href',
+      '/category',
+    );
   });
 
   it('offers named tea & coffee rail scroll controls', () => {
@@ -104,7 +108,7 @@ describe('CampaignGrid', () => {
     renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const hero = screen
-      .getByRole('heading', { name: 'Save Money. Live Better.' })
+      .getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' })
       .closest('section')!;
 
     expect(hero).toHaveClass('campaign-hero');

@@ -50,16 +50,15 @@ export function CampaignGrid({ products }: CampaignGridProps) {
       <span className="campaign-spine" aria-hidden="true">Everyday</span>
       <div className="relative z-10 mx-auto grid w-full gap-5 lg:grid-cols-[minmax(280px,0.76fr)_minmax(0,1.5fr)] lg:items-center lg:gap-10">
         <div className="campaign-copy max-w-xl">
-          <p className="campaign-kicker">Chittagong · Since 1947</p>
+          <p className="campaign-kicker">Lucky Store · Chittagong</p>
           <h2
             id="campaign-hero-title"
             className="campaign-headline campaign-display mt-2 text-balance text-[1.55rem] font-black leading-[1.05] tracking-[-0.04em] sm:text-[2.5rem] lg:text-5xl"
           >
-            Save Money. Live Better.
+            Daily groceries from a store Chittagong knows.
           </h2>
           <p className="campaign-on-image-muted mt-3 max-w-lg text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7">
-            Shop pantry staples, snacks, dairy, household essentials, and more from
-            Lucky Store—we curate the best deals, so that you don&apos;t have to.
+            Pantry staples, snacks, dairy, and household essentials packed by Lucky Store.
           </p>
 
           <div className="campaign-status-row mt-3 flex flex-wrap gap-2 sm:mt-5" aria-label="Store service status">
