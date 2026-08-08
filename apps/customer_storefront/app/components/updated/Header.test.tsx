@@ -46,11 +46,12 @@ describe('Header catalog filter strip', () => {
     mockSearchParams = new URLSearchParams();
   });
 
-  it('shows a search icon and cart button in the header', () => {
+  it('shows persistent mobile search and cart controls in the header', () => {
     render(<Header />);
 
     expect(screen.getByText('Lucky Store')).toBeInTheDocument();
-    expect(screen.getByLabelText('Open search')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Search products')[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Submit search' })[0]).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cart' })).toBeInTheDocument();
   });
 

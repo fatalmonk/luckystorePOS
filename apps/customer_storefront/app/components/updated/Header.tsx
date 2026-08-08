@@ -240,6 +240,26 @@ export function Header({ className = '' }: HeaderProps) {
           <Logo className="header-brand-logo ml-1 translate-y-0.5 [&_img]:!h-10 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
         </div>
 
+        {/* Mobile Search */}
+        <form onSubmit={handleSearchSubmit} className="mx-2 flex min-w-0 flex-1 items-center rounded-full border border-warm-border bg-warm-surface shadow-warm-sm md:hidden">
+          <input
+            name="q"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search groceries"
+            className="h-10 min-w-0 flex-1 bg-transparent pl-3 pr-1 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted"
+            aria-label="Search products"
+          />
+          <button
+            type="submit"
+            className="mr-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-label="Submit search"
+          >
+            <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
+          </button>
+        </form>
+
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
         <div className="relative hidden max-w-[460px] flex-1 md:block" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-all duration-300">
@@ -351,28 +371,13 @@ export function Header({ className = '' }: HeaderProps) {
           )}
         </div>
 
-        {/* Right Actions: Search Mobile Icon, Wishlist, Cart */}
+        {/* Right Actions: Theme, Wishlist, Cart */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* Mobile Search Button */}
-          <button
-            type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden"
-            onClick={() => {
-              setIsMobileSearchOpen(true);
-              setShowSuggestions(true);
-            }}
-            aria-expanded={isMobileSearchOpen}
-            aria-controls="mobile-search-header"
-            aria-label="Open search"
-          >
-            <MagnifyingGlass weight="bold" size={24} aria-hidden="true" />
-          </button>
-
           {/* Theme Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
