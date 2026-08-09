@@ -38,7 +38,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
     <MarketCard
       interactive
       stockState={outOfStock ? 'unavailable' : stockLow ? 'limited' : 'available'}
-      className="group relative flex w-full flex-col"
+      className="group relative flex h-full w-full flex-col"
       data-testid="grid-product-card"
     >
       <CartAnnouncer message={announcement} />
@@ -95,7 +95,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
         />
       </Link>
 
-      <div className="flex flex-col gap-2 p-3">
+      <div className="flex flex-1 flex-col justify-between gap-2 p-3">
         <div className="flex flex-col gap-1">
           <Link
             href={productHref}
