@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_BD',
     url: '/',
-    siteName: 'Lucky Store 1947',
+    siteName: 'Lucky Store',
     title: 'Lucky Store | Online Grocery in Chattogram',
     description:
       'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
@@ -161,8 +161,8 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': ['WebSite', 'GroceryStore'],
-              name: 'Lucky Store — Online Grocery Chattogram',
-              alternateName: ['Lucky Store Chattogram', 'Bangladesh Online Grocery', 'Daily Bazaar BD Shop', 'Chattogram Online Shop'],
+              name: 'Lucky Store',
+              alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
               description: 'Lucky Store offers pantry staples, snacks, dairy, and household essentials with local delivery and cash on delivery in Chattogram.',
               url: 'https://luckystore1947.com',
               telephone: '+880 1731-944544',
