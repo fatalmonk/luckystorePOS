@@ -127,8 +127,12 @@ describe('useCart', () => {
     expect(result.current.cart[0].qty).toBe(3);
 
     // Try to add one more — should not exceed stock
-    act(() => result.current.addToCart(mockProductLowStock));
+    let success = true;
+    act(() => {
+      success = result.current.addToCart(mockProductLowStock);
+    });
     expect(result.current.cart[0].qty).toBe(3);
+    expect(success).toBe(false);
   });
 
   it('updateQty increases quantity', async () => {

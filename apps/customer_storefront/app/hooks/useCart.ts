@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { CartItem, Product } from '../lib/types';
 
 const CART_KEY = 'lucky-cart';
@@ -9,6 +9,7 @@ const FREE_DELIVERY_FEE = 40;
 
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const cartRef = useRef<CartItem[]>([]);
   const [storageError, setStorageError] = useState(false);
   // Single hydration guard — replaces the previous dual isLoaded + mounted pattern
   const [hydrated, setHydrated] = useState(false);
@@ -27,6 +28,7 @@ export function useCart() {
     }
     const timer = setTimeout(() => {
       if (savedCart.length > 0) {
+        cartRef.current = savedCart;
         setCart(savedCart);
       }
       setHydrated(true);
@@ -48,22 +50,29 @@ export function useCart() {
   const addToCart = useCallback((product: Product): boolean => {
     if (product.stock <= 0) return false;
 
+    const existing = cartRef.current.find((item) => item.id === product.id);
+    if (existing && existing.qty >= product.stock) return false;
+
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
+      let nextCart: CartItem[];
       if (existing) {
-        if (existing.qty >= product.stock) return prev; // at max, no-op but signal success
-        return prev.map((item) =>
+        if (existing.qty >= product.stock) return prev;
+        nextCart = prev.map((item) =>
           item.id === product.id ? { ...item, qty: item.qty + 1 } : item
         );
+      } else {
+        nextCart = [...prev, { ...product, qty: 1 }];
       }
-      return [...prev, { ...product, qty: 1 }];
+      cartRef.current = nextCart;
+      return nextCart;
     });
     return true;
   }, []);
 
   const updateQty = useCallback((productId: string, delta: number) => {
     setCart((prev) => {
-      return prev
+      const nextCart = prev
         .map((item) => {
           if (item.id === productId) {
             const newQty = item.qty + delta;
@@ -75,6 +84,8 @@ export function useCart() {
           return item;
         })
         .filter(Boolean) as CartItem[];
+      cartRef.current = nextCart;
+      return nextCart;
     });
   }, []);
 
@@ -84,7 +95,9 @@ export function useCart() {
     setCart((prev) => {
       const removed = prev.find((item) => item.id === productId);
       if (removed) setLastRemoved(removed);
-      return prev.filter((item) => item.id !== productId);
+      const nextCart = prev.filter((item) => item.id !== productId);
+      cartRef.current = nextCart;
+      return nextCart;
     });
   }, []);
 
@@ -92,17 +105,22 @@ export function useCart() {
     setCart((prev) => {
       if (!lastRemoved) return prev;
       const existing = prev.find((item) => item.id === lastRemoved.id);
+      let nextCart: CartItem[];
       if (existing) {
-        return prev.map((item) =>
+        nextCart = prev.map((item) =>
           item.id === lastRemoved.id ? { ...item, qty: item.qty + lastRemoved.qty } : item
         );
+      } else {
+        nextCart = [...prev, lastRemoved];
       }
-      return [...prev, lastRemoved];
+      cartRef.current = nextCart;
+      return nextCart;
     });
     setLastRemoved(null);
   }, [lastRemoved]);
 
   const clearCart = useCallback(() => {
+    cartRef.current = [];
     setCart([]);
   }, []);
 

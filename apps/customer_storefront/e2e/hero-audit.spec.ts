@@ -46,11 +46,14 @@ test.describe('Storefront campaign hero audit', () => {
     expect(functionalTextSizes.length).toBeGreaterThan(0);
     expect(functionalTextSizes.every((size) => size >= 11)).toBe(true);
 
-    // Campaign hero now renders product cards with descriptive alts inside the same section.
-    // Spot-check the first reel image loads and is a reasonable modern format.
+    // Campaign hero renders product cards with descriptive alts inside the same section.
+    // Cards may render a processed canvas image to remove white product backgrounds, so
+    // verify the original asset source remains a reasonable modern format.
     const firstImage = reel.locator('img').first();
     await expect(firstImage).toBeVisible();
-    await expect(firstImage).toHaveAttribute('src', /\.(avif|webp)(\?.*)?$/i);
+    const originalImageSrc =
+      (await firstImage.getAttribute('data-original-src')) ?? (await firstImage.getAttribute('src'));
+    expect(originalImageSrc).toMatch(/\.(avif|webp)(\?.*)?$/i);
 
     const nextButton = hero.getByRole('button', { name: 'Next products' });
     const nextBox = await nextButton.boundingBox();

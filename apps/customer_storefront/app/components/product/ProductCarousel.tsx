@@ -1,6 +1,6 @@
 'use client';
 
-import { MiniProductCard } from './MiniProductCard';
+import { GridProductCard } from '../GridProductCard';
 import type { Product } from '../../lib/products/types';
 
 interface ProductCarouselProps {
@@ -24,8 +24,8 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
         aria-label={title}
       >
         {products.map((product) => (
-          <div key={product.id} className="snap-start" role="listitem">
-            <MiniProductCard product={product} />
+          <div key={product.id} className="w-40 shrink-0 snap-start" role="listitem">
+            <GridProductCard product={product} />
           </div>
         ))}
       </div>

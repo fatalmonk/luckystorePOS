@@ -5,8 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag, MagnifyingGlass } from '@phosphor-icons/react';
-import { ProductCard } from './ProductCard';
-import { useCartActions } from '../hooks/useCartActions';
+import { GridProductCard } from './GridProductCard';
 import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
@@ -87,7 +86,6 @@ export function CatalogLayout({
   const pathname = usePathname();
   const urlParams = useSearchParams();
 
-  const { cart, flyItems, handleAddToCart, handleUpdateQty, handleFlyComplete } = useCartActions();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Extract active query params
@@ -289,11 +287,6 @@ export function CatalogLayout({
       }
     };
   }, [isMobileFilterOpen]);
-
-  const getQtyInCart = (productId: string) => {
-    const item = cart.find((c) => c.id === productId);
-    return item?.qty || 0;
-  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
@@ -587,22 +580,7 @@ export function CatalogLayout({
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {filtered.slice(0, visibleCount).map((product, index) => (
                   <div key={product.id} className="h-full flex flex-col">
-                    <ProductCard
-                      id={product.id}
-                      emoji={product.emoji}
-                      name={product.name}
-                      price={product.price}
-                      originalPrice={product.originalPrice}
-                      brand={product.brand}
-                      unit={product.unit}
-                      stock={product.stock}
-                      category={product.category}
-                      image_url={product.image_url}
-                      qtyInCart={getQtyInCart(product.id)}
-                      priority={index < 4}
-                      onAdd={(btnEl) => handleAddToCart(product, btnEl)}
-                      onUpdateQty={(delta) => handleUpdateQty(product.id, delta)}
-                    />
+                    <GridProductCard product={product} priority={index < 4} />
                   </div>
                 ))}
               </div>
@@ -743,7 +721,7 @@ export function CatalogLayout({
         </div>
       )}
 
-      <CartFlyAnimation items={flyItems} onComplete={handleFlyComplete} />
+      <CartFlyAnimation items={[]} onComplete={() => undefined} />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
-import { CompactProductCard } from './CompactProductCard';
+import { GridProductCard } from './GridProductCard';
 import type { Product } from '../lib/types';
 import { getCategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
@@ -196,10 +196,7 @@ export function ThemedProductRail({
       >
         {picks.map((product, index) => (
           <div key={product.id} className="themed-slide">
-            <CompactProductCard
-              product={product}
-              index={index}
-            />
+            <GridProductCard product={product} priority={index === 0} />
           </div>
         ))}
       </div>
@@ -268,12 +265,12 @@ export function ThemedProductRail({
         }
         @media (min-width: 640px) {
           .themed-slide {
-            flex: 0 0 calc((100% - 1.5rem) / 3);
+            flex: 0 0 min(calc((100% - 1.5rem) / 3), 18rem);
           }
         }
         @media (min-width: 1024px) {
           .themed-slide {
-            flex: 0 0 calc((100% - 2.25rem) / 4);
+            flex: 0 0 min(calc((100% - 2.25rem) / 4), 19rem);
           }
         }
       `}</style>

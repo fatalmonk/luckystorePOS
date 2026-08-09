@@ -13,8 +13,6 @@ export interface ProductGridSectionProps {
   products: Product[];
   ctaLabel?: string;
   ctaHref?: string;
-  /** Optional brand overlay rendered on each card image (e.g. "brightfarms") */
-  brandOverlay?: string;
 }
 
 export function ProductGridSection({
@@ -24,7 +22,6 @@ export function ProductGridSection({
   products,
   ctaLabel = 'See all',
   ctaHref = '/category',
-  brandOverlay,
 }: ProductGridSectionProps) {
   if (products.length === 0) return null;
 
@@ -59,11 +56,7 @@ export function ProductGridSection({
       >
         {products.map((product, index) => (
           <div key={product.id} className="grid-slide">
-            <GridProductCard
-              product={product}
-              index={index}
-              brandOverlay={brandOverlay}
-            />
+            <GridProductCard product={product} priority={index === 0} />
           </div>
         ))}
       </div>
@@ -87,7 +80,7 @@ export function ProductGridSection({
         }
         @media (min-width: 640px) {
           .grid-slide {
-            flex: 0 0 calc((100% - 2.5rem) / 4);
+            flex: 0 0 min(calc((100% - 2.5rem) / 4), 17rem);
           }
           .grid-reel {
             gap: 0.875rem;
@@ -95,7 +88,7 @@ export function ProductGridSection({
         }
         @media (min-width: 1024px) {
           .grid-slide {
-            flex: 0 0 calc((100% - 3.75rem) / 5);
+            flex: 0 0 min(calc((100% - 3.75rem) / 5), 18rem);
           }
           .grid-reel {
             gap: 1rem;
