@@ -184,8 +184,8 @@ export default async function Home() {
     '@type': 'WebSite',
     '@id': 'https://luckystore1947.com/#website',
     url: 'https://luckystore1947.com/',
-    name: 'Lucky Store — Online Grocery Chattogram',
-    alternateName: ['Lucky Store Daily Bazaar', 'BD Shop Online Grocery', 'Chattogram Online Shop'],
+    name: 'Lucky Store',
+    alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
     description: 'Lucky Store offers pantry staples, snacks, dairy, and household essentials with local delivery and cash on delivery in Chattogram.',
   };
   const productListJsonLd = {
