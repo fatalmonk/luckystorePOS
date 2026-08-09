@@ -11,21 +11,39 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const resolvedParams = await params;
+  const resolvedSearch = await searchParams;
   const categorySlug = decodeURIComponent(resolvedParams.slug);
   const categories = await getCachedCategories();
   const group = getCategoryGroup(categorySlug);
   const currentCatObj = categories.find((c) => c.slug === categorySlug);
+  const normalizedSlug = normalizeCategorySlug(categorySlug);
+  const normalizedCategory = categories.find(
+    (c) => normalizeCategorySlug(c.slug) === normalizedSlug || normalizeCategorySlug(c.name) === normalizedSlug,
+  );
+  const isKnownCategory = Boolean(group || currentCatObj || normalizedCategory);
+  const canonicalCategorySlug = group?.slug || currentCatObj?.slug || normalizedCategory?.slug;
+  const hasFilters = Object.values(resolvedSearch).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value),
+  );
   const titleName = group?.label || currentCatObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   return {
     title: `${titleName} in Chittagong | Lucky Store`,
     description: `Shop ${titleName} online at Lucky Store Chittagong. Quality items, fast home delivery, and cash on delivery.`,
+    robots: !isKnownCategory || hasFilters ? {
+      index: false,
+      follow: true,
+    } : undefined,
     alternates: {
-      canonical: `https://luckystore1947.com/category/${categorySlug}`,
+      canonical: canonicalCategorySlug
+        ? `https://luckystore1947.com/category/${canonicalCategorySlug}`
+        : 'https://luckystore1947.com/category',
     },
   };
 }

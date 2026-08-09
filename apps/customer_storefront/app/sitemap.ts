@@ -73,18 +73,35 @@ async function getCategories(): Promise<{ slug: string }[]> {
 // Dynamic product pages
 async function getProducts(): Promise<{ id: string; name: string; updatedAt: string }[]> {
   try {
-    const { data, error } = await supabase
-      .from('items')
-      .select('id, name, updated_at')
-      .eq('is_active', true);
+    const { data, error } = await supabase.rpc('search_items_pos', {
+      p_store_id: STORE_ID,
+      p_query: '',
+      p_category_id: null,
+      p_limit: 5000,
+      p_offset: 0,
+    });
 
     if (error) throw error;
 
-    return (data || []).map((i: any) => ({
-      id: i.id,
-      name: i.name || '',
-      updatedAt: i.updated_at || new Date().toISOString(),
-    }));
+    const rows = Array.isArray(data) ? data : [];
+
+    return rows
+      .filter((i: any) => {
+        const id = i.id ?? i.item_id;
+        const price = Number(i.price);
+        return (
+          typeof id === 'string' &&
+          typeof i.name === 'string' &&
+          i.name.trim().length > 0 &&
+          Number.isFinite(price) &&
+          price > 0
+        );
+      })
+      .map((i: any) => ({
+        id: i.id ?? i.item_id,
+        name: i.name.trim(),
+        updatedAt: i.updated_at || i.created_at || new Date().toISOString(),
+      }));
   } catch (error) {
     console.error('Error fetching products for sitemap:', error);
     return [];
