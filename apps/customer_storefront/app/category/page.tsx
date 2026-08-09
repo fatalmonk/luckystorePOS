@@ -9,10 +9,23 @@ import type { Category } from '../lib/types';
 
 export const dynamic = 'force-dynamic';
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const resolvedParams = await searchParams;
+  const hasFilters = Object.values(resolvedParams).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value),
+  );
+
   return {
     title: 'Browse Products',
     description: 'Browse all products at Lucky Store — fresh groceries, household items, and more. Search by category, price, and availability. Same-day delivery in Chittagong.',
+    robots: hasFilters ? {
+      index: false,
+      follow: true,
+    } : undefined,
     alternates: {
       canonical: '/category',
     },

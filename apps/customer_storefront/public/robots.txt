@@ -2,8 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
-Disallow: /checkout/
-Disallow: /cart/
-Disallow: /order/
 
 Sitemap: https://luckystore1947.com/sitemap.xml
