@@ -16,6 +16,7 @@ const SELF = resolve(__dirname, 'secret_scan.js');
 
 const IGNORE_DIRS = new Set([
   '.git',
+  '.worktrees',
   'node_modules',
   'build',
   'coverage',
@@ -79,6 +80,7 @@ function shouldSkipPath(filePath) {
   if (resolve(filePath) === SELF) return true;
   if (fileName === '.env.example') return false;
 
+  if (rel === '.worktrees' || rel.startsWith('.worktrees/')) return true;
   if (rel.endsWith('.dev.vars') || rel.includes('/.dev.vars')) return true;
   if (rel === '.env' || rel.startsWith('.env.') || rel.endsWith('/.env') || rel.includes('/.env.')) {
     return true;
@@ -377,6 +379,13 @@ function runSelfTest() {
       expectPathScanned: true,
     },
     {
+      name: 'skips local worktree copies',
+      rel: '.worktrees/storefront-home-ia/scripts/security/secret_scan.js',
+      content: '-----BEGIN RSA PRIVATE KEY-----\n',
+      expectFinding: false,
+      expectPathScanned: false,
+    },
+    {
       name: 'rejects deceptive database URL password prefix',
       content: 'DATABASE_URL=postgresql://user:dummy-but-real@db.example.invalid/app\n',
       expectFinding: true,
@@ -423,7 +432,10 @@ function runSelfTest() {
     const savedCount = findingCount;
     exitCode = 0;
     findingCount = 0;
-    scanContent(tc.rel || 'fixture', tc.content);
+    const shouldScanPath = !tc.rel || !shouldSkipPath(resolve(ROOT, tc.rel));
+    if (shouldScanPath) {
+      scanContent(tc.rel || 'fixture', tc.content);
+    }
     console.log = origLog;
     const found = findingCount > 0;
     const countMatches = tc.expectedCount === undefined || findingCount === tc.expectedCount;
@@ -432,7 +444,7 @@ function runSelfTest() {
       findings.every((finding) => !String(finding).includes(tc.redactedValue));
     const pathScanned =
       tc.expectPathScanned === undefined ||
-      !shouldSkipPath(resolve(ROOT, tc.rel));
+      shouldScanPath === tc.expectPathScanned;
     exitCode = savedExit;
     findingCount = savedCount;
     hits.push(...findings);

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Money, WarningCircle } from '@phosphor-icons/react';
 import { Header } from '../components/updated/Header';
 import { useToast } from '../components/Toast';
@@ -406,9 +407,29 @@ function CheckoutContent() {
                       <span>Total</span>
                       <span>{formatBdt(total)}</span>
                     </div>
-                    <p className="text-xs text-warm-muted mt-2 flex items-center gap-1">
-                      <Money size={16} weight="bold" aria-hidden="true" /> Cash on Delivery — pay when you receive
-                    </p>
+                    <div className="mt-4 rounded-xl border border-warm-border-light bg-warm-bg p-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="shrink-0 self-start overflow-hidden rounded-lg border border-warm-border bg-white p-1">
+                          <Image
+                            src="/images/payments/bkash-payment-qr.png"
+                            alt="bKash payment QR code for 01731944544"
+                            width={132}
+                            height={176}
+                            className="h-auto w-[132px]"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-extrabold text-warm-fg">Pay with bKash</p>
+                          <p className="mt-1 text-xs leading-5 text-warm-muted">
+                            Scan the QR or send payment to <span className="font-bold text-warm-fg">01731944544</span>.
+                            Add your bKash TrxID in instructions if you pay before delivery.
+                          </p>
+                          <p className="mt-2 text-xs text-warm-muted flex items-center gap-1">
+                            <Money size={16} weight="bold" aria-hidden="true" /> Cash on Delivery is still available.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex gap-3">
