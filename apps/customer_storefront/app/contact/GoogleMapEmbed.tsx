@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+const MISSING_GOOGLE_MAPS_KEY = 'missing-google-maps-key';
+const LUCKY_STORE_MAPS_URL = 'https://maps.app.goo.gl/Yd3mAphotMJiVPM97';
+
 export interface GoogleMapEmbedProps {
   placeId?: string;
   address?: string;
@@ -35,7 +38,7 @@ export function GoogleMapEmbed({
   useEffect(() => {
     const key = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!key || !key.trim() || key.includes('YOUR_API_KEY') || key.includes('your-api-key')) {
-      setError('Google Maps API key missing or invalid. Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.');
+      setError(MISSING_GOOGLE_MAPS_KEY);
       return;
     }
 
@@ -536,12 +539,35 @@ export function GoogleMapEmbed({
   }, [placeId, address, tagline, logoUrl, phone, email, websiteUrl, facebookUrl, instagramUrl, zoom, apiKey]);
 
   if (error) {
+    if (error === MISSING_GOOGLE_MAPS_KEY) {
+      return (
+        <div className="flex h-full min-h-[380px] w-full flex-col justify-end rounded-[28px] border border-warm-border/80 bg-[linear-gradient(135deg,rgba(240,196,68,0.18),rgba(255,255,255,0.08)),url('/lucky-store-social-share-v2.png')] bg-cover bg-center p-5 sm:p-6">
+          <div className="max-w-md rounded-[24px] border border-warm-border/80 bg-warm-surface/95 p-5 shadow-warm-md backdrop-blur">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-warm-accent-dark">
+              Store location
+            </p>
+            <h3 className="mt-2 text-2xl font-black tracking-tight text-warm-fg">
+              Lucky Store
+            </h3>
+            <p className="mt-2 text-sm font-semibold leading-relaxed text-warm-muted">
+              {address}
+            </p>
+            <a
+              href={LUCKY_STORE_MAPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-warm-fg px-5 text-sm font-black text-warm-accent transition hover:bg-warm-fg-strong"
+            >
+              Open in Google Maps
+            </a>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex h-full min-h-[380px] w-full flex-col items-center justify-center rounded-[28px] border border-dashed border-warm-border bg-warm-surface p-6 text-center">
         <p className="text-sm font-semibold text-warm-foreground">{error}</p>
-        <p className="mt-2 text-xs text-warm-muted">
-          Set <code className="rounded bg-warm-border/40 px-1 py-0.5">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in your environment.
-        </p>
       </div>
     );
   }
