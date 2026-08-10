@@ -75,7 +75,7 @@ export function ProductGridSection({
           outline-offset: 4px;
         }
         .grid-slide {
-          flex: 0 0 calc((100% - 1.25rem) / 3);
+          flex: 0 0 calc((100% - 0.625rem) / 2);
           scroll-snap-align: start;
         }
         @media (min-width: 640px) {

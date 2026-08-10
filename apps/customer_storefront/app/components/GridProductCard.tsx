@@ -91,7 +91,6 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
           imageClassName="product-image-on-well object-contain p-1"
           priority={priority}
           showLoadingState
-          removeWhiteBackground
         />
       </Link>
 
