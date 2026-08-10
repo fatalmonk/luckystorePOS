@@ -5,15 +5,8 @@
   "type": "module",
   "description": "Lucky Store monorepo — POS frontend, Supabase backend, scrapers, and ops scripts",
   "supportedArchitectures": {
-    "os": [
-      "darwin",
-      "linux",
-      "win32"
-    ],
-    "cpu": [
-      "x64",
-      "arm64"
-    ]
+    "os": ["darwin", "linux", "win32"],
+    "cpu": ["x64", "arm64"]
   },
   "scripts": {
     "scrape": "node apps/scraper/scrape-shwapno.js",
@@ -22,11 +15,10 @@
     "remove-duplicates:dry-run": "node scripts/ops/remove-duplicate-items.js --dry-run",
     "scan:secrets": "node scripts/security/secret_scan.js",
     "scan:secrets:self-test": "node scripts/security/secret_scan.js --self-test",
-
     "migrate:images": "node scripts/images/migrate-images-to-r2.mjs",
     "migrate:images:dry-run": "node scripts/images/migrate-images-to-r2.mjs --dry-run",
     "deploy:worker": "cd cloudflare/workers/images && npx wrangler deploy",
-    "sync:notion": "node scripts/ops/sync-notion-hub.mjs",
+    "sync:notion": "node scripts/ops/sync-notion-handoff.mjs",
     "facebook:post": "tsx src/facebook.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -43,9 +35,7 @@
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   },
-  "workspaces": [
-    "apps/*"
-  ],
+  "workspaces": ["apps/*"],
   "overrides": {
     "serialize-javascript": "^7.0.3",
     "terser": "^5.14.2",

@@ -1,0 +1,36 @@
+name: Sync Notion AI Handoff
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/AI_HANDOFF.md'
+      - 'scripts/ops/sync-notion-handoff.mjs'
+      - '.github/workflows/sync-notion-handoff.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notion-ai-handoff-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync repository context to Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_HANDOFF_PAGE_ID: ${{ secrets.NOTION_HANDOFF_PAGE_ID }}
+        run: node scripts/ops/sync-notion-handoff.mjs
