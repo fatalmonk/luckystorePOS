@@ -29,7 +29,7 @@ export async function generateMetadata({
   const description =
     product.description ||
     `Buy ${product.name}${product.unit ? ` (${product.unit})` : ''} online at Lucky Store Chittagong. ${product.category ? `Available in ${product.category}.` : ''} Fast home delivery and cash on delivery.`;
-  const imageUrl = product.image_url || '/lucky-store-social-share-v2.png';
+  const imageUrl = product.image_url || '/lucky-store-social-share.jpg';
 
   return {
     title: {

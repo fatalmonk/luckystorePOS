@@ -17,6 +17,7 @@ function normalizeCategoryName(name: string): string {
 const CURATED_COLLECTIONS = [
   {
     label: 'Daily Cooking',
+    accessibleLabel: 'Cooking Essentials',
     slug: 'cooking-essentials',
     fallbackSlugs: ['rice-and-grain', 'spices', 'oil-and-ghee'],
     iconSlug: 'cooking-essentials',
@@ -24,6 +25,7 @@ const CURATED_COLLECTIONS = [
   },
   {
     label: 'Breakfast',
+    accessibleLabel: 'Breakfast',
     slug: 'breakfast',
     fallbackSlugs: ['dairy-and-eggs', 'tea-&-coffee', 'biscuits-and-cookies'],
     iconSlug: 'breakfast',
@@ -31,6 +33,7 @@ const CURATED_COLLECTIONS = [
   },
   {
     label: 'Snacks & Drinks',
+    accessibleLabel: 'Snacks',
     slug: 'snacks',
     fallbackSlugs: ['cold-beverages', 'ice-cream', 'biscuits-and-cookies'],
     iconSlug: 'snacks',
@@ -38,6 +41,7 @@ const CURATED_COLLECTIONS = [
   },
   {
     label: 'Home Essentials',
+    accessibleLabel: 'Cleaning Supplies',
     slug: 'household',
     fallbackSlugs: ['home-care', 'cleaning-supplies'],
     iconSlug: 'household',
@@ -45,6 +49,7 @@ const CURATED_COLLECTIONS = [
   },
   {
     label: 'Personal Care',
+    accessibleLabel: 'Personal Care',
     slug: 'personal-care',
     fallbackSlugs: ['baby-care'],
     iconSlug: 'personal-care',
@@ -82,6 +87,7 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
           <Link
             key={collection.slug}
             href={getCategoryHref(collection.slug, collection.fallbackSlugs)}
+            aria-label={collection.accessibleLabel}
             className={`group flex flex-col items-center gap-2 rounded-warm-lg p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:p-3 ${
               collection.desktopOnly ? 'hidden lg:flex' : ''
             }`}

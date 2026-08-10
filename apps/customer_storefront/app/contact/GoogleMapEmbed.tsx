@@ -541,7 +541,7 @@ export function GoogleMapEmbed({
   if (error) {
     if (error === MISSING_GOOGLE_MAPS_KEY) {
       return (
-        <div className="flex h-full min-h-[380px] w-full flex-col justify-end rounded-[28px] border border-warm-border/80 bg-[linear-gradient(135deg,rgba(240,196,68,0.18),rgba(255,255,255,0.08)),url('/lucky-store-social-share-v2.png')] bg-cover bg-center p-5 sm:p-6">
+        <div className="flex h-full min-h-[380px] w-full flex-col justify-end rounded-[28px] border border-warm-border/80 bg-[linear-gradient(135deg,rgba(240,196,68,0.18),rgba(255,255,255,0.08)),url('/lucky-store-social-share.jpg')] bg-cover bg-center p-5 sm:p-6">
           <div className="max-w-md rounded-[24px] border border-warm-border/80 bg-warm-surface/95 p-5 shadow-warm-md backdrop-blur">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-warm-accent-dark">
               Store location

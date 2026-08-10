@@ -67,11 +67,7 @@
   }
 
   .market-product-card {
-    --color-surface: var(--color-image-well, #F7F1E8);
-    --color-foreground: var(--color-foreground, #0B0B0D);
-    --color-muted: var(--color-muted, #6B6B6B);
-    --color-dim: var(--color-dim, #6B6B6B);
-    --color-border: var(--color-border, #E8E4DC);
+    --color-surface: var(--color-image-well);
     container-type: inline-size;
     position: relative;
     overflow: hidden;
@@ -86,7 +82,6 @@
 
   [data-theme='dark'] .market-product-card {
     --color-surface: rgba(17, 17, 20, 0.72);
-    --color-foreground: #f7f4ec;
     --color-muted: rgba(247, 244, 236, 0.68);
     --color-dim: rgba(247, 244, 236, 0.52);
     --color-border: rgba(255, 255, 255, 0.09);
@@ -141,8 +136,8 @@
     overflow: hidden;
     color: var(--color-campaign-on-image);
     background:
-      radial-gradient(circle at 71% 42%, rgba(240, 196, 68, 0.16), transparent 28%),
-      radial-gradient(circle at 18% 0%, rgba(240, 196, 68, 0.07), transparent 34%),
+      radial-gradient(circle at 71% 42%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 28%),
+      radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 34%),
       linear-gradient(135deg, var(--color-campaign-surface-raised), var(--color-campaign-surface));
   }
 
@@ -187,13 +182,13 @@
   }
 
   .campaign-card-content {
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 12%, transparent);
     background: rgba(11, 11, 13, 0.38);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.08),
       0 10px 24px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .campaign-card-picture::after {
@@ -208,7 +203,7 @@
 
   .campaign-card-picture {
     background:
-      radial-gradient(circle at 50% 45%, rgba(240, 196, 68, 0.12), transparent 38%),
+      radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 38%),
       #111114;
   }
 
@@ -222,13 +217,14 @@
     border-radius: 9999px;
     color: var(--color-campaign-on-image);
     background: var(--color-campaign-control);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-campaign-on-image) 6%, transparent);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    backdrop-filter: blur(14px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .campaign-on-image-muted {
@@ -307,11 +303,16 @@
   }
 
   .campaign-card-link:hover {
-    border-color: rgba(240, 196, 68, 0.56);
+    border-color: color-mix(in srgb, var(--color-accent) 56%, transparent);
     box-shadow:
       var(--shadow-campaign-card),
-      0 0 40px rgba(240, 196, 68, 0.12);
+      0 0 40px color-mix(in srgb, var(--color-accent) 12%, transparent);
     transform: perspective(900px) rotateX(0.7deg) rotateY(-0.9deg);
+  }
+
+  .campaign-card-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   @media (min-width: 1024px) {
@@ -323,10 +324,6 @@
   @media (prefers-reduced-motion: no-preference) {
     .campaign-hero::before {
       animation: aisle-marker-draw 650ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
-    }
-
-    .campaign-headline {
-      animation: aisle-headline-open 700ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
     }
 
     .campaign-actions {
@@ -553,8 +550,8 @@
   .category-single-carousel {
     color: white;
     background:
-      radial-gradient(circle at 78% 18%, rgba(240, 196, 68, 0.13), transparent 28%),
-      #0B0B0D;
+      radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--color-accent) 13%, transparent), transparent 28%),
+      var(--color-campaign-logo-surface);
   }
 
   .category-card-reel {
@@ -576,7 +573,7 @@
     flex-direction: column;
     overflow: hidden;
     padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.11);
+    border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 11%, transparent);
     border-radius: 1rem;
     color: white;
     background:
@@ -588,8 +585,8 @@
       border-color 220ms var(--ease-drawer),
       background-color 220ms var(--ease-drawer),
       transform 220ms var(--ease-drawer);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .category-cyber-card::after {
@@ -598,7 +595,7 @@
     bottom: -3rem;
     width: 8rem;
     height: 8rem;
-    border: 1px solid rgba(240, 196, 68, 0.20);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
     border-radius: 9999px;
     content: '';
     transition: transform 300ms var(--ease-drawer);
@@ -606,11 +603,16 @@
 
   .category-cyber-card:hover,
   .category-cyber-card:focus-visible {
-    border-color: rgba(240, 196, 68, 0.68);
+    border-color: color-mix(in srgb, var(--color-accent) 68%, transparent);
     background:
-      linear-gradient(145deg, rgba(240, 196, 68, 0.14), rgba(255, 255, 255, 0.025)),
+      linear-gradient(145deg, color-mix(in srgb, var(--color-accent) 14%, transparent), rgba(255, 255, 255, 0.025)),
       rgba(11, 11, 13, 0.48);
     transform: translateY(-2px);
+  }
+
+  .category-cyber-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   .category-cyber-card:hover::after,
@@ -623,9 +625,9 @@
     width: 3.25rem;
     height: 3.25rem;
     place-items: center;
-    border: 1px solid rgba(240, 196, 68, 0.28);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
     border-radius: 0.9rem;
-    background: rgba(240, 196, 68, 0.08);
+    background: var(--color-accent-ghost);
     font-size: 1.65rem;
   }
 
@@ -633,9 +635,9 @@
     align-self: flex-start;
     margin-top: 0.8rem;
     padding: 0.35rem 0.65rem;
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 18%, transparent);
     border-radius: 9999px;
-    color: rgba(255, 255, 255, 0.58);
+    color: color-mix(in srgb, var(--color-campaign-on-image) 82%, transparent);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 800;
@@ -646,7 +648,7 @@
 
   .category-cyber-card:hover .category-cyber-pill,
   .category-cyber-card:focus-visible .category-cyber-pill {
-    color: #0B0B0D;
+    color: var(--color-accent-text);
     border-color: var(--color-accent);
     background: var(--color-accent);
   }
@@ -665,7 +667,7 @@
 
   .cyber-rail-control:hover {
     border-color: var(--color-accent);
-    background: rgba(240, 196, 68, 0.14);
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   }
 
   .cyber-rail-control:active {
@@ -1046,20 +1048,6 @@
 }
 
 @layer utilities {
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
   /* Glassmorphism surface */
   .glass {
     background: var(--glass-bg);

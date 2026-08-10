@@ -90,7 +90,7 @@ export const metadata: Metadata = {
       'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
     images: [
       {
-        url: '/lucky-store-social-share-v2.png',
+        url: '/lucky-store-social-share.jpg',
         width: 1200,
         height: 630,
         alt: 'Lucky Store online grocery in Chattogram',
@@ -109,7 +109,7 @@ export const metadata: Metadata = {
       'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
     images: [
       {
-        url: '/lucky-store-social-share-v2.png',
+        url: '/lucky-store-social-share.jpg',
         alt: 'Lucky Store online grocery in Chattogram',
       },
     ],
@@ -146,7 +146,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
-        <link rel="preconnect" href="https://images.luckystore1947.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://images.luckystore1947.com" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
         <meta name="theme-color" content="#0B0B0D" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
@@ -203,17 +203,32 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
-        {/* Google Analytics — deferred to idle time, never blocks render or layout */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D"
-          strategy="lazyOnload"
-        />
+        {/* Google Analytics — inserted after idle time so hero paint wins the main thread. */}
         <Script id="gtag-init" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-K5JLJNSW6D');
+            window.gtag = gtag;
+            var loadGtag = function(){
+              if (document.querySelector('script[data-lucky-gtag]')) return;
+              var script = document.createElement('script');
+              script.async = true;
+              script.src = 'https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D';
+              script.dataset.luckyGtag = 'true';
+              script.onload = function(){
+                gtag('js', new Date());
+                gtag('config', 'G-K5JLJNSW6D');
+              };
+              document.head.appendChild(script);
+            };
+            var scheduleGtag = function(){
+              window.setTimeout(loadGtag, 3000);
+            };
+            if ('requestIdleCallback' in window) {
+              window.requestIdleCallback(scheduleGtag, { timeout: 5000 });
+            } else {
+              scheduleGtag();
+            }
           `}
         </Script>
         <WebMCPInit />

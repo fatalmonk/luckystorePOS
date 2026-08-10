@@ -230,8 +230,43 @@ export function Header({ className = '' }: HeaderProps) {
         data-desktop-categories={hasCategoryBar ? 'true' : 'false'}
         className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-warm-bg dark:border-transparent ${className}`}
       >
+      {/* Mobile Bar: menu, compact brand, search, cart */}
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 md:hidden">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsDrawerOpen(true)}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-expanded={isDrawerOpen}
+            aria-haspopup="dialog"
+            aria-label="Open menu"
+          >
+            <List weight="bold" size={24} aria-hidden="true" />
+          </button>
+
+          <Logo className="header-brand-logo min-w-0 justify-start [&_img]:!h-9 [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" />
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              setIsMobileSearchOpen(true);
+              setShowSuggestions(false);
+            }}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-expanded={isMobileSearchOpen}
+            aria-controls="mobile-search-header"
+            aria-label="Open search"
+          >
+            <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
+          </button>
+          <HeaderCartButton compact iconSize={22} />
+        </div>
+      </div>
+
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:max-w-none md:px-4">
+      <div className="mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:flex md:max-w-none md:px-4">
         {/* Left cluster: drawer trigger and brand */}
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button
@@ -247,44 +282,6 @@ export function Header({ className = '' }: HeaderProps) {
 
           <Logo className="header-brand-logo ml-0.5 translate-y-0.5 [&_img]:!h-7 xs:[&_img]:!h-8 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
         </div>
-
-        {/* Mobile Search */}
-        <form
-          ref={mobileInlineSearchRef}
-          onSubmit={handleSearchSubmit}
-          className="relative mx-2 flex min-h-11 min-w-0 flex-1 items-center rounded-full border border-warm-border bg-warm-surface shadow-warm-sm md:hidden"
-        >
-          <input
-            name="q"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            placeholder="Search groceries"
-            className="h-11 min-w-0 flex-1 bg-transparent pl-3 pr-1 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted"
-            aria-label="Search products"
-          />
-          <button
-            type="submit"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            aria-label="Submit search"
-          >
-            <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
-          </button>
-          {showSuggestions && (
-            <SearchSuggestions
-              query={searchQuery}
-              recentSearches={recentSearches}
-              popularSearches={popularSearches}
-              onSelect={(term: string) => {
-                setSearchQuery(term);
-                setShowSuggestions(false);
-                router.push(`/category?q=${encodeURIComponent(term)}`);
-              }}
-              onClose={() => setShowSuggestions(false)}
-            />
-          )}
-        </form>
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
         <div className="relative hidden max-w-[460px] flex-1 md:block" ref={desktopSearchRef}>
@@ -315,7 +312,7 @@ export function Header({ className = '' }: HeaderProps) {
                       router.push('/category');
                     }}
                     className={`min-h-11 w-full rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                      selectedCategory === 'all' ? 'bg-warm-fg text-warm-accent' : 'text-warm-fg hover:bg-warm-bg'
+                      selectedCategory === 'all' ? 'bg-warm-fg text-warm-bg' : 'text-warm-fg hover:bg-warm-bg'
                     }`}
                   >
                     <span className="inline-flex items-center gap-2">
@@ -335,7 +332,7 @@ export function Header({ className = '' }: HeaderProps) {
                           router.push(`/category/${g.slug}`);
                         }}
                         className={`flex min-h-11 w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                          selectedCategory === g.slug ? 'bg-warm-fg text-warm-accent font-bold' : 'text-warm-fg hover:bg-warm-bg'
+                          selectedCategory === g.slug ? 'bg-warm-fg text-warm-bg font-bold' : 'text-warm-fg hover:bg-warm-bg'
                         }`}
                       >
                         <span className="text-warm-accent">{getCategoryIcon(g.slug, 16)}</span>
@@ -408,14 +405,6 @@ export function Header({ className = '' }: HeaderProps) {
           >
             {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
           </button>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:hidden"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {theme === 'dark' ? <Sun weight="bold" size={18} aria-hidden="true" /> : <Moon weight="bold" size={18} aria-hidden="true" />}
-          </button>
 
           {/* Wishlist Link */}
           <Link
@@ -440,7 +429,7 @@ export function Header({ className = '' }: HeaderProps) {
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
               className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
-                  ? 'bg-warm-fg text-warm-accent'
+                  ? 'bg-warm-fg text-warm-bg'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
               }`}
             >
@@ -455,7 +444,7 @@ export function Header({ className = '' }: HeaderProps) {
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                     isActive
-                      ? 'bg-warm-fg text-warm-accent'
+                      ? 'bg-warm-fg text-warm-bg'
                       : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
                   }`}
                 >
@@ -479,7 +468,7 @@ export function Header({ className = '' }: HeaderProps) {
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
               className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
-                  ? 'bg-warm-fg text-warm-accent'
+                  ? 'bg-warm-fg text-warm-bg'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
               }`}
             >
@@ -494,7 +483,7 @@ export function Header({ className = '' }: HeaderProps) {
                   aria-current={isActive ? 'page' : undefined}
                   className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                     isActive
-                      ? 'bg-warm-fg text-warm-accent'
+                      ? 'bg-warm-fg text-warm-bg'
                       : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
                   }`}
                 >
@@ -526,7 +515,7 @@ export function Header({ className = '' }: HeaderProps) {
         @media (min-width: 1024px) {
           .header-brand-logo img {
             width: auto;
-            height: 40px !important;
+            height: 48px !important;
           }
         }
       `}</style>
@@ -534,7 +523,7 @@ export function Header({ className = '' }: HeaderProps) {
     <div
       className={
         showDesktopCategories
-          ? 'h-[112px]'
+          ? 'h-[108px] md:h-[112px]'
           : 'h-14'
       }
       aria-hidden="true"

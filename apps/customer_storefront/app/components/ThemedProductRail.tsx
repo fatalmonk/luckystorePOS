@@ -125,7 +125,7 @@ export function ThemedProductRail({
     const updateThumb = () => {
       const max = el.scrollWidth - el.clientWidth;
       const ratio = max > 0 ? el.scrollLeft / max : 0;
-      const viewportCards = Math.min(picks.length, window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 3 : Math.floor(el.clientWidth / (el.clientWidth * 0.46)));
+      const viewportCards = Math.min(picks.length, window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 3 : 1.45);
       const thumbWidth = Math.max(10, Math.min(100, (100 / picks.length) * viewportCards));
       const travel = 100 - thumbWidth;
       thumb.style.width = `${thumbWidth}%`;
@@ -260,7 +260,7 @@ export function ThemedProductRail({
           outline-offset: 4px;
         }
         .themed-slide {
-          flex: 0 0 min(46vw, 11rem);
+          flex: 0 0 min(68%, 18rem);
           scroll-snap-align: start;
         }
         @media (min-width: 640px) {

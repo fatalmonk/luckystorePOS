@@ -176,15 +176,16 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
               Help Center
             </Link>
           </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-warm-border text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun weight="bold" size={16} aria-hidden="true" /> : <Moon weight="bold" size={16} aria-hidden="true" />}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? <Sun weight="bold" size={16} aria-hidden="true" /> : <Moon weight="bold" size={16} aria-hidden="true" />}
-            </button>
             <Link
               href="/wishlist"
               onClick={onClose}
