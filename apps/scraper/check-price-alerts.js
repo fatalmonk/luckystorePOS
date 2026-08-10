@@ -24,21 +24,30 @@ async function checkPriceAlerts() {
   console.log(`Checking price alerts (threshold: ${threshold * 100}%)...`);
   
   try {
-    // Get all stores with competitor price data
-    const { data: stores, error: storeError } = await supabase
+    // Get stores with competitor price data from the last 24 hours.
+    // supabase-js/PostgREST does not expose a .group() query-builder method,
+    // so select the store IDs and deduplicate them client-side.
+    const { data: recentPrices, error: storeError } = await supabase
       .from('competitor_prices')
       .select('store_id')
-      .gte('scraped_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .group('store_id');
+      .gte('scraped_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
     
     if (storeError) throw storeError;
+
+    const storeIds = [
+      ...new Set(
+        (recentPrices ?? [])
+          .map(({ store_id }) => store_id)
+          .filter(Boolean)
+      )
+    ];
     
-    if (!stores || stores.length === 0) {
+    if (storeIds.length === 0) {
       console.log('No recent competitor data found');
       return;
     }
     
-    for (const { store_id } of stores) {
+    for (const store_id of storeIds) {
       console.log(`\nChecking store: ${store_id}`);
       
       // Call RPC to check price alerts
