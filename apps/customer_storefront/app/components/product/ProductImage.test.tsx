@@ -25,6 +25,22 @@ describe('ProductImage', () => {
     expect(screen.getByText('Lucky Store')).toBeInTheDocument();
   });
 
+  it('treats the legacy missing-image path as unavailable without requesting it', () => {
+    render(
+      <ProductImage
+        src="/images/products/default.svg"
+        alt="Legacy placeholder"
+        category="Snacks"
+        sizes="100px"
+      />,
+    );
+
+    expect(
+      screen.getByRole('img', { name: 'Legacy placeholder image unavailable' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'Legacy placeholder' })).not.toBeInTheDocument();
+  });
+
   it('replaces a failed image without exposing a broken-image fallback', () => {
     render(
       <ProductImage

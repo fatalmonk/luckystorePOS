@@ -1,0 +1,117 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { MagnifyingGlass } from '@phosphor-icons/react';
+import { ProductImage } from '../product/ProductImage';
+import { formatBdt } from '../../lib/formatPrice';
+import { toProductSlug } from '../../lib/products/slugify';
+import type { Product } from '../../lib/types';
+
+const suggestedSearches = [
+  { label: 'Rice', href: '/category?q=rice' },
+  { label: 'Milk', href: '/category?q=milk' },
+  { label: 'Oil', href: '/category?q=oil' },
+  { label: 'Snacks', href: '/category/snacks' },
+  { label: 'Cleaning', href: '/category/cleaning-supplies' },
+];
+
+export interface HeroDiscoveryRailProps {
+  products: Product[];
+  title?: string;
+}
+
+export function HeroDiscoveryRail({
+  products,
+  title = 'Quick picks from today',
+}: HeroDiscoveryRailProps) {
+  const picks = products.filter((product) => product.stock > 0).slice(0, 8);
+
+  return (
+    <div className="hero-discovery flex min-w-0 flex-col gap-4">
+      <form
+        action="/category"
+        className="group/search relative"
+        role="search"
+        aria-label="Search groceries"
+      >
+        <MagnifyingGlass
+          size={20}
+          weight="bold"
+          className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-warm-muted"
+          aria-hidden="true"
+        />
+        <input
+          type="search"
+          name="q"
+          placeholder="Search rice, milk, oil, snacks..."
+          className="h-14 w-full rounded-warm-panel border border-warm-image-well-border bg-warm-bg pl-12 pr-4 text-base font-semibold text-warm-fg shadow-warm-card transition-colors placeholder:text-warm-muted hover:border-warm-accent/60 focus:border-warm-accent focus:outline-none focus:ring-2 focus:ring-warm-accent/30"
+        />
+      </form>
+
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Suggested grocery searches">
+        {suggestedSearches.map(({ label, href }) => (
+          <Link
+            key={label}
+            href={href}
+            className="inline-flex min-h-11 shrink-0 items-center rounded-warm-control border border-warm-image-well-border bg-warm-image-well px-4 text-sm font-extrabold text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+
+      {picks.length > 0 ? (
+        <section aria-labelledby="hero-discovery-title" className="min-w-0">
+          <div className="mb-2 flex items-end justify-between gap-3">
+            <h2 id="hero-discovery-title" className="text-sm font-black text-warm-fg">
+              {title}
+            </h2>
+            <Link
+              href="/category"
+              className="inline-flex min-h-11 items-center text-sm font-extrabold text-warm-accent-dark transition-colors hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            >
+              Shop groceries
+            </Link>
+          </div>
+
+          <div
+            className="hero-product-strip flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-hide"
+            aria-label={`${title} products`}
+          >
+            {picks.map((product, index) => (
+              <Link
+                key={product.id}
+                href={`/product/${toProductSlug(product.name, product.id)}`}
+                className="group/product flex min-h-[13.5rem] w-[10.25rem] shrink-0 snap-start flex-col overflow-hidden rounded-warm-card border border-warm-image-well-border bg-warm-bg shadow-warm-card transition-transform hover:-translate-y-0.5 hover:shadow-warm-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              >
+                <span className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well">
+                  <ProductImage
+                    src={product.image_url}
+                    alt={product.name}
+                    category={product.category}
+                    sizes="164px"
+                    imageClassName="product-image-on-well object-contain p-2"
+                    priority={index === 0}
+                    showLoadingState
+                  />
+                </span>
+                <span className="flex flex-1 flex-col justify-between gap-2 p-3">
+                  <span>
+                    <span className="line-clamp-2 text-sm font-bold leading-5 text-warm-fg">
+                      {product.name}
+                    </span>
+                    <span className="mt-1 block truncate text-xs text-warm-muted">{product.unit}</span>
+                  </span>
+                  <span className="font-mono text-base font-black text-warm-fg">
+                    {formatBdt(product.price)}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}

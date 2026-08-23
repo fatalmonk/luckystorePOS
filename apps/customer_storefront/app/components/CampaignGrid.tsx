@@ -1,32 +1,10 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { ThemedProductRail } from './ThemedProductRail';
+import Image from 'next/image';
 import { MarketPanel } from './ui/MarketSurface';
+import { HeroDiscoveryRail } from './ui/HeroFloatingCard';
 import type { Product } from '../lib/types';
-
-const campaignFocusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-campaign-surface)]';
-
-function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={`h-5 w-5 ${direction === 'left' ? 'rotate-180' : ''}`}
-      fill="none"
-    >
-      <path
-        d="M5 12h14m-5-5 5 5-5 5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 interface CampaignGridProps {
   products: Product[];
@@ -45,45 +23,42 @@ export function CampaignGrid({ products }: CampaignGridProps) {
     <MarketPanel
       aria-labelledby="campaign-hero-title"
       tone="accent"
-      className="campaign-hero relative w-full overflow-hidden rounded-3xl border border-warm-accent/20 bg-gradient-to-br from-warm-accent-muted/40 via-warm-surface to-warm-accent-muted/20 p-5 shadow-sm sm:p-8 lg:p-10"
+      className="campaign-hero relative w-full overflow-hidden rounded-warm-panel border border-warm-accent/20 p-4 shadow-warm-panel sm:p-8 lg:p-10"
     >
       <span className="campaign-spine" aria-hidden="true">Everyday</span>
-      <div className="relative z-10 mx-auto grid w-full gap-5 lg:grid-cols-[minmax(280px,0.76fr)_minmax(0,1.5fr)] lg:items-center lg:gap-10">
-        <div className="campaign-copy max-w-xl">
-          <p className="campaign-kicker">Lucky Store · Chittagong</p>
-          <h2
-            id="campaign-hero-title"
-            className="campaign-headline campaign-display mt-2 text-balance text-[1.55rem] font-black leading-[1.05] tracking-[-0.04em] sm:text-[2.5rem] lg:text-5xl"
-          >
-            Daily groceries from a store Chittagong knows.
-          </h2>
-          <p className="campaign-on-image-muted mt-3 max-w-lg text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7">
-            Pantry staples, snacks, dairy, and household essentials packed by Lucky Store.
-          </p>
-
-          <div className="campaign-status-row mt-3 flex flex-wrap gap-2 sm:mt-5" aria-label="Store service status">
-            <span className="campaign-status-badge">
-              <svg className="h-3.5 w-3.5" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-              Stocked daily
-            </span>
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-start gap-6">
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_6rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_10rem] sm:gap-5 md:grid-cols-[minmax(0,1fr)_13rem] md:gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem] lg:gap-10">
+          <div className="campaign-copy relative max-w-3xl text-left">
+            <h2
+              id="campaign-hero-title"
+              className="campaign-headline campaign-display max-w-3xl text-balance text-[1.4rem] font-black leading-[1.02] tracking-tight sm:mt-2 sm:text-4xl sm:leading-[1.05] lg:text-5xl"
+            >
+              Daily essentials from a store Chittagong knows.
+            </h2>
+            <p className="campaign-on-image-muted mt-2 max-w-2xl text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7">
+              Pantry staples, snacks, dairy, and household essentials, delivered right to your doorstep.
+            </p>
           </div>
-          <Link href="/category" className={`mt-4 inline-flex min-h-11 items-center rounded-warm-md bg-warm-accent px-5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover ${campaignFocusRing}`}>
-            Shop groceries
-          </Link>
+
+          <div
+            className="relative ml-auto h-24 w-24 sm:h-40 sm:w-40 md:h-48 md:w-48 lg:mx-0 lg:h-56 lg:w-auto"
+            aria-label="A basket of everyday Lucky Store groceries"
+          >
+            <Image
+              src="/images/hero-grocery-basket.webp"
+              alt="A yellow basket filled with everyday Lucky Store groceries"
+              fill
+              priority
+              sizes="224px"
+              className="object-contain object-center"
+            />
+          </div>
         </div>
 
-        <div className="campaign-rail min-w-0">
-          <ThemedProductRail
-            id="campaign-organic-goods"
+        <div className="w-full min-w-0">
+          <HeroDiscoveryRail
             products={isOrganic ? organicMatches : products}
-            title={isOrganic ? 'Healthy Living' : 'Pantry Staples'}
-            subtitle={isOrganic ? 'Pure, organic food & wholesome natural groceries.' : 'Rice, grains, spices, oil & everyday cooking essentials.'}
-            theme="pantry"
-            ctaLabel={isOrganic ? 'Shop organic goods' : 'Shop pantry staples'}
-            ctaHref={isOrganic ? '/category?search=organic' : '/category/cooking-essentials'}
+            title={isOrganic ? 'Search organic staples' : 'Quick picks from today'}
           />
         </div>
       </div>

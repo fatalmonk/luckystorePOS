@@ -170,26 +170,28 @@ export function ProductImage({
 }: ProductImageProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const normalizedSrc = src?.trim() || null;
+  const usableSrc = normalizedSrc === '/images/products/default.svg' ? null : normalizedSrc;
 
   useEffect(() => {
     setImageError(false);
     setImageLoaded(false);
-  }, [src]);
+  }, [usableSrc]);
 
-  const showImage = Boolean(src) && !imageError;
+  const showImage = Boolean(usableSrc) && !imageError;
 
   return (
     <>
-      {showLoadingState && src && !imageLoaded && !imageError && (
+      {showLoadingState && usableSrc && !imageLoaded && !imageError && (
         <div
           data-testid="product-image-loading"
           className="absolute inset-3 animate-pulse rounded-warm-md bg-warm-border/50"
           aria-hidden="true"
         />
       )}
-      {showImage && src && removeWhiteBackground ? (
+      {showImage && usableSrc && removeWhiteBackground ? (
         <BackgroundRemovedImage
-          src={src}
+          src={usableSrc}
           alt={alt}
           imageClassName={imageClassName}
           priority={priority}
@@ -199,9 +201,9 @@ export function ProductImage({
             setImageError(true);
           }}
         />
-      ) : showImage && src ? (
+      ) : showImage && usableSrc ? (
         <Image
-          src={src}
+          src={usableSrc}
           alt={alt}
           fill
           sizes={sizes}
