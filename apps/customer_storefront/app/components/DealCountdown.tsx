@@ -153,7 +153,7 @@ export function DealCountdown({
   }
 
   return (
-    <div className={`deal-countdown flex items-center gap-3 rounded-[18px] border px-3 py-2.5 sm:px-4 ${className}`}>
+    <div className={`deal-countdown flex items-center gap-3 rounded-warm-card border px-3 py-2.5 sm:px-4 sm:py-3 ${className}`}>
       <span className="hidden text-xs font-extrabold uppercase tracking-wider text-warm-muted sm:inline">
         Ends in
       </span>
@@ -171,7 +171,7 @@ export function DealCountdown({
           <React.Fragment key={String(label)}>
             {index > 0 && <span className="mb-4 text-xs font-black text-warm-accent" aria-hidden="true">:</span>}
             <span className="flex flex-col items-center">
-              <span className="deal-countdown-value min-w-[32px] rounded-lg px-2 py-1 text-xs font-black">
+              <span className="deal-countdown-value min-w-[32px] rounded-warm-control px-2 py-1 text-sm font-black">
                 {String(value).padStart(2, '0')}
               </span>
               <span className="mt-0.5 text-xs font-semibold uppercase leading-4 text-warm-muted">
