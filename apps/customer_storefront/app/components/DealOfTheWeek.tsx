@@ -100,31 +100,31 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     <MarketPanel
       aria-labelledby="weekly-deal-title"
       tone="night"
-      className="deal-panel space-y-7 p-5 sm:p-7"
+      className="deal-panel space-y-5 p-4 sm:space-y-6 sm:p-5"
     >
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <h2 id="weekly-deal-title" className="deal-panel-title text-2xl font-black tracking-tight sm:text-3xl">
-            This week&apos;s best deal
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
+        <div className="min-w-0">
+          <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">
+            Save of the Week
           </h2>
-          <p className="deal-panel-copy mt-2 max-w-2xl text-sm">
-            Our biggest featured saving, with more discounted products alongside it.
-          </p>
         </div>
         <DealCountdown />
+        <p className="deal-panel-copy col-span-1 max-w-2xl text-sm">
+          Bag it before stock run out!
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <article className={`deal-lead-card flex flex-col justify-between space-y-4 rounded-[22px] p-5 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <article className={`deal-lead-card flex flex-col justify-between space-y-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
             href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
             aria-label={`View ${leadProduct.name}`}
-            className="deal-product-visual relative flex min-h-[280px] items-center justify-center overflow-hidden rounded-[18px] border p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[340px]"
+            className="deal-product-visual relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
           >
             <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
               {leadDiscount}% off
             </span>
-            <div className="relative h-[260px] w-full sm:h-[320px]">
+            <div className="relative h-[190px] w-full sm:h-[250px]">
               <ProductImage
                 src={leadProduct.image_url}
                 alt={leadProduct.name}
@@ -141,7 +141,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <span className="text-xs font-semibold uppercase tracking-wide text-warm-muted">
               {leadProduct.category}
             </span>
-            <h3 className="text-lg font-black text-warm-fg sm:text-xl">
+            <h3 className="text-base font-black text-warm-fg sm:text-lg">
               <Link
                 href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
                 className="hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg"
@@ -152,7 +152,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <p className="line-clamp-2 text-xs leading-5 text-warm-muted">{leadProduct.description}</p>
 
             <div className="flex flex-wrap items-baseline gap-2 pt-2">
-              <span className="text-2xl font-black text-warm-accent">৳{leadProduct.price}</span>
+              <span className="text-xl font-black text-warm-accent">৳{leadProduct.price}</span>
               {leadProduct.originalPrice && (
                 <span className="text-sm font-bold text-warm-muted line-through">
                   ৳{leadProduct.originalPrice}
@@ -173,7 +173,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         </article>
 
         {supportingProducts.length > 0 && (
-          <div className="min-w-0 space-y-4 lg:col-span-7">
+          <div className="min-w-0 space-y-3 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="deal-panel-title text-sm font-extrabold">More deals</h3>
               <div className="flex items-center gap-3">

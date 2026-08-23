@@ -68,9 +68,9 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
       <Header />
 
       <main className="flex-1 pb-28 md:pb-12">
-        <div className="max-w-3xl mx-auto bg-warm-surface min-h-full rounded-t-2xl mt-2">
+        <div className="mx-auto mt-2 min-h-full max-w-[var(--container-storefront)] rounded-t-warm-panel bg-warm-bg px-[var(--space-page-x)] md:mt-6">
           {/* Breadcrumb Navigation */}
-          <div className="pt-2">
+          <div className="pt-2 md:pt-0">
             <Breadcrumbs
               items={[
                 { label: product.category, href: `/category/${product.category}` },
@@ -80,98 +80,102 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
           </div>
 
           {/* Hero Section */}
-          <div className="px-4 pt-4 pb-5 sm:px-6 lg:px-8">
-            <div className="relative w-full aspect-square max-w-[360px] mx-auto rounded-2xl bg-warm-bg overflow-hidden mb-6">
-              <ProductImage
-                src={product.image_url}
-                alt={product.name}
-                category={product.category}
-                sizes="(max-width: 768px) 100vw, 360px"
-                imageClassName="w-full h-full object-contain p-6 sm:p-8"
-                priority
-                iconSize={64}
-              />
-            </div>
-
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-warm-fg mb-1">
-                  {product.name}
-                </h1>
-                <p className="text-sm text-warm-muted">{product.unit}</p>
-              </div>
-              <div aria-live="polite" aria-atomic="true" className="shrink-0">
-                <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${stockStatus.bg} ${stockStatus.color}`}
-                  aria-label={stockStatus.aria}
-                >
-                  {stockStatus.text}
-                </span>
+          <div className="grid gap-6 py-5 md:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] md:items-start md:gap-8 lg:gap-10">
+            <div className="mx-auto w-full max-w-[420px] md:sticky md:top-24 md:max-w-none">
+              <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-warm-image-well">
+                <ProductImage
+                  src={product.image_url}
+                  alt={product.name}
+                  category={product.category}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  imageClassName="w-full h-full object-contain p-6 sm:p-8 lg:p-10"
+                  priority
+                  iconSize={64}
+                />
               </div>
             </div>
 
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold tracking-tight text-warm-fg">
-                {formatBdt(product.price)}
-              </span>
-            </div>
-
-            {/* Action Area — Desktop & Inline */}
-            <div className="mt-6">
-              <TrustStrip className="mb-4" />
-              {qtyInCart > 0 ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleUpdateQty(-1)}
-                    className="w-12 h-12 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback"
-                    aria-label="Decrease quantity"
+            <div className="rounded-warm-panel border border-warm-border bg-warm-bg p-4 shadow-warm-panel sm:p-6 lg:p-7">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-warm-fg mb-1">
+                    {product.name}
+                  </h1>
+                  <p className="text-sm text-warm-muted">{product.unit}</p>
+                </div>
+                <div aria-live="polite" aria-atomic="true" className="shrink-0">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-warm-control text-xs font-bold ${stockStatus.bg} ${stockStatus.color}`}
+                    aria-label={stockStatus.aria}
                   >
-                    −
-                  </button>
-                  <QtyNumber
-                    qty={qtyInCart}
-                    className="font-bold text-sm min-w-[28px] text-center"
-                    aria-label={`Quantity ${qtyInCart} in cart`}
-                  />
-                  <button
-                    onClick={() => handleUpdateQty(1)}
-                    disabled={qtyInCart >= product.stock}
-                    className="w-12 h-12 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback disabled:opacity-50"
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
-                  <span className="ml-2 text-sm font-semibold text-warm-muted">
-                    {formatBdt(product.price * qtyInCart)} total
+                    {stockStatus.text}
                   </span>
                 </div>
-              ) : product.stock <= 0 ? (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <button
-                    type="button"
-                    disabled
-                    className="h-12 flex-1 cursor-not-allowed rounded-warm-md border border-warm-border bg-warm-bg px-5 text-sm font-bold text-warm-muted"
-                    aria-label={`${product.name} is out of stock`}
-                  >
-                    Out of stock
-                  </button>
-                  {product.category && (
-                    <Link
-                      href={`/category/${encodeURIComponent(product.category)}`}
-                      className="h-12 px-5 rounded-full bg-warm-bg text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
+              </div>
+
+              <div className="mt-5 flex items-baseline gap-1">
+                <span className="font-mono text-4xl font-extrabold text-warm-fg">
+                  {formatBdt(product.price)}
+                </span>
+              </div>
+
+              {/* Action Area — Desktop & Inline */}
+              <div className="mt-6">
+                <TrustStrip className="mb-4" />
+                {qtyInCart > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => handleUpdateQty(-1)}
+                      className="w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                      aria-label="Decrease quantity"
                     >
-                      See Similar Items →
-                    </Link>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={handleAdd}
-                  className="h-12 px-8 rounded-full bg-warm-accent text-warm-accent-text text-sm font-bold hover:bg-warm-accent-hover active:scale-[0.98] transition-all press-feedback"
-                >
-                  Add to Cart
-                </button>
-              )}
+                      −
+                    </button>
+                    <QtyNumber
+                      qty={qtyInCart}
+                      className="font-bold text-sm min-w-[28px] text-center"
+                      aria-label={`Quantity ${qtyInCart} in cart`}
+                    />
+                    <button
+                      onClick={() => handleUpdateQty(1)}
+                      disabled={qtyInCart >= product.stock}
+                      className="w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                    <span className="ml-2 text-sm font-semibold text-warm-muted">
+                      {formatBdt(product.price * qtyInCart)} total
+                    </span>
+                  </div>
+                ) : product.stock <= 0 ? (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <button
+                      type="button"
+                      disabled
+                      className="h-12 flex-1 cursor-not-allowed rounded-warm-control border border-warm-border bg-warm-bg px-5 text-sm font-bold text-warm-muted"
+                      aria-label={`${product.name} is out of stock`}
+                    >
+                      Out of stock
+                    </button>
+                    {product.category && (
+                      <Link
+                        href={`/category/${encodeURIComponent(product.category)}`}
+                        className="h-12 px-5 rounded-warm-control bg-warm-image-well text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
+                      >
+                        See Similar Items
+                      </Link>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleAdd}
+                    className="h-12 px-8 rounded-warm-control bg-warm-accent text-warm-accent-text text-sm font-bold hover:bg-warm-accent-hover active:scale-[0.98] transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                  >
+                    Add to Cart
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -195,7 +199,7 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
       </main>
 
       {/* Sticky Mobile Add-to-Cart Bar */}
-      <div className="fixed bottom-[var(--bottom-nav-height)] left-0 right-0 z-40 bg-warm-surface/95 backdrop-blur-md border-t border-warm-border p-3 px-4 flex items-center justify-between shadow-lg md:hidden">
+      <div className="fixed bottom-[var(--bottom-nav-height)] left-0 right-0 z-40 bg-warm-bg/95 backdrop-blur-md border-t border-warm-border p-3 px-4 flex items-center justify-between shadow-warm-lg md:hidden">
         <div className="flex flex-col">
           <span className="text-xs font-bold text-warm-fg line-clamp-1">{product.name}</span>
           <span className="text-sm font-black text-warm-fg">{formatBdt(product.price)}</span>
@@ -205,7 +209,7 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleUpdateQty(-1)}
-                className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-base active:scale-95"
+                className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center font-bold text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label="Decrease quantity"
               >
                 −
@@ -218,7 +222,7 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
               <button
                 onClick={() => handleUpdateQty(1)}
                 disabled={qtyInCart >= product.stock}
-                className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold text-base active:scale-95 disabled:opacity-50"
+                className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center font-bold text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
                 aria-label="Increase quantity"
               >
                 +
@@ -228,7 +232,7 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
             <button
               onClick={handleAdd}
               disabled={product.stock <= 0}
-              className="px-5 py-2.5 h-11 min-h-[44px] rounded-full bg-warm-accent text-warm-accent-text font-extrabold text-xs shadow-sm hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+              className="px-5 py-2.5 h-11 min-h-[44px] rounded-warm-control bg-warm-accent text-warm-accent-text font-extrabold text-xs shadow-warm-card-hover hover:opacity-90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
             >
               {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
