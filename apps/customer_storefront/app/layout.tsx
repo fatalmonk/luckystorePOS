@@ -90,7 +90,7 @@ export const metadata: Metadata = {
       'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
     images: [
       {
-        url: '/lucky-store-social-share.jpg',
+        url: '/lucky-store-social-share.jpg?v=2',
         width: 1200,
         height: 630,
         alt: 'Lucky Store online grocery in Chattogram',
@@ -109,7 +109,7 @@ export const metadata: Metadata = {
       'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
     images: [
       {
-        url: '/lucky-store-social-share.jpg',
+        url: '/lucky-store-social-share.jpg?v=2',
         alt: 'Lucky Store online grocery in Chattogram',
       },
     ],

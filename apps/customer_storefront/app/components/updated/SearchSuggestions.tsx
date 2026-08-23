@@ -45,14 +45,14 @@ export function SearchSuggestions({
       ref={containerRef}
       role="region"
       aria-label="Search suggestions"
-      className="absolute top-full left-0 right-0 mt-1 bg-warm-surface text-warm-fg border border-warm-border rounded-xl shadow-lg z-50 overflow-hidden"
+      className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[20px] border border-warm-border bg-warm-surface text-warm-fg shadow-warm-panel"
     >
       {query && (
         <div className="p-3 border-b border-warm-border-light">
           <div className="text-xs font-semibold text-warm-muted mb-2">Search for &ldquo;{query}&rdquo;</div>
           <button
             onClick={() => onSelect(query)}
-            className="w-full text-left px-3 py-2 rounded-lg text-warm-fg hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent text-sm font-medium"
+            className="min-h-11 w-full rounded-warm-control px-3 py-2 text-left text-sm font-medium text-warm-fg hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             Search for &ldquo;{query}&rdquo;
           </button>
@@ -67,7 +67,7 @@ export function SearchSuggestions({
               <button
                 key={index}
                 onClick={() => onSelect(term)}
-                className="w-full text-left px-3 py-2 rounded-lg text-warm-fg hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent text-sm flex items-center gap-2"
+                className="flex min-h-11 w-full items-center gap-2 rounded-warm-control px-3 py-2 text-left text-sm text-warm-fg hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 <Clock weight="bold" size={14} aria-hidden="true" />
                 {term}
@@ -86,7 +86,7 @@ export function SearchSuggestions({
             <button
               key={term}
               onClick={() => onSelect(term)}
-              className="w-full text-left px-3 py-2 rounded-lg text-warm-fg hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent text-sm flex items-center gap-2"
+              className="flex min-h-11 w-full items-center gap-2 rounded-warm-control px-3 py-2 text-left text-sm text-warm-fg hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >
               <Fire weight="fill" size={14} aria-hidden="true" />
               {term}

@@ -15,10 +15,6 @@ vi.mock('../providers/ThemeProvider', () => ({
   useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
 }));
 
-vi.mock('../HeaderFilters', () => ({
-  HeaderFilters: () => null,
-}));
-
 vi.mock('../DesktopQuickRail', () => ({
   DesktopQuickRail: () => <aside>Quick rail</aside>,
 }));
@@ -49,10 +45,10 @@ describe('Header catalog filter strip', () => {
   it('shows persistent mobile search and cart controls in the header', () => {
     render(<Header />);
 
-    expect(screen.getByText('Lucky Store')).toBeInTheDocument();
+    expect(screen.getAllByText('Lucky Store')).toHaveLength(2);
     expect(screen.getAllByLabelText('Search products')[0]).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Submit search' })[0]).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cart' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Cart' })[0]).toBeInTheDocument();
   });
 
   it('exposes the desktop category strip and quick rail on catalog routes', () => {
@@ -60,7 +56,10 @@ describe('Header catalog filter strip', () => {
 
     expect(screen.getByRole('navigation', { name: 'Product categories' })).toBeInTheDocument();
     expect(screen.getByText('Quick rail')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(screen.getAllByRole('button', { name: 'Open menu' })[0]).toHaveAttribute(
+      'aria-haspopup',
+      'dialog',
+    );
   });
 
   it('unsets All when active catalog theme is present', () => {

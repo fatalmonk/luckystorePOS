@@ -2,13 +2,13 @@
 
 export function SkeletonCard() {
   return (
-    <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
-      <div className="h-36 sm:h-40 lg:h-44 bg-gray-200 animate-pulse" />
+    <div className="bg-warm-bg border border-warm-border rounded-warm-card overflow-hidden">
+      <div className="h-36 sm:h-40 lg:h-44 bg-warm-image-well animate-pulse" />
       <div className="p-2.5 sm:p-3 space-y-1.5">
-        <div className="h-7 bg-gray-200 rounded animate-pulse w-24" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-        <div className="h-9 bg-gray-200 rounded-full animate-pulse mt-1" />
+        <div className="h-7 bg-warm-image-well rounded animate-pulse w-24" />
+        <div className="h-4 bg-warm-image-well rounded animate-pulse w-1/2" />
+        <div className="h-4 bg-warm-image-well rounded animate-pulse w-3/4" />
+        <div className="h-9 bg-warm-image-well rounded-warm-control animate-pulse mt-1" />
       </div>
     </div>
   );
@@ -16,12 +16,12 @@ export function SkeletonCard() {
 
 export function SkeletonCardCompact() {
   return (
-    <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
-      <div className="h-36 sm:h-40 bg-gray-200 animate-pulse" />
+    <div className="bg-warm-bg border border-warm-border rounded-warm-card overflow-hidden">
+      <div className="h-36 sm:h-40 bg-warm-image-well animate-pulse" />
       <div className="p-2.5 sm:p-3 space-y-1.5">
-        <div className="h-5 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3" />
-        <div className="h-9 bg-gray-200 rounded-full animate-pulse mt-1 w-3/4" />
+        <div className="h-5 bg-warm-image-well rounded animate-pulse" />
+        <div className="h-4 bg-warm-image-well rounded animate-pulse w-1/3" />
+        <div className="h-9 bg-warm-image-well rounded-warm-control animate-pulse mt-1 w-3/4" />
       </div>
     </div>
   );
@@ -55,20 +55,20 @@ export function SkeletonHeader() {
       <div className="h-[64px] bg-warm-bg border-b border-warm-border flex items-center px-4 gap-3">
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="w-9 h-9 rounded-full bg-warm-accent/50 animate-pulse" />
-          <div className="w-28 h-5 bg-gray-200 rounded animate-pulse hidden sm:block" />
+          <div className="w-28 h-5 bg-warm-image-well rounded animate-pulse hidden sm:block" />
         </div>
         <div className="flex-1 max-w-xl">
-          <div className="w-full h-10 bg-gray-200 rounded-full animate-pulse" />
+          <div className="w-full h-10 bg-warm-image-well rounded-warm-control animate-pulse" />
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
-          <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
+          <div className="w-10 h-10 rounded-xl bg-warm-image-well animate-pulse" />
+          <div className="w-10 h-10 rounded-xl bg-warm-image-well animate-pulse" />
         </div>
       </div>
       <div className="h-[44px] bg-warm-accent flex items-center px-4 gap-2">
-        <div className="w-16 h-6 rounded-full bg-white/50 animate-pulse" />
-        <div className="w-20 h-6 rounded-full bg-white/50 animate-pulse" />
-        <div className="w-14 h-6 rounded-full bg-white/50 animate-pulse" />
+        <div className="w-16 h-6 rounded-warm-control bg-warm-accent-muted animate-pulse" />
+        <div className="w-20 h-6 rounded-warm-control bg-warm-accent-muted animate-pulse" />
+        <div className="w-14 h-6 rounded-warm-control bg-warm-accent-muted animate-pulse" />
       </div>
     </header>
   );
@@ -81,7 +81,7 @@ export function SkeletonCategoryGrid() {
       {widths.map((w, i) => (
         <div
           key={i}
-          className="flex-shrink-0 py-2 rounded-full bg-gray-200 animate-pulse"
+          className="flex-shrink-0 py-2 rounded-warm-control bg-warm-image-well animate-pulse"
           style={{ width: `${w}px` }}
         />
       ))}
@@ -91,6 +91,6 @@ export function SkeletonCategoryGrid() {
 
 export function SkeletonHero() {
   return (
-    <section className="mx-4 my-2 rounded-xl overflow-hidden relative h-32 sm:h-40 bg-gray-200 animate-pulse" />
+    <section className="mx-4 my-2 rounded-warm-panel overflow-hidden relative h-32 sm:h-40 bg-warm-image-well animate-pulse" />
   );
 }
