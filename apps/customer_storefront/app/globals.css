@@ -41,8 +41,9 @@
     isolation: isolate;
     overflow: hidden;
     border: 1px solid var(--market-panel-edge);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-market-panel);
+    border-radius: var(--radius-panel);
+    background: var(--color-paper);
+    box-shadow: var(--shadow-panel);
   }
 
   .market-panel::after {
@@ -50,10 +51,10 @@
     top: 0.75rem;
     right: 0.75rem;
     z-index: 20;
-    width: 1.5rem;
-    height: 1.5rem;
-    border-top: 1px solid var(--market-panel-edge);
-    border-right: 1px solid var(--market-panel-edge);
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: var(--radius-sheet);
+    background: color-mix(in srgb, var(--color-image-well) 72%, transparent);
     content: '';
     pointer-events: none;
   }
@@ -67,14 +68,13 @@
   }
 
   .market-product-card {
-    --color-surface: var(--color-image-well);
     container-type: inline-size;
     position: relative;
     overflow: hidden;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: none;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    box-shadow: var(--shadow-card-rest);
     transition:
       border-color 220ms var(--ease-drawer),
       box-shadow 220ms var(--ease-drawer);
@@ -109,9 +109,10 @@
     background: var(--color-muted);
   }
 
-  .market-product-card[data-interactive]:hover {
+  .market-product-card[data-interactive]:hover,
+  .market-product-card[data-interactive]:focus-within {
     border-color: var(--color-accent);
-    box-shadow: var(--shadow-rest);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .market-card-add-label-full {
@@ -135,10 +136,7 @@
   .campaign-hero {
     overflow: hidden;
     color: var(--color-campaign-on-image);
-    background:
-      radial-gradient(circle at 71% 42%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 28%),
-      radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 34%),
-      linear-gradient(135deg, var(--color-campaign-surface-raised), var(--color-campaign-surface));
+    background: var(--color-campaign-surface);
   }
 
   .campaign-hero::before {
@@ -149,6 +147,14 @@
     background: var(--color-accent);
     content: '';
     transform-origin: top;
+  }
+
+  .campaign-hero::after {
+    display: none;
+  }
+
+  .deal-panel::after {
+    display: none;
   }
 
   .campaign-spine {
@@ -183,28 +189,20 @@
 
   .campaign-card-content {
     border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 12%, transparent);
-    background: rgba(11, 11, 13, 0.38);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 10px 24px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: var(--color-campaign-overlay-strong);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .campaign-card-picture::after {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(180deg, transparent 48%, rgba(11, 11, 13, 0.56)),
-      radial-gradient(circle at 50% 45%, transparent 45%, rgba(11, 11, 13, 0.22));
+    background: linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--color-campaign-surface) 76%, transparent));
     content: '';
     pointer-events: none;
   }
 
   .campaign-card-picture {
-    background:
-      radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 38%),
-      #111114;
+    background: var(--color-image-well);
   }
 
   .campaign-status-badge {

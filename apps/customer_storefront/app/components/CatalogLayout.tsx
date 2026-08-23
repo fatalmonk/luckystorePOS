@@ -289,9 +289,9 @@ export function CatalogLayout({
   }, [isMobileFilterOpen]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5">
+    <div className="space-y-5 sm:space-y-6 lg:space-y-8">
       {/* Top Toolbar */}
-      <div className="bg-warm-surface border border-warm-border dark:border-transparent rounded-[20px] p-4 shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-4 shadow-warm-panel flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
@@ -346,7 +346,7 @@ export function CatalogLayout({
           </button>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-1.5 bg-warm-bg border border-warm-border/60 rounded-full px-3 py-1.5 min-h-[44px] text-xs font-bold text-warm-fg">
+          <div className="flex items-center gap-1.5 bg-warm-image-well border border-warm-image-well-border rounded-warm-control px-3 py-1.5 min-h-[44px] text-xs font-bold text-warm-fg">
             <span className="text-warm-muted hidden sm:inline">Sort:</span>
             <select
               value={activeSort}
@@ -382,7 +382,7 @@ export function CatalogLayout({
         if (subCats.length === 0) return null;
 
         return (
-          <div className="bg-warm-surface border border-warm-border dark:border-transparent rounded-[20px] p-4 shadow-warm-sm space-y-3">
+          <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-4 shadow-warm-panel space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">
                 Explore Sub-categories
@@ -398,7 +398,7 @@ export function CatalogLayout({
                   <Link
                     key={sub.id}
                     href={`/category/${sub.slug}`}
-                    className={`group relative flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent min-h-[90px] ${
+                    className={`group relative flex flex-col items-center justify-center gap-2 rounded-warm-card border p-3 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent min-h-[90px] ${
                       isActive
                         ? 'border-warm-accent bg-warm-fg text-warm-accent shadow-warm-sm font-black'
                         : 'border-warm-border/70 bg-warm-bg text-warm-fg hover:border-warm-accent hover:bg-warm-surface'
@@ -427,7 +427,9 @@ export function CatalogLayout({
             return (
               <button
                 key={p}
+                type="button"
                 onClick={() => togglePriceFilter(p)}
+                aria-label={`Remove ${label} filter`}
                 className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
               >
                 <span>{label}</span>
@@ -440,7 +442,9 @@ export function CatalogLayout({
             return (
               <button
                 key={a}
+                type="button"
                 onClick={() => toggleAvailFilter(a)}
+                aria-label={`Remove ${label} filter`}
                 className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
               >
                 <span>{label}</span>
@@ -451,7 +455,9 @@ export function CatalogLayout({
           {activeBrands.map((b) => (
             <button
               key={b}
+              type="button"
               onClick={() => toggleBrandFilter(b)}
+              aria-label={`Remove ${b} brand filter`}
               className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
             >
               <span>Brand: {b}</span>
@@ -471,7 +477,7 @@ export function CatalogLayout({
       {/* Catalog Main Layout Grid: Left Sticky Sidebar (Desktop) + Right Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Desktop Sticky Sidebar */}
-        <aside className="hidden md:block md:col-span-3 sticky top-[120px] z-20 max-h-[calc(100vh-8.5rem)] overflow-y-auto custom-scrollbar bg-warm-surface border border-warm-border dark:border-transparent rounded-[24px] p-5 shadow-warm-sm space-y-6">
+        <aside className="hidden md:block md:col-span-3 sticky top-[120px] z-20 max-h-[calc(100vh-8.5rem)] overflow-y-auto custom-scrollbar bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-5 shadow-warm-panel space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-warm-border dark:border-transparent">
             <h2 className="font-extrabold text-sm text-warm-fg flex items-center gap-1.5">
               <Funnel weight="bold" size={16} /> Filters
@@ -561,7 +567,7 @@ export function CatalogLayout({
         {/* Products Grid Area */}
         <section aria-label="Product catalog" className="md:col-span-9 space-y-6">
           {filtered.length === 0 ? (
-            <div className="bg-warm-surface border border-warm-border/60 rounded-[24px] p-12 text-center space-y-3">
+            <div className="bg-warm-bg border border-warm-border/60 rounded-warm-panel p-12 text-center space-y-3">
               <MagnifyingGlass className="mx-auto text-warm-muted" size={36} weight="bold" aria-hidden="true" />
               <h3 className="text-lg font-bold text-warm-fg">No products match your filters</h3>
               <p className="text-xs text-warm-muted max-w-sm mx-auto">
@@ -608,7 +614,7 @@ export function CatalogLayout({
           <div
             id="mobile-filter-drawer"
             ref={modalRef}
-            className="w-full bg-warm-surface rounded-t-[28px] max-h-[85vh] flex flex-col overflow-hidden border-t border-warm-border shadow-2xl animate-in slide-in-from-bottom duration-300"
+            className="w-full bg-warm-bg rounded-t-warm-sheet max-h-[85vh] flex flex-col overflow-hidden border-t border-warm-border shadow-warm-lg animate-in slide-in-from-bottom duration-300"
             role="dialog"
             aria-modal="true"
             aria-label="Filter products"
@@ -642,7 +648,7 @@ export function CatalogLayout({
                         type="button"
                         onClick={() => toggleBrandFilter(b)}
                         aria-pressed={activeBrands.includes(b)}
-                        className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
+                        className={`min-h-11 px-3 py-2 rounded-warm-control border text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                           activeBrands.includes(b)
                             ? 'bg-warm-fg text-warm-accent border-warm-fg'
                             : 'bg-warm-bg text-warm-fg border-warm-border/60'
@@ -665,7 +671,7 @@ export function CatalogLayout({
                       type="button"
                       onClick={() => togglePriceFilter(opt.value)}
                       aria-pressed={activePrices.includes(opt.value)}
-                      className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left ${
+                      className={`min-h-11 p-2.5 rounded-warm-control border text-xs font-bold transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                         activePrices.includes(opt.value)
                           ? 'bg-warm-fg text-warm-accent border-warm-fg'
                           : 'bg-warm-bg text-warm-fg border-warm-border/60'
@@ -687,7 +693,7 @@ export function CatalogLayout({
                       type="button"
                       onClick={() => toggleAvailFilter(opt.value)}
                       aria-pressed={activeAvailabilities.includes(opt.value)}
-                      className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                      className={`min-h-11 p-2.5 rounded-warm-control border text-xs font-bold transition-all text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                         activeAvailabilities.includes(opt.value)
                           ? 'bg-warm-fg text-warm-accent border-warm-fg'
                           : 'bg-warm-bg text-warm-fg border-warm-border/60'
@@ -705,14 +711,14 @@ export function CatalogLayout({
               <button
                 type="button"
                 onClick={clearAllFilters}
-                className="flex-1 py-3 rounded-full bg-warm-bg text-warm-fg text-xs font-black uppercase tracking-wider hover:bg-warm-border/40 transition-colors"
+                className="min-h-11 flex-1 rounded-warm-control bg-warm-bg py-3 text-xs font-black uppercase tracking-wider text-warm-fg transition-colors hover:bg-warm-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 Clear All
               </button>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="flex-1 py-3 rounded-full bg-warm-fg text-warm-accent text-xs font-black uppercase tracking-wider hover:bg-warm-fg-strong transition-colors shadow-warm-sm"
+                className="min-h-11 flex-1 rounded-warm-control bg-warm-fg py-3 text-xs font-black uppercase tracking-wider text-warm-accent shadow-warm-sm transition-colors hover:bg-warm-fg-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 Apply ({filtered.length})
               </button>

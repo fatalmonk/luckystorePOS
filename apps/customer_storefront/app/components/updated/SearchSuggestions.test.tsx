@@ -16,7 +16,7 @@ describe('SearchSuggestions', () => {
     );
 
     const suggestions = screen.getByRole('region', { name: 'Search suggestions' });
-    expect(suggestions).toHaveClass('bg-warm-surface', 'text-warm-fg');
+    expect(suggestions).toHaveClass('bg-warm-surface', 'text-warm-fg', 'rounded-[20px]');
     expect(screen.getByRole('button', { name: 'Milk' })).toHaveClass('text-warm-fg');
     expect(screen.getByRole('button', { name: 'Eggs' })).toHaveClass('text-warm-fg');
   });

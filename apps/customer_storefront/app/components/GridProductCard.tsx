@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
@@ -64,17 +65,14 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
           disabled={isPending}
           aria-pressed={isWishlisted}
           aria-label={isWishlisted ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
-          className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-warm-image-well-border bg-warm-image-well/90 text-lg shadow-warm-sm backdrop-blur-sm transition-colors hover:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-70"
+          className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-warm-control border border-warm-image-well-border bg-warm-image-well/90 text-lg shadow-warm-card-hover backdrop-blur-sm transition-colors hover:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-70"
         >
-          {isWishlisted ? (
-            <svg className="h-4 w-4 text-red-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          ) : (
-            <svg className="h-4 w-4 text-warm-muted transition-colors hover:text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          )}
+          <Heart
+            size={18}
+            weight={isWishlisted ? 'fill' : 'bold'}
+            className={isWishlisted ? 'text-warm-danger' : 'text-warm-muted transition-colors'}
+            aria-hidden="true"
+          />
         </button>
       </div>
 
@@ -113,7 +111,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
               <span className="font-mono text-xs text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
             )}
             {onSale && product.originalPrice != null && (
-              <span className="text-[11px] font-bold text-warm-dim">
+              <span className="text-[11px] font-bold text-warm-muted">
                 Save {formatBdt(product.originalPrice - product.price)}
               </span>
             )}
@@ -125,13 +123,12 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
             <div className="flex w-full items-center justify-between gap-1.5">
               <button
                 type="button"
-                style={{ minHeight: 48, minWidth: 48 }}
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
                   decrement();
                 }}
-                className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-full border-2 border-warm-accent bg-warm-image-well text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="flex h-12 w-12 items-center justify-center rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={`Remove one ${product.name}`}
               >
                 -
@@ -139,14 +136,13 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
               <QtyNumber qty={quantity} className="min-w-[20px] text-center font-mono text-sm font-black text-warm-fg" />
               <button
                 type="button"
-                style={{ minHeight: 48, minWidth: 48 }}
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
                   increment();
                 }}
                 disabled={!canAdd}
-                className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-full border-2 border-warm-accent bg-warm-image-well text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-12 w-12 items-center justify-center rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label={`Add another ${product.name}`}
               >
                 +
@@ -156,8 +152,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
             <button
               type="button"
               disabled
-              style={{ minHeight: 48 }}
-              className="h-11 min-h-[44px] w-full cursor-not-allowed rounded-warm-md border border-warm-border bg-warm-bg px-3 text-xs font-bold text-warm-muted"
+              className="h-12 w-full cursor-not-allowed rounded-warm-control border border-warm-border bg-warm-bg px-3 text-xs font-bold text-warm-muted"
               aria-label={`${product.name} is out of stock`}
             >
               Out of stock
@@ -165,14 +160,13 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
           ) : (
             <button
               type="button"
-              style={{ minHeight: 48 }}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 add(event.currentTarget);
               }}
               disabled={!canAdd}
-              className="h-11 min-h-[44px] w-full rounded-warm-md bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors hover:bg-warm-accent-hover active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
+              className="h-12 w-full rounded-warm-control bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors hover:bg-warm-accent-hover active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
               aria-label={`Add ${product.name} to cart`}
             >
               <span className="market-card-add-label-full">Add to Cart</span>

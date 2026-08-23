@@ -3,7 +3,7 @@
 import React, { useCallback, useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, List, Sun, Moon } from '@phosphor-icons/react';
+import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, List, Sun, Moon, ArrowRight } from '@phosphor-icons/react';
 import { AppDrawer } from '../AppDrawer';
 import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
@@ -176,15 +176,15 @@ export function Header({ className = '' }: HeaderProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="Search products, brands, essentials..."
-              className="h-11 w-full rounded-full border border-warm-accent bg-warm-surface pl-4 pr-24 text-sm font-semibold shadow-inner transition-colors focus:outline-none focus:ring-2 focus:ring-warm-accent/40"
+              placeholder="What are you shopping for today?"
+              className="h-12 w-full rounded-full border border-warm-border bg-warm-surface pl-5 pr-14 text-base font-medium text-warm-fg shadow-inner transition-colors placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent/40"
               aria-label="Search products"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                  className="absolute right-11 top-0 flex h-11 w-11 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="absolute right-14 top-0.5 flex h-11 w-11 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label="Clear search query"
               >
                 <X weight="bold" size={14} aria-hidden="true" />
@@ -192,10 +192,10 @@ export function Header({ className = '' }: HeaderProps) {
             )}
             <button
               type="submit"
-              className="absolute right-0.5 top-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-warm-accent font-bold text-warm-accent-text shadow-sm transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-warm-accent font-bold text-warm-accent-text shadow-warm-accent transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label="Submit search"
             >
-              <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
+              <ArrowRight weight="bold" size={18} aria-hidden="true" />
             </button>
           </form>
 
@@ -244,7 +244,7 @@ export function Header({ className = '' }: HeaderProps) {
             <List weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo min-w-0 justify-start [&_img]:!h-9 [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" />
+          <Logo className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" />
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
@@ -280,7 +280,7 @@ export function Header({ className = '' }: HeaderProps) {
             <List weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo ml-0.5 translate-y-0.5 [&_img]:!h-7 xs:[&_img]:!h-8 sm:[&_img]:!h-12 lg:h-14 lg:w-auto" />
+          <Logo className="header-brand-logo ml-0.5 translate-y-0.5 lg:h-14 lg:w-auto" />
         </div>
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
@@ -352,15 +352,15 @@ export function Header({ className = '' }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Search 500+ groceries, daily essentials, brands..."
-                className="h-10 w-full bg-transparent pl-4 pr-20 text-sm font-semibold text-warm-fg outline-none placeholder:text-warm-muted lg:h-11 lg:pr-24"
+                placeholder="What are you shopping for today?"
+                className="h-14 w-full bg-transparent pl-5 pr-14 text-base font-medium text-warm-fg outline-none placeholder:text-warm-muted"
                 aria-label="Search products"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-11 top-0 flex h-10 w-10 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent lg:right-12 lg:h-11 lg:w-11"
+                  className="absolute right-3 top-1 flex h-12 w-12 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   aria-label="Clear search"
                 >
                   <X weight="bold" size={14} aria-hidden="true" />
@@ -371,10 +371,10 @@ export function Header({ className = '' }: HeaderProps) {
             {/* Search Submit Button */}
             <button
               type="submit"
-              className="my-0.5 mr-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-fg shadow-sm transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent lg:my-0 lg:mr-0 lg:h-11 lg:w-11"
+              className="mr-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-warm-accent transition-all hover:bg-warm-accent-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label="Submit search"
             >
-              <MagnifyingGlass weight="bold" size={16} aria-hidden="true" />
+              <ArrowRight weight="bold" size={20} aria-hidden="true" />
             </button>
           </form>
 

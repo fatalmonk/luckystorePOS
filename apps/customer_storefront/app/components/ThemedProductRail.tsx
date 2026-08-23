@@ -16,44 +16,35 @@ export interface ThemedProductRailProps {
   ctaHref?: string;
   theme: 'morning' | 'pantry' | 'household' | 'deals';
   id: string;
+  flat?: boolean;
 }
 
 type ThemeKey = ThemedProductRailProps['theme'];
 
 interface ThemeStyle {
   bg: string;
-  darkBg: string;
-  accent: string;
   iconSlug: string;
   groups: readonly string[];
 }
 
 const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
   morning: {
-    bg: 'bg-gradient-to-br from-[#FFFBF0] to-[#FDFBF7]',
-    darkBg: 'dark:bg-gradient-to-br dark:from-[#241e1a] dark:to-[#0B0B0D]',
-    accent: '#f0c444',
+    bg: 'bg-warm-bg',
     iconSlug: 'breakfast',
     groups: ['dairy & eggs', 'breakfast', 'tea & coffee', 'biscuits & cookies', 'cereals', 'chocolates & candies'],
   },
   pantry: {
-    bg: 'bg-gradient-to-br from-[#FFFBF0] to-[#FDFBF7]',
-    darkBg: 'dark:bg-gradient-to-br dark:from-[#241e1a] dark:to-[#0B0B0D]',
-    accent: '#f0c444',
+    bg: 'bg-warm-bg',
     iconSlug: 'rice-and-grain',
     groups: ['rice & grain', 'cooking essentials', 'spices', 'oil & ghee'],
   },
   household: {
-    bg: 'bg-gradient-to-br from-[#FFFBF0] to-[#FDFBF7]',
-    darkBg: 'dark:bg-gradient-to-br dark:from-[#241e1a] dark:to-[#0B0B0D]',
-    accent: '#f0c444',
+    bg: 'bg-warm-bg',
     iconSlug: 'cleaning-supplies',
     groups: ['cleaning supplies', 'personal care', 'air freshner', 'pest control'],
   },
   deals: {
-    bg: 'bg-gradient-to-br from-[#FFF0E8] to-[#FDFBF7]',
-    darkBg: 'dark:bg-gradient-to-br dark:from-[#2a1f1a] dark:to-[#0B0B0D]',
-    accent: '#e76f51',
+    bg: 'bg-warm-bg',
     iconSlug: 'snacks',
     groups: [],
   },
@@ -84,6 +75,7 @@ export function ThemedProductRail({
   ctaHref = '/category',
   theme,
   id,
+  flat = false,
 }: ThemedProductRailProps) {
   const themeStyle = THEME_STYLES[theme];
 
@@ -147,13 +139,8 @@ export function ThemedProductRail({
   return (
     <section
       aria-labelledby={`themed-title-${id}`}
-      className={`relative overflow-hidden rounded-[24px] ${themeStyle.bg} ${themeStyle.darkBg} p-5 shadow-warm-rest sm:p-7`}
+      className={`relative overflow-hidden rounded-warm-panel ${themeStyle.bg} p-5 sm:p-7 ${flat ? '' : 'border border-warm-border shadow-warm-panel'}`}
     >
-      <div
-        className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full opacity-30 blur-2xl"
-        style={{ background: themeStyle.accent }}
-      />
-
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div className="max-w-[70%]">
           <span className="text-warm-fg" aria-hidden="true">
@@ -173,7 +160,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Previous products"
             onClick={() => scroll(-1)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-warm-control border border-warm-border bg-warm-image-well text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretLeft size={18} weight="bold" />
           </button>
@@ -181,7 +168,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Next products"
             onClick={() => scroll(1)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-warm-control border border-warm-border bg-warm-image-well text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretRight size={18} weight="bold" />
           </button>
@@ -222,7 +209,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Previous products"
             onClick={() => scroll(-1)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-warm-control border border-warm-border bg-warm-image-well text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretLeft size={18} weight="bold" />
           </button>
@@ -230,7 +217,7 @@ export function ThemedProductRail({
             type="button"
             aria-label="Next products"
             onClick={() => scroll(1)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-warm-control border border-warm-border bg-warm-image-well text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretRight size={18} weight="bold" />
           </button>
@@ -238,7 +225,7 @@ export function ThemedProductRail({
 
         <Link
           href={ctaHref}
-          className="inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-extrabold transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          className="inline-flex min-h-11 items-center rounded-warm-control px-4 py-2 text-sm font-extrabold transition-colors hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           style={{ color: theme === 'deals' ? 'var(--color-danger)' : 'var(--color-accent-dark)' }}
         >
           {ctaLabel}
