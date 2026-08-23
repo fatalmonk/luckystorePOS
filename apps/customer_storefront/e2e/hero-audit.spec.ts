@@ -7,19 +7,23 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Daily groceries from a store Chittagong knows.',
+      name: 'Daily essentials from a store Chittagong knows.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const isOrganic = (await hero.getByText('Healthy Living').count()) > 0;
-    const regionName = isOrganic ? 'Healthy Living products' : 'Pantry Staples products';
-    const ctaName = isOrganic ? 'Shop organic goods' : 'Shop pantry staples';
-    const ctaHref = isOrganic ? '/category?search=organic' : '/category/cooking-essentials';
+    const search = hero.getByRole('search', { name: 'Search groceries' });
+    await expect(search).toBeVisible();
+    await expect(search.getByRole('searchbox')).toHaveAttribute('name', 'q');
 
-    const reel = hero.getByRole('region', { name: regionName });
+    const reel = hero.getByLabel('Quick picks from today products');
     await expect(reel).toBeVisible();
 
-    const destinations = [[ctaName, ctaHref]] as const;
+    const destinations = [
+      ['Rice', '/category?q=rice'],
+      ['Snacks', '/category/snacks'],
+      ['Cleaning', '/category/cleaning-supplies'],
+      ['Shop groceries', '/category'],
+    ] as const;
 
     for (const [name, href] of destinations) {
       const link = hero.getByRole('link', { name });
@@ -39,7 +43,7 @@ test.describe('Storefront campaign hero audit', () => {
     expect(layout.heroRight).toBeLessThanOrEqual(layout.viewportWidth);
 
     const functionalTextSizes = await hero
-      .locator('.campaign-kicker, .campaign-card-action')
+      .locator('input, a')
       .evaluateAll((elements) =>
         elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
       );
@@ -53,31 +57,17 @@ test.describe('Storefront campaign hero audit', () => {
     await expect(firstImage).toBeVisible();
     const originalImageSrc =
       (await firstImage.getAttribute('data-original-src')) ?? (await firstImage.getAttribute('src'));
-    expect(originalImageSrc).toMatch(/\.(avif|webp)(\?.*)?$/i);
+    const parsedImageSrc = new URL(originalImageSrc!, page.url());
+    const assetSrc =
+      parsedImageSrc.pathname === '/_next/image'
+        ? parsedImageSrc.searchParams.get('url') ?? originalImageSrc
+        : originalImageSrc;
+    expect(assetSrc).toMatch(/\.(avif|webp)(\?.*)?$/i);
 
-    const nextButton = hero.getByRole('button', { name: 'Next products' });
-    const nextBox = await nextButton.boundingBox();
-    expect(nextBox?.width).toBeGreaterThanOrEqual(38);
-    expect(nextBox?.height).toBeGreaterThanOrEqual(38);
-
-    await reel.evaluate((element) => element.scrollTo({ left: 0, behavior: 'auto' }));
-    await expect.poll(() => reel.evaluate((element) => element.scrollLeft)).toBeLessThanOrEqual(2);
-    const scrollBefore = await reel.evaluate((element) => element.scrollLeft);
-    await nextButton.click();
-    await expect
-      .poll(() => reel.evaluate((element) => element.scrollLeft))
-      .toBeGreaterThan(scrollBefore);
-
-    await reel.focus();
-    await expect(reel).toBeFocused();
-    await reel.evaluate((element) => element.scrollTo({ left: 0, behavior: 'auto' }));
-    const keyboardBefore = await reel.evaluate((element) => element.scrollLeft);
-    await page.keyboard.press('ArrowRight');
-    await expect
-      .poll(() => reel.evaluate((element) => element.scrollLeft))
-      .toBeGreaterThan(keyboardBefore);
-
-    const focusIndicator = await reel.evaluate((element) => {
+    const searchbox = search.getByRole('searchbox');
+    await searchbox.focus();
+    await expect(searchbox).toBeFocused();
+    const focusIndicator = await searchbox.evaluate((element) => {
       const style = getComputedStyle(element);
       return {
         outlineWidth: Number.parseFloat(style.outlineWidth),
@@ -94,14 +84,12 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Daily groceries from a store Chittagong knows.',
+      name: 'Daily essentials from a store Chittagong knows.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const isOrganic = (await hero.getByText('Healthy Living').count()) > 0;
-    const regionName = isOrganic ? 'Healthy Living products' : 'Pantry Staples products';
-    const reel = hero.getByRole('region', { name: regionName });
-    const slideCount = await reel.locator('.themed-slide').count();
+    const reel = hero.getByLabel('Quick picks from today products');
+    const slideCount = await reel.locator('a[href^="/product/"]').count();
     expect(slideCount).toBeGreaterThan(0);
 
     const scrollBehavior = await reel.evaluate((el) => getComputedStyle(el).scrollBehavior);

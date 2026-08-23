@@ -14,7 +14,7 @@ test.describe('Storefront visual audit evidence', () => {
 
     await page.goto('/');
     await page
-      .getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' })
+      .getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' })
       .waitFor();
     await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const footerLogo = page
@@ -76,6 +76,9 @@ test.describe('Storefront visual audit evidence', () => {
     const themeToggle = page
       .getByRole('button', { name: /Switch to dark mode|Switch to light mode/ })
       .filter({ visible: true });
+    if (!(await themeToggle.isVisible())) {
+      await page.getByRole('button', { name: 'Open menu' }).first().click();
+    }
     await expect(themeToggle).toBeVisible();
     await themeToggle.dispatchEvent('click');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -116,7 +119,7 @@ test.describe('Storefront visual audit evidence', () => {
 
     await page.goto('/');
     await page
-      .getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' })
+      .getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' })
       .waitFor();
     await page.waitForTimeout(1000);
 

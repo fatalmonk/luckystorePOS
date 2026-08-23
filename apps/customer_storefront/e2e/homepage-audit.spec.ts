@@ -5,7 +5,7 @@ test.describe('Storefront homepage shell audit', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('heading', { name: 'Daily groceries from a store Chittagong knows.' }),
+      page.getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Daily Essentials' })).toBeVisible();
