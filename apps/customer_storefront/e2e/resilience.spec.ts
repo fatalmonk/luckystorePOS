@@ -11,7 +11,9 @@ test('the homepage remains useful while product images are slow', async ({ page 
   await expect(
     page.getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' }),
   ).toBeVisible();
-  await expect(page.getByRole('link', { name: /Shop pantry staples/i })).toBeVisible();
+  await expect(
+    page.locator('.campaign-hero').getByRole('link', { name: 'Shop groceries' }).first(),
+  ).toBeVisible();
   await expect(page.locator('[data-testid="product-image-loading"]').first()).toBeVisible();
 });
 
@@ -32,7 +34,10 @@ test('search still routes when recent-search storage fails', async ({ page }) =>
 
   await page.goto('/search');
   await expect(page.getByRole('status')).toContainText('Search still works normally.');
-  await page.getByPlaceholder('Search groceries, brands, essentials...').fill('Milk');
+  await page
+    .locator('main')
+    .getByPlaceholder('Search groceries, brands, essentials...')
+    .fill('Milk');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/(\/category|\/search)\?.*q=Milk/);
   await expect(page.locator('main')).toContainText('Milk', { ignoreCase: true });
