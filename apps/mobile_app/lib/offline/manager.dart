@@ -16,7 +16,7 @@ void callbackDispatcher() {
 
       if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
         debugPrint('Background sync failed: Missing Supabase credentials');
-        return Future.value(false);
+        return await Future.value(false);
       }
 
       await Supabase.initialize(
@@ -30,7 +30,7 @@ void callbackDispatcher() {
       final pendingActions = await database.getPendingActions();
 
       if (pendingActions.isEmpty) {
-        return Future.value(true);
+        return await Future.value(true);
       }
 
       for (final action in pendingActions) {
@@ -69,7 +69,7 @@ void callbackDispatcher() {
         }
       }
 
-      return Future.value(true);
+      return await Future.value(true);
     } catch (e) {
       debugPrint('Background sync failed: $e');
       return Future.value(false);

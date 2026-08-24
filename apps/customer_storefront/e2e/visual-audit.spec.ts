@@ -76,12 +76,17 @@ test.describe('Storefront visual audit evidence', () => {
     const themeToggle = page
       .getByRole('button', { name: /Switch to dark mode|Switch to light mode/ })
       .filter({ visible: true });
+    let openedMenu = false;
     if (!(await themeToggle.isVisible())) {
       await page.getByRole('button', { name: 'Open menu' }).first().click();
+      openedMenu = true;
     }
     await expect(themeToggle).toBeVisible();
     await themeToggle.dispatchEvent('click');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    if (openedMenu) {
+      await page.keyboard.press('Escape');
+    }
 
     await page.screenshot({
       path: testInfo.outputPath('homepage-dark.png'),

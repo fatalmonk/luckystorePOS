@@ -16,6 +16,16 @@
 - `scripts/security/secret_scan.js`
 - `system-docs/env-security.md`
 
+### PR #348 Review-Fix Exception (Implementation Permitted)
+- `apps/customer_storefront/e2e/visual-audit.spec.ts`
+- `apps/customer_storefront/app/layout.tsx`
+- `apps/customer_storefront/app/components/CampaignGrid.tsx`
+- `apps/customer_storefront/e2e/hero-audit.spec.ts`
+- `apps/customer_storefront/e2e/homepage-audit.spec.ts`
+- `apps/customer_storefront/tailwind.config.js`
+- `apps/customer_storefront/app/components/DealOfTheWeek.tsx`
+- `apps/mobile_app/lib/offline/manager.dart`
+
 ### Forbidden Areas (No Modification)
 These remain off-limits for any code changes, edits, or implementation:
 - `PosProvider` (and related state management)

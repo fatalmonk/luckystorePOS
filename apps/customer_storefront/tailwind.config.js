@@ -56,7 +56,7 @@ module.exports = {
         'warm-card-rest': 'var(--shadow-card-rest)',
         'warm-card-hover': 'var(--shadow-card-hover)',
         'warm-panel': 'var(--shadow-panel)',
-        'warm-accent': '0 4px 24px rgba(240, 196, 68, 0.35)',
+        'warm-accent': 'var(--shadow-button-accent)',
         'search-focus': 'var(--shadow-search-focus)',
       },
     },
