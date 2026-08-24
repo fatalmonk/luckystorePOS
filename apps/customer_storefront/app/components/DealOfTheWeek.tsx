@@ -110,7 +110,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         </div>
         <DealCountdown />
         <p className="deal-panel-copy col-span-1 max-w-2xl text-sm">
-          Bag it before stock run out!
+          Bag it before stock runs out!
         </p>
       </div>
 

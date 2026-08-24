@@ -8,7 +8,7 @@ test.describe('Storefront homepage shell audit', () => {
       page.getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Daily Essentials' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Daily Essentials', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Shop by routine' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Serving Chittagong since 1947.' })).toBeVisible();
 
@@ -23,11 +23,15 @@ test.describe('Storefront homepage shell audit', () => {
 
     const headerControls = [
       header.getByRole('link', { name: 'Lucky Store 1947' }),
-      header.getByRole('button', { name: /Switch to (dark|light) mode/ }).filter({ visible: true }),
       header.getByRole('button', { name: /^Cart \(/ }),
     ];
     if (viewportWidth >= 768) {
+      headerControls.push(
+        header.getByRole('button', { name: /Switch to (dark|light) mode/ }).filter({ visible: true }),
+      );
       headerControls.push(header.getByRole('link', { name: 'Wishlist' }));
+    } else {
+      headerControls.push(header.getByRole('button', { name: 'Open menu' }));
     }
     for (const control of headerControls) {
       const box = await control.boundingBox();
@@ -43,11 +47,11 @@ test.describe('Storefront homepage shell audit', () => {
 
     const footer = page.getByRole('contentinfo');
     await expect(footer).toBeVisible();
-    await expect(footer.getByRole('navigation', { name: 'Main Navigation' }).getByRole('link', { name: 'GROCERIES' })).toHaveAttribute(
+    await expect(footer.getByRole('navigation', { name: 'Shop' }).getByRole('link', { name: 'GROCERIES' })).toHaveAttribute(
       'href',
       '/category',
     );
-    await expect(footer.getByRole('navigation', { name: 'Secondary Navigation' }).getByRole('link', { name: 'CONTACT' })).toHaveAttribute(
+    await expect(footer.getByRole('navigation', { name: 'Help' }).getByRole('link', { name: 'CONTACT' })).toHaveAttribute(
       'href',
       '/contact',
     );
@@ -85,9 +89,10 @@ test.describe('Storefront homepage shell audit', () => {
 
     await page.goto('/');
 
-    const header = page.getByRole('banner');
-    const mobileSearch = header.locator('form').first();
-    await expect(header.getByPlaceholder('Search groceries')).toBeVisible();
+    const mobileSearch = page
+      .getByRole('main')
+      .getByRole('search', { name: 'Search groceries' });
+    await expect(mobileSearch.getByPlaceholder('Search rice, milk, oil, snacks...')).toBeVisible();
     const searchBox = await mobileSearch.boundingBox();
     expect(searchBox?.width).toBeGreaterThanOrEqual(44);
     expect(searchBox?.height).toBeGreaterThanOrEqual(44);

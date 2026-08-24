@@ -15,7 +15,7 @@ test.describe('Storefront campaign hero audit', () => {
     await expect(search).toBeVisible();
     await expect(search.getByRole('searchbox')).toHaveAttribute('name', 'q');
 
-    const reel = hero.getByLabel('Quick picks from today products');
+    const reel = hero.locator('section[aria-labelledby="hero-discovery-title"] .hero-product-strip');
     await expect(reel).toBeVisible();
 
     const destinations = [
@@ -88,7 +88,7 @@ test.describe('Storefront campaign hero audit', () => {
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const reel = hero.getByLabel('Quick picks from today products');
+    const reel = hero.locator('section[aria-labelledby="hero-discovery-title"] .hero-product-strip');
     const slideCount = await reel.locator('a[href^="/product/"]').count();
     expect(slideCount).toBeGreaterThan(0);
 
