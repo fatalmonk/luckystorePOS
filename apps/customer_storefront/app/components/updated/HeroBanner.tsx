@@ -149,7 +149,7 @@ export function HeroBanner({
       {!slide.hideText && (slide.title || slide.subtitle || slide.badge) && (
         <div className="relative z-10 max-w-lg mr-auto text-left flex flex-col items-start justify-end pb-1 sm:pb-2.5 h-full w-full" aria-live="polite">
           {slide.badge && (
-            <p className="px-2.5 py-0.5 rounded-full inline-block mb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#0B0B0D] bg-[var(--color-accent)] shrink-0 shadow-sm">
+            <p className="mb-2 inline-block shrink-0 rounded-full bg-warm-accent px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-warm-accent-text shadow-sm">
               {slide.badge}
             </p>
           )}

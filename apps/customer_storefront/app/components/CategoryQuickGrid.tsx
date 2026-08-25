@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import type { Category } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
@@ -58,7 +59,11 @@ const CURATED_COLLECTIONS = [
 ] as const;
 
 export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
-  const getCategoryHref = (groupSlug: string, fallbackSlugs: readonly string[] = []) => {
+  const getCategoryTarget = (
+    groupSlug: string,
+    fallbackSlugs: readonly string[] = [],
+    fallbackLabel: string,
+  ) => {
     const slugs = [groupSlug, ...fallbackSlugs];
     const match = categories?.find(
       (c) =>
@@ -68,7 +73,10 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
           c.name.toLowerCase().replace(/\s+/g, '-') === slug
         ),
     );
-    return `/category/${match?.slug ?? groupSlug}`;
+    return {
+      href: `/category/${match?.slug ?? groupSlug}`,
+      accessibleLabel: match?.name ?? fallbackLabel,
+    };
   };
 
   return (
@@ -83,23 +91,30 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
       </div>
 
       <div className="grid grid-cols-4 gap-3 sm:gap-4 lg:grid-cols-5">
-        {CURATED_COLLECTIONS.map((collection) => (
-          <Link
-            key={collection.slug}
-            href={getCategoryHref(collection.slug, collection.fallbackSlugs)}
-            aria-label={collection.accessibleLabel}
-            className={`group flex flex-col items-center gap-2 rounded-warm-lg p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:p-3 ${
-              collection.desktopOnly ? 'hidden lg:flex' : ''
-            }`}
-          >
-            <div className="flex h-16 w-16 items-center justify-center rounded-warm-lg border border-warm-image-well-border bg-warm-image-well text-warm-fg transition-transform group-active:scale-[0.96] sm:h-20 sm:w-20">
-              <span className="text-warm-fg" aria-hidden="true">{getCategoryIcon(collection.iconSlug, 30)}</span>
-            </div>
-            <span className="line-clamp-1 text-center text-xs font-semibold text-warm-fg sm:text-sm">
-              {collection.label}
-            </span>
-          </Link>
-        ))}
+        {CURATED_COLLECTIONS.map((collection) => {
+          const target = getCategoryTarget(
+            collection.slug,
+            collection.fallbackSlugs,
+            collection.accessibleLabel,
+          );
+
+          return (
+            <Link
+              key={collection.slug}
+              href={target.href}
+              className={`group flex flex-col items-center gap-2 rounded-warm-lg p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:p-3 ${
+                collection.desktopOnly ? 'hidden lg:flex' : ''
+              }`}
+            >
+              <div className="flex h-16 w-16 items-center justify-center rounded-warm-lg border border-warm-image-well-border bg-warm-image-well text-warm-fg transition-transform group-active:scale-[0.96] sm:h-20 sm:w-20">
+                <span className="text-warm-fg" aria-hidden="true">{getCategoryIcon(collection.iconSlug, 30)}</span>
+              </div>
+              <span className="line-clamp-1 text-center text-xs font-semibold text-warm-fg sm:text-sm">
+                {target.accessibleLabel}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

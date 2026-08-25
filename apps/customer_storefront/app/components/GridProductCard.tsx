@@ -85,7 +85,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
           src={product.image_url}
           alt={product.name}
           category={product.category}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 640px) calc(50vw - 24px), (max-width: 1024px) calc(33vw - 24px), (max-width: 1280px) calc(25vw - 24px), 301px"
           imageClassName="product-image-on-well object-contain p-1"
           priority={priority}
           showLoadingState
