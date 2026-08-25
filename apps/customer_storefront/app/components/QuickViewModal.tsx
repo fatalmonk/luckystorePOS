@@ -133,7 +133,8 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleUpdateQty(-1)}
-                    className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold hover:bg-warm-accent active:scale-95 transition-all"
+                    className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-full border-2 border-warm-accent bg-warm-surface font-bold text-warm-fg transition-all hover:bg-warm-accent active:scale-95"
+                    aria-label={`Decrease ${product.name} quantity`}
                   >
                     −
                   </button>
@@ -141,7 +142,8 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                   <button
                     onClick={() => handleUpdateQty(1)}
                     disabled={qtyInCart >= product.stock}
-                    className="w-10 h-10 rounded-full border-2 border-warm-accent bg-warm-surface text-warm-fg flex items-center justify-center font-bold hover:bg-warm-accent active:scale-95 transition-all disabled:opacity-50"
+                    className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-full border-2 border-warm-accent bg-warm-surface font-bold text-warm-fg transition-all hover:bg-warm-accent active:scale-95 disabled:opacity-50"
+                    aria-label={`Increase ${product.name} quantity`}
                   >
                     +
                   </button>
@@ -158,7 +160,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
               ) : (
                 <button
                   onClick={handleAdd}
-                  className="w-full py-3 rounded-full bg-[#f0c444] text-[#0B0B0D] font-extrabold text-xs uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all shadow-md"
+                  className="min-h-11 w-full rounded-full bg-warm-accent py-3 text-xs font-extrabold uppercase tracking-wider text-warm-accent-text shadow-md transition-all hover:opacity-90 active:scale-95"
                 >
                   Add to Cart — {formatBdt(product.price)}
                 </button>

@@ -22,6 +22,7 @@ export function Logo({ className = '', href = '/', variant = 'default', onClick 
         width={210}
         height={48}
         priority
+        style={{ width: 'auto' }}
         className={`h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 ${
           isWhite ? 'hidden' : 'block dark:hidden'
         }`}
@@ -33,6 +34,7 @@ export function Logo({ className = '', href = '/', variant = 'default', onClick 
         width={210}
         height={48}
         priority
+        style={{ width: 'auto' }}
         className={`h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 ${
           isWhite ? 'block' : 'hidden dark:block'
         }`}

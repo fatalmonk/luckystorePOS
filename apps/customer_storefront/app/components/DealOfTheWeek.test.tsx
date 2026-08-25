@@ -39,9 +39,9 @@ describe('DealOfTheWeek', () => {
     render(<DealOfTheWeek products={products} />);
 
     expect(screen.getByRole('heading', { name: 'Save of the Week' })).toBeInTheDocument();
-    expect(screen.getByText('Bag it before stock run out!')).toBeInTheDocument();
+    expect(screen.getByText('Bag it before stock runs out!')).toBeInTheDocument();
     expect(screen.getByText('Countdown')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View Deal 1' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '50% off — View Deal 1' })).toBeInTheDocument();
     expect(screen.getAllByTestId('deal-product')).toHaveLength(3);
     expect(screen.getByRole('link', { name: 'See all 5 deals →' })).toBeInTheDocument();
 
