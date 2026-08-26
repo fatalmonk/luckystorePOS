@@ -1136,6 +1136,40 @@ html.theme-transitioning .glass {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
+/* Homepage Product Reels */
+.grid-reel {
+  display: flex;
+  gap: 0.625rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 0.25rem 0.125rem 0.5rem;
+  scroll-snap-type: inline mandatory;
+}
+.grid-reel:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.grid-slide {
+  flex: 0 0 calc((100% - 0.625rem) / 2);
+  scroll-snap-align: start;
+}
+@media (min-width: 640px) {
+  .grid-slide {
+    flex: 0 0 min(calc((100% - 2.5rem) / 4), 17rem);
+  }
+  .grid-reel {
+    gap: 0.875rem;
+  }
+}
+@media (min-width: 1024px) {
+  .grid-slide {
+    flex: 0 0 min(calc((100% - 3.75rem) / 5), 18rem);
+  }
+  .grid-reel {
+    gap: 1rem;
+  }
+}
+
 /* Dark Theme: Subtle border adjustment for high contrast cards */
 [data-theme="dark"] [class*="border-white/"] {
   border-color: rgba(255, 255, 255, 0.08);

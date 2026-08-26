@@ -353,14 +353,14 @@ export function Header({ className = '' }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="What are you shopping for today?"
-                className="h-14 w-full bg-transparent pl-5 pr-14 text-base font-medium text-warm-fg outline-none placeholder:text-warm-muted"
+                className="h-11 w-full bg-transparent pl-4 pr-12 text-sm font-medium text-warm-fg outline-none placeholder:text-warm-muted"
                 aria-label="Search products"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1 flex h-12 w-12 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                  className="absolute right-2 top-0.5 flex h-10 w-10 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   aria-label="Clear search"
                 >
                   <X weight="bold" size={14} aria-hidden="true" />
@@ -371,10 +371,10 @@ export function Header({ className = '' }: HeaderProps) {
             {/* Search Submit Button */}
             <button
               type="submit"
-              className="mr-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-warm-accent transition-all hover:bg-warm-accent-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-warm-accent transition-all hover:bg-warm-accent-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label="Submit search"
             >
-              <ArrowRight weight="bold" size={20} aria-hidden="true" />
+              <ArrowRight weight="bold" size={16} aria-hidden="true" />
             </button>
           </form>
 
