@@ -47,7 +47,7 @@ export class ProductErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={this.handleRetry}
-            className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold bg-[#f0c444] text-[#0B0B0D] rounded-full hover:opacity-90 transition-opacity active:scale-95 shadow-sm"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-warm-accent px-4 py-2 text-xs font-bold text-warm-accent-text shadow-sm transition-opacity hover:opacity-90 active:scale-95"
           >
             Try Again
           </button>

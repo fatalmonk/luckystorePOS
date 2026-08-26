@@ -42,13 +42,17 @@ describe('Header catalog filter strip', () => {
     mockSearchParams = new URLSearchParams();
   });
 
-  it('shows persistent mobile search and cart controls in the header', () => {
+  it('exposes responsive search and cart controls in the header', () => {
     render(<Header />);
 
     expect(screen.getAllByText('Lucky Store')).toHaveLength(2);
-    expect(screen.getAllByLabelText('Search products')[0]).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Submit search' })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Cart' })[0]).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open search' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Search products')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit search' })).toBeInTheDocument();
+    const cartButtons = screen.getAllByRole('button', { name: 'Cart' });
+    expect(cartButtons).toHaveLength(2);
+    expect(cartButtons.find((button) => button.dataset.compact === 'true')).toBeInTheDocument();
+    expect(cartButtons.find((button) => button.dataset.compact === 'false')).toBeInTheDocument();
   });
 
   it('exposes the desktop category strip and quick rail on catalog routes', () => {
@@ -56,10 +60,9 @@ describe('Header catalog filter strip', () => {
 
     expect(screen.getByRole('navigation', { name: 'Product categories' })).toBeInTheDocument();
     expect(screen.getByText('Quick rail')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Open menu' })[0]).toHaveAttribute(
-      'aria-haspopup',
-      'dialog',
-    );
+    const menuButtons = screen.getAllByRole('button', { name: 'Open menu' });
+    expect(menuButtons).toHaveLength(2);
+    menuButtons.forEach((button) => expect(button).toHaveAttribute('aria-haspopup', 'dialog'));
   });
 
   it('unsets All when active catalog theme is present', () => {

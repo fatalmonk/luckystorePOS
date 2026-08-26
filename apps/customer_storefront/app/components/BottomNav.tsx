@@ -1,8 +1,9 @@
 'use client';
 
+import React from 'react';
 import { BottomNavShell } from './BottomNavShell';
 import { ActiveLink } from './ActiveLink';
-import { HomeIcon, BrowseIcon, CartIcon, WhatsAppIcon } from './icons';
+import { HomeIcon, BrowseIcon, UserIcon, WhatsAppIcon } from './icons';
 
 export function BottomNav() {
   return (
@@ -20,7 +21,7 @@ export function BottomNav() {
           label="WhatsApp"
           external
         />
-        <ActiveLink href="/cart" icon={<CartIcon size={22} />} label="Cart" showBadge />
+        <ActiveLink href="/profile" icon={<UserIcon size={22} />} label="Profile" />
       </nav>
     </BottomNavShell>
   );

@@ -21,18 +21,18 @@ export function HeaderCartButton({ compact = false, iconSize }: HeaderCartButton
     <button
       type="button"
       onClick={open}
-      className={`relative flex items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-sm transition-[background-color,box-shadow] hover:bg-warm-accent-hover hover:shadow-warm-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+      className={`relative flex items-center justify-center rounded-full text-warm-accent-text transition-[background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
         compact
-          ? 'min-h-11 min-w-11'
+          ? 'min-h-11 min-w-11 before:absolute before:h-10 before:w-10 before:rounded-full before:bg-warm-accent before:shadow-sm before:transition-[background-color,box-shadow] hover:before:bg-warm-accent-hover hover:before:shadow-warm-md'
           : `${
               isLoaded && totalItems > 0
-                ? 'h-11 gap-1.5 px-3 text-xs font-extrabold'
-                : 'h-11 w-11'
+                ? 'h-11 gap-1.5 bg-warm-accent px-3 text-xs font-extrabold shadow-sm hover:bg-warm-accent-hover hover:shadow-warm-md'
+                : 'h-11 w-11 bg-warm-accent shadow-sm hover:bg-warm-accent-hover hover:shadow-warm-md'
             }`
       }`}
       aria-label={`Cart ${isLoaded && totalItems > 0 ? `(${totalItems} items, ${formatBdt(total)})` : '(empty)'}`}
     >
-      <ShoppingCartSimple weight="bold" size={iconPx} aria-hidden="true" />
+      <ShoppingCartSimple className={compact ? 'relative z-10' : undefined} weight="bold" size={iconPx} aria-hidden="true" />
       {!compact && isLoaded && totalItems > 0 && (
         <span className="font-extrabold tracking-tight">{formatBdt(total)}</span>
       )}

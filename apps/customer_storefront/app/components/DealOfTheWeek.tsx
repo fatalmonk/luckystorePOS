@@ -118,7 +118,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         <article className={`deal-lead-card flex flex-col justify-between space-y-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
             href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
-            aria-label={`View ${leadProduct.name}`}
+            aria-label={`${leadDiscount}% off — View ${leadProduct.name}`}
             className="deal-product-visual relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
           >
             <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
@@ -129,7 +129,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
                 src={leadProduct.image_url}
                 alt={leadProduct.name}
                 category={leadProduct.category}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
+                sizes="(max-width: 640px) calc(100vw - 72px), (max-width: 1024px) calc(100vw - 112px), 500px"
                 imageClassName="object-contain"
                 priority
                 iconSize={64}
@@ -152,7 +152,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <p className="line-clamp-2 text-xs leading-5 text-warm-muted">{leadProduct.description}</p>
 
             <div className="flex flex-wrap items-baseline gap-2 pt-2">
-              <span className="text-xl font-black text-warm-accent">৳{leadProduct.price}</span>
+              <span className="text-xl font-black text-warm-fg">৳{leadProduct.price}</span>
               {leadProduct.originalPrice && (
                 <span className="text-sm font-bold text-warm-muted line-through">
                   ৳{leadProduct.originalPrice}

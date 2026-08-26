@@ -126,7 +126,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
               {cart.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 py-2.5 px-1 rounded-xl hover:bg-warm-bg/50 transition-colors"
+                  className="grid grid-cols-[3rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-xl px-1 py-2.5 transition-colors hover:bg-warm-bg/50"
                 >
                   {/* Product image or deterministic category fallback */}
                   <div className="w-12 h-12 rounded-xl bg-warm-image-well overflow-hidden flex-shrink-0 grid place-items-center relative">
@@ -144,7 +144,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                     <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
-                      className="text-xs text-warm-danger mt-0.5 inline-flex items-center gap-1 hover:text-warm-danger-dark transition-colors min-h-[28px] px-0.5"
+                      className="mt-0.5 inline-flex min-h-11 items-center gap-1 px-0.5 text-xs text-warm-danger transition-colors hover:text-warm-danger-dark"
                       aria-label={`Remove ${item.name}`}
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -153,24 +153,28 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                       Remove
                     </button>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => updateQty(item.id, -1)}
-                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors active:scale-95"
-                      aria-label="Decrease quantity"
-                    >
-                      −
-                    </button>
-                    <QtyNumber qty={item.qty} className="font-bold text-sm min-w-[20px] text-center" />
-                    <button
-                      onClick={() => updateQty(item.id, 1)}
-                      className="w-9 h-9 rounded-lg border border-warm-border bg-warm-bg flex items-center justify-center text-sm font-semibold hover:border-warm-accent hover:text-warm-fg transition-colors active:scale-95"
-                      aria-label="Increase quantity"
-                    >
-                      +
-                    </button>
+                  <div className="col-start-2 flex min-w-0 items-center justify-between gap-2">
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        onClick={() => updateQty(item.id, -1)}
+                        className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-lg border border-warm-border bg-warm-bg text-sm font-semibold transition-colors hover:border-warm-accent hover:text-warm-fg active:scale-95"
+                        aria-label={`Decrease ${item.name} quantity`}
+                      >
+                        −
+                      </button>
+                      <QtyNumber qty={item.qty} className="min-w-[20px] text-center text-sm font-bold" />
+                      <button
+                        onClick={() => updateQty(item.id, 1)}
+                        className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-lg border border-warm-border bg-warm-bg text-sm font-semibold transition-colors hover:border-warm-accent hover:text-warm-fg active:scale-95"
+                        aria-label={`Increase ${item.name} quantity`}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="min-w-[55px] text-right text-sm font-bold text-warm-fg">
+                      {formatBdt(item.price * item.qty)}
+                    </span>
                   </div>
-                  <span className="font-bold text-sm min-w-[55px] text-right text-warm-fg">{formatBdt(item.price * item.qty)}</span>
                 </div>
               ))}
             </div>

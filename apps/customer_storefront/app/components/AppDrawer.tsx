@@ -98,8 +98,8 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 h-14 border-b border-warm-border shrink-0">
-          <Logo href="/" onClick={onClose} className="[&_img]:!h-7" />
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-warm-border px-4">
+          <Logo href="/" onClick={onClose} className="[&_img]:!h-11 [&_img]:w-auto" />
           <button
             ref={closeButtonRef}
             type="button"
