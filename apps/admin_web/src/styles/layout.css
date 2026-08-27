@@ -1,7 +1,7 @@
 .app-container {
   display: grid;
   grid-template-columns: 260px 1fr;
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: auto 1fr;
   height: 100vh;
   overflow: hidden;
 }
@@ -37,7 +37,7 @@
 @media (max-width: 768px) {
   .app-container {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px 1fr;
+    grid-template-rows: auto 1fr;
   }
   .app-container.sidebar-hidden {
     grid-template-columns: 1fr;
@@ -97,11 +97,11 @@
 @media (max-width: 768px) {
   .app-container {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px 1fr 56px;
+    grid-template-rows: auto 1fr 56px;
   }
   .app-container.sidebar-hidden {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px 1fr 56px;
+    grid-template-rows: auto 1fr 56px;
   }
   .sidebar {
     position: fixed;
@@ -171,6 +171,24 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              margin-top 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s ease;
+  will-change: transform, margin-top;
+}
+
+.top-header.header--hidden {
+  transform: translateY(-100%);
+  margin-top: -56px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.top-header:focus-within {
+  transform: translateY(0) !important;
+  margin-top: 0 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .app-container.sidebar-hidden .top-header {

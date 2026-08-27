@@ -5,8 +5,15 @@
   "type": "module",
   "description": "Lucky Store monorepo — POS frontend, Supabase backend, scrapers, and ops scripts",
   "supportedArchitectures": {
-    "os": ["darwin", "linux", "win32"],
-    "cpu": ["x64", "arm64"]
+    "os": [
+      "darwin",
+      "linux",
+      "win32"
+    ],
+    "cpu": [
+      "x64",
+      "arm64"
+    ]
   },
   "scripts": {
     "scrape": "node apps/scraper/scrape-shwapno.js",
@@ -31,11 +38,14 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260623.1",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^24.5.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   },
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "overrides": {
     "serialize-javascript": "^7.0.3",
     "terser": "^5.14.2",
@@ -44,6 +54,7 @@
     "tar-fs": "^3.1.1",
     "ws": "^8.17.1",
     "@types/react": "18.3.31",
-    "@types/react-dom": "18.3.7"
+    "@types/react-dom": "18.3.7",
+    "react-is": "^19.0.0"
   }
 }

@@ -268,3 +268,10 @@ architecture-review.html
 apps/scraper/chaldal-dump.txt
 lucky-store-brand-guidelines/fonts/Geist.zip
 Lucky_Store_E-Trade_License_Notarized_Translation.pdf
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

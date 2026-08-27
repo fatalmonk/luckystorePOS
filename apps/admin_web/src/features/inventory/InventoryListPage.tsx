@@ -1,35 +1,33 @@
 import type { InventoryItem } from '@/types/inventory';
-import { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback, lazy, Suspense } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState } from '@/components';
-import { Search, RefreshCw, History, Package, AlertTriangle, TrendingDown, TrendingUp, Wallet, LayoutGrid, List as ListIcon, Download, ScanLine, ArrowUpDown, Plus, Filter, X } from 'lucide-react';
+import { History, Package, AlertTriangle, TrendingDown, Wallet, Plus } from 'lucide-react';
 import { useNotify } from '@/components';
-import { downloadCSV } from '../../lib/format';
-import { ProductDetailDrawer } from '../products/ProductDetailDrawer';
-import { ProductUpdateDrawer } from './ProductUpdateDrawer';
-import { ProductAddModal } from './AddProductModal';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useDebounce } from '@/hooks';
 import { useInventoryEditing } from '@/hooks';
 import { PageHeader } from '@/components';
-import { Button } from '@/components';
 import { Card } from '@/components';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
-import { ProductCardSkeletonGrid, SkeletonBlock } from '../../components/Skeleton';
+import { SkeletonBlock } from '../../components/Skeleton';
 import { AnimatedMetric } from '@/components';
 import { InventoryListTable } from '@/components';
-import { InventoryProductCard } from './InventoryProductCard';
 import { BulkEditBar } from '@/components';
-import { BulkPriceModal } from '@/components';
-import { BulkStockModal } from '@/components';
-import { BarcodeScannerModal } from '@/components';
 import { useInventoryBulkActions } from '@/hooks';
 import { AnalyticsWidgets } from '@/components';
 import { InventoryFilterToolbar } from '@/components';
+
+// Lazy-loaded modals and drawers to minimize initial bundle size and optimize FCP/LCP
+const ProductDetailDrawer = lazy(() => import('../products/ProductDetailDrawer').then(m => ({ default: m.ProductDetailDrawer })));
+const ProductUpdateDrawer = lazy(() => import('./ProductUpdateDrawer').then(m => ({ default: m.ProductUpdateDrawer })));
+const ProductAddModal = lazy(() => import('./AddProductModal').then(m => ({ default: m.ProductAddModal })));
+const BulkPriceModal = lazy(() => import('@/components').then(m => ({ default: m.BulkPriceModal })));
+const BulkStockModal = lazy(() => import('@/components').then(m => ({ default: m.BulkStockModal })));
+const BarcodeScannerModal = lazy(() => import('@/components').then(m => ({ default: m.BarcodeScannerModal })));
 
 export function InventoryListPage() {
   const { storeId, tenantId } = useAuth();
@@ -40,21 +38,6 @@ export function InventoryListPage() {
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [viewMode, setViewModeState] = useState<'grid' | 'list'>(() => {
-    const mode = searchParams.get('view');
-    if (mode === 'grid' || mode === 'list') return mode;
-    return window.innerWidth >= 1024 ? 'list' : 'grid';
-  });
-
-  const setViewMode = (mode: 'grid' | 'list') => {
-    setViewModeState(mode);
-    setSearchParams(prev => {
-      prev.set('view', mode);
-      return prev;
-    }, { replace: true });
-  };
-  
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
   
   // Advanced Sorting
@@ -72,7 +55,6 @@ export function InventoryListPage() {
     localStorage.setItem('inventory-widgets-visible', String(newValue));
   };
 
-  const [showFilters, setShowFilters] = useState(false);
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low' | 'out'>('all');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -95,45 +77,9 @@ export function InventoryListPage() {
     enabled: !!storeId,
   });
 
-  const [columnsCount, setColumnsCount] = useState(() => {
-    const w = window.innerWidth;
-    if (w >= 1536) return 5;
-    if (w >= 1280) return 4;
-    if (w >= 1024) return 3;
-    if (w >= 640) return 2;
-    return 1;
-  });
 
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w >= 1536) setColumnsCount(5);
-      else if (w >= 1280) setColumnsCount(4);
-      else if (w >= 1024) setColumnsCount(3);
-      else if (w >= 640) setColumnsCount(2);
-      else setColumnsCount(1);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
-  // Preload first visible images after inventory loads
-  useEffect(() => {
-    if (!inventory?.length) return;
-    const preloadCount = viewMode === 'grid' ? Math.min(columnsCount * 2, 8) : 10;
-    inventory.slice(0, preloadCount).forEach((item, i) => {
-      if (!item.image_url) return;
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = item.image_url;
-      (link as any).fetchPriority = i < 4 ? 'high' : 'low';
-      document.head.appendChild(link);
-    });
-    return () => {
-      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(el => el.remove());
-    };
-  }, [inventory, viewMode, columnsCount]);
+
 
   const {
     selectedIds,
@@ -259,23 +205,23 @@ export function InventoryListPage() {
     return { total, lowStock, outOfStock, totalValue, potentialGP };
   }, [inventory]);
 
-  // Analytics queries
+  // Analytics queries - deferred when widgets are collapsed
   const { data: topSellingItems, isLoading: topSellingLoading } = useQuery({
     queryKey: ['inventory-analytics-top-selling', storeId],
     queryFn: () => api.inventory.getTopSellingItems(storeId!, 30, 5),
-    enabled: !!storeId,
+    enabled: !!storeId && showWidgets,
   });
 
   const { data: slowMovingItems, isLoading: slowMovingLoading } = useQuery({
     queryKey: ['inventory-analytics-slow-moving', storeId],
     queryFn: () => api.inventory.getSlowMovingItems(storeId!, 30, 5),
-    enabled: !!storeId,
+    enabled: !!storeId && showWidgets,
   });
 
   const { data: dailyTrend, isLoading: dailyTrendLoading } = useQuery({
     queryKey: ['inventory-analytics-daily-trend', storeId],
     queryFn: () => api.inventory.getDailyMovementTrend(storeId!, 14),
-    enabled: !!storeId,
+    enabled: !!storeId && showWidgets,
   });
 
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -304,56 +250,7 @@ export function InventoryListPage() {
     };
   }, []);
 
-  const chunkedItems = useMemo(() => {
-    const chunks: InventoryItem[][] = [];
-    for (let i = 0; i < filteredItems.length; i += columnsCount) {
-      chunks.push(filteredItems.slice(i, i + columnsCount));
-    }
-    return chunks;
-  }, [filteredItems, columnsCount]);
 
-  const gridRef = useRef<HTMLDivElement>(null);
-  const [gridScrollMargin, setGridScrollMargin] = useState(0);
-
-  useEffect(() => {
-    const el = gridRef.current;
-    const parent = (document.querySelector('.main-content') as HTMLDivElement) || null;
-    if (!el || !parent) return;
-
-    const measure = () => {
-      const elRect = el.getBoundingClientRect();
-      const parentRect = parent.getBoundingClientRect();
-      const offset = elRect.top - parentRect.top + parent.scrollTop;
-      setGridScrollMargin(offset);
-    };
-
-    measure();
-
-    const resizeObserver = new ResizeObserver(() => {
-      measure();
-    });
-
-    resizeObserver.observe(parent);
-    if (el.parentElement) {
-      resizeObserver.observe(el.parentElement);
-    }
-
-    parent.addEventListener('scroll', measure, { passive: true });
-
-    return () => {
-      resizeObserver.disconnect();
-      parent.removeEventListener('scroll', measure);
-    };
-  }, [chunkedItems]);
-
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const gridVirtualizer = useVirtualizer({
-    count: chunkedItems.length,
-    getScrollElement: () => (document.querySelector('.main-content') as HTMLDivElement) || null,
-    estimateSize: () => 380,
-    overscan: 1,
-    scrollMargin: gridScrollMargin,
-  });
 
   if (error) {
     return (
@@ -380,7 +277,7 @@ export function InventoryListPage() {
           className="relative z-10 font-display font-bold text-warm-fg leading-tight tracking-tight mb-8"
           style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', maxWidth: '1000px' }}
         >
-          Master your inventory flow <span className="inline-block w-24 h-[1em] rounded-full align-middle bg-cover bg-center mx-2 overflow-hidden shadow-lg" style={{backgroundImage: 'url(https://picsum.photos/seed/inventoryflow/400/200)', filter: 'grayscale(30%) contrast(120%)'}}></span> with precision.
+          Master your inventory flow <span className="inline-block w-24 h-[1em] rounded-full align-middle bg-gradient-to-r from-amber-400 to-yellow-500 mx-2 overflow-hidden shadow-lg opacity-90 border border-warm-border"></span> with precision.
         </h1>
         
         <div className="relative z-10 flex flex-wrap justify-center gap-4 mb-12">
@@ -421,7 +318,7 @@ export function InventoryListPage() {
       {/* Collapsible Analytics Widgets */}
       <div className="-mx-6 px-6 mb-1">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-semibold text-warm-muted uppercase tracking-wider">Analytics</span>
+          <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider m-0 p-0">Analytics</h2>
           <button
             onClick={toggleWidgets}
             className="flex items-center gap-1 text-xs text-warm-muted hover:text-warm-fg transition-colors"
@@ -441,6 +338,8 @@ export function InventoryListPage() {
           />
         )}
       </div>
+
+      <h2 className="sr-only">Product Inventory Catalog</h2>
 
       {/* Sticky Single Toolbar */}
       <div
@@ -464,22 +363,6 @@ export function InventoryListPage() {
             onSearchChange={setSearchTerm}
             sortBy={sortBy}
             onSortChange={(sort: string) => setSortBy(sort as 'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc')}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            showFilters={showFilters}
-            onToggleFilters={() => setShowFilters(!showFilters)}
-            hasActiveFilters={hasActiveFilters}
-            stockFilter={stockFilter}
-            onStockFilterChange={(filter: string) => setStockFilter(filter as 'all' | 'in_stock' | 'low' | 'out')}
-            minPrice={minPrice}
-            onMinPriceChange={setMinPrice}
-            maxPrice={maxPrice}
-            onMaxPriceChange={setMaxPrice}
-            onClearFilters={() => {
-              setStockFilter('all');
-              setMinPrice('');
-              setMaxPrice('');
-            }}
             onOpenBarcode={() => setIsBarcodeModalOpen(true)}
           />
         </div>
@@ -488,68 +371,22 @@ export function InventoryListPage() {
       {/* Content Area */}
       <div className="flex-1 min-h-0">
         {isLoading ? (
-          viewMode === 'grid' ? (
-            <ProductCardSkeletonGrid count={10} />
-          ) : (
-            <div className="p-4 space-y-4 bg-surface border border-border-default rounded-xl">
-              {Array(5).fill(0).map((_, i) => (
-                <div key={i} className="flex gap-4 items-center">
-                  <SkeletonBlock className="w-[28%] h-6" />
-                  <SkeletonBlock className="w-[18%] h-6" />
-                  <SkeletonBlock className="w-[12%] h-6" />
-                  <SkeletonBlock className="w-[12%] h-6" />
-                  <SkeletonBlock className="w-[12%] h-6" />
-                  <SkeletonBlock className="w-[18%] h-6 ml-auto" />
-                </div>
-              ))}
-            </div>
-          )
+          <div className="p-4 space-y-4 bg-surface border border-border-default rounded-xl">
+            {Array(5).fill(0).map((_, i) => (
+              <div key={i} className="flex gap-4 items-center">
+                <SkeletonBlock className="w-[28%] h-6" />
+                <SkeletonBlock className="w-[18%] h-6" />
+                <SkeletonBlock className="w-[12%] h-6" />
+                <SkeletonBlock className="w-[12%] h-6" />
+                <SkeletonBlock className="w-[12%] h-6" />
+                <SkeletonBlock className="w-[18%] h-6 ml-auto" />
+              </div>
+            ))}
+          </div>
         ) : filteredItems.length === 0 ? (
           <Card className="p-8 text-center text-text-muted">
             No inventory items found. Add products to start tracking stock levels.
           </Card>
-        ) : viewMode === 'grid' ? (
-          <div
-            ref={gridRef}
-            style={{
-              height: `${Math.max(0, gridVirtualizer.getTotalSize() - gridScrollMargin)}px`,
-              width: '100%',
-              position: 'relative',
-            }}
-          >
-            {gridVirtualizer.getVirtualItems().map((virtualRow) => {
-              const rowItems = chunkedItems[virtualRow.index];
-              if (!rowItems) return null;
-              return (
-                <div
-                  key={virtualRow.index}
-                  className="absolute top-0 left-0 w-full grid gap-4 grid-flow-dense"
-                  style={{
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${Math.max(0, virtualRow.start - gridScrollMargin)}px)`,
-                    gridTemplateColumns: `repeat(${columnsCount}, minmax(0, 1fr))`,
-                    paddingBottom: '16px',
-                  }}
-                >
-                  {rowItems.map((item: any) => (
-                    <InventoryProductCard
-                      key={item.id}
-                      item={item}
-                      isHighlighted={highlightedProductId === item.id}
-                      isSelected={selectedIds.has(item.id)}
-                      onToggleSelect={toggleSelect}
-                      onUpdateStock={handleViewProduct}
-                      onEditProduct={handleEditProduct}
-                      tenantId={tenantId}
-                      priority={virtualRow.index === 0}
-                      onInlineSave={handleInlineSave}
-                      storeId={storeId}
-                    />
-                  ))}
-                </div>
-              );
-            })}
-          </div>
         ) : (
           <InventoryListTable
             items={filteredItems}
@@ -568,59 +405,74 @@ export function InventoryListPage() {
         )}
       </div>
 
-      <ProductAddModal
-        isOpen={isAddModalOpen}
-        categories={categories}
-        onClose={() => setIsAddModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        {isAddModalOpen && (
+          <ProductAddModal
+            isOpen={isAddModalOpen}
+            categories={categories}
+            onClose={() => setIsAddModalOpen(false)}
+          />
+        )}
 
-      <ProductUpdateDrawer
-        product={editingProduct as any}
-        storeId={storeId}
-        onClose={() => setEditingProduct(null)}
-      />
+        {editingProduct && (
+          <ProductUpdateDrawer
+            product={editingProduct as any}
+            storeId={storeId}
+            onClose={() => setEditingProduct(null)}
+          />
+        )}
 
-      <ProductDetailDrawer
-        productId={viewingProductId}
-        onClose={() => setViewingProductId(null)}
-        onEdit={(p) => {
-          setViewingProductId(null);
-          setEditingProduct(p as unknown as InventoryItem);
-        }}
-      />
+        {viewingProductId && (
+          <ProductDetailDrawer
+            productId={viewingProductId}
+            onClose={() => setViewingProductId(null)}
+            onEdit={(p) => {
+              setViewingProductId(null);
+              const fullItem = inventory?.find(i => i.id === p.id);
+              setEditingProduct(fullItem ? { ...p, ...fullItem } : (p as unknown as InventoryItem));
+            }}
+          />
+        )}
 
-      <BulkPriceModal
-        isOpen={isBulkPriceModalOpen}
-        onClose={() => setIsBulkPriceModalOpen(false)}
-        onSubmit={(data) => {
-          bulkPriceMutation.mutate(data, { onSuccess: () => setIsBulkPriceModalOpen(false) });
-        }}
-        selectedCount={selectedIds.size}
-      />
+        {isBulkPriceModalOpen && (
+          <BulkPriceModal
+            isOpen={isBulkPriceModalOpen}
+            onClose={() => setIsBulkPriceModalOpen(false)}
+            onSubmit={(data) => {
+              bulkPriceMutation.mutate(data, { onSuccess: () => setIsBulkPriceModalOpen(false) });
+            }}
+            selectedCount={selectedIds.size}
+          />
+        )}
 
-      <BulkStockModal
-        isOpen={isBulkStockModalOpen}
-        onClose={() => setIsBulkStockModalOpen(false)}
-        onSubmit={(data) => {
-          bulkStockMutation.mutate(data, { onSuccess: () => setIsBulkStockModalOpen(false) });
-        }}
-        selectedCount={selectedIds.size}
-      />
+        {isBulkStockModalOpen && (
+          <BulkStockModal
+            isOpen={isBulkStockModalOpen}
+            onClose={() => setIsBulkStockModalOpen(false)}
+            onSubmit={(data) => {
+              bulkStockMutation.mutate(data, { onSuccess: () => setIsBulkStockModalOpen(false) });
+            }}
+            selectedCount={selectedIds.size}
+          />
+        )}
 
-      <BarcodeScannerModal
-        isOpen={isBarcodeModalOpen}
-        onClose={() => setIsBarcodeModalOpen(false)}
-        onScan={(barcode) => {
-          const found = inventory?.find((p: InventoryItem) => p.sku === barcode || (p as any).barcode === barcode);
-          if (found) {
-            setSearchTerm(barcode);
-            setViewingProductId(found.id);
-            setHighlightedProductId(found.id);
-          } else {
-            notify(`Product with barcode ${barcode} not found`, 'error');
-          }
-        }}
-      />
+        {isBarcodeModalOpen && (
+          <BarcodeScannerModal
+            isOpen={isBarcodeModalOpen}
+            onClose={() => setIsBarcodeModalOpen(false)}
+            onScan={(barcode) => {
+              const found = inventory?.find((p: InventoryItem) => p.sku === barcode || (p as any).barcode === barcode);
+              if (found) {
+                setSearchTerm(barcode);
+                setViewingProductId(found.id);
+                setHighlightedProductId(found.id);
+              } else {
+                notify(`Product with barcode ${barcode} not found`, 'error');
+              }
+            }}
+          />
+        )}
+      </Suspense>
 
       {selectedIds.size > 0 && (
         <BulkEditBar

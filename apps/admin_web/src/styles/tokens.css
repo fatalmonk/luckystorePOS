@@ -238,6 +238,8 @@
   --color-neutral-900: #020617;
   --color-neutral-800: #0f172a;
   --color-neutral-400: #64748b;
+
+  --color-surface-overlay: rgba(20, 20, 23, 0.85);
 }
 
 /* Smooth theme transition */

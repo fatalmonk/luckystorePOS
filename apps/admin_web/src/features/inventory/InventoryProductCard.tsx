@@ -6,6 +6,7 @@ import { EditableCell } from '@/components';
 import { CategoryPicker } from '@/components';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { calcMarginRounded } from '@/lib/format';
 
 interface InventoryProductCardProps {
   item: InventoryItem;
@@ -46,8 +47,8 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
     queryFn: () => api.categories.list(),
   });
 
-  const margin = item.cost && item.price ? Math.round(((item.price - item.cost) / item.cost) * 100) : null;
-  const profitMarginVal = item.cost && item.price ? (item.price - item.cost) : null;
+  const margin = calcMarginRounded(item.cost, item.price);
+  const profitMarginVal = (typeof item.cost === 'number' && typeof item.price === 'number' && item.price > 0 && item.cost > 0) ? (item.price - item.cost) : null;
   const hasMrp = typeof item.mrp === 'number' && item.mrp > 0;
   const priceError = hasMrp && (item.price || 0) > (item.mrp || 0);
   const lowMargin = margin !== null && margin < 10;
@@ -87,7 +88,10 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
       <div className="relative w-full h-44 flex-shrink-0 overflow-hidden rounded-t-lg">
         {/* Checkbox - compact */}
         {onToggleSelect && (
-          <div className="absolute top-1.5 left-1.5 z-10" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="absolute top-1.5 left-1.5 z-10 p-1 rounded-md backdrop-blur-sm bg-surface/85 dark:bg-white/[0.08] dark:backdrop-blur-md border border-border/60 dark:border-white/[0.12] shadow-sm flex items-center justify-center" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <input
               type="checkbox"
               checked={isSelected}

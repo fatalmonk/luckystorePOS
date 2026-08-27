@@ -14,6 +14,8 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@lib': path.resolve(__dirname, './src/lib'),
     },
+    // Force single copies of deps that appear in multiple chunks
+    dedupe: ['react', 'react-dom', 'react-is', 'tslib', 'use-sync-external-store'],
   },
   build: {
     chunkSizeWarningLimit: 1000,
@@ -48,6 +50,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['@supabase/supabase-js', 'recharts', 'date-fns', 'react-i18next', 'i18next'],
+    // Devtools are lazy-loaded in DEV only; excluding prevents them from being
+    // bundled into a shared chunk alongside react, removing the 90 KiB duplicate.
+    exclude: ['@tanstack/react-query-devtools'],
   },
   test: {
     environment: 'jsdom',

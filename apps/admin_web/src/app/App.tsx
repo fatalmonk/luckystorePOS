@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './QueryProvider';
 import { Layout } from '@/components';
-import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { AuthGuard } from './AuthGuard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { OAuthConsentPage } from '../features/oauth/OAuthConsentPage';
@@ -12,6 +11,7 @@ import { InstallPrompt } from '@/components';
 import { AuthProvider } from '../lib/AuthContext';
 import { ResetPasswordPage } from './ResetPasswordPage';
 
+const LazyDashboardPage = React.lazy(() => import('../features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
 const LazyMissingImagesPage = React.lazy(() => import('../features/inventory/MissingImagesPage').then(m => ({ default: m.MissingImagesPage })));
@@ -75,7 +75,7 @@ export function App() {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
-                  <Route index element={<DashboardPage />} />
+                  <Route index element={<LazyRoute><LazyDashboardPage /></LazyRoute>} />
                   <Route path="delivery-orders" element={<LazyRoute><LazyDeliveryOrdersPage /></LazyRoute>} />
                   <Route path="products" element={<Navigate to="/inventory" replace />} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />

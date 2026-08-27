@@ -39,3 +39,17 @@ export function downloadCSV(rows: Record<string, unknown>[], filename: string): 
   a.click();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Calculates gross profit margin percentage: ((price - cost) / price) * 100
+ * Returns null if cost or price is invalid / non-positive.
+ */
+export function calcMargin(cost?: number | null, price?: number | null): number | null {
+  if (typeof cost !== 'number' || typeof price !== 'number' || price <= 0 || cost <= 0) return null;
+  return ((price - cost) / price) * 100;
+}
+
+export function calcMarginRounded(cost?: number | null, price?: number | null): number | null {
+  const m = calcMargin(cost, price);
+  return m !== null ? Math.round(m) : null;
+}
