@@ -60,28 +60,31 @@ export function Layout() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollYRef = useRef(0);
   const tickingRef = useRef(false);
+  const mainContentRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const mainEl = document.querySelector('.main-content');
-    if (!mainEl) return;
+    const mainEl = mainContentRef.current || document.querySelector('.main-content');
+    const SCROLL_THRESHOLD = 8;
+    const TOP_ZONE = 30;
 
-    const SCROLL_THRESHOLD = 5;
-    const TOP_ZONE = 20;
-
-    // Reset on route change before attaching listener
     setHeaderVisible(true);
-    lastScrollYRef.current = mainEl.scrollTop || window.scrollY || 0;
+    lastScrollYRef.current = mainEl ? mainEl.scrollTop : window.scrollY;
 
     const handleScroll = (e: Event) => {
       if (tickingRef.current) return;
 
       tickingRef.current = true;
       window.requestAnimationFrame(() => {
-        const target = e.target as HTMLElement | Document | Window;
-        const currentScrollY =
-          target instanceof HTMLElement && target.scrollTop !== undefined
-            ? target.scrollTop
-            : (mainEl.scrollTop || window.scrollY || document.documentElement.scrollTop || 0);
+        const target = e.target as HTMLElement | Document | Window | null;
+        let currentScrollY = 0;
+
+        if (target && target instanceof HTMLElement && target.scrollTop !== undefined) {
+          currentScrollY = target.scrollTop;
+        } else if (mainEl && mainEl.scrollTop !== undefined) {
+          currentScrollY = mainEl.scrollTop;
+        } else {
+          currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+        }
 
         const diff = currentScrollY - lastScrollYRef.current;
 
@@ -89,10 +92,8 @@ export function Layout() {
           setHeaderVisible(true);
         } else if (Math.abs(diff) >= SCROLL_THRESHOLD) {
           if (diff > 0) {
-            // Scrolling down -> hide header
             setHeaderVisible(false);
           } else {
-            // Scrolling up -> show header
             setHeaderVisible(true);
           }
         }
@@ -102,14 +103,16 @@ export function Layout() {
       });
     };
 
-    mainEl.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('scroll', handleScroll, { passive: true });
+    if (mainEl) {
+      mainEl.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
 
     return () => {
-      mainEl.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('scroll', handleScroll);
+      if (mainEl) {
+        mainEl.removeEventListener('scroll', handleScroll);
+      }
+      window.removeEventListener('scroll', handleScroll, { capture: true });
     };
   }, [location.pathname]);
 
@@ -175,7 +178,7 @@ export function Layout() {
         isMobile={isMobile}
         hidden={!headerVisible}
       />
-      <main className={`main-content ${isPosPage ? 'pos-main-content' : ''}`}>
+      <main ref={mainContentRef} className={`main-content ${isPosPage ? 'pos-main-content' : ''}`}>
         <Outlet />
       </main>
       {isMobile && <BottomNav />}
