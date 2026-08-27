@@ -124,6 +124,10 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
           <img 
             src={product.imageUrl} 
             alt="" 
+            width={64}
+            height={64}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover" 
           />
         ) : (

@@ -13,7 +13,7 @@ export async function convertToWebP(
     quality?: number;
   } = {}
 ): Promise<Blob> {
-  const { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = options;
+  const { maxWidth = 600, maxHeight = 600, quality = 0.8 } = options;
 
   return new Promise((resolve, reject) => {
     const img = new Image();

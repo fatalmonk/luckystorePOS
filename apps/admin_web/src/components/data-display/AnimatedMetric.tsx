@@ -34,8 +34,8 @@ export const AnimatedMetric: FC<AnimatedMetricProps> = ({
   return (
     <span 
       className={clsx(
-        'tabular-nums transition-all duration-300', 
-        isAnimating ? 'text-primary scale-105 inline-block' : '',
+        'tabular-nums inline-block transition-transform duration-300', 
+        isAnimating ? 'text-primary scale-105' : '',
         className
       )}
     >
