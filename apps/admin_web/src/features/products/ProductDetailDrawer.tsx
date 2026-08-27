@@ -12,10 +12,27 @@ import { Badge } from '@/components';
 import { ConfirmDialog } from '@/components';
 import { useNotify } from '@/components';
 
+import type { InventoryItem } from '../../types/inventory';
+
 interface ProductDetailDrawerProps {
   productId: string | null;
   onClose: () => void;
-  onEdit: (product: { id: string; name: string; description?: string; sku?: string; barcode?: string; price: number; cost?: number; quantity: number; category?: string; image_url?: string }) => void;
+  onEdit: (product: {
+    id: string;
+    name: string;
+    description?: string | null;
+    sku?: string | null;
+    barcode?: string | null;
+    price: number | null;
+    cost?: number | null;
+    mrp?: number | null;
+    category_id?: string | null;
+    quantity?: number;
+    current_qty?: number;
+    category?: string;
+    image_url?: string | null;
+    [key: string]: any;
+  }) => void;
 }
 
 export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetailDrawerProps) {
@@ -90,6 +107,7 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
               </div>
             </div>
             <Button variant="outline" onClick={() => onEdit({
+              ...product,
               id: product.id,
               name: product.name,
               description: product.description,
@@ -97,7 +115,9 @@ export function ProductDetailDrawer({ productId, onClose, onEdit }: ProductDetai
               barcode: product.barcode,
               price: product.price,
               cost: product.cost,
-              quantity: (product as any).current_qty || 0,
+              mrp: product.mrp,
+              category_id: product.category_id,
+              current_qty: (product as any).current_qty,
               category: categoryName !== 'No Category' ? categoryName : undefined,
               image_url: product.image_url,
             })} icon={<Edit2 size={16} />}>

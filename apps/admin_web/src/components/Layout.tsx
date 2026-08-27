@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarNew } from './SidebarNew';
 import { BottomNav } from './BottomNav';
@@ -12,9 +12,27 @@ export function Layout() {
   const location = useLocation();
   const isPosPage = location.pathname.includes('/pos');
   
-  const [sidebarHidden, setSidebarHidden] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  // Persist sidebar hidden preference across page refresh
+  const [sidebarHidden, setSidebarHiddenState] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const isMobileView = window.innerWidth < 768;
+    if (isMobileView) return true;
+    const saved = localStorage.getItem('sidebar-hidden');
+    if (saved !== null) return saved === 'true';
+    return false;
+  });
+
+  const setSidebarHidden = (value: boolean | ((prev: boolean) => boolean)) => {
+    setSidebarHiddenState(prev => {
+      const newValue = typeof value === 'function' ? value(prev) : value;
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        localStorage.setItem('sidebar-hidden', String(newValue));
+      }
+      return newValue;
+    });
+  };
   
-  // Persist sidebar collapse preference
+  // Persist sidebar collapse preference across page refresh
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
     if (typeof window === 'undefined') return false;
     if (isPosPage) return true;
@@ -27,12 +45,68 @@ export function Layout() {
   });
 
   const setSidebarCollapsed = (value: boolean | ((prev: boolean) => boolean)) => {
-    const newValue = typeof value === 'function' ? value(sidebarCollapsed) : value;
-    localStorage.setItem('sidebar-collapsed', String(newValue));
-    setSidebarCollapsedState(newValue);
+    setSidebarCollapsedState(prev => {
+      const newValue = typeof value === 'function' ? value(prev) : value;
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        localStorage.setItem('sidebar-collapsed', String(newValue));
+      }
+      return newValue;
+    });
   };
 
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  // Hide header on scroll down, show on scroll up
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+  const tickingRef = useRef(false);
+
+  useEffect(() => {
+    const mainEl = document.querySelector('.main-content');
+    if (!mainEl) return;
+
+    const SCROLL_THRESHOLD = 8;
+    const TOP_ZONE = 40;
+
+    const handleScroll = () => {
+      if (tickingRef.current) return;
+
+      tickingRef.current = true;
+      window.requestAnimationFrame(() => {
+        const currentScrollY = mainEl.scrollTop;
+        const diff = currentScrollY - lastScrollYRef.current;
+
+        if (currentScrollY <= TOP_ZONE) {
+          setHeaderVisible(true);
+        } else if (Math.abs(diff) >= SCROLL_THRESHOLD) {
+          if (diff > 0) {
+            // Scrolling down -> hide header
+            setHeaderVisible(false);
+          } else {
+            // Scrolling up -> show header
+            setHeaderVisible(true);
+          }
+        }
+
+        lastScrollYRef.current = currentScrollY;
+        tickingRef.current = false;
+      });
+    };
+
+    mainEl.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      mainEl.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [location.pathname]);
+
+  // Reset header visibility on route navigation
+  useEffect(() => {
+    setHeaderVisible(true);
+    lastScrollYRef.current = 0;
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -40,16 +114,22 @@ export function Layout() {
       const mobile = width < 768;
       setIsMobile(mobile);
       if (mobile) {
-        if (!sidebarHidden) {
-          setSidebarHidden(true);
-        }
+        setSidebarHiddenState(true);
         setSidebarCollapsedState(false);
+      } else {
+        const savedHidden = localStorage.getItem('sidebar-hidden');
+        if (savedHidden !== null) {
+          setSidebarHiddenState(savedHidden === 'true');
+        }
+        const savedCollapsed = localStorage.getItem('sidebar-collapsed');
+        if (savedCollapsed !== null) {
+          setSidebarCollapsedState(savedCollapsed === 'true');
+        }
       }
-      // Don't force collapse state on desktop — respect user's preference
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarHidden]);
+  }, []);
 
   // Force sidebar collapse when entering POS mode (desktop), but save preference
   useLayoutEffect(() => {
@@ -87,6 +167,7 @@ export function Layout() {
         onToggleCollapse={() => setSidebarCollapsed(c => !c)}
         collapsed={sidebarCollapsed}
         isMobile={isMobile}
+        hidden={!headerVisible}
       />
       <main className={`main-content ${isPosPage ? 'pos-main-content' : ''}`}>
         <Outlet />

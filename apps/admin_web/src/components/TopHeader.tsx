@@ -9,9 +9,18 @@ interface TopHeaderProps {
   collapsed?: boolean;
   onSearchFocus?: () => void;
   isMobile: boolean;
+  hidden?: boolean;
 }
 
-export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, collapsed = false, onSearchFocus, isMobile }: TopHeaderProps) {
+export function TopHeader({
+  onToggleSidebar,
+  sidebarHidden,
+  onToggleCollapse,
+  collapsed = false,
+  onSearchFocus,
+  isMobile,
+  hidden = false,
+}: TopHeaderProps) {
   const { i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => {
@@ -50,7 +59,7 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, co
   const toggleTheme = () => setIsDark(!isDark);
 
   return (
-    <header className="top-header">
+    <header className={`top-header ${hidden ? 'header--hidden' : ''}`} aria-hidden={hidden ? 'true' : undefined}>
       <div className="header-left">
         {!sidebarHidden && !isMobile && onToggleCollapse && (
           <button 
@@ -93,7 +102,12 @@ export function TopHeader({ onToggleSidebar, sidebarHidden, onToggleCollapse, co
       </div>
 
       <div className="header-right">
-        <button className="header-button" onClick={toggleLanguage} aria-label="Change language" type="button">
+        <button
+          className="header-button"
+          onClick={toggleLanguage}
+          aria-label={`Language, ${i18n.language === 'bn' ? 'বাংলা' : 'EN'}`}
+          type="button"
+        >
           <span className="sr-only">Language</span>
           <span className="text-sm font-bold">{i18n.language === 'bn' ? 'বাংলা' : 'EN'}</span>
         </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, Equal } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -19,6 +19,17 @@ export function BulkStockModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
   const [mode, setMode] = useState<'add' | 'set'>('add');
   const [reason, setReason] = useState('Stock Count / Correction');
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const hasValue = stockValue !== '' && !isNaN(parseFloat(stockValue));
 
@@ -41,19 +52,25 @@ export function BulkStockModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       
       {/* Modal */}
-      <div className="relative bg-surface rounded-2xl border border-border-default shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulk-stock-modal-title"
+        className="relative bg-warm-surface text-warm-fg rounded-2xl border border-warm-border-warm shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border-default">
+        <div className="flex items-center justify-between p-5 border-b border-warm-border-warm">
           <div>
-            <h3 className="font-display font-black text-text-primary text-lg">Update Stock Levels</h3>
-            <p className="text-xs text-text-muted mt-0.5">{selectedCount} products selected</p>
+            <h3 id="bulk-stock-modal-title" className="font-display font-black text-warm-fg text-lg">Update Stock Levels</h3>
+            <p className="text-xs text-warm-muted mt-0.5">{selectedCount} products selected</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-text-muted hover:text-text-primary hover:bg-background-subtle rounded-lg transition-colors"
+            aria-label="Close modal"
+            className="p-1 text-warm-muted hover:text-warm-fg hover:bg-warm-surface-hover rounded-lg transition-colors"
           >
             <X size={20} />
           </button>
@@ -117,10 +134,12 @@ export function BulkStockModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
 
           {/* Reason */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
+            <label htmlFor="bulk-stock-reason" className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
               Reason
             </label>
             <select
+              id="bulk-stock-reason"
+              aria-label="Stock update reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full px-3 py-2 border border-border-default rounded-lg bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"

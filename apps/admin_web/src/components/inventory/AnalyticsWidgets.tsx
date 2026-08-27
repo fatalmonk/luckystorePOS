@@ -45,10 +45,10 @@ export function AnalyticsWidgets({
     <div className="grid grid-cols-3 gap-3 mb-4">
       {/* Top Selling Items */}
       <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-        <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <TrendingDown size={12} className="text-warm-accent rotate-180" />
           Top Selling
-        </h4>
+        </h2>
         {topSellingLoading ? (
           <div className="space-y-2">
             <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
@@ -77,10 +77,10 @@ export function AnalyticsWidgets({
 
       {/* Slow Moving Items */}
       <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-        <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <TrendingDown size={12} className="text-warm-accent" />
           Slow Moving
-        </h4>
+        </h2>
         {slowMovingLoading ? (
           <div className="space-y-2">
             <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
@@ -109,10 +109,10 @@ export function AnalyticsWidgets({
 
       {/* Daily Movement Trend */}
       <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-        <h4 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <RefreshCw size={12} className="text-warm-accent" />
           14-Day Movement
-        </h4>
+        </h2>
         {dailyTrendLoading ? (
           <div className="space-y-2">
             <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />

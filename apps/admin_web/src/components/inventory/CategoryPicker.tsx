@@ -106,6 +106,7 @@ export function CategoryPicker({
     return (
       <select
         ref={selectRef}
+        aria-label="Select category"
         value={value ?? ''}
         onChange={(e) => handleSave(e.target.value)}
         onKeyDown={(e) => {

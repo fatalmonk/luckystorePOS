@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Percent, Hash } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -21,6 +21,17 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
   const [sellingMode, setSellingMode] = useState<'absolute' | 'percentage'>('absolute');
   const [mrpMode, setMrpMode] = useState<'absolute' | 'percentage'>('absolute');
   const [costMode, setCostMode] = useState<'absolute' | 'percentage'>('absolute');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const hasValue = sellingPrice || mrp || costPrice;
 
@@ -56,19 +67,25 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-900/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       
       {/* Modal */}
-      <div className="relative bg-surface-default rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulk-price-modal-title"
+        className="relative bg-warm-surface text-warm-fg border border-warm-border-warm rounded-xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-100">
+        <div className="flex items-center justify-between p-4 border-b border-warm-border-warm">
           <div>
-            <h3 className="font-semibold text-slate-900">Update Prices</h3>
-            <p className="text-sm text-slate-500">{selectedCount} products selected</p>
+            <h3 id="bulk-price-modal-title" className="font-semibold text-warm-fg">Update Prices</h3>
+            <p className="text-sm text-warm-muted">{selectedCount} products selected</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded-md"
+            aria-label="Close modal"
+            className="p-1 text-warm-muted hover:text-warm-fg rounded-md transition-colors"
           >
             <X size={20} />
           </button>

@@ -9,6 +9,7 @@ import { Modal } from '@/components';
 import { Input } from '@/components';
 import { Button } from '@/components';
 import { Plus, Upload, X, Package } from 'lucide-react';
+import { calcMarginRounded } from '@/lib/format';
 
 interface Category {
   id: string;
@@ -42,7 +43,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const margin = cost > 0 && price > 0 ? Math.round(((price - cost) / cost) * 100) : null;
+  const margin = calcMarginRounded(cost, price);
   const lowMargin = margin !== null && margin < 10;
 
   // Group categories for hierarchical optgroup select

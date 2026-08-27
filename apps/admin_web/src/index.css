@@ -103,23 +103,32 @@
 /* ===== INVENTORY TABLE DESIGN SYSTEM V2 ===== */
 .table-wrap {
   overflow-x: visible;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
 }
 
 table.inventory {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: var(--text-small);
+}
+
+table.inventory thead {
+  position: sticky;
+  top: var(--table-sticky-top, 0px);
+  z-index: 30;
+}
+
+table.inventory thead tr {
+  background-color: var(--color-surface, #ffffff);
 }
 
 table.inventory thead th {
   position: sticky;
-  top: 0;
+  top: var(--table-sticky-top, 0px);
   z-index: 30;
-  background-color: var(--color-paper) !important;
-  border-bottom: 2px solid var(--color-border);
+  background-color: var(--color-surface, #ffffff);
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   padding: var(--space-3) var(--space-4);
   font-family: var(--font-mono);
   font-size: var(--text-xxs);
@@ -131,22 +140,27 @@ table.inventory thead th {
   white-space: nowrap;
 }
 
+table.inventory thead th:first-child {
+  border-left: 1px solid var(--color-border);
+}
+
 table.inventory tbody td {
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   vertical-align: middle;
 }
 
+table.inventory tbody td:first-child {
+  border-left: 1px solid var(--color-border);
+}
+
 table.inventory tbody tr:nth-child(even) td {
-  background: var(--color-border-light);
+  background: var(--color-background-subtle);
 }
 
 table.inventory tbody tr:hover td {
   background: var(--color-accent-ghost) !important;
-}
-
-table.inventory tbody tr:last-child td {
-  border-bottom: none;
 }
 
 table.inventory .sku {
