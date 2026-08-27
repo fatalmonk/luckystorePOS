@@ -295,7 +295,7 @@ export function InventoryListPage() {
         </div>
 
         {/* Ambient stats bar */}
-        <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold max-w-4xl mx-auto">
+        <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold max-w-4xl mx-auto min-h-[42px]">
             <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
               <Package size={14} className="text-warm-fg" />
               <AnimatedMetric value={stats.total} /> Total SKUs
