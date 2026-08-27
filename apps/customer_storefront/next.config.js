@@ -38,6 +38,18 @@ const nextConfig = {
     optimizePackageImports: ['@supabase/supabase-js'],
     inlineCss: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/auth.md',
+        destination: '/api/markdown?path=/auth.md',
+      },
+      {
+        source: '/.well-known/auth.md',
+        destination: '/api/markdown?path=/auth.md',
+      },
+    ];
+  },
   async headers() {
     const linkHeaders = [
       '</.well-known/api-catalog>; rel="api-catalog"',
