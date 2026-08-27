@@ -68,6 +68,11 @@ export function Layout() {
     const SCROLL_THRESHOLD = 8;
     const TOP_ZONE = 40;
 
+    // Reset on route change before attaching listener
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHeaderVisible(true);
+    lastScrollYRef.current = 0;
+
     const handleScroll = () => {
       if (tickingRef.current) return;
 
@@ -102,11 +107,6 @@ export function Layout() {
     };
   }, [location.pathname]);
 
-  // Reset header visibility on route navigation
-  useEffect(() => {
-    setHeaderVisible(true);
-    lastScrollYRef.current = 0;
-  }, [location.pathname]);
 
   useEffect(() => {
     const handleResize = () => {
