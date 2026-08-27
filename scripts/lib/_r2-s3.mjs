@@ -6,16 +6,26 @@
 import { createHmac, createHash } from 'crypto';
 
 export async function signRequest(method, endpoint, bucket, path, query, accessKey, secretKey, body = '') {
-  const url = new URL(`${endpoint}/${bucket}${path}${query ? '?' + query : ''}`);
+  const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
+  const pathname = `/${bucket}${cleanPath}`;
+  const url = new URL(`${endpoint}${pathname}${query ? '?' + query : ''}`);
   const now = new Date();
   const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
   const dateStamp = amzDate.slice(0, 8);
 
-  const bodyHash = createHash('sha256').update(Buffer.from(body)).digest('hex');
+  const bodyHash = createHash('sha256').update(Buffer.isBuffer(body) ? body : Buffer.from(body)).digest('hex');
+
+  // Build sorted, RFC 3986 canonical query string
+  const searchParams = new URLSearchParams(query || '');
+  const sortedParams = [...searchParams.entries()]
+    .filter(([k, v]) => k && v !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
 
   const canonicalHeaders = `host:${url.hostname}\nx-amz-content-sha256:${bodyHash}\nx-amz-date:${amzDate}\n`;
   const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
-  const canonicalRequest = `${method}\n${url.pathname}\n${url.search.slice(1)}\n${canonicalHeaders}\n${signedHeaders}\n${bodyHash}`;
+  const canonicalRequest = `${method}\n${url.pathname}\n${sortedParams}\n${canonicalHeaders}\n${signedHeaders}\n${bodyHash}`;
 
   const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
   const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credentialScope}\n${createHash('sha256').update(canonicalRequest).digest('hex')}`;
@@ -58,12 +68,12 @@ export async function listR2Objects(endpoint, bucket, { prefix = '', maxKeys = 1
     const params = new URLSearchParams({
       'list-type': '2',
       'max-keys': String(maxKeys),
-      prefix,
     });
+    if (prefix) params.set('prefix', prefix);
     if (continuationToken) params.set('continuation-token', continuationToken);
 
     const query = params.toString();
-    const { url, headers } = await signRequest('GET', endpoint, bucket, '/', query, accessKey, secretKey);
+    const { url, headers } = await signRequest('GET', endpoint, bucket, '', query, accessKey, secretKey);
 
     const res = await fetch(url, { method: 'GET', headers });
     if (!res.ok) {

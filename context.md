@@ -1,10 +1,11 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Supabase, Cloudflare Workers/R2
-Current: Optimized admin_web bundle splitting and deferred analytics queries for LCP/payload reduction
-Done: Split Recharts/D3 into vendor-charts chunk in vite.config.ts; default-collapsed secondary analytics RPCs in InventoryListPage.tsx
+Current: Completed Option B — R2 legacy product image batch optimization (478 images downscaled, 11.62 MiB saved)
+Done: Created scripts/images/optimize-r2-product-images.mjs, updated package.json scripts, executed batch optimization across R2 bucket lucky-store-images
 Branch: main
-Health: TypeScript compilation and Vite build passing (0 errors)
+Health: Production deployments READY (HTTP 200)
 Last Synced: 2026-08-27
-ctx: lighthouse audit optimizations | done: bundle chunking & query deferral | next: ready
+ctx: R2 image optimization | done: 478 images optimized (-56% payload) | next: idle
+
 
 

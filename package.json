@@ -24,6 +24,8 @@
     "scan:secrets:self-test": "node scripts/security/secret_scan.js --self-test",
     "migrate:images": "node scripts/images/migrate-images-to-r2.mjs",
     "migrate:images:dry-run": "node scripts/images/migrate-images-to-r2.mjs --dry-run",
+    "optimize:r2-images": "node scripts/images/optimize-r2-product-images.mjs",
+    "optimize:r2-images:dry-run": "node scripts/images/optimize-r2-product-images.mjs --dry-run",
     "deploy:worker": "cd cloudflare/workers/images && npx wrangler deploy",
     "sync:notion": "node scripts/ops/sync-notion-handoff.mjs",
     "facebook:post": "tsx src/facebook.ts",
