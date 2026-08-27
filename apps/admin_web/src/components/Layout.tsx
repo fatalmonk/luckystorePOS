@@ -65,20 +65,24 @@ export function Layout() {
     const mainEl = document.querySelector('.main-content');
     if (!mainEl) return;
 
-    const SCROLL_THRESHOLD = 8;
-    const TOP_ZONE = 40;
+    const SCROLL_THRESHOLD = 5;
+    const TOP_ZONE = 20;
 
     // Reset on route change before attaching listener
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHeaderVisible(true);
-    lastScrollYRef.current = 0;
+    lastScrollYRef.current = mainEl.scrollTop || window.scrollY || 0;
 
-    const handleScroll = () => {
+    const handleScroll = (e: Event) => {
       if (tickingRef.current) return;
 
       tickingRef.current = true;
       window.requestAnimationFrame(() => {
-        const currentScrollY = mainEl.scrollTop;
+        const target = e.target as HTMLElement | Document | Window;
+        const currentScrollY =
+          target instanceof HTMLElement && target.scrollTop !== undefined
+            ? target.scrollTop
+            : (mainEl.scrollTop || window.scrollY || document.documentElement.scrollTop || 0);
+
         const diff = currentScrollY - lastScrollYRef.current;
 
         if (currentScrollY <= TOP_ZONE) {
@@ -93,17 +97,19 @@ export function Layout() {
           }
         }
 
-        lastScrollYRef.current = currentScrollY;
+        lastScrollYRef.current = Math.max(0, currentScrollY);
         tickingRef.current = false;
       });
     };
 
     mainEl.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       mainEl.removeEventListener('scroll', handleScroll);
       window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('scroll', handleScroll);
     };
   }, [location.pathname]);
 
