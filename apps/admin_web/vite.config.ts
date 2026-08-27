@@ -7,23 +7,36 @@ import path from 'path'
  * fetches them in parallel with HTML parsing instead of blocking on them.
  * Savings: ~40 ms per Lighthouse audit.
  */
-function preloadCssPlugin(): Plugin {
+function preloadCriticalAssetsPlugin(): Plugin {
   return {
-    name: 'preload-css',
+    name: 'preload-critical-assets',
     apply: 'build',
-    transformIndexHtml(html) {
-      return html.replace(
+    transformIndexHtml(html, ctx) {
+      let result = html.replace(
         /<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g,
         (_, href) =>
           `<link rel="preload" as="style" href="${href}"><link rel="stylesheet" crossorigin href="${href}">`,
       );
+
+      // Preload critical Geist variable fonts directly in <head>
+      if (ctx.bundle) {
+        for (const fileName of Object.keys(ctx.bundle)) {
+          if (fileName.endsWith('.woff2') && fileName.includes('geist')) {
+            result = result.replace(
+              '</head>',
+              `  <link rel="preload" href="/${fileName}" as="font" type="font/woff2" crossorigin>\n  </head>`,
+            );
+          }
+        }
+      }
+      return result;
     },
   };
 }
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), preloadCssPlugin()],
+  plugins: [react(), preloadCriticalAssetsPlugin()],
 
   base: '/',
   resolve: {
