@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-static';
 
-const AUTH_MD = `# Lucky Store auth.md
+const AUTH_MD = `# auth.md
 
 This document is for agents that need to understand how a person registers for
 and signs in to Lucky Store.
