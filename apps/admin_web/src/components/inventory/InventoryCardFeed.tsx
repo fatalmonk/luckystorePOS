@@ -37,7 +37,7 @@ export function InventoryCardFeed({
       const w = window.innerWidth;
       if (w >= 1024) {
         setCols(3);
-      } else if (w >= 768) {
+      } else if (w >= 640) {
         setCols(2);
       } else {
         setCols(1);

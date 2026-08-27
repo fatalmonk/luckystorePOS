@@ -203,6 +203,34 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
+        <Script id="google-consent-default" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('consent', 'default', {
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              analytics_storage: 'denied',
+              wait_for_update: 500
+            });
+            gtag('set', 'ads_data_redaction', true);
+
+            try {
+              if (localStorage.getItem('lucky-analytics-consent') === 'granted') {
+                gtag('consent', 'update', {
+                  ad_storage: 'denied',
+                  ad_user_data: 'denied',
+                  ad_personalization: 'denied',
+                  analytics_storage: 'granted'
+                });
+              }
+            } catch (error) {
+              // Storage can be unavailable in privacy-restricted browsers.
+            }
+          `}
+        </Script>
         {/* Google Analytics — inserted after idle time so hero paint wins the main thread. */}
         <Script id="gtag-init" strategy="lazyOnload">
           {`
@@ -229,6 +257,84 @@ export default function RootLayout({
             } else {
               scheduleGtag();
             }
+          `}
+        </Script>
+        <div
+          id="lucky-consent-banner"
+          role="region"
+          aria-labelledby="lucky-consent-title"
+          aria-describedby="lucky-consent-description"
+          hidden
+          className="fixed inset-x-3 bottom-20 z-[80] mx-auto max-w-xl rounded-[var(--radius-md)] border border-warm-border bg-warm-surface p-4 text-warm-fg shadow-2xl sm:bottom-6 sm:p-5"
+        >
+          <h2 id="lucky-consent-title" className="text-base font-bold">
+            Your privacy choices
+          </h2>
+          <p id="lucky-consent-description" className="mt-1 text-sm leading-relaxed text-warm-muted">
+            We use optional Google Analytics to understand site traffic. Advertising storage and personalization remain disabled.
+          </p>
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button
+              id="lucky-consent-reject"
+              type="button"
+              className="min-h-11 rounded-full border border-warm-border px-4 py-2 text-sm font-semibold hover:bg-warm-subtle"
+            >
+              Reject analytics
+            </button>
+            <button
+              id="lucky-consent-accept"
+              type="button"
+              className="min-h-11 rounded-full bg-warm-accent px-4 py-2 text-sm font-bold text-black hover:brightness-95"
+            >
+              Accept analytics
+            </button>
+          </div>
+        </div>
+        <Script id="google-consent-ui" strategy="afterInteractive">
+          {`
+            (function () {
+              var storageKey = 'lucky-analytics-consent';
+              var banner = document.getElementById('lucky-consent-banner');
+              var accept = document.getElementById('lucky-consent-accept');
+              var reject = document.getElementById('lucky-consent-reject');
+              if (!banner || !accept || !reject) return;
+
+              var readChoice = function () {
+                try { return localStorage.getItem(storageKey); } catch (error) { return null; }
+              };
+              var saveChoice = function (value) {
+                try { localStorage.setItem(storageKey, value); } catch (error) {}
+              };
+              var showBanner = function () {
+                banner.hidden = false;
+                window.setTimeout(function () { accept.focus(); }, 0);
+              };
+              var hideBanner = function () {
+                banner.hidden = true;
+              };
+              var updateConsent = function (analyticsStorage) {
+                window.gtag('consent', 'update', {
+                  ad_storage: 'denied',
+                  ad_user_data: 'denied',
+                  ad_personalization: 'denied',
+                  analytics_storage: analyticsStorage
+                });
+              };
+
+              accept.addEventListener('click', function () {
+                saveChoice('granted');
+                updateConsent('granted');
+                hideBanner();
+              });
+              reject.addEventListener('click', function () {
+                saveChoice('denied');
+                updateConsent('denied');
+                hideBanner();
+              });
+
+              if (readChoice()) hideBanner();
+              else showBanner();
+            })();
           `}
         </Script>
         <WebMCPInit />
