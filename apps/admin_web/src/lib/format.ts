@@ -53,3 +53,42 @@ export function calcMarginRounded(cost?: number | null, price?: number | null): 
   const m = calcMargin(cost, price);
   return m !== null ? Math.round(m) : null;
 }
+
+export interface MarginBadgeStyles {
+  container: string;
+  text: string;
+}
+
+/**
+ * Returns text color token based on consistent margin thresholds:
+ * - > 25%: green ('text-success')
+ * - 10–25%: yellow/amber ('text-warning')
+ * - < 10%: red ('text-danger')
+ * - null: muted ('text-text-muted')
+ */
+export function getMarginColor(margin: number | null): string {
+  if (margin === null) return 'text-text-muted';
+  if (margin > 25) return 'text-success';
+  if (margin >= 10) return 'text-warning';
+  return 'text-danger';
+}
+
+/**
+ * Returns container & text badge style tokens based on consistent margin thresholds:
+ * - > 25%: green bg ('bg-success-subtle border-success/20 text-success')
+ * - 10–25%: yellow/amber bg ('bg-warning-subtle border-warning/20 text-warning')
+ * - < 10%: red bg ('bg-danger-subtle border-danger/20 text-danger')
+ * - null: neutral raised bg ('bg-surface-raised border-border/40 text-text-muted')
+ */
+export function getMarginBadgeStyles(margin: number | null): MarginBadgeStyles {
+  if (margin === null) {
+    return { container: 'bg-surface-raised border-border/40', text: 'text-text-muted' };
+  }
+  if (margin > 25) {
+    return { container: 'bg-success-subtle border-success/20', text: 'text-success' };
+  }
+  if (margin >= 10) {
+    return { container: 'bg-warning-subtle border-warning/20', text: 'text-warning' };
+  }
+  return { container: 'bg-danger-subtle border-danger/20', text: 'text-danger' };
+}

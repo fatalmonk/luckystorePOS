@@ -1,5 +1,5 @@
 import type { InventoryItem } from '../../types/inventory';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { InventoryProductCard } from './InventoryProductCard';
 
@@ -29,26 +29,40 @@ export function InventoryCardFeed({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
-  // Dynamic column layout sizing
+  // Dynamic column layout sizing based on container width
   const [cols, setCols] = useState(1);
 
   useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w >= 1024) {
-        setCols(3);
-      } else if (w >= 640) {
-        setCols(2);
-      } else {
-        setCols(1);
-      }
+    const el = containerRef.current;
+    if (!el) return;
+
+    const calcCols = (width: number) => {
+      if (width >= 1480) return 4;
+      if (width >= 1060) return 3;
+      if (width >= 640) return 2;
+      return 1;
     };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    const update = () => {
+      const w = el.clientWidth || window.innerWidth;
+      setCols(calcCols(w));
+    };
+
+    update();
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setCols(calcCols(entry.contentRect.width));
+      }
+    });
+    ro.observe(el);
+
+    return () => ro.disconnect();
   }, []);
 
-  const getParent = () => scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null;
+  const getParent = useCallback(
+    () => scrollElement || (document.querySelector('.main-content') as HTMLDivElement) || null,
+    [scrollElement]
+  );
 
   useEffect(() => {
     const el = containerRef.current;
@@ -92,6 +106,7 @@ export function InventoryCardFeed({
   const paddingBottom = virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0;
 
   const getGridColsClass = () => {
+    if (cols === 4) return 'grid-cols-4';
     if (cols === 3) return 'grid-cols-3';
     if (cols === 2) return 'grid-cols-2';
     return 'grid-cols-1';

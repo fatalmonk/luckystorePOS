@@ -55,6 +55,18 @@ export function InventoryListPage() {
     localStorage.setItem('inventory-widgets-visible', String(newValue));
   };
 
+  // View mode state: explicit user preference persisted in localStorage
+  const [userViewMode, setUserViewMode] = useState<'card' | 'table' | null>(() => {
+    const saved = localStorage.getItem('inventory-view-mode');
+    if (saved === 'card' || saved === 'table') return saved;
+    return null;
+  });
+
+  const handleViewChange = useCallback((newView: 'card' | 'table') => {
+    setUserViewMode(newView);
+    localStorage.setItem('inventory-view-mode', newView);
+  }, []);
+
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low' | 'out'>('all');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -76,10 +88,6 @@ export function InventoryListPage() {
     queryFn: () => api.inventory.list(storeId!),
     enabled: !!storeId,
   });
-
-
-
-
 
   const {
     selectedIds,
@@ -125,6 +133,19 @@ export function InventoryListPage() {
       icon: c.icon || undefined,
     })) ?? [];
   }, [categories, inventory]);
+
+  // Derived view mode: explicit user preference if saved, otherwise default to 'table' for categories with >20 items, 'card' otherwise
+  const viewMode: 'card' | 'table' = useMemo(() => {
+    if (userViewMode !== null) return userViewMode;
+    const count = selectedCategoryId
+      ? (inventory?.filter(
+          (p: InventoryItem) =>
+            p.category_id === selectedCategoryId ||
+            categories?.some((c: any) => c.id === p.category_id && c.parent_id === selectedCategoryId)
+        ).length ?? 0)
+      : (inventory?.length ?? 0);
+    return count > 20 ? 'table' : 'card';
+  }, [userViewMode, selectedCategoryId, inventory, categories]);
 
   const filteredItems = useMemo(() => {
     const filtered = inventory?.filter((p: InventoryItem) => {
@@ -344,7 +365,7 @@ export function InventoryListPage() {
       {/* Sticky Single Toolbar */}
       <div
         ref={toolbarRef}
-        className="sticky -mx-6 px-6 py-3 top-0 z-40 border-b border-border-default"
+        className="sticky -mx-6 px-6 py-3 top-0 z-40"
         style={{ backgroundColor: 'var(--color-background-default)' }}
       >
         <div className="flex flex-col gap-3 max-w-full">
@@ -364,6 +385,8 @@ export function InventoryListPage() {
             sortBy={sortBy}
             onSortChange={(sort: string) => setSortBy(sort as 'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc')}
             onOpenBarcode={() => setIsBarcodeModalOpen(true)}
+            view={viewMode}
+            onViewChange={handleViewChange}
           />
         </div>
       </div>
@@ -399,6 +422,7 @@ export function InventoryListPage() {
             onEditProduct={handleEditProduct}
             onDelete={handleDeleteProduct}
             onInlineSave={handleInlineSave}
+            view={viewMode}
             scrollElement={(document.querySelector('.main-content') as HTMLDivElement) || null}
             toolbarHeight={toolbarHeight}
           />

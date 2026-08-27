@@ -6,7 +6,7 @@ import { EditableCell } from '@/components';
 import { CategoryPicker } from '@/components';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { calcMarginRounded } from '@/lib/format';
+import { calcMarginRounded, getMarginColor } from '@/lib/format';
 
 interface InventoryProductCardProps {
   item: InventoryItem;
@@ -287,7 +287,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             <span
               className={cn(
                 "font-semibold tabular-nums",
-                margin >= 20 ? "text-warm-success" : margin >= 10 ? "text-warm-warning" : "text-warm-danger"
+                getMarginColor(margin)
               )}
             >
               {margin}% (৳{profitMarginVal.toLocaleString()})

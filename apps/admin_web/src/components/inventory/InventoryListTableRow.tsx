@@ -12,14 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { api } from '../../lib/api';
-import { calcMarginRounded } from '@/lib/format';
-
-const getMarginColor = (margin: number | null): string => {
-  if (margin === null) return 'text-text-muted';
-  if (margin >= 30) return 'text-success';
-  if (margin >= 15) return 'text-warning';
-  return 'text-danger';
-};
+import { calcMarginRounded, getMarginColor } from '@/lib/format';
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   OK: { bg: 'bg-success-subtle', text: 'text-success', border: 'border-success/20' },

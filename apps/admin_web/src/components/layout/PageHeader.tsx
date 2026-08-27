@@ -10,7 +10,7 @@ export interface PageHeaderProps {
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions, className }) => {
   return (
-    <div className={clsx('flex items-center justify-between py-4 border-b border-border-default', className)}>
+    <div className={clsx('flex items-center justify-between py-4', className)}>
       <div>
         <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
         {subtitle && <div className="text-sm text-text-muted mt-1">{subtitle}</div>}
