@@ -54,15 +54,20 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
     const rail = dealRailRef.current;
     if (!rail) return;
 
-    rail.scrollLeft = 0;
-    const frame = window.requestAnimationFrame(updateScrollControls);
+    let frameId: number | null = null;
     const resizeObserver = typeof ResizeObserver === 'undefined'
       ? null
-      : new ResizeObserver(updateScrollControls);
+      : new ResizeObserver(() => {
+          if (frameId !== null) window.cancelAnimationFrame(frameId);
+          frameId = window.requestAnimationFrame(updateScrollControls);
+        });
+
     resizeObserver?.observe(rail);
-    window.addEventListener('resize', updateScrollControls);
+    window.addEventListener('resize', updateScrollControls, { passive: true });
+    frameId = window.requestAnimationFrame(updateScrollControls);
+
     return () => {
-      window.cancelAnimationFrame(frame);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
       if (scrollRafId.current !== null) {
         window.cancelAnimationFrame(scrollRafId.current);
         scrollRafId.current = null;

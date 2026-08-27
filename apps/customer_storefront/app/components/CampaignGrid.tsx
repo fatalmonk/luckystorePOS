@@ -49,7 +49,7 @@ export function CampaignGrid({ products }: CampaignGridProps) {
               alt="A yellow basket filled with everyday Lucky Store groceries"
               fill
               priority
-              sizes="(max-width: 639px) 6rem, (max-width: 767px) 10rem, (max-width: 1023px) 12rem, 17.5rem"
+              sizes="(max-width: 639px) 96px, (max-width: 767px) 160px, (max-width: 1023px) 192px, 224px"
               className="object-contain object-center"
             />
           </div>
