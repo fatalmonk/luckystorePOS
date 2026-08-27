@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import { useState, useEffect } from 'react';
 import type { PosProduct } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
+import { getOptimizedImageUrl, getImageSrcSet } from '../../lib/images';
 
 interface ProductCardProps {
   product: PosProduct;
@@ -122,7 +123,9 @@ export function ProductCard({ product, onAddToCart, isFocused, onFocus }: Produc
       >
         {product.imageUrl ? (
           <img 
-            src={product.imageUrl} 
+            src={getOptimizedImageUrl(product.imageUrl, { width: 128 })} 
+            srcSet={getImageSrcSet(product.imageUrl, 64)}
+            sizes="64px"
             alt="" 
             width={64}
             height={64}

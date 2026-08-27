@@ -2,6 +2,51 @@ import { supabase } from './supabase';
 import { uploadToR2, isR2Configured } from './r2';
 
 /**
+ * Generates an optimized image URL for Cloudflare Worker / CDN.
+ * For images served from images.luckystore1947.com, appends width & quality query params
+ * or Cloudflare image resizing params.
+ */
+export function getOptimizedImageUrl(
+  url: string | null | undefined,
+  options: { width?: number; height?: number; quality?: number; format?: 'webp' | 'avif' } = {}
+): string {
+  if (!url) return '';
+  const { width, quality = 80 } = options;
+
+  try {
+    const parsed = new URL(url, window.location.origin);
+    // If hosted on Lucky Store Cloudflare Worker R2 bucket
+    if (parsed.hostname.includes('images.luckystore1947.com') || parsed.hostname.includes('luckystore1947.com')) {
+      if (width) parsed.searchParams.set('w', width.toString());
+      if (quality) parsed.searchParams.set('q', quality.toString());
+      return parsed.toString();
+    }
+  } catch {
+    // Return original if invalid URL string
+  }
+  return url;
+}
+
+/**
+ * Generate standard responsive srcset string for thumbnail display.
+ */
+export function getImageSrcSet(url: string | null | undefined, baseWidth = 112): string {
+  if (!url) return '';
+  const isCdn = url.includes('images.luckystore1947.com') || url.includes('luckystore1947.com');
+  if (!isCdn) return '';
+
+  const w1x = baseWidth;
+  const w2x = baseWidth * 2;
+  const w3x = baseWidth * 3;
+
+  const url1x = getOptimizedImageUrl(url, { width: w1x, quality: 80 });
+  const url2x = getOptimizedImageUrl(url, { width: w2x, quality: 80 });
+  const url3x = getOptimizedImageUrl(url, { width: w3x, quality: 75 });
+
+  return `${url1x} 1x, ${url2x} 2x, ${url3x} 3x`;
+}
+
+/**
  * Convert an image File/Blob to WebP format.
  * Resizes if oversized, encodes at specified quality.
  */
@@ -13,7 +58,7 @@ export async function convertToWebP(
     quality?: number;
   } = {}
 ): Promise<Blob> {
-  const { maxWidth = 600, maxHeight = 600, quality = 0.8 } = options;
+  const { maxWidth = 480, maxHeight = 480, quality = 0.8 } = options;
 
   return new Promise((resolve, reject) => {
     const img = new Image();

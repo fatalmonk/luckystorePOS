@@ -25,9 +25,9 @@ import { InventoryFilterToolbar } from '@/components';
 const ProductDetailDrawer = lazy(() => import('../products/ProductDetailDrawer').then(m => ({ default: m.ProductDetailDrawer })));
 const ProductUpdateDrawer = lazy(() => import('./ProductUpdateDrawer').then(m => ({ default: m.ProductUpdateDrawer })));
 const ProductAddModal = lazy(() => import('./AddProductModal').then(m => ({ default: m.ProductAddModal })));
-const BulkPriceModal = lazy(() => import('@/components').then(m => ({ default: m.BulkPriceModal })));
-const BulkStockModal = lazy(() => import('@/components').then(m => ({ default: m.BulkStockModal })));
-const BarcodeScannerModal = lazy(() => import('@/components').then(m => ({ default: m.BarcodeScannerModal })));
+const BulkPriceModal = lazy(() => import('../../components/inventory/BulkPriceModal').then(m => ({ default: m.BulkPriceModal })));
+const BulkStockModal = lazy(() => import('../../components/inventory/BulkStockModal').then(m => ({ default: m.BulkStockModal })));
+const BarcodeScannerModal = lazy(() => import('../../components/inventory/BarcodeScannerModal').then(m => ({ default: m.BarcodeScannerModal })));
 
 export function InventoryListPage() {
   const { storeId, tenantId } = useAuth();

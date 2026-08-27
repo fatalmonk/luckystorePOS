@@ -2,6 +2,7 @@ import type { InventoryItem } from '../../types/inventory';
 import React, { useState } from 'react';
 import { MoreVertical, History, Pencil, Trash2 } from 'lucide-react';
 import { calcMarginRounded } from '@/lib/format';
+import { getOptimizedImageUrl, getImageSrcSet } from '../../lib/images';
 
 const getMarginBadgeStyles = (margin: number | null): { container: string; text: string } => {
   if (margin === null) return { container: 'bg-surface-raised border-border/40', text: 'text-text-muted' };
@@ -141,7 +142,9 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             <div className="w-28 h-28 rounded-2xl bg-white dark:bg-neutral-100 border border-border/40 overflow-hidden flex items-center justify-center">
               {item.image_url ? (
                 <img
-                  src={item.image_url}
+                  src={getOptimizedImageUrl(item.image_url, { width: 224 })}
+                  srcSet={getImageSrcSet(item.image_url, 112)}
+                  sizes="(max-width: 768px) 112px, 112px"
                   alt={item.name}
                   width={112}
                   height={112}
