@@ -1,35 +1,25 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
-
-const STOREFRONT_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luckystore1947.com';
-const SUPABASE_URL = 'https://hvmyxyccfnkrbxqbhlnm.supabase.co';
+export const dynamic = 'force-static';
 
 /**
- * RFC 9728 — OAuth Protected Resource Metadata
- * Tells agents how to obtain access tokens for this resource.
+ * OAuth Protected Resource Metadata is intentionally unavailable until Lucky
+ * Store has a resource-server OAuth contract that can be advertised truthfully.
+ * Agent registration discovery remains available at /auth.md.
  */
 export async function GET() {
-  const metadata = {
-    resource: STOREFRONT_URL,
-    authorization_servers: [SUPABASE_URL],
-    bearer_methods_supported: ['header'],
-    scopes_supported: [
-      'read:products',
-      'read:orders',
-      'write:orders',
-      'read:profile',
-      'write:profile',
-    ],
-    resource_documentation: `${STOREFRONT_URL}/.well-known/agent-skills/index.json`,
-  };
-
-  return new NextResponse(JSON.stringify(metadata, null, 2), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
-      'Access-Control-Allow-Origin': '*',
+  return NextResponse.json(
+    {
+      error: 'metadata_not_available',
+      error_description: 'OAuth protected resource metadata is not published by this service.',
+      auth_md: 'https://luckystore1947.com/auth.md',
     },
-  });
+    {
+      status: 404,
+      headers: {
+        'Cache-Control': 'public, max-age=3600',
+        'Access-Control-Allow-Origin': '*',
+      },
+    },
+  );
 }
