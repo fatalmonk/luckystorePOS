@@ -60,7 +60,10 @@ export default defineConfig({
             if (/(\/|\\)(react|react-dom|react-router|react-router-dom|scheduler)(\/|\\)/.test(id)) {
               return 'vendor-react'
             }
-            if (/(\/|\\)(recharts|d3|lucide-react|clsx)(\/|\\)/.test(id)) {
+            if (/(\/|\\)(recharts|d3)(\/|\\)/.test(id)) {
+              return 'vendor-charts'
+            }
+            if (/(\/|\\)(lucide-react|clsx)(\/|\\)/.test(id)) {
               return 'vendor-ui'
             }
             if (/(\/|\\)(@supabase\/supabase-js|@supabase\/postgres-js|@tanstack\/react-query|papaparse)(\/|\\)/.test(id)) {

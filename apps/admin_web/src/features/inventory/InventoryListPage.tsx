@@ -43,10 +43,10 @@ export function InventoryListPage() {
   // Advanced Sorting
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'stock-asc' | 'stock-desc' | 'margin-asc' | 'margin-desc' | 'value-asc' | 'value-desc'>('name-asc');
 
-  // Collapsible widgets state
+  // Collapsible widgets state - default collapsed to defer secondary queries and save LCP/network payload
   const [showWidgets, setShowWidgets] = useState(() => {
     const saved = localStorage.getItem('inventory-widgets-visible');
-    return saved !== null ? saved === 'true' : true; // Default to visible
+    return saved !== null ? saved === 'true' : false;
   });
 
   const toggleWidgets = () => {
