@@ -1,0 +1,35 @@
+{
+  "protocol": {
+    "name": "acp",
+    "version": "1.0.0"
+  },
+  "api_base_url": "https://luckystore1947.com/api",
+  "transports": [
+    "http-rest",
+    "sse"
+  ],
+  "capabilities": {
+    "services": [
+      "catalog",
+      "cart",
+      "checkout",
+      "search",
+      "orders"
+    ],
+    "streaming": true,
+    "auth_types_supported": [
+      "bearer",
+      "api_key",
+      "anonymous"
+    ]
+  },
+  "endpoints": {
+    "products": "https://luckystore1947.com/api/products",
+    "categories": "https://luckystore1947.com/api/categories",
+    "search": "https://luckystore1947.com/api/products",
+    "checkout": "https://luckystore1947.com/api/checkout",
+    "orders": "https://luckystore1947.com/api/orders",
+    "health": "https://luckystore1947.com/api/health"
+  },
+  "documentation": "https://luckystore1947.com/.well-known/agent-skills/index.json"
+}

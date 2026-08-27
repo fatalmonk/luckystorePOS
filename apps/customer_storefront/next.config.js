@@ -39,6 +39,7 @@ const nextConfig = {
   async headers() {
     const linkHeaders = [
       '</.well-known/api-catalog>; rel="api-catalog"',
+      '</.well-known/acp.json>; rel="service-desc"',
       '</.well-known/oauth-authorization-server>; rel="service-doc"',
       '</.well-known/oauth-protected-resource>; rel="service-doc"',
       '<https://agent.luckystore1947.com/.well-known/oauth-protected-resource>; rel="oauth-protected-resource"',
