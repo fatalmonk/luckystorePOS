@@ -83,7 +83,7 @@ export function HomeShell({
                 </div>
                 <div className="home-trust-fact">
                   <dt>Since 1947</dt>
-                  <dd>A store Chittagong knows</dd>
+                  <dd>Three generations of trust</dd>
                 </div>
                 <div className="home-trust-fact">
                   <dt>Pay on delivery</dt>
@@ -97,14 +97,14 @@ export function HomeShell({
             <ProductGridSection
               id="popular-right-now"
               title="Popular Right Now"
-              subtitle="Frequently picked groceries and everyday repeat buys."
+              subtitle="Neighbourhood favourites filling Chittagong baskets this morning."
               products={featuredProducts.slice(0, 15)}
               ctaHref="/category"
             />
             <ProductGridSection
               id="daily-essentials"
               title="Daily Essentials"
-              subtitle="Rice, grains, spices, oil & everyday cooking essentials."
+              subtitle="Fragrant rice, pressed oils, and freshly ground spices for tonight’s pot."
               products={pantryProducts.slice(0, 15)}
               ctaHref="/category/cooking-essentials"
             />
@@ -116,14 +116,14 @@ export function HomeShell({
             <ProductGridSection
               id="snacks-drinks"
               title="Snacks & Drinks"
-              subtitle="Chips, biscuits, ice creams, beverages & quick bites."
+              subtitle="Crisp teatime biscuits, afternoon cold sips, and sweet bites."
               products={snacksProducts.slice(0, 15)}
               ctaHref="/category/snacks"
             />
             <ProductGridSection
               id="home-personal-care"
               title="Home & Personal Care"
-              subtitle="Household and personal replenishment for the week."
+              subtitle="Gentle soaps, clean living essentials, and daily comforts for the home."
               products={personalCareProducts.slice(0, 15)}
               ctaHref="/category/personal-care"
             />

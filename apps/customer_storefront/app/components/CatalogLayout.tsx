@@ -3,17 +3,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag, MagnifyingGlass } from '@phosphor-icons/react';
 import { GridProductCard } from './GridProductCard';
 import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
-
-const CartFlyAnimation = dynamic(
-  () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
-  { ssr: false }
-);
 
 const PRICE_OPTIONS = [
   { value: '0-100', label: 'Under ৳100' },
@@ -726,8 +720,6 @@ export function CatalogLayout({
           </div>
         </div>
       )}
-
-      <CartFlyAnimation items={[]} onComplete={() => undefined} />
     </div>
   );
 }

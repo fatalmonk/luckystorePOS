@@ -36,7 +36,7 @@ export function CampaignGrid({ products }: CampaignGridProps) {
               Daily essentials from a store Chittagong knows.
             </h2>
             <p className="campaign-on-image-muted mt-2 max-w-2xl text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7">
-              Pantry staples, snacks, dairy, and household essentials, delivered right to your doorstep.
+              From morning tea and warm daily bread to fragrant rice and evening pantry spices, we bring the heart of Chittagong’s local bazaar straight to your kitchen table.
             </p>
           </div>
 

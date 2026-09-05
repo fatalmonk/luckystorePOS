@@ -9,7 +9,7 @@ export function HeritageParallax() {
       <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="max-w-2xl">
           <p className="text-xs font-black uppercase tracking-wider text-warm-muted">
-            Chittagong grocery
+            Roots & Heritage
           </p>
           <h2
             id="heritage-title"
@@ -18,8 +18,7 @@ export function HeritageParallax() {
             Serving Chittagong since 1947.
           </h2>
           <p className="mt-3 text-sm leading-6 text-warm-muted sm:text-base sm:leading-7">
-            Browse pantry staples, snacks, dairy, and household essentials from a
-            local store built around everyday grocery runs.
+            Long before grocery apps, there was a counter, a scale, and an unshakeable promise of purity. For over seven decades, Lucky Store has stood with the families of Chittagong — delivering honest provisions from hands you have always known.
           </p>
         </div>
 

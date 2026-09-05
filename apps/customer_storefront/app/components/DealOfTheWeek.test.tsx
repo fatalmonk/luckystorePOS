@@ -38,8 +38,10 @@ describe('DealOfTheWeek', () => {
     products[4].stock = 0;
     render(<DealOfTheWeek products={products} />);
 
-    expect(screen.getByRole('heading', { name: 'Save of the Week' })).toBeInTheDocument();
-    expect(screen.getByText('Bag it before stock runs out!')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'The Weekly Special' })).toBeInTheDocument();
+    expect(
+      screen.getByText('A cherished kitchen staple, handpicked for you at an exceptional price.')
+    ).toBeInTheDocument();
     expect(screen.getByText('Countdown')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '50% off — View Deal 1' })).toBeInTheDocument();
     expect(screen.getAllByTestId('deal-product')).toHaveLength(3);
