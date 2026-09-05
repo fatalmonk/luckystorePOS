@@ -39,7 +39,7 @@ test.describe('Storefront commerce surfaces', () => {
     const weeklyDeal = page.locator('.deal-panel').first();
     await expect(weeklyDeal).toBeVisible();
     await expect(weeklyDeal).toHaveCSS('background-color', 'rgb(255, 248, 225)');
-    await expect(weeklyDeal.getByRole('heading', { name: 'Save of the Week' })).toBeVisible();
+    await expect(weeklyDeal.getByRole('heading', { name: 'The Weekly Special' })).toBeVisible();
     expect(consoleErrors).toEqual([]);
 
     await page.screenshot({

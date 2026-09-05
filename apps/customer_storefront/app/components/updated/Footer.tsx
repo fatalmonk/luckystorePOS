@@ -57,7 +57,7 @@ export function Footer() {
             <Logo className="[&_img]:!h-10 sm:[&_img]:!h-12" />
 
             <p className="site-footer-muted mt-5 max-w-md text-sm leading-6 sm:text-[15px] sm:leading-7">
-              Daily groceries, pantry staples, snacks, dairy, and household essentials for Chittagong homes.
+              Provisions for the Bengali hearth — pantry staples, fragrant tea, and daily comforts delivered with care across Chittagong since 1947.
             </p>
 
             <address className="mt-5 flex flex-col items-start not-italic">

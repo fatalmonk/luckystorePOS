@@ -110,12 +110,12 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
         <div className="min-w-0">
           <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">
-            Save of the Week
+            The Weekly Special
           </h2>
         </div>
         <DealCountdown />
         <p className="deal-panel-copy col-span-1 max-w-2xl text-sm">
-          Bag it before stock runs out!
+          A cherished kitchen staple, handpicked for you at an exceptional price.
         </p>
       </div>
 
