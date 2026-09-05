@@ -169,7 +169,7 @@ export function DealCountdown({
           ['Sec', timeLeft.seconds],
         ].map(([label, value], index) => (
           <React.Fragment key={String(label)}>
-            {index > 0 && <span className="mb-4 text-xs font-black text-warm-accent" aria-hidden="true">:</span>}
+            {index > 0 && <span className="mb-4 text-xs font-black text-warm-muted" aria-hidden="true">:</span>}
             <span className="flex flex-col items-center">
               <span className="deal-countdown-value min-w-[32px] rounded-warm-control px-2 py-1 text-sm font-black">
                 {String(value).padStart(2, '0')}

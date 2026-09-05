@@ -192,7 +192,7 @@ export function Header({ className = '' }: HeaderProps) {
             )}
             <button
               type="submit"
-              className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-warm-accent font-bold text-warm-accent-text shadow-warm-accent transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-warm-image-well font-bold text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label="Submit search"
             >
               <ArrowRight weight="bold" size={18} aria-hidden="true" />
@@ -371,7 +371,7 @@ export function Header({ className = '' }: HeaderProps) {
             {/* Search Submit Button */}
             <button
               type="submit"
-              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-accent text-warm-accent-text shadow-warm-accent transition-all hover:bg-warm-accent-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-all hover:bg-warm-bg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label="Submit search"
             >
               <ArrowRight weight="bold" size={16} aria-hidden="true" />

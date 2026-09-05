@@ -22,8 +22,8 @@ export function CampaignGrid({ products }: CampaignGridProps) {
   return (
     <MarketPanel
       aria-labelledby="campaign-hero-title"
-      tone="accent"
-      className="campaign-hero relative w-full overflow-hidden rounded-warm-panel border border-warm-accent/20 p-4 shadow-warm-panel sm:p-8 lg:p-10"
+      tone="paper"
+      className="campaign-hero relative w-full overflow-hidden rounded-warm-panel border border-warm-border p-4 shadow-warm-panel sm:p-8 lg:p-10"
     >
       <span className="campaign-spine" aria-hidden="true">Everyday</span>
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-start gap-6">
