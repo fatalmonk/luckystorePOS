@@ -69,7 +69,7 @@ export function HeroDiscoveryRail({
             </h2>
             <Link
               href="/category"
-              className="inline-flex min-h-11 items-center text-sm font-extrabold text-warm-accent-dark transition-colors hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="inline-flex min-h-11 items-center text-sm font-extrabold text-warm-fg underline underline-offset-4 transition-colors hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >
               Shop groceries
             </Link>

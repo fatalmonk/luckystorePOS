@@ -96,7 +96,7 @@
     z-index: 21;
     width: 2rem;
     height: 2px;
-    background: var(--color-accent);
+    background: var(--color-border);
     content: '';
     pointer-events: none;
   }
@@ -111,7 +111,7 @@
 
   .market-product-card[data-interactive]:hover,
   .market-product-card[data-interactive]:focus-within {
-    border-color: var(--color-accent);
+    border-color: var(--color-muted);
     box-shadow: var(--shadow-card-hover);
   }
 
@@ -140,13 +140,7 @@
   }
 
   .campaign-hero::before {
-    position: absolute;
-    inset: 0 auto 0 0;
-    z-index: 12;
-    width: 0.25rem;
-    background: var(--color-accent);
-    content: '';
-    transform-origin: top;
+    content: none;
   }
 
   .campaign-hero::after {
@@ -252,7 +246,9 @@
   }
 
   .campaign-card-action {
-    color: var(--color-accent);
+    color: var(--color-campaign-on-image);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
   .campaign-stage {
@@ -392,7 +388,7 @@
     margin-bottom: 0.4rem;
     width: 0.45rem;
     height: 0.45rem;
-    background: var(--color-accent);
+    background: var(--color-muted);
     border-radius: 9999px;
     content: '';
     flex-shrink: 0;
@@ -718,9 +714,7 @@
   }
 
   .deal-panel {
-    background:
-      linear-gradient(135deg, rgba(240, 196, 68, 0.20), rgba(253, 251, 247, 0.96) 48%),
-      var(--color-accent-muted);
+    background: var(--color-paper);
     box-shadow: 0 12px 32px rgba(11, 11, 13, 0.08);
   }
 
@@ -767,8 +761,8 @@
   }
 
   .deal-countdown-value {
-    color: var(--color-accent-text);
-    background: var(--color-accent);
+    color: var(--color-foreground);
+    background: var(--color-image-well);
   }
 
   .deal-product-reel {

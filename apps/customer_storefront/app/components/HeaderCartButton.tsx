@@ -16,18 +16,19 @@ export function HeaderCartButton({ compact = false, iconSize }: HeaderCartButton
   const { open } = useCartSheet();
 
   const iconPx = iconSize ?? 20;
+  const hasItems = isLoaded && totalItems > 0;
 
   return (
     <button
       type="button"
       onClick={open}
-      className={`relative flex items-center justify-center rounded-full text-warm-accent-text transition-[background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+      className={`relative flex items-center justify-center rounded-full transition-[background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${hasItems ? 'text-warm-accent-text' : 'text-warm-fg'} ${
         compact
-          ? 'min-h-11 min-w-11 before:absolute before:h-10 before:w-10 before:rounded-full before:bg-warm-accent before:shadow-sm before:transition-[background-color,box-shadow] hover:before:bg-warm-accent-hover hover:before:shadow-warm-md'
+          ? `min-h-11 min-w-11 before:absolute before:h-10 before:w-10 before:rounded-full before:transition-[background-color,box-shadow] ${hasItems ? 'before:bg-warm-accent hover:before:bg-warm-accent-hover' : 'before:border before:border-warm-border before:bg-warm-surface hover:before:bg-warm-image-well'}`
           : `${
               isLoaded && totalItems > 0
                 ? 'h-11 gap-1.5 bg-warm-accent px-3 text-xs font-extrabold shadow-sm hover:bg-warm-accent-hover hover:shadow-warm-md'
-                : 'h-11 w-11 bg-warm-accent shadow-sm hover:bg-warm-accent-hover hover:shadow-warm-md'
+                : 'h-11 w-11 border border-warm-border bg-warm-surface hover:bg-warm-image-well'
             }`
       }`}
       aria-label={`Cart ${isLoaded && totalItems > 0 ? `(${totalItems} items, ${formatBdt(total)})` : '(empty)'}`}

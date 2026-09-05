@@ -136,7 +136,7 @@ export function Footer() {
           </div>
           <Link
             href="/category"
-            className={`inline-flex min-h-12 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-warm-md bg-warm-accent px-6 py-3 text-center text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover active:translate-y-px sm:w-auto ${footerFocus}`}
+            className={`inline-flex min-h-12 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-warm-md border border-warm-muted bg-warm-surface px-6 py-3 text-center text-sm font-extrabold text-warm-fg transition-colors hover:bg-warm-image-well active:translate-y-px sm:w-auto ${footerFocus}`}
           >
             Shop groceries online
           </Link>

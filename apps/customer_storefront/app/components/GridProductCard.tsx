@@ -128,7 +128,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
                   event.stopPropagation();
                   decrement();
                 }}
-                className="flex h-12 w-12 items-center justify-center rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="flex h-12 w-12 items-center justify-center rounded-warm-control border border-warm-muted bg-warm-surface text-base font-bold text-warm-fg transition-colors hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={`Remove one ${product.name}`}
               >
                 -
@@ -142,7 +142,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
                   increment();
                 }}
                 disabled={!canAdd}
-                className="flex h-12 w-12 items-center justify-center rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-base font-bold text-warm-fg transition-colors hover:bg-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-12 w-12 items-center justify-center rounded-warm-control border border-warm-muted bg-warm-surface text-base font-bold text-warm-fg transition-colors hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label={`Add another ${product.name}`}
               >
                 +
@@ -166,7 +166,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
                 add(event.currentTarget);
               }}
               disabled={!canAdd}
-              className="h-12 w-full rounded-warm-control bg-warm-accent px-2 text-xs font-black text-warm-accent-text transition-colors hover:bg-warm-accent-hover active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
+              className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
               aria-label={`Add ${product.name} to cart`}
             >
               <span className="market-card-add-label-full">Add to Cart</span>

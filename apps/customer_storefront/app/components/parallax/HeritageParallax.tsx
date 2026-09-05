@@ -25,7 +25,7 @@ export function HeritageParallax() {
 
         <Link
           href="/category"
-          className="inline-flex min-h-11 w-max items-center justify-center rounded-warm-md bg-warm-accent px-5 py-2.5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          className="inline-flex min-h-11 w-max items-center justify-center rounded-warm-md border border-warm-muted bg-warm-surface px-5 py-2.5 text-sm font-extrabold text-warm-fg transition-colors hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
         >
           Shop groceries
         </Link>
