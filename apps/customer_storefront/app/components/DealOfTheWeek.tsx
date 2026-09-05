@@ -12,11 +12,6 @@ import { GridProductCard } from './GridProductCard';
 import { MarketPanel } from './ui/MarketSurface';
 import { ProductImage } from './product/ProductImage';
 
-const CartFlyAnimation = dynamic(
-  () => import('./CartFlyAnimation').then((m) => ({ default: m.CartFlyAnimation })),
-  { ssr: false }
-);
-
 interface DealOfTheWeekProps {
   products: Product[];
 }
@@ -229,8 +224,6 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
           </div>
         )}
       </div>
-
-      <CartFlyAnimation items={[]} onComplete={() => undefined} />
     </MarketPanel>
   );
 }

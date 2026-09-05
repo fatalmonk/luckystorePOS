@@ -40,7 +40,6 @@ export function Header({ className = '' }: HeaderProps) {
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState<boolean>(false);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
@@ -50,7 +49,6 @@ export function Header({ className = '' }: HeaderProps) {
   const mobileOverlaySearchRef = useRef<HTMLDivElement>(null);
   const mobileInlineSearchRef = useRef<HTMLFormElement>(null);
   const desktopSearchRef = useRef<HTMLDivElement>(null);
-  const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const desktopCategoriesRef = useRef<HTMLElement>(null);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
@@ -68,7 +66,7 @@ export function Header({ className = '' }: HeaderProps) {
     }
   }, []);
 
-  // Sync selectedCategory dropdown label with current URL pathname
+  // Sync selectedCategory with current URL pathname
   useEffect(() => {
     if (pathname?.startsWith('/category/')) {
       const slug = pathname.replace('/category/', '').split('/')[0];
@@ -81,7 +79,7 @@ export function Header({ className = '' }: HeaderProps) {
     }
   }, [pathname]);
 
-  // Close dropdowns when clicking outside or pressing Escape
+  // Close suggestions when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -93,15 +91,11 @@ export function Header({ className = '' }: HeaderProps) {
       if (!isInsideSearch) {
         setShowSuggestions(false);
       }
-      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(target)) {
-        setIsCategoryDropdownOpen(false);
-      }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowSuggestions(false);
-        setIsCategoryDropdownOpen(false);
         setIsMobileSearchOpen(false);
       }
     };
@@ -144,11 +138,6 @@ export function Header({ className = '' }: HeaderProps) {
       router.push('/category');
     }
   };
-
-  const selectedCategoryLabel =
-    selectedCategory === 'all'
-      ? 'All Categories'
-      : CATEGORY_GROUPS.find((g) => g.slug === selectedCategory)?.label || 'Category';
 
   // Early return for mobile search overlay state
   if (isMobileSearchOpen) {
@@ -286,64 +275,6 @@ export function Header({ className = '' }: HeaderProps) {
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
         <div className="relative hidden max-w-[460px] flex-1 md:block" ref={desktopSearchRef}>
           <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-all duration-300">
-            {/* Category Dropdown Toggle */}
-            <div className="relative shrink-0 border-r border-warm-border hidden" ref={categoryDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                className="flex h-11 items-center gap-1.5 rounded-l-full px-3.5 text-xs font-extrabold text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
-                aria-expanded={isCategoryDropdownOpen}
-                aria-haspopup="menu"
-                aria-label={`Search within ${selectedCategoryLabel}`}
-              >
-                <List weight="bold" size={14} className="text-warm-accent" aria-hidden="true" />
-                <span className="max-w-[110px] truncate">{selectedCategoryLabel}</span>
-                <CaretDown weight="bold" size={12} className="text-warm-muted" aria-hidden="true" />
-              </button>
-
-              {/* Category Dropdown Menu */}
-              {isCategoryDropdownOpen && (
-                <div className="absolute left-0 top-12 w-56 bg-warm-surface border border-warm-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory('all');
-                      setIsCategoryDropdownOpen(false);
-                      router.push('/category');
-                    }}
-                    className={`min-h-11 w-full rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                      selectedCategory === 'all' ? 'bg-warm-fg text-warm-bg' : 'text-warm-fg hover:bg-warm-bg'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <span className="text-warm-accent">{getCategoryIcon('all', 16)}</span>
-                      All Categories
-                    </span>
-                  </button>
-                  <div className="my-1 border-t border-warm-border/40" />
-                  <div className="max-h-60 overflow-y-auto scrollbar-hide space-y-0.5">
-                    {CATEGORY_GROUPS.map((g) => (
-                      <button
-                        key={g.slug}
-                        type="button"
-                        onClick={() => {
-                          setSelectedCategory(g.slug);
-                          setIsCategoryDropdownOpen(false);
-                          router.push(`/category/${g.slug}`);
-                        }}
-                        className={`flex min-h-11 w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                          selectedCategory === g.slug ? 'bg-warm-fg text-warm-bg font-bold' : 'text-warm-fg hover:bg-warm-bg'
-                        }`}
-                      >
-                        <span className="text-warm-accent">{getCategoryIcon(g.slug, 16)}</span>
-                        <span>{g.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Main Search Input */}
             <div className="flex-1 relative">
               <input
