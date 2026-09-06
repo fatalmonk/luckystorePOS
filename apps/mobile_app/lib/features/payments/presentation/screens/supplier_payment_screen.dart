@@ -147,18 +147,15 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
         throw Exception('Authentication required');
       }
 
-      // PR 0A Safety Containment: 6-arg RPC is broken in production backend.
-      // Temporarily disabled until PR 3 delivers unified record_supplier_payment_v2.
-      throw Exception('Supplier payment is temporarily undergoing maintenance.');
+      final supplierId = _selectedSupplier!['id'] as String;
+      final idempotencyKey = 'supp_pay_${DateTime.now().millisecondsSinceEpoch}_$supplierId';
 
-      // ignore: dead_code
-      await _supabase.rpc('record_supplier_payment', params: {
-        'p_supplier_id': _selectedSupplier!['id'],
+      await _supabase.rpc('record_supplier_payment_v2', params: {
+        'p_idempotency_key': idempotencyKey,
+        'p_supplier_id': supplierId,
         'p_amount': amount,
         'p_payment_method': _selectedPaymentMethod,
         'p_reference': reference.isEmpty ? null : reference,
-        'p_store_id': storeId,
-        'p_user_id': userId,
       });
 
       // Clear form

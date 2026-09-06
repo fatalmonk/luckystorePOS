@@ -191,18 +191,15 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       }
 
       final partyId = _selectedCustomer!['party_id'] as String;
+      final idempotencyKey = 'pay_mobile_${DateTime.now().millisecondsSinceEpoch}_$partyId';
 
-      // PR 0A Safety Containment: 5-arg RPC is broken in production backend.
-      // Temporarily disabled until PR 3 delivers unified record_customer_payment_v2.
-      throw Exception('Payment collection is temporarily undergoing maintenance. Please use Admin Web Collections.');
-
-      // ignore: dead_code
-      await _supabase.rpc('record_customer_payment', params: {
+      await _supabase.rpc('record_customer_payment_v2', params: {
+        'p_idempotency_key': idempotencyKey,
         'p_party_id': partyId,
         'p_amount': amount,
-        'p_payment_method': _selectedPaymentMethod!.type,
-        'p_reference': reference.isEmpty ? null : reference,
-        'p_collected_by': userId,
+        'p_payment_method_id': _selectedPaymentMethod?.id,
+        'p_client_transaction_id': reference.isEmpty ? null : reference,
+        'p_notes': reference.isEmpty ? null : 'Ref: $reference',
       });
 
       if (mounted) {

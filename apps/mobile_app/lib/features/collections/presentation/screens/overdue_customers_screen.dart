@@ -303,19 +303,12 @@ class _ReceivePaymentSheetState extends State<_ReceivePaymentSheet> {
     setState(() => _isSubmitting = true);
 
     try {
-      final auth = context.read<AuthProvider>();
       final supabase = Supabase.instance.client;
       
-      // Mocking cash account UUID for demo - usually fetched from settings
-      const cashAccountId = '00000000-0000-0000-0000-000000000003';
-      
-      await supabase.rpc('record_customer_payment', params: {
+      await supabase.rpc('record_customer_payment_v2', params: {
         'p_idempotency_key': 'pay_${DateTime.now().millisecondsSinceEpoch}_${widget.customer['party_id']}',
-        'p_tenant_id': auth.appUser?.id,
-        'p_store_id': auth.appUser?.storeId,
         'p_party_id': widget.customer['party_id'],
         'p_amount': amount,
-        'p_payment_account_id': cashAccountId,
       });
 
       widget.onSuccess();

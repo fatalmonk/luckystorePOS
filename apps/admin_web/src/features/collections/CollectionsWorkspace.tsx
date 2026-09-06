@@ -123,7 +123,7 @@ export const CollectionsWorkspace: React.FC = () => {
     setActionLoading(true);
     setActionError(null);
 
-    const { error } = await supabase.rpc('record_customer_payment', {
+    const { error } = await supabase.rpc('record_customer_payment_v2', {
       p_idempotency_key: `pay_${Date.now()}_${selectedParty.party_id}`,
       p_tenant_id: tenantId,
       p_store_id: storeId,

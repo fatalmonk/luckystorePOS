@@ -5549,6 +5549,20 @@ export type Database = {
             }
             Returns: Json
           }
+      record_customer_payment_v2: {
+        Args: {
+          p_amount: number
+          p_client_transaction_id?: string | null
+          p_idempotency_key?: string | null
+          p_notes?: string | null
+          p_party_id: string
+          p_payment_account_id?: string | null
+          p_payment_method_id?: string | null
+          p_store_id?: string | null
+          p_tenant_id?: string | null
+        }
+        Returns: Json
+      }
       record_expense: {
         Args: {
           p_amount: number
@@ -5609,6 +5623,21 @@ export type Database = {
           p_user_id?: string
         }
         Returns: string
+      }
+      record_supplier_payment_v2: {
+        Args: {
+          p_amount: number
+          p_idempotency_key?: string | null
+          p_notes?: string | null
+          p_payment_account_id?: string | null
+          p_payment_method?: string | null
+          p_payment_method_id?: string | null
+          p_reference?: string | null
+          p_store_id?: string | null
+          p_supplier_id: string
+          p_tenant_id?: string | null
+        }
+        Returns: Json
       }
       register_ledger_worker: {
         Args: { p_worker_id: string }
