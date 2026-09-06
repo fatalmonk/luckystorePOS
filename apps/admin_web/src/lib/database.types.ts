@@ -3312,6 +3312,44 @@ export type Database = {
           },
         ]
       }
+      sale_payment_allocations: {
+        Row: {
+          allocated_amount: number
+          allocated_at: string
+          id: string
+          ledger_batch_id: string | null
+          notes: string | null
+          payment_id: string | null
+          sale_id: string
+        }
+        Insert: {
+          allocated_amount: number
+          allocated_at?: string
+          id?: string
+          ledger_batch_id?: string | null
+          notes?: string | null
+          payment_id?: string | null
+          sale_id: string
+        }
+        Update: {
+          allocated_amount?: number
+          allocated_at?: string
+          id?: string
+          ledger_batch_id?: string | null
+          notes?: string | null
+          payment_id?: string | null
+          sale_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_payment_allocations_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           accounting_posted_at: string | null
@@ -3323,11 +3361,15 @@ export type Database = {
           change_due: number | null
           client_transaction_id: string | null
           created_at: string | null
+          credit_status: string
+          credit_terms_days: number
           customer_id: string | null
           discount: number | null
           discount_amount: number | null
+          due_date: string
           fulfilled_subtotal: number | null
           id: string
+          invoice_date: string
           invoice_sent_at: string | null
           invoice_sent_via: string | null
           ledger_batch_id: string | null
@@ -3358,11 +3400,15 @@ export type Database = {
           change_due?: number | null
           client_transaction_id?: string | null
           created_at?: string | null
+          credit_status?: string
+          credit_terms_days?: number
           customer_id?: string | null
           discount?: number | null
           discount_amount?: number | null
+          due_date?: string
           fulfilled_subtotal?: number | null
           id?: string
+          invoice_date?: string
           invoice_sent_at?: string | null
           invoice_sent_via?: string | null
           ledger_batch_id?: string | null
@@ -3393,11 +3439,15 @@ export type Database = {
           change_due?: number | null
           client_transaction_id?: string | null
           created_at?: string | null
+          credit_status?: string
+          credit_terms_days?: number
           customer_id?: string | null
           discount?: number | null
           discount_amount?: number | null
+          due_date?: string
           fulfilled_subtotal?: number | null
           id?: string
+          invoice_date?: string
           invoice_sent_at?: string | null
           invoice_sent_via?: string | null
           ledger_batch_id?: string | null
@@ -4367,6 +4417,16 @@ export type Database = {
         }
         Returns: string
       }
+      allocate_payment_to_invoices: {
+        Args: {
+          p_ledger_batch_id?: string | null
+          p_party_id: string
+          p_payment_amount: number
+          p_payment_id?: string | null
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       addauth: { Args: { "": string }; Returns: boolean }
       addgeometrycolumn:
         | {
@@ -5225,6 +5285,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      get_invoice_aging_report: {
+        Args: {
+          p_as_of_date?: string
+          p_customer_id?: string | null
+          p_store_id?: string | null
+        }
+        Returns: Json
       }
       get_receivables_aging: {
         Args: { p_search?: string; p_store_id: string; p_tenant_id: string }
