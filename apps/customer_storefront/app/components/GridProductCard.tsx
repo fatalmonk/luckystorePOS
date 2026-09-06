@@ -167,7 +167,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
               }}
               disabled={!canAdd}
               className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
-              aria-label={`Add ${product.name} to cart`}
+              aria-label={`Add to Cart: ${product.name}`}
             >
               <span className="market-card-add-label-full">Add to Cart</span>
               <span className="market-card-add-label-short">Add</span>

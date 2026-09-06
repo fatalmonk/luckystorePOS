@@ -26,12 +26,14 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
   display: 'swap',
+  preload: false,
 });
 
 const notoBengali = Noto_Sans_Bengali({
   subsets: ['bengali'],
   variable: '--font-bengali',
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -152,6 +154,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0B0B0D" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
         <script
+          data-cfasync="false"
           dangerouslySetInnerHTML={{
             __html: `(function(){var t=localStorage.getItem('lucky-theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}if(t==='dark')document.documentElement.dataset.theme='dark';})();`,
           }}
@@ -204,7 +207,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
-        <Script id="google-consent-default" strategy="beforeInteractive">
+        <Script id="google-consent-default" strategy="beforeInteractive" data-cfasync="false">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -232,7 +235,7 @@ export default function RootLayout({
             }
           `}
         </Script>
-        {/* Google Analytics — inserted after idle time so hero paint wins the main thread. */}
+        {/* Google Analytics — consolidated with Cloudflare Zaraz to avoid redundant 173 KiB script when Zaraz is active */}
         <Script id="gtag-init" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -240,10 +243,15 @@ export default function RootLayout({
             window.gtag = gtag;
             var loadGtag = function(){
               if (document.querySelector('script[data-lucky-gtag]')) return;
+              if (window.zaraz) {
+                // Cloudflare Zaraz is active at edge; skip direct gtag.js download
+                return;
+              }
               var script = document.createElement('script');
               script.async = true;
               script.src = 'https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D';
               script.dataset.luckyGtag = 'true';
+              script.setAttribute('data-cfasync', 'false');
               script.onload = function(){
                 gtag('js', new Date());
                 gtag('config', 'G-K5JLJNSW6D');
@@ -320,6 +328,11 @@ export default function RootLayout({
                   ad_personalization: 'denied',
                   analytics_storage: analyticsStorage
                 });
+                if (window.zaraz && window.zaraz.consent) {
+                  try {
+                    window.zaraz.consent.set({ analytics: analyticsStorage === 'granted' });
+                  } catch (error) {}
+                }
               };
 
               accept.addEventListener('click', function () {

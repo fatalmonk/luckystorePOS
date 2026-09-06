@@ -94,7 +94,7 @@ describe('GridProductCard', () => {
   it('keeps add, increment, and decrement actions inside buttons', () => {
     const { rerender } = render(<GridProductCard product={product} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add Test Rice to cart' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Cart: Test Rice' }));
     expect(add).toHaveBeenCalledTimes(1);
 
     cartState = { quantity: 1, canAdd: true, announcement: '' };
