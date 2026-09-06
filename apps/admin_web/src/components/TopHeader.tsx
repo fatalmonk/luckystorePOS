@@ -1,6 +1,7 @@
 import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../lib/AuthContext';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -22,6 +23,8 @@ export function TopHeader({
   hidden = false,
 }: TopHeaderProps) {
   const { i18n } = useTranslation();
+  const { user } = useAuth();
+  const userName = user?.name?.trim() || 'User';
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -122,7 +125,7 @@ export function TopHeader({
         </button>
         <div className="user-profile" role="group" aria-label="User menu">
           <div className="avatar" aria-hidden="true"><User size={16} /></div>
-          <span className="user-name">Mohammed</span>
+          <span className="user-name">{userName}</span>
         </div>
       </div>
     </header>

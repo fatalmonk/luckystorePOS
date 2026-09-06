@@ -41,7 +41,7 @@ export const dashboard = {
     const row = (data as any) || {};
     return {
       total_sales: Number(row.total_sales ?? 0),
-      user: row.user ?? { name: 'Mohammed' },
+      user: row.user ?? undefined,
     };
   },
   getMissingMetrics: async (storeId: string): Promise<MissingMetrics> => {

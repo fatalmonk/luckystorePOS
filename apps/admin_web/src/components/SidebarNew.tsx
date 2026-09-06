@@ -113,7 +113,9 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   hidden, 
   onClose 
 }) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const userName = user?.name?.trim() || 'User';
+  const userInitial = userName.charAt(0).toUpperCase();
   const navGroups = useNavGroups();
   const location = useLocation();
   const { t } = useTranslation();
@@ -363,11 +365,11 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
           {/* User profile & Logout */}
           <div className={clsx('flex items-center gap-2 border-t border-warm-border/50 pt-3', collapsed && 'flex-col justify-center')}>
             <div className="avatar flex items-center justify-center rounded-full bg-warm-accent text-white font-bold text-xs w-7 h-7 flex-shrink-0">
-              M
+              {userInitial}
             </div>
             {!collapsed ? (
               <div className="flex-1 min-w-0 flex flex-col">
-                <span className="truncate text-warm-fg text-xs font-bold leading-tight">Mohammed</span>
+                <span className="truncate text-warm-fg text-xs font-bold leading-tight">{userName}</span>
                 <span className="truncate text-[10px] text-warm-muted">Store Manager</span>
               </div>
             ) : null}
