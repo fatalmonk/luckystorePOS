@@ -86,7 +86,7 @@ export function InventoryCardFeed({
       resizeObserver.disconnect();
       parent.removeEventListener('scroll', measure);
     };
-  }, [scrollElement, items]);
+  }, [getParent, items]);
 
   // Adjust virtualized row count for multi-column grids
   const virtualCount = Math.ceil(items.length / cols);

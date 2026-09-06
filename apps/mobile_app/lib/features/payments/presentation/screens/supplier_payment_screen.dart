@@ -147,7 +147,11 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
         throw Exception('Authentication required');
       }
 
-      // Call RPC to record supplier payment
+      // PR 0A Safety Containment: 6-arg RPC is broken in production backend.
+      // Temporarily disabled until PR 3 delivers unified record_supplier_payment_v2.
+      throw Exception('Supplier payment is temporarily undergoing maintenance.');
+
+      // ignore: dead_code
       await _supabase.rpc('record_supplier_payment', params: {
         'p_supplier_id': _selectedSupplier!['id'],
         'p_amount': amount,

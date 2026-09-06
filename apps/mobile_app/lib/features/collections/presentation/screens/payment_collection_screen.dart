@@ -192,7 +192,11 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
 
       final partyId = _selectedCustomer!['party_id'] as String;
 
-      // Call RPC to record payment
+      // PR 0A Safety Containment: 5-arg RPC is broken in production backend.
+      // Temporarily disabled until PR 3 delivers unified record_customer_payment_v2.
+      throw Exception('Payment collection is temporarily undergoing maintenance. Please use Admin Web Collections.');
+
+      // ignore: dead_code
       await _supabase.rpc('record_customer_payment', params: {
         'p_party_id': partyId,
         'p_amount': amount,

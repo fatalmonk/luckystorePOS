@@ -36,6 +36,7 @@ function formatDate(dateStr?: string | null): string {
 interface InventoryListTableRowProps {
   item: InventoryItem;
   virtualRowSize: number;
+  onRowHeightChange: (height: number) => void;
   isSelected: boolean;
   isOpen: boolean;
   editingCell: { rowId: string; field: string } | null;
@@ -54,6 +55,7 @@ interface InventoryListTableRowProps {
 function InventoryListTableRowComponent({
   item,
   virtualRowSize,
+  onRowHeightChange,
   isSelected,
   isOpen,
   editingCell,
@@ -137,6 +139,24 @@ function InventoryListTableRowComponent({
     }
   };
 
+  const handleRowResizePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const startY = event.clientY;
+    const startHeight = virtualRowSize;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      onRowHeightChange(startHeight + moveEvent.clientY - startY);
+    };
+    const stopResize = () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', stopResize);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', stopResize, { once: true });
+  };
+
   const rowRef = useRef<HTMLTableRowElement>(null);
   const actionBtnRef = useMagneticHover<HTMLButtonElement>({ strength: 20 });
   const smartPricingBtnRef = useMagneticHover<HTMLButtonElement>({ strength: 10 });
@@ -173,7 +193,7 @@ function InventoryListTableRowComponent({
       )}
       style={{ height: `${virtualRowSize}px` }}
     >
-      <td className="px-4 py-3 text-center">
+      <td className="relative px-4 py-3 text-center">
         <input
           type="checkbox"
           checked={isSelected}
@@ -181,6 +201,21 @@ function InventoryListTableRowComponent({
           aria-label={`Select ${item.name}`}
           className="rounded border-border-default text-primary focus:ring-primary w-4 h-4 cursor-pointer"
         />
+        <button
+          type="button"
+          aria-label={`Resize row for ${item.name}`}
+          title="Drag to resize row. Double-click to reset."
+          className="absolute bottom-0 left-1/2 h-2 w-7 -translate-x-1/2 cursor-row-resize touch-none group/row-resize focus:outline-none focus:ring-2 focus:ring-primary"
+          onPointerDown={handleRowResizePointerDown}
+          onDoubleClick={() => onRowHeightChange(72)}
+          onKeyDown={(event) => {
+            if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+            event.preventDefault();
+            onRowHeightChange(virtualRowSize + (event.key === 'ArrowDown' ? 8 : -8));
+          }}
+        >
+          <span className="absolute bottom-[3px] left-1/2 h-px w-4 -translate-x-1/2 bg-border group-hover/row-resize:bg-primary group-focus/row-resize:bg-primary" />
+        </button>
       </td>
 
       {/* Product Name + Image */}
@@ -557,4 +592,3 @@ export const InventoryListTableRow = React.memo(
     return true;
   }
 );
-

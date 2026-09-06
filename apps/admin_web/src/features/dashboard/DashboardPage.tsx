@@ -337,7 +337,7 @@ export function DashboardPage() {
       <header className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-warm-fg font-display">
-            {t('dashboard.welcome')}, {user?.name || stats?.user?.name || 'Mohammed'}
+            {t('dashboard.welcome')}, {user?.name?.trim() || 'User'}
           </h1>
           <p className="text-warm-muted mt-1">Here&apos;s what&apos;s happening today.</p>
         </div>

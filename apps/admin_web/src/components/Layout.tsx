@@ -67,7 +67,6 @@ export function Layout() {
     const SCROLL_THRESHOLD = 8;
     const TOP_ZONE = 30;
 
-    setHeaderVisible(true);
     lastScrollYRef.current = mainEl ? mainEl.scrollTop : window.scrollY;
 
     const handleScroll = (e: Event) => {
