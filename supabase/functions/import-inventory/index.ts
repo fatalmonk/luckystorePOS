@@ -282,7 +282,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    let actorProfile: { id: string; role: UserRole } | null = null;
+    let actorProfile: { id: string; role: UserRole; tenant_id: string; store_id: string | null } | null = null;
     const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
     const token = authHeader?.toLowerCase().startsWith("bearer ")
       ? authHeader.replace(/^Bearer\s+/i, "").trim()
@@ -310,7 +310,7 @@ serve(async (req) => {
 
       const { data: profile, error: actorError } = await supabaseClient
         .from("users")
-        .select("id, role")
+        .select("id, role, tenant_id, store_id")
         .eq("auth_id", user.id)
         .maybeSingle();
       if (actorError || !profile || !ALLOWED_IMPORT_ROLES.includes(profile.role as UserRole)) {
@@ -319,7 +319,12 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      actorProfile = { id: profile.id, role: profile.role as UserRole };
+      actorProfile = { 
+        id: profile.id, 
+        role: profile.role as UserRole,
+        tenant_id: profile.tenant_id,
+        store_id: profile.store_id
+      };
     } catch {
       return new Response(JSON.stringify({ error: "Authentication failed" }), {
         status: 401,
@@ -536,9 +541,26 @@ serve(async (req) => {
     const barcodes = [...new Set(parsedRows.map((r) => r.barcode).filter(Boolean) as string[])];
     const skus = [...new Set(parsedRows.map((r) => r.sku).filter(Boolean) as string[])];
 
+    const storeMap = new Map<string, string>();
+    for (const chunk of chunkArray(storeCodes, 100)) {
+      const { data, error } = await supabaseClient
+        .from("stores")
+        .select("id, code")
+        .eq("tenant_id", actorProfile.tenant_id)
+        .in("code", chunk);
+      if (error) throw error;
+      for (const row of data ?? []) {
+        storeMap.set(row.code, row.id);
+      }
+    }
+
     const categoryMap = new Map<string, string>();
     for (const chunk of chunkArray(categoryNames, 100)) {
-      const { data, error } = await supabaseClient.from("categories").select("id, name").in("name", chunk);
+      const { data, error } = await supabaseClient
+        .from("categories")
+        .select("id, name")
+        .eq("tenant_id", actorProfile.tenant_id)
+        .in("name", chunk);
       if (error) throw error;
       for (const row of data ?? []) {
         categoryMap.set(row.name, row.id);
@@ -548,8 +570,12 @@ serve(async (req) => {
     const missingCategoryNames = categoryNames.filter((name) => !categoryMap.has(name));
     if (missingCategoryNames.length > 0) {
       const { error } = await supabaseClient.from("categories").upsert(
-        missingCategoryNames.map((name) => ({ name })),
-        { onConflict: "name", ignoreDuplicates: false },
+        missingCategoryNames.map((name) => ({ 
+          name, 
+          tenant_id: actorProfile!.tenant_id,
+          store_id: actorProfile!.store_id 
+        })),
+        { onConflict: "tenant_id,name", ignoreDuplicates: false },
       );
       if (error) {
         summary.errors.push({
@@ -562,19 +588,11 @@ serve(async (req) => {
       const { data: refreshedCategories, error: refreshCategoryError } = await supabaseClient
         .from("categories")
         .select("id, name")
+        .eq("tenant_id", actorProfile.tenant_id)
         .in("name", missingCategoryNames);
       if (refreshCategoryError) throw refreshCategoryError;
       for (const row of refreshedCategories ?? []) {
         categoryMap.set(row.name, row.id);
-      }
-    }
-
-    const storeMap = new Map<string, string>();
-    for (const chunk of chunkArray(storeCodes, 100)) {
-      const { data, error } = await supabaseClient.from("stores").select("id, code").in("code", chunk);
-      if (error) throw error;
-      for (const row of data ?? []) {
-        storeMap.set(row.code, row.id);
       }
     }
 
@@ -585,6 +603,7 @@ serve(async (req) => {
       const { data, error } = await supabaseClient
         .from("items")
         .select("id, barcode, sku")
+        .eq("tenant_id", actorProfile.tenant_id)
         .in("barcode", chunk);
       if (error) throw error;
       for (const item of data ?? []) {
@@ -597,6 +616,7 @@ serve(async (req) => {
       const { data, error } = await supabaseClient
         .from("items")
         .select("id, barcode, sku")
+        .eq("tenant_id", actorProfile.tenant_id)
         .in("sku", chunk);
       if (error) throw error;
       for (const item of data ?? []) {
@@ -666,6 +686,7 @@ serve(async (req) => {
             const { data: insertedItem, error: insertError } = await supabaseClient
               .from("items")
               .insert({
+                tenant_id: actorProfile!.tenant_id,
                 name: row.name,
                 barcode: row.barcode,
                 sku: row.sku,

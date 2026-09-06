@@ -331,10 +331,10 @@ serve(async (req) => {
 
     const requestData = validation.data!;
 
-    // Get user profile using RLS-enforced client (least privilege)
+    // Get user profile and store membership using RLS-enforced client (least privilege)
     const { data: profile, error: profileError } = await userClient
       .from('users')
-      .select('id')
+      .select('id, tenant_id, store_id, role')
       .eq('auth_id', user.id)
       .single();
 
@@ -347,6 +347,36 @@ serve(async (req) => {
           status: 403,
         }
       );
+    }
+
+    // Explicit store authorization check in edge layer
+    if (requestData.store_id) {
+      if (profile.role === 'cashier' && profile.store_id !== requestData.store_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Cashier not authorized for requested store' }),
+          {
+            headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },
+            status: 403,
+          }
+        );
+      }
+
+      // Verify requested store belongs to user's tenant
+      const { data: storeRow, error: storeError } = await userClient
+        .from('stores')
+        .select('id, tenant_id')
+        .eq('id', requestData.store_id)
+        .single();
+
+      if (storeError || !storeRow || storeRow.tenant_id !== profile.tenant_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Store does not belong to authorized tenant' }),
+          {
+            headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },
+            status: 403,
+          }
+        );
+      }
     }
 
     // Prepare RPC parameters
