@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Supabase, Cloudflare Workers/R2
 Current: Executed PR 3 (Unified Customer & Supplier Payment RPCs v2)
-Done: PR 0A-0C, PR 1B-1D, PR 2A-2C, PR 3; admin_web & mobile_app callers unified; vitest & flutter test suites passing
+Done: PR 0A-0C, PR 1B-1D, PR 2A-2C, PR 3; Admin Web & Customer Storefront deployed to Vercel production
 Branch: main
-Health: Test suites passing 100% (Security 19/19, Flutter 118/118, Storefront 154/154)
+Health: Production deployments READY (HTTP 200 on luckystore1947.com & admin.luckystore1947.com)
 Last Synced: 2026-09-07
-ctx: pr3 unified payment rpcs | done: record_customer_payment_v2, record_supplier_payment_v2, mobile & web updated | next: PR 4 (atomic card settlement in _checkout schema)
+ctx: vercel production deployments | done: admin_web & customer_storefront live | next: PR 4 (atomic card settlement in _checkout schema)
