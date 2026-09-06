@@ -4719,6 +4719,39 @@ export type Database = {
         }
         Returns: Json
       }
+      create_sale_intent: {
+        Args: {
+          p_client_transaction_id?: string | null
+          p_customer_id?: string | null
+          p_discount?: number
+          p_expires_in_minutes?: number
+          p_gateway_transaction_id?: string | null
+          p_items: Json
+          p_notes?: string | null
+          p_session_id?: string | null
+          p_store_id: string
+          p_total_amount: number
+        }
+        Returns: Json
+      }
+      get_sale_intent_status: {
+        Args: {
+          p_intent_id: string
+        }
+        Returns: Json
+      }
+      settle_card_sale_ipn: {
+        Args: {
+          p_amount: number
+          p_currency?: string
+          p_gateway_payment_method?: string
+          p_gateway_payload?: Json
+          p_gateway_transaction_id: string
+          p_store_id?: string | null
+          p_val_id: string
+        }
+        Returns: Json
+      }
       create_stock_transfer: {
         Args: {
           p_from_store_id: string

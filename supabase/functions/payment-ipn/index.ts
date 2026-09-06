@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,12 +61,40 @@ serve(async (req) => {
     const result: SSLValidationResult = await response.json()
 
     const valid = result.status === 'VALID' || result.status === 'VALIDATED'
+    let settlementResult: Record<string, unknown> | null = null
+
+    if (valid && tranId) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        const amount = Number(result.amount || params.get('amount') || 0)
+        const currency = result.currency || params.get('currency') || 'BDT'
+
+        const { data: settleData, error: settleError } = await supabase.rpc('settle_card_sale_ipn', {
+          p_gateway_transaction_id: tranId,
+          p_val_id: valId,
+          p_amount: amount,
+          p_currency: currency,
+          p_gateway_payment_method: result.card_type || 'CARD',
+          p_gateway_payload: result,
+        })
+
+        if (settleError) {
+          console.error('settle_card_sale_ipn error:', settleError)
+          throw new Error(`Settlement failed: ${settleError.message}`)
+        }
+        settlementResult = settleData as Record<string, unknown>
+      }
+    }
 
     return new Response(
       JSON.stringify({
         ok: valid,
         tran_id: tranId,
         status: result.status ?? 'UNKNOWN',
+        settlement: settlementResult,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

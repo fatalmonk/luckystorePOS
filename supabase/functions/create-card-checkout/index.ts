@@ -76,6 +76,21 @@ Deno.serve(async (req) => {
 
     const tranId = crypto.randomUUID().replaceAll('-', '').slice(0, 20)
 
+    // PR 4: Atomically reserve stock and register sale intent in _checkout schema
+    const { data: intentData, error: intentError } = await supabase.rpc('create_sale_intent', {
+      p_store_id: store_id,
+      p_items: items,
+      p_total_amount: total_amount,
+      p_discount: discount || 0,
+      p_gateway_transaction_id: tranId,
+      p_cashier_id: user.id,
+    })
+
+    if (intentError) {
+      console.error('create_sale_intent error:', intentError)
+      throw new Error(`Failed to reserve stock: ${intentError.message}`)
+    }
+
     const SSL_STORE_ID = Deno.env.get('SSLCOMMERZ_STORE_ID') || Deno.env.get('SSL_COMMERZ_STORE_ID') || ''
     const SSL_STORE_PASSWORD = Deno.env.get('SSLCOMMERZ_STORE_PASSWORD') || Deno.env.get('SSL_COMMERZ_STORE_PASSWORD') || ''
     const SSL_IS_LIVE = (Deno.env.get('SSLCOMMERZ_IS_LIVE') || 'false') === 'true'
@@ -163,6 +178,7 @@ Deno.serve(async (req) => {
         success: true,
         redirect_url: redirectUrl,
         tran_id: tranId,
+        intent_id: (intentData as Record<string, unknown>)?.intent_id,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
