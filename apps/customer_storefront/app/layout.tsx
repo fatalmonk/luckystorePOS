@@ -8,6 +8,7 @@ import { CartSheetProvider } from './components/providers/CartSheetProvider';
 import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -351,6 +352,7 @@ export default function RootLayout({
             </CartProvider>
           </ThemeProvider>
         </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
