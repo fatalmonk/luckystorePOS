@@ -340,6 +340,7 @@ export function Header({ className = '' }: HeaderProps) {
           {/* Wishlist Link */}
           <Link
             href="/wishlist"
+              prefetch={false}
             className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-label="Wishlist"
           >

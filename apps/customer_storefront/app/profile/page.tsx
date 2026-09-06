@@ -35,17 +35,17 @@ interface Order {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, status, error, ensureAuth, signOut } = useAuth();
   const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login?next=/profile');
+    if (status === 'anonymous') {
+      router.push(`/login?next=${encodeURIComponent(`/profile${window.location.hash}`)}`);
     }
-  }, [user, loading, router]);
+  }, [status, router]);
 
   useEffect(() => {
     const updateWishlist = () => setWishlistCount(getLocalWishlist().length);
@@ -79,6 +79,13 @@ export default function ProfilePage() {
       showToast('Failed to sign out');
     }
   };
+
+  if (status === 'error') {
+    return <main className="min-h-screen grid place-content-center gap-4 bg-warm-bg text-warm-fg">
+      <p role="alert">{error}</p>
+      <Button onClick={() => { void ensureAuth().catch(() => {}); }}>Retry account check</Button>
+    </main>;
+  }
 
   if (loading || !user) {
     return (

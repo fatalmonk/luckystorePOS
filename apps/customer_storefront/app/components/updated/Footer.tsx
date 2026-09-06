@@ -115,7 +115,7 @@ export function Footer() {
               <ul className="mt-3">
                 {helpLinks.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className={`site-footer-link ${footerFocus}`}>
+                    <Link href={link.href} prefetch={link.href === '/wishlist' ? false : undefined} className={`site-footer-link ${footerFocus}`}>
                       {link.label}
                     </Link>
                   </li>

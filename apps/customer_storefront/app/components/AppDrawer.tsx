@@ -188,6 +188,7 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
           <div className="flex items-center gap-2">
             <Link
               href="/wishlist"
+              prefetch={false}
               onClick={onClose}
               className="flex h-11 items-center gap-2 rounded-full border border-warm-border px-4 text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >

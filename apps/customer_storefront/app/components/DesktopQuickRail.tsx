@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import {
   Fire,
   House,
@@ -30,14 +30,36 @@ interface RailLink {
 export function DesktopQuickRail() {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
-  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { user, loading, status, ensureAuth } = useAuth();
+
+  useEffect(() => {
+    if (shouldHideDesktopRail(pathname)) return;
+    const media = window.matchMedia('(min-width: 768px)');
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      clearTimeout(timer);
+      if (media.matches) timer = setTimeout(() => { void ensureAuth().catch(() => {}); }, 3000);
+    };
+    const afterLoad = () => schedule();
+    if (document.readyState === 'complete') schedule();
+    else window.addEventListener('load', afterLoad, { once: true });
+    media.addEventListener('change', schedule);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('load', afterLoad);
+      media.removeEventListener('change', schedule);
+    };
+  }, [pathname, ensureAuth]);
+
+  const unresolved = loading || status === 'error';
 
   if (shouldHideDesktopRail(pathname)) return null;
 
-  const accountLabel = loading ? 'Account' : user ? 'Profile' : 'Sign Up';
-  const AccountIcon = loading ? UserCircle : user ? UserCircle : UserPlus;
+  const accountLabel = unresolved ? 'Account' : user ? 'Profile' : 'Sign Up';
+  const AccountIcon = unresolved ? UserCircle : user ? UserCircle : UserPlus;
   const isDeals = pathname.startsWith('/category') && searchParams.get('theme') === 'deals';
-  const ordersHref = user ? '/profile#orders' : '/login?next=/profile%23orders';
+  const ordersHref = unresolved || user ? '/profile#orders' : '/login?next=/profile%23orders';
 
   const links: RailLink[] = [
     { href: '/', label: 'Home', icon: House, active: pathname === '/' },
@@ -48,7 +70,7 @@ export function DesktopQuickRail() {
       active: pathname.startsWith('/category') && !isDeals,
     },
     {
-      href: user ? '/profile' : '/signup',
+      href: unresolved || user ? '/profile' : '/signup',
       label: accountLabel,
       icon: AccountIcon,
       active: pathname.startsWith('/profile') || pathname.startsWith('/signup'),
@@ -68,6 +90,20 @@ export function DesktopQuickRail() {
         {links.map(({ href, label, icon: IconComponent, active }) => (
           <Link
             key={label}
+            prefetch={label === accountLabel || label === 'Orders' ? false : undefined}
+            onClick={async (event) => {
+              if (!unresolved || (label !== accountLabel && label !== 'Orders')) return;
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              try {
+                const resolved = await ensureAuth();
+                router.push(label === 'Orders'
+                  ? (resolved ? '/profile#orders' : '/login?next=/profile%23orders')
+                  : (resolved ? '/profile' : '/signup'));
+              } catch {
+                router.push('/profile');
+              }
+            }}
             href={href}
             aria-current={active ? 'page' : undefined}
             title={label}
