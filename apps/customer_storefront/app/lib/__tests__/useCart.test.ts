@@ -239,6 +239,25 @@ describe('useCart', () => {
 
     expect(result.current.subtotal).toBe(600);
     expect(result.current.deliveryFee).toBe(0);
+    expect(result.current.discount).toBe(0);
+    expect(result.current.total).toBe(600);
+  });
+
+  it('does not subtract the delivery fee from an order over 500', async () => {
+    const savedCart = [
+      { ...mockProduct, id: 'deodorant', price: 445, qty: 1 },
+      { ...mockProduct, id: 'soap', price: 60, qty: 1 },
+      { ...mockProduct, id: 'hand-wash', price: 120, qty: 1 },
+    ];
+    localStorageMock.setItem('lucky-cart', JSON.stringify(savedCart));
+
+    const { result } = renderHook(() => useCart());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(result.current.subtotal).toBe(625);
+    expect(result.current.deliveryFee).toBe(0);
+    expect(result.current.discount).toBe(0);
+    expect(result.current.total).toBe(625);
   });
 
   it('charges delivery fee when subtotal < 500', async () => {
@@ -249,6 +268,8 @@ describe('useCart', () => {
 
     expect(result.current.subtotal).toBe(80);
     expect(result.current.deliveryFee).toBe(40);
+    expect(result.current.discount).toBe(0);
+    expect(result.current.total).toBe(120);
   });
 
   it('persists cart to localStorage after changes', async () => {

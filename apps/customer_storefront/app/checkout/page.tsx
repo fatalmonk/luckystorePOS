@@ -196,7 +196,7 @@ function CheckoutContent() {
         })),
         subtotal,
         deliveryFee,
-        discount: deliveryFee === 0 ? 40 : 0,
+        discount: 0,
         total,
         time: new Date().toISOString(),
       };

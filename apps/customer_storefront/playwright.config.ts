@@ -1,13 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
+import { getMutationSafety } from './e2e/support/mutationSafety';
 
-const hasIsolatedPreview = process.env.E2E_CAN_MUTATE === 'true';
+const mutationSafety = getMutationSafety();
+
+if (mutationSafety.requested && !mutationSafety.allowed) {
+  throw new Error(`Refusing E2E database mutation: ${mutationSafety.reason}`);
+}
+
+const hasIsolatedPreview = mutationSafety.allowed;
 
 export default defineConfig({
   testDir: './e2e',
   testIgnore:
     process.env.CI && !hasIsolatedPreview
       ? [
-          '**/checkout.spec.ts',
           '**/homepage-audit.spec.ts',
           '**/product-navigation.spec.ts',
           '**/search-and-filters.spec.ts',

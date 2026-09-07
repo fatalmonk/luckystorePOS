@@ -54,9 +54,15 @@ jobs:
       - name: Set environment variables for preview branch
         run: |
           if [ -n "${{ steps.supabase_preview.outputs.api_url }}" ]; then
+            PREVIEW_REF="$(node -e "console.log(new URL(process.argv[1]).hostname.split('.')[0])" "${{ steps.supabase_preview.outputs.api_url }}")"
+            if [ "$PREVIEW_REF" = "hvmyxyccfnkrbxqbhlnm" ]; then
+              echo "Refusing to enable mutating E2E tests against production Supabase"
+              exit 1
+            fi
             echo "NEXT_PUBLIC_SUPABASE_URL=${{ steps.supabase_preview.outputs.api_url }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.supabase_preview.outputs.anon_key }}" >> $GITHUB_ENV
             echo "SUPABASE_SERVICE_ROLE_KEY=${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
+            echo "E2E_SUPABASE_PROJECT_REF=$PREVIEW_REF" >> $GITHUB_ENV
             echo "E2E_CAN_MUTATE=true" >> $GITHUB_ENV
           else
             echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> $GITHUB_ENV

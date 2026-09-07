@@ -1,6 +1,7 @@
 # Codex Token Optimization & Workflow Guidelines
 
 ## Core Principles
+
 - **PR-Sized Tasks:** Work on small, manageable changes.
 - **Targeted Operations:** Do not perform broad repository scans (`find .`, `grep -R .`, `ls -R`).
 - **Surgical Reads:** Read only the files necessary for the current task.
@@ -8,15 +9,19 @@
 - **Transparency:** Report failing commands exactly as they occur.
 
 ## Phase 1 Scope
+
 ### Allowed Files (Implementation Permitted)
+
 - `.github/workflows/ci.yml`
 - `apps/mobile_app/pubspec.yaml`
 - `.env.example`
 - `package.json`
 - `scripts/security/secret_scan.js`
 - `system-docs/env-security.md`
+- docs/SEO Optimization/**
 
 ### PR #348 Review-Fix Exception (Implementation Permitted)
+
 - `apps/customer_storefront/e2e/visual-audit.spec.ts`
 - `apps/customer_storefront/app/layout.tsx`
 - `apps/customer_storefront/app/components/CampaignGrid.tsx`
@@ -27,7 +32,9 @@
 - `apps/mobile_app/lib/offline/manager.dart`
 
 ### Forbidden Areas (No Modification)
+
 These remain off-limits for any code changes, edits, or implementation:
+
 - `PosProvider` (and related state management)
 - `supabase/migrations/`
 - Auth flow logic
@@ -36,10 +43,12 @@ These remain off-limits for any code changes, edits, or implementation:
 ---
 
 ## Phase 1A Scope (Read-Only Audit)
+
 Permits read-only inspection of architecture, schema, RLS, queries, data flow,
 and configuration for audit and analysis purposes. No implementation is authorized.
 
 ### Readable Paths (Inspection Only — No Writes)
+
 - `supabase/migrations/**` — migration SQL files (schema, RLS, RPCs, policies)
 - `supabase/functions/**` — Edge Functions (query/mutation boundaries, webhooks)
 - `supabase/tests/**` — test fixtures and integration tests
@@ -54,7 +63,9 @@ and configuration for audit and analysis purposes. No implementation is authoriz
 - `.github/workflows/**` — CI/CD pipeline definitions
 
 ### Audit-Only Constraints
+
 The following remain prohibited under Phase 1A:
+
 - No migration execution (`supabase migration up`, `psql -f`, `supabase db push`)
 - No database writes or mutations (INSERT, UPDATE, DELETE, ALTER, DROP, TRUNCATE)
 - No auth behavior changes or auth-flow modifications
@@ -65,6 +76,7 @@ The following remain prohibited under Phase 1A:
 - No file modification outside the Phase 1 Allowed Files list
 
 ## Standard Workflow
+
 1. **Research:** Target allowed/auditable files only.
 2. **Implementation:** Apply changes surgically (Phase 1 files only).
 3. **Review:** Run `git diff` and explain changes.
@@ -72,7 +84,9 @@ The following remain prohibited under Phase 1A:
 5. **Report:** Summarize work and status of commands.
 
 ## Allowed Commands
+
 ### Read-Only Inspection (Phase 1A)
+
 - `git status`
 - `git diff`
 - `git diff --stat` → prefer `rtk git diff --name-status` for change lists
@@ -88,6 +102,7 @@ The following remain prohibited under Phase 1A:
 - `head -n <N> <file>` / `tail -n <N> <file>` — read file excerpts; prefer `rtk read` with offset/limit
 
 ### Implementation & Validation (Phase 1)
+
 - `node scripts/security/secret_scan.js`
 - `rtk npm run lint` — preferred over raw `npm run lint`; strips boilerplate, compresses output
 - `rtk npm run build --skip-env` — preferred over raw `npm run build`; skips env validation noise in child processes

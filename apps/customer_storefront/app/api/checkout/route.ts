@@ -88,8 +88,8 @@ function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price:
 function calculateTotals(items: CheckoutItem[]) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : FREE_DELIVERY_FEE;
-  const discount = subtotal >= FREE_DELIVERY_THRESHOLD ? FREE_DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee - discount;
+  const discount = 0;
+  const total = subtotal + deliveryFee;
   return { subtotal, deliveryFee, discount, total };
 }
 

@@ -1,6 +1,26 @@
 import { test, expect, Page } from '@playwright/test';
+import { getMutationSafety } from './support/mutationSafety';
 
-const canMutatePreview = process.env.E2E_CAN_MUTATE === 'true';
+const mutationSafety = getMutationSafety();
+const canMutatePreview = mutationSafety.allowed;
+
+async function mockSuccessfulCheckout(page: Page, orderNumber: string) {
+  await page.route('**/api/checkout', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback();
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        order: { id: 'e2e-mocked-order', order_number: orderNumber },
+      }),
+    });
+  });
+}
 
 async function openFirstProduct(page: Page) {
   await page.goto('/');
@@ -63,7 +83,7 @@ test.describe('Checkout Flow', () => {
   });
 
   test('completes a full checkout', async ({ page }) => {
-    test.skip(!canMutatePreview, 'Order creation requires an isolated Supabase preview branch');
+    await mockSuccessfulCheckout(page, 'LSO-20990101-MOCKED01');
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping checkout test');
@@ -154,7 +174,7 @@ test.describe('Order Confirmation Display', () => {
   test.setTimeout(120000);
 
   test('displays order number, item count, and total correctly', async ({ page }) => {
-    test.skip(!canMutatePreview, 'Order creation requires an isolated Supabase preview branch');
+    await mockSuccessfulCheckout(page, 'LSO-20990101-MOCKED02');
     const added = await addFirstInStockProductToCart(page);
     if (!added) {
       test.skip(true, 'First product is out of stock, skipping order confirmation test');
@@ -185,5 +205,29 @@ test.describe('Order Confirmation Display', () => {
     // Verify total is shown (should be ৳ followed by a number)
     const totalText = await page.locator('text=Total').locator('..').textContent();
     expect(totalText).toMatch(/৳/);
+  });
+});
+
+test.describe('Isolated Supabase order integration', () => {
+  test.setTimeout(120000);
+
+  test('creates one real order only on a verified preview branch', async ({ page }) => {
+    test.skip(!canMutatePreview, mutationSafety.reason);
+
+    const added = await addFirstInStockProductToCart(page);
+    if (!added) {
+      test.skip(true, 'First product is out of stock, skipping checkout integration test');
+      return;
+    }
+
+    await page.goto('/checkout');
+    await page.fill('[data-testid="checkout-name-input"]', 'Isolated Preview Test');
+    await page.fill('[data-testid="checkout-phone-input"]', '01712345678');
+    await page.fill('[data-testid="checkout-address-input"]', 'Supabase preview branch only');
+    await page.click('[data-testid="checkout-review-btn"]');
+    await page.click('[data-testid="checkout-place-order-btn"]');
+
+    await page.waitForURL(/\/order/);
+    await expect(page.locator('[data-testid="order-confirmed-heading"]')).toBeVisible();
   });
 });
