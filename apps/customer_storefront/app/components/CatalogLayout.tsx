@@ -8,6 +8,7 @@ import { GridProductCard } from './GridProductCard';
 import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
+import { trackViewItemList } from '../lib/analytics';
 
 const PRICE_OPTIONS = [
   { value: '0-100', label: 'Under ৳100' },
@@ -225,6 +226,12 @@ export function CatalogLayout({
   const modalRef = useRef<HTMLDivElement>(null);
   const PAGE_SIZE = 24;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const listId = `category:${categorySlug}`;
+  const listName = group?.label || parentGroup?.label || categorySlug;
+
+  useEffect(() => {
+    trackViewItemList(filtered.slice(0, visibleCount), listId, listName);
+  }, [filtered, visibleCount, listId, listName]);
 
   // Reset pagination when active filters or sort change
   useEffect(() => {
@@ -580,7 +587,13 @@ export function CatalogLayout({
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {filtered.slice(0, visibleCount).map((product, index) => (
                   <div key={product.id} className="h-full flex flex-col">
-                    <GridProductCard product={product} priority={index < 4} />
+                    <GridProductCard
+                      product={product}
+                      priority={index < 4}
+                      listId={listId}
+                      listName={listName}
+                      index={index}
+                    />
                   </div>
                 ))}
               </div>

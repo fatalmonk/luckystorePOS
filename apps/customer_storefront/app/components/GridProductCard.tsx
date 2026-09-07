@@ -13,13 +13,17 @@ import { ProductImage } from './product/ProductImage';
 import { QtyNumber } from './ui/QtyNumber';
 import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
+import { trackSelectItem } from '../lib/analytics';
 
 export interface GridProductCardProps {
   product: Product;
   priority?: boolean;
+  listId?: string;
+  listName?: string;
+  index?: number;
 }
 
-export function GridProductCard({ product, priority = false }: GridProductCardProps) {
+export function GridProductCard({ product, priority = false, listId, listName, index }: GridProductCardProps) {
   const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(product);
   const { isWishlisted, isPending, toggle } = useProductWishlist(product.id, product.name);
   const productHref = `/product/${toProductSlug(product.name, product.id)}`;
@@ -78,6 +82,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
 
       <Link
         href={productHref}
+        onClick={() => trackSelectItem(product, { listId, listName, index })}
         aria-label={`View ${product.name}`}
         className="product-card-image-well relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
@@ -96,6 +101,7 @@ export function GridProductCard({ product, priority = false }: GridProductCardPr
         <div className="flex flex-col gap-1">
           <Link
             href={productHref}
+            onClick={() => trackSelectItem(product, { listId, listName, index })}
             className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <h3 className="line-clamp-3 break-words font-body text-sm font-semibold leading-5 text-warm-fg">

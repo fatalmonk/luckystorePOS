@@ -12,6 +12,12 @@ import { Button } from '../components/ui/Button';
 import { Input, TextArea } from '../components/ui/Input';
 import { formatBdt } from '../lib/formatPrice';
 import { ProductImage } from '../components/product/ProductImage';
+import {
+  trackAddShippingInfo,
+  trackAddPaymentInfo,
+  trackBeginCheckout,
+  trackPurchase,
+} from '../lib/analytics';
 
 const STEPS = [
   { id: 1, label: 'Your Info' },
@@ -33,6 +39,13 @@ function CheckoutContent() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { user } = useAuth();
   const phoneRef = useRef<HTMLInputElement>(null);
+  const checkoutTrackedRef = useRef(false);
+  const shippingTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoaded || cart.length === 0 || checkoutTrackedRef.current) return;
+    checkoutTrackedRef.current = trackBeginCheckout(cart, total);
+  }, [cart, isLoaded, total]);
 
   useEffect(() => {
     if (user) {
@@ -57,6 +70,7 @@ function CheckoutContent() {
     address: '',
     notes: '',
     deliverySlot: 'morning' as 'morning' | 'evening',
+    paymentMethod: 'cod' as 'cod' | 'bkash',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -115,6 +129,13 @@ function CheckoutContent() {
     if (step === 2 && !validateAll()) {
       return;
     }
+    if (step === 2 && !shippingTrackedRef.current) {
+      shippingTrackedRef.current = trackAddShippingInfo(
+        cart,
+        total,
+        deliveryFee === 0 ? 'Free delivery over 500 BDT' : 'Local delivery 40 BDT',
+      );
+    }
     setSubmitError(null);
     setCurrentStep(step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -127,6 +148,7 @@ function CheckoutContent() {
     setSubmitError(null);
 
     try {
+      trackAddPaymentInfo(cart, total, formData.paymentMethod);
       const cleanPhone = formData.phone.replace(/[\s-]/g, '');
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -138,6 +160,7 @@ function CheckoutContent() {
           customerAddress: formData.address,
           notes: formData.notes || undefined,
           deliverySlot: formData.deliverySlot,
+          paymentMethod: formData.paymentMethod,
           items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty, unit: c.unit })),
           subtotal,
           deliveryFee,
@@ -147,6 +170,13 @@ function CheckoutContent() {
       const { ok, order, error } = await res.json();
       if (!ok) throw new Error(error || 'Order failed');
 
+      trackPurchase({
+        transactionId: order.order_number,
+        items: cart,
+        value: total,
+        shipping: deliveryFee,
+      });
+
       // Transform API response (snake_case) to OrderData (camelCase) for the confirmation page
       const orderData = {
         orderNumber: order.order_number,
@@ -155,6 +185,7 @@ function CheckoutContent() {
         address: formData.address,
         notes: formData.notes || undefined,
         deliverySlot: formData.deliverySlot,
+        paymentMethod: formData.paymentMethod,
         items: cart.map(c => ({
           id: c.id,
           name: c.name,
@@ -407,29 +438,84 @@ function CheckoutContent() {
                       <span>Total</span>
                       <span>{formatBdt(total)}</span>
                     </div>
-                    <div className="mt-4 rounded-xl border border-warm-border-light bg-warm-bg p-3">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <div className="shrink-0 self-start overflow-hidden rounded-lg border border-warm-border bg-white p-1">
-                          <Image
-                            src="/images/payments/bkash-payment-qr.png"
-                            alt="bKash payment QR code for 01731944544"
-                            width={132}
-                            height={176}
-                            className="h-auto w-[132px]"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-extrabold text-warm-fg">Pay with bKash</p>
-                          <p className="mt-1 text-xs leading-5 text-warm-muted">
-                            Scan the QR or send payment to <span className="font-bold text-warm-fg">01731944544</span>.
-                            Add your bKash TrxID in instructions if you pay before delivery.
-                          </p>
-                          <p className="mt-2 text-xs text-warm-muted flex items-center gap-1">
-                            <Money size={16} weight="bold" aria-hidden="true" /> Cash on Delivery is still available.
-                          </p>
-                        </div>
+                    <fieldset className="mt-4">
+                      <legend className="text-xs font-bold uppercase tracking-widest text-warm-muted">
+                        Payment method
+                      </legend>
+                      <div className="mt-2 grid gap-2">
+                        <label
+                          className={`cursor-pointer rounded-xl border-2 p-3 transition-colors ${
+                            formData.paymentMethod === 'cod'
+                              ? 'border-warm-accent bg-warm-accent/10'
+                              : 'border-warm-border bg-warm-bg'
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="cod"
+                              checked={formData.paymentMethod === 'cod'}
+                              onChange={() => updateField('paymentMethod', 'cod')}
+                              className="h-4 w-4 accent-warm-accent"
+                            />
+                            <span>
+                              <span className="flex items-center gap-1 text-sm font-extrabold text-warm-fg">
+                                <Money size={16} weight="bold" aria-hidden="true" /> Cash on Delivery
+                              </span>
+                              <span className="mt-0.5 block text-xs text-warm-muted">Pay the rider when your order arrives.</span>
+                            </span>
+                          </span>
+                        </label>
+
+                        <label
+                          className={`cursor-pointer rounded-xl border-2 p-3 transition-colors ${
+                            formData.paymentMethod === 'bkash'
+                              ? 'border-[#e2136e] bg-[#e2136e]/5'
+                              : 'border-warm-border bg-warm-bg'
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="bkash"
+                              checked={formData.paymentMethod === 'bkash'}
+                              onChange={() => updateField('paymentMethod', 'bkash')}
+                              className="h-4 w-4 accent-[#e2136e]"
+                              data-testid="checkout-payment-bkash"
+                            />
+                            <span>
+                              <span className="block text-sm font-extrabold text-warm-fg">bKash</span>
+                              <span className="mt-0.5 block text-xs text-warm-muted">Pay to 01731944544.</span>
+                            </span>
+                          </span>
+                        </label>
                       </div>
-                    </div>
+
+                      {formData.paymentMethod === 'bkash' && (
+                        <div className="mt-3 rounded-xl border border-[#e2136e]/30 bg-[#e2136e]/5 p-3">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <div className="shrink-0 self-start overflow-hidden rounded-lg border border-warm-border bg-white p-1">
+                              <Image
+                                src="/images/payments/bkash-payment-qr.png"
+                                alt="bKash payment QR code for 01731944544"
+                                width={132}
+                                height={176}
+                                className="h-auto w-[132px]"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-extrabold text-warm-fg">Pay {formatBdt(total)} with bKash</p>
+                              <p className="mt-1 text-xs leading-5 text-warm-muted">
+                                Scan the QR or send payment to <span className="font-bold text-warm-fg">01731944544</span>.
+                                Add your bKash TrxID in instructions if you pay before delivery.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </fieldset>
                   </div>
 
                   <div className="flex gap-3">

@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     template: '%s | Lucky Store',
   },
   description:
-    'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
+    'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
   keywords: [
     'online grocery chattogram',
     'grocery stores chattogram',
@@ -90,7 +90,7 @@ export const metadata: Metadata = {
     siteName: 'Lucky Store',
     title: 'Lucky Store | Online Grocery in Chattogram',
     description:
-      'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
+      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
@@ -109,7 +109,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Lucky Store | Online Grocery in Chattogram',
     description:
-      'Shop pantry staples, snacks, dairy, and household essentials from Lucky Store, with local delivery and cash on delivery in Chattogram.',
+      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
@@ -167,22 +167,34 @@ export default function RootLayout({
               '@type': ['WebSite', 'GroceryStore'],
               name: 'Lucky Store',
               alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
-              description: 'Lucky Store offers pantry staples, snacks, dairy, and household essentials with local delivery and cash on delivery in Chattogram.',
+              description: 'Lucky Store delivers groceries within 1 km of the store in Chattogram. Delivery is free for orders over ৳500 and costs ৳40 for orders below ৳500.',
               url: 'https://luckystore1947.com',
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
-              priceRange: '$$',
               currenciesAccepted: 'BDT',
-              paymentAccepted: 'Cash',
               areaServed: {
-                '@type': 'City',
-                name: 'Chattogram',
-                addressCountry: 'BD',
+                '@type': 'GeoCircle',
+                geoMidpoint: {
+                  '@type': 'GeoCoordinates',
+                  latitude: '22.35500093723366',
+                  longitude: '91.83628930715629',
+                },
+                geoRadius: '1000',
               },
-              openingHours: [
-                'Mo-Sa 08:00-22:00',
-                'Su 09:00-21:00',
-              ],
+              openingHoursSpecification: {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday',
+                ],
+                opens: '09:00',
+                closes: '00:30',
+              },
               address: {
                 '@type': 'PostalAddress',
                 streetAddress: '665 Percival Hill Road, Emdad Park',

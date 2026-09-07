@@ -86,6 +86,10 @@ test.describe('Checkout Flow', () => {
     // Go to Step 2: Review
     await page.click('[data-testid="checkout-review-btn"]');
 
+    await expect(page.getByRole('radio', { name: /Cash on Delivery/ })).toBeChecked();
+    await page.getByRole('radio', { name: /bKash/ }).check();
+    await expect(page.getByText('Pay to 01731944544.')).toBeVisible();
+
     // Place order
     await page.click('[data-testid="checkout-place-order-btn"]');
 

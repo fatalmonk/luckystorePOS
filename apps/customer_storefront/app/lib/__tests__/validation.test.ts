@@ -8,6 +8,7 @@ const validBase = {
   customerName: 'Karim Ahmed',
   customerPhone: '01712345678',
   customerAddress: '123 Test Road, Chittagong',
+  paymentMethod: 'cod' as const,
   items: [{ id: '550e8400-e29b-41d4-a716-446655440000', name: 'Milk', price: 80, qty: 2 }],
   subtotal: 160,
   deliveryFee: 40,
@@ -104,5 +105,15 @@ describe('checkoutSchema', () => {
   it('accepts optional deliverySlot field', () => {
     const result = checkoutSchema.safeParse({ ...validBase, deliverySlot: 'morning' });
     expect(result.success).toBe(true);
+  });
+
+  it('accepts bKash as a payment method', () => {
+    const result = checkoutSchema.safeParse({ ...validBase, paymentMethod: 'bkash' });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects unsupported payment methods', () => {
+    const result = checkoutSchema.safeParse({ ...validBase, paymentMethod: 'card' });
+    expect(result.success).toBe(false);
   });
 });

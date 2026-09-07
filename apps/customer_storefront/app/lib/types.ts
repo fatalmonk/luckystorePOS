@@ -182,7 +182,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   createdAt: string;
-  paymentMethod: 'cod';
+  paymentMethod: 'cod' | 'bkash';
 }
 
 export type OrderStatus =
@@ -192,4 +192,3 @@ export type OrderStatus =
   | 'out_for_delivery'
   | 'delivered'
   | 'cancelled';
-

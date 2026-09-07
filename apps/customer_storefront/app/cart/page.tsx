@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '../components/updated/Header';
@@ -12,6 +13,7 @@ import { PriceDisplay } from '../components/PriceDisplay';
 import { EmptyCartIcon } from '../components/icons';
 import { formatBdt } from '../lib/formatPrice';
 import { ProductImage } from '../components/product/ProductImage';
+import { trackViewCart } from '../lib/analytics';
 
 const PROMO_CODES: Record<string, { label: string; amount: number; minSubtotal: number }> = {
   FREE500: { label: 'FREE500', amount: 40, minSubtotal: 500 },
@@ -21,6 +23,12 @@ function CartContent() {
   const router = useRouter();
   const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, discount, total, isLoaded } = useCartContext();
   const { showToast } = useToast();
+  const trackedViewRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoaded || cart.length === 0 || trackedViewRef.current) return;
+    trackedViewRef.current = trackViewCart(cart, total);
+  }, [cart, isLoaded, total]);
 
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);

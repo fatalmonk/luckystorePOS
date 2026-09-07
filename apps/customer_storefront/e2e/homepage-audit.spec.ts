@@ -1,6 +1,41 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Storefront homepage shell audit', () => {
+  test('publishes evidence-safe homepage metadata and structured data', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page).toHaveTitle('Lucky Store | Online Grocery in Chattogram');
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      'https://luckystore1947.com/',
+    );
+
+    const schemas = await page.locator('script[type="application/ld+json"]').allTextContents();
+    const storeSchema = schemas
+      .map((schema) => JSON.parse(schema))
+      .find((schema) => Array.isArray(schema['@type']) && schema['@type'].includes('GroceryStore'));
+
+    expect(storeSchema).toBeTruthy();
+    expect(storeSchema).toMatchObject({
+      areaServed: {
+        '@type': 'GeoCircle',
+        geoRadius: '1000',
+      },
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        opens: '09:00',
+        closes: '00:30',
+      },
+    });
+    expect(storeSchema.openingHoursSpecification.dayOfWeek).toHaveLength(7);
+    expect(storeSchema).not.toHaveProperty('paymentAccepted');
+    expect(storeSchema).not.toHaveProperty('priceRange');
+  });
+
   test('presents a clear hierarchy, dependable shell, and complete navigation', async ({ page }) => {
     await page.goto('/');
 

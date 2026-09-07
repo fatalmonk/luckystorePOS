@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CartItem, Product } from '../lib/types';
+import { trackAddToCart } from '../lib/analytics';
 
 const CART_KEY = 'lucky-cart';
 const FREE_DELIVERY_THRESHOLD = 500;
@@ -67,10 +68,13 @@ export function useCart() {
       cartRef.current = nextCart;
       return nextCart;
     });
+    trackAddToCart(product);
     return true;
   }, []);
 
   const updateQty = useCallback((productId: string, delta: number) => {
+    const existing = cartRef.current.find((item) => item.id === productId);
+    const canIncrease = Boolean(existing && delta > 0 && existing.qty < existing.stock);
     setCart((prev) => {
       const nextCart = prev
         .map((item) => {
@@ -87,6 +91,7 @@ export function useCart() {
       cartRef.current = nextCart;
       return nextCart;
     });
+    if (existing && canIncrease) trackAddToCart(existing, Math.min(delta, existing.stock - existing.qty));
   }, []);
 
   const [lastRemoved, setLastRemoved] = useState<CartItem | null>(null);

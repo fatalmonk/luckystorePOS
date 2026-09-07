@@ -14,6 +14,7 @@ interface OrderData {
   address: string;
   notes?: string;
   deliverySlot?: string;
+  paymentMethod: 'cod' | 'bkash';
   items: { id: string; name: string; price: number; qty: number; unit?: string; total: number }[];
   subtotal: number;
   deliveryFee: number;
@@ -52,7 +53,7 @@ const formatOrderMessage = (order: OrderData): string => {
     `Delivery Fee: ৳${order.deliveryFee.toFixed(2)}`,
     `*Total: ৳${order.total.toFixed(2)}*`,
     ``,
-    `💵 Cash on Delivery`,
+    order.paymentMethod === 'bkash' ? `💳 bKash — 01731944544` : `💵 Cash on Delivery`,
     ``,
     `Please confirm this order.`,
   ]
@@ -156,20 +157,29 @@ export default function OrderContent() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-warm-muted">Payment</span>
-            <span className="text-warm-success font-bold">Cash on Delivery</span>
+            <span className="text-warm-success font-bold">
+              {order.paymentMethod === 'bkash' ? 'bKash' : 'Cash on Delivery'}
+            </span>
           </div>
         </div>
 
-        {/* Cash Preparation */}
-        <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-6">
-          <h3 className="text-sm font-bold mb-2">💵 Have Cash Ready</h3>
-          <p className="text-sm text-warm-muted mb-2">
-            Have <strong className="text-warm-fg">{formatBdt(order.total)}</strong> ready in cash for the rider.
-          </p>
-          <p className="text-xs text-warm-muted">
-            Having exact change speeds up delivery.
-          </p>
-        </div>
+        {order.paymentMethod === 'bkash' ? (
+          <div className="border border-[#e2136e]/30 bg-[#e2136e]/5 rounded-[14px] p-4 mb-6">
+            <h3 className="text-sm font-bold mb-2">bKash payment selected</h3>
+            <p className="text-sm text-warm-muted">
+              Send <strong className="text-warm-fg">{formatBdt(order.total)}</strong> to{' '}
+              <strong className="text-warm-fg">01731944544</strong> if you have not paid yet.
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white border border-warm-border rounded-[14px] p-4 mb-6">
+            <h3 className="text-sm font-bold mb-2">💵 Have Cash Ready</h3>
+            <p className="text-sm text-warm-muted mb-2">
+              Have <strong className="text-warm-fg">{formatBdt(order.total)}</strong> ready in cash for the rider.
+            </p>
+            <p className="text-xs text-warm-muted">Having exact change speeds up delivery.</p>
+          </div>
+        )}
 
         {/* Timeline */}
         <h3 className="text-sm font-bold mb-4">Order Status</h3>
@@ -198,7 +208,7 @@ export default function OrderContent() {
                   {step.label}
                 </p>
                 <p className="text-[13px] text-warm-muted">
-                  {step.time || `Pay ${formatBdt(order.total)} to rider`}
+                  {step.time || (order.paymentMethod === 'bkash' ? 'Payment by bKash' : `Pay ${formatBdt(order.total)} to rider`)}
                 </p>
               </div>
             ))}

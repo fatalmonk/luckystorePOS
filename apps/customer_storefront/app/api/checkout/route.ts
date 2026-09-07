@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
       customerAddress: body.customerAddress,
       notes: body.notes,
       deliverySlot: body.deliverySlot,
+      paymentMethod: body.paymentMethod,
       items: verifiedItems.map((item) => ({
         id: item.id,
         name: item.name,

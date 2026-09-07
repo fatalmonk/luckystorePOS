@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { CaretRight } from '@phosphor-icons/react';
 import { GridProductCard } from './GridProductCard';
 import type { Product } from '../lib/types';
+import { trackViewItemList } from '../lib/analytics';
 
 export interface ProductGridSectionProps {
   id: string;
@@ -23,6 +24,10 @@ export function ProductGridSection({
   ctaLabel = 'See all',
   ctaHref = '/category',
 }: ProductGridSectionProps) {
+  useEffect(() => {
+    trackViewItemList(products, id, title);
+  }, [id, products, title]);
+
   if (products.length === 0) return null;
 
   return (
@@ -56,7 +61,13 @@ export function ProductGridSection({
       >
         {products.map((product, index) => (
           <div key={product.id} className="grid-slide">
-            <GridProductCard product={product} priority={index === 0} />
+            <GridProductCard
+              product={product}
+              priority={index === 0}
+              listId={id}
+              listName={title}
+              index={index}
+            />
           </div>
         ))}
       </div>

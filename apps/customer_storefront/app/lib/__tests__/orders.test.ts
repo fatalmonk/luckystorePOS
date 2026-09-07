@@ -29,6 +29,7 @@ const validInput = {
   customerName: 'Karim Ahmed',
   customerPhone: '01712345678',
   customerAddress: '123 Test Road, Chittagong',
+  paymentMethod: 'cod' as const,
   items: [{ id: '550e8400-e29b-41d4-a716-446655440000', name: 'Milk', price: 80, qty: 2 }],
   subtotal: 160,
   deliveryFee: 40,
@@ -91,7 +92,7 @@ describe('createOrder', () => {
 
     // Verify RPC was called
     expect(supabase.rpc).toHaveBeenCalledWith(
-      'create_order_with_stock',
+      'create_order_with_stock_v2',
       expect.objectContaining({
         p_order_number: 'LSO-20260101-ABCD1234',
         p_customer_name: 'Karim Ahmed',
@@ -101,7 +102,23 @@ describe('createOrder', () => {
         p_subtotal: 160,
         p_delivery_fee: 40,
         p_total: 200,
+        p_payment_method: 'cod',
       })
+    );
+  });
+
+  it('passes bKash to the order RPC', async () => {
+    const { supabase } = await import('../supabase');
+    (supabase.rpc as any).mockResolvedValue({
+      data: { id: 'order-bkash', order_number: 'LSO-20260101-ABCD1234' },
+      error: null,
+    });
+
+    await createOrder({ ...validInput, paymentMethod: 'bkash' });
+
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'create_order_with_stock_v2',
+      expect.objectContaining({ p_payment_method: 'bkash' }),
     );
   });
 
@@ -115,7 +132,7 @@ describe('createOrder', () => {
     await createOrder(validInput);
 
     expect(supabase.rpc).toHaveBeenCalledWith(
-      'create_order_with_stock',
+      'create_order_with_stock_v2',
       expect.objectContaining({
         p_notes: null,
         p_delivery_slot: null,

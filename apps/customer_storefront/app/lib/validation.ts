@@ -9,6 +9,7 @@ export const checkoutSchema = z.object({
   customerAddress: z.string().min(10).max(300),
   notes: z.string().max(300).optional(),
   deliverySlot: z.string().max(20).optional(),
+  paymentMethod: z.enum(['cod', 'bkash']),
   items: z.array(z.object({
     id: z.string().uuid(),
     name: z.string(),

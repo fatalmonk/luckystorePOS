@@ -16,6 +16,7 @@ import type { Product } from '../../lib/products/types';
 import { TrustStrip } from '../../components/product/TrustStrip';
 import { ProductCarousel } from '../../components/product/ProductCarousel';
 import { ProductImage } from '../../components/product/ProductImage';
+import { trackViewItem } from '../../lib/analytics';
 
 interface ProductClientProps {
   product: Product;
@@ -31,8 +32,9 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
   useEffect(() => {
     if (product?.id) {
       addViewed(product.id);
+      trackViewItem(product);
     }
-  }, [product?.id, addViewed]);
+  }, [product, addViewed]);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
 
