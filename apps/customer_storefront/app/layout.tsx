@@ -164,7 +164,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': ['WebSite', 'GroceryStore'],
+              '@type': ['Store', 'GroceryStore'],
+              '@id': 'https://luckystore1947.com/#grocerystore',
               name: 'Lucky Store',
               alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
               description: 'Lucky Store delivers groceries within 1 km of the store in Chattogram. Delivery is free for orders over ৳500 and costs ৳40 for orders below ৳500.',
@@ -172,6 +173,8 @@ export default function RootLayout({
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               currenciesAccepted: 'BDT',
+              paymentAccepted: 'Cash, bKash',
+              hasMap: 'https://maps.google.com/?cid=1342606622879549324',
               areaServed: {
                 '@type': 'GeoCircle',
                 geoMidpoint: {
@@ -197,7 +200,7 @@ export default function RootLayout({
               },
               address: {
                 '@type': 'PostalAddress',
-                streetAddress: '665 Percival Hill Road, Emdad Park',
+                streetAddress: '665 Percival Hill Road, Emdad Park, Chawkbazar',
                 addressLocality: 'Chattogram',
                 addressRegion: 'Chattogram Division',
                 postalCode: '4203',
@@ -208,11 +211,38 @@ export default function RootLayout({
                 latitude: '22.35500093723366',
                 longitude: '91.83628930715629',
               },
+              hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'BD',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 1,
+                returnMethod: 'https://schema.org/ReturnInStore',
+                returnFees: 'https://schema.org/FreeReturn',
+              },
+              shippingDetails: {
+                '@type': 'OfferShippingDetails',
+                shippingRate: {
+                  '@type': 'MonetaryAmount',
+                  value: '40',
+                  currency: 'BDT',
+                },
+                freeShippingThreshold: {
+                  '@type': 'DeliveryChargeSpecification',
+                  appliesToDeliveryChargeMethod: 'https://schema.org/DeliveryModeOwnFleet',
+                  price: '500',
+                  priceCurrency: 'BDT',
+                },
+                shippingDestination: {
+                  '@type': 'DefinedRegion',
+                  addressCountry: 'BD',
+                  addressRegion: 'Chattogram',
+                },
+              },
               sameAs: [
                 'https://facebook.com/luckystore1947',
                 'https://instagram.com/luckystore1947',
                 'https://wa.me/8801731944544',
-                'https://www.google.com/maps/place/Lucky+Store/@22.3550277,91.8363056,17z',
+                'https://maps.google.com/?cid=1342606622879549324',
               ],
             }),
           }}
