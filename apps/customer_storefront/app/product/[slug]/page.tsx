@@ -6,7 +6,11 @@ import {
   prepareCrossSell,
 } from '../../lib/products/getCachedCrossSell';
 import { toProductSlug } from '../../lib/products/slugify';
-import { formatBdt } from '../../lib/formatPrice';
+import { getEnrichedProductData } from '../../lib/products/productEnrichment';
+import {
+  formatProductMetaTitle,
+  formatProductMetaDescription,
+} from '../../lib/products/productMetadata';
 import ProductClient from './ProductClient';
 
 export async function generateMetadata({
@@ -26,11 +30,16 @@ export async function generateMetadata({
     permanentRedirect(`/product/${canonicalSlug}`);
   }
 
+  const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(product.id);
+  const effectiveName = enrichment?.exactName || product.name;
   const canonicalUrl = `https://luckystore1947.com/product/${canonicalSlug}`;
-  const title = `${product.name} – ${formatBdt(product.price)}${product.unit ? `/${product.unit}` : ''}`;
-  const description =
-    product.description ||
-    `Buy ${product.name}${product.unit ? ` (${product.unit})` : ''} online at Lucky Store Chittagong. ${product.category ? `Available in ${product.category}.` : ''} Fast home delivery and cash on delivery.`;
+  const title = formatProductMetaTitle(effectiveName, product.price, product.unit);
+  const description = formatProductMetaDescription(
+    effectiveName,
+    product.price,
+    product.unit,
+    enrichment?.summary
+  );
   const imageUrl = product.image_url || '/lucky-store-social-share.jpg';
 
   return {
@@ -51,7 +60,7 @@ export async function generateMetadata({
       images: [
         {
           url: imageUrl,
-          alt: product.name,
+          alt: effectiveName,
         },
       ],
     },
@@ -82,6 +91,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     product.id
   );
   const crossSellProducts = prepareCrossSell(crossSell);
+  const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(product.id);
 
-  return <ProductClient product={product} crossSell={crossSellProducts} />;
+  return <ProductClient product={product} crossSell={crossSellProducts} enrichment={enrichment} />;
 }

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 
 interface JsonLdProps<T extends Record<string, unknown>> {
   data: T;

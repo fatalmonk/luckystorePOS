@@ -1,4 +1,5 @@
-'use client';
+import React from 'react';
+import Link from 'next/link';
 
 interface TrustStripProps {
   className?: string;
@@ -6,14 +7,17 @@ interface TrustStripProps {
 
 /**
  * Compact trust strip for the product detail page.
- * Surfaces delivery, COD, and support reassurance without cluttering the CTA.
+ * Surfaces delivery policy, COD, and doorstep inspection reassurance linking to /delivery.
  */
 export function TrustStrip({ className = '' }: TrustStripProps) {
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      <div className="inline-flex items-center gap-1.5 text-xs text-warm-muted">
+      <Link
+        href="/delivery"
+        className="inline-flex items-center gap-1.5 text-xs text-warm-muted hover:text-warm-fg transition-colors group"
+      >
         <svg
-          className="w-4 h-4 shrink-0"
+          className="w-4 h-4 shrink-0 text-warm-accent"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -25,8 +29,10 @@ export function TrustStrip({ className = '' }: TrustStripProps) {
           <rect x="2" y="7" width="20" height="14" rx="2" />
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
         </svg>
-        <span>Free delivery in Chittagong</span>
-      </div>
+        <span className="underline decoration-warm-border group-hover:decoration-warm-fg underline-offset-2">
+          Free delivery ৳500+ (1 km)
+        </span>
+      </Link>
 
       <span className="text-warm-border" aria-hidden="true">·</span>
 
@@ -51,9 +57,12 @@ export function TrustStrip({ className = '' }: TrustStripProps) {
 
       <span className="text-warm-border" aria-hidden="true">·</span>
 
-      <div className="inline-flex items-center gap-1.5 text-xs text-warm-muted">
+      <Link
+        href="/delivery"
+        className="inline-flex items-center gap-1.5 text-xs text-warm-muted hover:text-warm-fg transition-colors group"
+      >
         <svg
-          className="w-4 h-4 shrink-0"
+          className="w-4 h-4 shrink-0 text-warm-accent"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -62,10 +71,13 @@ export function TrustStrip({ className = '' }: TrustStripProps) {
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
         </svg>
-        <span>WhatsApp support</span>
-      </div>
+        <span className="underline decoration-warm-border group-hover:decoration-warm-fg underline-offset-2">
+          Doorstep inspection
+        </span>
+      </Link>
     </div>
   );
 }
