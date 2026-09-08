@@ -22,6 +22,17 @@ vi.mock('next/navigation', () => ({
   redirect: (url: string) => mockPermanentRedirect(url),
 }));
 
+vi.mock('@vercel/speed-insights/next', () => ({
+  SpeedInsights: () => null,
+}));
+
+vi.mock('next/font/google', () => ({
+  Bricolage_Grotesque: () => ({ variable: 'font-bricolage' }),
+  Geist_Mono: () => ({ variable: 'font-geist-mono' }),
+  Manrope: () => ({ variable: 'font-manrope' }),
+  Noto_Sans_Bengali: () => ({ variable: 'font-bengali' }),
+}));
+
 // Mock Supabase
 vi.mock('../../supabase', () => ({
   supabase: {
@@ -56,6 +67,8 @@ const mockCategories = [
   { id: 'c2', slug: 'personal-care', name: 'Personal Care', emoji: '🧺', active: true },
   { id: 'c3', slug: 'cooking-essentials', name: 'Cooking Essentials', emoji: '🍳', active: true },
   { id: 'c4', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾', active: true, parentId: 'c3' },
+  { id: 'c5', slug: 'oil-and-ghee', name: 'Oil & Ghee', emoji: '🛢️', active: true, parentId: 'c3' },
+  { id: 'c6', slug: 'tea-and-coffee', name: 'Tea & Coffee', emoji: '🍵', active: true },
 ];
 
 const mockSearch = vi.fn(async (args: any) => {
@@ -327,6 +340,82 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(isProductSitemapEligible({ id: '', name: 'Item', price: 10 })).toBe(false);
       expect(isProductSitemapEligible({ id: 'uuid-1', name: '  ', price: 10 })).toBe(false);
       expect(isProductSitemapEligible({ id: null, name: 'Item', price: 10 })).toBe(false);
+    });
+  });
+
+  describe('Phase 3: Money Page Metadata & Snippet Optimization Contract', () => {
+    it('provides optimized Homepage root metadata in layout.tsx', async () => {
+      const { metadata } = await import('../../layout');
+      expect((metadata.title as any).default).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+      expect(metadata.description).toBe(
+        'Order daily bazaar & groceries in Chattogram. Fresh Miniket rice, pure mustard oil, dairy & spices with free delivery on ৳500+ and 100% Cash on Delivery.',
+      );
+      expect((metadata.openGraph as any)?.title).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+      expect((metadata.twitter as any)?.title).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+    });
+
+    it('generates high-intent snippet metadata for /category/rice-and-grain', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'rice-and-grain' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Miniket & Chinigura Rice Price in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Miniket, Nazirshail, and Chinigura rice in Chittagong');
+      expect(meta.description).toContain('fair bazaar rates');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/rice-and-grain');
+    });
+
+    it('generates high-intent snippet metadata for /category/oil-and-ghee', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'oil-and-ghee' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Soybean & Pure Mustard Oil Price in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Teer, Rupchanda soybean and pure mustard oil');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/oil-and-ghee');
+    });
+
+    it('generates high-intent snippet metadata for /category/cooking-essentials', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'cooking-essentials' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Daily Bazaar & Pantry Staples in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/cooking-essentials');
+    });
+
+    it('generates high-intent snippet metadata for /category/tea-and-coffee', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'tea-and-coffee' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Ispahani Tea & Coffee Blends in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Ispahani Mirzapore, Taaza tea, and coffee in Chittagong');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/tea-and-coffee');
+    });
+
+    it('falls back gracefully to standard metadata for non-money category', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'snacks' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      expect(meta.title).toBe('Snacks in Chittagong');
+      expect(meta.description).toContain('Shop Snacks online at Lucky Store Chittagong.');
     });
   });
 });

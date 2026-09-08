@@ -11,6 +11,34 @@ import type { CategoryGroup } from '../../lib/types';
 import type { Category, Product } from '../../lib/products/types';
 import type { Metadata } from 'next';
 
+const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }> = {
+  'rice-and-grain': {
+    title: 'Miniket & Chinigura Rice Price in Chittagong | Lucky Store',
+    description:
+      'Buy fresh Miniket, Nazirshail, and Chinigura rice in Chittagong at fair bazaar rates. Guaranteed weight, doorstep quality check, and dependable Cash on Delivery.',
+  },
+  'oil-and-ghee': {
+    title: 'Soybean & Pure Mustard Oil Price in Chittagong | Lucky Store',
+    description:
+      "Check today's 1L & 5L Teer, Rupchanda soybean and pure mustard oil prices in Chittagong. Authentic sealed bottles, fast local dispatch, and Cash on Delivery.",
+  },
+  'cooking-essentials': {
+    title: 'Daily Bazaar & Pantry Staples in Chittagong | Lucky Store',
+    description:
+      'Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at local market prices in Chittagong. Free home delivery on orders ৳500+. Order online.',
+  },
+  'tea-and-coffee': {
+    title: 'Ispahani Tea & Coffee Blends in Chittagong | Lucky Store',
+    description:
+      'Order fresh Ispahani Mirzapore, Taaza tea, and coffee in Chittagong. Handpicked blends from local gardens with fast delivery to Chawkbazar & Panchlaish.',
+  },
+  'tea-&-coffee': {
+    title: 'Ispahani Tea & Coffee Blends in Chittagong | Lucky Store',
+    description:
+      'Order fresh Ispahani Mirzapore, Taaza tea, and coffee in Chittagong. Handpicked blends from local gardens with fast delivery to Chawkbazar & Panchlaish.',
+  },
+};
+
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
@@ -44,10 +72,21 @@ export async function generateMetadata({
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
   const titleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const customMeta = MONEY_PAGE_METADATA[canonicalSlug] || MONEY_PAGE_METADATA[categorySlug];
+  const title = customMeta?.title || `${titleName} in Chittagong | Lucky Store`;
+  const description = customMeta?.description || `Shop ${titleName} online at Lucky Store Chittagong. Quality items, fast home delivery, and cash on delivery.`;
 
   return {
-    title: `${titleName} in Chittagong | Lucky Store`,
-    description: `Shop ${titleName} online at Lucky Store Chittagong. Quality items, fast home delivery, and cash on delivery.`,
+    title: customMeta ? { absolute: customMeta.title } : `${titleName} in Chittagong`,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://luckystore1947.com/category/${canonicalSlug}`,
+      siteName: 'Lucky Store',
+      locale: 'en_BD',
+      type: 'website',
+    },
     robots: hasFilters ? {
       index: false,
       follow: true,
