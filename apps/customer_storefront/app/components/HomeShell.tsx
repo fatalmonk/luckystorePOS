@@ -77,18 +77,24 @@ export function HomeShell({
 
             <section aria-label="Why shop with Lucky Store" className="home-trust-strip">
               <dl className="grid grid-cols-3 divide-x divide-warm-border">
-                <div className="home-trust-fact">
-                  <dt>Free Delivery ৳500+</dt>
+                <Link
+                  href="/delivery"
+                  className="home-trust-fact transition-colors hover:bg-warm-image-well/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                >
+                  <dt className="transition-colors hover:text-warm-accent">Free Delivery ৳500+</dt>
                   <dd>Within 1 km of Chawkbazar</dd>
-                </div>
+                </Link>
                 <div className="home-trust-fact">
                   <dt>Established 1947</dt>
                   <dd>75+ years of trusted service</dd>
                 </div>
-                <div className="home-trust-fact">
-                  <dt>Cash on Delivery</dt>
+                <Link
+                  href="/delivery#payment-heading"
+                  className="home-trust-fact transition-colors hover:bg-warm-image-well/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                >
+                  <dt className="transition-colors hover:text-warm-accent">Cash on Delivery</dt>
                   <dd>Doorstep check &amp; bKash</dd>
-                </div>
+                </Link>
               </dl>
             </section>
 
