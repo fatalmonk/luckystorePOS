@@ -44,10 +44,10 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     subCategories: ['baby-care'],
   },
   {
-    slug: 'tea-&-coffee',
+    slug: 'tea-and-coffee',
     label: 'Tea & Coffee',
     emoji: '☕',
-    subCategories: ['tea-&-coffee', 'tea', 'coffee'],
+    subCategories: ['tea-and-coffee', 'tea-&-coffee', 'tea-coffee', 'tea', 'coffee'],
   },
   {
     slug: 'cleaning-supplies',
@@ -139,6 +139,11 @@ export function normalizeCategorySlug(str: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+const CATEGORY_SLUG_ALIASES: Record<string, string> = {
+  'tea-coffee': 'tea-and-coffee',
+  'tea-&-coffee': 'tea-and-coffee',
+};
+
 /**
  * Resolves the single canonical category slug across the entire application.
  * Both storefront routing and sitemap generation MUST use this function.
@@ -146,6 +151,9 @@ export function normalizeCategorySlug(str: string): string {
 export function getCanonicalCategorySlug(raw: string): string {
   const normalized = normalizeCategorySlug(raw);
   if (!normalized) return '';
+  if (CATEGORY_SLUG_ALIASES[normalized]) {
+    return CATEGORY_SLUG_ALIASES[normalized];
+  }
   const group = CATEGORY_GROUPS.find(
     (g) => normalizeCategorySlug(g.slug) === normalized || normalizeCategorySlug(g.label) === normalized,
   );

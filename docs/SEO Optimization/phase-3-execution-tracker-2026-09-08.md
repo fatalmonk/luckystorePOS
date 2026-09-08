@@ -29,19 +29,19 @@ Improves search snippet metadata (titles & descriptions) on high-impression mone
 ### 1. Homepage (`/`)
 
 - **Title**: `Lucky Store | Online Grocery & Daily Bazaar in Chattogram` (56 chars)
-- **Meta Description**: `Order daily bazaar & groceries in Chattogram. Fresh Miniket rice, pure mustard oil, dairy & spices with free delivery on ৳500+ and 100% Cash on Delivery.` (154 chars)
+- **Meta Description**: `Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.` (147 chars)
 - **Canonical**: `https://luckystore1947.com/`
 
 ### 2. Rice and Grain (`/category/rice-and-grain`)
 
 - **Title**: `Miniket & Chinigura Rice Price in Chittagong | Lucky Store` (58 chars)
-- **Meta Description**: `Buy fresh Miniket, Nazirshail, and Chinigura rice in Chittagong at fair bazaar rates. Guaranteed weight, doorstep quality check, and dependable Cash on Delivery.` (156 chars)
+- **Meta Description**: `Shop Miniket, Nazirshail and Chinigura rice in Chittagong at displayed bazaar prices. Order online with Cash on Delivery and doorstep product inspection.` (147 chars)
 - **Canonical**: `https://luckystore1947.com/category/rice-and-grain`
 
 ### 3. Oil and Ghee (`/category/oil-and-ghee`)
 
 - **Title**: `Soybean & Pure Mustard Oil Price in Chittagong | Lucky Store` (57 chars)
-- **Meta Description**: `Check today's 1L & 5L Teer, Rupchanda soybean and pure mustard oil prices in Chittagong. Authentic sealed bottles, fast local dispatch, and Cash on Delivery.` (155 chars)
+- **Meta Description**: `Check current 1L & 5L soybean and mustard oil prices in Chittagong. Order online for local delivery with Cash on Delivery.` (123 chars)
 - **Canonical**: `https://luckystore1947.com/category/oil-and-ghee`
 
 ### 4. Cooking Essentials (`/category/cooking-essentials`)
@@ -53,20 +53,27 @@ Improves search snippet metadata (titles & descriptions) on high-impression mone
 ### 5. Tea and Coffee (`/category/tea-and-coffee`)
 
 - **Title**: `Ispahani Tea & Coffee Blends in Chittagong | Lucky Store` (58 chars)
-- **Meta Description**: `Order fresh Ispahani Mirzapore, Taaza tea, and coffee in Chittagong. Handpicked blends from local gardens with fast delivery to Chawkbazar & Panchlaish.` (152 chars)
+- **Meta Description**: `Shop Ispahani Mirzapore, Taaza tea and coffee online from Lucky Store in Chittagong. Cash on Delivery and local delivery available.` (132 chars)
 - **Canonical**: `https://luckystore1947.com/category/tea-and-coffee`
 
 ---
 
-## Cannibalization Resolution
+## Cannibalization Resolution & Query Ownership Separation
 
-1. **Homepage Rice/Oil De-stuffing**:
-   - Strip generic rice keyword stuffing from Homepage section headers.
+1. **Clear Query Ownership Boundaries**:
+   - **Homepage (`/`)**: Owns broad local-commercial entity queries (`online grocery chattogram`, `daily bazaar chattogram`, `grocery delivery chittagong`, `Lucky Store`). Strictly free of specific food product terms (Miniket, mustard oil, soybean) in meta description and keywords.
+   - **Category Landing Pages**: Authoritatively own specific commodity and product search intents (`/category/rice-and-grain` for Miniket/Nazirshail/Chinigura rice; `/category/oil-and-ghee` for mustard/soybean oil; `/category/tea-and-coffee` for tea/coffee).
    - Anchor rice product intents directly to `/category/rice-and-grain` with descriptive anchor `Miniket & Chinigura Rice`.
    - Anchor edible oil product intents directly to `/category/oil-and-ghee` with descriptive anchor `Edible Oils & Pure Mustard Oil`.
 
-2. **Dedicated Category Banners**:
-   - In `CategoryShell.tsx`, add distinct hero titles and subtitles for `rice-and-grain` and `oil-and-ghee` rather than generic category fallback names.
+2. **Tea Canonical Slug Consolidation**:
+   - Single authoritative canonical slug: `/category/tea-and-coffee`.
+   - Legacy aliases `/category/tea-coffee` and `/category/tea-&-coffee` permanently redirect via HTTP 308 to `/category/tea-and-coffee`.
+   - Removed duplicate alias entries from `MONEY_PAGE_METADATA` and `BANNER_MAP`.
+
+3. **Policy-Safe Commercial Copy**:
+   - Purged all promotional fluff (`Guaranteed weight`, `authentic sealed bottles`, `fast local dispatch`, `handpicked blends`, `garden-fresh`, `finest`).
+   - Fallback metadata updated to factual browsing copy without delivery speed promises.
 
 ---
 

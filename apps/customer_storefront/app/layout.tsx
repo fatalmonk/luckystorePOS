@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     template: '%s | Lucky Store',
   },
   description:
-    'Order daily bazaar & groceries in Chattogram. Fresh Miniket rice, pure mustard oil, dairy & spices with free delivery on ৳500+ and 100% Cash on Delivery.',
+    'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
   keywords: [
     'online grocery chattogram',
     'daily bazaar chattogram',
@@ -55,8 +55,6 @@ export const metadata: Metadata = {
     'bd shop',
     'online shop',
     'home shop',
-    'Oil',
-    'Chal',
     'local delivery',
     'chattogram online grocery',
     'grocery shop near me',
@@ -91,7 +89,7 @@ export const metadata: Metadata = {
     siteName: 'Lucky Store',
     title: 'Lucky Store | Online Grocery & Daily Bazaar in Chattogram',
     description:
-      'Order daily bazaar & groceries in Chattogram. Fresh Miniket rice, pure mustard oil, dairy & spices with free delivery on ৳500+ and 100% Cash on Delivery.',
+      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
@@ -110,7 +108,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Lucky Store | Online Grocery & Daily Bazaar in Chattogram',
     description:
-      'Order daily bazaar & groceries in Chattogram. Fresh Miniket rice, pure mustard oil, dairy & spices with free delivery on ৳500+ and 100% Cash on Delivery.',
+      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
