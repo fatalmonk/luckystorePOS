@@ -66,7 +66,7 @@ export function HomeShell({
 
   return (
     <>
-      <h1 className="sr-only">Lucky Store 1947 — Online Grocery Delivery in Chittagong</h1>
+      <h1 className="sr-only">Lucky Store — Online Grocery &amp; Daily Bazaar in Chattogram (Est. 1947)</h1>
       <FaqJsonLd />
       <Header />
       <CartStorageNotice />
@@ -78,21 +78,49 @@ export function HomeShell({
             <section aria-label="Why shop with Lucky Store" className="home-trust-strip">
               <dl className="grid grid-cols-3 divide-x divide-warm-border">
                 <div className="home-trust-fact">
-                  <dt>Local delivery</dt>
-                  <dd>Across Chittagong</dd>
+                  <dt>Free Delivery ৳500+</dt>
+                  <dd>Within 1 km of Chawkbazar</dd>
                 </div>
                 <div className="home-trust-fact">
-                  <dt>Since 1947</dt>
-                  <dd>Three generations of trust</dd>
+                  <dt>Established 1947</dt>
+                  <dd>75+ years of trusted service</dd>
                 </div>
                 <div className="home-trust-fact">
-                  <dt>Pay on delivery</dt>
-                  <dd>Cash accepted at your door</dd>
+                  <dt>Cash on Delivery</dt>
+                  <dd>Doorstep check &amp; bKash</dd>
                 </div>
               </dl>
             </section>
 
             <CategoryQuickGrid categories={categories} />
+
+            <nav aria-label="Popular Bazaar Categories" className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold text-warm-muted scrollbar-hide">
+              <span className="shrink-0 font-bold text-warm-fg">Popular Bazaar:</span>
+              <Link
+                href="/category/rice-and-grain"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors"
+              >
+                Miniket &amp; Chinigura Rice
+              </Link>
+              <Link
+                href="/category/oil-and-ghee"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors"
+              >
+                Edible Oils &amp; Mustard Oil
+              </Link>
+              <Link
+                href="/category/cooking-essentials"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors"
+              >
+                Daily Bazaar &amp; Pantry
+              </Link>
+              <Link
+                href="/category/tea-and-coffee"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors"
+              >
+                Ispahani Tea &amp; Coffee
+              </Link>
+            </nav>
 
             <ProductGridSection
               id="popular-right-now"
@@ -103,8 +131,8 @@ export function HomeShell({
             />
             <ProductGridSection
               id="daily-essentials"
-              title="Daily Essentials"
-              subtitle="Fragrant rice, pressed oils, and freshly ground spices for tonight’s pot."
+              title="Daily Bazaar &amp; Pantry Staples"
+              subtitle="Everyday lentils, flour, spices, salt &amp; sugar for tonight’s pot."
               products={pantryProducts.slice(0, 15)}
               ctaHref="/category/cooking-essentials"
             />

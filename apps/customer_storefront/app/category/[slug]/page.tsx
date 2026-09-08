@@ -11,6 +11,29 @@ import type { CategoryGroup } from '../../lib/types';
 import type { Category, Product } from '../../lib/products/types';
 import type { Metadata } from 'next';
 
+const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }> = {
+  'rice-and-grain': {
+    title: 'Miniket & Chinigura Rice Price in Chittagong | Lucky Store',
+    description:
+      'Shop Miniket, Nazirshail and Chinigura rice in Chittagong at displayed bazaar prices. Order online with Cash on Delivery and doorstep product inspection.',
+  },
+  'oil-and-ghee': {
+    title: 'Soybean & Mustard Oil Price in Chittagong | Lucky Store',
+    description:
+      'Check current 1L & 5L soybean and mustard oil prices in Chittagong. Order online for local delivery with Cash on Delivery.',
+  },
+  'cooking-essentials': {
+    title: 'Daily Bazaar & Pantry Staples in Chittagong | Lucky Store',
+    description:
+      'Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at displayed prices in Chittagong. Free home delivery on orders ৳500+. Order online.',
+  },
+  'tea-and-coffee': {
+    title: 'Ispahani Tea & Coffee Blends in Chittagong | Lucky Store',
+    description:
+      'Shop Ispahani Mirzapore, Taaza tea and coffee online from Lucky Store in Chittagong. Cash on Delivery and local delivery available.',
+  },
+};
+
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
@@ -22,7 +45,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
-  const categorySlug = decodeURIComponent(resolvedParams.slug);
+  let categorySlug: string;
+  try {
+    categorySlug = decodeURIComponent(resolvedParams.slug);
+  } catch {
+    notFound();
+  }
   const categories = await getCachedCategories();
   const { canonicalSlug, group, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
 
@@ -44,10 +72,21 @@ export async function generateMetadata({
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
   const titleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const customMeta = canonicalSlug ? MONEY_PAGE_METADATA[canonicalSlug] : undefined;
+  const title = customMeta?.title || `${titleName} in Chittagong | Lucky Store`;
+  const description = customMeta?.description || `Shop ${titleName} online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.`;
 
   return {
-    title: `${titleName} in Chittagong | Lucky Store`,
-    description: `Shop ${titleName} online at Lucky Store Chittagong. Quality items, fast home delivery, and cash on delivery.`,
+    title: customMeta ? { absolute: customMeta.title } : `${titleName} in Chittagong`,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://luckystore1947.com/category/${canonicalSlug}`,
+      siteName: 'Lucky Store',
+      locale: 'en_BD',
+      type: 'website',
+    },
     robots: hasFilters ? {
       index: false,
       follow: true,
@@ -69,7 +108,12 @@ export default async function CategorySlugPage({
   const resolvedSearch = await searchParams;
   const categories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const categorySlug = decodeURIComponent(resolvedParams.slug);
+  let categorySlug: string;
+  try {
+    categorySlug = decodeURIComponent(resolvedParams.slug);
+  } catch {
+    notFound();
+  }
   const { canonicalSlug, group: initialGroup, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
 
   if (!canonicalSlug) {

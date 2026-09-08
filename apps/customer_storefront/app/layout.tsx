@@ -38,13 +38,14 @@ const notoBengali = Noto_Sans_Bengali({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Lucky Store | Online Grocery in Chattogram',
+    default: 'Lucky Store | Online Grocery & Daily Bazaar in Chattogram',
     template: '%s | Lucky Store',
   },
   description:
-    'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
+    'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
   keywords: [
     'online grocery chattogram',
+    'daily bazaar chattogram',
     'grocery stores chattogram',
     'grocery prices chattogram',
     'bangladesh online grocery',
@@ -54,8 +55,6 @@ export const metadata: Metadata = {
     'bd shop',
     'online shop',
     'home shop',
-    'Oil',
-    'Chal',
     'local delivery',
     'chattogram online grocery',
     'grocery shop near me',
@@ -88,15 +87,15 @@ export const metadata: Metadata = {
     locale: 'en_BD',
     url: '/',
     siteName: 'Lucky Store',
-    title: 'Lucky Store | Online Grocery in Chattogram',
+    title: 'Lucky Store | Online Grocery & Daily Bazaar in Chattogram',
     description:
-      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
+      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
         width: 1200,
         height: 630,
-        alt: 'Lucky Store online grocery in Chattogram',
+        alt: 'Lucky Store online grocery and daily bazaar in Chattogram',
       },
     ],
   },
@@ -107,13 +106,13 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store | Online Grocery in Chattogram',
+    title: 'Lucky Store | Online Grocery & Daily Bazaar in Chattogram',
     description:
-      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
+      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
     images: [
       {
         url: '/lucky-store-social-share-v2.png',
-        alt: 'Lucky Store online grocery in Chattogram',
+        alt: 'Lucky Store online grocery and daily bazaar in Chattogram',
       },
     ],
     creator: '@luckystore1947',

@@ -59,11 +59,23 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     badge: 'Tea Time Treats',
     bgImage: responsiveHeroBanner('promo_biscuits', 'Biscuits & Cookies'),
   },
+  'rice-and-grain': {
+    title: 'Miniket Rice & Daily Grains',
+    subtitle: 'Miniket, Chinigura, and Nazirshail rice for everyday cooking at displayed bazaar rates.',
+    badge: 'Daily Rice & Grains',
+    bgImage: responsiveHeroBanner('promo_cooking', 'Rice & Grains'),
+  },
+  'oil-and-ghee': {
+    title: 'Soybean Oil, Mustard Oil & Ghee',
+    subtitle: 'Soybean oil, mustard oil, and ghee from familiar household brands delivered to your door.',
+    badge: 'Edible Oils & Ghee',
+    bgImage: responsiveHeroBanner('promo_cooking', 'Oil & Ghee'),
+  },
   'cooking-essentials': {
-    title: 'Cooking Essentials',
-    subtitle: 'Pure oils, aromatic spices, and finest grains for your daily meals.',
+    title: 'Daily Bazaar & Pantry Staples',
+    subtitle: 'Everyday cooking essentials: lentils, flour, spices, salt, and sugar at displayed bazaar prices.',
     badge: 'Kitchen Staples',
-    bgImage: responsiveHeroBanner('promo_cooking', 'Cooking'),
+    bgImage: responsiveHeroBanner('promo_cooking', 'Cooking Essentials'),
   },
   'personal-care': {
     title: 'Personal Care & Hygiene',
@@ -71,9 +83,9 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     badge: 'Hygiene & Care',
     bgImage: responsiveHeroBanner('promo_personal', 'Personal care'),
   },
-  'tea-coffee': {
-    title: 'Tea & Coffee Essentials',
-    subtitle: 'Aromatic teas, premium coffee blends, and milk powders for your morning brew.',
+  'tea-and-coffee': {
+    title: 'Tea & Coffee Blends',
+    subtitle: 'Packaged tea and coffee from familiar brands available for local delivery in Chittagong.',
     badge: 'Morning Brew',
     bgImage: responsiveHeroBanner('promo_tea_coffee', 'Tea & Coffee'),
   },

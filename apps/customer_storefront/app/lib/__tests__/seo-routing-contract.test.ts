@@ -22,6 +22,17 @@ vi.mock('next/navigation', () => ({
   redirect: (url: string) => mockPermanentRedirect(url),
 }));
 
+vi.mock('@vercel/speed-insights/next', () => ({
+  SpeedInsights: () => null,
+}));
+
+vi.mock('next/font/google', () => ({
+  Bricolage_Grotesque: () => ({ variable: 'font-bricolage' }),
+  Geist_Mono: () => ({ variable: 'font-geist-mono' }),
+  Manrope: () => ({ variable: 'font-manrope' }),
+  Noto_Sans_Bengali: () => ({ variable: 'font-bengali' }),
+}));
+
 // Mock Supabase
 vi.mock('../../supabase', () => ({
   supabase: {
@@ -56,6 +67,8 @@ const mockCategories = [
   { id: 'c2', slug: 'personal-care', name: 'Personal Care', emoji: '🧺', active: true },
   { id: 'c3', slug: 'cooking-essentials', name: 'Cooking Essentials', emoji: '🍳', active: true },
   { id: 'c4', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾', active: true, parentId: 'c3' },
+  { id: 'c5', slug: 'oil-and-ghee', name: 'Oil & Ghee', emoji: '🛢️', active: true, parentId: 'c3' },
+  { id: 'c6', slug: 'tea-and-coffee', name: 'Tea & Coffee', emoji: '🍵', active: true },
 ];
 
 const mockSearch = vi.fn(async (args: any) => {
@@ -327,6 +340,201 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(isProductSitemapEligible({ id: '', name: 'Item', price: 10 })).toBe(false);
       expect(isProductSitemapEligible({ id: 'uuid-1', name: '  ', price: 10 })).toBe(false);
       expect(isProductSitemapEligible({ id: null, name: 'Item', price: 10 })).toBe(false);
+    });
+  });
+
+  describe('Phase 3: Money Page Metadata & Snippet Optimization Contract', () => {
+    it('provides clean entity-level Homepage root metadata without product stuffing', async () => {
+      const { metadata } = await import('../../layout');
+      expect((metadata.title as any).default).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+      expect(metadata.description).toBe(
+        'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
+      );
+      expect((metadata.openGraph as any)?.title).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+      expect((metadata.twitter as any)?.title).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+
+      // Adversarial check: homepage description must not stuff specific category product terms
+      const descLower = (metadata.description || '').toLowerCase();
+      expect(descLower).not.toContain('miniket');
+      expect(descLower).not.toContain('mustard oil');
+      expect(descLower).not.toContain('soybean');
+    });
+
+    it('generates high-intent snippet metadata for /category/rice-and-grain without unverified claims', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'rice-and-grain' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Miniket & Chinigura Rice Price in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Shop Miniket, Nazirshail and Chinigura rice in Chittagong at displayed bazaar prices');
+      expect(meta.description).toContain('doorstep product inspection');
+      expect(meta.description).not.toContain('Guaranteed weight');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/rice-and-grain');
+    });
+
+    it('generates high-intent snippet metadata for /category/oil-and-ghee without unverified dispatch claims', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'oil-and-ghee' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Soybean & Mustard Oil Price in Chittagong | Lucky Store');
+      expect(meta.description).toContain('current 1L & 5L soybean and mustard oil prices in Chittagong');
+      expect(meta.description).not.toContain('Authentic sealed bottles');
+      expect(meta.description).not.toContain('fast local dispatch');
+      expect(meta.description).not.toContain('Pure');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/oil-and-ghee');
+    });
+
+    it('generates high-intent snippet metadata for /category/cooking-essentials', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'cooking-essentials' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Daily Bazaar & Pantry Staples in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at displayed prices');
+      expect(meta.description).not.toContain('local market prices');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/cooking-essentials');
+    });
+
+    it('generates high-intent snippet metadata for /category/tea-and-coffee without sourcing fiction', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'tea-and-coffee' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
+      expect(titleStr).toBe('Ispahani Tea & Coffee Blends in Chittagong | Lucky Store');
+      expect(meta.description).toContain('Shop Ispahani Mirzapore, Taaza tea and coffee online from Lucky Store in Chittagong');
+      expect(meta.description).not.toContain('Handpicked blends');
+      expect(meta.description).not.toContain('garden-fresh');
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/tea-and-coffee');
+    });
+
+    it('falls back to factual metadata for non-money category without delivery speed claims', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'snacks' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      expect(meta.title).toBe('Snacks in Chittagong');
+      expect(meta.description).toBe(
+        'Shop Snacks online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.',
+      );
+      expect(meta.description).not.toContain('fast');
+      expect(meta.description).not.toContain('Quality items');
+    });
+  });
+
+  describe('Adversarial SEO & Canonical Interception Contract', () => {
+    it('permanently redirects legacy tea-coffee alias to /category/tea-and-coffee in middleware with HTTP 308', async () => {
+      const { middleware } = await import('../../../middleware');
+      const req = new NextRequest('https://luckystore1947.com/category/tea-coffee');
+      const res = await middleware(req);
+
+      expect(res.status).toBe(308);
+      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/tea-and-coffee');
+    });
+
+    it('permanently redirects legacy tea-&-coffee alias to /category/tea-and-coffee in middleware with HTTP 308', async () => {
+      const { middleware } = await import('../../../middleware');
+      const req = new NextRequest('https://luckystore1947.com/category/tea-&-coffee');
+      const res = await middleware(req);
+
+      expect(res.status).toBe(308);
+      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/tea-and-coffee');
+    });
+
+    it('preserves clean parent canonical and adds noindex,follow on filtered category queries', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'rice-and-grain' }),
+        searchParams: Promise.resolve({ sort: 'price_asc', brand: 'teer' }),
+      });
+
+      expect(meta.robots).toEqual({ index: false, follow: true });
+      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/rice-and-grain');
+    });
+
+    it('rejects unverified promotional claims across all money metadata entries', async () => {
+      const { generateMetadata } = await import('../../category/[slug]/page');
+      const moneySlugs = ['rice-and-grain', 'oil-and-ghee', 'cooking-essentials', 'tea-and-coffee'];
+      const forbiddenTerms = [
+        'guaranteed weight',
+        'handpicked',
+        'garden-fresh',
+        'fast delivery',
+        'fast local dispatch',
+        'fast home delivery',
+        'finest',
+      ];
+
+      for (const slug of moneySlugs) {
+        const meta = await generateMetadata({
+          params: Promise.resolve({ slug }),
+          searchParams: Promise.resolve({}),
+        });
+        const descLower = (meta.description || '').toLowerCase();
+        for (const term of forbiddenTerms) {
+          expect(descLower).not.toContain(term);
+        }
+      }
+    });
+
+    it('handles malformed percent-encoded category slugs in middleware without throwing 500', async () => {
+      const { middleware } = await import('../../../middleware');
+      
+      const malformedUrls = [
+        'https://luckystore1947.com/category/%E0%A4%A',
+        'https://luckystore1947.com/category/%ZZ',
+        'https://luckystore1947.com/category/%',
+        'https://luckystore1947.com/category/%a',
+      ];
+
+      for (const url of malformedUrls) {
+        const req = new NextRequest(url);
+        // Must not throw URIError (which causes 500 in Next.js)
+        const res = await middleware(req);
+        // Middleware passes through to route handler (NextResponse.next() status 200 or updated session)
+        expect(res.status).toBeLessThan(500);
+      }
+    });
+
+    it('triggers notFound() without throwing URIError 500 for malformed percent-encoded category slug in page & metadata', async () => {
+      const { generateMetadata, default: CategoryPage } = await import('../../category/[slug]/page');
+
+      // generateMetadata should trigger notFound()
+      await expect(
+        generateMetadata({
+          params: Promise.resolve({ slug: '%E0%A4%A' }),
+          searchParams: Promise.resolve({}),
+        }),
+      ).rejects.toThrow('NEXT_NOT_FOUND');
+
+      await expect(
+        generateMetadata({
+          params: Promise.resolve({ slug: '%ZZ' }),
+          searchParams: Promise.resolve({}),
+        }),
+      ).rejects.toThrow('NEXT_NOT_FOUND');
+
+      // CategoryPage should trigger notFound()
+      await expect(
+        CategoryPage({
+          params: Promise.resolve({ slug: '%E0%A4%A' }),
+          searchParams: Promise.resolve({}),
+        }),
+      ).rejects.toThrow('NEXT_NOT_FOUND');
     });
   });
 });
