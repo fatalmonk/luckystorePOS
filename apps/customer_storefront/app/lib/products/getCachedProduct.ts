@@ -10,12 +10,17 @@ import type { Product } from './types';
  * during the same request.
  */
 export const getCachedProductBySlug = cache(async (slug: string): Promise<Product | null> => {
-  const { repo } = createProductRepository(supabase);
+  try {
+    const { repo } = createProductRepository(supabase);
 
-  if (isBareUuid(slug)) {
-    return repo.getById(createProductId(slug));
+    if (isBareUuid(slug)) {
+      return await repo.getById(createProductId(slug));
+    }
+
+    const prefix = extractIdFromSlug(slug);
+    return await repo.getByIdPrefix(prefix);
+  } catch (err) {
+    console.error('getCachedProductBySlug error:', err);
+    return null;
   }
-
-  const prefix = extractIdFromSlug(slug);
-  return repo.getByIdPrefix(prefix);
 });

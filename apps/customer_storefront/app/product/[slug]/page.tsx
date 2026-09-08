@@ -1,11 +1,11 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getCachedProductBySlug } from '../../lib/products/getCachedProduct';
 import {
   getCachedCrossSellProducts,
   prepareCrossSell,
 } from '../../lib/products/getCachedCrossSell';
-import { toProductSlug, isBareUuid } from '../../lib/products/slugify';
+import { toProductSlug } from '../../lib/products/slugify';
 import { formatBdt } from '../../lib/formatPrice';
 import ProductClient from './ProductClient';
 
@@ -18,13 +18,15 @@ export async function generateMetadata({
   const product = await getCachedProductBySlug(slug);
 
   if (!product) {
-    return {
-      title: 'Product Not Found | Lucky Store',
-      description: 'The product you are looking for is not available at Lucky Store.',
-    };
+    notFound();
   }
 
-  const canonicalUrl = `https://luckystore1947.com/product/${toProductSlug(product.name, product.id)}`;
+  const canonicalSlug = toProductSlug(product.name, product.id);
+  if (slug !== canonicalSlug) {
+    permanentRedirect(`/product/${canonicalSlug}`);
+  }
+
+  const canonicalUrl = `https://luckystore1947.com/product/${canonicalSlug}`;
   const title = `${product.name} – ${formatBdt(product.price)}${product.unit ? `/${product.unit}` : ''}`;
   const description =
     product.description ||
@@ -68,15 +70,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   if (!product) notFound();
 
-  // Redirect bare UUIDs (/product/<uuid>) → canonical slug URL
-  if (isBareUuid(slug)) {
-    redirect(`/product/${toProductSlug(product.name, product.id)}`);
-  }
-
-  // Redirect non-canonical slugs (e.g. outdated name in URL)
-  const canonical = toProductSlug(product.name, product.id);
-  if (slug !== canonical) {
-    redirect(`/product/${canonical}`);
+  // Redirect bare UUIDs and outdated slugs → canonical slug URL via HTTP 308
+  const canonicalSlug = toProductSlug(product.name, product.id);
+  if (slug !== canonicalSlug) {
+    permanentRedirect(`/product/${canonicalSlug}`);
   }
 
   const crossSell = await getCachedCrossSellProducts(

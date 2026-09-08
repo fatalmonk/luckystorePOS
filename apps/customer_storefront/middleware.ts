@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
+import { normalizeCategorySlug } from './app/lib/types';
 
 /**
  * Middleware for Markdown-for-Agents content negotiation.
@@ -15,6 +16,33 @@ import { updateSession } from './app/lib/supabase/middleware';
  */
 
 export async function middleware(request: NextRequest) {
+  // Pre-session canonical redirect: consolidate /category?cat=<slug> to /category/<slug>
+  // Preserves legitimate non-cat query parameters (e.g. sort, q) in a single 308 hop
+  if (request.nextUrl.pathname === '/category' && request.nextUrl.searchParams.has('cat')) {
+    const rawCat = request.nextUrl.searchParams.get('cat')?.trim();
+    if (rawCat) {
+      const normalizedCat = normalizeCategorySlug(rawCat);
+      const url = request.nextUrl.clone();
+      url.pathname = normalizedCat ? `/category/${normalizedCat}` : '/category';
+      url.searchParams.delete('cat');
+      return NextResponse.redirect(url, 308);
+    }
+  }
+
+  // Pre-session canonical redirect for unnormalized category path slugs (e.g. /category/Personal-Care -> /category/personal-care)
+  if (request.nextUrl.pathname.startsWith('/category/')) {
+    const rawSlug = request.nextUrl.pathname.replace(/^\/category\//, '');
+    if (rawSlug && !rawSlug.includes('/')) {
+      const decoded = decodeURIComponent(rawSlug);
+      const normalized = normalizeCategorySlug(decoded);
+      if (normalized && rawSlug !== normalized) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/category/${normalized}`;
+        return NextResponse.redirect(url, 308);
+      }
+    }
+  }
+
   const supabaseResponse = await updateSession(request);
 
   const accept = request.headers.get('accept') || '';

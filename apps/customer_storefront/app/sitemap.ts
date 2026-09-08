@@ -1,11 +1,13 @@
 import { MetadataRoute } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
+import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
+import { getCanonicalCategorySlug } from './lib/types';
 
 const BASE_URL = 'https://luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
-// Dynamic index pages — lastMod derived at runtime from newest DB content
+// Dynamic index pages — lastMod derived at runtime from newest DB content only
 const dynamicIndexRoutes = [
   { path: '', priority: 1.0, changefreq: 'daily' },
   { path: '/category', priority: 0.8, changefreq: 'daily' },
@@ -20,58 +22,68 @@ const staticRoutes = [
   { path: '/data-deletion', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
 ] as const;
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'placeholder',
-  { auth: { persistSession: false } }
-);
-
-// Dynamic category pages
+// Dynamic category pages: shares the exact canonical slug normalization used by category routing
 async function getCategories(): Promise<{ slug: string }[]> {
   try {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('slug, name, category')
-      .eq('active', true)
-      .eq('store_id', STORE_ID);
+    const categories = await getCachedCategories();
+    const seenSlugs = new Set<string>();
+    const result: { slug: string }[] = [];
 
-    if (error) throw error;
+    for (const cat of categories) {
+      const canonicalSlug = getCanonicalCategorySlug(cat.slug || cat.name);
+      if (canonicalSlug && !seenSlugs.has(canonicalSlug)) {
+        seenSlugs.add(canonicalSlug);
+        result.push({ slug: canonicalSlug });
+      }
+    }
 
-    return (data || []).map((c: any) => ({
-      slug: (c.slug || c.name || c.category || '')
-        .toLowerCase()
-        .trim()
-        .replace(/&/g, 'and')
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-'),
-    }));
+    return result;
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
-    // Fallback static categories if DB query fails to ensure a valid sitemap is generated
-    return [
-      'oil-and-ghee',
-      'rice-and-grain',
-      'dairy-and-eggs',
-      'snacks',
-      'cold-beverages',
-      'personal-care',
-      'cooking-essentials',
-      'cleaning-supplies',
-      'breakfast',
-      'tea-and-coffee',
-      'electronics',
-      'baking-needs',
-      'baby-care',
-    ].map((slug) => ({ slug }));
+    // Return empty list on failure — never inject fabricated fallback URLs
+    return [];
   }
 }
 
-// Dynamic product pages
-async function getProducts(): Promise<{ id: string; name: string; updatedAt: string }[]> {
+/**
+ * Product Sitemap Eligibility Predicate
+ *
+ * Database RPC Contract:
+ * - Supabase RPC `search_items_pos` filters strictly at the SQL level via `WHERE i.is_active = true`.
+ * - The RPC returns rows that are guaranteed to be active in PostgreSQL, but omits the `is_active`
+ *   column from its JSON projection.
+ *
+ * Eligibility Criteria:
+ * 1. ID: Must be a non-empty string.
+ * 2. Name: Must be a non-empty string.
+ * 3. Price: Must be a finite, positive number (> 0).
+ * 4. Active flags: When present (e.g. from table queries or mock objects), `is_active` and `active`
+ *    must NOT be false.
+ */
+export function isProductSitemapEligible(item: {
+  id?: unknown;
+  item_id?: unknown;
+  name?: unknown;
+  price?: unknown;
+  is_active?: unknown;
+  active?: unknown;
+}): boolean {
+  const id = item.id ?? item.item_id;
+  const name = item.name;
+  const price = Number(item.price);
+
+  if (typeof id !== 'string' || id.trim().length === 0) return false;
+  if (typeof name !== 'string' || name.trim().length === 0) return false;
+  if (!Number.isFinite(price) || price <= 0) return false;
+
+  if (item.is_active !== undefined && item.is_active !== true) return false;
+  if (item.active !== undefined && item.active !== true) return false;
+
+  return true;
+}
+
+// Dynamic product pages: enforces strict sitemap eligibility contract
+async function getProducts(): Promise<{ id: string; name: string; updatedAt: string | null }[]> {
   try {
     const { data, error } = await supabase.rpc('search_items_pos', {
       p_store_id: STORE_ID,
@@ -86,21 +98,11 @@ async function getProducts(): Promise<{ id: string; name: string; updatedAt: str
     const rows = Array.isArray(data) ? data : [];
 
     return rows
-      .filter((i: any) => {
-        const id = i.id ?? i.item_id;
-        const price = Number(i.price);
-        return (
-          typeof id === 'string' &&
-          typeof i.name === 'string' &&
-          i.name.trim().length > 0 &&
-          Number.isFinite(price) &&
-          price > 0
-        );
-      })
+      .filter(isProductSitemapEligible)
       .map((i: any) => ({
-        id: i.id ?? i.item_id,
+        id: String(i.id ?? i.item_id).trim(),
         name: i.name.trim(),
-        updatedAt: i.updated_at || i.created_at || new Date().toISOString(),
+        updatedAt: i.updated_at || i.created_at || null,
       }));
   } catch (error) {
     console.error('Error fetching products for sitemap:', error);
@@ -115,17 +117,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   // Derive homepage/listing lastMod from the newest *real* product timestamp only.
-  // Category pages have no updated_at column, so we exclude them to avoid
-  // every build appearing as "just modified" and triggering unnecessary crawler re-fetches.
-  const productUpdatedAts = products.map(p => p.updatedAt).filter(Boolean);
-  const newestUpdatedAt = productUpdatedAts.length
-    ? productUpdatedAts.reduce((a, b) => (a > b ? a : b))
-    : new Date().toISOString();
-  const newestMod = new Date(newestUpdatedAt).toISOString().split('.')[0] + 'Z';
+  // When no legitimate timestamp is available, lastModified is omitted (never use Date.now()).
+  const productUpdatedAts = products
+    .map((p) => p.updatedAt)
+    .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
+
+  const newestMod = productUpdatedAts.length
+    ? new Date(productUpdatedAts.reduce((a, b) => (a > b ? a : b))).toISOString().split('.')[0] + 'Z'
+    : undefined;
 
   const dynamicIndexEntries: MetadataRoute.Sitemap = dynamicIndexRoutes.map((route) => ({
     url: `${BASE_URL}${route.path}`,
-    lastModified: newestMod,
+    ...(newestMod ? { lastModified: newestMod } : {}),
     changeFrequency: route.changefreq as any,
     priority: route.priority,
   }));
@@ -139,15 +142,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
     url: `${BASE_URL}/category/${cat.slug}`,
-    // lastModified intentionally omitted: no updated_at column on categories table.
-    // Omitting is spec-compliant and prevents false "just updated" signals to crawlers.
     changeFrequency: 'daily',
     priority: 0.9,
   }));
 
   const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${BASE_URL}/product/${toProductSlug(product.name, product.id)}`,
-    lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z',
+    ...(product.updatedAt
+      ? { lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z' }
+      : {}),
     changeFrequency: 'daily',
     priority: 0.8,
   }));
