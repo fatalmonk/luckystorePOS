@@ -82,18 +82,22 @@ Eliminates URL fragmentation and cannibalization by permanently redirecting lega
 
 ## Structured Data Implementation
 
-The page emits four standard, validated Schema.org JSON-LD schemas:
+The page emits validated Schema.org JSON-LD schemas:
 
 1. **`FAQPage` Schema**:
    - Covers 6 comprehensive questions and policy answers regarding coverage, fees, hours, payments, inspection, and damaged items.
 2. **`BreadcrumbList` Schema**:
    - Item 1: `Home` (`https://luckystore1947.com`)
    - Item 2: `Delivery Information` (`https://luckystore1947.com/delivery`)
-3. **`OfferShippingDetails` Schema**:
-   - `@type: OfferShippingDetails` representing merchant delivery policies:
-     - `shippingRate`: MonetaryAmount ৳40 BDT
-     - `freeShippingThreshold`: DeliveryChargeSpecification ৳500 BDT (appliesToDeliveryChargeMethod: DeliveryModeOwnFleet)
+3. **`OfferShippingDetails` & `ShippingRateSettings` Schema**:
+   - In accordance with Schema.org vocabulary, `freeShippingThreshold` is modeled inside `ShippingRateSettings` rather than directly on `OfferShippingDetails`:
+     - `@type: OfferShippingDetails`
      - `shippingDestination`: DefinedRegion (Chattogram, BD, 4203)
+     - `shippingRate`: `@type: ShippingRateSettings`
+       - `shippingLabel`: `Lucky Store Standard Local Delivery`
+       - `shippingRate`: MonetaryAmount ৳40 BDT
+       - `freeShippingThreshold`: DeliveryChargeSpecification ৳500 BDT (`appliesToDeliveryMethod: https://schema.org/DeliveryModeOwnFleet`)
+   - Standalone `getDeliveryShippingRateSettingsSchema()` also exported for central policy reuse.
 4. **`DeliveryService` Schema**:
    - `@type: DeliveryService` representing the store's in-house fulfillment:
      - `provider`: `@id: https://luckystore1947.com/#grocerystore`
@@ -125,16 +129,32 @@ A dedicated vitest contract test suite is active in `apps/customer_storefront/ap
 - [x] Validates canonical URL matches `https://luckystore1947.com/delivery`.
 - [x] Validates strict policy compliance (1 km radius, ৳500+ free, ৳40 fee, 09:00–00:30, COD/bKash, doorstep inspection).
 - [x] Rejects all promotional fluff, false speed promises, or unsupported claims.
+- [x] Asserts Schema.org property placement (`freeShippingThreshold` inside `ShippingRateSettings`, rejects invented `appliesToDeliveryChargeMethod`).
 - [x] Validates HTTP 308 permanent redirect from `/delivery/chattogram` and `/delivery/`.
 - [x] Validates query parameter preservation on redirects.
 - [x] Validates markdown content negotiation returns 200 with structured policy text.
-- [x] 225/225 total vitest storefront tests passing.
+- [x] 228/228 total vitest storefront tests passing (17/17 in delivery-hub-contract).
 - [x] `tsc --noEmit` clean with 0 errors.
+- [x] `next build` clean (prerendered `/delivery` static 6.3 kB).
+
+---
+
+## Production Deployment & Live Verification
+
+- **PR Merge:** PR #362 merged to `main` at `bfbe84da`.
+- **Vercel Deployment ID:** `dpl_5KnmPS1jpxjVJHX61gYuS3Vk4rYu`
+- **Production URL:** `https://lucky-store-do1p4f6il-mac-alvis-projects.vercel.app`
+- **Production Alias:** `https://luckystore1947.com`
+- **Live Verification Evidence:**
+  - `GET https://luckystore1947.com/delivery` → HTTP 200 OK (`x-nextjs-prerender: 1`, `x-vercel-cache: PRERENDER`)
+  - `GET https://luckystore1947.com/delivery/` → HTTP 308 (`location: /delivery`)
+  - `GET https://luckystore1947.com/delivery/chattogram` → HTTP 308 (`location: /delivery`)
+  - `GET https://luckystore1947.com/api/markdown?path=/delivery` → HTTP 200 OK (`content-type: text/markdown`)
 
 ---
 
 ## Rollback Method
 
 In the event of unforeseen regressions:
-1. Revert commit touching `apps/customer_storefront/app/delivery/`, `middleware.ts`, `sitemap.ts`, `markdown/route.ts`, `Footer.tsx`, `AppDrawer.tsx`, and `HomeShell.tsx`.
-2. Checkout prior commit `5b15fb4e`.
+1. Revert commit `bfbe84da` on `main`.
+2. Redeploy previous known-good deployment `dpl_2gFzNsKX4KqBNvvW2syerFpNFZfJ` (commit `5b15fb4e`).

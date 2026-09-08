@@ -46,7 +46,7 @@ Do not present estimates as GSC data. Do not publish delivery, payment, price, a
 2. **Phase 1 — GA4 measurement repair** (Completed & Deployed — PR #356 / live)
 3. **Phase 2 — Indexing, canonical, sitemap, and 404 hygiene** (Completed & Deployed — PR #359 / live)
 4. **Phase 3 — Homepage and demonstrated product-demand optimization** (Completed & Deployed — PR #361 / live)
-5. **Phase 4 — One authoritative Chattogram delivery hub** (Completed & Verified)
+5. **Phase 4 — One authoritative Chattogram delivery hub** (Completed & Deployed — PR #362 / live)
 6. **Phase 4B — Bengali Storefront Track (`/bn` Dual-Surface SEO)** (Active / Immediate Next)
 7. **Phase 5 — Truthful GBP completeness and customer usefulness**
 8. **Phase 6 — Structured data and citations**
