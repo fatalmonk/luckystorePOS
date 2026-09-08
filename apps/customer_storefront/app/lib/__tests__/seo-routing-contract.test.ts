@@ -490,5 +490,51 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         }
       }
     });
+
+    it('handles malformed percent-encoded category slugs in middleware without throwing 500', async () => {
+      const { middleware } = await import('../../../middleware');
+      
+      const malformedUrls = [
+        'https://luckystore1947.com/category/%E0%A4%A',
+        'https://luckystore1947.com/category/%ZZ',
+        'https://luckystore1947.com/category/%',
+        'https://luckystore1947.com/category/%a',
+      ];
+
+      for (const url of malformedUrls) {
+        const req = new NextRequest(url);
+        // Must not throw URIError (which causes 500 in Next.js)
+        const res = await middleware(req);
+        // Middleware passes through to route handler (NextResponse.next() status 200 or updated session)
+        expect(res.status).toBeLessThan(500);
+      }
+    });
+
+    it('triggers notFound() without throwing URIError 500 for malformed percent-encoded category slug in page & metadata', async () => {
+      const { generateMetadata, default: CategoryPage } = await import('../../category/[slug]/page');
+
+      // generateMetadata should trigger notFound()
+      await expect(
+        generateMetadata({
+          params: Promise.resolve({ slug: '%E0%A4%A' }),
+          searchParams: Promise.resolve({}),
+        }),
+      ).rejects.toThrow('NEXT_NOT_FOUND');
+
+      await expect(
+        generateMetadata({
+          params: Promise.resolve({ slug: '%ZZ' }),
+          searchParams: Promise.resolve({}),
+        }),
+      ).rejects.toThrow('NEXT_NOT_FOUND');
+
+      // CategoryPage should trigger notFound()
+      await expect(
+        CategoryPage({
+          params: Promise.resolve({ slug: '%E0%A4%A' }),
+          searchParams: Promise.resolve({}),
+        }),
+      ).rejects.toThrow('NEXT_NOT_FOUND');
+    });
   });
 });

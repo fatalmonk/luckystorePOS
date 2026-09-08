@@ -34,7 +34,13 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/category/')) {
     const rawSlug = request.nextUrl.pathname.replace(/^\/category\//, '');
     if (rawSlug && !rawSlug.includes('/')) {
-      const decoded = decodeURIComponent(rawSlug);
+      let decoded: string;
+      try {
+        decoded = decodeURIComponent(rawSlug);
+      } catch {
+        // Malformed percent-encoding (URIError): pass through to route handler which returns 404
+        return NextResponse.next();
+      }
       const canonical = getCanonicalCategorySlug(decoded);
       if (canonical && rawSlug !== canonical) {
         const url = request.nextUrl.clone();

@@ -45,7 +45,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
-  const categorySlug = decodeURIComponent(resolvedParams.slug);
+  let categorySlug: string;
+  try {
+    categorySlug = decodeURIComponent(resolvedParams.slug);
+  } catch {
+    notFound();
+  }
   const categories = await getCachedCategories();
   const { canonicalSlug, group, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
 
@@ -103,7 +108,12 @@ export default async function CategorySlugPage({
   const resolvedSearch = await searchParams;
   const categories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const categorySlug = decodeURIComponent(resolvedParams.slug);
+  let categorySlug: string;
+  try {
+    categorySlug = decodeURIComponent(resolvedParams.slug);
+  } catch {
+    notFound();
+  }
   const { canonicalSlug, group: initialGroup, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
 
   if (!canonicalSlug) {
