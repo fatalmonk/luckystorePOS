@@ -280,6 +280,15 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         'https://luckystore1947.com/category/personal-care?sort=price&q=chips',
       );
     });
+
+    it('redirects unnormalized category paths like /category/Personal-Care with HTTP 308 to /category/personal-care', async () => {
+      const { middleware } = await import('../../../middleware');
+      const req = new NextRequest('https://luckystore1947.com/category/Personal-Care');
+      const res = await middleware(req);
+
+      expect(res.status).toBe(308);
+      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/personal-care');
+    });
   });
 
   describe('Category Slug Canonicalization Consistency', () => {
@@ -294,9 +303,10 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
   });
 
-  describe('Strict Product Sitemap Eligibility Contract', () => {
+  describe('Product Sitemap Eligibility Contract (RPC search_items_pos DB-level active filter)', () => {
     it('accepts valid active products with positive price', () => {
       expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 10, is_active: true })).toBe(true);
+      // search_items_pos filters by WHERE i.is_active = true at DB level but omits is_active in projection
       expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 10 })).toBe(true);
     });
 

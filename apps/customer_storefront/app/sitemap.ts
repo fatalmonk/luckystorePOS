@@ -46,12 +46,19 @@ async function getCategories(): Promise<{ slug: string }[]> {
 }
 
 /**
- * Strict Product Sitemap Eligibility Predicate
- * Contract:
- * - Must have a valid non-empty string ID
- * - Must have a non-empty string name
- * - Must have a valid positive price
- * - If active flag is present, it must be strictly boolean true
+ * Product Sitemap Eligibility Predicate
+ *
+ * Database RPC Contract:
+ * - Supabase RPC `search_items_pos` filters strictly at the SQL level via `WHERE i.is_active = true`.
+ * - The RPC returns rows that are guaranteed to be active in PostgreSQL, but omits the `is_active`
+ *   column from its JSON projection.
+ *
+ * Eligibility Criteria:
+ * 1. ID: Must be a non-empty string.
+ * 2. Name: Must be a non-empty string.
+ * 3. Price: Must be a finite, positive number (> 0).
+ * 4. Active flags: When present (e.g. from table queries or mock objects), `is_active` and `active`
+ *    must NOT be false.
  */
 export function isProductSitemapEligible(item: {
   id?: unknown;

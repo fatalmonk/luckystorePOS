@@ -132,29 +132,80 @@ async function runSmokeTests() {
       }
     });
 
-    // 9. Sitemap reconciliation
-    await assert('Sitemap returns HTTP 200, valid XML, and sampled URLs are 200 & indexable', async () => {
+    // 9. Sitemap reconciliation with self-canonical, 200, and noindex validation
+    await assert('Sitemap returns HTTP 200, valid XML, and verified self-canonical URLs', async () => {
       const res = await fetch(`${BASE_URL}/sitemap.xml`);
       if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
       const xml = await res.text();
       const locMatches = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
       if (locMatches.length === 0) throw new Error('Sitemap returned zero URLs');
 
-      console.log(`    (Discovered ${locMatches.length} sitemap URLs)`);
+      const isFullCrawl = process.argv.includes('--full') || process.env.FULL_SITEMAP_CRAWL === 'true';
+      let targets;
+      if (isFullCrawl) {
+        targets = locMatches;
+        console.log(`    (Full crawl mode: validating all ${targets.length} sitemap URLs)`);
+      } else {
+        // Fast sample mode: sample static pages, category pages, and product pages
+        const staticUrls = locMatches.filter(u => !u.includes('/category/') && !u.includes('/product/'));
+        const categoryUrls = locMatches.filter(u => u.includes('/category/')).slice(0, 10);
+        const productUrls = locMatches.filter(u => u.includes('/product/')).slice(0, 15);
+        targets = [...new Set([...staticUrls, ...categoryUrls, ...productUrls])];
+        console.log(`    (Fast sample mode: validating ${targets.length} diverse URLs across static, category, and product types. Use --full or FULL_SITEMAP_CRAWL=true for all ${locMatches.length} URLs)`);
+      }
 
-      // Sample up to 10 URLs to verify direct resolution
-      const samples = locMatches.slice(0, 10);
-      for (const sampleUrl of samples) {
-        const path = new URL(sampleUrl).pathname;
-        const pageRes = await fetch(`${BASE_URL}${path}`, { redirect: 'manual' });
-        if (pageRes.status !== 200) {
-          throw new Error(`Sitemap URL ${path} returned ${pageRes.status} instead of 200`);
-        }
-        const pageHtml = await pageRes.text();
-        if (pageHtml.includes('content="noindex')) {
-          throw new Error(`Sitemap URL ${path} emits noindex`);
+      // Concurrent validation pool (concurrency: 10)
+      const CONCURRENCY = 10;
+      let currentIndex = 0;
+      const errors = [];
+
+      async function worker() {
+        while (currentIndex < targets.length) {
+          const index = currentIndex++;
+          const targetUrl = targets[index];
+          const path = new URL(targetUrl).pathname;
+
+          try {
+            const pageRes = await fetch(`${BASE_URL}${path}`, { redirect: 'manual' });
+            if (pageRes.status !== 200) {
+              throw new Error(`Expected HTTP 200, got ${pageRes.status}`);
+            }
+            if (pageRes.headers.get('location')) {
+              throw new Error(`Unexpected redirect to ${pageRes.headers.get('location')}`);
+            }
+
+            const pageHtml = await pageRes.text();
+            if (pageHtml.includes('content="noindex')) {
+              throw new Error('Unexpected noindex meta tag on canonical URL');
+            }
+
+            // Verify exact self-canonical match
+            const canonicalMatch =
+              pageHtml.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) ||
+              pageHtml.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i);
+
+            if (!canonicalMatch) {
+              throw new Error('Missing <link rel="canonical"> tag');
+            }
+
+            const actualCanonical = canonicalMatch[1].replace(/\/$/, '');
+            const expectedCanonical = targetUrl.replace(/\/$/, '');
+            if (actualCanonical !== expectedCanonical) {
+              throw new Error(`Canonical mismatch: expected "${expectedCanonical}", got "${actualCanonical}"`);
+            }
+          } catch (err) {
+            errors.push(`${path}: ${err.message}`);
+          }
         }
       }
+
+      const workers = Array.from({ length: Math.min(CONCURRENCY, targets.length) }, () => worker());
+      await Promise.all(workers);
+
+      if (errors.length > 0) {
+        throw new Error(`${errors.length} URLs failed validation:\n    ` + errors.slice(0, 5).join('\n    ') + (errors.length > 5 ? `\n    ...and ${errors.length - 5} more` : ''));
+      }
+      console.log(`    (Validated ${targets.length} URLs: all 200 OK, zero redirects, zero noindex, exact self-canonical match)`);
     });
 
     const failed = assertions.filter(a => !a.passed);
