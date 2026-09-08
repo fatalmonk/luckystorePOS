@@ -1,11 +1,11 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { CategoryShell } from './CategoryShell';
 import { createProductRepository } from '../lib/products/index';
 import { getCachedCategories } from '../lib/products/getCachedCategories';
 import { supabase } from '../lib/supabase';
 import { getSingleParam } from '../lib/utils';
-import type { Category } from '../lib/types';
+import { normalizeCategorySlug, type Category } from '../lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,12 +37,17 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
 
   const catParam = resolvedParams.cat;
   if (catParam) {
+    const rawCat = Array.isArray(catParam) ? catParam[0] : catParam;
+    const normalizedCat = normalizeCategorySlug(String(rawCat).trim());
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(resolvedParams)) {
       if (key !== 'cat' && typeof value === 'string') params.set(key, value);
     }
     const queryString = params.toString();
-    redirect(queryString ? `/category/${catParam}?${queryString}` : `/category/${catParam}`);
+    const destination = normalizedCat
+      ? (queryString ? `/category/${normalizedCat}?${queryString}` : `/category/${normalizedCat}`)
+      : (queryString ? `/category?${queryString}` : '/category');
+    permanentRedirect(destination);
   }
 
   const searchTerm = getSingleParam(resolvedParams.q) || getSingleParam(resolvedParams.search);

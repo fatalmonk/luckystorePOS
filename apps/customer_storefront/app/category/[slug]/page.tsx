@@ -1,13 +1,34 @@
+import { notFound, permanentRedirect } from 'next/navigation';
 import { CategoryShell } from '../CategoryShell';
 import { createProductRepository } from '../../lib/products/index';
 import { getCachedCategories } from '../../lib/products/getCachedCategories';
 import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS, normalizeCategorySlug } from '../../lib/types';
-import type { Category, Product, CategoryGroup } from '../../lib/types';
+import type { CategoryGroup } from '../../lib/types';
+import type { Category, Product } from '../../lib/products/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Resolves the canonical category slug and matched object or group.
+ * Guarantees a single source of truth for both metadata and component rendering.
+ */
+function resolveCanonicalCategory(categorySlug: string, categories: Category[]) {
+  const group = getCategoryGroup(categorySlug);
+  const currentCatObj = categories.find((c) => c.slug === categorySlug);
+  const normalizedSlug = normalizeCategorySlug(categorySlug);
+  const normalizedCategory = categories.find(
+    (c) => normalizeCategorySlug(c.slug) === normalizedSlug || normalizeCategorySlug(c.name) === normalizedSlug,
+  );
+  const canonicalSlug = group?.slug || currentCatObj?.slug || normalizedCategory?.slug;
+  return {
+    canonicalSlug,
+    group,
+    currentCatObj: currentCatObj || normalizedCategory,
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -20,30 +41,36 @@ export async function generateMetadata({
   const resolvedSearch = await searchParams;
   const categorySlug = decodeURIComponent(resolvedParams.slug);
   const categories = await getCachedCategories();
-  const group = getCategoryGroup(categorySlug);
-  const currentCatObj = categories.find((c) => c.slug === categorySlug);
-  const normalizedSlug = normalizeCategorySlug(categorySlug);
-  const normalizedCategory = categories.find(
-    (c) => normalizeCategorySlug(c.slug) === normalizedSlug || normalizeCategorySlug(c.name) === normalizedSlug,
-  );
-  const isKnownCategory = Boolean(group || currentCatObj || normalizedCategory);
-  const canonicalCategorySlug = group?.slug || currentCatObj?.slug || normalizedCategory?.slug;
+  const { canonicalSlug, group, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
+
+  if (!canonicalSlug) {
+    notFound();
+  }
+
+  if (categorySlug !== canonicalSlug) {
+    const p = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedSearch)) {
+      if (typeof value === 'string') p.set(key, value);
+      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
+    }
+    const qs = p.toString();
+    permanentRedirect(qs ? `/category/${canonicalSlug}?${qs}` : `/category/${canonicalSlug}`);
+  }
+
   const hasFilters = Object.values(resolvedSearch).some((value) =>
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
-  const titleName = group?.label || currentCatObj?.name || categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const titleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   return {
     title: `${titleName} in Chittagong | Lucky Store`,
     description: `Shop ${titleName} online at Lucky Store Chittagong. Quality items, fast home delivery, and cash on delivery.`,
-    robots: !isKnownCategory || hasFilters ? {
+    robots: hasFilters ? {
       index: false,
       follow: true,
     } : undefined,
     alternates: {
-      canonical: canonicalCategorySlug
-        ? `https://luckystore1947.com/category/${canonicalCategorySlug}`
-        : 'https://luckystore1947.com/category',
+      canonical: `https://luckystore1947.com/category/${canonicalSlug}`,
     },
   };
 }
@@ -60,9 +87,23 @@ export default async function CategorySlugPage({
   const categories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
   const categorySlug = decodeURIComponent(resolvedParams.slug);
-  
-  let group = getCategoryGroup(categorySlug);
-  const currentCatObj = categories.find((c) => c.slug === categorySlug);
+  const { canonicalSlug, group: initialGroup, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
+
+  if (!canonicalSlug) {
+    notFound();
+  }
+
+  if (categorySlug !== canonicalSlug) {
+    const p = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedSearch)) {
+      if (typeof value === 'string') p.set(key, value);
+      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
+    }
+    const qs = p.toString();
+    permanentRedirect(qs ? `/category/${canonicalSlug}?${qs}` : `/category/${canonicalSlug}`);
+  }
+
+  let group = initialGroup;
 
   // Dynamically treat root categories with child categories as groups
   if (!group && currentCatObj) {
@@ -80,7 +121,7 @@ export default async function CategorySlugPage({
   // Resolve parent group if this is a subcategory
   let parentGroup: CategoryGroup | undefined;
   if (!group) {
-    parentGroup = getParentGroup(categorySlug);
+    parentGroup = getParentGroup(canonicalSlug);
     const parentId = currentCatObj?.parentId ?? currentCatObj?.parent_id;
     if (!parentGroup && parentId) {
       const parentCatObj = categories.find((c) => c.id === parentId);
@@ -89,14 +130,13 @@ export default async function CategorySlugPage({
           slug: parentCatObj.slug,
           label: parentCatObj.name,
           emoji: parentCatObj.emoji,
-          subCategories: [categorySlug],
+          subCategories: [canonicalSlug],
         };
       }
     }
   }
 
-  const isValidCat = !!currentCatObj;
-  const currentCat = isValidCat || group ? categorySlug : 'all';
+  const currentCat = canonicalSlug;
 
   const searchTerm = getSingleParam(resolvedSearch.q) || getSingleParam(resolvedSearch.search);
   const theme = getSingleParam(resolvedSearch.theme);
@@ -104,7 +144,7 @@ export default async function CategorySlugPage({
 
   let products: Product[] = [];
   try {
-    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(categorySlug);
+    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(canonicalSlug);
     if (isGroupRoot) {
       // Visiting the group page itself (e.g. /category/personal-care) -> aggregate all subcategories
       const subCatIds = categories
@@ -127,16 +167,6 @@ export default async function CategorySlugPage({
         limit: 200,
       });
       products = result.products as any[];
-    } else {
-      // Find matching category by normalized slug/name if present
-      const normTarget = normalizeCategorySlug(categorySlug);
-      const matchedCat = categories.find((c) => normalizeCategorySlug(c.slug) === normTarget || normalizeCategorySlug(c.name) === normTarget);
-      const result = await repo.search({
-        query: searchTerm || (matchedCat ? undefined : categorySlug.replace(/-/g, ' ')),
-        categoryId: matchedCat?.id,
-        limit: 200,
-      });
-      products = result.products as any[];
     }
   } catch (err) {
     console.error('Failed to fetch category products:', err);
@@ -144,7 +174,7 @@ export default async function CategorySlugPage({
 
   return (
     <CategoryShell
-      categorySlug={categorySlug}
+      categorySlug={canonicalSlug}
       currentCat={currentCat}
       group={group}
       parentGroup={parentGroup}
