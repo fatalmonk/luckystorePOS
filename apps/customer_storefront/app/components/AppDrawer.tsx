@@ -153,9 +153,13 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
         {/* Footer */}
         <div className="px-4 py-4 border-t border-warm-border shrink-0 space-y-3">
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold leading-5 text-warm-fg">
-              Free delivery on orders over ৳500
-            </p>
+            <Link
+              href="/delivery"
+              onClick={onClose}
+              className="text-xs font-semibold leading-5 text-warm-fg hover:text-warm-accent transition-colors block"
+            >
+              Free delivery on ৳500+ (1 km Chawkbazar) →
+            </Link>
             <a
               href="tel:+8801731944544"
               className="flex items-center gap-2 text-xs font-semibold text-warm-muted hover:text-warm-accent transition-colors"
@@ -163,10 +167,14 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
               <Phone weight="bold" size={14} aria-hidden="true" />
               +880 1731-944544
             </a>
-            <p className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
+            <Link
+              href="/delivery"
+              onClick={onClose}
+              className="flex items-center gap-2 text-xs font-semibold text-warm-muted transition-colors hover:text-warm-accent"
+            >
               <MapPin weight="bold" size={14} aria-hidden="true" />
-              Chittagong, Bangladesh
-            </p>
+              Delivery Areas &amp; Info
+            </Link>
             <Link
               href="/#how-it-works"
               onClick={onClose}

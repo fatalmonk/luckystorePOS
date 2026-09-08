@@ -37,6 +37,7 @@ const shopLinks = [
 
 const helpLinks = [
   { label: 'ABOUT US', href: '/contact#about' },
+  { label: 'DELIVERY INFO', href: '/delivery' },
   { label: 'CONTACT', href: '/contact' },
   { label: 'FAQ', href: '/contact#faq' },
   { label: 'WISHLIST', href: '/wishlist' },

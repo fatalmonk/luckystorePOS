@@ -3,6 +3,7 @@ import { createProductRepository, createProductId } from '../../lib/products/ind
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
+import { DELIVERY_POLICY } from '../../delivery/deliveryData';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +68,7 @@ const SITE_MAP = [
   { path: '/category/cold-beverages', label: 'Cold Beverages', desc: 'Juices, soft drinks, and energy boosters' },
   { path: '/category/personal-care', label: 'Personal Care', desc: 'Soaps, shampoo, toothpaste, and skincare' },
   { path: '/search', label: 'Search', desc: 'Search the product catalog' },
+  { path: '/delivery', label: 'Delivery Information', desc: 'Coverage areas, fees, hours, and COD policies' },
   { path: '/contact', label: 'Contact Us', desc: 'Address, phone, email, WhatsApp' },
   { path: '/privacy', label: 'Privacy Policy', desc: 'How we handle your data' },
   { path: '/terms', label: 'Terms of Service', desc: 'Usage terms and conditions' },
@@ -355,6 +357,47 @@ function mdAuthPage(variant: 'login' | 'signup'): string {
   return md;
 }
 
+function mdDeliveryPage(): string {
+  let md = mdHeader(
+    'Online Grocery & Daily Bazaar Delivery in Chattogram',
+    'Fulfillment policies, delivery areas, fees, timings, and payment options.'
+  );
+
+  md += `## 📍 Delivery Coverage & Boundaries\n\n`;
+  md += `${DELIVERY_POLICY.storeName} provides local grocery delivery strictly within a verified **${DELIVERY_POLICY.radiusLabel}** (${DELIVERY_POLICY.radiusMeters} m GeoCircle) centered at our store:\n\n`;
+  md += `- **Central Hub:** ${DELIVERY_POLICY.hubAddress}\n`;
+  md += `- **GPS Coordinates:** ${DELIVERY_POLICY.hubCoordinates.display}\n`;
+  md += `- **Areas & Nearby Parts Served Within 1 km:** Nearby parts of Chawkbazar, Parade Ground, Chittagong College area, Government Mohsin College area, Siraj-ud-Daula Road, Chandanpura, Gani Bakery circle, DC Hill periphery, and Subash Bose Road / Emdad Park.\n\n`;
+  md += `*Note: Coverage is strictly defined by the ${DELIVERY_POLICY.radiusLabel} GeoCircle; portions outside 1 km are not covered. Fulfillment is handled directly by in-store staff to guarantee freshness and intact seals.*\n\n`;
+
+  md += `## 💰 Delivery Fees & Thresholds\n\n`;
+  md += `| Order Subtotal | Delivery Fee | Conditions |\n`;
+  md += `| --- | --- | --- |\n`;
+  md += `| **৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} and above** | **FREE (৳0)** | Applies across entire 1 km delivery radius |\n`;
+  md += `| **Under ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}** | **৳${DELIVERY_POLICY.standardDeliveryFeeBdt}** | Flat fee, no minimum basket restriction |\n\n`;
+
+  md += `## 🕐 Delivery Hours & Schedule\n\n`;
+  md += `- **Delivery Hours:** ${DELIVERY_POLICY.deliveryHours.display}\n`;
+  md += `- **Schedule Type:** ${DELIVERY_POLICY.deliveryHours.scheduleType}\n`;
+  md += `- **Dispatch:** Orders placed during active delivery hours are dispatched same-day directly from our Chawkbazar shelves.\n\n`;
+
+  md += `## 💳 Payment Options & Doorstep Inspection\n\n`;
+  md += `- **Cash on Delivery (COD):** 100% supported. Pay the delivery partner upon arrival.\n`;
+  md += `- **bKash Mobile Payment:** Send money or scan QR upon delivery to \`${DELIVERY_POLICY.paymentMethods.bkashNumber}\`.\n`;
+  md += `- **Doorstep Inspection Guarantee:** Inspect all items, seals, rice varieties, and expiration dates before paying. Decline unsatisfactory items on the spot with zero penalty.\n\n`;
+
+  md += `## ❓ Frequently Asked Questions\n\n`;
+  md += `1. **What areas are covered?** Areas and nearby parts of neighborhoods within 1 km of Chawkbazar, Chattogram.\n`;
+  md += `2. **Is delivery free?** Yes, completely free on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+.\n`;
+  md += `3. **What is the fee below ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}?** A flat fee of ৳${DELIVERY_POLICY.standardDeliveryFeeBdt}.\n`;
+  md += `4. **What are delivery hours?** ${DELIVERY_POLICY.deliveryHours.display}.\n`;
+  md += `5. **Can I inspect items?** Yes, full doorstep inspection is guaranteed before payment.\n`;
+  md += `6. **Customer Support:** Call or WhatsApp ${DELIVERY_POLICY.supportPhone}.\n\n`;
+
+  md += `Visit [${BASE_URL}/delivery](${BASE_URL}/delivery) for the full web experience, or [${BASE_URL}/category](${BASE_URL}/category) to start shopping.\n`;
+  return md;
+}
+
 // ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
@@ -466,6 +509,8 @@ export async function GET(req: NextRequest) {
       }
 
     // ----- Static page handlers -----
+    } else if (path === '/delivery') {
+      markdown = mdDeliveryPage();
     } else if (path === '/contact') {
       markdown = mdContactPage();
     } else if (path === '/privacy') {

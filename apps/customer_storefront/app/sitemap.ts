@@ -15,6 +15,7 @@ const dynamicIndexRoutes = [
 
 // Truly static pages — content rarely changes; hardcoded dates are appropriate
 const staticRoutes = [
+  { path: '/delivery', priority: 0.8, changefreq: 'weekly', lastMod: '2026-09-08T00:00:00Z' },
   { path: '/contact', priority: 0.5, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
   { path: '/privacy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
   { path: '/terms', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },

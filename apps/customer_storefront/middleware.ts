@@ -16,6 +16,17 @@ import { getCanonicalCategorySlug } from './app/lib/types';
  */
 
 export async function middleware(request: NextRequest) {
+  // Pre-session canonical redirect: consolidate delivery hub aliases to single authoritative hub
+  // (e.g. /delivery/chattogram -> /delivery, /delivery/ -> /delivery)
+  if (
+    request.nextUrl.pathname === '/delivery/chattogram' ||
+    request.nextUrl.pathname === '/delivery/'
+  ) {
+    const url = new URL('/delivery', request.url);
+    url.search = request.nextUrl.search;
+    return NextResponse.redirect(url, 308);
+  }
+
   // Pre-session canonical redirect: consolidate /category?cat=<slug> to /category/<slug>
   // Preserves legitimate non-cat query parameters (e.g. sort, q) in a single 308 hop
   if (request.nextUrl.pathname === '/category' && request.nextUrl.searchParams.has('cat')) {

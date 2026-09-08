@@ -37,12 +37,14 @@
 - Mobile UI uses Dart `DesignTokens` under `apps/mobile_app/lib/core/theme/tokens.dart`.
 - Do not modify `PosProvider`, `supabase/migrations/`, or the core authentication flow without explicit approval and appropriate validation.
 - Production storefront product cards are consolidated into `GridProductCard`; do not reintroduce parallel card implementations without a documented reason.
+- Storefront localization architecture (`/` English, `/bn` Bengali): Shared component tree parameterized by typed locale dictionaries (`app/lib/i18n`), stable Latin slugs (`/bn/category/*`), strict self-canonicals, bilateral hreflang (`en-BD`, `bn-BD`, `x-default`), and `<html lang="bn">` (detailed in `docs/plan/bengaliversion.md`).
 
 ## Major Shipped Storefront Capabilities
 
 - Unified production product-card rendering through `GridProductCard`, including cart and wishlist behavior.
 - Storefront card/layout polish and commerce-surface consolidation.
 - Storefront coverage and SEO fixes.
+- SEO Phases 0–3 deployment: GA4 full commerce funnel repair (property `542881250`), canonical 308 taxonomy and sitemap hygiene, money page metadata optimization (rice, oil, cooking essentials, tea), query ownership separation, malformed URI middleware hardening, and adversarial automated SEO test suite.
 - Contact/maps fallback behavior.
 - bKash QR payment support.
 - Header performance and social-preview improvements.
