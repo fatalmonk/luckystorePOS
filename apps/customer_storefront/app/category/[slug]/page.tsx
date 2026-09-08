@@ -18,14 +18,14 @@ const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }
       'Shop Miniket, Nazirshail and Chinigura rice in Chittagong at displayed bazaar prices. Order online with Cash on Delivery and doorstep product inspection.',
   },
   'oil-and-ghee': {
-    title: 'Soybean & Pure Mustard Oil Price in Chittagong | Lucky Store',
+    title: 'Soybean & Mustard Oil Price in Chittagong | Lucky Store',
     description:
       'Check current 1L & 5L soybean and mustard oil prices in Chittagong. Order online for local delivery with Cash on Delivery.',
   },
   'cooking-essentials': {
     title: 'Daily Bazaar & Pantry Staples in Chittagong | Lucky Store',
     description:
-      'Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at local market prices in Chittagong. Free home delivery on orders ৳500+. Order online.',
+      'Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at displayed prices in Chittagong. Free home delivery on orders ৳500+. Order online.',
   },
   'tea-and-coffee': {
     title: 'Ispahani Tea & Coffee Blends in Chittagong | Lucky Store',

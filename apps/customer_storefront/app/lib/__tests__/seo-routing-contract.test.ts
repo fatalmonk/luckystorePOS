@@ -383,10 +383,11 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       });
 
       const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
-      expect(titleStr).toBe('Soybean & Pure Mustard Oil Price in Chittagong | Lucky Store');
+      expect(titleStr).toBe('Soybean & Mustard Oil Price in Chittagong | Lucky Store');
       expect(meta.description).toContain('current 1L & 5L soybean and mustard oil prices in Chittagong');
       expect(meta.description).not.toContain('Authentic sealed bottles');
       expect(meta.description).not.toContain('fast local dispatch');
+      expect(meta.description).not.toContain('Pure');
       expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/oil-and-ghee');
     });
 
@@ -399,7 +400,8 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       const titleStr = typeof meta.title === 'string' ? meta.title : (meta.title as any)?.absolute;
       expect(titleStr).toBe('Daily Bazaar & Pantry Staples in Chittagong | Lucky Store');
-      expect(meta.description).toContain('Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar');
+      expect(meta.description).toContain('Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at displayed prices');
+      expect(meta.description).not.toContain('local market prices');
       expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/cooking-essentials');
     });
 

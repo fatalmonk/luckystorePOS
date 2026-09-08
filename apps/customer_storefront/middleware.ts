@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
-import { normalizeCategorySlug, getCanonicalCategorySlug } from './app/lib/types';
+import { getCanonicalCategorySlug } from './app/lib/types';
 
 /**
  * Middleware for Markdown-for-Agents content negotiation.

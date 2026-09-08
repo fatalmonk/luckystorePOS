@@ -40,14 +40,14 @@ Improves search snippet metadata (titles & descriptions) on high-impression mone
 
 ### 3. Oil and Ghee (`/category/oil-and-ghee`)
 
-- **Title**: `Soybean & Pure Mustard Oil Price in Chittagong | Lucky Store` (57 chars)
+- **Title**: `Soybean & Mustard Oil Price in Chittagong | Lucky Store` (52 chars)
 - **Meta Description**: `Check current 1L & 5L soybean and mustard oil prices in Chittagong. Order online for local delivery with Cash on Delivery.` (123 chars)
 - **Canonical**: `https://luckystore1947.com/category/oil-and-ghee`
 
 ### 4. Cooking Essentials (`/category/cooking-essentials`)
 
 - **Title**: `Daily Bazaar & Pantry Staples in Chittagong | Lucky Store` (55 chars)
-- **Meta Description**: `Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at local market prices in Chittagong. Free home delivery on orders ৳500+. Order online.` (155 chars)
+- **Meta Description**: `Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at displayed prices in Chittagong. Free home delivery on orders ৳500+. Order online.` (154 chars)
 - **Canonical**: `https://luckystore1947.com/category/cooking-essentials`
 
 ### 5. Tea and Coffee (`/category/tea-and-coffee`)
