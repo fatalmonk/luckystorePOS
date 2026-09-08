@@ -139,6 +139,20 @@ export function normalizeCategorySlug(str: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+/**
+ * Resolves the single canonical category slug across the entire application.
+ * Both storefront routing and sitemap generation MUST use this function.
+ */
+export function getCanonicalCategorySlug(raw: string): string {
+  const normalized = normalizeCategorySlug(raw);
+  if (!normalized) return '';
+  const group = CATEGORY_GROUPS.find(
+    (g) => normalizeCategorySlug(g.slug) === normalized || normalizeCategorySlug(g.label) === normalized,
+  );
+  if (group) return normalizeCategorySlug(group.slug);
+  return normalized;
+}
+
 /** Check if a slug is a category group */
 export function getCategoryGroup(slug: string): CategoryGroup | undefined {
   if (!slug) return undefined;

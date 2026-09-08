@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { supabase } from './lib/supabase';
 import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
-import { normalizeCategorySlug } from './lib/types';
+import { getCanonicalCategorySlug } from './lib/types';
 
 const BASE_URL = 'https://luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -30,7 +30,7 @@ async function getCategories(): Promise<{ slug: string }[]> {
     const result: { slug: string }[] = [];
 
     for (const cat of categories) {
-      const canonicalSlug = normalizeCategorySlug(cat.slug || cat.name);
+      const canonicalSlug = getCanonicalCategorySlug(cat.slug || cat.name);
       if (canonicalSlug && !seenSlugs.has(canonicalSlug)) {
         seenSlugs.add(canonicalSlug);
         result.push({ slug: canonicalSlug });
@@ -43,6 +43,36 @@ async function getCategories(): Promise<{ slug: string }[]> {
     // Return empty list on failure — never inject fabricated fallback URLs
     return [];
   }
+}
+
+/**
+ * Strict Product Sitemap Eligibility Predicate
+ * Contract:
+ * - Must have a valid non-empty string ID
+ * - Must have a non-empty string name
+ * - Must have a valid positive price
+ * - If active flag is present, it must be strictly boolean true
+ */
+export function isProductSitemapEligible(item: {
+  id?: unknown;
+  item_id?: unknown;
+  name?: unknown;
+  price?: unknown;
+  is_active?: unknown;
+  active?: unknown;
+}): boolean {
+  const id = item.id ?? item.item_id;
+  const name = item.name;
+  const price = Number(item.price);
+
+  if (typeof id !== 'string' || id.trim().length === 0) return false;
+  if (typeof name !== 'string' || name.trim().length === 0) return false;
+  if (!Number.isFinite(price) || price <= 0) return false;
+
+  if (item.is_active !== undefined && item.is_active !== true) return false;
+  if (item.active !== undefined && item.active !== true) return false;
+
+  return true;
 }
 
 // Dynamic product pages: enforces strict sitemap eligibility contract
@@ -61,20 +91,7 @@ async function getProducts(): Promise<{ id: string; name: string; updatedAt: str
     const rows = Array.isArray(data) ? data : [];
 
     return rows
-      .filter((i: any) => {
-        const id = i.id ?? i.item_id;
-        const price = Number(i.price);
-        const isActive = i.is_active !== false && i.active !== false;
-        return (
-          typeof id === 'string' &&
-          id.trim().length > 0 &&
-          typeof i.name === 'string' &&
-          i.name.trim().length > 0 &&
-          Number.isFinite(price) &&
-          price > 0 &&
-          isActive
-        );
-      })
+      .filter(isProductSitemapEligible)
       .map((i: any) => ({
         id: String(i.id ?? i.item_id).trim(),
         name: i.name.trim(),

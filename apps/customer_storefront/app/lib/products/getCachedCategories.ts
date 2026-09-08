@@ -3,6 +3,11 @@ import { supabase } from '../supabase';
 import { createProductRepository } from './index';
 
 export const getCachedCategories = cache(async () => {
-  const { repo } = createProductRepository(supabase);
-  return repo.getCategories();
+  try {
+    const { repo } = createProductRepository(supabase);
+    return await repo.getCategories();
+  } catch (err) {
+    console.error('Failed to get cached categories:', err);
+    return [];
+  }
 });

@@ -9,6 +9,7 @@ const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
   devIndicators: false,
+  htmlLimitedBots: /Googlebot|bingbot|DuckDuckBot|Baiduspider|YandexBot|Sogou|curl|LuckySmokeTest/i,
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],

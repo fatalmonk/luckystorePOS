@@ -1,3 +1,4 @@
+import React from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { CategoryShell } from '../CategoryShell';
 import { createProductRepository } from '../../lib/products/index';
@@ -5,30 +6,12 @@ import { getCachedCategories } from '../../lib/products/getCachedCategories';
 import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
 import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS, normalizeCategorySlug } from '../../lib/types';
+import { resolveCanonicalCategory } from '../../lib/categoryResolution';
 import type { CategoryGroup } from '../../lib/types';
 import type { Category, Product } from '../../lib/products/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
-
-/**
- * Resolves the canonical category slug and matched object or group.
- * Guarantees a single source of truth for both metadata and component rendering.
- */
-function resolveCanonicalCategory(categorySlug: string, categories: Category[]) {
-  const group = getCategoryGroup(categorySlug);
-  const currentCatObj = categories.find((c) => c.slug === categorySlug);
-  const normalizedSlug = normalizeCategorySlug(categorySlug);
-  const normalizedCategory = categories.find(
-    (c) => normalizeCategorySlug(c.slug) === normalizedSlug || normalizeCategorySlug(c.name) === normalizedSlug,
-  );
-  const canonicalSlug = group?.slug || currentCatObj?.slug || normalizedCategory?.slug;
-  return {
-    canonicalSlug,
-    group,
-    currentCatObj: currentCatObj || normalizedCategory,
-  };
-}
 
 export async function generateMetadata({
   params,
@@ -153,17 +136,36 @@ export default async function CategorySlugPage({
           return group!.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
         })
         .map((c) => c.id);
+      if (currentCatObj && !subCatIds.includes(currentCatObj.id)) {
+        subCatIds.push(currentCatObj.id);
+      }
       const result = await repo.search({
         query: searchTerm || undefined,
         categoryIds: subCatIds.length > 0 ? subCatIds : undefined,
         limit: 500,
       });
       products = result.products as any[];
-    } else if (currentCatObj) {
-      // Visiting a specific subcategory (e.g. /category/facial) -> fetch only products for this subcategory
+    } else if (currentCatObj?.id) {
+      // Visiting a specific subcategory with DB ID (e.g. /category/rice-and-grain)
       const result = await repo.search({
         query: searchTerm || undefined,
         categoryId: currentCatObj.id,
+        limit: 200,
+      });
+      products = result.products as any[];
+
+      // Fallback: if categoryId search yielded 0 products (e.g. legacy products tagged by name), fallback to name
+      if (products.length === 0 && !searchTerm) {
+        const fallbackResult = await repo.search({
+          query: currentCatObj.name || canonicalSlug.replace(/-/g, ' '),
+          limit: 200,
+        });
+        products = fallbackResult.products as any[];
+      }
+    } else {
+      // Valid leaf category or subcategory without direct DB category row -> search by keyword
+      const result = await repo.search({
+        query: searchTerm || canonicalSlug.replace(/-/g, ' '),
         limit: 200,
       });
       products = result.products as any[];

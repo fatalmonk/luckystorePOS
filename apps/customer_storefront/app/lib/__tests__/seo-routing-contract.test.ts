@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { isProductSitemapEligible } from '../../sitemap';
+import { getCanonicalCategorySlug } from '../types';
 
 // Mock next/navigation
 const mockNotFound = vi.fn(() => {
@@ -28,18 +30,55 @@ vi.mock('../../supabase', () => ({
   },
 }));
 
+// Mock CategoryShell to inspect rendered props
+vi.mock('../../category/CategoryShell', () => ({
+  CategoryShell: vi.fn((props: any) => ({
+    type: 'CategoryShell',
+    props,
+  })),
+}));
+
 // Mock products repository / cached helpers
 const mockProduct = {
   id: '029b62d8-1111-2222-3333-444455556666',
   name: 'Radhuni Holud Gura 100gm',
   price: 65,
   category: 'Cooking Essentials',
-  categoryId: 'cat-cooking',
+  categoryId: 'c3',
   description: 'Pure turmeric powder',
   image_url: 'https://images.luckystore1947.com/turmeric.jpg',
   unit: '100gm',
   stock: 20,
 };
+
+const mockCategories = [
+  { id: 'c1', slug: 'snacks', name: 'Snacks', emoji: '🍿', active: true },
+  { id: 'c2', slug: 'personal-care', name: 'Personal Care', emoji: '🧺', active: true },
+  { id: 'c3', slug: 'cooking-essentials', name: 'Cooking Essentials', emoji: '🍳', active: true },
+  { id: 'c4', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾', active: true, parentId: 'c3' },
+];
+
+const mockSearch = vi.fn(async (args: any) => {
+  if (args.categoryId === 'c4') {
+    return { products: [mockProduct], total: 1 };
+  }
+  if (args.categoryIds && (args.categoryIds.includes('c2') || args.categoryIds.includes('c3'))) {
+    return { products: [{ ...mockProduct, id: 'item-pc', category: 'Personal Care' }], total: 1 };
+  }
+  return { products: [], total: 0 };
+});
+
+vi.mock('../products/index', () => ({
+  createProductRepository: vi.fn(() => ({
+    repo: {
+      search: mockSearch,
+    },
+  })),
+}));
+
+vi.mock('../products/getCachedCategories', () => ({
+  getCachedCategories: vi.fn(async () => mockCategories),
+}));
 
 vi.mock('../products/getCachedProduct', () => ({
   getCachedProductBySlug: vi.fn(async (slug: string) => {
@@ -51,16 +90,6 @@ vi.mock('../products/getCachedProduct', () => ({
 vi.mock('../products/getCachedCrossSell', () => ({
   getCachedCrossSellProducts: vi.fn(async () => []),
   prepareCrossSell: vi.fn(() => []),
-}));
-
-const mockCategories = [
-  { id: 'c1', slug: 'snacks', name: 'Snacks', emoji: '🍿', active: true },
-  { id: 'c2', slug: 'personal-care', name: 'Personal Care', emoji: '🧺', active: true },
-  { id: 'c3', slug: 'cooking-essentials', name: 'Cooking Essentials', emoji: '🍳', active: true },
-];
-
-vi.mock('../products/getCachedCategories', () => ({
-  getCachedCategories: vi.fn(async () => mockCategories),
 }));
 
 describe('SEO & Routing Contract Tests (Phase 2)', () => {
@@ -131,7 +160,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
   });
 
-  describe('Category Routing & Metadata Contract', () => {
+  describe('Category Routing & Product Loading Contract', () => {
     it('returns 200 indexable canonical metadata for valid canonical category', async () => {
       const { generateMetadata } = await import('../../category/[slug]/page');
       const meta = await generateMetadata({
@@ -190,6 +219,45 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       expect(mockNotFound).toHaveBeenCalled();
     });
+
+    it('CRITICAL REGRESSION TEST: valid leaf category queries products by categoryId and renders them', async () => {
+      const CategorySlugPage = (await import('../../category/[slug]/page')).default;
+      const result = await CategorySlugPage({
+        params: Promise.resolve({ slug: 'rice-and-grain' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      // Assert repo.search was called with leaf categoryId 'c4'
+      expect(mockSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          categoryId: 'c4',
+          limit: 200,
+        }),
+      );
+
+      // Assert CategoryShell received the loaded products
+      expect(result.props.categorySlug).toBe('rice-and-grain');
+      expect(result.props.products).toEqual([mockProduct]);
+    });
+
+    it('valid group root category aggregates subcategories and loads products', async () => {
+      const CategorySlugPage = (await import('../../category/[slug]/page')).default;
+      const result = await CategorySlugPage({
+        params: Promise.resolve({ slug: 'personal-care' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      // Assert repo.search was called with categoryIds array
+      expect(mockSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          categoryIds: expect.arrayContaining(['c2']),
+          limit: 500,
+        }),
+      );
+
+      expect(result.props.categorySlug).toBe('personal-care');
+      expect(result.props.products.length).toBeGreaterThan(0);
+    });
   });
 
   describe('Middleware Category Interception Contract', () => {
@@ -202,7 +270,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/snacks');
     });
 
-    it('preserves other query parameters while consolidating cat parameter', async () => {
+    it('preserves other query parameters while consolidating cat parameter in single 308 hop', async () => {
       const { middleware } = await import('../../../middleware');
       const req = new NextRequest('https://luckystore1947.com/category?cat=Personal%20Care&sort=price&q=chips');
       const res = await middleware(req);
@@ -214,18 +282,41 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
   });
 
-  describe('Sitemap Invariants', () => {
-    it('produces valid self-canonical URLs and never injects hardcoded fallbacks on error', async () => {
-      const sitemapModule = await import('../../sitemap');
-      const sitemap = await sitemapModule.default();
+  describe('Category Slug Canonicalization Consistency', () => {
+    it('produces identical normalized slugs across all representations', () => {
+      expect(getCanonicalCategorySlug('tea-&-coffee')).toBe('tea-and-coffee');
+      expect(getCanonicalCategorySlug('Tea & Coffee')).toBe('tea-and-coffee');
+      expect(getCanonicalCategorySlug('tea-and-coffee')).toBe('tea-and-coffee');
+      expect(getCanonicalCategorySlug('Personal Care')).toBe('personal-care');
+      expect(getCanonicalCategorySlug('personal-care')).toBe('personal-care');
+      expect(getCanonicalCategorySlug('snacks')).toBe('snacks');
+      expect(getCanonicalCategorySlug('rice-and-grain')).toBe('rice-and-grain');
+    });
+  });
 
-      expect(Array.isArray(sitemap)).toBe(true);
-      for (const entry of sitemap) {
-        expect(entry.url).toMatch(/^https:\/\/luckystore1947\.com/);
-        expect(entry.url).not.toContain('?');
-        expect(entry.url).not.toContain('/api/');
-        expect(entry.url).not.toContain('/admin/');
-      }
+  describe('Strict Product Sitemap Eligibility Contract', () => {
+    it('accepts valid active products with positive price', () => {
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 10, is_active: true })).toBe(true);
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 10 })).toBe(true);
+    });
+
+    it('rejects inactive products (is_active: false)', () => {
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 10, is_active: false })).toBe(false);
+    });
+
+    it('rejects inactive products (active: false)', () => {
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 10, active: false })).toBe(false);
+    });
+
+    it('rejects zero or negative price', () => {
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: 0, is_active: true })).toBe(false);
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: 'Item', price: -5, is_active: true })).toBe(false);
+    });
+
+    it('rejects missing or whitespace-only name or id', () => {
+      expect(isProductSitemapEligible({ id: '', name: 'Item', price: 10 })).toBe(false);
+      expect(isProductSitemapEligible({ id: 'uuid-1', name: '  ', price: 10 })).toBe(false);
+      expect(isProductSitemapEligible({ id: null, name: 'Item', price: 10 })).toBe(false);
     });
   });
 });

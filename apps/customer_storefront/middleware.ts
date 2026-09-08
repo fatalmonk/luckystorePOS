@@ -29,6 +29,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Pre-session canonical redirect for unnormalized category path slugs (e.g. /category/Personal-Care -> /category/personal-care)
+  if (request.nextUrl.pathname.startsWith('/category/')) {
+    const rawSlug = request.nextUrl.pathname.replace(/^\/category\//, '');
+    if (rawSlug && !rawSlug.includes('/')) {
+      const decoded = decodeURIComponent(rawSlug);
+      const normalized = normalizeCategorySlug(decoded);
+      if (normalized && rawSlug !== normalized) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/category/${normalized}`;
+        return NextResponse.redirect(url, 308);
+      }
+    }
+  }
+
   const supabaseResponse = await updateSession(request);
 
   const accept = request.headers.get('accept') || '';
