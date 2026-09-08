@@ -6,6 +6,7 @@ import {
   DELIVERY_FAQS,
   COVERED_AREAS,
   getDeliveryOfferShippingDetailsSchema,
+  getDeliveryShippingRateSettingsSchema,
   getDeliveryServiceSchema,
   getDeliveryFaqSchema,
   getDeliveryBreadcrumbSchema,
@@ -120,27 +121,53 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   });
 
   describe('Schema.org Precision & Validity', () => {
-    it('produces valid OfferShippingDetails schema representing delivery fees and free threshold', () => {
+    it('produces valid OfferShippingDetails schema modeling rate & threshold through ShippingRateSettings', () => {
       const schema = getDeliveryOfferShippingDetailsSchema();
       expect(schema['@context']).toBe('https://schema.org');
       expect(schema['@type']).toBe('OfferShippingDetails');
       expect(schema['@id']).toBe(`${DELIVERY_POLICY.canonicalUrl}#shipping-policy`);
 
-      // Rate
-      expect(schema.shippingRate['@type']).toBe('MonetaryAmount');
-      expect(schema.shippingRate.value).toBe(String(DELIVERY_POLICY.standardDeliveryFeeBdt));
-      expect(schema.shippingRate.currency).toBe('BDT');
+      // In Schema.org, freeShippingThreshold is NOT a property of OfferShippingDetails
+      expect((schema as any).freeShippingThreshold).toBeUndefined();
 
-      // Free shipping threshold specification
-      expect(schema.freeShippingThreshold['@type']).toBe('DeliveryChargeSpecification');
-      expect(schema.freeShippingThreshold.price).toBe(String(DELIVERY_POLICY.freeDeliveryThresholdBdt));
-      expect(schema.freeShippingThreshold.priceCurrency).toBe('BDT');
-      expect(schema.freeShippingThreshold.appliesToDeliveryChargeMethod).toBe('https://schema.org/DeliveryModeOwnFleet');
+      // Rate and free-shipping threshold are modeled through nested ShippingRateSettings
+      expect(schema.shippingRate['@type']).toBe('ShippingRateSettings');
+      expect(schema.shippingRate.shippingRate['@type']).toBe('MonetaryAmount');
+      expect(schema.shippingRate.shippingRate.value).toBe(String(DELIVERY_POLICY.standardDeliveryFeeBdt));
+      expect(schema.shippingRate.shippingRate.currency).toBe('BDT');
+
+      // Free shipping threshold specification inside ShippingRateSettings
+      expect(schema.shippingRate.freeShippingThreshold['@type']).toBe('DeliveryChargeSpecification');
+      expect(schema.shippingRate.freeShippingThreshold.price).toBe(String(DELIVERY_POLICY.freeDeliveryThresholdBdt));
+      expect(schema.shippingRate.freeShippingThreshold.priceCurrency).toBe('BDT');
+      expect(schema.shippingRate.freeShippingThreshold.appliesToDeliveryMethod).toBe('https://schema.org/DeliveryModeOwnFleet');
+
+      // Reject invalid / invented property appliesToDeliveryChargeMethod across the entire payload
+      expect(JSON.stringify(schema)).not.toContain('appliesToDeliveryChargeMethod');
 
       // Destination
       expect(schema.shippingDestination['@type']).toBe('DefinedRegion');
       expect(schema.shippingDestination.addressCountry).toBe('BD');
       expect(schema.shippingDestination.addressRegion).toBe('Chattogram');
+      expect(schema.shippingDestination.postalCode).toBe('4203');
+    });
+
+    it('produces valid standalone ShippingRateSettings schema for central policy reference', () => {
+      const settings = getDeliveryShippingRateSettingsSchema();
+      expect(settings['@context']).toBe('https://schema.org');
+      expect(settings['@type']).toBe('ShippingRateSettings');
+      expect(settings['@id']).toBe(`${DELIVERY_POLICY.canonicalUrl}#shipping-rate-settings`);
+
+      expect(settings.shippingRate['@type']).toBe('MonetaryAmount');
+      expect(settings.shippingRate.value).toBe(String(DELIVERY_POLICY.standardDeliveryFeeBdt));
+      expect(settings.shippingRate.currency).toBe('BDT');
+
+      expect(settings.freeShippingThreshold['@type']).toBe('DeliveryChargeSpecification');
+      expect(settings.freeShippingThreshold.price).toBe(String(DELIVERY_POLICY.freeDeliveryThresholdBdt));
+      expect(settings.freeShippingThreshold.priceCurrency).toBe('BDT');
+      expect(settings.freeShippingThreshold.appliesToDeliveryMethod).toBe('https://schema.org/DeliveryModeOwnFleet');
+
+      expect(JSON.stringify(settings)).not.toContain('appliesToDeliveryChargeMethod');
     });
 
     it('produces valid DeliveryService schema representing provider, 1 km GeoCircle, and delivery hours', () => {

@@ -220,21 +220,32 @@ export default function RootLayout({
               },
               shippingDetails: {
                 '@type': 'OfferShippingDetails',
-                shippingRate: {
-                  '@type': 'MonetaryAmount',
-                  value: '40',
-                  currency: 'BDT',
-                },
-                freeShippingThreshold: {
-                  '@type': 'DeliveryChargeSpecification',
-                  appliesToDeliveryChargeMethod: 'https://schema.org/DeliveryModeOwnFleet',
-                  price: '500',
-                  priceCurrency: 'BDT',
-                },
                 shippingDestination: {
                   '@type': 'DefinedRegion',
                   addressCountry: 'BD',
                   addressRegion: 'Chattogram',
+                  postalCode: '4203',
+                },
+                shippingRate: {
+                  '@type': 'ShippingRateSettings',
+                  shippingLabel: 'Lucky Store Standard Local Delivery',
+                  shippingDestination: {
+                    '@type': 'DefinedRegion',
+                    addressCountry: 'BD',
+                    addressRegion: 'Chattogram',
+                    postalCode: '4203',
+                  },
+                  shippingRate: {
+                    '@type': 'MonetaryAmount',
+                    value: '40',
+                    currency: 'BDT',
+                  },
+                  freeShippingThreshold: {
+                    '@type': 'DeliveryChargeSpecification',
+                    appliesToDeliveryMethod: 'https://schema.org/DeliveryModeOwnFleet',
+                    price: '500',
+                    priceCurrency: 'BDT',
+                  },
                 },
               },
               sameAs: [

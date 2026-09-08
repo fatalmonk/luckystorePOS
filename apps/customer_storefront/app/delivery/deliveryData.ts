@@ -83,6 +83,49 @@ export function getDeliveryOfferShippingDetailsSchema() {
     '@context': 'https://schema.org',
     '@type': 'OfferShippingDetails',
     '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-policy`,
+    shippingDestination: {
+      '@type': 'DefinedRegion',
+      addressCountry: 'BD',
+      addressRegion: 'Chattogram',
+      postalCode: '4203',
+    },
+    shippingRate: {
+      '@type': 'ShippingRateSettings',
+      '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-rate-settings`,
+      shippingLabel: `${DELIVERY_POLICY.storeName} Standard Local Delivery`,
+      shippingDestination: {
+        '@type': 'DefinedRegion',
+        addressCountry: 'BD',
+        addressRegion: 'Chattogram',
+        postalCode: '4203',
+      },
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: String(DELIVERY_POLICY.standardDeliveryFeeBdt),
+        currency: 'BDT',
+      },
+      freeShippingThreshold: {
+        '@type': 'DeliveryChargeSpecification',
+        appliesToDeliveryMethod: 'https://schema.org/DeliveryModeOwnFleet',
+        price: String(DELIVERY_POLICY.freeDeliveryThresholdBdt),
+        priceCurrency: 'BDT',
+      },
+    },
+  };
+}
+
+export function getDeliveryShippingRateSettingsSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ShippingRateSettings',
+    '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-rate-settings`,
+    shippingLabel: `${DELIVERY_POLICY.storeName} Standard Local Delivery`,
+    shippingDestination: {
+      '@type': 'DefinedRegion',
+      addressCountry: 'BD',
+      addressRegion: 'Chattogram',
+      postalCode: '4203',
+    },
     shippingRate: {
       '@type': 'MonetaryAmount',
       value: String(DELIVERY_POLICY.standardDeliveryFeeBdt),
@@ -90,15 +133,9 @@ export function getDeliveryOfferShippingDetailsSchema() {
     },
     freeShippingThreshold: {
       '@type': 'DeliveryChargeSpecification',
-      appliesToDeliveryChargeMethod: 'https://schema.org/DeliveryModeOwnFleet',
+      appliesToDeliveryMethod: 'https://schema.org/DeliveryModeOwnFleet',
       price: String(DELIVERY_POLICY.freeDeliveryThresholdBdt),
       priceCurrency: 'BDT',
-    },
-    shippingDestination: {
-      '@type': 'DefinedRegion',
-      addressCountry: 'BD',
-      addressRegion: 'Chattogram',
-      postalCode: '4203',
     },
   };
 }
