@@ -10,7 +10,7 @@ colors:
   saffron-dark: "#d4a820"
   paper: "#FDFBF7"
   surface: "#ffffff"
-  surface-dark: "#241e1a"
+  surface-dark: "#121212"
   foreground: "#0B0B0D"
   foreground-dark: "#f5f0eb"
   muted: "#525252"

@@ -251,6 +251,7 @@ export function Header({ className = '' }: HeaderProps) {
           >
             <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
           </button>
+          <LanguageSwitcher />
           <HeaderCartButton compact iconSize={20} />
         </div>
       </div>

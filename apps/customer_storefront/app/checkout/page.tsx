@@ -148,13 +148,17 @@ function CheckoutContent() {
     return undefined;
   };
 
-  const validateAll = (): boolean => {
+  const validateAll = (includePaymentReference = false): boolean => {
+    const checkoutNotes = [
+      formData.notes.trim(),
+      formData.paymentMethod === 'bkash' && formData.trxId.trim() ? `bKash TrxID: ${formData.trxId.trim()}` : '',
+    ].filter(Boolean).join(' — ');
     const newErrors: FormErrors = {
       name: validateField('name', formData.name),
       phone: validateField('phone', formData.phone),
       address: validateField('address', formData.address),
-      notes: validateField('notes', formData.notes),
-      trxId: formData.paymentMethod === 'bkash' && !formData.trxId.trim() ? 'Enter the bKash transaction reference' : undefined,
+      notes: checkoutNotes.length > 300 ? 'Keep combined instructions and payment reference under 300 characters' : validateField('notes', formData.notes),
+      trxId: includePaymentReference && formData.paymentMethod === 'bkash' && !formData.trxId.trim() ? 'Enter the bKash transaction reference' : undefined,
     };
     setErrors(newErrors);
     const hasErrors = Object.values(newErrors).some(Boolean);
@@ -179,7 +183,7 @@ function CheckoutContent() {
       showToast('Your cart is empty');
       return;
     }
-    if (step === 2 && !validateAll()) {
+    if (step === 2 && !validateAll(false)) {
       return;
     }
     if (step === 2 && !shippingTrackedRef.current) {
@@ -196,7 +200,7 @@ function CheckoutContent() {
   };
 
   const placeOrder = async () => {
-    if (!validateAll()) return;
+    if (!validateAll(true)) return;
 
     setIsPlacing(true);
     setSubmitError(null);
@@ -213,7 +217,7 @@ function CheckoutContent() {
           customerName: formData.name,
           customerPhone: cleanPhone,
           customerAddress: formData.address,
-          notes: [formData.notes, formData.paymentMethod === 'bkash' && formData.trxId ? `bKash TrxID: ${formData.trxId}` : ''].filter(Boolean).join(' — ') || undefined,
+          notes: [formData.notes.trim(), formData.paymentMethod === 'bkash' && formData.trxId.trim() ? `bKash TrxID: ${formData.trxId.trim()}` : ''].filter(Boolean).join(' — ') || undefined,
           deliverySlot: formData.deliverySlot,
           paymentMethod: formData.paymentMethod,
           items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty, unit: c.unit })),

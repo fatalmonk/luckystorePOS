@@ -92,7 +92,7 @@ describe('createOrder', () => {
 
     // Verify RPC was called
     expect(supabase.rpc).toHaveBeenCalledWith(
-      'create_order_with_stock_v2',
+      'create_order_with_stock_idempotent',
       expect.objectContaining({
         p_order_number: 'LSO-20260101-ABCD1234',
         p_customer_name: 'Karim Ahmed',
@@ -117,7 +117,7 @@ describe('createOrder', () => {
     await createOrder({ ...validInput, paymentMethod: 'bkash' });
 
     expect(supabase.rpc).toHaveBeenCalledWith(
-      'create_order_with_stock_v2',
+      'create_order_with_stock_idempotent',
       expect.objectContaining({ p_payment_method: 'bkash' }),
     );
   });
@@ -132,7 +132,7 @@ describe('createOrder', () => {
     await createOrder(validInput);
 
     expect(supabase.rpc).toHaveBeenCalledWith(
-      'create_order_with_stock_v2',
+      'create_order_with_stock_idempotent',
       expect.objectContaining({
         p_notes: null,
         p_delivery_slot: null,

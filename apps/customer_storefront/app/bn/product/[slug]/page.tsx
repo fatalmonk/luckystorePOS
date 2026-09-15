@@ -8,7 +8,7 @@ import { formatBdt } from '../../../lib/formatPrice';
 import type { Product } from '../../../lib/products/types';
 import ProductClient from '../../../product/[slug]/ProductClient';
 
-type LocalizedProduct = { product: Product; sourceName: string };
+type LocalizedProduct = { product: Product; sourceName: string; translated: boolean };
 
 const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedProduct | null> => {
   const product = await getCachedProductBySlug(slug);
@@ -22,14 +22,13 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
     .eq('review_status', 'published')
     .maybeSingle();
   if (error) throw error;
-  if (!translation) return null;
-
   return {
     sourceName: product.name,
+    translated: Boolean(translation),
     product: {
       ...product,
-      name: translation.name,
-      description: translation.description || product.description,
+      name: translation?.name || product.name,
+      description: translation?.description || product.description,
     },
   };
 });
@@ -66,5 +65,13 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
   const canonicalSlug = toProductSlug(localized.sourceName, localized.product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
-  return <ProductClient product={localized.product} crossSell={[]} locale="bn" productUrlName={localized.sourceName} />;
+  return (
+    <ProductClient
+      product={localized.product}
+      crossSell={[]}
+      locale="bn"
+      productUrlName={localized.sourceName}
+      productCanonicalUrl={`https://luckystore1947.com/bn/product/${canonicalSlug}`}
+    />
+  );
 }

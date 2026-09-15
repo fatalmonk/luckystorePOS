@@ -101,7 +101,7 @@ function useNavGroups(): NavGroup[] {
         { icon: Settings, label: t('nav.settings', 'Settings'), path: '/settings' },
         { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
         { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
-        { icon: Languages, label: t('nav.translations', 'Bengali Translations'), path: '/translations' },
+        { icon: Languages, label: t('nav.translations'), path: '/translations' },
       ]
     }
   ], [t]);

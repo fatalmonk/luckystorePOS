@@ -16,6 +16,7 @@ export interface OrderInput {
   subtotal: number;
   deliveryFee: number;
   total: number;
+  idempotencyKey?: string;
 }
 
 export interface CreatedOrder {
@@ -35,7 +36,7 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
   }
   const data = parsed.data;
 
-  const { data: result, error } = await supabase.rpc('create_order_with_stock_v2', {
+  const { data: result, error } = await supabase.rpc('create_order_with_stock_idempotent', {
     p_order_number: data.orderNumber,
     p_tenant_id: TENANT_ID,
     p_store_id: STORE_ID,
@@ -49,6 +50,7 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
     p_total: data.total,
     p_payment_method: data.paymentMethod,
     p_delivery_slot: data.deliverySlot ?? null,
+    p_idempotency_key: input.idempotencyKey ?? null,
   });
 
   if (error) throw error;

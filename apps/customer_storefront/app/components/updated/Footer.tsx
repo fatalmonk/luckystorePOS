@@ -143,7 +143,7 @@ export function Footer() {
               <ul className="mt-3 space-y-2.5 sm:mt-5">
                 {shopLinks.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className={`site-footer-link !h-auto !min-h-0 py-0.5 text-sm font-medium ${footerFocus}`}>
+                    <Link href={link.href} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
                       {link.label}
                     </Link>
                   </li>
@@ -158,7 +158,7 @@ export function Footer() {
               <ul className="mt-3 space-y-2.5 sm:mt-5">
                 {helpLinks.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} prefetch={link.href === '/wishlist' ? false : undefined} className={`site-footer-link !h-auto !min-h-0 py-0.5 text-sm font-medium ${footerFocus}`}>
+                    <Link href={link.href} prefetch={link.href === '/wishlist' ? false : undefined} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
                       {link.label}
                     </Link>
                   </li>

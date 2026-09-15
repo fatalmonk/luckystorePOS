@@ -30,8 +30,8 @@ export default function BengaliDeliveryPage() {
           <p className="mt-5 text-lg leading-8 text-warm-muted">চকবাজারের Lucky Store থেকে আমাদের যাচাইকৃত ১ কিমি ডেলিভারি জোনের মধ্যে দৈনন্দিন বাজার পৌঁছে দিই।</p>
         </header>
         <section className="mt-10 grid gap-4 sm:grid-cols-3" aria-label="ডেলিভারি সারাংশ">
-          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">ডেলিভারি জোন</p><p className="mt-2 text-2xl font-black">১ কিমি</p><p className="mt-1 text-sm text-warm-muted">চকবাজার থেকে</p></div>
-          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">ডেলিভারি ফি</p><p className="mt-2 text-2xl font-black">৳৫০০+ ফ্রি</p><p className="mt-1 text-sm text-warm-muted">এর নিচে ফ্ল্যাট ৳৪০</p></div>
+          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">ডেলিভারি জোন</p><p className="mt-2 text-2xl font-black">{DELIVERY_POLICY.radiusKm} কিমি</p><p className="mt-1 text-sm text-warm-muted">চকবাজার থেকে</p></div>
+          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">ডেলিভারি ফি</p><p className="mt-2 text-2xl font-black">৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}+ ফ্রি</p><p className="mt-1 text-sm text-warm-muted">এর নিচে ফ্ল্যাট ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}</p></div>
           <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">পেমেন্ট</p><p className="mt-2 text-2xl font-black">COD ও bKash</p><p className="mt-1 text-sm text-warm-muted">পেমেন্টের আগে পণ্য দেখুন</p></div>
         </section>
         <section className="mt-12" aria-labelledby="areas-heading">

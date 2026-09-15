@@ -35,7 +35,7 @@ function getStoredTheme(): Theme | null {
 function getPreferredTheme(): Theme {
   const stored = getStoredTheme();
   if (stored) return stored;
-  return 'light';
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function applyTheme(theme: Theme, withTransition = false) {

@@ -134,7 +134,7 @@ export function useCart() {
     setCart((prev) => {
       const nextCart = prev.map((item) => {
         const update = prices.get(item.id);
-        return update ? { ...item, name: update.name ?? item.name, price: update.price } : item;
+        return update ? { ...item, price: update.price } : item;
       });
       cartRef.current = nextCart;
       return nextCart;

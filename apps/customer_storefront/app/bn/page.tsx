@@ -15,6 +15,19 @@ export const metadata: Metadata = {
       'x-default': 'https://luckystore1947.com/',
     },
   },
+  openGraph: {
+    type: 'website',
+    locale: 'bn_BD',
+    url: 'https://luckystore1947.com/bn',
+    siteName: 'Lucky Store',
+    title: 'চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার | Lucky Store',
+    description: 'চট্টগ্রামে Lucky Store থেকে দৈনন্দিন বাজারের পণ্য অনলাইনে অর্ডার করুন।',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার | Lucky Store',
+    description: 'চট্টগ্রামে Lucky Store থেকে দৈনন্দিন বাজারের পণ্য অনলাইনে অর্ডার করুন।',
+  },
 };
 
 export default function BengaliHomePage() {

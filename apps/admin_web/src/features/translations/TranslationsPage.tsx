@@ -121,14 +121,14 @@ export function TranslationsPage() {
       <PageHeader title="Bengali translations" subtitle="Review localized catalog copy before it becomes public." />
       <div className="mb-4 flex gap-2">
         {(['item', 'category'] as const).map((value) => (
-          <button key={value} type="button" onClick={() => { setKind(value); setEditing(null); setSelectedDraftIds(new Set()); }} className={`rounded-lg px-4 py-2 text-sm font-semibold ${kind === value ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" aria-pressed={kind === value} onClick={() => { setKind(value); setEditing(null); setSelectedDraftIds(new Set()); }} className={`rounded-lg px-4 py-2 text-sm font-semibold ${kind === value ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
             {value === 'item' ? 'Products' : 'Categories'}
           </button>
         ))}
       </div>
       <div className="mb-4 flex flex-wrap gap-2" aria-label="Translation status filter">
         {(['all', 'draft', 'reviewed', 'published'] as const).map((value) => (
-          <button key={value} type="button" onClick={() => { setStatusFilter(value); setEditing(null); setSelectedDraftIds(new Set()); }} className={`rounded-lg px-3 py-2 text-sm font-semibold capitalize ${statusFilter === value ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setEditing(null); setSelectedDraftIds(new Set()); }} className={`rounded-lg px-3 py-2 text-sm font-semibold capitalize ${statusFilter === value ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
             {value === 'all' ? 'All translations' : value === 'draft' ? 'Show drafts' : value}
           </button>
         ))}

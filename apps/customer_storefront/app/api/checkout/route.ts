@@ -8,8 +8,6 @@ const RATE_LIMIT_MAX = 5;
 const FREE_DELIVERY_THRESHOLD = 500;
 const FREE_DELIVERY_FEE = 40;
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
-const IDEMPOTENCY_CACHE = new Map<string, { order: any; expires: number }>();
-const IDEMPOTENCY_TTL_MS = 10 * 60_000;
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -107,13 +105,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const idempotencyKey = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : '';
-    if (idempotencyKey) {
-      const cached = IDEMPOTENCY_CACHE.get(idempotencyKey);
-      if (cached && cached.expires > Date.now()) {
-        return NextResponse.json({ ok: true, order: cached.order, replayed: true });
-      }
-      if (cached) IDEMPOTENCY_CACHE.delete(idempotencyKey);
-    }
     const clientItems: CheckoutItem[] = body.items ?? [];
 
     if (!clientItems.length) {
@@ -166,14 +157,11 @@ export async function POST(req: NextRequest) {
       subtotal,
       deliveryFee,
       total,
+      idempotencyKey,
     });
 
     notifyAdminWeb(order).catch(console.error);
     sendWhatsApp(order).catch(console.error);
-
-    if (idempotencyKey) {
-      IDEMPOTENCY_CACHE.set(idempotencyKey, { order, expires: Date.now() + IDEMPOTENCY_TTL_MS });
-    }
 
     return NextResponse.json({ ok: true, order });
   } catch (e: any) {

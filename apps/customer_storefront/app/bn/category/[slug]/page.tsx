@@ -6,6 +6,8 @@ import { BottomNav } from '../../../components/BottomNav';
 import { GridProductCard } from '../../../components/GridProductCard';
 import { createProductRepository } from '../../../lib/products/index';
 import { supabase } from '../../../lib/supabase';
+import { getCachedCategories } from '../../../lib/products/getCachedCategories';
+import { resolveCanonicalCategory } from '../../../lib/categoryResolution';
 
 const CATEGORY_COPY: Record<string, { title: string; description: string; query: string }> = {
   'rice-and-grain': { title: 'চাল ও শস্য', description: 'মিনিকেট, নাজিরশাইল ও চিনিগুঁড়া চালের বর্তমান পণ্য দেখুন।', query: 'rice' },
@@ -39,7 +41,13 @@ export default async function BengaliCategoryPage({ params }: { params: Promise<
   const copy = CATEGORY_COPY[slug];
   if (!copy) notFound();
   const { repo } = createProductRepository(supabase);
-  const { products: catalogProducts } = await repo.search({ query: copy.query, limit: 24 });
+  const categories = await getCachedCategories();
+  const { currentCatObj } = resolveCanonicalCategory(slug, categories);
+  const { products: catalogProducts } = await repo.search({
+    categoryId: currentCatObj?.id,
+    query: currentCatObj?.id ? undefined : copy.query,
+    limit: 24,
+  });
   const productIds = catalogProducts.map((product) => product.id);
   const { data: translations } = productIds.length
     ? await supabase
