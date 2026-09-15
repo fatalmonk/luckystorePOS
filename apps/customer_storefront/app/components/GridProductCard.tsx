@@ -6,6 +6,7 @@ import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
+import { withLocale, type Locale } from '../lib/i18n/config';
 import type { Product } from '../lib/types';
 import { useProductCart } from '../hooks/useProductCart';
 import { useProductWishlist } from '../hooks/useProductWishlist';
@@ -17,16 +18,18 @@ import { trackSelectItem } from '../lib/analytics';
 
 export interface GridProductCardProps {
   product: Product;
+  locale?: Locale;
+  linkName?: string;
   priority?: boolean;
   listId?: string;
   listName?: string;
   index?: number;
 }
 
-export function GridProductCard({ product, priority = false, listId, listName, index }: GridProductCardProps) {
+export function GridProductCard({ product, locale = 'en', linkName, priority = false, listId, listName, index }: GridProductCardProps) {
   const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(product);
   const { isWishlisted, isPending, toggle } = useProductWishlist(product.id, product.name);
-  const productHref = `/product/${toProductSlug(product.name, product.id)}`;
+  const productHref = withLocale(`/product/${toProductSlug(linkName ?? product.name, product.id)}`, locale);
   const onSale = product.originalPrice != null && product.originalPrice > product.price;
   const discountPercentage = getDiscountBadgePercentage(product);
   const stockLow = product.stock === 1;

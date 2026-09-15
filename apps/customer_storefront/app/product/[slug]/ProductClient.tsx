@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { toProductSlug } from '../../lib/products/slugify';
+import { withLocale, type Locale } from '../../lib/i18n/config';
 import { useEffect } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
@@ -21,9 +22,11 @@ import { trackViewItem } from '../../lib/analytics';
 interface ProductClientProps {
   product: Product;
   crossSell: Product[];
+  locale?: Locale;
+  productUrlName?: string;
 }
 
-function ProductContent({ product, crossSell }: ProductClientProps) {
+function ProductContent({ product, crossSell, locale = 'en', productUrlName }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
@@ -62,7 +65,7 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
     }
   };
 
-  const productUrl = `/product/${toProductSlug(product.name, product.id)}`;
+  const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
 
   return (
     <>
@@ -247,6 +250,6 @@ function ProductContent({ product, crossSell }: ProductClientProps) {
   );
 }
 
-export default function ProductClient({ product, crossSell }: ProductClientProps) {
-  return <ProductContent product={product} crossSell={crossSell} />;
+export default function ProductClient({ product, crossSell, locale, productUrlName }: ProductClientProps) {
+  return <ProductContent product={product} crossSell={crossSell} locale={locale} productUrlName={productUrlName} />;
 }

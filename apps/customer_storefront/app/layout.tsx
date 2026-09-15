@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import Script from 'next/script';
 import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
@@ -9,6 +10,7 @@ import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { getLocaleFromPathname } from './lib/i18n/config';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -140,13 +142,14 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = getLocaleFromPathname((await headers()).get('x-lucky-pathname'));
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />

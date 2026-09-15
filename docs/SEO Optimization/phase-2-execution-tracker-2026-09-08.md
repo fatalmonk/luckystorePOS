@@ -3,7 +3,7 @@ meta:
   contentType: Reference
   title: Phase 2 — Indexing, Canonical, Sitemap & 404 Hygiene Tracker
   date: 2026-09-08
-  status: In Progress — Implementation Started on Branch feat/indexing-sitemap-hygiene
+  status: Implemented — Deployment Pending
 ---
 
 # Phase 2 — Indexing, Canonical, Sitemap & 404 Hygiene Tracker
@@ -38,29 +38,29 @@ Executes Phase 2 of the SEO Optimization Master Plan: establishing strict canoni
 ## Implementation Workstream
 
 ### 1. Storefront Routing & Status Code Remediation
-- [ ] **Category 404 & Alias 308** (`apps/customer_storefront/app/category/[slug]/page.tsx`):
+- [x] **Category 404 & Alias 308** (`apps/customer_storefront/app/category/[slug]/page.tsx`):
   - `notFound()` called in `generateMetadata` and `CategorySlugPage` when `!canonicalCategorySlug`.
   - Canonical slug alias comparison: if `categorySlug !== canonicalCategorySlug`, execute `permanentRedirect(`/category/${canonicalCategorySlug}`)`.
-- [ ] **Product 404 & Slug Canonicalization** (`apps/customer_storefront/app/product/[slug]/page.tsx`):
+- [x] **Product 404 & Slug Canonicalization** (`apps/customer_storefront/app/product/[slug]/page.tsx`):
   - Make `generateMetadata` call `notFound()` when `!product`, matching component behavior.
   - Centralize canonical check: if `slug !== canonicalSlug`, execute `permanentRedirect(`/product/${canonicalSlug}`)`.
-- [ ] **Pre-Session Middleware Interception** (`apps/customer_storefront/middleware.ts`):
+- [x] **Pre-Session Middleware Interception** (`apps/customer_storefront/middleware.ts`):
   - Intercept `/category?cat=...` BEFORE `updateSession(request)`.
   - Normalize slug and preserve non-cat parameters (e.g. `?cat=snacks&sort=price` -> `/category/snacks?sort=price`).
   - Return HTTP 308 in one hop.
 
 ### 2. Sitemap Invariants & Hygiene
-- [ ] **Shared Canonical Category Slugging** (`apps/customer_storefront/app/sitemap.ts`):
+- [x] **Shared Canonical Category Slugging** (`apps/customer_storefront/app/sitemap.ts`):
   - Use `getCachedCategories` and shared slug utilities instead of independent `.replace()` algorithm.
-- [ ] **Eliminate Fabricated Fallbacks**:
+- [x] **Eliminate Fabricated Fallbacks**:
   - Delete hardcoded fallback category array; return `[]` on DB error.
-- [ ] **Product Sitemap Eligibility Contract**:
+- [x] **Product Sitemap Eligibility Contract**:
   - Filter by: `is_active = true`, `store_id = STORE_ID`, non-empty name, price > 0, deterministic slug.
-- [ ] **Truthful `lastModified`**:
+- [x] **Truthful `lastModified`**:
   - Omit `lastModified` if trustworthy database timestamp unavailable; do not use `new Date()`.
 
 ### 3. Automated SEO Contract Testing
-- [ ] Create `apps/customer_storefront/app/lib/__tests__/seo-routing-contract.test.ts` covering:
+- [x] Create `apps/customer_storefront/app/lib/__tests__/seo-routing-contract.test.ts` covering:
   - Product 200, 308, 404 paths
   - Category 200, 308, 404 paths
   - Middleware query parameter preservation & normalization
