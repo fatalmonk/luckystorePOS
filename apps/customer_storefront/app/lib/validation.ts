@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const checkoutSchema = z.object({
   orderNumber: z.string().min(1),
+  idempotencyKey: z.string().trim().max(100).optional(),
   tenantId: z.string().uuid(),
   storeId: z.string().uuid(),
   customerName: z.string().trim().min(2).max(100),

@@ -22,6 +22,14 @@ export interface OrderInput {
 export interface CreatedOrder {
   id: string;
   order_number: string;
+  replayed?: boolean;
+}
+
+interface RpcOrderResult {
+  order?: CreatedOrder;
+  replayed?: boolean;
+  id?: string;
+  order_number?: string;
 }
 
 export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
@@ -50,10 +58,16 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
     p_total: data.total,
     p_payment_method: data.paymentMethod,
     p_delivery_slot: data.deliverySlot ?? null,
-    p_idempotency_key: input.idempotencyKey ?? null,
+    p_idempotency_key: data.idempotencyKey ?? null,
   });
 
   if (error) throw error;
+
+  const rpcResult = result as RpcOrderResult;
+  const order = rpcResult.order ?? rpcResult;
+  const replayed = rpcResult.order ? rpcResult.replayed === true : false;
+
+  if (replayed) return { ...order, replayed: true } as CreatedOrder;
 
   // Broadcast realtime notification to admin web and mobile app
   // Use a timeout to ensure channel cleanup even if subscription hangs
@@ -135,5 +149,5 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
     }
   }
 
-  return result as CreatedOrder;
+  return { ...order, replayed } as CreatedOrder;
 }

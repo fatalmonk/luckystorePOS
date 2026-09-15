@@ -19,7 +19,7 @@ export function LanguageSwitcher() {
 
   return (
     <Link
-      href={getLocaleHref(targetPath, targetPath === '/' ? '' : search ? `?${search}` : '', targetLocale)}
+      href={getLocaleHref(targetPath, targetPath === '/' && cleanPath !== '/' ? '' : search ? `?${search}` : '', targetLocale)}
       className="inline-flex min-h-11 items-center rounded-full border border-warm-border px-3 text-xs font-bold text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
       aria-label={dictionary.languageLabel}
       hrefLang={targetLocale === 'bn' ? 'bn-BD' : 'en-BD'}

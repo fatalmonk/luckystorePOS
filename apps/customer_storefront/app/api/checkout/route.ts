@@ -160,8 +160,10 @@ export async function POST(req: NextRequest) {
       idempotencyKey,
     });
 
-    notifyAdminWeb(order).catch(console.error);
-    sendWhatsApp(order).catch(console.error);
+    if (order.replayed !== true) {
+      notifyAdminWeb(order).catch(console.error);
+      sendWhatsApp(order).catch(console.error);
+    }
 
     return NextResponse.json({ ok: true, order });
   } catch (e: any) {
