@@ -45,3 +45,12 @@ export {
   validateCategoryRow,
   SchemaMismatchError,
 } from './adapters/types';
+
+// Enrichment (Phase 4A)
+export {
+  getEnrichedProductData,
+  PILOT_ENRICHED_PRODUCTS,
+  type ProductEnrichment,
+  type ProductSpecification,
+  type ProductFaq,
+} from './productEnrichment';
