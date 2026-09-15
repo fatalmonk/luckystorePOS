@@ -85,7 +85,7 @@ export const PILOT_ENRICHED_PRODUCTS: Record<string, ProductEnrichment> = {
       {
         question: 'Is free delivery available for this 5L oil in Chattogram?',
         answer:
-          'Yes. Any order containing this 5L Fortune Mustard Oil automatically qualifies for free delivery within our 1 km Chawkbazar delivery radius since the price exceeds ৳500.',
+          'Yes. Orders totaling ৳500 or more qualify for free delivery within our 1 km Chawkbazar delivery radius; orders below ৳500 have the standard delivery fee.',
       },
     ],
   },

@@ -79,7 +79,12 @@ function ProductContent({ product, crossSell, enrichment }: ProductClientProps) 
 
   return (
     <>
-      <ProductJsonLd product={product} description={overviewText} />
+      <ProductJsonLd
+        product={product}
+        name={displayName}
+        brand={enrichment?.brand}
+        description={overviewText}
+      />
       <Header />
 
       <main className="flex-1 pb-28 md:pb-12">
@@ -209,6 +214,15 @@ function ProductContent({ product, crossSell, enrichment }: ProductClientProps) 
               {overviewText}
             </p>
           </section>
+
+          {product.nutrition && (
+            <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
+              <h2 className="text-base font-bold mb-3 text-warm-fg">Nutrition per 100ml</h2>
+              <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
+                {product.nutrition}
+              </p>
+            </section>
+          )}
 
           {/* Section 2: Verified Specifications Table */}
           <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">

@@ -7,24 +7,28 @@ import { JsonLd } from './JsonLd';
 interface ProductJsonLdProps {
   product: Product;
   description?: string;
+  name?: string;
+  brand?: string;
 }
 
-export function ProductJsonLd({ product, description }: ProductJsonLdProps) {
+export function ProductJsonLd({ product, description, name, brand }: ProductJsonLdProps) {
   const canonicalSlug = toProductSlug(product.name, product.id);
   const canonicalUrl = `https://luckystore1947.com/product/${canonicalSlug}`;
+  const effectiveName = name || product.name;
+  const effectiveBrand = brand || product.brand;
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org/',
     '@type': 'Product',
-    name: product.name,
+    name: effectiveName,
     image: product.image_url ? [product.image_url] : undefined,
-    description: description || product.description || `${product.name} available at Lucky Store in Chattogram`,
+    description: description || product.description || `${effectiveName} available at Lucky Store in Chattogram`,
     sku: product.id,
-    ...(product.brand
+    ...(effectiveBrand
       ? {
           brand: {
             '@type': 'Brand',
-            name: product.brand,
+            name: effectiveBrand,
           },
         }
       : {}),
@@ -47,13 +51,10 @@ export function ProductJsonLd({ product, description }: ProductJsonLdProps) {
       hasMerchantReturnPolicy: {
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'BD',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 0,
-        returnMethod: 'https://schema.org/ReturnAtKiosk',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
         returnFees: 'https://schema.org/FreeReturn',
-        refundType: 'https://schema.org/FullRefund',
         description:
-          '100% doorstep inspection before payment. Inspect packaging, seals, and dates upon arrival; reject any item immediately at zero fee penalty.',
+          'No post-payment returns. Lucky Store offers 100% doorstep inspection: customers may inspect packaging, seals, and dates before payment and reject an item immediately at zero fee penalty.',
       },
     },
   };
