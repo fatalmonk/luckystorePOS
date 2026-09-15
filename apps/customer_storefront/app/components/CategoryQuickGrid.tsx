@@ -84,7 +84,7 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
       <div className="mb-3 flex items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="home-section-kicker">Curated discovery</p>
-          <h2 id="category-quick-title" className="text-lg font-black leading-tight tracking-tight text-warm-fg sm:text-xl">
+          <h2 id="category-quick-title" className="text-balance text-lg font-black leading-tight tracking-tight text-warm-fg sm:text-xl">
             Shop by routine
           </h2>
         </div>
@@ -106,7 +106,7 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
                 collection.desktopOnly ? 'hidden lg:flex' : ''
               }`}
             >
-              <div className="flex h-16 w-16 items-center justify-center rounded-warm-lg border border-warm-image-well-border bg-warm-image-well text-warm-fg transition-transform group-active:scale-[0.96] sm:h-20 sm:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-warm-lg border border-warm-image-well-border bg-warm-image-well text-warm-fg transition-transform motion-safe:group-active:scale-[0.96] sm:h-20 sm:w-20">
                 <span className="text-warm-fg" aria-hidden="true">{getCategoryIcon(collection.iconSlug, 30)}</span>
               </div>
               <span className="line-clamp-1 text-center text-xs font-semibold text-warm-fg sm:text-sm">

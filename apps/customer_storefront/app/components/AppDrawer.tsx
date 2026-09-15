@@ -130,7 +130,7 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
         </nav>
 
         {/* Categories */}
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
           <p className="px-3 mb-2 text-xs font-black text-warm-dim uppercase tracking-widest">Categories</p>
           <ul className="space-y-0.5">
             {CATEGORY_GROUPS.map((group) => (

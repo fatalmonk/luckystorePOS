@@ -262,6 +262,12 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-warm-control focus:bg-warm-accent focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-black focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-warm-fg"
+        >
+          Skip to main content
+        </a>
         <Script id="google-consent-default" strategy="beforeInteractive" data-cfasync="false">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -341,14 +347,14 @@ export default async function RootLayout({
             <button
               id="lucky-consent-reject"
               type="button"
-              className="min-h-11 rounded-full border border-warm-border px-4 py-2 text-sm font-semibold hover:bg-warm-subtle"
+              className="min-h-11 rounded-full border border-warm-border px-4 py-2 text-sm font-semibold hover:bg-warm-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >
               Reject analytics
             </button>
             <button
               id="lucky-consent-accept"
               type="button"
-              className="min-h-11 rounded-full bg-warm-accent px-4 py-2 text-sm font-bold text-black hover:brightness-95"
+              className="min-h-11 rounded-full bg-warm-accent px-4 py-2 text-sm font-bold text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-fg"
             >
               Accept analytics
             </button>

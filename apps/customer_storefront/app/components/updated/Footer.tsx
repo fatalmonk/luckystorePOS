@@ -98,7 +98,7 @@ export function Footer() {
             <Logo className="[&_img]:!h-10 sm:[&_img]:!h-12" />
 
             <p className="site-footer-muted mt-4 max-w-md text-sm leading-6 sm:mt-6 sm:text-[15px] sm:leading-7">
-              Provisions for the Bengali hearth — pantry staples, fragrant tea, and daily comforts delivered with care across Chittagong since 1947.
+              Provisions for the Bengali hearth—pantry staples, fragrant tea, and daily comforts delivered with care across Chittagong since 1947.
             </p>
 
             <address className="mt-4 flex flex-col items-start not-italic sm:mt-6">
@@ -175,7 +175,7 @@ export function Footer() {
         <div className="site-footer-bottom mt-10 border-t pt-5 sm:mt-12 sm:pt-6">
           <div className="flex flex-col gap-3 text-xs sm:text-[13px]">
             <div className="flex items-center justify-between font-medium">
-              <p>© Lucky Store. Est. 1947.</p>
+              <p>© <span translate="no">Lucky Store</span>. Est. 1947.</p>
               <p>Chittagong, Bangladesh</p>
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-medium">

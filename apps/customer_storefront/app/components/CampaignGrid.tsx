@@ -42,8 +42,9 @@ export function CampaignGrid({ products }: CampaignGridProps) {
           </div>
 
           <div
-            className="relative ml-auto h-24 w-24 sm:h-40 sm:w-40 md:h-48 md:w-48 lg:mx-0 lg:h-56 lg:w-auto"
+            role="img"
             aria-label="A basket of everyday Lucky Store groceries"
+            className="relative ml-auto h-24 w-24 sm:h-40 sm:w-40 md:h-48 md:w-48 lg:mx-0 lg:h-56 lg:w-auto"
           >
             <Image
               src="/images/hero-grocery-basket.webp"

@@ -115,9 +115,9 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
           <p className="text-xs leading-none text-warm-dim">{product.unit}</p>
 
           <div className="mt-1 flex min-h-6 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="font-mono text-lg font-bold text-warm-fg">{formatBdt(product.price)}</span>
+            <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatBdt(product.price)}</span>
             {onSale && (
-              <span className="font-mono text-xs text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
+              <span className="font-mono text-xs tabular-nums text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
             )}
             {onSale && product.originalPrice != null && (
               <span className="text-[11px] font-bold text-warm-muted">
@@ -140,7 +140,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
                 className="flex h-12 w-12 items-center justify-center rounded-warm-control border border-warm-muted bg-warm-surface text-base font-bold text-warm-fg transition-colors hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={`Remove one ${product.name}`}
               >
-                -
+                −
               </button>
               <QtyNumber qty={quantity} className="min-w-[20px] text-center font-mono text-sm font-black text-warm-fg" />
               <button
@@ -175,7 +175,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
                 add(event.currentTarget);
               }}
               disabled={!canAdd}
-              className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
+              className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
               aria-label={`Add to Cart: ${product.name}`}
             >
               <span className="market-card-add-label-full">Add to Cart</span>
