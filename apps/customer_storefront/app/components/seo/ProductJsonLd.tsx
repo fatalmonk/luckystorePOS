@@ -1,34 +1,60 @@
+import React from 'react';
 import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
+import { getDeliveryOfferShippingDetailsSchema } from '../../delivery/deliveryData';
 import { JsonLd } from './JsonLd';
 
 interface ProductJsonLdProps {
   product: Product;
+  description?: string;
+  name?: string;
+  brand?: string;
 }
 
-export function ProductJsonLd({ product }: ProductJsonLdProps) {
-  const jsonLd = {
+export function ProductJsonLd({ product, description, name, brand }: ProductJsonLdProps) {
+  const canonicalSlug = toProductSlug(product.name, product.id);
+  const canonicalUrl = `https://luckystore1947.com/product/${canonicalSlug}`;
+  const effectiveName = name || product.name;
+  const effectiveBrand = brand || product.brand;
+
+  const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org/',
     '@type': 'Product',
-    name: product.name,
+    name: effectiveName,
     image: product.image_url ? [product.image_url] : undefined,
-    description: product.description || `${product.name} available at Lucky Store`,
+    description: description || product.description || `${effectiveName} available at Lucky Store in Chattogram`,
     sku: product.id,
-    brand: {
-      '@type': 'Brand',
-      name: product.brand || 'Lucky Store',
-    },
+    ...(effectiveBrand
+      ? {
+          brand: {
+            '@type': 'Brand',
+            name: effectiveBrand,
+          },
+        }
+      : {}),
     offers: {
       '@type': 'Offer',
       price: product.price,
       priceCurrency: 'BDT',
-      availability: product.stock > 0
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      url: `https://luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
+      itemCondition: 'https://schema.org/NewCondition',
+      availability:
+        product.stock > 0
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+      url: canonicalUrl,
       seller: {
         '@type': 'Organization',
         name: 'Lucky Store',
+        url: 'https://luckystore1947.com',
+      },
+      shippingDetails: getDeliveryOfferShippingDetailsSchema(),
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'BD',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+        returnFees: 'https://schema.org/FreeReturn',
+        description:
+          'No post-payment returns. Lucky Store offers 100% doorstep inspection: customers may inspect packaging, seals, and dates before payment and reject an item immediately at zero fee penalty.',
       },
     },
   };

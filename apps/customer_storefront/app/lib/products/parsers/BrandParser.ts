@@ -19,15 +19,15 @@ export class RuleBasedBrandParser implements BrandParser {
     // Default list from current products.ts, but now injectable
     this.knownBrands = knownBrands ?? [
       // Dairy & Ice Cream
-      'Polar', 'Igloo', 'Savoy', 'Kwality', 'Diploma', 'Aarong', 'Milk Vita',
+      'Polar', 'Igloo', 'Savoy', 'Kwality', 'Diploma', 'Aarong', 'Milk Vita', 'Marks',
       // Personal Care
       'Lux', 'Dove', 'Lifebuoy', 'Dettol', 'Sunsilk', 'Pantene', 'Clear',
       // Food & Beverage
-      'Pran', 'Ruchi', 'Danish', 'Radhuni', 'ACI', 'Fresh', 'Teer', 'Nestle', 'Nescafe', 'Nescafé', 'Maggi', 'KitKat', 'Nido', 'Milo', 'Koko Crunch',
+      'Pran', 'Ruchi', 'Danish', 'Radhuni', 'ACI', 'Fresh', 'Teer', 'Rupchanda', 'Fortune', 'Ispahani', 'Taaza', 'Ama', 'Ahmed', 'Nestle', 'Nescafe', 'Nescafé', 'Maggi', 'KitKat', 'Nido', 'Milo', 'Koko Crunch',
       // Household & Paper
       'Bashundhara', 'Dekko', 'RFL',
       // Snacks & Confectionery
-      'Bisk', 'Olympic', 'Haque', 'Bombay',
+      'Bisk', 'Olympic', 'Haque', 'Bombay', 'Bellame', 'Aril',
     ];
 
     const defaultAliases: Record<string, Brand> = {
@@ -48,6 +48,14 @@ export class RuleBasedBrandParser implements BrandParser {
       'nestlé gold': 'Nestle',
       nestle: 'Nestle',
       nestlé: 'Nestle',
+      'ispahani mirzapore': 'Ispahani',
+      mirzapore: 'Ispahani',
+      'ama classic': 'Ama',
+      ama: 'Ama',
+      fortune: 'Fortune',
+      rupchanda: 'Rupchanda',
+      bellame: 'Bellame',
+      aril: 'Aril',
     };
 
     const sourceAliases = brandAliases ?? defaultAliases;
