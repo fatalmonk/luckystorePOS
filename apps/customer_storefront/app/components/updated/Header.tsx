@@ -12,6 +12,7 @@ import { Logo } from '../ui/Logo';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { useTheme } from '../providers/ThemeProvider';
 import { getCategoryIcon } from '../icons/CategoryIcons';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 export interface HeaderProps {
   className?: string;
@@ -327,6 +328,7 @@ export function Header({ className = '' }: HeaderProps) {
 
         {/* Right Actions: Theme, Wishlist, Cart */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <LanguageSwitcher />
           {/* Theme Toggle */}
           <button
             type="button"
