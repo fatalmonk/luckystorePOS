@@ -4,7 +4,7 @@ export function HeritageParallax() {
   return (
     <section
       aria-labelledby="heritage-title"
-      className="mt-14 border-y border-warm-border py-8 sm:mt-20 sm:py-10 lg:mt-20"
+      className="mt-8 border-y border-warm-border py-6 sm:mt-20 sm:py-10 lg:mt-20"
     >
       <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="max-w-2xl">

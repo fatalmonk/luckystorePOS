@@ -36,7 +36,8 @@ export function CampaignGrid({ products }: CampaignGridProps) {
               Daily essentials from a store Chittagong knows.
             </h2>
             <p className="campaign-on-image-muted mt-2 max-w-2xl text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7">
-              From morning tea and warm daily bread to fragrant rice and evening pantry spices, we bring the heart of Chittagong’s local bazaar straight to your kitchen table.
+              <span className="sm:hidden">Everyday groceries from Chittagong’s trusted store.</span>
+              <span className="hidden sm:inline">From morning tea and warm daily bread to fragrant rice and evening pantry spices, we bring the heart of Chittagong’s local bazaar straight to your kitchen table.</span>
             </p>
           </div>
 

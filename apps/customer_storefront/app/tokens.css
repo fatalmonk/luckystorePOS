@@ -119,8 +119,8 @@
 
 /* Deep Night theme */
 [data-theme="dark"] {
-  --color-paper: #0B0B0D;
-  --color-surface: #241e1a;
+  --color-paper: #0F0F0F;
+  --color-surface: #121212;
   --color-foreground: #f5f0eb;
   --color-muted: #b0a89e;
   --color-dim: #8f877d;

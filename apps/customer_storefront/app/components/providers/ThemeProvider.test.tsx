@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('ThemeProvider', () => {
-  it('uses the system preference when no theme has been saved', async () => {
+  it('defaults to light when no theme has been saved', async () => {
     matchMedia.mockReturnValue({
       matches: true,
       addEventListener: vi.fn(),
@@ -56,9 +56,9 @@ describe('ThemeProvider', () => {
 
     renderThemeControls();
 
-    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('dark'));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-    expect(document.documentElement.style.colorScheme).toBe('dark');
+    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('light'));
+    expect(document.documentElement).not.toHaveAttribute('data-theme');
+    expect(document.documentElement.style.colorScheme).toBe('light');
   });
 
   it('prefers a saved theme over the system preference', async () => {

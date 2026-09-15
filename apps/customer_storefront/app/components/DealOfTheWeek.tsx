@@ -102,14 +102,14 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       tone="night"
       className="deal-panel space-y-5 p-4 sm:space-y-6 sm:p-5"
     >
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
+      <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:gap-y-2">
         <div className="min-w-0">
           <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">
             The Weekly Special
           </h2>
         </div>
-        <DealCountdown />
-        <p className="deal-panel-copy col-span-1 max-w-2xl text-sm">
+        <DealCountdown className="justify-self-start sm:justify-self-end" />
+        <p className="deal-panel-copy max-w-2xl text-sm">
           A cherished kitchen staple, handpicked for you at an exceptional price.
         </p>
       </div>

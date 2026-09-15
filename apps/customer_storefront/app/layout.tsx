@@ -155,7 +155,7 @@ export default function RootLayout({
         <script
           data-cfasync="false"
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('lucky-theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}if(t==='dark')document.documentElement.dataset.theme='dark';})();`,
+            __html: `(function(){var t=localStorage.getItem('lucky-theme')||'light';if(t==='dark')document.documentElement.dataset.theme='dark';})();`,
           }}
         />
         <script

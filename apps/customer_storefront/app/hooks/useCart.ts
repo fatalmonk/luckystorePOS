@@ -129,6 +129,18 @@ export function useCart() {
     setCart([]);
   }, []);
 
+  const syncPrices = useCallback((updates: { id: string; name?: string; price: number }[]) => {
+    const prices = new Map(updates.map((update) => [update.id, update]));
+    setCart((prev) => {
+      const nextCart = prev.map((item) => {
+        const update = prices.get(item.id);
+        return update ? { ...item, name: update.name ?? item.name, price: update.price } : item;
+      });
+      cartRef.current = nextCart;
+      return nextCart;
+    });
+  }, []);
+
   // Before hydration, show empty cart to avoid SSR/client mismatch
   const safeCart = hydrated ? cart : [];
   const totalItems = hydrated ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
@@ -145,6 +157,7 @@ export function useCart() {
     removeFromCart,
     undoRemove,
     clearCart,
+    syncPrices,
     totalItems,
     subtotal,
     deliveryFee,
