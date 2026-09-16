@@ -43,33 +43,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch Supabase Preview Branch
-        if: env.HAS_SUPABASE_TOKEN == 'true'
-        id: supabase_preview
-        uses: 0xbigboss/supabase-branch-gh-action@v1
-        with:
-          supabase-access-token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          supabase-project-id: 'hvmyxyccfnkrbxqbhlnm'
-
-      - name: Set environment variables for preview branch
+      - name: Configure Test Supabase Environment
         run: |
-          if [ -n "${{ steps.supabase_preview.outputs.api_url }}" ]; then
-            PREVIEW_REF="$(node -e "console.log(new URL(process.argv[1]).hostname.split('.')[0])" "${{ steps.supabase_preview.outputs.api_url }}")"
-            if [ "$PREVIEW_REF" = "hvmyxyccfnkrbxqbhlnm" ]; then
-              echo "Refusing to enable mutating E2E tests against production Supabase"
-              exit 1
-            fi
-            echo "NEXT_PUBLIC_SUPABASE_URL=${{ steps.supabase_preview.outputs.api_url }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.supabase_preview.outputs.anon_key }}" >> $GITHUB_ENV
-            echo "SUPABASE_SERVICE_ROLE_KEY=${{ steps.supabase_preview.outputs.service_role_key }}" >> $GITHUB_ENV
-            echo "E2E_SUPABASE_PROJECT_REF=$PREVIEW_REF" >> $GITHUB_ENV
-            echo "E2E_CAN_MUTATE=true" >> $GITHUB_ENV
-          else
-            echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-            echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}" >> $GITHUB_ENV
-            echo "E2E_CAN_MUTATE=false" >> $GITHUB_ENV
-          fi
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.TEST_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}" >> $GITHUB_ENV
+          echo "E2E_SUPABASE_PROJECT_REF=grxxenvdhfwzafzyykgo" >> $GITHUB_ENV
+          echo "E2E_CAN_MUTATE=true" >> $GITHUB_ENV
 
       - uses: actions/setup-node@v4
         with:
