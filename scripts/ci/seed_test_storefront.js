@@ -73,6 +73,15 @@ function isMissingSchemaObject(error) {
 >>>>>>> theirs
 }
 
+function isMissingSchemaObject(error) {
+  return Boolean(
+    error &&
+      (error.code === 'PGRST205' ||
+        error.code === 'PGRST202' ||
+        /could not find the table .* in the schema cache/i.test(error.message || '')),
+  );
+}
+
 let projectRef = '';
 try {
   const parsedSupabaseUrl = supabaseUrl ? new URL(supabaseUrl) : null;
