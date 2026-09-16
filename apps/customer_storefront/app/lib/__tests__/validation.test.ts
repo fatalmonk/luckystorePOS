@@ -107,6 +107,11 @@ describe('checkoutSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('bounds the optional idempotency key', () => {
+    expect(checkoutSchema.safeParse({ ...validBase, idempotencyKey: 'k'.repeat(100) }).success).toBe(true);
+    expect(checkoutSchema.safeParse({ ...validBase, idempotencyKey: 'k'.repeat(101) }).success).toBe(false);
+  });
+
   it('accepts bKash as a payment method', () => {
     const result = checkoutSchema.safeParse({ ...validBase, paymentMethod: 'bkash' });
     expect(result.success).toBe(true);

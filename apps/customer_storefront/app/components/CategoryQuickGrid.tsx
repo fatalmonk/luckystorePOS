@@ -3,8 +3,12 @@ import Link from 'next/link';
 import type { Category } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
 
+import { withLocale, type Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
+
 interface CategoryQuickGridProps {
   categories?: { id: string; slug: Category; name: string; emoji: string }[];
+  locale?: Locale;
 }
 
 function normalizeCategoryName(name: string): string {
@@ -15,50 +19,47 @@ function normalizeCategoryName(name: string): string {
     .replace(/[^a-z0-9-]/g, '');
 }
 
-const CURATED_COLLECTIONS = [
-  {
-    label: 'Daily Cooking',
-    accessibleLabel: 'Cooking Essentials',
-    slug: 'cooking-essentials',
-    fallbackSlugs: ['rice-and-grain', 'spices', 'oil-and-ghee'],
-    iconSlug: 'cooking-essentials',
-    desktopOnly: false,
-  },
-  {
-    label: 'Breakfast',
-    accessibleLabel: 'Breakfast',
-    slug: 'breakfast',
-    fallbackSlugs: ['dairy-and-eggs', 'tea-&-coffee', 'biscuits-and-cookies'],
-    iconSlug: 'breakfast',
-    desktopOnly: false,
-  },
-  {
-    label: 'Snacks & Drinks',
-    accessibleLabel: 'Snacks',
-    slug: 'snacks',
-    fallbackSlugs: ['cold-beverages', 'ice-cream', 'biscuits-and-cookies'],
-    iconSlug: 'snacks',
-    desktopOnly: false,
-  },
-  {
-    label: 'Home Essentials',
-    accessibleLabel: 'Cleaning Supplies',
-    slug: 'household',
-    fallbackSlugs: ['home-care', 'cleaning-supplies'],
-    iconSlug: 'household',
-    desktopOnly: false,
-  },
-  {
-    label: 'Personal Care',
-    accessibleLabel: 'Personal Care',
-    slug: 'personal-care',
-    fallbackSlugs: ['baby-care'],
-    iconSlug: 'personal-care',
-    desktopOnly: true,
-  },
-] as const;
+export function CategoryQuickGrid({ categories, locale = 'en' }: CategoryQuickGridProps) {
 
-export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
+  const dict = getDictionary(locale);
+  const collections = [
+    {
+      label: dict.categoryGrid.dailyCooking,
+      slug: 'cooking-essentials',
+      fallbackSlugs: ['rice-and-grain', 'spices', 'oil-and-ghee'],
+      iconSlug: 'cooking-essentials',
+      desktopOnly: false,
+    },
+    {
+      label: dict.categoryGrid.breakfast,
+      slug: 'breakfast',
+      fallbackSlugs: ['dairy-and-eggs', 'tea-&-coffee', 'biscuits-and-cookies'],
+      iconSlug: 'breakfast',
+      desktopOnly: false,
+    },
+    {
+      label: dict.categoryGrid.snacksDrinks,
+      slug: 'snacks',
+      fallbackSlugs: ['cold-beverages', 'ice-cream', 'biscuits-and-cookies'],
+      iconSlug: 'snacks',
+      desktopOnly: false,
+    },
+    {
+      label: dict.categoryGrid.homeEssentials,
+      slug: 'household',
+      fallbackSlugs: ['home-care', 'cleaning-supplies'],
+      iconSlug: 'household',
+      desktopOnly: false,
+    },
+    {
+      label: dict.categoryGrid.personalCare,
+      slug: 'personal-care',
+      fallbackSlugs: ['baby-care'],
+      iconSlug: 'personal-care',
+      desktopOnly: true,
+    },
+  ] as const;
+
   const getCategoryTarget = (
     groupSlug: string,
     fallbackSlugs: readonly string[] = [],
@@ -74,8 +75,8 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
         ),
     );
     return {
-      href: `/category/${match?.slug ?? groupSlug}`,
-      accessibleLabel: match?.name ?? fallbackLabel,
+      href: withLocale(`/category/${match?.slug ?? groupSlug}`, locale),
+      accessibleLabel: locale === 'bn' ? fallbackLabel : (match?.name ?? fallbackLabel),
     };
   };
 
@@ -83,19 +84,21 @@ export function CategoryQuickGrid({ categories }: CategoryQuickGridProps) {
     <section aria-labelledby="category-quick-title" className="px-1 pt-1">
       <div className="mb-3 flex items-end justify-between gap-3">
         <div className="min-w-0">
-          <p className="home-section-kicker">Curated discovery</p>
+          <p className="home-section-kicker">
+            {locale === 'bn' ? 'বাছাইকৃত ক্যাটাগরি' : 'Curated discovery'}
+          </p>
           <h2 id="category-quick-title" className="text-balance text-lg font-black leading-tight tracking-tight text-warm-fg sm:text-xl">
-            Shop by routine
+            {locale === 'bn' ? 'দৈনন্দিন রুটিন অনুযায়ী বাজার' : 'Shop by routine'}
           </h2>
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-3 sm:gap-4 lg:grid-cols-5">
-        {CURATED_COLLECTIONS.map((collection) => {
+        {collections.map((collection) => {
           const target = getCategoryTarget(
             collection.slug,
             collection.fallbackSlugs,
-            collection.accessibleLabel,
+            collection.label,
           );
 
           return (

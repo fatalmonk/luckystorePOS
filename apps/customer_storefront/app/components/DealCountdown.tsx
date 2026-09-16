@@ -16,12 +16,17 @@ export interface TimeLeft {
   isExpired: boolean;
 }
 
+import type { Locale } from '../lib/i18n/config';
+import { toBengaliNumerals } from '../lib/i18n/config';
+
 export interface DealCountdownProps {
   workerUrl?: string;
   initialEndTime?: string;
   className?: string;
   onExpire?: () => void;
+  locale?: Locale;
 }
+
 
 /**
  * Calculates time remaining until a given target date ISO string.
@@ -70,6 +75,7 @@ export function DealCountdown({
   initialEndTime,
   className = '',
   onExpire,
+  locale = 'en',
 }: DealCountdownProps) {
   const [targetEndTime, setTargetEndTime] = useState<string>(initialEndTime || getFallbackSundayDeadline());
   const [timeSkewMs, setTimeSkewMs] = useState<number>(0);
@@ -136,7 +142,9 @@ export function DealCountdown({
   if (isLoading) {
     return (
       <div aria-live="polite" className={`deal-countdown rounded-[18px] border px-4 py-3 ${className}`}>
-        <span className="text-xs font-bold text-warm-muted">Loading deal timer…</span>
+        <span className="text-xs font-bold text-warm-muted">
+          {locale === 'bn' ? 'অফার লোড হচ্ছে…' : 'Loading deal timer…'}
+        </span>
       </div>
     );
   }
@@ -144,35 +152,46 @@ export function DealCountdown({
   if (timeLeft.isExpired) {
     return (
       <div className={`deal-countdown rounded-[18px] border p-4 text-center ${className}`}>
-        <p className="text-xs font-black uppercase tracking-wider text-warm-fg">Deal ended</p>
+        <p className="text-xs font-black uppercase tracking-wider text-warm-fg">
+          {locale === 'bn' ? 'অফার শেষ হয়েছে' : 'Deal ended'}
+        </p>
         <p className="mt-1 text-xs font-medium text-warm-muted">
-          Check back for the next weekly offer.
+          {locale === 'bn' ? 'পরবর্তী সাপ্তাহিক অফারের জন্য অপেক্ষা করুন।' : 'Check back for the next weekly offer.'}
         </p>
       </div>
     );
   }
 
+  const timeSegments = locale === 'bn'
+    ? [
+        ['দিন', toBengaliNumerals(String(timeLeft.days).padStart(2, '0'))],
+        ['ঘণ্টা', toBengaliNumerals(String(timeLeft.hours).padStart(2, '0'))],
+        ['মিনিট', toBengaliNumerals(String(timeLeft.minutes).padStart(2, '0'))],
+        ['সেকেন্ড', toBengaliNumerals(String(timeLeft.seconds).padStart(2, '0'))],
+      ]
+    : [
+        ['Days', String(timeLeft.days).padStart(2, '0')],
+        ['Hrs', String(timeLeft.hours).padStart(2, '0')],
+        ['Min', String(timeLeft.minutes).padStart(2, '0')],
+        ['Sec', String(timeLeft.seconds).padStart(2, '0')],
+      ];
+
   return (
     <div className={`deal-countdown flex items-center gap-3 rounded-warm-card border px-3 py-2.5 sm:px-4 sm:py-3 ${className}`}>
       <span className="hidden text-xs font-extrabold uppercase tracking-wider text-warm-muted sm:inline">
-        Ends in
+        {locale === 'bn' ? 'বাকি আছে' : 'Ends in'}
       </span>
       <time
         dateTime={targetEndTime}
         aria-label={`${timeLeft.days} days, ${timeLeft.hours} hours, ${timeLeft.minutes} minutes, ${timeLeft.seconds} seconds remaining`}
         className="flex items-center gap-1.5 font-mono text-center"
       >
-        {[
-          ['Days', timeLeft.days],
-          ['Hrs', timeLeft.hours],
-          ['Min', timeLeft.minutes],
-          ['Sec', timeLeft.seconds],
-        ].map(([label, value], index) => (
+        {timeSegments.map(([label, value], index) => (
           <React.Fragment key={String(label)}>
             {index > 0 && <span className="mb-4 text-xs font-black text-warm-muted" aria-hidden="true">:</span>}
             <span className="flex flex-col items-center">
               <span className="deal-countdown-value min-w-[32px] rounded-warm-control px-2 py-1 text-sm font-black">
-                {String(value).padStart(2, '0')}
+                {value}
               </span>
               <span className="mt-0.5 text-xs font-semibold uppercase leading-4 text-warm-muted">
                 {label}

@@ -7,6 +7,8 @@ import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
+import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 import { DealCountdown } from './DealCountdown';
 import { GridProductCard } from './GridProductCard';
 import { MarketPanel } from './ui/MarketSurface';
@@ -14,9 +16,16 @@ import { ProductImage } from './product/ProductImage';
 
 interface DealOfTheWeekProps {
   products: Product[];
+  locale?: Locale;
 }
 
-export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
+export function DealOfTheWeek({ products, locale = 'en' }: DealOfTheWeekProps) {
+  const dict = getDictionary(locale);
+  const localizeNumerals = (value: number | string | null) => {
+    if (value == null) return '';
+    return locale === 'bn' ? toBengaliNumerals(value) : String(value);
+  };
+
   const selection = useMemo(() => getDealOfTheWeekProducts(products, 8), [products]);
   const supportingProducts = useMemo(() => selection?.supportingProducts ?? [], [selection]);
   const discountedProductCount = useMemo(
@@ -105,24 +114,25 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:gap-y-2">
         <div className="min-w-0">
           <h2 id="weekly-deal-title" className="deal-panel-title text-balance text-xl font-black tracking-tight sm:text-2xl">
-            The Weekly Special
+            {dict.deal.title}
           </h2>
         </div>
-        <DealCountdown className="justify-self-start sm:justify-self-end" />
+        <DealCountdown locale={locale} className="justify-self-start sm:justify-self-end" />
         <p className="deal-panel-copy max-w-2xl text-sm">
-          A cherished kitchen staple, handpicked for you at an exceptional price.
+          {dict.deal.subtitle}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <article className={`deal-lead-card flex flex-col justify-between space-y-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
-            href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
-            aria-label={`${leadDiscount}% off — View ${leadProduct.name}`}
+            href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
+            aria-label={locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`}
             className="deal-product-visual relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
           >
+
             <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
-              {leadDiscount}% off
+              {localizeNumerals(leadDiscount)}% {dict.deal.off}
             </span>
             <div className="relative h-[190px] w-full sm:h-[250px]">
               <ProductImage
@@ -137,13 +147,14 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             </div>
           </Link>
 
+
           <div className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-warm-muted">
               {leadProduct.category}
             </span>
             <h3 className="text-base font-black text-warm-fg sm:text-lg">
               <Link
-                href={`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`}
+                href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
                 className="hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg"
               >
                 {leadProduct.name}
@@ -152,10 +163,10 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <p className="line-clamp-2 text-xs leading-5 text-warm-muted">{leadProduct.description}</p>
 
             <div className="flex flex-wrap items-baseline gap-2 pt-2">
-              <span className="text-xl font-black tabular-nums text-warm-fg">৳{leadProduct.price}</span>
+              <span className="text-xl font-black tabular-nums text-warm-fg">৳{localizeNumerals(leadProduct.price)}</span>
               {leadProduct.originalPrice && (
                 <span className="text-sm font-bold tabular-nums text-warm-muted line-through">
-                  ৳{leadProduct.originalPrice}
+                  ৳{localizeNumerals(leadProduct.originalPrice)}
                 </span>
               )}
               <span className="text-xs font-medium text-warm-muted">/ {leadProduct.unit}</span>
@@ -164,10 +175,10 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
 
           <div className="flex items-center gap-3 pt-2">
             <Link
-              href="/category?theme=deals"
+              href={withLocale('/category?theme=deals', locale)}
               className="home-primary-action inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 py-3 text-center text-xs font-black uppercase tracking-wider"
             >
-              Shop all deals →
+              {locale === 'bn' ? 'সব অফার দেখুন →' : 'Shop all deals →'}
             </Link>
           </div>
         </article>
@@ -175,18 +186,20 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         {supportingProducts.length > 0 && (
           <div className="min-w-0 space-y-3 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="deal-panel-title text-sm font-extrabold">More Deals</h3>
+              <h3 className="deal-panel-title text-sm font-extrabold">
+                {locale === 'bn' ? 'আরও অফার' : 'More deals'}
+              </h3>
               <div className="flex items-center gap-3">
                 <Link
-                  href="/category?theme=deals"
+                  href={withLocale('/category?theme=deals', locale)}
                   className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
                 >
-                  See all {discountedProductCount} deals →
+                  {locale === 'bn' ? `সবগুলো অফার (${discountedProductCount}) →` : `See all ${discountedProductCount} deals →`}
                 </Link>
                 <div className="flex shrink-0 gap-2" role="group" aria-label="Weekly deal carousel controls">
                   <button
                     type="button"
-                    aria-label="Previous weekly deals"
+                    aria-label={locale === 'bn' ? 'আগের অফারগুলো' : 'Previous weekly deals'}
                     onClick={() => scrollDeals(-1)}
                     disabled={!canScrollPrevious}
                     className="deal-rail-control"
@@ -195,7 +208,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
                   </button>
                   <button
                     type="button"
-                    aria-label="Next weekly deals"
+                    aria-label={locale === 'bn' ? 'পরের অফারগুলো' : 'Next weekly deals'}
                     onClick={() => scrollDeals(1)}
                     disabled={!canScrollNext}
                     className="deal-rail-control"
@@ -209,7 +222,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <div
               ref={dealRailRef}
               role="region"
-              aria-label="More weekly deals"
+              aria-label={locale === 'bn' ? 'আরও সাপ্তাহিক অফার' : 'More weekly deals'}
               tabIndex={0}
               onKeyDown={handleDealRailKeyDown}
               onScroll={handleScroll}
@@ -217,12 +230,13 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             >
               {supportingProducts.map((product) => (
                 <div key={product.id} className="deal-product-slide text-warm-fg">
-                  <GridProductCard product={product} />
+                  <GridProductCard product={product} locale={locale} />
                 </div>
               ))}
             </div>
           </div>
         )}
+
       </div>
     </MarketPanel>
   );

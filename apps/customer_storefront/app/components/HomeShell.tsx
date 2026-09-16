@@ -10,6 +10,8 @@ import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { ProductGridSection } from './ProductGridSection';
 import { HeritageParallax } from './parallax/HeritageParallax';
 import type { Product, Category } from '../lib/types';
+import { withLocale, type Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
 export interface CategoryItem {
   id: string;
@@ -30,6 +32,7 @@ export interface HomeShellProps {
   personalCareProducts?: Product[];
   nestleProducts?: Product[];
   snacksProducts?: Product[];
+  locale?: Locale;
 }
 
 export function HomeShell({
@@ -44,136 +47,155 @@ export function HomeShell({
   personalCareProducts = [],
   nestleProducts = [],
   snacksProducts = [],
+  locale = 'en',
 }: HomeShellProps) {
+  const dict = getDictionary(locale);
+
   if (inStock.length === 0) {
     return (
       <>
-        <Header />
+        <Header locale={locale} />
         <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
           <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-20">
-            <h1 className="text-balance text-2xl font-black">Lucky Store is stocking up</h1>
-            <p className="mt-2 text-sm text-warm-muted">Please check back soon.</p>
-            <Link href="/category" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-warm-accent px-5 py-2 text-sm font-extrabold text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent">
-              Browse categories →
+            <h1 className="text-balance text-2xl font-black">{dict.emptyState.title}</h1>
+            <p className="mt-2 text-sm text-warm-muted">{dict.emptyState.message}</p>
+            <Link
+              href={withLocale('/category', locale)}
+              className="mt-6 inline-flex min-h-11 items-center rounded-full bg-warm-accent px-5 py-2 text-sm font-extrabold text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            >
+              {dict.emptyState.browse}
             </Link>
           </div>
         </main>
-        <Footer />
-        <BottomNav />
+        <Footer locale={locale} />
+        <BottomNav locale={locale} />
       </>
     );
   }
 
+
   return (
     <>
-      <h1 className="sr-only">Lucky Store — Online Grocery &amp; Daily Bazaar in Chattogram (Est. 1947)</h1>
+      <h1 className="sr-only">
+        {locale === 'bn'
+          ? 'লাকি স্টোর — চট্টগ্রামে অনলাইন গ্রোসারি ও দৈনন্দিন বাজার (স্থাপিত ১৯৪৭)'
+          : 'Lucky Store — Online Grocery & Daily Bazaar in Chattogram (Est. 1947)'}
+      </h1>
       <FaqJsonLd />
-      <Header />
+      <Header locale={locale} />
       <CartStorageNotice />
       <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
         <div className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pb-20 sm:pt-7 lg:pb-24">
           <div className="space-y-4 sm:space-y-5">
-            <CampaignGrid products={campaignProducts} />
+            <CampaignGrid products={campaignProducts} locale={locale} />
 
-            <section aria-label="Why shop with Lucky Store" className="home-trust-strip">
+            <section aria-label={locale === 'bn' ? 'কেন লাকি স্টোরে কেনাকাটা করবেন' : 'Why shop with Lucky Store'} className="home-trust-strip">
               <dl className="grid grid-cols-3 divide-x divide-warm-border">
                 <div className="flex">
                   <Link
-                    href="/delivery"
+                    href={withLocale('/delivery', locale)}
                     className="home-trust-fact w-full transition-colors hover:bg-warm-image-well/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   >
-                    <dt className="transition-colors hover:text-warm-accent">Free Delivery ৳500+</dt>
-                    <dd>Within 1 km of Chawkbazar</dd>
+                    <dt className="transition-colors hover:text-warm-accent">{dict.trustStrip.freeDeliveryTitle}</dt>
+                    <dd>{dict.trustStrip.freeDeliveryDesc}</dd>
                   </Link>
                 </div>
                 <div className="flex">
                   <div className="home-trust-fact w-full">
-                    <dt>Established 1947</dt>
-                    <dd>75+ years of trusted service</dd>
+                    <dt>{dict.trustStrip.establishedTitle}</dt>
+                    <dd>{dict.trustStrip.establishedDesc}</dd>
                   </div>
                 </div>
                 <div className="flex">
                   <Link
-                    href="/delivery#payment-heading"
+                    href={withLocale('/delivery#payment-heading', locale)}
                     className="home-trust-fact w-full transition-colors hover:bg-warm-image-well/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   >
-                    <dt className="transition-colors hover:text-warm-accent">Cash on Delivery</dt>
-                    <dd>Doorstep check &amp; bKash</dd>
+                    <dt className="transition-colors hover:text-warm-accent">{dict.trustStrip.codTitle}</dt>
+                    <dd>{dict.trustStrip.codDesc}</dd>
                   </Link>
                 </div>
               </dl>
             </section>
 
-            <CategoryQuickGrid categories={categories} />
+            <CategoryQuickGrid categories={categories} locale={locale} />
 
-            <nav aria-label="Popular Bazaar Categories" className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold text-warm-muted scrollbar-hide">
-              <span className="shrink-0 font-bold text-warm-fg">Popular Bazaar:</span>
+            <nav aria-label={dict.popularBazaar.label} className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold text-warm-muted scrollbar-hide">
+              <span className="shrink-0 font-bold text-warm-fg">{dict.popularBazaar.label}</span>
               <Link
-                href="/category/rice-and-grain"
+                href={withLocale('/category/rice-and-grain', locale)}
                 className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                Miniket &amp; Chinigura Rice
+                {dict.popularBazaar.rice}
               </Link>
               <Link
-                href="/category/oil-and-ghee"
+                href={withLocale('/category/oil-and-ghee', locale)}
                 className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                Edible Oils &amp; Mustard Oil
+                {dict.popularBazaar.oil}
               </Link>
               <Link
-                href="/category/cooking-essentials"
+                href={withLocale('/category/cooking-essentials', locale)}
                 className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                Daily Bazaar &amp; Pantry
+                {dict.popularBazaar.cooking}
               </Link>
               <Link
-                href="/category/tea-and-coffee"
+                href={withLocale('/category/tea-and-coffee', locale)}
                 className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                Ispahani Tea &amp; Coffee
+                {dict.popularBazaar.tea}
               </Link>
             </nav>
 
             <ProductGridSection
               id="popular-right-now"
-              title="Popular Right Now"
-              subtitle="Neighbourhood favourites filling Chittagong baskets this morning."
+              title={dict.reels.popularTitle}
+              subtitle={dict.reels.popularSubtitle}
               products={featuredProducts.slice(0, 15)}
-              ctaHref="/category"
+              ctaHref={withLocale('/category', locale)}
+              ctaLabel={dict.reels.seeAll}
+              locale={locale}
             />
             <ProductGridSection
               id="daily-essentials"
-              title="Daily Bazaar &amp; Pantry Staples"
-              subtitle="Everyday lentils, flour, spices, salt &amp; sugar for tonight’s pot."
+              title={dict.reels.pantryTitle}
+              subtitle={dict.reels.pantrySubtitle}
               products={pantryProducts.slice(0, 15)}
-              ctaHref="/category/cooking-essentials"
+              ctaHref={withLocale('/category/cooking-essentials', locale)}
+              ctaLabel={dict.reels.seeAll}
+              locale={locale}
             />
 
             <div className="py-2 sm:py-4">
-              <DealOfTheWeek products={inStock} />
+              <DealOfTheWeek products={inStock} locale={locale} />
             </div>
 
             <ProductGridSection
               id="snacks-drinks"
-              title="Snacks & Drinks"
-              subtitle="Crisp teatime biscuits, afternoon cold sips, and sweet bites."
+              title={dict.reels.snacksTitle}
+              subtitle={dict.reels.snacksSubtitle}
               products={snacksProducts.slice(0, 15)}
-              ctaHref="/category/snacks"
+              ctaHref={withLocale('/category/snacks', locale)}
+              ctaLabel={dict.reels.seeAll}
+              locale={locale}
             />
             <ProductGridSection
               id="home-personal-care"
-              title="Home & Personal Care"
-              subtitle="Gentle soaps, clean living essentials, and daily comforts for the home."
+              title={dict.reels.careTitle}
+              subtitle={dict.reels.careSubtitle}
               products={personalCareProducts.slice(0, 15)}
-              ctaHref="/category/personal-care"
+              ctaHref={withLocale('/category/personal-care', locale)}
+              ctaLabel={dict.reels.seeAll}
+              locale={locale}
             />
           </div>
 
-          <HeritageParallax />
+          <HeritageParallax locale={locale} />
         </div>
       </main>
-      <Footer />
-      <BottomNav />
+      <Footer locale={locale} />
+      <BottomNav locale={locale} />
     </>
   );
 }

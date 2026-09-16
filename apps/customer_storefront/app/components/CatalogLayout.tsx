@@ -9,6 +9,9 @@ import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
 import { trackViewItemList } from '../lib/analytics';
+import type { Locale } from '../lib/i18n/config';
+import { withLocale, getLocaleFromPathname } from '../lib/i18n/config';
+import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
 
 const PRICE_OPTIONS = [
   { value: '0-100', label: 'Under ৳100' },
@@ -65,6 +68,7 @@ interface CatalogLayoutProps {
   theme: string;
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
+  locale?: Locale;
 }
 
 export function CatalogLayout({
@@ -76,9 +80,11 @@ export function CatalogLayout({
   theme,
   sort,
   searchParams,
+  locale,
 }: CatalogLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const effectiveLocale = locale || getLocaleFromPathname(pathname);
   const urlParams = useSearchParams();
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -296,13 +302,19 @@ export function CatalogLayout({
         {/* Results summary & query tags */}
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
-            <Link href="/" className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">Home</Link>
+            <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
+              {effectiveLocale === 'bn' ? 'হোম' : 'Home'}
+            </Link>
             <span>/</span>
-            <Link href="/category" className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">Shop</Link>
+            <Link href={withLocale('/category', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
+              {effectiveLocale === 'bn' ? 'ক্যাটাগরি' : 'Shop'}
+            </Link>
             {categorySlug !== 'all' && (
               <>
                 <span>/</span>
-                <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">{categorySlug.replace(/-/g, ' ')}</span>
+                <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">
+                  {effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[categorySlug] || categorySlug.replace(/-/g, ' ')) : categorySlug.replace(/-/g, ' ')}
+                </span>
               </>
             )}
           </div>
@@ -395,10 +407,11 @@ export function CatalogLayout({
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {subCats.map((sub) => {
                 const isActive = categorySlug === sub.slug;
+                const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[sub.slug] || sub.name) : sub.name;
                 return (
                   <Link
                     key={sub.id}
-                    href={`/category/${sub.slug}`}
+                    href={withLocale(`/category/${sub.slug}`, effectiveLocale)}
                     className={`group relative flex flex-col items-center justify-center gap-2 rounded-warm-card border p-3 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent min-h-[90px] ${
                       isActive
                         ? 'border-warm-accent bg-warm-fg text-warm-accent shadow-warm-sm font-black'
@@ -409,7 +422,7 @@ export function CatalogLayout({
                       {getCategoryIcon(sub.slug || sub.name, 28)}
                     </span>
                     <span className={`text-xs font-extrabold leading-tight truncate max-w-full ${isActive ? 'text-warm-accent' : 'text-warm-fg'}`}>
-                      {sub.name}
+                      {subDisplayName}
                     </span>
                   </Link>
                 );
@@ -593,6 +606,7 @@ export function CatalogLayout({
                       listId={listId}
                       listName={listName}
                       index={index}
+                      locale={effectiveLocale}
                     />
                   </div>
                 ))}

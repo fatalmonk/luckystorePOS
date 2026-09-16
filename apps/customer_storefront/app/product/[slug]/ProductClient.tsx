@@ -29,6 +29,10 @@ interface ProductClientProps {
   enrichment?: ProductEnrichment;
 }
 
+export function getCategoryBreadcrumbHref(category: string, locale: Locale): string {
+  return withLocale(`/category/${encodeURIComponent(category)}`, locale);
+}
+
 function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
@@ -100,7 +104,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
         homeHref={withLocale('/', locale)}
         homeLabel={locale === 'bn' ? 'হোম' : 'Home'}
         items={[
-                { label: product.category, href: withLocale(`/category/${encodeURIComponent(product.category)}`, locale) },
+                { label: product.category, href: getCategoryBreadcrumbHref(product.category, locale) },
                 { label: displayName, href: productUrl },
               ]}
             />

@@ -139,4 +139,21 @@ describe('createOrder', () => {
       })
     );
   });
+
+  it('passes the validated idempotency key and unwraps replay metadata', async () => {
+    const { supabase } = await import('../supabase');
+    (supabase.rpc as any).mockResolvedValue({
+      data: { order: { id: 'order-replayed', order_number: 'LSO-20260101-ABCD1234' }, replayed: true },
+      error: null,
+    });
+
+    const result = await createOrder({ ...validInput, idempotencyKey: `  ${'k'.repeat(100)}  ` });
+
+    expect(result).toMatchObject({ id: 'order-replayed', replayed: true });
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'create_order_with_stock_idempotent',
+      expect.objectContaining({ p_idempotency_key: 'k'.repeat(100) }),
+    );
+    expect(supabase.channel).not.toHaveBeenCalled();
+  });
 });

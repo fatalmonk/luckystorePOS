@@ -6,7 +6,8 @@ import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
-import { withLocale, type Locale } from '../lib/i18n/config';
+import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 import type { Product } from '../lib/types';
 import { useProductCart } from '../hooks/useProductCart';
 import { useProductWishlist } from '../hooks/useProductWishlist';
@@ -26,7 +27,13 @@ export interface GridProductCardProps {
   index?: number;
 }
 
+export function formatLocalizedBdt(value: number | null | undefined, locale: Locale): string {
+  const formatted = formatBdt(value);
+  return locale === 'bn' ? toBengaliNumerals(formatted) : formatted;
+}
+
 export function GridProductCard({ product, locale = 'en', linkName, priority = false, listId, listName, index }: GridProductCardProps) {
+  const dict = getDictionary(locale);
   const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(product);
   const { isWishlisted, isPending, toggle } = useProductWishlist(product.id, product.name);
   const productHref = withLocale(`/product/${toProductSlug(linkName ?? product.name, product.id)}`, locale);
@@ -35,12 +42,13 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
   const stockLow = product.stock === 1;
   const outOfStock = product.stock <= 0;
   const badgeLabel = outOfStock
-    ? 'Out of stock'
+    ? dict.productCard.outOfStock
     : stockLow
-      ? 'Last one'
+      ? dict.productCard.lastOne
       : discountPercentage !== null
-        ? `${discountPercentage}% off`
+        ? `${locale === 'bn' ? toBengaliNumerals(discountPercentage) : discountPercentage}% ${locale === 'bn' ? 'ছাড়' : 'off'}`
         : null;
+
 
   return (
     <MarketCard
@@ -115,13 +123,13 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
           <p className="text-xs leading-none text-warm-dim">{product.unit}</p>
 
           <div className="mt-1 flex min-h-6 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatBdt(product.price)}</span>
+            <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatLocalizedBdt(product.price, locale)}</span>
             {onSale && (
-              <span className="font-mono text-xs tabular-nums text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
+              <span className="font-mono text-xs tabular-nums text-warm-muted line-through">{formatLocalizedBdt(product.originalPrice, locale)}</span>
             )}
             {onSale && product.originalPrice != null && (
               <span className="text-[11px] font-bold text-warm-muted">
-                Save {formatBdt(product.originalPrice - product.price)}
+                {dict.productCard.save} {formatLocalizedBdt(product.originalPrice - product.price, locale)}
               </span>
             )}
           </div>
@@ -164,7 +172,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
               className="h-12 w-full cursor-not-allowed rounded-warm-control border border-warm-border bg-warm-bg px-3 text-xs font-bold text-warm-muted"
               aria-label={`${product.name} is out of stock`}
             >
-              Out of stock
+              {dict.productCard.outOfStock}
             </button>
           ) : (
             <button
@@ -174,15 +182,15 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
                 event.stopPropagation();
                 add(event.currentTarget);
               }}
-              disabled={!canAdd}
               className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
-              aria-label={`Add to Cart: ${product.name}`}
+              aria-label={locale === 'bn' ? `ব্যাগে যোগ করুন: ${product.name}` : `Add to Cart: ${product.name}`}
             >
-              <span className="market-card-add-label-full">Add to Cart</span>
-              <span className="market-card-add-label-short">Add</span>
+              <span className="market-card-add-label-full">{dict.productCard.addToCart}</span>
+              <span className="market-card-add-label-short">{locale === 'bn' ? 'যোগ' : 'Add'}</span>
             </button>
           )}
         </div>
+
       </div>
     </MarketCard>
   );
