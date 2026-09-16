@@ -17,12 +17,15 @@
  * a registered record in `evidenceManifest`. Dangling or undeclared evidence references are forbidden.
  */
 
-export type EvidenceSource =
-  | 'PACKAGING'
-  | 'MANUFACTURER'
-  | 'LUCKY_STORE_CATALOG'
-  | 'LUCKY_STORE_POLICY'
-  | 'CALCULATED_FROM_VERIFIED_FACTS';
+export const EVIDENCE_SOURCES = [
+  'PACKAGING',
+  'MANUFACTURER',
+  'LUCKY_STORE_CATALOG',
+  'LUCKY_STORE_POLICY',
+  'CALCULATED_FROM_VERIFIED_FACTS',
+] as const;
+
+export type EvidenceSource = (typeof EVIDENCE_SOURCES)[number];
 
 export interface EvidenceRecord {
   source: EvidenceSource;

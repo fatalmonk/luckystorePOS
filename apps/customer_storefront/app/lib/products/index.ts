@@ -55,6 +55,7 @@ export {
   type ProductSpecification,
   type ProductFaq,
   type ProductFieldEvidence,
+  EVIDENCE_SOURCES,
   type EvidenceSource,
   type EvidenceRecord,
 } from './productEnrichment';

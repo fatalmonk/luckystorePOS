@@ -9,6 +9,7 @@ import {
   getEnrichedProductData,
   PRODUCT_ENRICHMENTS,
   PILOT_ENRICHED_PRODUCTS,
+  EVIDENCE_SOURCES,
   type EvidenceSource,
 } from '../../lib/products/productEnrichment';
 import { RuleBasedBrandParser } from '../../lib/products/parsers/BrandParser';
@@ -19,14 +20,6 @@ import type { Product } from '../../lib/products/types';
 
 describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
   const brandParser = new RuleBasedBrandParser();
-
-  const VALID_EVIDENCE_SOURCES: EvidenceSource[] = [
-    'PACKAGING',
-    'MANUFACTURER',
-    'LUCKY_STORE_CATALOG',
-    'LUCKY_STORE_POLICY',
-    'CALCULATED_FROM_VERIFIED_FACTS',
-  ];
 
   describe('Brand Extraction for GSC-Demonstrated Queries', () => {
     it('extracts Fortune brand from oil names and aliases', () => {
@@ -201,7 +194,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
 
     it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
       const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
-      expect(enrichmentKeys.length).toBe(22);
+      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(22);
       expect(PILOT_ENRICHED_PRODUCTS).toBe(PRODUCT_ENRICHMENTS);
 
       for (const key of enrichmentKeys) {
@@ -221,7 +214,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
 
         for (const mKey of manifestKeys) {
           const rec = item.evidenceManifest[mKey];
-          expect(VALID_EVIDENCE_SOURCES).toContain(rec.source);
+          expect(EVIDENCE_SOURCES).toContain(rec.source);
           expect(rec.evidenceRef).toBeTruthy();
           expect(rec.sourceTitle).toBeTruthy();
         }

@@ -1,6 +1,6 @@
 # Lucky Store — Product Enrichment Evidence Manifest (2026-09-16)
 
-This document provides machine-verifiable and reviewable provenance for all 22 products registered in `apps/customer_storefront/app/lib/products/productEnrichment.ts` (`PRODUCT_ENRICHMENTS`).
+This document provides machine-enforced evidence-reference integrity and reviewable provenance for all 22 products registered in `apps/customer_storefront/app/lib/products/productEnrichment.ts` (`PRODUCT_ENRICHMENTS`).
 
 ---
 
