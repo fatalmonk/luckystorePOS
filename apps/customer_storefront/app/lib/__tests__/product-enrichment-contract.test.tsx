@@ -168,7 +168,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(offers.hasMerchantReturnPolicy).toBeDefined();
       expect(offers.hasMerchantReturnPolicy['@type']).toBe('MerchantReturnPolicy');
       expect(offers.hasMerchantReturnPolicy.description).toContain('doorstep inspection');
-      expect(offers.hasMerchantReturnPolicy.returnFees).toBe('https://schema.org/FreeReturn');
+      expect(offers.hasMerchantReturnPolicy.returnFees).toBeUndefined();
     });
   });
 
@@ -191,7 +191,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
 
     it('ensures all pilot items have complete, verified content contracts', () => {
       const pilotKeys = Object.keys(PILOT_ENRICHED_PRODUCTS);
-      expect(pilotKeys.length).toBeGreaterThanOrEqual(7);
+      expect(pilotKeys.length).toBeGreaterThanOrEqual(8);
 
       for (const key of pilotKeys) {
         const item = PILOT_ENRICHED_PRODUCTS[key];
@@ -209,6 +209,61 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
           expect(faq.answer).toBeTruthy();
         }
       }
+    });
+
+    it('verifies Nescafe Classic 90g Jar (ae09a3ef) evidence pack contract', () => {
+      const nescafe = getEnrichedProductData('ae09a3ef');
+      expect(nescafe).toBeDefined();
+      expect(nescafe?.slugPrefix).toBe('ae09a3ef');
+      expect(nescafe?.exactName).toBe('Nescafé Classic Instant Coffee 90g Jar');
+      expect(nescafe?.brand).toBe('Nescafé');
+      expect(nescafe?.netQuantity).toBe('90g');
+
+      // Canonical slug resolution
+      const fromSlug = getEnrichedProductData('nescafe-classic-90g-jar--ae09a3ef');
+      expect(fromSlug).toBe(nescafe);
+
+      // Identifier separation: ProductEnrichment MUST NOT contain gtin, mpn, or sku
+      // Catalog data (items.barcode, items.sku) and PR #367 own identifier schema generation
+      const nescafeRecord = nescafe as unknown as Record<string, unknown>;
+      expect(nescafeRecord.gtin).toBeUndefined();
+      expect(nescafeRecord.mpn).toBeUndefined();
+      expect(nescafeRecord.sku).toBeUndefined();
+
+      // Word count budget: strictly 120-220 words
+      const wordCount = nescafe!.summary.trim().split(/\s+/).length;
+      expect(wordCount).toBeGreaterThanOrEqual(120);
+      expect(wordCount).toBeLessThanOrEqual(220);
+
+      // Field-by-field verified claims (PACKAGING / LUCKY_STORE_POLICY)
+      expect(nescafe?.summary).toContain('100% Pure Instant Coffee');
+      expect(nescafe?.summary).toContain('Nestlé Bangladesh PLC');
+      expect(nescafe?.summary).toContain('one teaspoon');
+      expect(nescafe?.summary).toContain('150ml');
+      expect(nescafe?.summary).toContain('doorstep inspection');
+
+      // Hard gate exclusions: no unverified varietal, roast, brewing temp, serving count calculations, or negative claims
+      expect(nescafe?.summary).not.toContain('Robusta');
+      expect(nescafe?.summary).not.toContain('medium-dark');
+      expect(nescafe?.summary).not.toContain('80–85°C');
+      expect(nescafe?.summary).not.toContain('richest crema');
+      expect(nescafe?.summary).not.toContain('zero preservatives');
+      expect(nescafe?.summary).not.toContain('50 to 60');
+      expect(nescafe?.summary).not.toContain('serving estimate');
+
+      // Specifications field-by-field verification (editorial only; SKU is not in enrichment)
+      const specMap = new Map(nescafe?.specifications.map((s) => [s.label, s.value]));
+      expect(specMap.has('Store SKU')).toBe(false);
+      expect(specMap.has('Serving Estimate')).toBe(false);
+      expect(specMap.get('Product Type')).toBe('100% Pure Soluble Coffee');
+      expect(specMap.get('Marketer')).toBe('Nestlé Bangladesh PLC');
+      expect(specMap.get('Packaging Form')).toBe('Glass Jar with Plastic Screw Cap & Inner Seal');
+      expect(specMap.get('Preparation Guideline')).toBe('1 teaspoon in 150ml hot water');
+
+      // FAQs cover verified packaging facts
+      expect(nescafe?.faqs.some((f) => f.question.includes('ingredient') && f.answer.includes('100% Pure Coffee'))).toBe(true);
+      expect(nescafe?.faqs.some((f) => f.question.includes('preparation') && f.answer.includes('150ml'))).toBe(true);
+      expect(nescafe?.faqs.some((f) => f.question.includes('markets') && f.answer.includes('Nestlé Bangladesh PLC'))).toBe(true);
     });
   });
 

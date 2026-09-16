@@ -76,13 +76,16 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   const displayName = enrichment?.exactName || product.name;
   const overviewText = enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`;
 
-  // Fallback specifications when specific enrichment is not available
-  const specifications = enrichment?.specifications || [
-    ...(product.brand ? [{ label: 'Brand', value: product.brand }] : []),
-    ...(product.category ? [{ label: 'Category', value: product.category }] : []),
-    ...(product.unit ? [{ label: 'Net Quantity', value: product.unit }] : []),
-    { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
-    { label: 'Inspection Guarantee', value: '100% doorstep inspection prior to payment' },
+  // Specifications: derive catalog SKU dynamically, then append editorial or fallback specs
+  const specifications = [
+    ...(product.sku ? [{ label: 'Store SKU', value: product.sku }] : []),
+    ...(enrichment?.specifications || [
+      ...(product.brand ? [{ label: 'Brand', value: product.brand }] : []),
+      ...(product.category ? [{ label: 'Category', value: product.category }] : []),
+      ...(product.unit ? [{ label: 'Net Quantity', value: product.unit }] : []),
+      { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
+      { label: 'Inspection Guarantee', value: '100% doorstep inspection prior to payment' },
+    ]),
   ];
 
   return (
