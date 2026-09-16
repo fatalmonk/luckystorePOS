@@ -95,15 +95,16 @@ Before expanding `productEnrichment.ts` or modifying structured data, the follow
 | **Step 3: Nescafé 90g Evidence Pack** | Assemble packaging facts from physical SKU / Nestlé Bangladesh | Pending Evidence |
 | **Step 4: Coffee Enrichment Cohort** | Scale verified attributes to 45g, 180g, 200g lines without copying unsupported claims | Pending Evidence |
 | **Step 5: Structured Data Repair** | Add verified GTIN-13/12/8 validation to `ProductJsonLd.tsx` | **Complete** |
-| **Step 6: 48 Missing Descriptions** | Build reviewable dataset for 48 blank items before any DB update | Scheduled |
+| **Step 6: 48 Missing Descriptions** | Build reviewable dataset for 48 blank items before any DB update | **Intake Registered; Pending Evidence** |
 | **Step 7: Search Console Measurement** | Track impressions, indexation, and position post-crawl | Ongoing |
 
 ### Next execution gate
 
-The next implementation slice is evidence intake for the 48 active items with blank
-`items.description` values. No catalog copy or database backfill should be authored
-until each candidate has either a packaging capture or an official manufacturer
-declaration that identifies the exact SKU, pack size, and supported claims. The
-reviewable dataset should retain source URL/capture date, product UUID, current
-catalog name, category, and an explicit `PENDING_EVIDENCE` status for unresolved
-fields. This keeps registry expansion separate from unsupported inference.
+The evidence intake register now enumerates all 48 active items with blank
+`items.description` values, including their production UUID, SKU, current name,
+and category. No catalog copy or database backfill should be authored until each
+candidate has either a packaging capture or an official manufacturer declaration
+that identifies the exact SKU, pack size, and supported claims. Source URL/capture
+date and field-level claim status remain required before promotion; unresolved
+fields stay `PENDING_EVIDENCE`. This keeps registry expansion separate from
+unsupported inference.

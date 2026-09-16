@@ -118,8 +118,9 @@ All contracts are verified by automated tests in `apps/customer_storefront/app/l
 ## Post-merge continuation gate
 
 The next cohort is the 48 active catalog items with blank database descriptions.
-Expansion is gated on exact-SKU packaging or manufacturer evidence; unresolved
-fields remain `PENDING_EVIDENCE` and are not copied from neighboring products.
-The intake record must preserve the product UUID, current catalog name/category,
-source URL or capture reference, capture date, and field-level claim status before
+Their exact production UUIDs, SKUs, names, and categories are now registered in
+`catalog-enrichment-evidence-intake-2026-09-16.md`. Expansion is gated on
+exact-SKU packaging or manufacturer evidence; unresolved fields remain
+`PENDING_EVIDENCE` and are not copied from neighboring products. Source URL or
+capture reference, capture date, and field-level claim status are required before
 any database backfill is considered.
