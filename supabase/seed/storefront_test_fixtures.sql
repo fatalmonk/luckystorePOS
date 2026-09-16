@@ -53,7 +53,7 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- 4. Deterministic Products (items)
 INSERT INTO public.items (
-  id, tenant_id, name, brand, price, mrp, cost, category_id, sku, barcode, active, is_active, image_url, description
+  id, tenant_id, name, brand, price, mrp, cost, category_id, sku, barcode, is_active, image_url, description
 )
 VALUES
   (
@@ -67,7 +67,6 @@ VALUES
     'c0000000-0000-0000-0000-000000000001',
     'RICE-MIN-01',
     '894110000001',
-    true,
     true,
     '/banners/promo_welcome_v2_400.webp',
     'Freshly polished premium Miniket rice sourced from trusted local mills in Dinajpur.'
@@ -84,7 +83,6 @@ VALUES
     'MILK-AAR-01',
     '894110000002',
     true,
-    true,
     '/banners/promo_dairy_400.webp',
     'Pasteurized 100% pure whole cows milk from Aarong Dairy.'
   ),
@@ -99,7 +97,6 @@ VALUES
     'c0000000-0000-0000-0000-000000000002',
     'EGG-LAY-12',
     '894110000003',
-    true,
     true,
     '/banners/promo_dairy_400.webp',
     'Fresh farm brown layer eggs carefully graded and packed.'
@@ -116,7 +113,6 @@ VALUES
     'SNK-POT-01',
     '894110000004',
     true,
-    true,
     '/banners/promo_snacks_400.webp',
     'Classic crispy potato chips with authentic local spice seasoning.'
   ),
@@ -131,7 +127,6 @@ VALUES
     'c0000000-0000-0000-0000-000000000004',
     'CLN-VIM-01',
     '894110000005',
-    true,
     true,
     '/banners/promo_cleaning_supply_400.webp',
     'Concentrated dishwash gel with lemon grease-cutting power.'
@@ -148,7 +143,6 @@ VALUES
     'OIL-PRAN-500',
     '894110000006',
     true,
-    true,
     '/banners/promo_cooking_400.webp',
     'Pure grade-1 pungent mustard oil for traditional cooking.'
   ),
@@ -163,7 +157,6 @@ VALUES
     'c0000000-0000-0000-0000-000000000001',
     'AUTH-TEST-01',
     '894110000099',
-    true,
     true,
     '/banners/promo_welcome_v2_400.webp',
     'Deterministic test product for auth boundary and checkout test verification.'
@@ -180,7 +173,6 @@ VALUES
     'RAD-TUR-200',
     '894110000007',
     true,
-    true,
     '/banners/promo_cooking_400.webp',
     'Finely milled pure turmeric powder for cooking.'
   )
@@ -194,7 +186,6 @@ ON CONFLICT (id) DO UPDATE SET
   category_id = EXCLUDED.category_id,
   sku = EXCLUDED.sku,
   barcode = EXCLUDED.barcode,
-  active = EXCLUDED.active,
   is_active = EXCLUDED.is_active,
   image_url = EXCLUDED.image_url,
   description = EXCLUDED.description;
