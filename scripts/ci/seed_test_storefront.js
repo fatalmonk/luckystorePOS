@@ -141,7 +141,11 @@ async function runViaServiceRoleClient(url, key) {
     throw new Error(`Order cleanup failed: ${ordersCleanupError.message}`);
   }
   const { error: idempotencyCleanupError } = await supabase.from('idempotency_keys').delete().eq('tenant_id', TENANT_ID);
-  if (idempotencyCleanupError) throw new Error(`Idempotency cleanup failed: ${idempotencyCleanupError.message}`);
+  if (idempotencyCleanupError && isMissingSchemaObject(idempotencyCleanupError)) {
+    console.warn(`[Seed] Idempotency cleanup skipped: ${idempotencyCleanupError.message}`);
+  } else if (idempotencyCleanupError) {
+    throw new Error(`Idempotency cleanup failed: ${idempotencyCleanupError.message}`);
+  }
 
   // 1. Tenant
   const { error: tErr } = await supabase.from('tenants').upsert({ id: TENANT_ID, name: 'Lucky Store Test Tenant' });
