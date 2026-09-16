@@ -117,13 +117,13 @@ async function runViaServiceRoleClient(url, key) {
 
   // 3. Categories
   const categories = [
-    { id: 'c0000000-0000-0000-0000-000000000001', store_id: STORE_ID, name: 'Rice & Grains', slug: 'rice-and-grain', emoji: '🍚', active: true, display_order: 1 },
-    { id: 'c0000000-0000-0000-0000-000000000002', store_id: STORE_ID, name: 'Dairy & Eggs', slug: 'dairy-and-eggs', emoji: '🥛', active: true, display_order: 2 },
-    { id: 'c0000000-0000-0000-0000-000000000003', store_id: STORE_ID, name: 'Snacks', slug: 'snacks', emoji: '🍿', active: true, display_order: 3 },
-    { id: 'c0000000-0000-0000-0000-000000000004', store_id: STORE_ID, name: 'Cleaning Supplies', slug: 'cleaning-supplies', emoji: '🧼', active: true, display_order: 4 },
-    { id: 'c0000000-0000-0000-0000-000000000005', store_id: STORE_ID, name: 'Cooking Essentials', slug: 'cooking-essentials', emoji: '🌾', active: true, display_order: 5 },
-    { id: 'c0000000-0000-0000-0000-000000000006', store_id: STORE_ID, name: 'Beverages', slug: 'beverages', emoji: '🧃', active: true, display_order: 6 },
-    { id: 'c0000000-0000-0000-0000-000000000007', store_id: STORE_ID, name: 'Personal Care', slug: 'personal-care', emoji: '🧺', active: true, display_order: 7 },
+    { id: 'c0000000-0000-0000-0000-000000000001', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Rice & Grains', category: 'Rice & Grains', slug: 'rice-and-grain', emoji: '🍚', active: true, display_order: 1 },
+    { id: 'c0000000-0000-0000-0000-000000000002', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Dairy & Eggs', category: 'Dairy & Eggs', slug: 'dairy-and-eggs', emoji: '🥛', active: true, display_order: 2 },
+    { id: 'c0000000-0000-0000-0000-000000000003', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Snacks', category: 'Snacks', slug: 'snacks', emoji: '🍿', active: true, display_order: 3 },
+    { id: 'c0000000-0000-0000-0000-000000000004', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Cleaning Supplies', category: 'Cleaning Supplies', slug: 'cleaning-supplies', emoji: '🧼', active: true, display_order: 4 },
+    { id: 'c0000000-0000-0000-0000-000000000005', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Cooking Essentials', category: 'Cooking Essentials', slug: 'cooking-essentials', emoji: '🌾', active: true, display_order: 5 },
+    { id: 'c0000000-0000-0000-0000-000000000006', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Beverages', category: 'Beverages', slug: 'beverages', emoji: '🧃', active: true, display_order: 6 },
+    { id: 'c0000000-0000-0000-0000-000000000007', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Personal Care', category: 'Personal Care', slug: 'personal-care', emoji: '🧺', active: true, display_order: 7 },
   ];
   const { error: cErr } = await supabase.from('categories').upsert(categories, { onConflict: 'id' });
   if (cErr) throw cErr;

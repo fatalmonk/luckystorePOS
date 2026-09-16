@@ -32,18 +32,20 @@ ON CONFLICT (id) DO UPDATE SET
   code = EXCLUDED.code;
 
 -- 3. Deterministic Categories for Navigation & Filtering
-INSERT INTO public.categories (id, store_id, name, slug, emoji, active, display_order)
+INSERT INTO public.categories (id, store_id, tenant_id, name, category, slug, emoji, active, display_order)
 VALUES
-  ('c0000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Rice & Grains', 'rice-and-grain', '🍚', true, 1),
-  ('c0000000-0000-0000-0000-000000000002', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Dairy & Eggs', 'dairy-and-eggs', '🥛', true, 2),
-  ('c0000000-0000-0000-0000-000000000003', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Snacks', 'snacks', '🍿', true, 3),
-  ('c0000000-0000-0000-0000-000000000004', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Cleaning Supplies', 'cleaning-supplies', '🧼', true, 4),
-  ('c0000000-0000-0000-0000-000000000005', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Cooking Essentials', 'cooking-essentials', '🌾', true, 5),
-  ('c0000000-0000-0000-0000-000000000006', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Beverages', 'beverages', '🧃', true, 6),
-  ('c0000000-0000-0000-0000-000000000007', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'Personal Care', 'personal-care', '🧺', true, 7)
+  ('c0000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Rice & Grains', 'Rice & Grains', 'rice-and-grain', '🍚', true, 1),
+  ('c0000000-0000-0000-0000-000000000002', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Dairy & Eggs', 'Dairy & Eggs', 'dairy-and-eggs', '🥛', true, 2),
+  ('c0000000-0000-0000-0000-000000000003', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Snacks', 'Snacks', 'snacks', '🍿', true, 3),
+  ('c0000000-0000-0000-0000-000000000004', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Cleaning Supplies', 'Cleaning Supplies', 'cleaning-supplies', '🧼', true, 4),
+  ('c0000000-0000-0000-0000-000000000005', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Cooking Essentials', 'Cooking Essentials', 'cooking-essentials', '🌾', true, 5),
+  ('c0000000-0000-0000-0000-000000000006', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Beverages', 'Beverages', 'beverages', '🧃', true, 6),
+  ('c0000000-0000-0000-0000-000000000007', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Personal Care', 'Personal Care', 'personal-care', '🧺', true, 7)
 ON CONFLICT (id) DO UPDATE SET
   store_id = EXCLUDED.store_id,
+  tenant_id = EXCLUDED.tenant_id,
   name = EXCLUDED.name,
+  category = EXCLUDED.category,
   slug = EXCLUDED.slug,
   emoji = EXCLUDED.emoji,
   active = EXCLUDED.active,
