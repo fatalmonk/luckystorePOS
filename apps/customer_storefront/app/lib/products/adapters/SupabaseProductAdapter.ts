@@ -202,18 +202,34 @@ export class SupabaseProductAdapter implements ProductDataPort {
       const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
       const categoryNameMap = new Map(categories.map(c => [c.id, c.name]));
 
-      const { data: stockData } = await this.supabase
+      const { data: stockData, error: stockError } = await this.supabase
         .from('stock_levels')
         .select('qty')
         .eq('item_id', data.id)
         .eq('store_id', this.storeId)
         .maybeSingle();
 
+      // The public storefront may not be granted direct stock_levels reads.
+      // Fall back to the authoritative POS search projection so product detail
+      // pages retain the same stock state used by the homepage cards.
+      let resolvedStock = stockData?.qty ?? null;
+      if (stockError || resolvedStock === null) {
+        const { data: projectedRows } = await this.supabase.rpc('search_items_pos', {
+          p_store_id: this.storeId,
+          p_query: '',
+          p_category_id: null,
+          p_limit: 1000,
+          p_offset: 0,
+        });
+        const projected = (projectedRows ?? []).find((row: any) => (row.id ?? row.item_id) === data.id) as any;
+        resolvedStock = projected?.qty_on_hand ?? projected?.stock ?? 0;
+      }
+
       const row = {
         ...data,
         category: categoryNameMap.get(data.category_id ?? '') || '',
-        stock: stockData?.qty ?? 0,
-        qty_on_hand: stockData?.qty ?? 0,
+        stock: resolvedStock,
+        qty_on_hand: resolvedStock,
       };
 
       const validated = tryValidateProductRow(row);
