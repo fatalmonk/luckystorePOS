@@ -11,7 +11,7 @@ test.describe('Storefront homepage shell audit', () => {
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://luckystore1947.com/',
+      'https://www.luckystore1947.com/',
     );
 
     const schemas = await page.locator('script[type="application/ld+json"]').allTextContents();

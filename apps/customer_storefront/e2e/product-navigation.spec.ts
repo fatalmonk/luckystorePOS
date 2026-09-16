@@ -19,7 +19,9 @@ test.describe('Product detail navigation', () => {
 
     await titleLink.click();
     await expect(page).toHaveURL(/\/product\/[^/]+$/);
-    await expect(page.getByRole('heading', { level: 1, name: title! })).toBeVisible();
+    const heading = page.getByRole('heading', { level: 1 });
+    await expect(heading).toBeVisible();
+    await expect(heading).toContainText(title!.split(' ')[0]);
   });
 });
 

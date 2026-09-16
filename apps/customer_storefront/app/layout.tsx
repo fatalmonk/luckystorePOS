@@ -172,7 +172,6 @@ export default function RootLayout({
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               currenciesAccepted: 'BDT',
-              paymentAccepted: 'Cash, bKash',
               hasMap: 'https://maps.google.com/?cid=1342606622879549324',
               areaServed: {
                 '@type': 'GeoCircle',
