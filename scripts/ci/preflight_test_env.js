@@ -83,7 +83,7 @@ async function runPreflight() {
     p_offset: 0,
   });
   if (searchErr) throw new Error(`search_items_pos RPC check failed: ${searchErr.message}`);
-  const items = (searchData ?? []) as any[];
+  const items = searchData ?? [];
   if (items.length === 0) {
     throw new Error(`search_items_pos returned 0 items for store ${STORE_ID}. Check stock_levels association.`);
   }

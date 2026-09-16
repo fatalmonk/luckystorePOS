@@ -6,9 +6,7 @@
 
 -- 0. Deterministic Cleanup of Mutable E2E Test State
 DELETE FROM public.orders
-WHERE store_id = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'
-  AND (customer_name IN ('Isolated Test Order', 'Confirmation Test', 'Local Test')
-       OR customer_address ILIKE '%test project%');
+WHERE store_id = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 DELETE FROM public.idempotency_keys
 WHERE tenant_id = '00000000-0000-0000-0000-000000000001';
@@ -66,10 +64,10 @@ VALUES
     70.00,
     'c0000000-0000-0000-0000-000000000001',
     'RICE-MIN-01',
-    '894110000001',
+    NULL,
     true,
     '/banners/promo_welcome_v2_400.webp',
-    'Freshly polished premium Miniket rice sourced from trusted local mills in Dinajpur.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000002',
@@ -81,10 +79,10 @@ VALUES
     75.00,
     'c0000000-0000-0000-0000-000000000002',
     'MILK-AAR-01',
-    '894110000002',
+    NULL,
     true,
     '/banners/promo_dairy_400.webp',
-    'Pasteurized 100% pure whole cows milk from Aarong Dairy.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000003',
@@ -96,10 +94,10 @@ VALUES
     120.00,
     'c0000000-0000-0000-0000-000000000002',
     'EGG-LAY-12',
-    '894110000003',
+    NULL,
     true,
     '/banners/promo_dairy_400.webp',
-    'Fresh farm brown layer eggs carefully graded and packed.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000004',
@@ -111,10 +109,10 @@ VALUES
     18.00,
     'c0000000-0000-0000-0000-000000000003',
     'SNK-POT-01',
-    '894110000004',
+    NULL,
     true,
     '/banners/promo_snacks_400.webp',
-    'Classic crispy potato chips with authentic local spice seasoning.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000005',
@@ -126,10 +124,10 @@ VALUES
     100.00,
     'c0000000-0000-0000-0000-000000000004',
     'CLN-VIM-01',
-    '894110000005',
+    NULL,
     true,
     '/banners/promo_cleaning_supply_400.webp',
-    'Concentrated dishwash gel with lemon grease-cutting power.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000006',
@@ -141,10 +139,10 @@ VALUES
     150.00,
     'c0000000-0000-0000-0000-000000000005',
     'OIL-PRAN-500',
-    '894110000006',
+    NULL,
     true,
     '/banners/promo_cooking_400.webp',
-    'Pure grade-1 pungent mustard oil for traditional cooking.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000099',
@@ -156,10 +154,10 @@ VALUES
     80.00,
     'c0000000-0000-0000-0000-000000000001',
     'AUTH-TEST-01',
-    '894110000099',
+    NULL,
     true,
     '/banners/promo_welcome_v2_400.webp',
-    'Deterministic test product for auth boundary and checkout test verification.'
+    'Deterministic storefront E2E fixture.'
   ),
   (
     'a0740000-0000-0000-0000-000000000007',
@@ -171,10 +169,10 @@ VALUES
     75.00,
     'c0000000-0000-0000-0000-000000000005',
     'RAD-TUR-200',
-    '894110000007',
+    NULL,
     true,
     '/banners/promo_cooking_400.webp',
-    'Finely milled pure turmeric powder for cooking.'
+    'Deterministic storefront E2E fixture.'
   )
 ON CONFLICT (id) DO UPDATE SET
   tenant_id = EXCLUDED.tenant_id,
