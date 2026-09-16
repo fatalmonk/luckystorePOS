@@ -9,6 +9,9 @@ import { CategoryGridSkeleton } from '../components/CategoryGridSkeleton';
 import { HeroBanner } from '../components/updated/HeroBanner';
 import type { Product, Category, CategoryGroup } from '../lib/types';
 import { img, srcSet, responsiveHeroBanner } from '../lib/imageUrl';
+import type { Locale } from '../lib/i18n/config';
+import { withLocale } from '../lib/i18n/config';
+import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
 
 interface CategoryShellProps {
   categorySlug: string;
@@ -20,6 +23,7 @@ interface CategoryShellProps {
   theme: string;
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
+  locale?: Locale;
 }
 
 const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: any }> = {
@@ -100,19 +104,28 @@ export function CategoryShell({
   theme,
   sort,
   searchParams,
+  locale = 'en',
 }: CategoryShellProps) {
+  const isBn = locale === 'bn';
   const isAllProducts = categorySlug === 'all';
   const catObj = categories.find((c) => c.slug === categorySlug);
-  const prettyName =
+  const rawPrettyName =
     catObj?.name ||
     categorySlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const prettyName = isBn
+    ? (BENGALI_CATEGORY_NAMES[categorySlug] || (group?.slug && BENGALI_CATEGORY_NAMES[group.slug]) || rawPrettyName)
+    : rawPrettyName;
 
-  const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || {
+  const defaultBanner = {
     title: prettyName,
-    subtitle: `Explore top quality ${prettyName.toLowerCase()} products delivered directly to your home.`,
-    badge: 'Lucky Choice',
+    subtitle: isBn
+      ? `আপনার ঘরে পৌঁছে দেওয়া হচ্ছে সেরা মানের ${prettyName} পণ্য।`
+      : `Explore top quality ${prettyName.toLowerCase()} products delivered directly to your home.`,
+    badge: isBn ? 'লাকি চয়েস' : 'Lucky Choice',
     bgImage: responsiveHeroBanner('hero_grocery_banner', prettyName),
   };
+
+  const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || defaultBanner;
 
   return (
     <>
@@ -120,19 +133,19 @@ export function CategoryShell({
       <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
         {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (
           <Suspense fallback={<CategoryGridSkeleton />}>
-            <CategoryGrid searchParams={searchParams} />
+            <CategoryGrid searchParams={searchParams} locale={locale} />
           </Suspense>
         ) : (
           <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
             <div className="space-y-4">
               {parentGroup && !group && (
                 <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
-                  <Link href="/category" className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-                    Categories
+                  <Link href={withLocale('/category', locale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
+                    {isBn ? 'ক্যাটাগরি' : 'Categories'}
                   </Link>
                   <span>/</span>
-                  <Link href={`/category/${parentGroup.slug}`} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-                    {parentGroup.label}
+                  <Link href={withLocale(`/category/${parentGroup.slug}`, locale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
+                    {isBn ? (BENGALI_CATEGORY_NAMES[parentGroup.slug] || parentGroup.label) : parentGroup.label}
                   </Link>
                   <span>/</span>
                   <span className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">{prettyName}</span>
@@ -142,9 +155,9 @@ export function CategoryShell({
                 slides={[
                   {
                     image: bannerConfig.bgImage,
-                    title: bannerConfig.title,
-                    subtitle: bannerConfig.subtitle,
-                    badge: bannerConfig.badge,
+                    title: isBn ? prettyName : bannerConfig.title,
+                    subtitle: isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle,
+                    badge: isBn ? 'বিশেষ অফার' : bannerConfig.badge,
                   },
                 ]}
               />
@@ -159,12 +172,13 @@ export function CategoryShell({
               theme={theme}
               sort={sort}
               searchParams={searchParams}
+              locale={locale}
             />
           </div>
         )}
-        <Footer />
+        <Footer locale={locale} />
       </main>
-      <BottomNav />
+      <BottomNav locale={locale} />
     </>
   );
 }

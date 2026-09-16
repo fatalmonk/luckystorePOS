@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Header } from '../components/updated/Header';
-import { Footer } from '../components/updated/Footer';
-import { BottomNav } from '../components/BottomNav';
+import { HomeShell } from '../components/HomeShell';
+import { getHomePageData } from '../lib/products/getHomePageData';
+import { img, srcSet } from '../lib/imageUrl';
+import { toProductSlug } from '../lib/products/slugify';
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার | Lucky Store',
-  description: 'চট্টগ্রামে Lucky Store থেকে দৈনন্দিন বাজারের পণ্য অনলাইনে অর্ডার করুন।',
+  description: 'চট্টগ্রামে Lucky Store থেকে দৈনন্দিন বাজারের পণ্য অনলাইনে অর্ডার করুন। চকবাজার থেকে ১ কিমির মধ্যে ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি ও ক্যাশ অন ডেলিভারি।',
   alternates: {
     canonical: 'https://luckystore1947.com/bn',
     languages: {
@@ -30,21 +32,58 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BengaliHomePage() {
+export default async function BengaliHomePage() {
+  const data = await getHomePageData('bn');
+
+  // Preload primary campaign hero image (LCP element)
+  const primaryHeroAvif = img('/banners/promo_welcome_v2_1200.avif');
+  const primaryHeroSrcSet = srcSet(
+    '/banners/promo_welcome_v2_400.avif 400w, /banners/promo_welcome_v2_600.avif 600w, /banners/promo_welcome_v2_800.avif 800w, /banners/promo_welcome_v2_1200.avif 1200w'
+  );
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': 'https://luckystore1947.com/#website',
+    url: 'https://luckystore1947.com/bn',
+    name: 'Lucky Store (লাকি স্টোর)',
+    alternateName: ['Lucky Store 1947', 'লাকি স্টোর', 'Lucky Store Chattogram'],
+    description: 'লাকি স্টোর চট্টগ্রামে নিত্যপ্রয়োজনীয় মুদি বাজার, স্ন্যাক্স, ডেইরি ও গৃহস্থালী পণ্য স্থানীয় হোম ডেলিভারি ও ক্যাশ অন ডেলিভারিতে সরবরাহ করে।',
+  };
+  const productListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'লাকি স্টোরের জনপ্রিয় পণ্যসমূহ',
+    itemListElement: data.featuredProducts.map((product, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: product.name,
+      url: `https://luckystore1947.com/bn/product/${toProductSlug(product.name, product.id)}`,
+    })),
+  };
+
   return (
     <>
-      <Header />
-      <main className="mx-auto flex min-h-[calc(100vh-8rem)] max-w-4xl flex-col justify-center px-6 py-24 text-center">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-warm-muted">Lucky Store</p>
-        <h1 className="mt-4 text-3xl font-extrabold text-warm-fg sm:text-5xl">চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার</h1>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-warm-muted">চকবাজার থেকে ১ কিমির মধ্যে দৈনন্দিন বাজারের পণ্য অর্ডার করুন। ৳৫০০ বা তার বেশি অর্ডারে ফ্রি ডেলিভারি, সঙ্গে ক্যাশ অন ডেলিভারি ও bKash।</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/bn/category/rice-and-grain" className="inline-flex min-h-12 items-center rounded-full bg-warm-accent px-6 font-bold text-black">চাল ও শস্য দেখুন</Link>
-          <Link href="/bn/delivery" className="inline-flex min-h-12 items-center rounded-full border border-warm-border px-6 font-bold text-warm-fg">ডেলিভারি তথ্য</Link>
-        </div>
-      </main>
-      <Footer />
-      <BottomNav />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c') }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd).replace(/</g, '\\u003c') }}
+      />
+      <link
+        rel="preload"
+        as="image"
+        href={primaryHeroAvif}
+        imageSrcSet={primaryHeroSrcSet}
+        imageSizes="100vw"
+        type="image/avif"
+        fetchPriority="high"
+      />
+      <HomeShell
+        {...data}
+        locale="bn"
+      />
     </>
   );
 }

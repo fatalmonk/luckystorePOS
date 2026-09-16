@@ -12,10 +12,16 @@ import { Logo } from '../ui/Logo';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { useTheme } from '../providers/ThemeProvider';
 import { getCategoryIcon } from '../icons/CategoryIcons';
+import { getLocaleFromPathname, withLocale, type Locale } from '../../lib/i18n/config';
+import { getDictionary } from '../../lib/i18n/dictionaries';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
+
+
 
 export interface HeaderProps {
   className?: string;
+  locale?: Locale;
 }
 
 export interface CategoryOption {
@@ -24,14 +30,14 @@ export interface CategoryOption {
   emoji: string;
 }
 
-const PROMO_TEXT = 'Free doorstep delivery across Chittagong on orders over ৳500';
-
-export function Header({ className = '' }: HeaderProps) {
+export function Header({ className = '', locale }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const currentLocale = locale ?? getLocaleFromPathname(pathname);
+  const dict = getDictionary(currentLocale);
   const isFilterPage = pathname?.startsWith('/category') ?? false;
-  const isHomePage = pathname === '/';
+  const isHomePage = pathname === '/' || pathname === '/bn';
   const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
     pathname?.startsWith(path),
   );
@@ -45,7 +51,8 @@ export function Header({ className = '' }: HeaderProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [popularSearches] = useState<string[]>(['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bread']);
+  const popularSearches = dict.header.popularSearches as unknown as string[];
+
 
   const mobileOverlaySearchRef = useRef<HTMLDivElement>(null);
   const mobileInlineSearchRef = useRef<HTMLFormElement>(null);
@@ -125,20 +132,21 @@ export function Header({ className = '' }: HeaderProps) {
       setShowSuggestions(false);
       setIsMobileSearchOpen(false);
       if (selectedCategory && selectedCategory !== 'all') {
-        router.push(`/category/${encodeURIComponent(selectedCategory)}?q=${encodeURIComponent(trimmed)}`);
+        router.push(withLocale(`/category/${encodeURIComponent(selectedCategory)}?q=${encodeURIComponent(trimmed)}`, currentLocale));
       } else {
-        router.push(`/category?q=${encodeURIComponent(trimmed)}`);
+        router.push(withLocale(`/category?q=${encodeURIComponent(trimmed)}`, currentLocale));
       }
     } else if (selectedCategory && selectedCategory !== 'all') {
       setShowSuggestions(false);
       setIsMobileSearchOpen(false);
-      router.push(`/category/${encodeURIComponent(selectedCategory)}`);
+      router.push(withLocale(`/category/${encodeURIComponent(selectedCategory)}`, currentLocale));
     } else {
       setShowSuggestions(false);
       setIsMobileSearchOpen(false);
-      router.push('/category');
+      router.push(withLocale('/category', currentLocale));
     }
   };
+
 
   // Early return for mobile search overlay state
   if (isMobileSearchOpen) {
@@ -166,16 +174,16 @@ export function Header({ className = '' }: HeaderProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="What are you shopping for today?…"
+              placeholder={dict.header.searchPlaceholder}
               className="h-12 w-full rounded-full border border-warm-border bg-warm-surface pl-5 pr-14 text-base font-medium text-warm-fg shadow-inner transition-colors placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent/40"
-              aria-label="Search products"
+              aria-label={currentLocale === 'bn' ? 'পণ্য খুঁজুন' : 'Search products'}
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-14 top-0.5 flex h-11 w-11 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-                aria-label="Clear search query"
+                aria-label={dict.header.clear}
               >
                 <X weight="bold" size={14} aria-hidden="true" />
               </button>
@@ -183,7 +191,7 @@ export function Header({ className = '' }: HeaderProps) {
             <button
               type="submit"
               className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-warm-image-well font-bold text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-              aria-label="Submit search"
+              aria-label={currentLocale === 'bn' ? 'অনুসন্ধান করুন' : 'Submit search'}
             >
               <ArrowRight weight="bold" size={18} aria-hidden="true" />
             </button>
@@ -198,7 +206,7 @@ export function Header({ className = '' }: HeaderProps) {
                 setSearchQuery(term);
                 setShowSuggestions(false);
                 setIsMobileSearchOpen(false);
-                router.push(`/category?q=${encodeURIComponent(term)}`);
+                router.push(withLocale(`/category?q=${encodeURIComponent(term)}`, currentLocale));
               }}
               onClose={() => {
                 setShowSuggestions(false);
@@ -206,6 +214,7 @@ export function Header({ className = '' }: HeaderProps) {
               }}
             />
           )}
+
         </div>
       </header>
     );
@@ -234,7 +243,7 @@ export function Header({ className = '' }: HeaderProps) {
             <List weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" />
+          <Logo className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
@@ -271,7 +280,7 @@ export function Header({ className = '' }: HeaderProps) {
             <List weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo ml-0.5 translate-y-0.5 lg:h-14 lg:w-auto" />
+          <Logo className="header-brand-logo ml-0.5 translate-y-0.5 lg:h-14 lg:w-auto" locale={currentLocale} />
         </div>
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
@@ -286,16 +295,16 @@ export function Header({ className = '' }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="What are you shopping for today?…"
+                placeholder={dict.header.searchPlaceholder}
                 className="h-11 w-full bg-transparent pl-4 pr-12 text-sm font-medium text-warm-fg outline-none placeholder:text-warm-muted"
-                aria-label="Search products"
+                aria-label={currentLocale === 'bn' ? 'পণ্য খুঁজুন' : 'Search products'}
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
                   className="absolute right-2 top-0.5 flex h-10 w-10 items-center justify-center text-warm-muted hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-                  aria-label="Clear search"
+                  aria-label={dict.header.clear}
                 >
                   <X weight="bold" size={14} aria-hidden="true" />
                 </button>
@@ -306,7 +315,7 @@ export function Header({ className = '' }: HeaderProps) {
             <button
               type="submit"
               className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-[background-color,transform] hover:bg-warm-bg motion-safe:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-              aria-label="Submit search"
+              aria-label={currentLocale === 'bn' ? 'অনুসন্ধান করুন' : 'Submit search'}
             >
               <ArrowRight weight="bold" size={16} aria-hidden="true" />
             </button>
@@ -321,7 +330,7 @@ export function Header({ className = '' }: HeaderProps) {
               onSelect={(term: string) => {
                 setSearchQuery(term);
                 setShowSuggestions(false);
-                router.push(`/category?q=${encodeURIComponent(term)}`);
+                router.push(withLocale(`/category?q=${encodeURIComponent(term)}`, currentLocale));
               }}
               onClose={() => setShowSuggestions(false)}
             />
@@ -336,17 +345,17 @@ export function Header({ className = '' }: HeaderProps) {
             type="button"
             onClick={toggleTheme}
             className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? dict.header.themeLight : dict.header.themeDark}
           >
             {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
           </button>
 
           {/* Wishlist Link */}
           <Link
-            href="/wishlist"
-              prefetch={false}
+            href={withLocale('/wishlist', currentLocale)}
+            prefetch={false}
             className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
-            aria-label="Wishlist"
+            aria-label={dict.footer.wishlist}
           >
             <Heart weight="bold" size={20} aria-hidden="true" />
           </Link>
@@ -361,7 +370,7 @@ export function Header({ className = '' }: HeaderProps) {
         <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 lg:hidden">
           <nav className="flex flex-nowrap items-center overflow-x-auto h-[44px] gap-1.5 scrollbar-hide py-0.5" aria-label="Categories">
             <Link
-              href="/category"
+              href={withLocale('/category', currentLocale)}
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
               className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
@@ -369,14 +378,15 @@ export function Header({ className = '' }: HeaderProps) {
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
               }`}
             >
-              All
+              {dict.header.allCategories}
             </Link>
             {CATEGORY_GROUPS.map((group) => {
               const isActive = !activeCatalogTheme && selectedCategory === group.slug;
+              const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[group.slug] || group.label) : group.label;
               return (
                 <Link
                   key={group.slug}
-                  href={`/category/${group.slug}`}
+                  href={withLocale(`/category/${group.slug}`, currentLocale)}
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                     isActive
@@ -384,7 +394,7 @@ export function Header({ className = '' }: HeaderProps) {
                       : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
                   }`}
                 >
-                  {group.label}
+                  {label}
                 </Link>
               );
             })}
@@ -400,7 +410,7 @@ export function Header({ className = '' }: HeaderProps) {
             className="flex h-full items-center gap-2 overflow-x-auto px-6 pr-16 scrollbar-hide"
           >
             <Link
-              href="/category"
+              href={withLocale('/category', currentLocale)}
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
               className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
@@ -408,14 +418,15 @@ export function Header({ className = '' }: HeaderProps) {
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
               }`}
             >
-              All
+              {dict.header.allCategories}
             </Link>
             {CATEGORY_GROUPS.map((group) => {
               const isActive = !activeCatalogTheme && selectedCategory === group.slug;
+              const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[group.slug] || group.label) : group.label;
               return (
                 <Link
                   key={group.slug}
-                  href={`/category/${group.slug}`}
+                  href={withLocale(`/category/${group.slug}`, currentLocale)}
                   aria-current={isActive ? 'page' : undefined}
                   className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                     isActive
@@ -423,11 +434,12 @@ export function Header({ className = '' }: HeaderProps) {
                       : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
                   }`}
                 >
-                  {group.label}
+                  {label}
                 </Link>
               );
             })}
           </nav>
+
           <button
             type="button"
             onClick={() => {

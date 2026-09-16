@@ -12,6 +12,15 @@ export function stripLocalePrefix(pathname: string): string {
 }
 
 export function withLocale(pathname: string, locale: Locale): string {
+  if (!pathname || pathname.startsWith('http://') || pathname.startsWith('https://') || pathname.startsWith('//') || pathname.startsWith('#') || pathname.startsWith('mailto:') || pathname.startsWith('tel:')) {
+    return pathname;
+  }
   const cleanPath = stripLocalePrefix(pathname);
   return locale === 'bn' ? `/bn${cleanPath === '/' ? '' : cleanPath}` : cleanPath;
+}
+
+const BENGALI_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+export function toBengaliNumerals(val: number | string): string {
+  return String(val).replace(/[0-9]/g, (digit) => BENGALI_DIGITS[Number(digit)] ?? digit);
 }

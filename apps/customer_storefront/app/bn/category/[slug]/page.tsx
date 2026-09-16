@@ -1,81 +1,250 @@
+import React from 'react';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { Header } from '../../../components/updated/Header';
-import { Footer } from '../../../components/updated/Footer';
-import { BottomNav } from '../../../components/BottomNav';
-import { GridProductCard } from '../../../components/GridProductCard';
+import { CategoryShell } from '../../../category/CategoryShell';
 import { createProductRepository } from '../../../lib/products/index';
-import { supabase } from '../../../lib/supabase';
 import { getCachedCategories } from '../../../lib/products/getCachedCategories';
+import { supabase } from '../../../lib/supabase';
+import { getSingleParam } from '../../../lib/utils';
+import { getCategoryGroup, getParentGroup, normalizeCategorySlug } from '../../../lib/types';
 import { resolveCanonicalCategory } from '../../../lib/categoryResolution';
+import type { CategoryGroup } from '../../../lib/types';
+import type { Product } from '../../../lib/products/types';
+import { BENGALI_CATEGORY_NAMES } from '../../../lib/products/getHomePageData';
 
-const CATEGORY_COPY: Record<string, { title: string; description: string; query: string }> = {
-  'rice-and-grain': { title: 'চাল ও শস্য', description: 'মিনিকেট, নাজিরশাইল ও চিনিগুঁড়া চালের বর্তমান পণ্য দেখুন।', query: 'rice' },
-  'oil-and-ghee': { title: 'তেল ও ঘি', description: 'সয়াবিন তেল, সরিষার তেল ও ঘি অনলাইনে দেখুন।', query: 'oil' },
-  'cooking-essentials': { title: 'রান্নার প্রয়োজনীয় পণ্য', description: 'ডাল, মসলা, আটা, ময়দা, লবণ ও চিনি দেখুন।', query: 'cooking' },
-  'tea-and-coffee': { title: 'চা ও কফি', description: 'ইস্পাহানি, তাজা চা ও কফির পণ্য দেখুন।', query: 'tea' },
-  breakfast: { title: 'সকালের নাস্তা', description: 'ডিম, দুধ ও সকালের নাস্তার পণ্য দেখুন।', query: 'breakfast' },
+export const dynamic = 'force-dynamic';
+
+const BENGALI_CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  'rice-and-grain': 'মিনিকেট, নাজিরশাইল ও চিনিগুঁড়া চালের বর্তমান বাজারদর দেখুন।',
+  'oil-and-ghee': 'সয়াবিন তেল, সরিষার তেল ও ঘি অনলাইনে কিনুন।',
+  'cooking-essentials': 'ডাল, মসলা, আটা, ময়দা, লবণ ও চিনির সেরা পণ্য।',
+  'tea-and-coffee': 'ইস্পাহানি, তাজা চা ও কফির আসল পণ্য।',
+  breakfast: 'ডিম, দুধ ও সকালের পুষ্টিকর নাস্তার পণ্য।',
+  snacks: 'নাস্তা, বিস্কুট ও চানাচুরের সেরা কালেকশন।',
+  'personal-care': 'সাবান, শ্যাম্পু ও ব্যক্তিগত পরিচ্ছন্নতার প্রসাধন।',
+  'cleaning-supplies': 'ঘরের পরিষ্কার-পরিচ্ছন্নতার নিত্যপ্রয়োজনীয় জিনিস।',
+  household: 'ঘরের টুকিটাকি সামগ্রী ও গৃহস্থালি পণ্য।',
+  'baby-care': 'শিশুর খাবার ও ডায়াপারের যত্নশীল কালেকশন।',
 };
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
-  const copy = CATEGORY_COPY[slug];
-  if (!copy) notFound();
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const resolvedSearch = await searchParams;
+  let categorySlug: string;
+  try {
+    categorySlug = decodeURIComponent(resolvedParams.slug);
+  } catch {
+    notFound();
+  }
+  const categories = await getCachedCategories();
+  const { canonicalSlug, group, currentCatObj } = resolveCanonicalCategory(categorySlug, categories);
+
+  if (!canonicalSlug) {
+    notFound();
+  }
+
+  if (categorySlug !== canonicalSlug) {
+    const p = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedSearch)) {
+      if (typeof value === 'string') p.set(key, value);
+      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
+    }
+    const qs = p.toString();
+    permanentRedirect(qs ? `/bn/category/${canonicalSlug}?${qs}` : `/bn/category/${canonicalSlug}`);
+  }
+
+  const hasFilters = Object.values(resolvedSearch).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value),
+  );
+
+  const rawTitleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const titleName = BENGALI_CATEGORY_NAMES[canonicalSlug] || (group?.slug && BENGALI_CATEGORY_NAMES[group.slug]) || rawTitleName;
+  const description = BENGALI_CATEGORY_DESCRIPTIONS[canonicalSlug] || `${titleName} অনলাইনে কিনুন লাকি স্টোর চট্টগ্রাম থেকে। ক্যাশ অন ডেলিভারি এবং দ্রুত হোম ডেলিভারি।`;
+
   return {
-    title: `${copy.title} | Lucky Store`,
-    description: `${copy.description} চট্টগ্রামে ক্যাশ অন ডেলিভারিতে অর্ডার করুন।`,
-    robots: { index: false, follow: true },
+    title: `${titleName} | লাকি স্টোর চট্টগ্রাম`,
+    description,
+    openGraph: {
+      title: `${titleName} | লাকি স্টোর`,
+      description,
+      url: `https://luckystore1947.com/bn/category/${canonicalSlug}`,
+      siteName: 'লাকি স্টোর',
+      locale: 'bn_BD',
+      type: 'website',
+    },
+    robots: hasFilters ? {
+      index: false,
+      follow: true,
+    } : undefined,
     alternates: {
-      canonical: `https://luckystore1947.com/bn/category/${slug}`,
+      canonical: `https://luckystore1947.com/bn/category/${canonicalSlug}`,
       languages: {
-        'en-BD': `https://luckystore1947.com/category/${slug}`,
-        'bn-BD': `https://luckystore1947.com/bn/category/${slug}`,
-        'x-default': `https://luckystore1947.com/category/${slug}`,
+        'en-BD': `https://luckystore1947.com/category/${canonicalSlug}`,
+        'bn-BD': `https://luckystore1947.com/bn/category/${canonicalSlug}`,
+        'x-default': `https://luckystore1947.com/category/${canonicalSlug}`,
       },
     },
   };
 }
 
-export default async function BengaliCategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const copy = CATEGORY_COPY[slug];
-  if (!copy) notFound();
+export default async function BengaliCategorySlugPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedParams = await params;
+  const resolvedSearch = await searchParams;
+  const rawCategories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const categories = await getCachedCategories();
-  const { currentCatObj } = resolveCanonicalCategory(slug, categories);
-  const { products: catalogProducts } = await repo.search({
-    categoryId: currentCatObj?.id,
-    query: currentCatObj?.id ? undefined : copy.query,
-    limit: 24,
-  });
-  const productIds = catalogProducts.map((product) => product.id);
+  let categorySlug: string;
+  try {
+    categorySlug = decodeURIComponent(resolvedParams.slug);
+  } catch {
+    notFound();
+  }
+  const { canonicalSlug, group: initialGroup, currentCatObj } = resolveCanonicalCategory(categorySlug, rawCategories);
+
+  if (!canonicalSlug) {
+    notFound();
+  }
+
+  if (categorySlug !== canonicalSlug) {
+    const p = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedSearch)) {
+      if (typeof value === 'string') p.set(key, value);
+      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
+    }
+    const qs = p.toString();
+    permanentRedirect(qs ? `/bn/category/${canonicalSlug}?${qs}` : `/bn/category/${canonicalSlug}`);
+  }
+
+  let group = initialGroup;
+
+  // Dynamically treat root categories with child categories as groups
+  if (!group && currentCatObj) {
+    const childCats = rawCategories.filter((c) => (c.parentId ?? c.parent_id) === currentCatObj.id);
+    if (childCats.length > 0) {
+      group = {
+        slug: currentCatObj.slug,
+        label: BENGALI_CATEGORY_NAMES[currentCatObj.slug] || currentCatObj.name,
+        emoji: currentCatObj.emoji,
+        subCategories: childCats.map((c) => c.slug),
+      };
+    }
+  }
+
+  // Resolve parent group if this is a subcategory
+  let parentGroup: CategoryGroup | undefined;
+  if (!group) {
+    parentGroup = getParentGroup(canonicalSlug);
+    const parentId = currentCatObj?.parentId ?? currentCatObj?.parent_id;
+    if (!parentGroup && parentId) {
+      const parentCatObj = rawCategories.find((c) => c.id === parentId);
+      if (parentCatObj) {
+        parentGroup = getCategoryGroup(parentCatObj.slug) || {
+          slug: parentCatObj.slug,
+          label: BENGALI_CATEGORY_NAMES[parentCatObj.slug] || parentCatObj.name,
+          emoji: parentCatObj.emoji,
+          subCategories: [canonicalSlug],
+        };
+      }
+    }
+  }
+
+  const currentCat = canonicalSlug;
+  const searchTerm = getSingleParam(resolvedSearch.q) || getSingleParam(resolvedSearch.search);
+  const theme = getSingleParam(resolvedSearch.theme);
+  const sort = getSingleParam(resolvedSearch.sort) || 'best';
+
+  let rawProducts: Product[] = [];
+  try {
+    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(canonicalSlug);
+    if (isGroupRoot) {
+      const subCatIds = rawCategories
+        .filter((c) => {
+          const normC = normalizeCategorySlug(c.slug);
+          return group!.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
+        })
+        .map((c) => c.id);
+      if (currentCatObj && !subCatIds.includes(currentCatObj.id)) {
+        subCatIds.push(currentCatObj.id);
+      }
+      const result = await repo.search({
+        query: searchTerm || undefined,
+        categoryIds: subCatIds.length > 0 ? subCatIds : undefined,
+        limit: 500,
+      });
+      rawProducts = result.products as any[];
+    } else if (currentCatObj?.id) {
+      const result = await repo.search({
+        query: searchTerm || undefined,
+        categoryId: currentCatObj.id,
+        limit: 200,
+      });
+      rawProducts = result.products as any[];
+
+      if (rawProducts.length === 0 && !searchTerm) {
+        const fallbackResult = await repo.search({
+          query: currentCatObj.name || canonicalSlug.replace(/-/g, ' '),
+          limit: 200,
+        });
+        rawProducts = fallbackResult.products as any[];
+      }
+    } else {
+      const result = await repo.search({
+        query: searchTerm || canonicalSlug.replace(/-/g, ' '),
+        limit: 200,
+      });
+      rawProducts = result.products as any[];
+    }
+  } catch (err) {
+    console.error('Failed to fetch Bengali category products:', err);
+  }
+
+  // Overlay Bengali translations
+  const productIds = rawProducts.map((product) => product.id);
   const { data: translations } = productIds.length
-    ? await supabase
+    ? await (supabase as any)
         .from('item_translations')
         .select('item_id, name, description')
         .in('item_id', productIds)
         .eq('locale', 'bn')
         .eq('review_status', 'published')
     : { data: [] };
-  const translationMap = new Map((translations ?? []).map((translation) => [translation.item_id, translation]));
-  const products = catalogProducts.map((product) => {
-    const translation = translationMap.get(product.id);
+
+  const translationMap = new Map((translations ?? []).map((t: any) => [t.item_id, t]));
+  const products = rawProducts.map((product) => {
+    const translation: any = translationMap.get(product.id);
     return translation
-      ? { ...product, name: translation.name, description: translation.description || product.description }
+      ? { ...product, name: translation.name?.trim() || product.name, description: translation.description?.trim() || product.description }
       : product;
   });
+
+  const categories = (rawCategories ?? []).map((c) => ({
+    ...c,
+    name: BENGALI_CATEGORY_NAMES[c.slug] || c.name,
+  }));
+
   return (
-    <>
-      <Header />
-      <main className="mx-auto max-w-7xl px-6 py-24">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-warm-muted">Lucky Store</p>
-        <h1 className="mt-3 text-3xl font-black text-warm-fg sm:text-5xl">{copy.title}</h1>
-        <p className="mt-3 max-w-2xl text-lg leading-8 text-warm-muted">{copy.description} চকবাজার থেকে ১ কিমির মধ্যে ডেলিভারি পাওয়া যায়।</p>
-        {products.length ? <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{products.map((product, index) => <GridProductCard key={product.id} product={product} locale="bn" linkName={catalogProducts[index].name} listId={`bn-${slug}`} listName={copy.title} index={index} />)}</div> : <p className="mt-10 rounded-2xl border border-warm-border p-6 text-warm-muted">এই বিভাগে এখন কোনো পণ্য পাওয়া যায়নি।</p>}
-        <p className="mt-8 text-sm text-warm-muted">মূল্য, স্টক ও পণ্যের তথ্য আমাদের একই ক্যাটালগ থেকে আসে।</p>
-      </main>
-      <Footer />
-      <BottomNav />
-    </>
+    <CategoryShell
+      categorySlug={canonicalSlug}
+      currentCat={currentCat}
+      group={group}
+      parentGroup={parentGroup}
+      categories={categories}
+      products={products}
+      theme={theme}
+      sort={sort}
+      searchParams={resolvedSearch}
+      locale="bn"
+    />
   );
 }

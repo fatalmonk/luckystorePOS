@@ -2,9 +2,13 @@ import Link from 'next/link';
 import { ArrowRight, MagnifyingGlass, Fire, Star, Package } from '@phosphor-icons/react/dist/ssr';
 import { CATEGORY_GROUPS, type CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
+import type { Locale } from '../lib/i18n/config';
+import { withLocale } from '../lib/i18n/config';
+import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
 
 interface CategoryGridProps {
   searchParams?: Record<string, string | string[] | undefined>;
+  locale?: Locale;
 }
 
 interface FeaturedChip {
@@ -31,17 +35,18 @@ function FeaturedCollection({ href, label, icon, variant }: FeaturedChip) {
   );
 }
 
-function CategoryTile({ group }: { group: CategoryGroup }) {
+function CategoryTile({ group, locale = 'en' }: { group: CategoryGroup; locale?: Locale }) {
+  const label = locale === 'bn' ? (BENGALI_CATEGORY_NAMES[group.slug] || group.label) : group.label;
   return (
     <Link
-      href={`/category/${group.slug}`}
+      href={withLocale(`/category/${group.slug}`, locale)}
       className="group relative flex flex-col items-center justify-center gap-3 rounded-2xl border border-warm-border/60 bg-warm-surface p-4 shadow-warm-sm transition-all duration-200 hover:-translate-y-1 hover:border-warm-accent hover:shadow-warm-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent active:scale-[0.96] min-h-[120px] sm:min-h-[140px]"
     >
       <span className="text-warm-fg" aria-hidden="true">
         {getCategoryIcon(group.slug, 36)}
       </span>
       <span className="text-center text-xs font-extrabold leading-tight text-warm-fg sm:text-sm">
-        {group.label}
+        {label}
       </span>
       <ArrowRight
         weight="bold"
@@ -53,8 +58,9 @@ function CategoryTile({ group }: { group: CategoryGroup }) {
   );
 }
 
-export function CategoryGrid({ searchParams }: CategoryGridProps) {
+export function CategoryGrid({ searchParams, locale = 'en' }: CategoryGridProps) {
   const searchQuery = typeof searchParams?.q === 'string' ? searchParams.q : undefined;
+  const isBn = locale === 'bn';
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
@@ -62,15 +68,15 @@ export function CategoryGrid({ searchParams }: CategoryGridProps) {
       <div className="space-y-4">
         <div className="space-y-1">
           <h1 className="font-display text-xl font-black tracking-tight text-warm-fg sm:text-2xl">
-            Browse Categories
+            {isBn ? 'সব ক্যাটাগরি' : 'Browse Categories'}
           </h1>
           <p className="text-sm text-warm-muted">
-            Find everyday essentials by category at Lucky Store.
+            {isBn ? 'লাকি স্টোরের বিভাগ অনুযায়ী নিত্যপ্রয়োজনীয় পণ্য খুঁজে নিন।' : 'Find everyday essentials by category at Lucky Store.'}
           </p>
         </div>
 
         <form
-          action="/category"
+          action={withLocale('/category', locale)}
           method="GET"
           className="relative"
           role="search"
@@ -79,9 +85,9 @@ export function CategoryGrid({ searchParams }: CategoryGridProps) {
             type="text"
             name="q"
             defaultValue={searchQuery}
-            placeholder="Search products, brands, essentials..."
+            placeholder={isBn ? 'পণ্য, ব্র্যান্ড ও প্রয়োজনীয় জিনিস খুঁজুন...' : 'Search products, brands, essentials...'}
             className="h-12 w-full rounded-full border border-warm-border bg-warm-surface pl-12 pr-4 text-sm font-semibold text-warm-fg shadow-warm-sm outline-none placeholder:text-warm-muted focus:border-warm-accent focus:ring-2 focus:ring-warm-accent/20"
-            aria-label="Search products"
+            aria-label={isBn ? 'পণ্য খুঁজুন' : 'Search products'}
           />
           <MagnifyingGlass
             weight="bold"
@@ -95,24 +101,24 @@ export function CategoryGrid({ searchParams }: CategoryGridProps) {
       {/* Featured collections strip */}
       <div className="space-y-2">
         <span className="text-[11px] font-extrabold uppercase tracking-wider text-warm-muted">
-          Featured Collections
+          {isBn ? 'বিশেষ কালেকশন' : 'Featured Collections'}
         </span>
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
           <FeaturedCollection
-            href="/category"
-            label="All Products"
+            href={withLocale('/category', locale)}
+            label={isBn ? 'সব পণ্য' : 'All Products'}
             icon={<Package weight="fill" size={16} />}
             variant="primary"
           />
           <FeaturedCollection
-            href="/category?theme=deals"
-            label="Hot Deals"
+            href={withLocale('/category?theme=deals', locale)}
+            label={isBn ? 'হট ডিলস' : 'Hot Deals'}
             icon={<Fire weight="fill" size={16} />}
             variant="secondary"
           />
           <FeaturedCollection
-            href="/category?theme=bestsellers"
-            label="Best Sellers"
+            href={withLocale('/category?theme=bestsellers', locale)}
+            label={isBn ? 'সেরা পণ্য' : 'Best Sellers'}
             icon={<Star weight="fill" size={16} />}
             variant="secondary"
           />
@@ -122,11 +128,11 @@ export function CategoryGrid({ searchParams }: CategoryGridProps) {
       {/* Category grid */}
       <section aria-labelledby="category-grid-heading" className="space-y-3">
         <h2 id="category-grid-heading" className="text-[11px] font-extrabold uppercase tracking-wider text-warm-muted">
-          Shop by Category
+          {isBn ? 'ক্যাটাগরি অনুযায়ী বাজার' : 'Shop by Category'}
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {CATEGORY_GROUPS.map((group) => (
-            <CategoryTile key={group.slug} group={group} />
+            <CategoryTile key={group.slug} group={group} locale={locale} />
           ))}
         </div>
       </section>

@@ -7,6 +7,8 @@ import { GridProductCard } from './GridProductCard';
 import type { Product } from '../lib/types';
 import { trackViewItemList } from '../lib/analytics';
 
+import type { Locale } from '../lib/i18n/config';
+
 export interface ProductGridSectionProps {
   id: string;
   title: string;
@@ -14,6 +16,7 @@ export interface ProductGridSectionProps {
   products: Product[];
   ctaLabel?: string;
   ctaHref?: string;
+  locale?: Locale;
 }
 
 export function ProductGridSection({
@@ -21,9 +24,12 @@ export function ProductGridSection({
   title,
   subtitle,
   products,
-  ctaLabel = 'See all',
+  ctaLabel,
   ctaHref = '/category',
+  locale = 'en',
 }: ProductGridSectionProps) {
+  const resolvedCtaLabel = ctaLabel ?? (locale === 'bn' ? 'সব দেখুন' : 'See all');
+
   useEffect(() => {
     trackViewItemList(products, id, title);
   }, [id, products, title]);
@@ -47,7 +53,7 @@ export function ProductGridSection({
         <Link
           href={ctaHref}
           className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-muted transition-colors hover:bg-warm-bg hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-          aria-label={`${ctaLabel} — ${title}`}
+          aria-label={`${resolvedCtaLabel} — ${title}`}
         >
           <CaretRight size={18} weight="bold" aria-hidden="true" />
         </Link>
@@ -67,10 +73,12 @@ export function ProductGridSection({
               listId={id}
               listName={title}
               index={index}
+              locale={locale}
             />
           </div>
         ))}
       </div>
+
     </section>
   );
 }
