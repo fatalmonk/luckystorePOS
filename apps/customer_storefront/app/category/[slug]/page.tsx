@@ -82,7 +82,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: `https://luckystore1947.com/category/${canonicalSlug}`,
+      url: `https://www.luckystore1947.com/category/${canonicalSlug}`,
       siteName: 'Lucky Store',
       locale: 'en_BD',
       type: 'website',
@@ -92,7 +92,7 @@ export async function generateMetadata({
       follow: true,
     } : undefined,
     alternates: {
-      canonical: `https://luckystore1947.com/category/${canonicalSlug}`,
+      canonical: `https://www.luckystore1947.com/category/${canonicalSlug}`,
     },
   };
 }

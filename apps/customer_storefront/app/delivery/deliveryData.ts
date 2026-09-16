@@ -26,7 +26,7 @@ export const DELIVERY_POLICY = {
   },
   supportPhone: '+880 1731-944544',
   supportWhatsAppUrl: 'https://wa.me/8801731944544',
-  canonicalUrl: 'https://luckystore1947.com/delivery',
+  canonicalUrl: 'https://www.luckystore1947.com/delivery',
 } as const;
 
 export interface CoveredAreaItem {
@@ -149,9 +149,9 @@ export function getDeliveryServiceSchema() {
     serviceType: 'Local Grocery Delivery',
     provider: {
       '@type': 'GroceryStore',
-      '@id': 'https://luckystore1947.com/#grocerystore',
+      '@id': 'https://www.luckystore1947.com/#grocerystore',
       name: DELIVERY_POLICY.storeName,
-      url: 'https://luckystore1947.com',
+      url: 'https://www.luckystore1947.com',
       telephone: DELIVERY_POLICY.supportPhone,
       address: {
         '@type': 'PostalAddress',
@@ -212,7 +212,7 @@ export function getDeliveryBreadcrumbSchema() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://luckystore1947.com',
+        item: 'https://www.luckystore1947.com',
       },
       {
         '@type': 'ListItem',

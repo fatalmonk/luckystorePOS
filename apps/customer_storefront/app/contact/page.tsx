@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Header } from '../components/updated/Header';
 import { Footer } from '../components/updated/Footer';
 import { BottomNav } from '../components/BottomNav';
 import { WhatsAppFloat } from '../components/WhatsAppFloat';
 import { ContactForm } from './ContactForm';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
@@ -29,14 +29,7 @@ export default function ContactPage() {
             </p>
           </header>
 
-          {/* Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
-            <Link href="/" className="hover:text-warm-fg transition-colors">
-              Home
-            </Link>
-            <span>/</span>
-            <span className="text-warm-fg font-bold">Contact Us</span>
-          </nav>
+          <Breadcrumbs items={[{ label: 'Contact Us', href: '/contact' }]} />
 
           {/* Main Contact Form & Info Grid */}
           <ContactForm />

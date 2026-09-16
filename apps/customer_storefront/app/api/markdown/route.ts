@@ -7,7 +7,7 @@ import { DELIVERY_POLICY } from '../../delivery/deliveryData';
 
 export const dynamic = 'force-dynamic';
 
-const BASE_URL = 'https://luckystore1947.com';
+const BASE_URL = 'https://www.luckystore1947.com';
 
 /**
  * Markdown for Agents — content negotiation endpoint.
@@ -533,7 +533,7 @@ and signs in to Lucky Store.
 
 ## Registration
 
-- Registration URI: https://luckystore1947.com/signup
+- Registration URI: https://www.luckystore1947.com/signup
 - Method: interactive verified-email registration
 - Required information: full name, WhatsApp number, email address, and password
 - Email confirmation may be required before the account can be used.
@@ -546,7 +546,7 @@ user's explicit participation.
 
 ## Sign-in and credential use
 
-- Sign-in URI: https://luckystore1947.com/login
+- Sign-in URI: https://www.luckystore1947.com/login
 - Method: email and password
 
 Successful sign-in creates a user session managed by Lucky Store's authentication

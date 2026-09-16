@@ -26,7 +26,7 @@ export function GoogleMapEmbed({
   logoUrl = '/logo-main.png',
   phone = '+8801731944544',
   email = 'hello@luckystore1947.com',
-  websiteUrl = 'https://luckystore1947.com',
+  websiteUrl = 'https://www.luckystore1947.com',
   facebookUrl = 'https://facebook.com/luckystore1947',
   instagramUrl = 'https://instagram.com/luckystore1947',
   zoom = 13,

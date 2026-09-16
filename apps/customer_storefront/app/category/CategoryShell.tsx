@@ -12,6 +12,7 @@ import { img, srcSet, responsiveHeroBanner } from '../lib/imageUrl';
 import type { Locale } from '../lib/i18n/config';
 import { withLocale } from '../lib/i18n/config';
 import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
 interface CategoryShellProps {
   categorySlug: string;
@@ -138,18 +139,21 @@ export function CategoryShell({
         ) : (
           <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
             <div className="space-y-4">
-              {parentGroup && !group && (
-                <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
-                  <Link href={withLocale('/category', locale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-                    {isBn ? 'ক্যাটাগরি' : 'Categories'}
-                  </Link>
-                  <span>/</span>
-                  <Link href={withLocale(`/category/${parentGroup.slug}`, locale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-                    {isBn ? (BENGALI_CATEGORY_NAMES[parentGroup.slug] || parentGroup.label) : parentGroup.label}
-                  </Link>
-                  <span>/</span>
-                  <span className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">{prettyName}</span>
-                </nav>
+              {!isAllProducts && (
+                <Breadcrumbs
+                  homeHref={withLocale('/', locale)}
+                  homeLabel={isBn ? 'হোম' : 'Home'}
+                  items={[
+                    { label: isBn ? 'ক্যাটাগরি' : 'Categories', href: withLocale('/category', locale) },
+                    ...(parentGroup && !group
+                      ? [{
+                          label: isBn ? (BENGALI_CATEGORY_NAMES[parentGroup.slug] || parentGroup.label) : parentGroup.label,
+                          href: withLocale(`/category/${parentGroup.slug}`, locale),
+                        }]
+                      : []),
+                    { label: prettyName, href: withLocale(`/category/${categorySlug}`, locale) },
+                  ]}
+                />
               )}
               <HeroBanner
                 slides={[

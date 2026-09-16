@@ -4,7 +4,7 @@ import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
 import { getCanonicalCategorySlug } from './lib/types';
 
-const BASE_URL = 'https://luckystore1947.com';
+const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 // Dynamic index pages — lastMod derived at runtime from newest DB content only

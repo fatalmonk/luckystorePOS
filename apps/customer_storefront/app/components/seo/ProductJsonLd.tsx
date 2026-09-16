@@ -15,7 +15,7 @@ interface ProductJsonLdProps {
 
 export function ProductJsonLd({ product, description, name, brand, canonicalUrl: providedCanonicalUrl }: ProductJsonLdProps) {
   const canonicalSlug = toProductSlug(product.name, product.id);
-  const canonicalUrl = providedCanonicalUrl || `https://luckystore1947.com/product/${canonicalSlug}`;
+  const canonicalUrl = providedCanonicalUrl || `https://www.luckystore1947.com/product/${canonicalSlug}`;
   const effectiveName = name || product.name;
   const effectiveBrand = brand || product.brand;
   const gtinInfo = validateGtin(product.barcode);
@@ -50,7 +50,7 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
       seller: {
         '@type': 'Organization',
         name: 'Lucky Store',
-        url: 'https://luckystore1947.com',
+        url: 'https://www.luckystore1947.com',
       },
       shippingDetails: getDeliveryOfferShippingDetailsSchema(),
       hasMerchantReturnPolicy: {

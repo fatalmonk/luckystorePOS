@@ -1,7 +1,10 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { JsonLd } from '../seo/JsonLd';
+
+const SITE_URL = 'https://www.luckystore1947.com';
 
 export interface BreadcrumbItem {
   label: string;
@@ -17,6 +20,11 @@ interface BreadcrumbsProps {
 export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: BreadcrumbsProps) {
   const allItems: BreadcrumbItem[] = [{ label: homeLabel, href: homeHref }, ...items];
 
+  const toCanonicalUrl = (href: string) => {
+    if (/^https?:\/\//i.test(href)) return href;
+    return `${SITE_URL}${href === '/' ? '' : href}`;
+  };
+
   // Schema.org BreadcrumbList structured data
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -25,7 +33,7 @@ export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: Bread
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      item: `https://luckystore1947.com${item.href}`,
+      item: toCanonicalUrl(item.href),
     })),
   };
 

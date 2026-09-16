@@ -5,12 +5,12 @@ import { Header } from '../components/updated/Header';
 import { Footer } from '../components/updated/Footer';
 import { BottomNav } from '../components/BottomNav';
 import { WhatsAppFloat } from '../components/WhatsAppFloat';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { DeliveryFaqAccordion } from './DeliveryFaqAccordion';
 import {
   DELIVERY_POLICY,
   COVERED_AREAS,
   getDeliveryFaqSchema,
-  getDeliveryBreadcrumbSchema,
   getDeliveryOfferShippingDetailsSchema,
   getDeliveryServiceSchema,
 } from './deliveryData';
@@ -38,7 +38,6 @@ export const metadata: Metadata = {
 
 export default function DeliveryHubPage() {
   const faqSchema = getDeliveryFaqSchema();
-  const breadcrumbSchema = getDeliveryBreadcrumbSchema();
   const shippingDetailsSchema = getDeliveryOfferShippingDetailsSchema();
   const deliveryServiceSchema = getDeliveryServiceSchema();
 
@@ -48,11 +47,6 @@ export default function DeliveryHubPage() {
         id="delivery-faq-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <Script
-        id="delivery-breadcrumb-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <Script
         id="delivery-shipping-details-schema"
@@ -69,14 +63,7 @@ export default function DeliveryHubPage() {
 
       <main className="flex-1 overflow-x-hidden pb-16">
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 space-y-10">
-          {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-warm-muted">
-            <Link href="/" className="hover:text-warm-fg transition-colors">
-              Home
-            </Link>
-            <span aria-hidden="true">/</span>
-            <span className="text-warm-fg font-bold">Delivery Information</span>
-          </nav>
+          <Breadcrumbs items={[{ label: 'Delivery Information', href: '/delivery' }]} />
 
           {/* Hero Header */}
           <header className="space-y-4">

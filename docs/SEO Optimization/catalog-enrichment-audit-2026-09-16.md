@@ -19,7 +19,7 @@ Verified directly against the live Supabase production schema and database:
 | **Total Active Products** | **580** | 100.0% | Active items in production PostgreSQL (`is_active = true`) |
 | **Active with DB Description** | **532** | 91.7% | High-value descriptions (50–350 chars) stored in DB, previously masked on storefront |
 | **Active Missing DB Description** | **48** | 8.3% | `items.description` is null/blank; requires reviewable enrichment dataset |
-| *Registry Enriched (Phase 4A Pilot)* | *7* | *1.2%* | Independent pilot overlay (`productEnrichment.ts`) |
+| *Registry Enriched (Phase 4A cohort)* | *25* | *4.3%* | Independent evidence-backed overlay (`productEnrichment.ts`) |
 
 ### Breakdown of 48 Items Missing Database Descriptions
 - **Ice-Cream (31 items):** Savoy and Polar varieties (`Savoy Ekdom Aam`, `Polar Carnival Vanilla`, `Polar Doi 1L`, `Savoy iKone Vanilla`, etc.).
@@ -92,8 +92,42 @@ Before expanding `productEnrichment.ts` or modifying structured data, the follow
 | :--- | :--- | :---: |
 | **Step 1: Adapter Repair** | Fix `SupabaseProductAdapter.ts` + add regression tests | **COMPLETE** |
 | **Step 2: Catalog Validation** | Validate representative products live, verify sitemap invariance | **COMPLETE** |
-| **Step 3: Nescafé 90g Evidence Pack** | Assemble packaging facts from physical SKU / Nestlé Bangladesh | Pending Evidence |
-| **Step 4: Coffee Enrichment Cohort** | Scale verified attributes to 45g, 180g, 200g lines without copying unsupported claims | Pending Evidence |
-| **Step 5: Structured Data Repair** | Add verified GTIN-13/12/8 validation to `ProductJsonLd.tsx` | Next |
-| **Step 6: 48 Missing Descriptions** | Build reviewable dataset for 48 blank items before any DB update | Scheduled |
+| **Step 3: Nescafé 90g Evidence Pack** | Assemble packaging facts from physical SKU / Nestlé Bangladesh | **Manufacturer Source Verified** |
+| **Step 4: Coffee Enrichment Cohort** | Scale verified attributes to 45g, 180g, 200g lines without copying unsupported claims | **Source Verified; Registry Review Complete** |
+| **Step 5: Structured Data Repair** | Add verified GTIN-13/12/8 validation to `ProductJsonLd.tsx` | **Complete** |
+| **Step 6: 48 Missing Descriptions** | Build reviewable dataset for 48 blank items before any DB update | **Intake Registered; Pending Evidence** |
 | **Step 7: Search Console Measurement** | Track impressions, indexation, and position post-crawl | Ongoing |
+
+### Next execution gate
+
+The evidence intake register now enumerates all 48 active items with blank
+`items.description` values, including their production UUID, SKU, current name,
+and category. No catalog copy or database backfill should be authored until each
+candidate has either a packaging capture or an official manufacturer declaration
+that identifies the exact SKU, pack size, and supported claims. Source URL/capture
+date and field-level claim status remain required before promotion; unresolved
+fields stay `PENDING_EVIDENCE`. This keeps registry expansion separate from
+unsupported inference.
+
+### Manufacturer source intake (2026-09-16)
+
+- **[Nestlé Bangladesh — NESCAFÉ Classic](https://www.nestle.com.bd/nescafe-classic):** The official product page identifies
+  medium-dark roasted 100% natural Robusta coffee and lists the Bangladesh pack
+  sizes and barcodes for 1g, 24g, 45g, 90g, 180g, and 200g. These claims are
+  recorded as manufacturer-source support for the existing 90g/45g/180g/200g
+  registry cohort; the 1g and 24g products still require exact catalog matching
+  before registry promotion.
+- **[Polar Bangladesh](https://polarbd.com/en/):** The official English catalogue exposes 58 unique product detail
+  links, including the two Carnival cone pages supplied for this audit. These
+  pages provide exact names, pack/carton details, nutrition, ingredients,
+  allergens, and package imagery. The complete link index is recorded in
+  `polar-product-source-index-2026-09-16.md`; barcode transcription and exact
+  Lucky Store SKU matching remain required before a row is marked
+  `READY_FOR_REVIEW`.
+- **[Savoy Bangladesh product catalogue](https://www.savoybd.com/products):** The rendered catalogue confirms
+  the names **Ekdom Aam**, **iKone Vanilla**, **Ice Lolly Orange**, and **Red Velvet
+  Temptation** under Savoy categories. It does not expose Lucky Store SKU or
+  pack-size mappings, so these rows receive name/category source support only and
+  remain `PENDING_EVIDENCE` for enrichment.
+- **[Trident Pineapple Twist product page](https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces):** The exact 14-piece product page supports the Trident brand, pineapple flavour, sugar-free formulation, xylitol, individually wrapped sticks, and ingredient/allergen declarations. The `CC-TRI-14` row is now `READY_FOR_REVIEW` and represented in the enrichment registry; no database backfill has been applied.
+- **[Buldak Quattro Cheese](https://buldak.com/us/product/buldak-ramen-quattro-cheese/) and [Buldak 2X Cup](https://buldak.com/us/product/buldak-ramen-2x-cup/):** Official Samyang pages support the 145g Quattro Cheese pouch and 70g 2X Cup, including product format, spicy-level information, and preparation instructions. The supplied 2X Cup Nutrition Facts panel supports the 70g serving, 300 calories, and 640mg sodium. `NOO-BUL-QTC` and `NOO-BUL-2XS` are now `READY_FOR_REVIEW` and represented in the registry.

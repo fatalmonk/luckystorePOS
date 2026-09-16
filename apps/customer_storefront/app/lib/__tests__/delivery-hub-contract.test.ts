@@ -178,7 +178,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
 
       // Provider
       expect(schema.provider['@type']).toBe('GroceryStore');
-      expect(schema.provider['@id']).toBe('https://luckystore1947.com/#grocerystore');
+      expect(schema.provider['@id']).toBe('https://www.luckystore1947.com/#grocerystore');
 
       // GeoCircle areaServed
       expect(schema.areaServed['@type']).toBe('GeoCircle');
@@ -206,30 +206,30 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
 
   describe('Middleware Canonical 308 Consolidation', () => {
     it('redirects /delivery/chattogram permanently to /delivery with HTTP 308', async () => {
-      const req = new NextRequest('https://luckystore1947.com/delivery/chattogram');
+      const req = new NextRequest('https://www.luckystore1947.com/delivery/chattogram');
       const res = await middleware(req);
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/delivery');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/delivery');
     });
 
     it('redirects trailing-slash /delivery/ permanently to /delivery with HTTP 308', async () => {
-      const req = new NextRequest('https://luckystore1947.com/delivery/');
+      const req = new NextRequest('https://www.luckystore1947.com/delivery/');
       const res = await middleware(req);
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/delivery');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/delivery');
     });
 
     it('preserves query parameters on 308 redirect from /delivery/chattogram', async () => {
-      const req = new NextRequest('https://luckystore1947.com/delivery/chattogram?utm_source=facebook&campaign=chattogram');
+      const req = new NextRequest('https://www.luckystore1947.com/delivery/chattogram?utm_source=facebook&campaign=chattogram');
       const res = await middleware(req);
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/delivery?utm_source=facebook&campaign=chattogram');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/delivery?utm_source=facebook&campaign=chattogram');
     });
   });
 
   describe('Markdown-for-Agents Content Negotiation', () => {
     it('renders structured markdown for /delivery consuming central operational constants', async () => {
-      const req = new NextRequest('https://luckystore1947.com/api/markdown?path=/delivery');
+      const req = new NextRequest('https://www.luckystore1947.com/api/markdown?path=/delivery');
       const res = await getMarkdown(req);
       expect(res.status).toBe(200);
       expect(res.headers.get('Content-Type')).toContain('text/markdown');
