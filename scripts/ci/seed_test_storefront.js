@@ -59,6 +59,7 @@ function requireApprovedRef(label, ref) {
     throw new Error(`${label} must target the approved test Supabase project (${APPROVED_TEST_REF})`);
   }
   return ref;
+<<<<<<< ours
 }
 
 function isMissingSchemaObject(error) {
@@ -68,6 +69,8 @@ function isMissingSchemaObject(error) {
         error.code === 'PGRST202' ||
         /could not find the table .* in the schema cache/i.test(error.message || '')),
   );
+=======
+>>>>>>> theirs
 }
 
 let projectRef = '';
