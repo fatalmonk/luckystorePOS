@@ -117,11 +117,13 @@ unsupported inference.
   recorded as manufacturer-source support for the existing 90g/45g/180g/200g
   registry cohort; the 1g and 24g products still require exact catalog matching
   before registry promotion.
-- **[Polar Bangladesh](https://polarbd.com/en/):** The official catalogue exposes named product descriptions for the
-  Polar families represented in the missing-description cohort (including Coffee,
-  Vanilla, Chocodelight, Tornado, Carnival, Crunchy, Shor Malai, Kheer, Royal
-  Sundae, and Zafran Malai). Exact SKU and pack-size matching remains required
-  before any row is marked `READY_FOR_REVIEW`.
+- **[Polar Bangladesh](https://polarbd.com/en/):** The official English catalogue exposes 58 unique product detail
+  links, including the two Carnival cone pages supplied for this audit. These
+  pages provide exact names, pack/carton details, nutrition, ingredients,
+  allergens, and package imagery. The complete link index is recorded in
+  `polar-product-source-index-2026-09-16.md`; barcode transcription and exact
+  Lucky Store SKU matching remain required before a row is marked
+  `READY_FOR_REVIEW`.
 - **[Savoy Bangladesh product catalogue](https://www.savoybd.com/products):** The rendered catalogue confirms
   the names **Ekdom Aam**, **iKone Vanilla**, **Ice Lolly Orange**, and **Red Velvet
   Temptation** under Savoy categories. It does not expose Lucky Store SKU or
