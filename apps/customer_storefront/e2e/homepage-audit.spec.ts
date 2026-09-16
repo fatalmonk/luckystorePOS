@@ -11,7 +11,7 @@ test.describe('Storefront homepage shell audit', () => {
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://www.luckystore1947.com/',
+      'https://www.luckystore1947.com',
     );
 
     const schemas = await page.locator('script[type="application/ld+json"]').allTextContents();
@@ -62,7 +62,7 @@ test.describe('Storefront homepage shell audit', () => {
     ];
     if (viewportWidth >= 768) {
       headerControls.push(
-        header.getByRole('button', { name: /Switch to (dark|light) mode/ }).filter({ visible: true }),
+        header.getByRole('button', { name: /Switch to (dark|light) mode/i }).filter({ visible: true }),
       );
       headerControls.push(header.getByRole('link', { name: 'Wishlist' }));
     } else {

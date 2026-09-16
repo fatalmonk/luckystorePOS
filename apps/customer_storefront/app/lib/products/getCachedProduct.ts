@@ -1,7 +1,8 @@
 import { cache } from 'react';
 import { supabase } from '../supabase';
 import { createProductRepository, createProductId } from './index';
-import { extractIdFromSlug, isBareUuid } from './slugify';
+import { extractIdFromSlug, isBareUuid, toProductSlug } from './slugify';
+import { FALLBACK_PRODUCTS } from './getHomePageData';
 import type { Product } from './types';
 
 /**
@@ -14,13 +15,32 @@ export const getCachedProductBySlug = cache(async (slug: string): Promise<Produc
     const { repo } = createProductRepository(supabase);
 
     if (isBareUuid(slug)) {
-      return await repo.getById(createProductId(slug));
+      const prod = await repo.getById(createProductId(slug));
+      if (prod) return prod;
+    } else {
+      const prefix = extractIdFromSlug(slug);
+      const prod = await repo.getByIdPrefix(prefix);
+      if (prod) return prod;
     }
 
-    const prefix = extractIdFromSlug(slug);
-    return await repo.getByIdPrefix(prefix);
+    // Fallback lookup from known fixtures if database query fails or is empty
+    const prefix = extractIdFromSlug(slug).toLowerCase();
+    const fallback = FALLBACK_PRODUCTS.find(
+      (p) =>
+        p.id === slug ||
+        p.id.replace(/-/g, '').toLowerCase().startsWith(prefix) ||
+        toProductSlug(p.name, p.id) === slug
+    );
+    if (fallback) {
+      return {
+        ...fallback,
+        id: createProductId(fallback.id),
+      };
+    }
+    return null;
   } catch (err) {
     console.error('getCachedProductBySlug error:', err);
     return null;
   }
 });
+
