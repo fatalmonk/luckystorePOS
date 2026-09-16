@@ -1,4 +1,5 @@
 const PRODUCTION_SUPABASE_PROJECT_REF = 'hvmyxyccfnkrbxqbhlnm';
+const APPROVED_TEST_SUPABASE_PROJECT_REF = 'grxxenvdhfwzafzyykgo';
 
 interface MutationEnvironment {
   E2E_CAN_MUTATE?: string;
@@ -33,9 +34,9 @@ export function getMutationSafety(env: MutationEnvironment = {
   }
 
   const configuredRef = projectRefFromUrl(env.NEXT_PUBLIC_SUPABASE_URL);
-  const expectedPreviewRef = env.E2E_SUPABASE_PROJECT_REF?.trim() || null;
+  const expectedTestRef = env.E2E_SUPABASE_PROJECT_REF?.trim() || null;
 
-  if (!configuredRef || !expectedPreviewRef) {
+  if (!configuredRef || !expectedTestRef) {
     return {
       allowed: false,
       requested,
@@ -45,18 +46,18 @@ export function getMutationSafety(env: MutationEnvironment = {
 
   if (
     configuredRef === PRODUCTION_SUPABASE_PROJECT_REF ||
-    expectedPreviewRef === PRODUCTION_SUPABASE_PROJECT_REF
+    expectedTestRef === PRODUCTION_SUPABASE_PROJECT_REF
   ) {
     return { allowed: false, requested, reason: 'Mutation against production Supabase is forbidden' };
   }
 
-  if (configuredRef !== expectedPreviewRef) {
+  if (configuredRef !== expectedTestRef) {
     return {
       allowed: false,
       requested,
-      reason: 'Configured Supabase URL does not match the declared preview project ref',
+      reason: 'Configured Supabase URL does not match the declared test project ref',
     };
   }
 
-  return { allowed: true, requested, reason: 'Verified isolated Supabase preview branch' };
+  return { allowed: true, requested, reason: 'Verified isolated Supabase test project' };
 }

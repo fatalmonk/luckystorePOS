@@ -211,7 +211,7 @@ test.describe('Order Confirmation Display', () => {
 test.describe('Isolated Supabase order integration', () => {
   test.setTimeout(120000);
 
-  test('creates one real order only on a verified preview branch', async ({ page }) => {
+  test('creates one real order only on an approved test project', async ({ page }) => {
     test.skip(!canMutatePreview, mutationSafety.reason);
 
     const added = await addFirstInStockProductToCart(page);
@@ -221,9 +221,9 @@ test.describe('Isolated Supabase order integration', () => {
     }
 
     await page.goto('/checkout');
-    await page.fill('[data-testid="checkout-name-input"]', 'Isolated Preview Test');
+    await page.fill('[data-testid="checkout-name-input"]', 'Isolated Test Order');
     await page.fill('[data-testid="checkout-phone-input"]', '01712345678');
-    await page.fill('[data-testid="checkout-address-input"]', 'Supabase preview branch only');
+    await page.fill('[data-testid="checkout-address-input"]', 'Approved Supabase test project only');
     await page.click('[data-testid="checkout-review-btn"]');
     await page.click('[data-testid="checkout-place-order-btn"]');
 

@@ -53,7 +53,7 @@ test('profile waits for auth initialization and retains the orders return destin
 test('cart persists through checkout and account navigation; mocked guest order completes', async ({ page }) => {
   await page.addInitScript(() => {
     if (!sessionStorage.getItem('auth-cart-fixture')) {
-      localStorage.setItem('lucky-cart', JSON.stringify([{ id: 'auth-test-product', name: 'Auth test rice', price: 100, qty: 2, stock: 10, unit: '1 kg', category: 'rice-and-grain' }]));
+      localStorage.setItem('lucky-cart', JSON.stringify([{ id: 'a0740000-0000-0000-0000-000000000099', name: 'Auth test rice', price: 100, qty: 2, stock: 10, unit: '1 kg', category: 'rice-and-grain' }]));
       sessionStorage.setItem('auth-cart-fixture', 'yes');
     }
   });

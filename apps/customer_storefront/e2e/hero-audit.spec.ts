@@ -26,7 +26,7 @@ test.describe('Storefront campaign hero audit', () => {
     ] as const;
 
     for (const [name, href] of destinations) {
-      const link = hero.getByRole('link', { name });
+      const link = hero.getByRole('link', { name, exact: true });
       await expect(link).toHaveAttribute('href', href);
 
       const box = await link.boundingBox();
