@@ -6,9 +6,7 @@ test.describe('Search suggestions and catalog filters', () => {
 
     const viewport = page.viewportSize();
     const header = page.getByRole('banner');
-    const searchInput = (viewport && viewport.width < 768
-      ? header.getByPlaceholder('Search groceries')
-      : header.getByPlaceholder('Search 500+ groceries, daily essentials, brands...')).filter({ visible: true });
+    const searchInput = header.getByRole('searchbox').filter({ visible: true });
     await searchInput.click();
 
     const suggestions = page.getByRole('region', { name: 'Search suggestions' });

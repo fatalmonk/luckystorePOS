@@ -4,10 +4,10 @@ test.describe('Storefront homepage shell audit', () => {
   test('publishes evidence-safe homepage metadata and structured data', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveTitle('Lucky Store | Online Grocery in Chattogram');
+    await expect(page).toHaveTitle('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
+      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -43,7 +43,7 @@ test.describe('Storefront homepage shell audit', () => {
       page.getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Daily Essentials', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Daily Bazaar & Pantry Staples', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Shop by routine' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Serving Chittagong since 1947.' })).toBeVisible();
 

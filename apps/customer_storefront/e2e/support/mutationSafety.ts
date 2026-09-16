@@ -1,4 +1,5 @@
 const PRODUCTION_SUPABASE_PROJECT_REF = 'hvmyxyccfnkrbxqbhlnm';
+const APPROVED_TEST_SUPABASE_PROJECT_REF = 'grxxenvdhfwzafzyykgo';
 
 interface MutationEnvironment {
   E2E_CAN_MUTATE?: string;
@@ -16,7 +17,9 @@ function projectRefFromUrl(rawUrl: string | undefined): string | null {
   if (!rawUrl) return null;
 
   try {
-    return new URL(rawUrl).hostname.split('.')[0] || null;
+    const hostname = new URL(rawUrl).hostname;
+    if (!hostname.endsWith('.supabase.co')) return null;
+    return hostname.split('.')[0] || null;
   } catch {
     return null;
   }
@@ -33,9 +36,9 @@ export function getMutationSafety(env: MutationEnvironment = {
   }
 
   const configuredRef = projectRefFromUrl(env.NEXT_PUBLIC_SUPABASE_URL);
-  const expectedPreviewRef = env.E2E_SUPABASE_PROJECT_REF?.trim() || null;
+  const expectedTestRef = env.E2E_SUPABASE_PROJECT_REF?.trim() || null;
 
-  if (!configuredRef || !expectedPreviewRef) {
+  if (!configuredRef || !expectedTestRef) {
     return {
       allowed: false,
       requested,
@@ -45,18 +48,29 @@ export function getMutationSafety(env: MutationEnvironment = {
 
   if (
     configuredRef === PRODUCTION_SUPABASE_PROJECT_REF ||
-    expectedPreviewRef === PRODUCTION_SUPABASE_PROJECT_REF
+    expectedTestRef === PRODUCTION_SUPABASE_PROJECT_REF
   ) {
     return { allowed: false, requested, reason: 'Mutation against production Supabase is forbidden' };
   }
 
-  if (configuredRef !== expectedPreviewRef) {
+  if (configuredRef !== expectedTestRef) {
     return {
       allowed: false,
       requested,
-      reason: 'Configured Supabase URL does not match the declared preview project ref',
+      reason: 'Configured Supabase URL does not match the declared test project ref',
     };
   }
 
-  return { allowed: true, requested, reason: 'Verified isolated Supabase preview branch' };
+  if (
+    configuredRef !== APPROVED_TEST_SUPABASE_PROJECT_REF ||
+    expectedTestRef !== APPROVED_TEST_SUPABASE_PROJECT_REF
+  ) {
+    return {
+      allowed: false,
+      requested,
+      reason: 'Mutations are restricted to the approved test Supabase project',
+    };
+  }
+
+  return { allowed: true, requested, reason: 'Verified isolated Supabase test project' };
 }

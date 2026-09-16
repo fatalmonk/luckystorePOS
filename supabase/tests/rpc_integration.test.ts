@@ -18,7 +18,7 @@ describe('Supabase RPC Integration Tests', () => {
     const sql = `
       INSERT INTO tenants (id, name) VALUES ('${tenantA}', 'Tenant A'), ('${tenantB}', 'Tenant B') ON CONFLICT DO NOTHING;
       INSERT INTO stores (id, tenant_id, name) VALUES ('${storeA1}', '${tenantA}', 'Store A1'), ('${storeB1}', '${tenantB}', 'Store B1') ON CONFLICT DO NOTHING;
-      INSERT INTO items (id, tenant_id, name, barcode, price, is_active) VALUES ('${itemA1}', '${tenantA}', 'Alpha Product 1', 'BAR-A1', 100, true), ('${itemA2}', '${tenantA}', 'Alpha Product 2', 'BAR-A2', 200, true), ('${itemB1}', '${tenantB}', 'Beta Product 1', 'BAR-B1', 150, true) ON CONFLICT DO NOTHING;
+      INSERT INTO items (id, tenant_id, name, sku, barcode, price, is_active) VALUES ('${itemA1}', '${tenantA}', 'Alpha Product 1', 'SKU-A1', 'BAR-A1', 100, true), ('${itemA2}', '${tenantA}', 'Alpha Product 2', 'SKU-A2', 'BAR-A2', 200, true), ('${itemB1}', '${tenantB}', 'Beta Product 1', 'SKU-B1', 'BAR-B1', 150, true) ON CONFLICT DO NOTHING;
       INSERT INTO stock_levels (store_id, item_id, qty) VALUES ('${storeA1}', '${itemA1}', 50), ('${storeA1}', '${itemA2}', 50), ('${storeB1}', '${itemB1}', 0) ON CONFLICT DO NOTHING;
       INSERT INTO ledger_accounts (id, store_id, code, name, account_type, is_system) VALUES ('c0000000-0000-0000-0000-000000000001', '${storeA1}', '1000', '1000_CASH', 'ASSET', true) ON CONFLICT DO NOTHING;
       INSERT INTO payment_methods (id, store_id, name, type) VALUES ('${pmCashA}', '${storeA1}', 'Cash', 'cash') ON CONFLICT DO NOTHING;
@@ -51,6 +51,17 @@ describe('Supabase RPC Integration Tests', () => {
       } else {
         expect(data).toBeNull();
       }
+    });
+
+    it('should find an item by its legacy SKU', async () => {
+      const { data, error } = await supabase.rpc('lookup_item_by_scan', {
+        p_barcode: 'SKU-A1',
+        p_store_id: storeA1
+      });
+
+      expect(error).toBeNull();
+      const item = Array.isArray(data) ? data[0] : data;
+      expect(item.name).toBe('Alpha Product 1');
     });
   });
 

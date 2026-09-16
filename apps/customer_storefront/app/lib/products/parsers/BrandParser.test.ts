@@ -42,6 +42,11 @@ describe('RuleBasedBrandParser', () => {
     expect(parser.parse('Nestlé Gold Cornflakes 300g')).toBe('Nestle');
   });
 
+  it('maps Samyang and Buldak to Samyang brand', () => {
+    expect(parser.parse('Samyang Buldak 2X Spicy Ramen 140g')).toBe('Samyang');
+    expect(parser.parse('Buldak Hot Chicken Ramen')).toBe('Samyang');
+  });
+
   it('handles whitespace-padded names', () => {
     expect(parser.parse('  Polar  Ice Cream  ')).toBe('Polar');
   });
