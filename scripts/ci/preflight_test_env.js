@@ -109,6 +109,9 @@ async function runPreflight() {
     p_delivery_fee: 0,
     p_total: 0,
     p_payment_method: 'cod',
+    p_notes: null,
+    p_delivery_slot: null,
+    p_idempotency_key: null,
   });
 
   if (orderRpcErr) {
