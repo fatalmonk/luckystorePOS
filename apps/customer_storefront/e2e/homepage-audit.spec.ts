@@ -7,7 +7,7 @@ test.describe('Storefront homepage shell audit', () => {
     await expect(page).toHaveTitle('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Order groceries within 1 km of Lucky Store in Chattogram. Delivery is free over ৳500; orders below ৳500 have a ৳40 delivery charge.',
+      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',

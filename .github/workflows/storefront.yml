@@ -85,7 +85,8 @@ jobs:
 
           const banners = [
             'promo_welcome_v2', 'promo_buldak', 'promo_dairy',
-            'promo_tea_coffee', 'hero_grocery_banner', 'native_ad_banner'
+            'promo_tea_coffee', 'promo_snacks', 'promo_cleaning_supply',
+            'promo_cooking', 'hero_grocery_banner', 'native_ad_banner'
           ];
           const widths = [400, 600, 800, 1200];
           const outputDir = 'public/banners';
