@@ -78,15 +78,15 @@ similarly packaged variants.
 | 697ec1bf-8b16-4d34-b692-2d206443493f | IC-SAV-IKV | Savoy iKone Vanilla | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
 | 5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba | IC-SAV-LOL-ORG | Savoy Orange Lolly | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
 | 524f084a-e3be-4fdd-a637-dcacc3cc3afa | IC-SAV-RVT | Savoy Red Velvet Temptation Cake 1KG | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
-| f49fa080-07f8-4ec3-926a-6f64e315802f | NOO-BUL-DSP | Buldak Ramen 2x Spicy | Noodles |  |  |  |  | PENDING_EVIDENCE |
+| f49fa080-07f8-4ec3-926a-6f64e315802f | NOO-BUL-DSP | Buldak Ramen 2x Spicy | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-2x/ | 2026-09-16 | exactName, brand, netQuantity, preparation | READY_FOR_REVIEW |
 | 315a1ef1-49ef-470e-a0ff-818aa0400739 | NOO-BUL-3XS | Buldak Ramen 3x Spicy | Noodles |  |  |  |  | PENDING_EVIDENCE |
-| 0c815bf1-c506-44f5-88dd-b504db60d7af | NOO-BUL-CHE-CUP | Buldak Ramen Cheese Cup | Noodles |  |  |  |  | PENDING_EVIDENCE |
-| e04a2efd-9a26-411a-9984-eaf227f72cdc | NOO-BUL-CCA | Buldak Ramen Cream Carbonara | Noodles |  |  |  |  | PENDING_EVIDENCE |
+| 0c815bf1-c506-44f5-88dd-b504db60d7af | NOO-BUL-CHE-CUP | Buldak Ramen Cheese Cup | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-cheese-cup/ | 2026-09-16 | exactName, brand, netQuantity, preparation | READY_FOR_REVIEW |
+| e04a2efd-9a26-411a-9984-eaf227f72cdc | NOO-BUL-CCA | Buldak Ramen Cream Carbonara | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-cream-carbonara/ | 2026-09-16 | exactName, brand, netQuantity, preparation | READY_FOR_REVIEW |
 | b79a6606-3eb8-425e-bf53-57c5788dc7ea | NOO-BUL-2XS | Buldak Ramen Noodles 2x Spicy Cup | Noodles | MANUFACTURER + PACKAGING | https://buldak.com/us/product/buldak-ramen-2x-cup/ | 2026-09-16 | exactName, brand, netQuantity, nutrition, preparation | READY_FOR_REVIEW |
-| 8169739f-dd49-4588-928e-837a22faa388 | NOO-BUL-ORG | Buldak Ramen Original | Noodles |  |  |  |  | PENDING_EVIDENCE |
-| 4bbb76d4-f058-430f-9fd1-87db15d71b5c | NOO-BUL-ORG-CUP | Buldak Ramen Original Cup | Noodles |  |  |  |  | PENDING_EVIDENCE |
+| 8169739f-dd49-4588-928e-837a22faa388 | NOO-BUL-ORG | Buldak Ramen Original | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-original/ | 2026-09-16 | exactName, brand, netQuantity, preparation | READY_FOR_REVIEW |
+| 4bbb76d4-f058-430f-9fd1-87db15d71b5c | NOO-BUL-ORG-CUP | Buldak Ramen Original Cup | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-original-cup/ | 2026-09-16 | exactName, brand, netQuantity, preparation | READY_FOR_REVIEW |
 | 7fd83cfc-2eac-45d1-aa90-0002ca5a0222 | NOO-BUL-QTC | Buldak Ramen Quattro Cheese | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-quattro-cheese/ | 2026-09-16 | exactName, brand, netQuantity, cheeseBlend, preparation | READY_FOR_REVIEW |
-| 841b013d-e7bd-46a6-9e69-282f84aa2781 | NOO-BUL-ROS | Buldak Ramen Rose | Noodles |  |  |  |  | PENDING_EVIDENCE |
+| 841b013d-e7bd-46a6-9e69-282f84aa2781 | NOO-BUL-ROS | Buldak Ramen Rose | Noodles | MANUFACTURER | https://buldak.com/us/product/buldak-ramen-rose/ | 2026-09-16 | exactName, brand, netQuantity, preparation | READY_FOR_REVIEW |
 | ed4f74c8-0f74-47f0-94e2-a6f874f83f80 | OIL-001 | Cooking Oil 1L | Uncategorized |  |  |  |  | PENDING_EVIDENCE |
 | 067da398-cb65-45c9-9699-bff6f336acbe | EGGS-001 | Eggs (12 pcs) | Uncategorized |  |  |  |  | PENDING_EVIDENCE |
 | ead2ba9a-ac6c-468a-9ba7-c37d680df38c | MILK-001 | Fresh Milk 1L | Uncategorized |  |  |  |  | PENDING_EVIDENCE |
