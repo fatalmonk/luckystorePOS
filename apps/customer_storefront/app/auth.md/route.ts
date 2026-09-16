@@ -30,7 +30,7 @@ GET /.well-known/oauth-protected-resource
 \`\`\`
 
 Returns:
-- \`resource\`: https://luckystore1947.com
+- \`resource\`: https://www.luckystore1947.com
 - \`authorization_servers\`: https://hvmyxyccfnkrbxqbhlnm.supabase.co
 - \`scopes_supported\`: read:products, read:orders, write:orders, read:profile, write:profile
 - \`bearer_methods_supported\`: header
@@ -71,7 +71,7 @@ Returns full OAuth 2.1 metadata plus an \`agent_auth\` block with:
 \`\`\`json
 {
   "status": "pending",
-  "claim_url": "https://luckystore1947.com/claim/abc123",
+  "claim_url": "https://www.luckystore1947.com/claim/abc123",
   "expires_in": 900
 }
 \`\`\`
@@ -85,7 +85,7 @@ Returns full OAuth 2.1 metadata plus an \`agent_auth\` block with:
 {
   "type": "identity_assertion",
   "assertion": "<ID-JAG JWT token>",
-  "audience": "https://luckystore1947.com"
+  "audience": "https://www.luckystore1947.com"
 }
 \`\`\`
 

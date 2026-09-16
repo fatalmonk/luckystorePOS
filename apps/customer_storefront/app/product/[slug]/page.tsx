@@ -32,7 +32,7 @@ export async function generateMetadata({
 
   const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(product.id);
   const effectiveName = enrichment?.exactName || product.name;
-  const canonicalUrl = `https://luckystore1947.com/product/${canonicalSlug}`;
+  const canonicalUrl = `https://www.luckystore1947.com/product/${canonicalSlug}`;
   const title = formatProductMetaTitle(effectiveName, product.price, product.unit);
   const description = formatProductMetaDescription(
     effectiveName,

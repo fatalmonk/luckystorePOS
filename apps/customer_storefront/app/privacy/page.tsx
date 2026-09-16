@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: 'https://luckystore1947.com/privacy',
+    canonical: 'https://www.luckystore1947.com/privacy',
   },
 };
 

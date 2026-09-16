@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonicalSlug = toProductSlug(localized.sourceName, localized.product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
-  const canonicalUrl = `https://luckystore1947.com/bn/product/${canonicalSlug}`;
+  const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
   return {
     title: { absolute: `${localized.product.name} – ${formatBdt(localized.product.price)}` },
     description: localized.product.description,
@@ -49,8 +49,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       canonical: canonicalUrl,
       languages: {
         'bn-BD': canonicalUrl,
-        'en-BD': `https://luckystore1947.com/product/${canonicalSlug}`,
-        'x-default': `https://luckystore1947.com/product/${canonicalSlug}`,
+        'en-BD': `https://www.luckystore1947.com/product/${canonicalSlug}`,
+        'x-default': `https://www.luckystore1947.com/product/${canonicalSlug}`,
       },
     },
     openGraph: { type: 'website', locale: 'bn_BD', url: canonicalUrl, title: localized.product.name, description: localized.product.description },
@@ -71,7 +71,7 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
       crossSell={[]}
       locale="bn"
       productUrlName={localized.sourceName}
-      productCanonicalUrl={`https://luckystore1947.com/bn/product/${canonicalSlug}`}
+      productCanonicalUrl={`https://www.luckystore1947.com/bn/product/${canonicalSlug}`}
     />
   );
 }

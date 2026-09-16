@@ -73,7 +73,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${titleName} | লাকি স্টোর`,
       description,
-      url: `https://luckystore1947.com/bn/category/${canonicalSlug}`,
+      url: `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
       siteName: 'লাকি স্টোর',
       locale: 'bn_BD',
       type: 'website',
@@ -83,11 +83,11 @@ export async function generateMetadata({
       follow: true,
     } : undefined,
     alternates: {
-      canonical: `https://luckystore1947.com/bn/category/${canonicalSlug}`,
+      canonical: `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
       languages: {
-        'en-BD': `https://luckystore1947.com/category/${canonicalSlug}`,
-        'bn-BD': `https://luckystore1947.com/bn/category/${canonicalSlug}`,
-        'x-default': `https://luckystore1947.com/category/${canonicalSlug}`,
+        'en-BD': `https://www.luckystore1947.com/category/${canonicalSlug}`,
+        'bn-BD': `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
+        'x-default': `https://www.luckystore1947.com/category/${canonicalSlug}`,
       },
     },
   };

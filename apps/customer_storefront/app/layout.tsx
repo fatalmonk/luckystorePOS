@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Lucky Store' }],
   creator: 'Lucky Store',
-  metadataBase: new URL('https://luckystore1947.com'),
+  metadataBase: new URL('https://www.luckystore1947.com'),
   alternates: {
     canonical: '/',
   },
@@ -167,11 +167,11 @@ export default async function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': ['Store', 'GroceryStore'],
-              '@id': 'https://luckystore1947.com/#grocerystore',
+              '@id': 'https://www.luckystore1947.com/#grocerystore',
               name: 'Lucky Store',
               alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
               description: 'Lucky Store delivers groceries within 1 km of the store in Chattogram. Delivery is free for orders over ৳500 and costs ৳40 for orders below ৳500.',
-              url: 'https://luckystore1947.com',
+              url: 'https://www.luckystore1947.com',
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               currenciesAccepted: 'BDT',

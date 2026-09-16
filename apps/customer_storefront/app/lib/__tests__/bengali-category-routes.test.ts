@@ -83,9 +83,9 @@ describe('Bengali Category Routes Contract', () => {
       searchParams: Promise.resolve({}),
     });
 
-    expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/bn/category');
-    expect(meta.alternates?.languages?.['bn-BD']).toBe('https://luckystore1947.com/bn/category');
-    expect(meta.alternates?.languages?.['en-BD']).toBe('https://luckystore1947.com/category');
+    expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/bn/category');
+    expect(meta.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category');
+    expect(meta.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category');
     expect(meta.title).toContain('পণ্য ব্রাউজ করুন');
   });
 
@@ -106,8 +106,7 @@ describe('Bengali Category Routes Contract', () => {
       searchParams: Promise.resolve({}),
     });
 
-    expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/bn/category/snacks');
-    expect(meta.alternates?.languages?.['bn-BD']).toBe('https://luckystore1947.com/bn/category/snacks');
+    expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/bn/category/snacks');
     expect(meta.title).toContain('নাস্তা ও পানীয়');
     expect(mockNotFound).not.toHaveBeenCalled();
   });

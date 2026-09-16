@@ -118,7 +118,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       });
 
       expect(meta.alternates?.canonical).toBe(
-        'https://luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8',
+        'https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8',
       );
       expect(mockNotFound).not.toHaveBeenCalled();
       expect(mockPermanentRedirect).not.toHaveBeenCalled();
@@ -181,7 +181,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         searchParams: Promise.resolve({}),
       });
 
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/personal-care');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/personal-care');
       expect(meta.robots).toBeUndefined(); // defaults to index,follow
       expect(mockNotFound).not.toHaveBeenCalled();
     });
@@ -218,7 +218,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       });
 
       expect(meta.robots).toEqual({ index: false, follow: true });
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/personal-care');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/personal-care');
     });
 
     it('triggers notFound() in CategorySlugPage component for nonexistent category', async () => {
@@ -276,31 +276,31 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
   describe('Middleware Category Interception Contract', () => {
     it('redirects /category?cat=snacks with HTTP 308 to /category/snacks', async () => {
       const { middleware } = await import('../../../middleware');
-      const req = new NextRequest('https://luckystore1947.com/category?cat=snacks');
+      const req = new NextRequest('https://www.luckystore1947.com/category?cat=snacks');
       const res = await middleware(req);
 
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/snacks');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/snacks');
     });
 
     it('preserves other query parameters while consolidating cat parameter in single 308 hop', async () => {
       const { middleware } = await import('../../../middleware');
-      const req = new NextRequest('https://luckystore1947.com/category?cat=Personal%20Care&sort=price&q=chips');
+      const req = new NextRequest('https://www.luckystore1947.com/category?cat=Personal%20Care&sort=price&q=chips');
       const res = await middleware(req);
 
       expect(res.status).toBe(308);
       expect(res.headers.get('location')).toBe(
-        'https://luckystore1947.com/category/personal-care?sort=price&q=chips',
+        'https://www.luckystore1947.com/category/personal-care?sort=price&q=chips',
       );
     });
 
     it('redirects unnormalized category paths like /category/Personal-Care with HTTP 308 to /category/personal-care', async () => {
       const { middleware } = await import('../../../middleware');
-      const req = new NextRequest('https://luckystore1947.com/category/Personal-Care');
+      const req = new NextRequest('https://www.luckystore1947.com/category/Personal-Care');
       const res = await middleware(req);
 
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/personal-care');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/personal-care');
     });
   });
 
@@ -372,7 +372,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(meta.description).toContain('Shop Miniket, Nazirshail and Chinigura rice in Chittagong at displayed bazaar prices');
       expect(meta.description).toContain('doorstep product inspection');
       expect(meta.description).not.toContain('Guaranteed weight');
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/rice-and-grain');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/rice-and-grain');
     });
 
     it('generates high-intent snippet metadata for /category/oil-and-ghee without unverified dispatch claims', async () => {
@@ -388,7 +388,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(meta.description).not.toContain('Authentic sealed bottles');
       expect(meta.description).not.toContain('fast local dispatch');
       expect(meta.description).not.toContain('Pure');
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/oil-and-ghee');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/oil-and-ghee');
     });
 
     it('generates high-intent snippet metadata for /category/cooking-essentials', async () => {
@@ -402,7 +402,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(titleStr).toBe('Daily Bazaar & Pantry Staples in Chittagong | Lucky Store');
       expect(meta.description).toContain('Shop everyday bazaar essentials: lentils, flour, spices, salt & sugar at displayed prices');
       expect(meta.description).not.toContain('local market prices');
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/cooking-essentials');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/cooking-essentials');
     });
 
     it('generates high-intent snippet metadata for /category/tea-and-coffee without sourcing fiction', async () => {
@@ -417,7 +417,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(meta.description).toContain('Shop Ispahani Mirzapore, Taaza tea and coffee online from Lucky Store in Chittagong');
       expect(meta.description).not.toContain('Handpicked blends');
       expect(meta.description).not.toContain('garden-fresh');
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/tea-and-coffee');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/tea-and-coffee');
     });
 
     it('falls back to factual metadata for non-money category without delivery speed claims', async () => {
@@ -439,20 +439,20 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
   describe('Adversarial SEO & Canonical Interception Contract', () => {
     it('permanently redirects legacy tea-coffee alias to /category/tea-and-coffee in middleware with HTTP 308', async () => {
       const { middleware } = await import('../../../middleware');
-      const req = new NextRequest('https://luckystore1947.com/category/tea-coffee');
+      const req = new NextRequest('https://www.luckystore1947.com/category/tea-coffee');
       const res = await middleware(req);
 
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/tea-and-coffee');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/tea-and-coffee');
     });
 
     it('permanently redirects legacy tea-&-coffee alias to /category/tea-and-coffee in middleware with HTTP 308', async () => {
       const { middleware } = await import('../../../middleware');
-      const req = new NextRequest('https://luckystore1947.com/category/tea-&-coffee');
+      const req = new NextRequest('https://www.luckystore1947.com/category/tea-&-coffee');
       const res = await middleware(req);
 
       expect(res.status).toBe(308);
-      expect(res.headers.get('location')).toBe('https://luckystore1947.com/category/tea-and-coffee');
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/tea-and-coffee');
     });
 
     it('preserves clean parent canonical and adds noindex,follow on filtered category queries', async () => {
@@ -463,7 +463,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       });
 
       expect(meta.robots).toEqual({ index: false, follow: true });
-      expect(meta.alternates?.canonical).toBe('https://luckystore1947.com/category/rice-and-grain');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/rice-and-grain');
     });
 
     it('rejects unverified promotional claims across all money metadata entries', async () => {
@@ -495,10 +495,10 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       const { middleware } = await import('../../../middleware');
       
       const malformedUrls = [
-        'https://luckystore1947.com/category/%E0%A4%A',
-        'https://luckystore1947.com/category/%ZZ',
-        'https://luckystore1947.com/category/%',
-        'https://luckystore1947.com/category/%a',
+        'https://www.luckystore1947.com/category/%E0%A4%A',
+        'https://www.luckystore1947.com/category/%ZZ',
+        'https://www.luckystore1947.com/category/%',
+        'https://www.luckystore1947.com/category/%a',
       ];
 
       for (const url of malformedUrls) {

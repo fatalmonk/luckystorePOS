@@ -16,8 +16,8 @@ export default async function Home() {
   const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': 'https://luckystore1947.com/#website',
-    url: 'https://luckystore1947.com/',
+    '@id': 'https://www.luckystore1947.com/#website',
+    url: 'https://www.luckystore1947.com/',
     name: 'Lucky Store',
     alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
     description: 'Lucky Store offers pantry staples, snacks, dairy, and household essentials with local delivery and cash on delivery in Chattogram.',
@@ -30,7 +30,7 @@ export default async function Home() {
       '@type': 'ListItem',
       position: index + 1,
       name: product.name,
-      url: `https://luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
+      url: `https://www.luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
     })),
   };
 

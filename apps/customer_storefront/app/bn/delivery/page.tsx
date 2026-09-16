@@ -10,11 +10,11 @@ export const metadata: Metadata = {
   title: 'চট্টগ্রাম grocery delivery | Lucky Store',
   description: 'চকবাজার থেকে ১ কিমির মধ্যে grocery delivery। ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি, ক্যাশ অন ডেলিভারি ও bKash।',
   alternates: {
-    canonical: 'https://luckystore1947.com/bn/delivery',
+    canonical: 'https://www.luckystore1947.com/bn/delivery',
     languages: {
-      'en-BD': 'https://luckystore1947.com/delivery',
-      'bn-BD': 'https://luckystore1947.com/bn/delivery',
-      'x-default': 'https://luckystore1947.com/delivery',
+      'en-BD': 'https://www.luckystore1947.com/delivery',
+      'bn-BD': 'https://www.luckystore1947.com/bn/delivery',
+      'x-default': 'https://www.luckystore1947.com/delivery',
     },
   },
 };

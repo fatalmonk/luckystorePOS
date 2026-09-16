@@ -5,4 +5,4 @@ Disallow: /admin/
 
 Content-Signal: ai-train=no, search=yes, ai-input=no
 
-Sitemap: https://luckystore1947.com/sitemap.xml
+Sitemap: https://www.luckystore1947.com/sitemap.xml

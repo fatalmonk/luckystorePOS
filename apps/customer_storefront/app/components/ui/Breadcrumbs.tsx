@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { JsonLd } from '../seo/JsonLd';
 
-const SITE_URL = 'https://luckystore1947.com';
+const SITE_URL = 'https://www.luckystore1947.com';
 
 export interface BreadcrumbItem {
   label: string;

@@ -29,11 +29,11 @@ export async function generateMetadata({
       follow: true,
     } : undefined,
     alternates: {
-      canonical: 'https://luckystore1947.com/bn/category',
+      canonical: 'https://www.luckystore1947.com/bn/category',
       languages: {
-        'en-BD': 'https://luckystore1947.com/category',
-        'bn-BD': 'https://luckystore1947.com/bn/category',
-        'x-default': 'https://luckystore1947.com/category',
+        'en-BD': 'https://www.luckystore1947.com/category',
+        'bn-BD': 'https://www.luckystore1947.com/bn/category',
+        'x-default': 'https://www.luckystore1947.com/category',
       },
     },
   };
