@@ -96,7 +96,7 @@ name-family match.
 | --- | --- | --- | --- |
 | IC-POL-CAR-2 | Polar Carnival Butterscotch | [Carnival Butterscotch](https://polarbd.com/en/product/cone-carnival-butterscotch/) | exact |
 | IC-POL-CAR, IC-POL-CAR-3 | Polar Carnival Vanilla | [Carnival Vanilla](https://polarbd.com/en/product/cone-carnival-vanilla/) | exact name; duplicate SKUs require pack confirmation |
-| IC-POL-CHO | Polar Chocobar | [Chocobar Vanilla](https://polarbd.com/en/product/stick-chocobar-vanilla/); [Choco Bar Chocolate](https://polarbd.com/en/product/stick-choco-bar-chocolate/) | variant unresolved |
+| IC-POL-CHO | Polar Chocobar | [Chocobar Vanilla](https://polarbd.com/en/product/stick-chocobar-vanilla/) | user-confirmed variant |
 | IC-POL-CHO-2 | Polar Chocodelight | [Chocodelight Cone](https://polarbd.com/en/product/cone-chocodelight/) | same name-family |
 | IC-POL-COF | Polar Coffee 1L | [Coffee Tub](https://polarbd.com/en/product/tub-coffee/) | same name-family |
 | IC-POL-CRU | Polar Crunchy | [Crunchy](https://polarbd.com/en/product/stick-crunchy/) | exact |
@@ -104,7 +104,7 @@ name-family match.
 | IC-POL-DS1 | Polar Double Sundae 1 Liter | — | no exact catalogue page found |
 | IC-POL-ESS | Polar Essora | [Essora Banana](https://polarbd.com/en/product/essora-banana/); [Essora Mixed Berry](https://polarbd.com/en/product/essora-mixed-berry/) | flavor unresolved |
 | IC-POL-HAZ | Polar Hazelnut | [Carnival Hazelnut](https://polarbd.com/en/product/cone-carnival-hazelnut/) | product-family confirmation required |
-| IC-POL-ICE | Polar Ice Lolly | [Ice Lolly Orange](https://polarbd.com/en/product/stick-ice-lolly-orange/); [Ice Lolly Lemon](https://polarbd.com/en/product/stick-ice-lolly-lemon/) | flavor unresolved |
+| IC-POL-ICE | Polar Ice Lolly | [Ice Lolly Lemon](https://polarbd.com/en/product/stick-ice-lolly-lemon/) | user-confirmed variant |
 | IC-POL-K1L-2 | Polar Kheer 1 Liter | [Kheer Tub](https://polarbd.com/en/product/tub-kheer/) | same name-family |
 | IC-POL-K1L | Polar Kheer 1/2 Liter | [Kheer Tub](https://polarbd.com/en/product/tub-kheer/) | same name-family; pack confirmation required |
 | IC-POL-MAL | Polar Malai | [Malai](https://polarbd.com/en/product/stick-malai/) | exact |
@@ -115,7 +115,7 @@ name-family match.
 | IC-POL-R1L | Polar Regular 1 Liter | [Vanilla Tub](https://polarbd.com/en/product/tub-vanilla/); [Chocolate Tub](https://polarbd.com/en/product/tub-chocolate/); [Strawberry Tub](https://polarbd.com/en/product/tub-strawberry/) | flavor unresolved |
 | IC-POL-ROB | Polar Robusto | [Robusto Salted Caramel](https://polarbd.com/en/product/stick-robusto-salted-caramel/) | user-confirmed variant |
 | IC-POL-ROY | Polar Royal Sundae | [Royal Sundae](https://polarbd.com/en/product/cup-royal-sundae/) | exact |
-| IC-POL-SNC | Polar Shell N Core | [Cool Shell N Core](https://polarbd.com/en/product/stick-cool-shell-n-core/) | same name-family |
+| IC-POL-SNC | Polar Shell N Core | [Cool Shell N Core](https://polarbd.com/en/product/stick-cool-shell-n-core/) | user-confirmed name-family match |
 | IC-POL-SHO | Polar Shor Malai | [Shor Malai](https://polarbd.com/en/product/stick-shor-malai/) | exact |
 | IC-POL-TOR | Polar Tornado | [Tornado Strawberry](https://polarbd.com/en/product/stick-tornado-strawberry/); [Tornado Mango](https://polarbd.com/en/product/stick-tornado-mango/) | user-confirmed variants; SKU/package confirmation still required |
 | IC-POL-TR1 | Polar Tub Regular 1/2 Liter | [Vanilla Tub](https://polarbd.com/en/product/tub-vanilla/); [Chocolate Tub](https://polarbd.com/en/product/tub-chocolate/); [Strawberry Tub](https://polarbd.com/en/product/tub-strawberry/) | flavor unresolved |

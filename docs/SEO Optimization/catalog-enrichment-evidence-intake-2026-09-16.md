@@ -50,7 +50,7 @@ similarly packaged variants.
 | 5830390b-4eef-4685-965e-de21d8e4ae7e | IC-POL-CAR-2 | Polar Carnival Butterscotch | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/cone-carnival-butterscotch/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | e8771528-0444-4659-ba97-d71e7a8ff438 | IC-POL-CAR | Polar Carnival Vanilla | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/cone-carnival-vanilla/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | 6df59696-6647-4c08-8cd4-4a137da6326b | IC-POL-CAR-3 | Polar Carnival Vanilla | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/cone-carnival-vanilla/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
-| fc6d963a-1d54-42d0-8b6b-47825cf94f11 | IC-POL-CHO | Polar Chocobar | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
+| fc6d963a-1d54-42d0-8b6b-47825cf94f11 | IC-POL-CHO | Polar Chocobar | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-chocobar-vanilla/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | 4ca03fce-c4b6-493a-af3d-d6c941bfba68 | IC-POL-CHO-2 | Polar Chocodelight | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | 2e948079-ebb6-498f-b14a-fda18fbbf721 | IC-POL-COF | Polar Coffee 1L | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/tub-coffee/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | 8f7ce150-2419-408f-bd99-db8daa8f9b05 | IC-POL-CRU | Polar Crunchy | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/stick-crunchy/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
@@ -58,7 +58,7 @@ similarly packaged variants.
 | 70a322a1-cab7-4504-bf0e-999118e6fcc6 | IC-POL-DS1 | Polar Double Sundae 1 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | 0aa0a385-a936-4c28-8b3c-6755436804c1 | IC-POL-ESS | Polar Essora | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | 1ba3a780-6e7b-4d8a-b451-36a959a823e6 | IC-POL-HAZ | Polar Hazelnut | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
-| 604e6bb0-6042-4daf-adb9-12a4f9738ef4 | IC-POL-ICE | Polar Ice Lolly | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
+| 604e6bb0-6042-4daf-adb9-12a4f9738ef4 | IC-POL-ICE | Polar Ice Lolly | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-ice-lolly-lemon/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | c1895793-84d3-492d-93eb-1c56383cecc4 | IC-POL-K1L-2 | Polar Kheer 1 Liter | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/tub-kheer/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | 79e0ece1-0c5e-4e2f-a003-d2f37b73fafb | IC-POL-K1L | Polar Kheer 1/2 Liter | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/tub-kheer/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | b77e2fe6-53c0-4fc5-8de3-31cec1e1f510 | IC-POL-MAL | Polar Malai | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/stick-malai/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
@@ -69,7 +69,7 @@ similarly packaged variants.
 | 94c748e3-6bed-4898-950d-2ad2ae9deb08 | IC-POL-R1L | Polar Regular 1 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | 2c367e44-91b4-4fcf-84a3-09e9dcecdbc7 | IC-POL-ROB | Polar Robusto | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-robusto-salted-caramel/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | d132ec9d-3175-440b-b1ac-d4cbfea8e55b | IC-POL-ROY | Polar Royal Sundae | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/cup-royal-sundae/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
-| fe31ca90-6d1b-4ee8-9d69-1b34c2544190 | IC-POL-SNC | Polar Shell N Core | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
+| fe31ca90-6d1b-4ee8-9d69-1b34c2544190 | IC-POL-SNC | Polar Shell N Core | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-cool-shell-n-core/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | 2233c416-8337-461f-a167-88dcee05b3d5 | IC-POL-SHO | Polar Shor Malai | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/stick-shor-malai/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | fcefa591-3172-43b2-b174-a63802108a7a | IC-POL-TOR | Polar Tornado | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-tornado-strawberry/; https://polarbd.com/en/product/stick-tornado-mango/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | eca88367-4d03-4562-b7e8-88ef2eea38c7 | IC-POL-TR1 | Polar Tub Regular 1/2 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
