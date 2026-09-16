@@ -61,6 +61,15 @@ function requireApprovedRef(label, ref) {
   return ref;
 }
 
+function isMissingSchemaObject(error) {
+  return Boolean(
+    error &&
+      (error.code === 'PGRST205' ||
+        error.code === 'PGRST202' ||
+        /could not find the table .* in the schema cache/i.test(error.message || '')),
+  );
+}
+
 let projectRef = '';
 try {
   const parsedSupabaseUrl = supabaseUrl ? new URL(supabaseUrl) : null;
@@ -126,7 +135,11 @@ async function runViaServiceRoleClient(url, key) {
 
   // 0. Clean mutable test orders & idempotency keys
   const { error: ordersCleanupError } = await supabase.from('orders').delete().eq('store_id', STORE_ID);
-  if (ordersCleanupError) throw new Error(`Order cleanup failed: ${ordersCleanupError.message}`);
+  if (ordersCleanupError && isMissingSchemaObject(ordersCleanupError)) {
+    console.warn(`[Seed] Orders cleanup skipped: ${ordersCleanupError.message}`);
+  } else if (ordersCleanupError) {
+    throw new Error(`Order cleanup failed: ${ordersCleanupError.message}`);
+  }
   const { error: idempotencyCleanupError } = await supabase.from('idempotency_keys').delete().eq('tenant_id', TENANT_ID);
   if (idempotencyCleanupError) throw new Error(`Idempotency cleanup failed: ${idempotencyCleanupError.message}`);
 
