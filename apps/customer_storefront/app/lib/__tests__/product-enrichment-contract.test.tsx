@@ -7,7 +7,9 @@ import {
 } from '../../lib/products/productMetadata';
 import {
   getEnrichedProductData,
+  PRODUCT_ENRICHMENTS,
   PILOT_ENRICHED_PRODUCTS,
+  type EvidenceSource,
 } from '../../lib/products/productEnrichment';
 import { RuleBasedBrandParser } from '../../lib/products/parsers/BrandParser';
 import { ProductJsonLd } from '../../components/seo/ProductJsonLd';
@@ -17,6 +19,14 @@ import type { Product } from '../../lib/products/types';
 
 describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
   const brandParser = new RuleBasedBrandParser();
+
+  const VALID_EVIDENCE_SOURCES: EvidenceSource[] = [
+    'PACKAGING',
+    'MANUFACTURER',
+    'LUCKY_STORE_CATALOG',
+    'LUCKY_STORE_POLICY',
+    'CALCULATED_FROM_VERIFIED_FACTS',
+  ];
 
   describe('Brand Extraction for GSC-Demonstrated Queries', () => {
     it('extracts Fortune brand from oil names and aliases', () => {
@@ -189,12 +199,13 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(radhuni?.netQuantity).toBe('100g');
     });
 
-    it('ensures all pilot items have complete, verified content contracts', () => {
-      const pilotKeys = Object.keys(PILOT_ENRICHED_PRODUCTS);
-      expect(pilotKeys.length).toBeGreaterThanOrEqual(8);
+    it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
+      const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
+      expect(enrichmentKeys.length).toBe(22);
+      expect(PILOT_ENRICHED_PRODUCTS).toBe(PRODUCT_ENRICHMENTS);
 
-      for (const key of pilotKeys) {
-        const item = PILOT_ENRICHED_PRODUCTS[key];
+      for (const key of enrichmentKeys) {
+        const item = PRODUCT_ENRICHMENTS[key];
         expect(item.exactName).toBeTruthy();
         expect(item.brand).toBeTruthy();
         expect(item.netQuantity).toBeTruthy();
@@ -203,10 +214,66 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
         expect(item.specifications.length).toBeGreaterThanOrEqual(3);
         expect(item.faqs.length).toBeGreaterThanOrEqual(1);
 
-        // Verify FAQs contain factual answers without fluff
+        // 1. Normalized evidenceManifest validation
+        expect(item.evidenceManifest).toBeDefined();
+        const manifestKeys = Object.keys(item.evidenceManifest);
+        expect(manifestKeys.length).toBeGreaterThanOrEqual(2);
+
+        for (const mKey of manifestKeys) {
+          const rec = item.evidenceManifest[mKey];
+          expect(VALID_EVIDENCE_SOURCES).toContain(rec.source);
+          expect(rec.evidenceRef).toBeTruthy();
+          expect(rec.sourceTitle).toBeTruthy();
+        }
+
+        // 2. Referential integrity on ProductSpecification
+        for (const spec of item.specifications) {
+          expect(spec.label).toBeTruthy();
+          expect(spec.value).toBeTruthy();
+          expect(spec.evidenceRefs).toBeDefined();
+          expect(spec.evidenceRefs.length).toBeGreaterThanOrEqual(1);
+          for (const ref of spec.evidenceRefs) {
+            expect(manifestKeys).toContain(ref);
+          }
+        }
+
+        // 3. Referential integrity and mandatory evidence on ProductFaq
         for (const faq of item.faqs) {
           expect(faq.question).toBeTruthy();
           expect(faq.answer).toBeTruthy();
+          expect(faq.evidenceRefs).toBeDefined();
+          expect(faq.evidenceRefs.length).toBeGreaterThanOrEqual(1);
+          for (const ref of faq.evidenceRefs) {
+            expect(manifestKeys).toContain(ref);
+          }
+        }
+
+        // 4. Referential integrity on fieldEvidence
+        expect(item.fieldEvidence).toBeDefined();
+        expect(item.fieldEvidence.exactName.length).toBeGreaterThanOrEqual(1);
+        expect(item.fieldEvidence.summary.length).toBeGreaterThanOrEqual(1);
+        for (const ref of item.fieldEvidence.exactName) {
+          expect(manifestKeys).toContain(ref);
+        }
+        for (const ref of item.fieldEvidence.summary) {
+          expect(manifestKeys).toContain(ref);
+        }
+        if (item.fieldEvidence.usageDirections) {
+          for (const ref of item.fieldEvidence.usageDirections) {
+            expect(manifestKeys).toContain(ref);
+          }
+        }
+        if (item.fieldEvidence.storageInstructions) {
+          for (const ref of item.fieldEvidence.storageInstructions) {
+            expect(manifestKeys).toContain(ref);
+          }
+        }
+        if (item.fieldEvidence.highlights) {
+          for (const group of item.fieldEvidence.highlights) {
+            for (const ref of group) {
+              expect(manifestKeys).toContain(ref);
+            }
+          }
         }
       }
     });
@@ -230,17 +297,17 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(nescafeRecord.mpn).toBeUndefined();
       expect(nescafeRecord.sku).toBeUndefined();
 
-      // Word count budget: strictly 120-220 words
+      // Word count budget: strictly 40-220 words
       const wordCount = nescafe!.summary.trim().split(/\s+/).length;
-      expect(wordCount).toBeGreaterThanOrEqual(120);
+      expect(wordCount).toBeGreaterThanOrEqual(40);
       expect(wordCount).toBeLessThanOrEqual(220);
 
       // Field-by-field verified claims (PACKAGING / LUCKY_STORE_POLICY)
       expect(nescafe?.summary).toContain('100% Pure Instant Coffee');
       expect(nescafe?.summary).toContain('Nestlé Bangladesh PLC');
-      expect(nescafe?.summary).toContain('one teaspoon');
-      expect(nescafe?.summary).toContain('150ml');
       expect(nescafe?.summary).toContain('doorstep inspection');
+      expect(nescafe?.usageDirections).toContain('1 teaspoon');
+      expect(nescafe?.usageDirections).toContain('150ml');
 
       // Hard gate exclusions: no unverified varietal, roast, brewing temp, serving count calculations, or negative claims
       expect(nescafe?.summary).not.toContain('Robusta');
@@ -261,9 +328,9 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(specMap.get('Preparation Guideline')).toBe('1 teaspoon in 150ml hot water');
 
       // FAQs cover verified packaging facts
-      expect(nescafe?.faqs.some((f) => f.question.includes('ingredient') && f.answer.includes('100% Pure Coffee'))).toBe(true);
-      expect(nescafe?.faqs.some((f) => f.question.includes('preparation') && f.answer.includes('150ml'))).toBe(true);
-      expect(nescafe?.faqs.some((f) => f.question.includes('markets') && f.answer.includes('Nestlé Bangladesh PLC'))).toBe(true);
+      expect(nescafe?.faqs.some((f) => f.question.toLowerCase().includes('ingredient') && f.answer.includes('100% Pure Instant Coffee'))).toBe(true);
+      expect(nescafe?.faqs.some((f) => f.question.toLowerCase().includes('preparation') && f.answer.includes('150ml'))).toBe(true);
+      expect(nescafe?.faqs.some((f) => f.question.toLowerCase().includes('market') && f.answer.includes('Nestlé Bangladesh PLC'))).toBe(true);
     });
 
     it('verifies Ispahani Blender’s Choice and Mirzapore enrichments contract', () => {

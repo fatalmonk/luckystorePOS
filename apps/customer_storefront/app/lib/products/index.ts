@@ -49,8 +49,12 @@ export {
 // Enrichment (Phase 4A)
 export {
   getEnrichedProductData,
+  PRODUCT_ENRICHMENTS,
   PILOT_ENRICHED_PRODUCTS,
   type ProductEnrichment,
   type ProductSpecification,
   type ProductFaq,
+  type ProductFieldEvidence,
+  type EvidenceSource,
+  type EvidenceRecord,
 } from './productEnrichment';
