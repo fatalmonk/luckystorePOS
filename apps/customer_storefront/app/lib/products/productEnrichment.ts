@@ -2135,12 +2135,14 @@ export const PILOT_ENRICHED_PRODUCTS = PRODUCT_ENRICHMENTS;
 export function getEnrichedProductData(slugOrId: string): ProductEnrichment | undefined {
   if (!slugOrId) return undefined;
 
+  const normalized = slugOrId.toLowerCase().trim();
+
   // 1. Direct key match (e.g. 'b8a7c6c6')
-  const directMatch = PRODUCT_ENRICHMENTS[slugOrId];
+  const directMatch = PRODUCT_ENRICHMENTS[normalized];
   if (directMatch) return directMatch;
 
   // 2. Extract prefix from canonical slug format: name-words--[prefix]
-  const doubleHyphenParts = slugOrId.split('--');
+  const doubleHyphenParts = normalized.split('--');
   if (doubleHyphenParts.length > 1) {
     const candidatePrefix = doubleHyphenParts[doubleHyphenParts.length - 1];
     const match = PRODUCT_ENRICHMENTS[candidatePrefix];
@@ -2148,7 +2150,7 @@ export function getEnrichedProductData(slugOrId: string): ProductEnrichment | un
   }
 
   // 3. Extract prefix from single hyphen standard slug or raw UUID
-  const singleHyphenParts = slugOrId.split('-');
+  const singleHyphenParts = normalized.split('-');
   const lastPart = singleHyphenParts[singleHyphenParts.length - 1];
   if (lastPart && lastPart.length >= 8) {
     const candidatePrefix = lastPart.slice(0, 8);
@@ -2161,6 +2163,12 @@ export function getEnrichedProductData(slugOrId: string): ProductEnrichment | un
   if (firstPart && firstPart.length === 8 && /^[0-9a-f]{8}$/i.test(firstPart)) {
     const match = PRODUCT_ENRICHMENTS[firstPart.toLowerCase()];
     if (match) return match;
+  }
+
+  // 5. Preserve compatibility with legacy slugs that contain a known prefix
+  // outside the canonical suffix position.
+  for (const [prefix, data] of Object.entries(PRODUCT_ENRICHMENTS)) {
+    if (normalized.includes(prefix)) return data;
   }
 
   return undefined;

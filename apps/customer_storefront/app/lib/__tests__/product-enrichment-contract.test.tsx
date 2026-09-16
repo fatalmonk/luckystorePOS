@@ -192,6 +192,11 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(radhuni?.netQuantity).toBe('100g');
     });
 
+    it('normalizes legacy enrichment lookup inputs', () => {
+      expect(getEnrichedProductData('  B8A7C6C6  ')).toBe(PRODUCT_ENRICHMENTS.b8a7c6c6);
+      expect(getEnrichedProductData('legacy-b8a7c6c6-product')).toBe(PRODUCT_ENRICHMENTS.b8a7c6c6);
+    });
+
     it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
       const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
       expect(enrichmentKeys.length).toBeGreaterThanOrEqual(22);
@@ -244,8 +249,20 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
         // 4. Referential integrity on fieldEvidence
         expect(item.fieldEvidence).toBeDefined();
         expect(item.fieldEvidence.exactName.length).toBeGreaterThanOrEqual(1);
+        expect(item.fieldEvidence.brand.length).toBeGreaterThanOrEqual(1);
+        expect(item.fieldEvidence.netQuantity.length).toBeGreaterThanOrEqual(1);
+        expect(item.fieldEvidence.category.length).toBeGreaterThanOrEqual(1);
         expect(item.fieldEvidence.summary.length).toBeGreaterThanOrEqual(1);
         for (const ref of item.fieldEvidence.exactName) {
+          expect(manifestKeys).toContain(ref);
+        }
+        for (const ref of item.fieldEvidence.brand) {
+          expect(manifestKeys).toContain(ref);
+        }
+        for (const ref of item.fieldEvidence.netQuantity) {
+          expect(manifestKeys).toContain(ref);
+        }
+        for (const ref of item.fieldEvidence.category) {
           expect(manifestKeys).toContain(ref);
         }
         for (const ref of item.fieldEvidence.summary) {

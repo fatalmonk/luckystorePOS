@@ -8,7 +8,7 @@
  *
  * Execution Priority:
  * 1. Supabase Management API (via SUPABASE_ACCESS_TOKEN) -> raw SQL execution
- * 2. Direct Postgres connection (via DATABASE_URL or TEST_DATABASE_URL) -> raw SQL execution
+ * 2. Direct Postgres connection (via TEST_DATABASE_URL) -> raw SQL execution
  * 3. Table-level service_role upserts derived from canonical SQL definition
  *
  * Safety enforcement:
@@ -29,7 +29,7 @@ const APPROVED_TEST_REF = 'grxxenvdhfwzafzyykgo';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.TEST_SUPABASE_URL || '';
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TEST_SUPABASE_SERVICE_ROLE_KEY || '';
 const accessToken = process.env.SUPABASE_ACCESS_TOKEN || '';
-const databaseUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL || '';
+const databaseUrl = process.env.TEST_DATABASE_URL || '';
 
 const fixturePath = path.resolve(__dirname, '../../supabase/seed/storefront_test_fixtures.sql');
 
@@ -40,26 +40,47 @@ if (!fs.existsSync(fixturePath)) {
 
 const sqlContent = fs.readFileSync(fixturePath, 'utf8');
 
-// Safety verification
+// Safety verification. Every execution target must resolve to the one
+// approved test project; unknown or mismatched targets fail closed.
+function projectRefFromDatabaseUrl(rawUrl) {
+  if (!rawUrl) return null;
+  try {
+    const parsed = new URL(rawUrl);
+    const userRef = decodeURIComponent(parsed.username).match(/^postgres\.([a-z0-9]+)$/i)?.[1];
+    const hostRef = parsed.hostname.match(/^db\.([a-z0-9]+)\.supabase\.co$/i)?.[1];
+    return userRef || hostRef || null;
+  } catch {
+    return null;
+  }
+}
+
+function requireApprovedRef(label, ref) {
+  if (!ref || ref === PRODUCTION_REF || ref !== APPROVED_TEST_REF) {
+    throw new Error(`${label} must target the approved test Supabase project (${APPROVED_TEST_REF})`);
+  }
+  return ref;
+}
+
 let projectRef = '';
 try {
-  if (supabaseUrl) {
-    projectRef = new URL(supabaseUrl).hostname.split('.')[0];
-  } else if (databaseUrl) {
-    projectRef = (databaseUrl.match(/postgres\.([a-z0-9]+):/) || [])[1] || '';
+  const parsedSupabaseUrl = supabaseUrl ? new URL(supabaseUrl) : null;
+  const urlRef = parsedSupabaseUrl && parsedSupabaseUrl.hostname.endsWith('.supabase.co')
+    ? parsedSupabaseUrl.hostname.split('.')[0]
+    : null;
+  if (supabaseUrl && !urlRef) {
+    throw new Error('Supabase URL must use a *.supabase.co hostname');
   }
-} catch {
-  console.error(`Invalid Supabase URL: ${supabaseUrl}`);
+  const databaseRef = projectRefFromDatabaseUrl(databaseUrl);
+  if (databaseUrl && !databaseRef) {
+    throw new Error('TEST_DATABASE_URL does not identify a Supabase project ref');
+  }
+  if (urlRef && databaseRef && urlRef !== databaseRef) {
+    throw new Error(`Supabase URL ref ${urlRef} does not match TEST_DATABASE_URL ref ${databaseRef}`);
+  }
+  projectRef = requireApprovedRef('Supabase URL', urlRef || databaseRef);
+} catch (error) {
+  console.error(`FATAL: ${error.message}`);
   process.exit(1);
-}
-
-if (projectRef === PRODUCTION_REF) {
-  console.error('FATAL: Refusing to seed against production Supabase (hvmyxyccfnkrbxqbhlnm)!');
-  process.exit(1);
-}
-
-if (projectRef && projectRef !== APPROVED_TEST_REF) {
-  console.warn(`Warning: Target project ref is ${projectRef} (Approved: ${APPROVED_TEST_REF})`);
 }
 
 async function runViaManagementApi(token, ref, sql) {
@@ -104,8 +125,10 @@ async function runViaServiceRoleClient(url, key) {
   const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
   // 0. Clean mutable test orders & idempotency keys
-  await supabase.from('orders').delete().eq('store_id', STORE_ID);
-  await supabase.from('idempotency_keys').delete().eq('tenant_id', TENANT_ID);
+  const { error: ordersCleanupError } = await supabase.from('orders').delete().eq('store_id', STORE_ID);
+  if (ordersCleanupError) throw new Error(`Order cleanup failed: ${ordersCleanupError.message}`);
+  const { error: idempotencyCleanupError } = await supabase.from('idempotency_keys').delete().eq('tenant_id', TENANT_ID);
+  if (idempotencyCleanupError) throw new Error(`Idempotency cleanup failed: ${idempotencyCleanupError.message}`);
 
   // 1. Tenant
   const { error: tErr } = await supabase.from('tenants').upsert({ id: TENANT_ID, name: 'Lucky Store Test Tenant' });

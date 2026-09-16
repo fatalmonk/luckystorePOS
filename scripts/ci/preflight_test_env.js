@@ -36,13 +36,19 @@ try {
   process.exit(1);
 }
 
+if (!new URL(supabaseUrl).hostname.endsWith('.supabase.co')) {
+  console.error('FATAL: Supabase URL must use a *.supabase.co hostname.');
+  process.exit(1);
+}
+
 if (projectRef === PRODUCTION_REF) {
   console.error('FATAL: Aborting preflight. Targeting production Supabase (hvmyxyccfnkrbxqbhlnm) is forbidden!');
   process.exit(1);
 }
 
 if (projectRef !== APPROVED_TEST_REF) {
-  console.warn(`[Preflight] Warning: Target ref is ${projectRef} (Approved test ref: ${APPROVED_TEST_REF})`);
+  console.error(`[Preflight] FATAL: Target ref is ${projectRef || 'unknown'}; only ${APPROVED_TEST_REF} is approved.`);
+  process.exit(1);
 }
 
 const client = createClient(supabaseUrl, anonKey);
@@ -84,16 +90,17 @@ async function runPreflight() {
   });
   if (searchErr) throw new Error(`search_items_pos RPC check failed: ${searchErr.message}`);
   const items = searchData ?? [];
-  if (items.length === 0) {
-    throw new Error(`search_items_pos returned 0 items for store ${STORE_ID}. Check stock_levels association.`);
+  if (items.length === 0 || !items.some((item) => Number(item.qty_on_hand) > 0)) {
+    throw new Error(`search_items_pos returned no sellable stock for store ${STORE_ID}. Check stock_levels association.`);
   }
   console.log(`✓ search_items_pos RPC verified (${items.length} items returned for store)`);
 
-  // 4. Order RPC signature test (call with dummy order number to verify function exists)
+  // 4. Probe the order RPC with an invalid store so existence is tested without
+  // inserting an order or touching stock/idempotency state.
   const { error: orderRpcErr } = await client.rpc('create_order_with_stock_idempotent', {
     p_order_number: 'INVALID-PROBE',
     p_tenant_id: '00000000-0000-0000-0000-000000000001',
-    p_store_id: STORE_ID,
+    p_store_id: '00000000-0000-0000-0000-000000000000',
     p_customer_name: 'Probe',
     p_customer_phone: '01700000000',
     p_customer_address: 'Probe address',
@@ -106,7 +113,11 @@ async function runPreflight() {
 
   if (orderRpcErr) {
     // If error is schema/format validation (e.g. 'Invalid checkout details' or 'Cart is empty' or 'function does not exist')
-    if (orderRpcErr.message.includes('does not exist') || orderRpcErr.code === '42883') {
+    if (
+      orderRpcErr.message.includes('does not exist') ||
+      orderRpcErr.code === '42883' ||
+      orderRpcErr.code === 'PGRST202'
+    ) {
       throw new Error(`create_order_with_stock_idempotent RPC missing: ${orderRpcErr.message}`);
     }
     console.log(`✓ create_order_with_stock_idempotent RPC signature verified (Validation trigger: ${orderRpcErr.message})`);

@@ -30,13 +30,33 @@ describe('E2E mutation safety', () => {
     expect(result.allowed).toBe(false);
   });
 
-  it('allows mutation only for a matching non-production preview ref', () => {
+  it('allows mutation only for the approved test ref', () => {
     const result = getMutationSafety({
       E2E_CAN_MUTATE: 'true',
-      E2E_SUPABASE_PROJECT_REF: 'preview-branch-ref',
-      NEXT_PUBLIC_SUPABASE_URL: 'https://preview-branch-ref.supabase.co',
+      E2E_SUPABASE_PROJECT_REF: 'grxxenvdhfwzafzyykgo',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://grxxenvdhfwzafzyykgo.supabase.co',
     });
 
     expect(result).toMatchObject({ allowed: true, requested: true });
+  });
+
+  it('refuses mutation against an unapproved non-production ref', () => {
+    const result = getMutationSafety({
+      E2E_CAN_MUTATE: 'true',
+      E2E_SUPABASE_PROJECT_REF: 'other-test-ref',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://other-test-ref.supabase.co',
+    });
+
+    expect(result.allowed).toBe(false);
+  });
+
+  it('refuses an approved ref on a non-Supabase host', () => {
+    const result = getMutationSafety({
+      E2E_CAN_MUTATE: 'true',
+      E2E_SUPABASE_PROJECT_REF: 'grxxenvdhfwzafzyykgo',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://grxxenvdhfwzafzyykgo.example.test',
+    });
+
+    expect(result.allowed).toBe(false);
   });
 });

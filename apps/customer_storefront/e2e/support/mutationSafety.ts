@@ -17,7 +17,9 @@ function projectRefFromUrl(rawUrl: string | undefined): string | null {
   if (!rawUrl) return null;
 
   try {
-    return new URL(rawUrl).hostname.split('.')[0] || null;
+    const hostname = new URL(rawUrl).hostname;
+    if (!hostname.endsWith('.supabase.co')) return null;
+    return hostname.split('.')[0] || null;
   } catch {
     return null;
   }
@@ -56,6 +58,17 @@ export function getMutationSafety(env: MutationEnvironment = {
       allowed: false,
       requested,
       reason: 'Configured Supabase URL does not match the declared test project ref',
+    };
+  }
+
+  if (
+    configuredRef !== APPROVED_TEST_SUPABASE_PROJECT_REF ||
+    expectedTestRef !== APPROVED_TEST_SUPABASE_PROJECT_REF
+  ) {
+    return {
+      allowed: false,
+      requested,
+      reason: 'Mutations are restricted to the approved test Supabase project',
     };
   }
 
