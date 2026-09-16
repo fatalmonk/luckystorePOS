@@ -92,8 +92,8 @@ Before expanding `productEnrichment.ts` or modifying structured data, the follow
 | :--- | :--- | :---: |
 | **Step 1: Adapter Repair** | Fix `SupabaseProductAdapter.ts` + add regression tests | **COMPLETE** |
 | **Step 2: Catalog Validation** | Validate representative products live, verify sitemap invariance | **COMPLETE** |
-| **Step 3: Nescafé 90g Evidence Pack** | Assemble packaging facts from physical SKU / Nestlé Bangladesh | Pending Evidence |
-| **Step 4: Coffee Enrichment Cohort** | Scale verified attributes to 45g, 180g, 200g lines without copying unsupported claims | Pending Evidence |
+| **Step 3: Nescafé 90g Evidence Pack** | Assemble packaging facts from physical SKU / Nestlé Bangladesh | **Manufacturer Source Verified** |
+| **Step 4: Coffee Enrichment Cohort** | Scale verified attributes to 45g, 180g, 200g lines without copying unsupported claims | **Source Verified; Registry Review Complete** |
 | **Step 5: Structured Data Repair** | Add verified GTIN-13/12/8 validation to `ProductJsonLd.tsx` | **Complete** |
 | **Step 6: 48 Missing Descriptions** | Build reviewable dataset for 48 blank items before any DB update | **Intake Registered; Pending Evidence** |
 | **Step 7: Search Console Measurement** | Track impressions, indexation, and position post-crawl | Ongoing |
@@ -108,3 +108,20 @@ that identifies the exact SKU, pack size, and supported claims. Source URL/captu
 date and field-level claim status remain required before promotion; unresolved
 fields stay `PENDING_EVIDENCE`. This keeps registry expansion separate from
 unsupported inference.
+
+### Manufacturer source intake (2026-09-16)
+
+- **[Nestlé Bangladesh — NESCAFÉ Classic](https://www.nestle.com.bd/nescafe-classic):** The official product page identifies
+  medium-dark roasted 100% natural Robusta coffee and lists the Bangladesh pack
+  sizes and barcodes for 1g, 24g, 45g, 90g, 180g, and 200g. These claims are
+  recorded as manufacturer-source support for the existing 90g/45g/180g/200g
+  registry cohort; the 1g and 24g products still require exact catalog matching
+  before registry promotion.
+- **[Polar Bangladesh](https://polarbd.com/en/):** The official catalogue exposes named product descriptions for the
+  Polar families represented in the missing-description cohort (including Coffee,
+  Vanilla, Chocodelight, Tornado, Carnival, Crunchy, Shor Malai, Kheer, Royal
+  Sundae, and Zafran Malai). Exact SKU and pack-size matching remains required
+  before any row is marked `READY_FOR_REVIEW`.
+- **[Savoy Bangladesh](https://www.savoybd.com/):** The supplied homepage is retained as a source candidate, but its
+  current rendered response exposes no text product specification. No Savoy
+  claims are promoted from that page alone.
