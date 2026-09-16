@@ -113,10 +113,10 @@ name-family match.
 | IC-POL-PRE | Polar Premium Cup | — | no exact catalogue page found |
 | IC-POL-RV1 | Polar Red Velvet 1L | [Red Velvet](https://polarbd.com/en/product/tub-red-velvet/) | same name-family |
 | IC-POL-R1L | Polar Regular 1 Liter | [Vanilla Tub](https://polarbd.com/en/product/tub-vanilla/); [Chocolate Tub](https://polarbd.com/en/product/tub-chocolate/); [Strawberry Tub](https://polarbd.com/en/product/tub-strawberry/) | flavor unresolved |
-| IC-POL-ROB | Polar Robusto | [Robusto Chocolate](https://polarbd.com/en/product/stick-robusto-chocolate/); [Robusto Vanilla](https://polarbd.com/en/product/stick-robusto-vanilla/); [Robusto Salted Caramel](https://polarbd.com/en/product/stick-robusto-salted-caramel/) | flavor unresolved |
+| IC-POL-ROB | Polar Robusto | [Robusto Salted Caramel](https://polarbd.com/en/product/stick-robusto-salted-caramel/) | user-confirmed variant |
 | IC-POL-ROY | Polar Royal Sundae | [Royal Sundae](https://polarbd.com/en/product/cup-royal-sundae/) | exact |
 | IC-POL-SNC | Polar Shell N Core | [Cool Shell N Core](https://polarbd.com/en/product/stick-cool-shell-n-core/) | same name-family |
 | IC-POL-SHO | Polar Shor Malai | [Shor Malai](https://polarbd.com/en/product/stick-shor-malai/) | exact |
-| IC-POL-TOR | Polar Tornado | [Tornado Mango](https://polarbd.com/en/product/stick-tornado-mango/); [Tornado Strawberry](https://polarbd.com/en/product/stick-tornado-strawberry/); [Tornado Green Apple](https://polarbd.com/en/product/stick-tornado-green-apple/) | flavor unresolved |
+| IC-POL-TOR | Polar Tornado | [Tornado Strawberry](https://polarbd.com/en/product/stick-tornado-strawberry/); [Tornado Mango](https://polarbd.com/en/product/stick-tornado-mango/) | user-confirmed variants; SKU/package confirmation still required |
 | IC-POL-TR1 | Polar Tub Regular 1/2 Liter | [Vanilla Tub](https://polarbd.com/en/product/tub-vanilla/); [Chocolate Tub](https://polarbd.com/en/product/tub-chocolate/); [Strawberry Tub](https://polarbd.com/en/product/tub-strawberry/) | flavor unresolved |
 | IC-POL-ZM1 | Polar Zafran Malai 1 Liter | [Zafran Malai Tub](https://polarbd.com/en/product/tub-zafran-malai/) | same name-family |

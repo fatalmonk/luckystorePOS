@@ -67,11 +67,11 @@ similarly packaged variants.
 | 39d85f5f-9ca7-40b9-8fd2-d4f7118de8ce | IC-POL-PRE | Polar Premium Cup | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | bc7de70f-e4d8-42e7-8e83-ecccbbfd7a72 | IC-POL-RV1 | Polar Red Velvet 1L | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/tub-red-velvet/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | 94c748e3-6bed-4898-950d-2ad2ae9deb08 | IC-POL-R1L | Polar Regular 1 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
-| 2c367e44-91b4-4fcf-84a3-09e9dcecdbc7 | IC-POL-ROB | Polar Robusto | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
+| 2c367e44-91b4-4fcf-84a3-09e9dcecdbc7 | IC-POL-ROB | Polar Robusto | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-robusto-salted-caramel/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | d132ec9d-3175-440b-b1ac-d4cbfea8e55b | IC-POL-ROY | Polar Royal Sundae | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/cup-royal-sundae/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | fe31ca90-6d1b-4ee8-9d69-1b34c2544190 | IC-POL-SNC | Polar Shell N Core | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | 2233c416-8337-461f-a167-88dcee05b3d5 | IC-POL-SHO | Polar Shor Malai | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/stick-shor-malai/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
-| fcefa591-3172-43b2-b174-a63802108a7a | IC-POL-TOR | Polar Tornado | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
+| fcefa591-3172-43b2-b174-a63802108a7a | IC-POL-TOR | Polar Tornado | Ice-Cream | MANUFACTURER + USER CONFIRMATION | https://polarbd.com/en/product/stick-tornado-strawberry/; https://polarbd.com/en/product/stick-tornado-mango/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition, variant | READY_FOR_REVIEW |
 | eca88367-4d03-4562-b7e8-88ef2eea38c7 | IC-POL-TR1 | Polar Tub Regular 1/2 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | be49558d-34d6-4f54-ab67-0d8b96efd59e | IC-POL-ZM1 | Polar Zafran Malai 1 Liter | Ice-Cream | MANUFACTURER | https://polarbd.com/en/product/tub-zafran-malai/ | 2026-09-16 | exactName, brand, netQuantity, ingredients, nutrition | READY_FOR_REVIEW |
 | 169e4ac0-80cf-4dc7-8266-f8cad832eb9b | IC-SAV-EA | Savoy Ekdom Aam | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
