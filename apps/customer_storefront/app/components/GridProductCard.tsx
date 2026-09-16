@@ -6,7 +6,7 @@ import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
-import { withLocale, type Locale } from '../lib/i18n/config';
+import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import type { Product } from '../lib/types';
 import { useProductCart } from '../hooks/useProductCart';
@@ -27,6 +27,11 @@ export interface GridProductCardProps {
   index?: number;
 }
 
+export function formatLocalizedBdt(value: number | null | undefined, locale: Locale): string {
+  const formatted = formatBdt(value);
+  return locale === 'bn' ? toBengaliNumerals(formatted) : formatted;
+}
+
 export function GridProductCard({ product, locale = 'en', linkName, priority = false, listId, listName, index }: GridProductCardProps) {
   const dict = getDictionary(locale);
   const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(product);
@@ -41,7 +46,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
     : stockLow
       ? dict.productCard.lastOne
       : discountPercentage !== null
-        ? `${discountPercentage}% ${locale === 'bn' ? 'ছাড়' : 'off'}`
+        ? `${locale === 'bn' ? toBengaliNumerals(discountPercentage) : discountPercentage}% ${locale === 'bn' ? 'ছাড়' : 'off'}`
         : null;
 
 
@@ -118,13 +123,13 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
           <p className="text-xs leading-none text-warm-dim">{product.unit}</p>
 
           <div className="mt-1 flex min-h-6 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatBdt(product.price)}</span>
+            <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatLocalizedBdt(product.price, locale)}</span>
             {onSale && (
-              <span className="font-mono text-xs tabular-nums text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
+              <span className="font-mono text-xs tabular-nums text-warm-muted line-through">{formatLocalizedBdt(product.originalPrice, locale)}</span>
             )}
             {onSale && product.originalPrice != null && (
               <span className="text-[11px] font-bold text-warm-muted">
-                {dict.productCard.save} {formatBdt(product.originalPrice - product.price)}
+                {dict.productCard.save} {formatLocalizedBdt(product.originalPrice - product.price, locale)}
               </span>
             )}
           </div>

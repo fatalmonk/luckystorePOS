@@ -47,17 +47,17 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
   ];
 
   const helpLinks = [
-    { label: dict.footer.aboutUs, href: withLocale('/contact#about', locale) },
+    { label: dict.footer.aboutUs, href: '/contact#about' },
     { label: dict.footer.deliveryInfo, href: withLocale('/delivery', locale) },
-    { label: dict.footer.contact, href: withLocale('/contact', locale) },
-    { label: dict.footer.faq, href: withLocale('/contact#faq', locale) },
-    { label: dict.footer.wishlist, href: withLocale('/wishlist', locale) },
+    { label: dict.footer.contact, href: '/contact' },
+    { label: dict.footer.faq, href: '/contact#faq' },
+    { label: dict.footer.wishlist, href: '/wishlist' },
   ];
 
   const legalLinks = [
-    { label: dict.footer.privacyPolicy, href: withLocale('/privacy', locale) },
-    { label: dict.footer.termsOfService, href: withLocale('/terms', locale) },
-    { label: dict.footer.securityPolicy, href: withLocale('/security-policy', locale) },
+    { label: dict.footer.privacyPolicy, href: '/privacy' },
+    { label: dict.footer.termsOfService, href: '/terms' },
+    { label: dict.footer.securityPolicy, href: '/security-policy' },
   ];
 
   return (

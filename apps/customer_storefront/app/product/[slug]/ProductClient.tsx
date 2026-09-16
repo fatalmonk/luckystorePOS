@@ -14,7 +14,6 @@ import { ProductJsonLd } from '../../components/seo/ProductJsonLd';
 import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { formatBdt } from '../../lib/formatPrice';
 import type { Product, ProductEnrichment } from '../../lib/products';
-import { getParentGroup, normalizeCategorySlug } from '../../lib/types';
 import { TrustStrip } from '../../components/product/TrustStrip';
 import { ProductCarousel } from '../../components/product/ProductCarousel';
 import { ProductImage } from '../../components/product/ProductImage';
@@ -30,23 +29,8 @@ interface ProductClientProps {
   enrichment?: ProductEnrichment;
 }
 
-const BENGALI_CATEGORY_ROUTES = new Set([
-  'rice-and-grain',
-  'oil-and-ghee',
-  'cooking-essentials',
-  'tea-and-coffee',
-  'breakfast',
-]);
-
-function getCategoryBreadcrumbHref(category: string, locale: Locale): string {
-  const normalizedCategory = normalizeCategorySlug(category);
-  if (locale !== 'bn') return withLocale(`/category/${encodeURIComponent(category)}`, locale);
-
-  const parentCategory = getParentGroup(normalizedCategory)?.slug;
-  const bengaliCategory = [normalizedCategory, parentCategory].find((slug) => slug && BENGALI_CATEGORY_ROUTES.has(slug));
-  return bengaliCategory
-    ? withLocale(`/category/${bengaliCategory}`, locale)
-    : `/category/${encodeURIComponent(category)}`;
+export function getCategoryBreadcrumbHref(category: string, locale: Locale): string {
+  return withLocale(`/category/${encodeURIComponent(category)}`, locale);
 }
 
 function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {

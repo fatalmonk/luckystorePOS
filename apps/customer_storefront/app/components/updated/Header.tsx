@@ -12,7 +12,7 @@ import { Logo } from '../ui/Logo';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { useTheme } from '../providers/ThemeProvider';
 import { getCategoryIcon } from '../icons/CategoryIcons';
-import { getLocaleFromPathname, withLocale, type Locale } from '../../lib/i18n/config';
+import { getLocaleFromPathname, stripLocalePrefix, withLocale, type Locale } from '../../lib/i18n/config';
 import { getDictionary } from '../../lib/i18n/dictionaries';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
@@ -36,10 +36,11 @@ export function Header({ className = '', locale }: HeaderProps) {
   const searchParams = useSearchParams();
   const currentLocale = locale ?? getLocaleFromPathname(pathname);
   const dict = getDictionary(currentLocale);
-  const isFilterPage = pathname?.startsWith('/category') ?? false;
-  const isHomePage = pathname === '/' || pathname === '/bn';
+  const localizedPathname = stripLocalePrefix(pathname || '/');
+  const isFilterPage = localizedPathname.startsWith('/category');
+  const isHomePage = localizedPathname === '/';
   const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
-    pathname?.startsWith(path),
+    localizedPathname.startsWith(path),
   );
   const showDesktopCategories = !isDistractionFreePage;
   const activeCatalogTheme = isFilterPage ? searchParams.get('theme') : null;
@@ -76,8 +77,8 @@ export function Header({ className = '', locale }: HeaderProps) {
 
   // Sync selectedCategory with current URL pathname
   useEffect(() => {
-    if (pathname?.startsWith('/category/')) {
-      const slug = pathname.replace('/category/', '').split('/')[0];
+    if (localizedPathname.startsWith('/category/')) {
+      const slug = localizedPathname.replace('/category/', '').split('/')[0];
       if (slug && CATEGORY_GROUPS.some((g) => g.slug === slug)) {
         setSelectedCategory(slug);
         return;
@@ -85,7 +86,7 @@ export function Header({ className = '', locale }: HeaderProps) {
     } else {
       setSelectedCategory('all');
     }
-  }, [pathname]);
+  }, [localizedPathname]);
 
   // Close suggestions when clicking outside or pressing Escape
   useEffect(() => {
@@ -352,7 +353,7 @@ export function Header({ className = '', locale }: HeaderProps) {
 
           {/* Wishlist Link */}
           <Link
-            href={withLocale('/wishlist', currentLocale)}
+            href="/wishlist"
             prefetch={false}
             className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-label={dict.footer.wishlist}

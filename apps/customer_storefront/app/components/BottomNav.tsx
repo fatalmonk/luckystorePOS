@@ -28,7 +28,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           label={dict.bottomNav.whatsapp}
           external
         />
-        <ActiveLink href={withLocale('/profile', currentLocale)} icon={<UserIcon size={22} />} label={dict.bottomNav.profile} />
+        <ActiveLink href="/profile" icon={<UserIcon size={22} />} label={dict.bottomNav.profile} />
       </nav>
     </BottomNavShell>
   );

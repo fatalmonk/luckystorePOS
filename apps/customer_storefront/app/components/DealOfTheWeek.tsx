@@ -7,7 +7,7 @@ import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
-import { withLocale, type Locale } from '../lib/i18n/config';
+import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import { DealCountdown } from './DealCountdown';
 import { GridProductCard } from './GridProductCard';
@@ -21,6 +21,10 @@ interface DealOfTheWeekProps {
 
 export function DealOfTheWeek({ products, locale = 'en' }: DealOfTheWeekProps) {
   const dict = getDictionary(locale);
+  const localizeNumerals = (value: number | string | null) => {
+    if (value == null) return '';
+    return locale === 'bn' ? toBengaliNumerals(value) : String(value);
+  };
 
   const selection = useMemo(() => getDealOfTheWeekProducts(products, 8), [products]);
   const supportingProducts = useMemo(() => selection?.supportingProducts ?? [], [selection]);
@@ -123,12 +127,12 @@ export function DealOfTheWeek({ products, locale = 'en' }: DealOfTheWeekProps) {
         <article className={`deal-lead-card flex flex-col justify-between space-y-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
             href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
-            aria-label={locale === 'bn' ? `${leadDiscount}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`}
+            aria-label={locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`}
             className="deal-product-visual relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
           >
 
             <span className="deal-discount absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-black shadow-md">
-              {leadDiscount}% {dict.deal.off}
+              {localizeNumerals(leadDiscount)}% {dict.deal.off}
             </span>
             <div className="relative h-[190px] w-full sm:h-[250px]">
               <ProductImage
@@ -159,10 +163,10 @@ export function DealOfTheWeek({ products, locale = 'en' }: DealOfTheWeekProps) {
             <p className="line-clamp-2 text-xs leading-5 text-warm-muted">{leadProduct.description}</p>
 
             <div className="flex flex-wrap items-baseline gap-2 pt-2">
-              <span className="text-xl font-black tabular-nums text-warm-fg">৳{leadProduct.price}</span>
+              <span className="text-xl font-black tabular-nums text-warm-fg">৳{localizeNumerals(leadProduct.price)}</span>
               {leadProduct.originalPrice && (
                 <span className="text-sm font-bold tabular-nums text-warm-muted line-through">
-                  ৳{leadProduct.originalPrice}
+                  ৳{localizeNumerals(leadProduct.originalPrice)}
                 </span>
               )}
               <span className="text-xs font-medium text-warm-muted">/ {leadProduct.unit}</span>

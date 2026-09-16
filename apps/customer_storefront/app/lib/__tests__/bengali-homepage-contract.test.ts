@@ -66,6 +66,8 @@ vi.mock('../products/index', () => ({
 }));
 
 import { getHomePageData } from '../products/getHomePageData';
+import { formatLocalizedBdt } from '../../components/GridProductCard';
+import { getCategoryBreadcrumbHref } from '../../product/[slug]/ProductClient';
 
 describe('Bengali Homepage & Seamless Switching Contract', () => {
   it('provides complete Bengali dictionaries for all homepage sections with key parity', () => {
@@ -99,6 +101,8 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(toBengaliNumerals(500)).toBe('৫০০');
     expect(toBengaliNumerals('৳ 1,250')).toBe('৳ ১,২৫০');
     expect(toBengaliNumerals('Save ৳15')).toBe('Save ৳১৫');
+    expect(formatLocalizedBdt(1250, 'bn')).toBe('৳১,২৫০');
+    expect(formatLocalizedBdt(1250, 'en')).toBe('৳1,250');
   });
 
   it('prefixes and strips URLs with locale correctly', () => {
@@ -112,6 +116,8 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(stripLocalePrefix('/bn/category/snacks')).toBe('/category/snacks');
     expect(stripLocalePrefix('/bn')).toBe('/');
     expect(stripLocalePrefix('/category/snacks')).toBe('/category/snacks');
+    expect(getCategoryBreadcrumbHref('snacks', 'bn')).toBe('/bn/category/snacks');
+    expect(getCategoryBreadcrumbHref('personal-care', 'bn')).toBe('/bn/category/personal-care');
   });
 
   it('fetches homepage data and overlays Bengali product translations in bn locale', async () => {
@@ -158,5 +164,8 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     const { container: footerContainer } = render(React.createElement(Footer, { locale: 'bn' }));
     const footerLogo = footerContainer.querySelector('img[src*="logo-bangla.svg"]');
     expect(footerLogo).not.toBeNull();
+    expect(screen.getByRole('link', { name: 'যোগাযোগ' })).toHaveAttribute('href', '/contact');
+    expect(screen.getByRole('link', { name: 'পছন্দের তালিকা' })).toHaveAttribute('href', '/wishlist');
+    expect(screen.getByRole('link', { name: 'গোপনীয়তা নীতি' })).toHaveAttribute('href', '/privacy');
   });
 });
