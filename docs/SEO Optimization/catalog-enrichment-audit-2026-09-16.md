@@ -122,6 +122,8 @@ unsupported inference.
   Vanilla, Chocodelight, Tornado, Carnival, Crunchy, Shor Malai, Kheer, Royal
   Sundae, and Zafran Malai). Exact SKU and pack-size matching remains required
   before any row is marked `READY_FOR_REVIEW`.
-- **[Savoy Bangladesh](https://www.savoybd.com/):** The supplied homepage is retained as a source candidate, but its
-  current rendered response exposes no text product specification. No Savoy
-  claims are promoted from that page alone.
+- **[Savoy Bangladesh product catalogue](https://www.savoybd.com/products):** The rendered catalogue confirms
+  the names **Ekdom Aam**, **iKone Vanilla**, **Ice Lolly Orange**, and **Red Velvet
+  Temptation** under Savoy categories. It does not expose Lucky Store SKU or
+  pack-size mappings, so these rows receive name/category source support only and
+  remain `PENDING_EVIDENCE` for enrichment.

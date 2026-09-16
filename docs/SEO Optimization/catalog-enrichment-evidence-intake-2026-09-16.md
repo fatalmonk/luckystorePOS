@@ -74,10 +74,10 @@ similarly packaged variants.
 | fcefa591-3172-43b2-b174-a63802108a7a | IC-POL-TOR | Polar Tornado | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | eca88367-4d03-4562-b7e8-88ef2eea38c7 | IC-POL-TR1 | Polar Tub Regular 1/2 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | be49558d-34d6-4f54-ab67-0d8b96efd59e | IC-POL-ZM1 | Polar Zafran Malai 1 Liter | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
-| 169e4ac0-80cf-4dc7-8266-f8cad832eb9b | IC-SAV-EA | Savoy Ekdom Aam | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
-| 697ec1bf-8b16-4d34-b692-2d206443493f | IC-SAV-IKV | Savoy iKone Vanilla | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
-| 5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba | IC-SAV-LOL-ORG | Savoy Orange Lolly | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
-| 524f084a-e3be-4fdd-a637-dcacc3cc3afa | IC-SAV-RVT | Savoy Red Velvet Temptation Cake 1KG | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
+| 169e4ac0-80cf-4dc7-8266-f8cad832eb9b | IC-SAV-EA | Savoy Ekdom Aam | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
+| 697ec1bf-8b16-4d34-b692-2d206443493f | IC-SAV-IKV | Savoy iKone Vanilla | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
+| 5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba | IC-SAV-LOL-ORG | Savoy Orange Lolly | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
+| 524f084a-e3be-4fdd-a637-dcacc3cc3afa | IC-SAV-RVT | Savoy Red Velvet Temptation Cake 1KG | Ice-Cream | MANUFACTURER | https://www.savoybd.com/products | 2026-09-16 | exactName, category | PENDING_EVIDENCE |
 | f49fa080-07f8-4ec3-926a-6f64e315802f | NOO-BUL-DSP | Buldak Ramen 2x Spicy | Noodles |  |  |  |  | PENDING_EVIDENCE |
 | 315a1ef1-49ef-470e-a0ff-818aa0400739 | NOO-BUL-3XS | Buldak Ramen 3x Spicy | Noodles |  |  |  |  | PENDING_EVIDENCE |
 | 0c815bf1-c506-44f5-88dd-b504db60d7af | NOO-BUL-CHE-CUP | Buldak Ramen Cheese Cup | Noodles |  |  |  |  | PENDING_EVIDENCE |
