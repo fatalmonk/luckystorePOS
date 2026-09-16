@@ -168,7 +168,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(offers.hasMerchantReturnPolicy).toBeDefined();
       expect(offers.hasMerchantReturnPolicy['@type']).toBe('MerchantReturnPolicy');
       expect(offers.hasMerchantReturnPolicy.description).toContain('doorstep inspection');
-      expect(offers.hasMerchantReturnPolicy.returnFees).toBe('https://schema.org/FreeReturn');
+      expect(offers.hasMerchantReturnPolicy.returnFees).toBeUndefined();
     });
   });
 

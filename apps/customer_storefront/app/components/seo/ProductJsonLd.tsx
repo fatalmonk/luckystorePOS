@@ -57,7 +57,6 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'BD',
         returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
-        returnFees: 'https://schema.org/FreeReturn',
         description:
           'No post-payment returns. Lucky Store offers 100% doorstep inspection: customers may inspect packaging, seals, and dates before payment and reject an item immediately at zero fee penalty.',
       },
