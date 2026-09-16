@@ -265,6 +265,91 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(nescafe?.faqs.some((f) => f.question.includes('preparation') && f.answer.includes('150ml'))).toBe(true);
       expect(nescafe?.faqs.some((f) => f.question.includes('markets') && f.answer.includes('Nestlé Bangladesh PLC'))).toBe(true);
     });
+
+    it('verifies Ispahani Blender’s Choice and Mirzapore enrichments contract', () => {
+      const ispahani200g = getEnrichedProductData('8058c111');
+      expect(ispahani200g).toBeDefined();
+      expect(ispahani200g?.brand).toBe('Ispahani');
+      expect(ispahani200g?.netQuantity).toBe('200g');
+      expect(ispahani200g?.summary).toContain('Ispahani Tea Ltd.');
+      expect(ispahani200g?.summary).toContain('Chattogram');
+
+      const ispahani400g = getEnrichedProductData('4d004a30');
+      expect(ispahani400g).toBeDefined();
+      expect(ispahani400g?.brand).toBe('Ispahani');
+      expect(ispahani400g?.netQuantity).toBe('400g');
+
+      const mirzapore50 = getEnrichedProductData('1dd3e411');
+      expect(mirzapore50).toBeDefined();
+      expect(mirzapore50?.brand).toBe('Ispahani');
+      expect(mirzapore50?.netQuantity).toBe('50 Tea Bags');
+    });
+
+    it('verifies expanded Nescafe line (180g, 45g, 200g Pouch) contract', () => {
+      const n180 = getEnrichedProductData('be803387');
+      expect(n180).toBeDefined();
+      expect(n180?.netQuantity).toBe('180g');
+      expect(n180?.summary).toContain('Nestlé Bangladesh PLC');
+
+      const n45 = getEnrichedProductData('6dbf8f0e');
+      expect(n45).toBeDefined();
+      expect(n45?.netQuantity).toBe('45g');
+
+      const n200p = getEnrichedProductData('b8d96d50');
+      expect(n200p).toBeDefined();
+      expect(n200p?.netQuantity).toBe('200g');
+      expect(n200p?.summary).toContain('refill pouch');
+    });
+
+    it('verifies Cohort 2 Cooking Essentials (Rupchanda, Radhuni, Maggi) contracts', () => {
+      const rupchanda5L = getEnrichedProductData('b3e78fa4');
+      expect(rupchanda5L).toBeDefined();
+      expect(rupchanda5L?.brand).toBe('Rupchanda');
+      expect(rupchanda5L?.netQuantity).toBe('5 Litres');
+      expect(rupchanda5L?.summary).toContain('Bangladesh Edible Oil Limited');
+
+      const rupchanda1L = getEnrichedProductData('b39aa5cc');
+      expect(rupchanda1L).toBeDefined();
+      expect(rupchanda1L?.brand).toBe('Rupchanda');
+      expect(rupchanda1L?.netQuantity).toBe('1 Litre');
+
+      const radhuniChilli = getEnrichedProductData('c0fe29c0');
+      expect(radhuniChilli).toBeDefined();
+      expect(radhuniChilli?.brand).toBe('Radhuni');
+      expect(radhuniChilli?.netQuantity).toBe('100g');
+
+      const radhuniJira = getEnrichedProductData('045df58d');
+      expect(radhuniJira).toBeDefined();
+      expect(radhuniJira?.brand).toBe('Radhuni');
+      expect(radhuniJira?.netQuantity).toBe('100g');
+
+      const maggiMagic = getEnrichedProductData('7d931484');
+      expect(maggiMagic).toBeDefined();
+      expect(maggiMagic?.brand).toBe('Maggi');
+      expect(maggiMagic?.netQuantity).toBe('4g');
+    });
+
+    it('verifies Cohort 4 Noodles (Samyang Buldak lines) brand parsing and enrichments', () => {
+      expect(brandParser.parse('Buldak Ramen Original')).toBe('Samyang');
+      expect(brandParser.parse('Buldak Ramen 2x Spicy')).toBe('Samyang');
+      expect(brandParser.parse('Buldak Ramen Cream Carbonara')).toBe('Samyang');
+
+      const buldakOrig = getEnrichedProductData('8169739f');
+      expect(buldakOrig).toBeDefined();
+      expect(buldakOrig?.brand).toBe('Samyang');
+      expect(buldakOrig?.netQuantity).toBe('140g');
+      expect(buldakOrig?.summary).toContain('Samyang Foods Co., Ltd.');
+
+      const buldak2x = getEnrichedProductData('f49fa080');
+      expect(buldak2x).toBeDefined();
+      expect(buldak2x?.brand).toBe('Samyang');
+      expect(buldak2x?.netQuantity).toBe('140g');
+
+      const buldakCarb = getEnrichedProductData('e04a2efd');
+      expect(buldakCarb).toBeDefined();
+      expect(buldakCarb?.brand).toBe('Samyang');
+      expect(buldakCarb?.netQuantity).toBe('130g');
+    });
   });
 
   describe('TrustStrip Reassurance & Internal Linking', () => {

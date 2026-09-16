@@ -345,6 +345,562 @@ export const PILOT_ENRICHED_PRODUCTS: Record<string, ProductEnrichment> = {
       },
     ],
   },
+
+  // Nescafé Classic 180g Jar (Query: nescafe classic 180g jar price in bangladesh)
+  be803387: {
+    slugPrefix: 'be803387',
+    exactName: 'Nescafé Classic Instant Coffee 180g Jar',
+    brand: 'Nescafé',
+    netQuantity: '180g',
+    category: 'Tea & Coffee',
+    summary:
+      'Nescafé Classic 100% Pure Instant Coffee in a 180g glass jar with red plastic screw cap and protective freshness seal. Marketed by Nestlé Bangladesh PLC, this product is declared on-pack as 100% pure soluble coffee. The manufacturer preparation guideline directs one teaspoon of coffee stirred into 150ml of hot water. On-pack instructions advise storing the jar in a cool, dry place and always using a dry spoon to maintain granule quality. Dispatched directly from Lucky Store in Chawkbazar, Chattogram, under our verified 1 km local delivery radius with free delivery on orders ৳500+ and 100% doorstep inspection prior to payment by cash or bKash.',
+    specifications: [
+      { label: 'Brand', value: 'Nescafé' },
+      { label: 'Net Weight', value: '180g' },
+      { label: 'Product Type', value: '100% Pure Soluble Coffee' },
+      { label: 'Packaging Form', value: 'Glass Jar with Plastic Screw Cap & Inner Seal' },
+      { label: 'Marketer', value: 'Nestlé Bangladesh PLC' },
+      { label: 'Approximate Servings', value: '~100–120 Servings (calculated from 1.5g–1.8g per cup)' },
+      { label: 'Preparation Guideline', value: '1 teaspoon in 150ml hot water' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place. Always use a dry spoon.' },
+    ],
+    highlights: [
+      'Declared on-pack as 100% pure soluble coffee',
+      '180g family glass jar with plastic screw cap and protective inner seal',
+      'On-pack preparation guideline: 1 teaspoon in 150ml hot water',
+      'On-pack storage instructions: store in a cool, dry place and always use a dry spoon',
+    ],
+    usageDirections:
+      'Add 1 teaspoon of Nescafé Classic into 150ml of hot water and stir per on-pack instructions.',
+    storageInstructions:
+      'Store in a cool, dry place. Always use a dry spoon and keep the cap tightly closed.',
+    faqs: [
+      {
+        question: 'What is the declared ingredient in this Nescafé Classic 180g jar?',
+        answer:
+          'The physical packaging declares 100% Pure Coffee (pure soluble coffee powder).',
+      },
+      {
+        question: 'Can I inspect the glass jar and seal before paying in Chattogram?',
+        answer:
+          'Yes. Lucky Store offers 100% doorstep inspection within our 1 km Chawkbazar delivery zone. You may inspect the glass container, cap seal, and printed expiry date before payment by cash or bKash.',
+      },
+      {
+        question: 'Who markets this Nescafé Classic product in Bangladesh?',
+        answer:
+          'The back panel of the physical jar states that the product is marketed by Nestlé Bangladesh PLC.',
+      },
+    ],
+  },
+
+  // Nescafé Classic 45g Jar (Query: nescafe classic 45g jar price in bangladesh)
+  '6dbf8f0e': {
+    slugPrefix: '6dbf8f0e',
+    exactName: 'Nescafé Classic Instant Coffee 45g Jar',
+    brand: 'Nescafé',
+    netQuantity: '45g',
+    category: 'Tea & Coffee',
+    summary:
+      'Nescafé Classic 100% Pure Instant Coffee in a compact 45g glass jar with plastic screw cap and protective inner seal. Marketed by Nestlé Bangladesh PLC, this product is declared on-pack as 100% pure soluble coffee. The manufacturer preparation guideline directs one teaspoon of coffee stirred into 150ml of hot water. On-pack instructions advise storing the jar in a cool, dry place and always using a dry spoon. Dispatched directly from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection prior to payment by cash or bKash.',
+    specifications: [
+      { label: 'Brand', value: 'Nescafé' },
+      { label: 'Net Weight', value: '45g' },
+      { label: 'Product Type', value: '100% Pure Soluble Coffee' },
+      { label: 'Packaging Form', value: 'Glass Jar with Plastic Screw Cap & Inner Seal' },
+      { label: 'Marketer', value: 'Nestlé Bangladesh PLC' },
+      { label: 'Approximate Servings', value: '~25–30 Servings (calculated from 1.5g–1.8g per cup)' },
+      { label: 'Preparation Guideline', value: '1 teaspoon in 150ml hot water' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place. Always use a dry spoon.' },
+    ],
+    highlights: [
+      'Declared on-pack as 100% pure soluble coffee',
+      'Compact 45g glass jar with plastic screw cap and protective seal',
+      'On-pack preparation guideline: 1 teaspoon in 150ml hot water',
+    ],
+    usageDirections:
+      'Add 1 teaspoon of Nescafé Classic into 150ml of hot water and stir per on-pack instructions.',
+    storageInstructions:
+      'Store in a cool, dry place. Always use a dry spoon and keep the cap tightly closed.',
+    faqs: [
+      {
+        question: 'What is the declared ingredient in this 45g Nescafé Classic jar?',
+        answer:
+          'The product packaging declares 100% Pure Coffee (pure soluble coffee powder).',
+      },
+      {
+        question: 'Can I inspect the 45g jar before payment?',
+        answer:
+          'Yes. Lucky Store provides 100% doorstep inspection across our 1 km Chawkbazar delivery area.',
+      },
+    ],
+  },
+
+  // Nescafé Classic 200g Pouch (Query: nescafe classic 200g pouch price in bangladesh)
+  b8d96d50: {
+    slugPrefix: 'b8d96d50',
+    exactName: 'Nescafé Classic Instant Coffee 200g Pouch',
+    brand: 'Nescafé',
+    netQuantity: '200g',
+    category: 'Tea & Coffee',
+    summary:
+      'Nescafé Classic 100% Pure Instant Coffee in an economical 200g sealed refill pouch pack. Marketed by Nestlé Bangladesh PLC, this product is declared on-pack as 100% pure soluble coffee. Manufacturer preparation directs one teaspoon in 150ml of hot water. Dispatched from Lucky Store in Chawkbazar, Chattogram, under our 1 km delivery radius with 100% doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Nescafé' },
+      { label: 'Net Weight', value: '200g' },
+      { label: 'Product Type', value: '100% Pure Soluble Coffee' },
+      { label: 'Packaging Form', value: 'Flexible Multi-layer Sealed Refill Pouch' },
+      { label: 'Marketer', value: 'Nestlé Bangladesh PLC' },
+      { label: 'Approximate Servings', value: '~110–133 Servings (calculated from 1.5g–1.8g per cup)' },
+      { label: 'Preparation Guideline', value: '1 teaspoon in 150ml hot water' },
+      { label: 'Storage Guidance', value: 'Transfer to an airtight container after opening; keep in a cool, dry place.' },
+    ],
+    highlights: [
+      'Declared on-pack as 100% pure soluble coffee',
+      '200g value refill pouch packaging',
+      'On-pack preparation guideline: 1 teaspoon in 150ml hot water',
+    ],
+    usageDirections:
+      'Add 1 teaspoon into 150ml of hot water and stir well.',
+    storageInstructions:
+      'Transfer contents into an airtight jar upon opening. Store in a cool, dry place away from direct heat.',
+    faqs: [
+      {
+        question: 'Is this 200g pack a jar or a pouch?',
+        answer:
+          'This is a 200g sealed flexible refill pouch pack designed for refilling coffee containers.',
+      },
+      {
+        question: 'Can I verify the pouch seal upon delivery?',
+        answer:
+          'Yes. You have full right of doorstep inspection before paying cash or bKash.',
+      },
+    ],
+  },
+
+  // Ispahani Blender's Choice Premium Black Tea 200g (Query: ispahani blenders choice 200g price in bangladesh)
+  '8058c111': {
+    slugPrefix: '8058c111',
+    exactName: "Ispahani Blender's Choice Premium Black Tea 200g",
+    brand: 'Ispahani',
+    netQuantity: '200g',
+    category: 'Tea & Coffee',
+    summary:
+      "Ispahani Blender's Choice Premium Black Tea in a 200g sealed pack. Blended and packed by Ispahani Tea Ltd. in Chattogram, Bangladesh, combining CTC black tea leaves with select whole orthodox tea leaves. Dispatched directly from Lucky Store in Chawkbazar, Chattogram, under our 1 km local delivery radius with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: 'Brand', value: 'Ispahani' },
+      { label: 'Net Weight', value: '200g' },
+      { label: 'Product Type', value: 'Blended Black Tea (CTC with Orthodox Tea Leaves)' },
+      { label: 'Manufacturer', value: 'Ispahani Tea Ltd.' },
+      { label: 'Origin', value: 'Chattogram, Bangladesh' },
+      { label: 'Packaging Form', value: 'Aroma-protecting inner foil inside outer carton' },
+      { label: 'Storage Guidance', value: 'Store in an airtight container in a cool, dry place away from strong odors.' },
+    ],
+    highlights: [
+      'Blended with select orthodox tea leaves for authentic tea aroma',
+      'Produced by Ispahani Tea Ltd., Chattogram',
+      'Aroma-protecting sealed foil packaging',
+    ],
+    usageDirections:
+      'Bring fresh water to a rolling boil. Add one teaspoon per cup and steep for 3–5 minutes before straining.',
+    storageInstructions:
+      'Transfer to an airtight caddy or jar after opening; keep away from spices and humidity.',
+    faqs: [
+      {
+        question: "Where is Ispahani Blender's Choice manufactured?",
+        answer:
+          'It is blended and packaged by Ispahani Tea Ltd. in Chattogram, Bangladesh.',
+      },
+      {
+        question: 'Can I inspect the carton seal before payment?',
+        answer:
+          'Yes. Lucky Store offers 100% doorstep inspection before payment.',
+      },
+    ],
+  },
+
+  // Ispahani Blender's Choice Premium Black Tea 400g (Query: ispahani blenders choice 400g price in bangladesh)
+  '4d004a30': {
+    slugPrefix: '4d004a30',
+    exactName: "Ispahani Blender's Choice Premium Black Tea 400g",
+    brand: 'Ispahani',
+    netQuantity: '400g',
+    category: 'Tea & Coffee',
+    summary:
+      "Ispahani Blender's Choice Premium Black Tea in a 400g family pack. Blended and packaged by Ispahani Tea Ltd. in Chattogram, combining CTC black tea with select orthodox tea leaves for daily household brewing. Dispatched directly from Lucky Store in Chawkbazar under our verified 1 km local delivery radius with free delivery on orders ৳500+ and 100% doorstep inspection prior to payment.",
+    specifications: [
+      { label: 'Brand', value: 'Ispahani' },
+      { label: 'Net Weight', value: '400g' },
+      { label: 'Product Type', value: 'Blended Black Tea (CTC with Orthodox Tea Leaves)' },
+      { label: 'Manufacturer', value: 'Ispahani Tea Ltd.' },
+      { label: 'Origin', value: 'Chattogram, Bangladesh' },
+      { label: 'Packaging Form', value: 'Aroma-protecting inner foil pack inside carton' },
+      { label: 'Storage Guidance', value: 'Store in an airtight container in a cool, dry place.' },
+    ],
+    highlights: [
+      '400g family pack blended by Ispahani Tea Ltd.',
+      'Features CTC tea blended with select orthodox tea leaves',
+      'Aroma-protecting sealed foil packaging',
+    ],
+    usageDirections:
+      'Add one teaspoon of tea per cup of boiling water. Steep 3–5 minutes per taste preference.',
+    storageInstructions:
+      'Store in an airtight container in a dry pantry away from sunlight and moisture.',
+    faqs: [
+      {
+        question: 'Does this 400g pack qualify for free local delivery?',
+        answer:
+          'If your total basket reaches ৳500 or more, delivery is completely free within our 1 km Chawkbazar zone.',
+      },
+      {
+        question: 'Can I inspect the package at my doorstep?',
+        answer:
+          'Yes. Doorstep inspection is provided on 100% of deliveries before completing payment.',
+      },
+    ],
+  },
+
+  // Ispahani Mirzapore Tea Bag - 50p (Query: ispahani mirzapore tea bag 50)
+  '1dd3e411': {
+    slugPrefix: '1dd3e411',
+    exactName: 'Ispahani Mirzapore Best Leaf Tea Bags 50 Count',
+    brand: 'Ispahani',
+    netQuantity: '50 Tea Bags',
+    category: 'Tea & Coffee',
+    summary:
+      'Ispahani Mirzapore Best Leaf Tea Bags containing 50 individually prepared tea bags with strings and tags. Produced by Ispahani Tea Ltd. in Chattogram from selected tea leaves. Dispatched from Lucky Store in Chawkbazar with 100% doorstep inspection prior to payment by cash or bKash.',
+    specifications: [
+      { label: 'Brand', value: 'Ispahani' },
+      { label: 'Net Quantity', value: '50 Tea Bags' },
+      { label: 'Product Type', value: 'Black Tea Bags with String and Tag' },
+      { label: 'Manufacturer', value: 'Ispahani Tea Ltd.' },
+      { label: 'Origin', value: 'Chattogram, Bangladesh' },
+      { label: 'Packaging Form', value: 'Box with 50 tea bags' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place away from moisture.' },
+    ],
+    highlights: [
+      '50 individual string-and-tag tea bags',
+      'Produced by Ispahani Tea Ltd.',
+      'Convenient single-cup brewing',
+    ],
+    usageDirections:
+      'Place 1 tea bag in a cup, pour freshly boiled water, steep for 2–3 minutes, and remove bag.',
+    storageInstructions:
+      'Keep box closed in a cool, dry location.',
+    faqs: [
+      {
+        question: 'How many tea bags are in this box?',
+        answer:
+          'This pack contains 50 individual tea bags.',
+      },
+      {
+        question: 'Can I inspect the box seal upon delivery?',
+        answer:
+          'Yes. Doorstep inspection is guaranteed on all orders before payment.',
+      },
+    ],
+  },
+
+  // Rupchanda Fortified Soyabean Oil 5L (Query: rupchanda soyabean oil 5 litre price in bangladesh)
+  b3e78fa4: {
+    slugPrefix: 'b3e78fa4',
+    exactName: 'Rupchanda Fortified Soyabean Oil 5L',
+    brand: 'Rupchanda',
+    netQuantity: '5 Litres',
+    category: 'Oil & Ghee',
+    summary:
+      'Rupchanda Fortified Soyabean Oil in a 5-litre family container with sturdy handle and sealed cap. Refined and vitamin A-fortified soyabean oil produced by Bangladesh Edible Oil Limited (BEOL). Suitable for all types of daily frying, sauteing, and curry preparation. Dispatched directly from Lucky Store in Chawkbazar, Chattogram, under our 1 km local delivery radius with 100% doorstep inspection prior to payment by cash or bKash.',
+    specifications: [
+      { label: 'Brand', value: 'Rupchanda' },
+      { label: 'Net Volume', value: '5 Litres' },
+      { label: 'Product Type', value: 'Fortified Refined Soyabean Oil' },
+      { label: 'Manufacturer', value: 'Bangladesh Edible Oil Limited (BEOL)' },
+      { label: 'Fortification', value: 'Fortified with Vitamin A' },
+      { label: 'Packaging Form', value: 'Food-grade Poly Jerry Can with Handle' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place away from direct sunlight.' },
+    ],
+    highlights: [
+      'Refined soyabean oil fortified with Vitamin A',
+      '5-litre family jerry can with sealed tamper-evident cap',
+      'Produced by Bangladesh Edible Oil Limited (BEOL)',
+    ],
+    usageDirections:
+      'Suitable for deep frying, pan frying, tempering, and general cooking.',
+    storageInstructions:
+      'Keep tightly closed in a cool, dry pantry away from sunlight.',
+    faqs: [
+      {
+        question: 'Is Rupchanda Soyabean Oil fortified with vitamins?',
+        answer:
+          'Yes. The packaging declares fortification with Vitamin A in compliance with national food standards.',
+      },
+      {
+        question: 'Can I inspect the 5L container at my doorstep?',
+        answer:
+          'Yes. Lucky Store provides 100% doorstep inspection before completing payment.',
+      },
+    ],
+  },
+
+  // Rupchanda Fortified Soyabean Oil 1L (Query: rupchanda soyabean oil 1 litre price)
+  b39aa5cc: {
+    slugPrefix: 'b39aa5cc',
+    exactName: 'Rupchanda Fortified Soyabean Oil 1L',
+    brand: 'Rupchanda',
+    netQuantity: '1 Litre',
+    category: 'Oil & Ghee',
+    summary:
+      'Rupchanda Fortified Soyabean Oil in a 1-litre PET bottle. Produced by Bangladesh Edible Oil Limited (BEOL) and fortified with Vitamin A for everyday culinary use in Chattogram. Dispatched from Lucky Store in Chawkbazar with 100% doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Rupchanda' },
+      { label: 'Net Volume', value: '1 Litre' },
+      { label: 'Product Type', value: 'Fortified Refined Soyabean Oil' },
+      { label: 'Manufacturer', value: 'Bangladesh Edible Oil Limited (BEOL)' },
+      { label: 'Fortification', value: 'Fortified with Vitamin A' },
+      { label: 'Packaging Form', value: 'Food-grade PET Bottle' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place.' },
+    ],
+    highlights: [
+      '1-litre food-grade PET bottle with tamper-evident seal',
+      'Fortified with Vitamin A',
+    ],
+    usageDirections:
+      'Ideal for everyday frying, curry preparation, and baking.',
+    storageInstructions:
+      'Keep cap tightly sealed in a dry pantry away from direct heat.',
+    faqs: [
+      {
+        question: 'Can I verify the seal on delivery?',
+        answer:
+          'Yes. Lucky Store offers doorstep inspection on all deliveries prior to payment.',
+      },
+    ],
+  },
+
+  // Radhuni Morich Gura 100gm (Query: radhuni morich gura 100g price in bangladesh)
+  c0fe29c0: {
+    slugPrefix: 'c0fe29c0',
+    exactName: 'Radhuni Morich Gura (Chilli Powder) 100g',
+    brand: 'Radhuni',
+    netQuantity: '100g',
+    category: 'Spices',
+    summary:
+      'Radhuni Morich Gura (Red Chilli Powder) in a 100g sealed moisture-barrier pouch. Produced by Square Food & Beverage Ltd. from selected dried red chillies to provide authentic heat and color in culinary preparations. Dispatched from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection prior to payment.',
+    specifications: [
+      { label: 'Brand', value: 'Radhuni' },
+      { label: 'Net Weight', value: '100g' },
+      { label: 'Declared Ingredients', value: '100% Selected Ground Red Chillies' },
+      { label: 'Manufacturer', value: 'Square Food & Beverage Ltd.' },
+      { label: 'Packaging Form', value: 'Multi-layer sealed barrier pouch' },
+      { label: 'Storage Guidance', value: 'Store in an airtight container in a dry place.' },
+    ],
+    highlights: [
+      'Ground red chilli powder in a 100g moisture-barrier pack',
+      'Packaged by Square Food & Beverage Ltd.',
+    ],
+    usageDirections:
+      'Add to curries, gravies, marinades, and spice rubs per taste.',
+    storageInstructions:
+      'Transfer to an airtight caddy or jar after opening; keep away from humidity.',
+    faqs: [
+      {
+        question: 'What are the ingredients in this Radhuni Chilli Powder?',
+        answer:
+          'The pack declares 100% ground red chillies without artificial colors.',
+      },
+      {
+        question: 'Can I check the packet at delivery?',
+        answer:
+          'Yes. Doorstep inspection is provided on 100% of deliveries.',
+      },
+    ],
+  },
+
+  // Radhuni Jira Gura 100gm (Query: radhuni jira gura 100g price)
+  '045df58d': {
+    slugPrefix: '045df58d',
+    exactName: 'Radhuni Jira Gura (Cumin Powder) 100g',
+    brand: 'Radhuni',
+    netQuantity: '100g',
+    category: 'Spices',
+    summary:
+      'Radhuni Jira Gura (Cumin Powder) in a 100g sealed pouch. Produced by Square Food & Beverage Ltd. from 100% roasted and ground cumin seeds for aromatic flavoring in daily cooking. Dispatched from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Radhuni' },
+      { label: 'Net Weight', value: '100g' },
+      { label: 'Declared Ingredients', value: '100% Ground Cumin Seeds' },
+      { label: 'Manufacturer', value: 'Square Food & Beverage Ltd.' },
+      { label: 'Packaging Form', value: 'Multi-layer sealed moisture-barrier pouch' },
+      { label: 'Storage Guidance', value: 'Store in an airtight container in a cool, dry place.' },
+    ],
+    highlights: [
+      '100% ground cumin seeds in a 100g sealed pouch',
+      'Packaged by Square Food & Beverage Ltd.',
+    ],
+    usageDirections:
+      'Add to savoury dishes, dal, curry seasoning, and roasted marinades.',
+    storageInstructions:
+      'Store in an airtight container in a cool, dry location.',
+    faqs: [
+      {
+        question: 'Is this pure ground cumin?',
+        answer:
+          'Yes. The physical package declares 100% ground cumin seeds.',
+      },
+      {
+        question: 'Can I inspect the pack seal before payment?',
+        answer:
+          'Yes. Lucky Store guarantees doorstep inspection before payment.',
+      },
+    ],
+  },
+
+  // Maggi Shaad-E-Magic 4g (Query: maggi shaad e magic price bd)
+  '7d931484': {
+    slugPrefix: '7d931484',
+    exactName: 'Maggi Shaad-E-Magic Seasoning 4g',
+    brand: 'Maggi',
+    netQuantity: '4g',
+    category: 'Spices',
+    summary:
+      'Maggi Shaad-E-Magic all-purpose taste enhancer seasoning in a 4g single-use foil sachet. Marketed by Nestlé Bangladesh PLC, formulated with a blend of roasted spices and iodized salt. Dispatched from Lucky Store in Chawkbazar with 100% doorstep inspection and no minimum order requirement.',
+    specifications: [
+      { label: 'Brand', value: 'Maggi' },
+      { label: 'Net Weight', value: '4g (Single Serve Sachet)' },
+      { label: 'Product Type', value: 'All-purpose Seasoning Spice Blend' },
+      { label: 'Marketer', value: 'Nestlé Bangladesh PLC' },
+      { label: 'Packaging Form', value: 'Moisture-sealed foil sachet' },
+      { label: 'Storage Guidance', value: 'Store in a dry place away from heat.' },
+    ],
+    highlights: [
+      '4g single-use spice blend sachet',
+      'Marketed by Nestlé Bangladesh PLC',
+    ],
+    usageDirections:
+      'Sprinkle into vegetables, fish, egg, or meat dishes 2–3 minutes before taking off heat.',
+    storageInstructions:
+      'Keep foil sealed until use.',
+    faqs: [
+      {
+        question: 'How is Maggi Shaad-E-Magic used in cooking?',
+        answer:
+          'On-pack instructions direct sprinkling one sachet into cooked dishes towards the end of cooking and stirring well.',
+      },
+      {
+        question: 'Can I buy single sachets?',
+        answer:
+          'Yes. Lucky Store has no minimum order restrictions.',
+      },
+    ],
+  },
+
+  // Samyang Buldak Hot Chicken Flavor Ramen Original 140g (Query: samyang buldak ramen price in bangladesh)
+  '8169739f': {
+    slugPrefix: '8169739f',
+    exactName: 'Samyang Buldak Hot Chicken Flavor Ramen Original 140g',
+    brand: 'Samyang',
+    netQuantity: '140g',
+    category: 'Noodles',
+    summary:
+      'Samyang Buldak Hot Chicken Flavor Ramen Original in a single-serve 140g packet. Produced by Samyang Foods Co., Ltd., featuring spicy stir-fried ramen noodles with signature hot chicken liquid sauce and roasted sesame-seaweed garnish. Dispatched directly from Lucky Store in Chawkbazar, Chattogram, under our 1 km local delivery radius with 100% doorstep inspection prior to payment by cash or bKash.',
+    specifications: [
+      { label: 'Brand', value: 'Samyang' },
+      { label: 'Net Weight', value: '140g' },
+      { label: 'Product Type', value: 'Stir-Fried Spicy Instant Noodles' },
+      { label: 'Manufacturer', value: 'Samyang Foods Co., Ltd.' },
+      { label: 'Packaging Form', value: 'Moisture-sealed single pack' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place away from direct sunlight.' },
+    ],
+    highlights: [
+      'Original hot chicken flavor spicy stir-fried ramen',
+      'Includes spicy liquid seasoning sauce and roasted sesame-seaweed garnish',
+      'Manufactured by Samyang Foods Co., Ltd.',
+    ],
+    usageDirections:
+      'Boil noodles in 600ml water for 5 minutes. Drain leaving about 8 tablespoons of water, add liquid sauce, stir-fry for 30 seconds, and garnish with flakes.',
+    storageInstructions:
+      'Store in a cool, dry pantry away from direct heat and moisture.',
+    faqs: [
+      {
+        question: 'How do you prepare Samyang Buldak Original Ramen?',
+        answer:
+          'Boil noodles for 5 minutes in 600ml water, drain leaving 8 spoons of water, mix with sauce over heat for 30 seconds, and top with the flakes packet.',
+      },
+      {
+        question: 'Can I inspect the packet on delivery?',
+        answer:
+          'Yes. Doorstep inspection is provided on all orders before payment.',
+      },
+    ],
+  },
+
+  // Samyang Buldak 2X Spicy Hot Chicken Ramen 140g (Query: samyang 2x spicy buldak price bd)
+  f49fa080: {
+    slugPrefix: 'f49fa080',
+    exactName: 'Samyang Buldak 2X Spicy Hot Chicken Ramen 140g',
+    brand: 'Samyang',
+    netQuantity: '140g',
+    category: 'Noodles',
+    summary:
+      'Samyang Buldak 2X Spicy Hot Chicken Flavor Ramen in a 140g single pack. Produced by Samyang Foods Co., Ltd., declared on-pack as extra-spicy stir-fried instant noodles. Delivered locally from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Samyang' },
+      { label: 'Net Weight', value: '140g' },
+      { label: 'Product Type', value: '2X Spicy Stir-Fried Instant Noodles' },
+      { label: 'Manufacturer', value: 'Samyang Foods Co., Ltd.' },
+      { label: 'Packaging Form', value: 'Moisture-sealed single pack' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place.' },
+    ],
+    highlights: [
+      '2X extra spicy hot chicken flavor ramen',
+      'Manufactured by Samyang Foods Co., Ltd.',
+    ],
+    usageDirections:
+      'Boil noodles in 600ml water for 5 minutes, drain leaving 8 spoons of water, mix with sauce, stir-fry 30 seconds, and add flakes.',
+    storageInstructions:
+      'Keep in a dry, cool area away from sunlight.',
+    faqs: [
+      {
+        question: 'Is this the authentic 2X Spicy Buldak ramen?',
+        answer:
+          'Yes. This is the 140g 2X Spicy ramen produced by Samyang Foods Co., Ltd.',
+      },
+    ],
+  },
+
+  // Samyang Buldak Carbonara Hot Chicken Ramen 130g (Query: buldak carbonara price in bangladesh)
+  e04a2efd: {
+    slugPrefix: 'e04a2efd',
+    exactName: 'Samyang Buldak Carbonara Hot Chicken Ramen 130g',
+    brand: 'Samyang',
+    netQuantity: '130g',
+    category: 'Noodles',
+    summary:
+      'Samyang Buldak Cream Carbonara Hot Chicken Flavor Ramen in a 130g single pack. Produced by Samyang Foods Co., Ltd., combining spicy hot chicken sauce with a creamy carbonara cheese powder packet. Dispatched from Lucky Store in Chawkbazar with 100% doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Samyang' },
+      { label: 'Net Weight', value: '130g' },
+      { label: 'Product Type', value: 'Spicy Carbonara Instant Ramen' },
+      { label: 'Manufacturer', value: 'Samyang Foods Co., Ltd.' },
+      { label: 'Packaging Form', value: 'Moisture-sealed single pack' },
+      { label: 'Storage Guidance', value: 'Store in a cool, dry place.' },
+    ],
+    highlights: [
+      'Spicy hot chicken sauce combined with creamy carbonara powder',
+      'Manufactured by Samyang Foods Co., Ltd.',
+    ],
+    usageDirections:
+      'Boil noodles for 5 minutes in 600ml water, drain leaving 8 spoons of water, add liquid sauce and carbonara powder, stir well and serve.',
+    storageInstructions:
+      'Store in a cool, dry place away from heat.',
+    faqs: [
+      {
+        question: 'Does the carbonara pack include both cheese powder and hot sauce?',
+        answer:
+          'Yes. The packet contains the spicy liquid base and a separate creamy carbonara powder seasoning.',
+      },
+    ],
+  },
 };
 
 /**

@@ -1,9 +1,9 @@
 <!-- markdownlint-disable MD041 -->
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Supabase, Cloudflare Workers/R2
-Current: Phase 4A Catalog Adapter Repair & SEO Diagnostic Complete
-Done: SupabaseProductAdapter getById and getByIdPrefix repaired (recovering descriptions for 532 products / 91.7% of catalog without DB writes), catalog validation executed across 7 edge scenarios, 6 unit regression tests added, 268/268 vitest passing, 0 tsc errors, catalog-enrichment-audit-2026-09-16.md documented
-Branch: feat/web-design-guidelines-polish
-Health: 268/268 vitest tests passing, 0 tsc errors
+Current: Full Catalog Inventory Audit & Barcode Remediation Complete
+Done: 580/580 active inventory audited across all 8 cohorts (catalog-evidence-expansion-audit-2026-09-16.md), barcode dependency audit complete (SAFE_TO_REPLACE across POS/search/scan), 580-row barcode remediation dataset generated (catalog-barcode-remediation-2026-09-16.csv), 22 evidence-backed enrichments across high-priority FMCG SKUs, 281/281 vitest tests passing, 0 tsc errors, 0 build errors, 0 secret scan leaks
+Branch: feat/catalog-evidence-expansion
+Health: 281/281 vitest tests passing, 0 tsc errors, Next.js build clean
 Last Synced: 2026-09-16
-ctx: Catalog Adapter Repair | done: SupabaseProductAdapter.ts getById/getByIdPrefix fix, SupabaseProductAdapter.test.ts (6/6 pass), catalog-enrichment-audit-2026-09-16.md, catalog-wide validation | next: Step 3 Nescafé 90g evidence pack & Step 5 GTIN structured data repair
+ctx: Full Catalog Inventory Audit & Barcode Remediation | done: Master audit (580 active products), Barcode Remediation CSV (580 rows), Cohorts 1-8 audited | next: Present Barcode Remediation Dataset & Final Deliverables for Human Approval

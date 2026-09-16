@@ -23,7 +23,7 @@ export class RuleBasedBrandParser implements BrandParser {
       // Personal Care
       'Lux', 'Dove', 'Lifebuoy', 'Dettol', 'Sunsilk', 'Pantene', 'Clear',
       // Food & Beverage
-      'Pran', 'Ruchi', 'Danish', 'Radhuni', 'ACI', 'Fresh', 'Teer', 'Rupchanda', 'Fortune', 'Ispahani', 'Taaza', 'Ama', 'Ahmed', 'Nestle', 'Nescafe', 'Nescafé', 'Maggi', 'KitKat', 'Nido', 'Milo', 'Koko Crunch',
+      'Pran', 'Ruchi', 'Danish', 'Radhuni', 'ACI', 'Fresh', 'Teer', 'Rupchanda', 'Fortune', 'Ispahani', 'Taaza', 'Ama', 'Ahmed', 'Nestle', 'Nescafe', 'Nescafé', 'Maggi', 'KitKat', 'Nido', 'Milo', 'Koko Crunch', 'Samyang',
       // Household & Paper
       'Bashundhara', 'Dekko', 'RFL',
       // Snacks & Confectionery
@@ -56,6 +56,8 @@ export class RuleBasedBrandParser implements BrandParser {
       rupchanda: 'Rupchanda',
       bellame: 'Bellame',
       aril: 'Aril',
+      buldak: 'Samyang',
+      samyang: 'Samyang',
     };
 
     const sourceAliases = brandAliases ?? defaultAliases;
