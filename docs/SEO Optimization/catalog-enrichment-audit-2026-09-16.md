@@ -19,7 +19,7 @@ Verified directly against the live Supabase production schema and database:
 | **Total Active Products** | **580** | 100.0% | Active items in production PostgreSQL (`is_active = true`) |
 | **Active with DB Description** | **532** | 91.7% | High-value descriptions (50–350 chars) stored in DB, previously masked on storefront |
 | **Active Missing DB Description** | **48** | 8.3% | `items.description` is null/blank; requires reviewable enrichment dataset |
-| *Registry Enriched (Phase 4A Pilot)* | *7* | *1.2%* | Independent pilot overlay (`productEnrichment.ts`) |
+| *Registry Enriched (Phase 4A cohort)* | *22* | *3.8%* | Independent evidence-backed overlay (`productEnrichment.ts`) |
 
 ### Breakdown of 48 Items Missing Database Descriptions
 - **Ice-Cream (31 items):** Savoy and Polar varieties (`Savoy Ekdom Aam`, `Polar Carnival Vanilla`, `Polar Doi 1L`, `Savoy iKone Vanilla`, etc.).
@@ -94,6 +94,16 @@ Before expanding `productEnrichment.ts` or modifying structured data, the follow
 | **Step 2: Catalog Validation** | Validate representative products live, verify sitemap invariance | **COMPLETE** |
 | **Step 3: Nescafé 90g Evidence Pack** | Assemble packaging facts from physical SKU / Nestlé Bangladesh | Pending Evidence |
 | **Step 4: Coffee Enrichment Cohort** | Scale verified attributes to 45g, 180g, 200g lines without copying unsupported claims | Pending Evidence |
-| **Step 5: Structured Data Repair** | Add verified GTIN-13/12/8 validation to `ProductJsonLd.tsx` | Next |
+| **Step 5: Structured Data Repair** | Add verified GTIN-13/12/8 validation to `ProductJsonLd.tsx` | **Complete** |
 | **Step 6: 48 Missing Descriptions** | Build reviewable dataset for 48 blank items before any DB update | Scheduled |
 | **Step 7: Search Console Measurement** | Track impressions, indexation, and position post-crawl | Ongoing |
+
+### Next execution gate
+
+The next implementation slice is evidence intake for the 48 active items with blank
+`items.description` values. No catalog copy or database backfill should be authored
+until each candidate has either a packaging capture or an official manufacturer
+declaration that identifies the exact SKU, pack size, and supported claims. The
+reviewable dataset should retain source URL/capture date, product UUID, current
+catalog name, category, and an explicit `PENDING_EVIDENCE` status for unresolved
+fields. This keeps registry expansion separate from unsupported inference.

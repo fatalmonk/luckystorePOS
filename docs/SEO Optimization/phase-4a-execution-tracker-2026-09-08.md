@@ -112,5 +112,14 @@ All contracts are verified by automated tests in `apps/customer_storefront/app/l
 ## Rollout Status
 
 - **Phase 4A Pilot Code**: Complete and tested.
-- **Enriched Pilot Catalog**: 7 high-demonstration GSC query items live in registry.
+- **Enriched Catalog Cohort**: 22 evidence-backed product records live in the registry.
 - **Rollout Gate**: Expand enrichment across catalog categories following GSC query+page evidence.
+
+## Post-merge continuation gate
+
+The next cohort is the 48 active catalog items with blank database descriptions.
+Expansion is gated on exact-SKU packaging or manufacturer evidence; unresolved
+fields remain `PENDING_EVIDENCE` and are not copied from neighboring products.
+The intake record must preserve the product UUID, current catalog name/category,
+source URL or capture reference, capture date, and field-level claim status before
+any database backfill is considered.
