@@ -199,7 +199,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
 
     it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
       const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
-      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(23);
+      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(25);
       expect(PILOT_ENRICHED_PRODUCTS).toBe(PRODUCT_ENRICHMENTS);
 
       for (const key of enrichmentKeys) {
@@ -439,6 +439,24 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(trident?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
         'https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces',
       );
+    });
+
+    it('verifies Buldak Quattro Cheese and 2X Cup manufacturer evidence contracts', () => {
+      const quattro = getEnrichedProductData('7fd83cfc');
+      expect(quattro).toBeDefined();
+      expect(quattro?.brand).toBe('Samyang');
+      expect(quattro?.netQuantity).toBe('145g');
+      expect(quattro?.summary).toContain('Gouda, Cheddar, Camembert, and Mozzarella');
+      expect(quattro?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
+        'https://buldak.com/us/product/buldak-ramen-quattro-cheese/',
+      );
+
+      const cup = getEnrichedProductData('b79a6606');
+      expect(cup).toBeDefined();
+      expect(cup?.brand).toBe('Samyang');
+      expect(cup?.netQuantity).toBe('70g');
+      expect(cup?.specifications.find((s) => s.label === 'Calories')?.value).toBe('300 per 70g cup');
+      expect(cup?.evidenceManifest.PACK_NUTRITION.evidenceRef).toContain('640mg sodium');
     });
   });
 

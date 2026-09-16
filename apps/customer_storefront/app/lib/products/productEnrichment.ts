@@ -91,7 +91,7 @@ export interface ProductEnrichment {
 
 /**
  * Verified product enrichments indexed by 8-char prefix and partial slug.
- * Total: 23 products (8 prior pilots + 15 expanded cohort enrichments).
+ * Total: 25 products (8 prior pilots + 17 expanded cohort enrichments).
  */
 export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
   // 1. Fortune Mustard Oil 5L
@@ -2118,7 +2118,181 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     },
   },
 
-  // 23. Trident Pineapple Twist Sugar Free Gum 14 pieces
+  // 23. Samyang Buldak Quattro Cheese Ramen 145g
+  '7fd83cfc': {
+    slugPrefix: '7fd83cfc',
+    exactName: 'Samyang Buldak Ramen Quattro Cheese 145g',
+    brand: 'Samyang',
+    netQuantity: '145g',
+    category: 'Noodles',
+    summary:
+      'Samyang Buldak Ramen Quattro Cheese in a 145g pouch. The official Buldak product page describes a four-cheese blend of Gouda, Cheddar, Camembert, and Mozzarella with a spicy flavour profile. Prepare by boiling the noodles, retaining a small amount of water, then adding the sauce and powder before serving. Available from Lucky Store in Chawkbazar, Chattogram, with doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Samyang', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Net Weight', value: '145g', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Product Type', value: 'Pouch Noodles', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Cheese Blend', value: 'Gouda, Cheddar, Camembert, and Mozzarella', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Spicy Level', value: '3', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Preparation', value: 'Boil 5 minutes 30 seconds; retain 3 oz water; add sauce and powder', evidenceRefs: ['MFR_COOKING'] },
+    ],
+    highlights: [
+      'Four-cheese blend with Gouda, Cheddar, Camembert, and Mozzarella',
+      '145g pouch format',
+      'Official spicy level 3 rating',
+    ],
+    usageDirections:
+      'Boil 2½ cups (20 oz) of water, cook the noodles for 5 minutes 30 seconds, retain 3 oz of water, add the sauce and powder, stir well, and serve.',
+    faqs: [
+      {
+        question: 'Which cheeses are listed for Buldak Quattro Cheese?',
+        answer: 'The official product page lists Gouda, Cheddar, Camembert, and Mozzarella.',
+        evidenceRefs: ['MFR_PRODUCT_PAGE'],
+      },
+      {
+        question: 'How do I prepare the Quattro Cheese pouch?',
+        answer: 'Boil the noodles for 5 minutes 30 seconds, retain 3 oz of water, add the sauce and powder, stir, and serve.',
+        evidenceRefs: ['MFR_COOKING'],
+      },
+      {
+        question: 'Can I inspect this imported noodle pouch before payment?',
+        answer: 'Yes. Lucky Store provides 100% doorstep inspection before payment.',
+        evidenceRefs: ['STORE_INSPECTION_POLICY'],
+      },
+    ],
+    evidenceManifest: {
+      MFR_PRODUCT_PAGE: {
+        source: 'MANUFACTURER',
+        evidenceRef: 'Official Buldak Quattro Cheese product page: 145g pouch, four-cheese blend, spicy level 3',
+        sourceTitle: 'Buldak Ramen Quattro Cheese 5.11 OZ (145g)',
+        sourceUrl: 'https://buldak.com/us/product/buldak-ramen-quattro-cheese/',
+        skuScope: 'Buldak Quattro Cheese 145g pouch',
+        verifiedAt: '2026-09-16',
+      },
+      MFR_COOKING: {
+        source: 'MANUFACTURER',
+        evidenceRef: 'Official Buldak Quattro Cheese cooking instructions: boil, retain 3 oz water, add sauce and powder',
+        sourceTitle: 'Buldak Quattro Cheese Cooking Instructions',
+        sourceUrl: 'https://buldak.com/us/product/buldak-ramen-quattro-cheese/',
+        skuScope: 'Buldak Quattro Cheese 145g pouch',
+        verifiedAt: '2026-09-16',
+      },
+      CATALOG_RECORD: {
+        source: 'LUCKY_STORE_CATALOG',
+        evidenceRef: 'items.id: 7fd83cfc-2eac-45d1-aa90-0002ca5a0222, SKU: NOO-BUL-QTC, category: Noodles',
+        sourceTitle: 'Lucky Store Production Catalog',
+        skuScope: '7fd83cfc-2eac-45d1-aa90-0002ca5a0222',
+        verifiedAt: '2026-09-16',
+      },
+      STORE_INSPECTION_POLICY: {
+        source: 'LUCKY_STORE_POLICY',
+        evidenceRef: 'INSPECTION_POLICY: 100% doorstep inspection before payment by cash or bKash',
+        sourceTitle: 'Lucky Store Inspection Policy',
+        verifiedAt: '2026-09-16',
+      },
+    },
+    fieldEvidence: {
+      exactName: ['MFR_PRODUCT_PAGE', 'CATALOG_RECORD'],
+      brand: ['MFR_PRODUCT_PAGE'],
+      netQuantity: ['MFR_PRODUCT_PAGE'],
+      category: ['CATALOG_RECORD'],
+      summary: ['MFR_PRODUCT_PAGE', 'MFR_COOKING', 'STORE_INSPECTION_POLICY'],
+      highlights: [['MFR_PRODUCT_PAGE'], ['MFR_PRODUCT_PAGE'], ['MFR_PRODUCT_PAGE']],
+      usageDirections: ['MFR_COOKING'],
+    },
+  },
+
+  // 24. Samyang Buldak 2X Spicy Cup 70g
+  b79a6606: {
+    slugPrefix: 'b79a6606',
+    exactName: 'Samyang Buldak Ramen 2X Cup 70g',
+    brand: 'Samyang',
+    netQuantity: '70g',
+    category: 'Noodles',
+    summary:
+      'Samyang Buldak Ramen 2X Cup in a 70g cup format. The official Buldak page describes an intense twice-as-hot spicy profile and a five-step cup preparation method: remove the two packets, add boiling water to the inner line, wait four minutes, drain, then mix in the sauce and dry cheese powder. Available from Lucky Store in Chawkbazar, Chattogram, with doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Samyang', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Net Weight', value: '70g', evidenceRefs: ['MFR_PRODUCT_PAGE', 'PACK_NUTRITION'] },
+      { label: 'Product Type', value: 'Cup Noodles', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Spicy Level', value: '5', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Calories', value: '300 per 70g cup', evidenceRefs: ['PACK_NUTRITION'] },
+      { label: 'Sodium', value: '640mg per cup', evidenceRefs: ['PACK_NUTRITION'] },
+      { label: 'Preparation', value: 'Add boiling water to inner line, stand 4 minutes, drain, add sauce and dry cheese powder', evidenceRefs: ['MFR_COOKING'] },
+    ],
+    highlights: [
+      'Twice-as-hot Buldak cup noodle profile',
+      '70g single-serve cup',
+      'Includes sauce and dry cheese powder packets',
+    ],
+    usageDirections:
+      'Partially open the lid and remove both packets. Add boiling water to the inner line, close the lid for 4 minutes, drain all water, add sauce and dry cheese powder, stir, and serve.',
+    faqs: [
+      {
+        question: 'How spicy is Buldak 2X Cup?',
+        answer: 'The official product page labels it as the ultimate heat for spice masters and shows spicy level 5.',
+        evidenceRefs: ['MFR_PRODUCT_PAGE'],
+      },
+      {
+        question: 'What are the nutrition facts for the 70g cup?',
+        answer: 'The supplied Nutrition Facts panel lists 300 calories and 640mg sodium per 70g cup.',
+        evidenceRefs: ['PACK_NUTRITION'],
+      },
+      {
+        question: 'Can I inspect this cup noodle before payment?',
+        answer: 'Yes. Lucky Store provides 100% doorstep inspection before payment.',
+        evidenceRefs: ['STORE_INSPECTION_POLICY'],
+      },
+    ],
+    evidenceManifest: {
+      MFR_PRODUCT_PAGE: {
+        source: 'MANUFACTURER',
+        evidenceRef: 'Official Buldak 2X Cup product page: 70g cup, spicy level 5, twice-as-hot positioning',
+        sourceTitle: 'Buldak Ramen 2X Cup 2.47 OZ (70g)',
+        sourceUrl: 'https://buldak.com/us/product/buldak-ramen-2x-cup/',
+        skuScope: 'Buldak 2X Cup 70g',
+        verifiedAt: '2026-09-16',
+      },
+      MFR_COOKING: {
+        source: 'MANUFACTURER',
+        evidenceRef: 'Official Buldak 2X Cup preparation: boiling water to inner line, stand 4 minutes, drain, add sauce and dry cheese powder',
+        sourceTitle: 'Buldak 2X Cup Cooking Instructions',
+        sourceUrl: 'https://buldak.com/us/product/buldak-ramen-2x-cup/',
+        skuScope: 'Buldak 2X Cup 70g',
+        verifiedAt: '2026-09-16',
+      },
+      PACK_NUTRITION: {
+        source: 'PACKAGING',
+        evidenceRef: 'Supplied Nutrition Facts panel for Buldak 2X Cup: 1 cup (70g), 300 calories, 11g fat, 640mg sodium, 43g carbohydrate, 7g protein',
+        sourceTitle: 'Buldak 2X Cup Nutrition Facts Panel',
+        skuScope: 'Buldak 2X Cup 70g',
+        verifiedAt: '2026-09-16',
+      },
+      CATALOG_RECORD: {
+        source: 'LUCKY_STORE_CATALOG',
+        evidenceRef: 'items.id: b79a6606-3eb8-425e-bf53-57c5788dc7ea, SKU: NOO-BUL-2XS, category: Noodles',
+        sourceTitle: 'Lucky Store Production Catalog',
+        skuScope: 'b79a6606-3eb8-425e-bf53-57c5788dc7ea',
+        verifiedAt: '2026-09-16',
+      },
+      STORE_INSPECTION_POLICY: {
+        source: 'LUCKY_STORE_POLICY',
+        evidenceRef: 'INSPECTION_POLICY: 100% doorstep inspection before payment by cash or bKash',
+        sourceTitle: 'Lucky Store Inspection Policy',
+        verifiedAt: '2026-09-16',
+      },
+    },
+    fieldEvidence: {
+      exactName: ['MFR_PRODUCT_PAGE', 'CATALOG_RECORD'],
+      brand: ['MFR_PRODUCT_PAGE'],
+      netQuantity: ['MFR_PRODUCT_PAGE', 'PACK_NUTRITION'],
+      category: ['CATALOG_RECORD'],
+      summary: ['MFR_PRODUCT_PAGE', 'MFR_COOKING', 'PACK_NUTRITION', 'STORE_INSPECTION_POLICY'],
+      highlights: [['MFR_PRODUCT_PAGE'], ['MFR_PRODUCT_PAGE'], ['MFR_COOKING']],
+      usageDirections: ['MFR_COOKING'],
+    },
+  },
+
+  // 25. Trident Pineapple Twist Sugar Free Gum 14 pieces
   '5b214258': {
     slugPrefix: '5b214258',
     exactName: 'Trident Pineapple Twist Sugar Free Gum 14 Pieces',
