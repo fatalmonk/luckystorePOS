@@ -183,7 +183,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
                 add(event.currentTarget);
               }}
               className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
-              aria-label={locale === 'bn' ? `ব্যাগে যোগ করুন: ${product.name}` : `Add to Cart: ${product.name}`}
+              aria-label={locale === 'bn' ? `ব্যাগে যোগ করুন: ${product.name}` : `Add ${product.name} to cart`}
             >
               <span className="market-card-add-label-full">{dict.productCard.addToCart}</span>
               <span className="market-card-add-label-short">{locale === 'bn' ? 'যোগ' : 'Add'}</span>
