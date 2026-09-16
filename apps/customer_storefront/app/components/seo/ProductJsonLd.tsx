@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
+import { validateGtin } from '../../lib/products/gtin';
 import { getDeliveryOfferShippingDetailsSchema } from '../../delivery/deliveryData';
 import { JsonLd } from './JsonLd';
 
@@ -17,6 +18,8 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
   const canonicalUrl = providedCanonicalUrl || `https://luckystore1947.com/product/${canonicalSlug}`;
   const effectiveName = name || product.name;
   const effectiveBrand = brand || product.brand;
+  const gtinInfo = validateGtin(product.barcode);
+  const effectiveSku = product.sku || product.id;
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org/',
@@ -24,7 +27,8 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
     name: effectiveName,
     image: product.image_url ? [product.image_url] : undefined,
     description: description || product.description || `${effectiveName} available at Lucky Store in Chattogram`,
-    sku: product.id,
+    sku: effectiveSku,
+    ...(gtinInfo ? { [gtinInfo.property]: gtinInfo.value } : {}),
     ...(effectiveBrand
       ? {
           brand: {

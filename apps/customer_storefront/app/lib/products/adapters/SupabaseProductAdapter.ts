@@ -69,6 +69,8 @@ function mapRowToProduct(
     createdAt: row.created_at ? new Date(row.created_at) : undefined,
     created_at: row.created_at ?? undefined,
     brand,
+    sku: row.sku ?? undefined,
+    barcode: row.barcode ?? undefined,
   };
 }
 
