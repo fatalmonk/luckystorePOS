@@ -4,6 +4,7 @@ import { Header } from '../../components/updated/Header';
 import { Footer } from '../../components/updated/Footer';
 import { BottomNav } from '../../components/BottomNav';
 import { DELIVERY_POLICY, COVERED_AREAS } from '../../delivery/deliveryData';
+import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 
 export const metadata: Metadata = {
   title: 'চট্টগ্রাম grocery delivery | Lucky Store',
@@ -23,7 +24,11 @@ export default function BengaliDeliveryPage() {
     <>
       <Header />
       <main className="mx-auto max-w-5xl px-6 py-24 text-warm-fg">
-        <nav aria-label="Breadcrumb" className="text-sm text-warm-muted"><Link href="/bn">হোম</Link> <span aria-hidden="true">/</span> ডেলিভারি তথ্য</nav>
+        <Breadcrumbs
+          homeHref="/bn"
+          homeLabel="হোম"
+          items={[{ label: 'ডেলিভারি তথ্য', href: '/bn/delivery' }]}
+        />
         <header className="mt-8 max-w-3xl">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-warm-muted">Lucky Store</p>
           <h1 className="mt-3 text-3xl font-black sm:text-5xl">চট্টগ্রামে অনলাইন grocery delivery</h1>
