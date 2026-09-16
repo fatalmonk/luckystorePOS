@@ -46,7 +46,7 @@ similarly packaged variants.
 
 | product_id | sku | catalog_name | category | evidence_source | source_reference | captured_at | supported_fields | status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 5b214258-3bf9-4a99-9c58-0f95e1a7930e | CC-TRI-14 | Trident Pineapple Twist Chewing Gum | Chocolates & Candies |  |  |  |  | PENDING_EVIDENCE |
+| 5b214258-3bf9-4a99-9c58-0f95e1a7930e | CC-TRI-14 | Trident Pineapple Twist Chewing Gum | Chocolates & Candies | MANUFACTURER | https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces | 2026-09-16 | exactName, brand, netQuantity, ingredients, allergens | READY_FOR_REVIEW |
 | 5830390b-4eef-4685-965e-de21d8e4ae7e | IC-POL-CAR-2 | Polar Carnival Butterscotch | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | e8771528-0444-4659-ba97-d71e7a8ff438 | IC-POL-CAR | Polar Carnival Vanilla | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |
 | 6df59696-6647-4c08-8cd4-4a137da6326b | IC-POL-CAR-3 | Polar Carnival Vanilla | Ice-Cream |  |  |  |  | PENDING_EVIDENCE |

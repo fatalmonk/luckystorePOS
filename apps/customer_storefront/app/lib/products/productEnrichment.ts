@@ -91,7 +91,7 @@ export interface ProductEnrichment {
 
 /**
  * Verified product enrichments indexed by 8-char prefix and partial slug.
- * Total: 22 products (8 prior pilots + 14 expanded cohort enrichments).
+ * Total: 23 products (8 prior pilots + 15 expanded cohort enrichments).
  */
 export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
   // 1. Fortune Mustard Oil 5L
@@ -2115,6 +2115,96 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       highlights: [['PACK_FRONT'], ['MFR_SPEC']],
       usageDirections: ['PACK_PREP'],
       storageInstructions: ['PACK_STORAGE'],
+    },
+  },
+
+  // 23. Trident Pineapple Twist Sugar Free Gum 14 pieces
+  '5b214258': {
+    slugPrefix: '5b214258',
+    exactName: 'Trident Pineapple Twist Sugar Free Gum 14 Pieces',
+    brand: 'Trident',
+    netQuantity: '14 pieces',
+    category: 'Chocolates & Candies',
+    summary:
+      'Trident Pineapple Twist Sugar Free Gum in a 14-piece pack. The manufacturer describes the gum as a fruity pineapple-flavoured, sugar-free product sweetened with xylitol, with 14 individually wrapped sticks in each pack. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.',
+    specifications: [
+      { label: 'Brand', value: 'Trident', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Net Quantity', value: '14 pieces', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Product Type', value: 'Sugar Free Chewing Gum', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Flavour', value: 'Pineapple Twist', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Sweetener', value: 'Xylitol', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Pack Format', value: '14 individually wrapped sticks', evidenceRefs: ['MFR_PRODUCT_PAGE'] },
+      { label: 'Allergen Declaration', value: 'Contains soy; contains phenylalanine', evidenceRefs: ['MFR_INGREDIENTS'] },
+      { label: 'Ingredients', value: 'Sorbitol, gum base, xylitol, glycerin, natural and artificial flavor; less than 2% acesulfame potassium, aspartame, BHT, citric acid, malic acid, mannitol, soy lecithin, and Yellow 5 Lake', evidenceRefs: ['MFR_INGREDIENTS'] },
+    ],
+    highlights: [
+      'Sugar-free pineapple-flavoured chewing gum',
+      'Sweetened with xylitol',
+      '14 individually wrapped sticks per pack',
+    ],
+    usageDirections:
+      'Chew after eating or drinking as directed by the manufacturer. People with phenylketonuria should note the phenylalanine declaration on the product page.',
+    faqs: [
+      {
+        question: 'How many sticks are in Trident Pineapple Twist?',
+        answer: 'Each pack contains 14 individually wrapped sticks.',
+        evidenceRefs: ['MFR_PRODUCT_PAGE'],
+      },
+      {
+        question: 'What sweetener is used in this sugar-free gum?',
+        answer: 'The manufacturer identifies xylitol as a sweetener and also lists sorbitol, among the ingredients.',
+        evidenceRefs: ['MFR_PRODUCT_PAGE', 'MFR_INGREDIENTS'],
+      },
+      {
+        question: 'Does Trident Pineapple Twist contain allergens?',
+        answer: 'The manufacturer declares that it contains soy and includes a phenylalanine warning for phenylketonurics.',
+        evidenceRefs: ['MFR_INGREDIENTS'],
+      },
+      {
+        question: 'Can I inspect this gum pack before payment?',
+        answer: 'Yes. Lucky Store provides 100% doorstep inspection before payment.',
+        evidenceRefs: ['STORE_INSPECTION_POLICY'],
+      },
+    ],
+    evidenceManifest: {
+      MFR_PRODUCT_PAGE: {
+        source: 'MANUFACTURER',
+        evidenceRef: 'Trident Pineapple Twist product page: sugar-free gum, pineapple flavour, xylitol, 14 individually wrapped sticks',
+        sourceTitle: 'Trident Pineapple Twist (14 pieces)',
+        sourceUrl: 'https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces',
+        skuScope: 'Trident Pineapple Twist 14 pieces',
+        verifiedAt: '2026-09-16',
+      },
+      MFR_INGREDIENTS: {
+        source: 'MANUFACTURER',
+        evidenceRef: 'Trident Pineapple Twist ingredient and allergen declaration, including soy and phenylalanine warning',
+        sourceTitle: 'Trident Pineapple Twist Ingredients',
+        sourceUrl: 'https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces',
+        skuScope: 'Trident Pineapple Twist 14 pieces',
+        verifiedAt: '2026-09-16',
+      },
+      CATALOG_RECORD: {
+        source: 'LUCKY_STORE_CATALOG',
+        evidenceRef: 'items.id: 5b214258-3bf9-4a99-9c58-0f95e1a7930e, SKU: CC-TRI-14, category: Chocolates & Candies',
+        sourceTitle: 'Lucky Store Production Catalog',
+        skuScope: '5b214258-3bf9-4a99-9c58-0f95e1a7930e',
+        verifiedAt: '2026-09-16',
+      },
+      STORE_INSPECTION_POLICY: {
+        source: 'LUCKY_STORE_POLICY',
+        evidenceRef: 'INSPECTION_POLICY: 100% doorstep inspection before payment by cash or bKash',
+        sourceTitle: 'Lucky Store Inspection Policy',
+        verifiedAt: '2026-09-16',
+      },
+    },
+    fieldEvidence: {
+      exactName: ['MFR_PRODUCT_PAGE', 'CATALOG_RECORD'],
+      brand: ['MFR_PRODUCT_PAGE'],
+      netQuantity: ['MFR_PRODUCT_PAGE'],
+      category: ['CATALOG_RECORD'],
+      summary: ['MFR_PRODUCT_PAGE', 'MFR_INGREDIENTS', 'STORE_INSPECTION_POLICY'],
+      highlights: [['MFR_PRODUCT_PAGE'], ['MFR_PRODUCT_PAGE'], ['MFR_PRODUCT_PAGE']],
+      usageDirections: ['MFR_PRODUCT_PAGE', 'MFR_INGREDIENTS'],
     },
   },
 };

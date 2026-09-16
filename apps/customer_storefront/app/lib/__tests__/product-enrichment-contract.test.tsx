@@ -199,7 +199,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
 
     it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
       const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
-      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(22);
+      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(23);
       expect(PILOT_ENRICHED_PRODUCTS).toBe(PRODUCT_ENRICHMENTS);
 
       for (const key of enrichmentKeys) {
@@ -426,6 +426,19 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(buldakCarb).toBeDefined();
       expect(buldakCarb?.brand).toBe('Samyang');
       expect(buldakCarb?.netQuantity).toBe('130g');
+    });
+
+    it('verifies Trident Pineapple Twist manufacturer evidence contract', () => {
+      const trident = getEnrichedProductData('5b214258');
+      expect(trident).toBeDefined();
+      expect(trident?.exactName).toBe('Trident Pineapple Twist Sugar Free Gum 14 Pieces');
+      expect(trident?.brand).toBe('Trident');
+      expect(trident?.netQuantity).toBe('14 pieces');
+      expect(trident?.summary).toContain('sweetened with xylitol');
+      expect(trident?.specifications.find((s) => s.label === 'Allergen Declaration')?.value).toContain('soy');
+      expect(trident?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
+        'https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces',
+      );
     });
   });
 

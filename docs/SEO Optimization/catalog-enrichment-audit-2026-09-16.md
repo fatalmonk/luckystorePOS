@@ -19,7 +19,7 @@ Verified directly against the live Supabase production schema and database:
 | **Total Active Products** | **580** | 100.0% | Active items in production PostgreSQL (`is_active = true`) |
 | **Active with DB Description** | **532** | 91.7% | High-value descriptions (50–350 chars) stored in DB, previously masked on storefront |
 | **Active Missing DB Description** | **48** | 8.3% | `items.description` is null/blank; requires reviewable enrichment dataset |
-| *Registry Enriched (Phase 4A cohort)* | *22* | *3.8%* | Independent evidence-backed overlay (`productEnrichment.ts`) |
+| *Registry Enriched (Phase 4A cohort)* | *23* | *4.0%* | Independent evidence-backed overlay (`productEnrichment.ts`) |
 
 ### Breakdown of 48 Items Missing Database Descriptions
 - **Ice-Cream (31 items):** Savoy and Polar varieties (`Savoy Ekdom Aam`, `Polar Carnival Vanilla`, `Polar Doi 1L`, `Savoy iKone Vanilla`, etc.).
@@ -127,3 +127,4 @@ unsupported inference.
   Temptation** under Savoy categories. It does not expose Lucky Store SKU or
   pack-size mappings, so these rows receive name/category source support only and
   remain `PENDING_EVIDENCE` for enrichment.
+- **[Trident Pineapple Twist product page](https://www.tridentgum.com/products/trident-pineapple-twist-14-pieces):** The exact 14-piece product page supports the Trident brand, pineapple flavour, sugar-free formulation, xylitol, individually wrapped sticks, and ingredient/allergen declarations. The `CC-TRI-14` row is now `READY_FOR_REVIEW` and represented in the enrichment registry; no database backfill has been applied.
