@@ -47,6 +47,8 @@ export interface Product {
   createdAt?: Date;
   created_at?: string;
   brand?: Brand;
+  sku?: string;
+  barcode?: string;
 }
 
 // Search criteria value object

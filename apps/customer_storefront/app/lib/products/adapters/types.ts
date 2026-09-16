@@ -22,6 +22,8 @@ export const ProductRowSchema = z.object({
   image_url: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),
   brand: z.string().optional().nullable(),
+  sku: z.string().optional().nullable(),
+  barcode: z.string().optional().nullable(),
 });
 
 export type ProductRow = z.infer<typeof ProductRowSchema>;
