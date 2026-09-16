@@ -185,7 +185,42 @@ export class SupabaseProductAdapter implements ProductDataPort {
   }
 
   async getById(id: ProductId): Promise<Product | null> {
-    const { data, error } = await this.supabase.rpc('search_items_pos', {
+    const cleanId = String(id).trim();
+
+    // Direct table query — uses primary key index, includes description
+    const { data, error } = await this.supabase
+      .from('items')
+      .select('id, name, price, mrp, category_id, description, image_url, created_at, brand')
+      .eq('id', cleanId)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (!error && data) {
+      const categories = await this.getCategories();
+      const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
+      const categoryNameMap = new Map(categories.map(c => [c.id, c.name]));
+
+      const { data: stockData } = await this.supabase
+        .from('stock_levels')
+        .select('qty')
+        .eq('item_id', data.id)
+        .eq('store_id', this.storeId)
+        .maybeSingle();
+
+      const row = {
+        ...data,
+        category: categoryNameMap.get(data.category_id ?? '') || '',
+        stock: stockData?.qty ?? 0,
+        qty_on_hand: stockData?.qty ?? 0,
+      };
+
+      const validated = tryValidateProductRow(row);
+      if (!validated) return null;
+      return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
+    }
+
+    // Fallback: RPC scan
+    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_items_pos', {
       p_store_id: this.storeId,
       p_query: '',
       p_category_id: null,
@@ -193,11 +228,11 @@ export class SupabaseProductAdapter implements ProductDataPort {
       p_offset: 0,
     });
 
-    if (error) {
-      throw new Error(`RPC getById failed: ${error.message}`);
+    if (rpcError) {
+      throw new Error(`RPC getById failed: ${rpcError.message}`);
     }
 
-    const rows = (data ?? []) as unknown[];
+    const rows = (rpcData ?? []) as unknown[];
     const match = rows.find((row: any) =>
       (row.id ?? row.item_id) === String(id)
     );
@@ -214,23 +249,10 @@ export class SupabaseProductAdapter implements ProductDataPort {
   }
 
   async getByIdPrefix(prefix: string): Promise<Product | null> {
-    // Direct table query — uses index, avoids full RPC scan
-    const { data, error } = await this.supabase
-      .from('items')
-      .select('id, name, price, mrp, category, category_id, stock, description, image_url, created_at, brand')
-      .ilike('id', `${prefix}%`)
-      .eq('is_active', true)
-      .limit(1);
+    const cleanPrefix = prefix.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
+    if (!cleanPrefix || cleanPrefix.length < 4) return null;
 
-    if (!error && data?.length) {
-      const categories = await this.getCategories();
-      const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
-      const validated = tryValidateProductRow(data[0]);
-      if (!validated) return null;
-      return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
-    }
-
-    // Fallback: RPC scan filtered by prefix (handles column name differences)
+    // Resolve 8-char slug prefix against active catalog via search_items_pos
     const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_items_pos', {
       p_store_id: this.storeId,
       p_query: '',
@@ -239,19 +261,20 @@ export class SupabaseProductAdapter implements ProductDataPort {
       p_offset: 0,
     });
 
-    if (rpcError) throw new Error(`getByIdPrefix RPC fallback failed: ${rpcError.message}`);
+    if (rpcError) throw new Error(`getByIdPrefix RPC failed: ${rpcError.message}`);
 
     const rows = (rpcData ?? []) as unknown[];
-    const match = rows.find((row: any) =>
-      ((row.id ?? row.item_id) as string)?.replace(/-/g, '').startsWith(prefix)
+    const matches = rows.filter((row: any) =>
+      ((row.id ?? row.item_id) as string)?.replace(/-/g, '').toLowerCase().startsWith(cleanPrefix)
     );
-    if (!match) return null;
 
-    const categories = await this.getCategories();
-    const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
-    const validated = tryValidateProductRow(match);
-    if (!validated) return null;
-    return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
+    // Fail closed: require exactly 1 unique match; reject ambiguous collisions (>1) or 0 matches
+    if (matches.length !== 1) return null;
+
+    const fullId = String((matches[0] as any).id ?? (matches[0] as any).item_id);
+
+    // Delegate to getById for complete storefront product projection (including description)
+    return this.getById(createProductId(fullId));
   }
 
   async getCategories(): Promise<Category[]> {
