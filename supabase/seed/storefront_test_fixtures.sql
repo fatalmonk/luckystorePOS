@@ -19,15 +19,17 @@ VALUES ('00000000-0000-0000-0000-000000000001', 'Lucky Store Test Tenant')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 -- 2. Ensure Store (Matches STORE_ID = 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd)
-INSERT INTO public.stores (id, tenant_id, name)
+INSERT INTO public.stores (id, tenant_id, name, code)
 VALUES (
   '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
   '00000000-0000-0000-0000-000000000001',
-  'Lucky Store Chattogram Main'
+  'Lucky Store Chattogram Main',
+  'STORE-MAIN'
 )
 ON CONFLICT (id) DO UPDATE SET
   tenant_id = EXCLUDED.tenant_id,
-  name = EXCLUDED.name;
+  name = EXCLUDED.name,
+  code = EXCLUDED.code;
 
 -- 3. Deterministic Categories for Navigation & Filtering
 INSERT INTO public.categories (id, store_id, name, slug, emoji, active, display_order)

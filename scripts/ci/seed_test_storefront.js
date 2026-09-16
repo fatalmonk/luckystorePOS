@@ -112,7 +112,7 @@ async function runViaServiceRoleClient(url, key) {
   if (tErr) throw tErr;
 
   // 2. Store
-  const { error: sErr } = await supabase.from('stores').upsert({ id: STORE_ID, tenant_id: TENANT_ID, name: 'Lucky Store Chattogram Main' });
+  const { error: sErr } = await supabase.from('stores').upsert({ id: STORE_ID, tenant_id: TENANT_ID, name: 'Lucky Store Chattogram Main', code: 'STORE-MAIN' });
   if (sErr) throw sErr;
 
   // 3. Categories
