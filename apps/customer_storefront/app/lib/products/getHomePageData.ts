@@ -135,7 +135,7 @@ export interface HomePageData {
 const DEFAULT_FALLBACK_CATEGORIES: CategoryItem[] = [
   { id: 'cat-1', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾' },
   { id: 'cat-2', slug: 'oil-and-ghee', name: 'Oil & Ghee', emoji: '🛢️' },
-  { id: 'cat-3', slug: 'tea-&-coffee', name: 'Tea & Coffee', emoji: '☕' },
+  { id: 'cat-3', slug: 'tea-and-coffee', name: 'Tea & Coffee', emoji: '☕' },
   { id: 'cat-4', slug: 'dairy-and-eggs', name: 'Dairy & Eggs', emoji: '🥛' },
   { id: 'cat-5', slug: 'snacks', name: 'Snacks & Drinks', emoji: '🍿' },
   { id: 'cat-6', slug: 'cleaning-supplies', name: 'Cleaning Supplies', emoji: '🧼' },
