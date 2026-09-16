@@ -12,6 +12,7 @@ import { Logo } from '../ui/Logo';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { useTheme } from '../providers/ThemeProvider';
 import { getCategoryIcon } from '../icons/CategoryIcons';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 export interface HeaderProps {
   className?: string;
@@ -160,12 +161,12 @@ export function Header({ className = '' }: HeaderProps) {
 
           <form onSubmit={handleSearchSubmit} className="flex-1 relative">
             <input
-              type="text"
-              autoFocus
+              type="search"
+              inputMode="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="What are you shopping for today?"
+              placeholder="What are you shopping for today?…"
               className="h-12 w-full rounded-full border border-warm-border bg-warm-surface pl-5 pr-14 text-base font-medium text-warm-fg shadow-inner transition-colors placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent/40"
               aria-label="Search products"
             />
@@ -225,7 +226,7 @@ export function Header({ className = '' }: HeaderProps) {
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 shrink-0 -translate-y-0.5 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -250,6 +251,7 @@ export function Header({ className = '' }: HeaderProps) {
           >
             <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
           </button>
+          <LanguageSwitcher />
           <HeaderCartButton compact iconSize={20} />
         </div>
       </div>
@@ -261,7 +263,7 @@ export function Header({ className = '' }: HeaderProps) {
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+            className="flex h-11 w-11 shrink-0 -translate-y-1 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -274,16 +276,17 @@ export function Header({ className = '' }: HeaderProps) {
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
         <div className="relative hidden max-w-[460px] flex-1 md:block" ref={desktopSearchRef}>
-          <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-all duration-300">
+          <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-[border-color,box-shadow] duration-300">
             {/* Main Search Input */}
             <div className="flex-1 relative">
               <input
                 name="q"
-                type="text"
+                type="search"
+                inputMode="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="What are you shopping for today?"
+                placeholder="What are you shopping for today?…"
                 className="h-11 w-full bg-transparent pl-4 pr-12 text-sm font-medium text-warm-fg outline-none placeholder:text-warm-muted"
                 aria-label="Search products"
               />
@@ -302,7 +305,7 @@ export function Header({ className = '' }: HeaderProps) {
             {/* Search Submit Button */}
             <button
               type="submit"
-              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-all hover:bg-warm-bg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-[background-color,transform] hover:bg-warm-bg motion-safe:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label="Submit search"
             >
               <ArrowRight weight="bold" size={16} aria-hidden="true" />
@@ -327,6 +330,7 @@ export function Header({ className = '' }: HeaderProps) {
 
         {/* Right Actions: Theme, Wishlist, Cart */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <LanguageSwitcher />
           {/* Theme Toggle */}
           <button
             type="button"
@@ -426,7 +430,10 @@ export function Header({ className = '' }: HeaderProps) {
           </nav>
           <button
             type="button"
-            onClick={() => desktopCategoriesRef.current?.scrollBy({ left: 360, behavior: 'smooth' })}
+            onClick={() => {
+              const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              desktopCategoriesRef.current?.scrollBy({ left: 360, behavior: reducedMotion ? 'auto' : 'smooth' });
+            }}
             aria-label="Scroll categories forward"
             className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-bg text-warm-fg shadow-warm-md transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >

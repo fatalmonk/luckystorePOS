@@ -36,7 +36,7 @@ export function ProductGridSection({
         <div className="min-w-0">
           <h2
             id={`grid-section-title-${id}`}
-            className="text-lg font-black leading-tight tracking-tight text-warm-fg sm:text-xl"
+            className="text-balance text-lg font-black leading-tight tracking-tight text-warm-fg sm:text-xl"
           >
             {title}
           </h2>
@@ -46,7 +46,7 @@ export function ProductGridSection({
         </div>
         <Link
           href={ctaHref}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-muted transition-colors hover:bg-warm-bg hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-muted transition-colors hover:bg-warm-bg hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           aria-label={`${ctaLabel} — ${title}`}
         >
           <CaretRight size={18} weight="bold" aria-hidden="true" />

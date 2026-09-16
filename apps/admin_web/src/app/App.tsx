@@ -36,6 +36,7 @@ const LazyStaffDashboardPage = React.lazy(() => import('../features/staff/StaffD
 const LazyDeliveryOrdersPage = React.lazy(() => import('../features/deliveryOrders/DeliveryOrdersPage').then(m => ({ default: m.DeliveryOrdersPage })));
 const LazySocialPostPage = React.lazy(() => import('../features/social/SocialPostPage').then(m => ({ default: m.SocialPostPage })));
 const LazyCategoriesPage = React.lazy(() => import('../features/inventory/CategoriesPage').then(m => ({ default: m.CategoriesPage })));
+const LazyTranslationsPage = React.lazy(() => import('../features/translations/TranslationsPage').then(m => ({ default: m.TranslationsPage })));
 
 function SuspenseFallback() {
   return (
@@ -99,6 +100,7 @@ export function App() {
                   <Route path="other-income" element={<LazyRoute><LazyOtherIncomePage /></LazyRoute>} />
                   <Route path="staff" element={<LazyRoute><LazyStaffDashboardPage /></LazyRoute>} />
                   <Route path="social-post" element={<LazyRoute><LazySocialPostPage /></LazyRoute>} />
+                  <Route path="translations" element={<LazyRoute><LazyTranslationsPage /></LazyRoute>} />
                 </Route>
               </Routes>
               <InstallPrompt />

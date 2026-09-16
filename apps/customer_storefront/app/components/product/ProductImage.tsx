@@ -147,6 +147,8 @@ function BackgroundRemovedImage({
       src={processedSrc ?? src}
       data-original-src={src}
       alt={alt}
+      width={400}
+      height={300}
       className={`absolute inset-0 h-full w-full ${imageClassName}`}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"

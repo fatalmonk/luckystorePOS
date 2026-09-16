@@ -1,6 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
+  ArrowRight,
+  Phone,
+  EnvelopeSimple,
   FacebookLogo,
   InstagramLogo,
   WhatsappLogo,
@@ -29,18 +33,18 @@ const socialLinks = [
 ] as const;
 
 const shopLinks = [
-  { label: 'GROCERIES', href: '/category' },
-  { label: 'WEEKLY DEALS', href: '/category?theme=deals' },
-  { label: 'NEW ARRIVALS', href: '/category?theme=new' },
-  { label: 'COOKING ESSENTIALS', href: '/category/cooking-essentials' },
+  { label: 'Groceries', href: '/category' },
+  { label: 'Weekly deals', href: '/category?theme=deals' },
+  { label: 'New arrivals', href: '/category?theme=new' },
+  { label: 'Cooking essentials', href: '/category/cooking-essentials' },
 ] as const;
 
 const helpLinks = [
-  { label: 'ABOUT US', href: '/contact#about' },
-  { label: 'DELIVERY INFO', href: '/delivery' },
-  { label: 'CONTACT', href: '/contact' },
+  { label: 'About us', href: '/contact#about' },
+  { label: 'Delivery info', href: '/delivery' },
+  { label: 'Contact', href: '/contact' },
   { label: 'FAQ', href: '/contact#faq' },
-  { label: 'WISHLIST', href: '/wishlist' },
+  { label: 'Wishlist', href: '/wishlist' },
 ] as const;
 
 const legalLinks = [
@@ -51,32 +55,70 @@ const legalLinks = [
 
 export function Footer() {
   return (
-    <footer className="site-footer mt-10 w-full border-t border-[var(--color-campaign-border)] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-10 font-body sm:mt-14 sm:px-8 sm:pb-8 sm:pt-14 lg:px-12">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 md:grid-cols-12 md:gap-8 lg:gap-12">
-          <div className="md:col-span-5 lg:col-span-6">
+    <footer className="site-footer mt-6 w-full border-t border-[var(--color-campaign-border)] pb-[calc(5rem+env(safe-area-inset-bottom))] font-body sm:mt-10 md:pb-6">
+      <div className="bg-warm-accent text-[#0B0B0D]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-5 sm:px-8 sm:py-6 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+          <div className="flex items-center gap-4">
+            <span className="hidden h-[2px] w-7 shrink-0 bg-[#0B0B0D] sm:inline-block" aria-hidden="true" />
+            <div>
+              <h2 className="font-display text-xl font-extrabold tracking-tight text-[#0B0B0D] sm:text-3xl">
+                Ready for the weekly shop?
+              </h2>
+              <p className="mt-1 text-sm text-[#0B0B0D]/85 sm:text-base">
+                Everyday groceries, delivered with care.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 sm:gap-8">
+            <Link
+              href="/category"
+              className="inline-flex min-h-12 items-center justify-center gap-4 rounded-lg bg-[#0B0B0D] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#232328] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0B0B0D]"
+            >
+              Shop groceries online <ArrowRight size={20} aria-hidden="true" />
+            </Link>
+            <div className="hidden items-center gap-2.5 sm:flex" aria-hidden="true">
+              <svg width="22" height="26" viewBox="0 0 24 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[#0B0B0D]">
+                <line x1="18" y1="6" x2="8" y2="2" />
+                <line x1="17" y1="14" x2="6" y2="14" />
+                <line x1="18" y1="22" x2="8" y2="26" />
+              </svg>
+              <div className="font-display text-xs font-extrabold uppercase leading-tight tracking-wider text-[#0B0B0D]">
+                <div>GOOD</div>
+                <div>FOOD</div>
+                <div>BRIGHTER</div>
+                <div>DAYS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-8 sm:pt-12 lg:px-12">
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-12 xl:gap-8">
+          <div className="min-w-0 xl:col-span-4">
             <Logo className="[&_img]:!h-10 sm:[&_img]:!h-12" />
 
-            <p className="site-footer-muted mt-5 max-w-md text-sm leading-6 sm:text-[15px] sm:leading-7">
-              Provisions for the Bengali hearth — pantry staples, fragrant tea, and daily comforts delivered with care across Chittagong since 1947.
+            <p className="site-footer-muted mt-4 max-w-md text-sm leading-6 sm:mt-6 sm:text-[15px] sm:leading-7">
+              Provisions for the Bengali hearth—pantry staples, fragrant tea, and daily comforts delivered with care across Chittagong since 1947.
             </p>
 
-            <address className="mt-5 flex flex-col items-start not-italic">
+            <address className="mt-4 flex flex-col items-start not-italic sm:mt-6">
               <a
                 href="tel:+8801731944544"
-                className={`site-footer-link text-sm ${footerFocus}`}
+                className={`site-footer-link gap-3 text-sm ${footerFocus}`}
               >
+                <Phone size={18} aria-hidden="true" className="shrink-0" />
                 +880 1731 944544
               </a>
               <a
                 href="mailto:hello@luckystore1947.com"
-                className={`site-footer-link text-sm ${footerFocus}`}
+                className={`site-footer-link gap-3 break-all text-sm ${footerFocus}`}
               >
+                <EnvelopeSimple size={18} aria-hidden="true" className="shrink-0" />
                 hello@luckystore1947.com
               </a>
             </address>
 
-            <div className="mt-5 flex items-center gap-2" aria-label="Lucky Store on social media">
+            <div className="mt-4 flex items-center gap-2.5" aria-label="Lucky Store on social media">
               {socialLinks.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
@@ -85,7 +127,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label={label}
                   title={label}
-                  className={`site-footer-text inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-campaign-border)] bg-[var(--color-campaign-control)] transition-colors hover:border-warm-accent hover:bg-[var(--color-campaign-control-hover)] hover:text-warm-accent active:translate-y-px ${footerFocus}`}
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#0B0B0D] text-white transition-colors hover:bg-warm-accent hover:text-warm-accent-text ${footerFocus}`}
                 >
                   <Icon size={20} weight="fill" aria-hidden="true" />
                 </a>
@@ -93,15 +135,15 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 border-t border-[var(--color-campaign-border)] pt-8 md:col-span-7 md:border-t-0 md:pt-5 lg:col-span-6 lg:gap-x-12 lg:pt-6">
+          <div className="grid grid-cols-2 gap-x-6 pt-2 sm:pt-0 xl:col-span-4">
             <nav aria-labelledby="footer-shop-heading">
-              <h2 id="footer-shop-heading" className="site-footer-heading">
+              <h2 id="footer-shop-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 Shop
               </h2>
-              <ul className="mt-3">
+              <ul className="mt-3 space-y-2.5 sm:mt-5">
                 {shopLinks.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className={`site-footer-link ${footerFocus}`}>
+                    <Link href={link.href} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
                       {link.label}
                     </Link>
                   </li>
@@ -110,13 +152,13 @@ export function Footer() {
             </nav>
 
             <nav aria-labelledby="footer-help-heading">
-              <h2 id="footer-help-heading" className="site-footer-heading">
+              <h2 id="footer-help-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 Help
               </h2>
-              <ul className="mt-3">
+              <ul className="mt-3 space-y-2.5 sm:mt-5">
                 {helpLinks.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} prefetch={link.href === '/wishlist' ? false : undefined} className={`site-footer-link ${footerFocus}`}>
+                    <Link href={link.href} prefetch={link.href === '/wishlist' ? false : undefined} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
                       {link.label}
                     </Link>
                   </li>
@@ -124,40 +166,29 @@ export function Footer() {
               </ul>
             </nav>
           </div>
-        </div>
 
-        <div className="mt-10 flex flex-col gap-5 rounded-warm-lg border border-[var(--color-campaign-border)] bg-[var(--color-campaign-control)] p-5 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-          <div>
-            <p className="site-footer-text font-display text-lg font-extrabold tracking-tight sm:text-xl">
-              Ready for the weekly shop?
-            </p>
-            <p className="site-footer-muted mt-1 max-w-xl text-sm leading-6">
-              Browse everyday groceries and order online from Lucky Store.
-            </p>
+          <div className="relative hidden min-h-64 xl:col-span-4 xl:block" aria-hidden="true">
+            <Image src="/images/footer-grocery-tote.png" alt="" fill sizes="380px" className="object-contain object-bottom" />
           </div>
-          <Link
-            href="/category"
-            className={`inline-flex min-h-12 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-warm-md border border-warm-muted bg-warm-surface px-6 py-3 text-center text-sm font-extrabold text-warm-fg transition-colors hover:bg-warm-image-well active:translate-y-px sm:w-auto ${footerFocus}`}
-          >
-            Shop groceries online
-          </Link>
         </div>
 
-        <div className="site-footer-bottom mt-8 border-t pt-5">
-          <div className="flex flex-col gap-3 text-[13px] font-medium sm:flex-row sm:items-center sm:justify-between">
-            <p>© Lucky Store. Est. 1947.</p>
-            <div className="flex flex-wrap items-center gap-x-5">
+        <div className="site-footer-bottom mt-10 border-t pt-5 sm:mt-12 sm:pt-6">
+          <div className="flex flex-col gap-3 text-xs sm:text-[13px]">
+            <div className="flex items-center justify-between font-medium">
+              <p>© <span translate="no">Lucky Store</span>. Est. 1947.</p>
+              <p>Chittagong, Bangladesh</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-medium">
               {legalLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`inline-flex min-h-11 items-center transition-colors hover:text-warm-accent ${footerFocus}`}
+                  className={`transition-colors hover:text-warm-accent ${footerFocus}`}
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
-            <p>Chittagong, Bangladesh</p>
           </div>
         </div>
       </div>

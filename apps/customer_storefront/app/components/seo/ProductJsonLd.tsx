@@ -9,11 +9,12 @@ interface ProductJsonLdProps {
   description?: string;
   name?: string;
   brand?: string;
+  canonicalUrl?: string;
 }
 
-export function ProductJsonLd({ product, description, name, brand }: ProductJsonLdProps) {
+export function ProductJsonLd({ product, description, name, brand, canonicalUrl: providedCanonicalUrl }: ProductJsonLdProps) {
   const canonicalSlug = toProductSlug(product.name, product.id);
-  const canonicalUrl = `https://luckystore1947.com/product/${canonicalSlug}`;
+  const canonicalUrl = providedCanonicalUrl || `https://luckystore1947.com/product/${canonicalSlug}`;
   const effectiveName = name || product.name;
   const effectiveBrand = brand || product.brand;
 

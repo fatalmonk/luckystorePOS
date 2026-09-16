@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { toProductSlug } from '../../lib/products/slugify';
+import { withLocale, type Locale } from '../../lib/i18n/config';
 import { useEffect } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
@@ -22,10 +23,13 @@ import { DELIVERY_POLICY } from '../../delivery/deliveryData';
 interface ProductClientProps {
   product: Product;
   crossSell: Product[];
+  locale?: Locale;
+  productUrlName?: string;
+  productCanonicalUrl?: string;
   enrichment?: ProductEnrichment;
 }
 
-function ProductContent({ product, crossSell, enrichment }: ProductClientProps) {
+function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
@@ -64,7 +68,7 @@ function ProductContent({ product, crossSell, enrichment }: ProductClientProps) 
     }
   };
 
-  const productUrl = `/product/${toProductSlug(product.name, product.id)}`;
+  const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
   const displayName = enrichment?.exactName || product.name;
   const overviewText = enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`;
 
@@ -84,6 +88,7 @@ function ProductContent({ product, crossSell, enrichment }: ProductClientProps) 
         name={displayName}
         brand={enrichment?.brand}
         description={overviewText}
+        canonicalUrl={productCanonicalUrl}
       />
       <Header />
 
@@ -91,9 +96,11 @@ function ProductContent({ product, crossSell, enrichment }: ProductClientProps) 
         <div className="mx-auto mt-2 min-h-full max-w-[var(--container-storefront)] rounded-t-warm-panel bg-warm-bg px-[var(--space-page-x)] md:mt-6">
           {/* Breadcrumb Navigation */}
           <div className="pt-2 md:pt-0">
-            <Breadcrumbs
-              items={[
-                { label: product.category, href: `/category/${encodeURIComponent(product.category)}` },
+      <Breadcrumbs
+        homeHref={withLocale('/', locale)}
+        homeLabel={locale === 'bn' ? 'হোম' : 'Home'}
+        items={[
+                { label: product.category, href: withLocale(`/category/${encodeURIComponent(product.category)}`, locale) },
                 { label: displayName, href: productUrl },
               ]}
             />
@@ -400,6 +407,15 @@ function ProductContent({ product, crossSell, enrichment }: ProductClientProps) 
   );
 }
 
-export default function ProductClient({ product, crossSell, enrichment }: ProductClientProps) {
-  return <ProductContent product={product} crossSell={crossSell} enrichment={enrichment} />;
+export default function ProductClient({ product, crossSell, locale, productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {
+  return (
+    <ProductContent
+      product={product}
+      crossSell={crossSell}
+      locale={locale}
+      productUrlName={productUrlName}
+      productCanonicalUrl={productCanonicalUrl}
+      enrichment={enrichment}
+    />
+  );
 }

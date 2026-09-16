@@ -44,8 +44,9 @@ export function HeroDiscoveryRail({
         <input
           type="search"
           name="q"
-          placeholder="Search rice, milk, oil, snacks..."
-          className="h-14 w-full rounded-warm-panel border border-warm-image-well-border bg-warm-bg pl-12 pr-4 text-base font-semibold text-warm-fg shadow-warm-card transition-colors placeholder:text-warm-muted hover:border-warm-accent/60 focus:border-warm-accent focus:outline-none focus:ring-2 focus:ring-warm-accent/30"
+          aria-label="Search groceries"
+          placeholder="Search rice, milk, oil, snacks…"
+          className="h-14 w-full rounded-warm-panel border border-warm-image-well-border bg-warm-bg pl-12 pr-4 text-base font-semibold text-warm-fg shadow-warm-card transition-colors placeholder:text-warm-muted hover:border-warm-accent/60 focus-visible:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/40"
         />
       </form>
 
@@ -83,7 +84,7 @@ export function HeroDiscoveryRail({
               <Link
                 key={product.id}
                 href={`/product/${toProductSlug(product.name, product.id)}`}
-                className="group/product flex min-h-[13.5rem] w-[10.25rem] shrink-0 snap-start flex-col overflow-hidden rounded-warm-card border border-warm-image-well-border bg-warm-bg shadow-warm-card transition-transform hover:-translate-y-0.5 hover:shadow-warm-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="group/product flex min-h-[13.5rem] w-[10.25rem] shrink-0 snap-start flex-col overflow-hidden rounded-warm-card border border-warm-image-well-border bg-warm-bg shadow-warm-card transition-transform motion-safe:hover:-translate-y-0.5 hover:shadow-warm-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 <span className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well">
                   <ProductImage
@@ -103,7 +104,7 @@ export function HeroDiscoveryRail({
                     </span>
                     <span className="mt-1 block truncate text-xs text-warm-muted">{product.unit}</span>
                   </span>
-                  <span className="font-mono text-base font-black text-warm-fg">
+                  <span className="font-mono text-base font-black tabular-nums text-warm-fg">
                     {formatBdt(product.price)}
                   </span>
                 </span>

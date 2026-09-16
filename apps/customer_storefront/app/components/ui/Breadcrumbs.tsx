@@ -10,10 +10,12 @@ export interface BreadcrumbItem {
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
+  homeHref?: string;
+  homeLabel?: string;
 }
 
-export function Breadcrumbs({ items }: BreadcrumbsProps) {
-  const allItems: BreadcrumbItem[] = [{ label: 'Home', href: '/' }, ...items];
+export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: BreadcrumbsProps) {
+  const allItems: BreadcrumbItem[] = [{ label: homeLabel, href: homeHref }, ...items];
 
   // Schema.org BreadcrumbList structured data
   const jsonLd = {

@@ -6,6 +6,7 @@ import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
+import { withLocale, type Locale } from '../lib/i18n/config';
 import type { Product } from '../lib/types';
 import { useProductCart } from '../hooks/useProductCart';
 import { useProductWishlist } from '../hooks/useProductWishlist';
@@ -17,16 +18,18 @@ import { trackSelectItem } from '../lib/analytics';
 
 export interface GridProductCardProps {
   product: Product;
+  locale?: Locale;
+  linkName?: string;
   priority?: boolean;
   listId?: string;
   listName?: string;
   index?: number;
 }
 
-export function GridProductCard({ product, priority = false, listId, listName, index }: GridProductCardProps) {
+export function GridProductCard({ product, locale = 'en', linkName, priority = false, listId, listName, index }: GridProductCardProps) {
   const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(product);
   const { isWishlisted, isPending, toggle } = useProductWishlist(product.id, product.name);
-  const productHref = `/product/${toProductSlug(product.name, product.id)}`;
+  const productHref = withLocale(`/product/${toProductSlug(linkName ?? product.name, product.id)}`, locale);
   const onSale = product.originalPrice != null && product.originalPrice > product.price;
   const discountPercentage = getDiscountBadgePercentage(product);
   const stockLow = product.stock === 1;
@@ -112,9 +115,9 @@ export function GridProductCard({ product, priority = false, listId, listName, i
           <p className="text-xs leading-none text-warm-dim">{product.unit}</p>
 
           <div className="mt-1 flex min-h-6 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="font-mono text-lg font-bold text-warm-fg">{formatBdt(product.price)}</span>
+            <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatBdt(product.price)}</span>
             {onSale && (
-              <span className="font-mono text-xs text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
+              <span className="font-mono text-xs tabular-nums text-warm-muted line-through">{formatBdt(product.originalPrice)}</span>
             )}
             {onSale && product.originalPrice != null && (
               <span className="text-[11px] font-bold text-warm-muted">
@@ -137,7 +140,7 @@ export function GridProductCard({ product, priority = false, listId, listName, i
                 className="flex h-12 w-12 items-center justify-center rounded-warm-control border border-warm-muted bg-warm-surface text-base font-bold text-warm-fg transition-colors hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={`Remove one ${product.name}`}
               >
-                -
+                −
               </button>
               <QtyNumber qty={quantity} className="min-w-[20px] text-center font-mono text-sm font-black text-warm-fg" />
               <button
@@ -172,7 +175,7 @@ export function GridProductCard({ product, priority = false, listId, listName, i
                 add(event.currentTarget);
               }}
               disabled={!canAdd}
-              className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
+              className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
               aria-label={`Add to Cart: ${product.name}`}
             >
               <span className="market-card-add-label-full">Add to Cart</span>

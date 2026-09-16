@@ -36,13 +36,15 @@ export function CampaignGrid({ products }: CampaignGridProps) {
               Daily essentials from a store Chittagong knows.
             </h2>
             <p className="campaign-on-image-muted mt-2 max-w-2xl text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7">
-              From morning tea and warm daily bread to fragrant rice and evening pantry spices, we bring the heart of Chittagong’s local bazaar straight to your kitchen table.
+              <span className="sm:hidden">Everyday groceries from Chittagong’s trusted store.</span>
+              <span className="hidden sm:inline">From morning tea and warm daily bread to fragrant rice and evening pantry spices, we bring the heart of Chittagong’s local bazaar straight to your kitchen table.</span>
             </p>
           </div>
 
           <div
-            className="relative ml-auto h-24 w-24 sm:h-40 sm:w-40 md:h-48 md:w-48 lg:mx-0 lg:h-56 lg:w-auto"
+            role="img"
             aria-label="A basket of everyday Lucky Store groceries"
+            className="relative ml-auto h-24 w-24 sm:h-40 sm:w-40 md:h-48 md:w-48 lg:mx-0 lg:h-56 lg:w-auto"
           >
             <Image
               src="/images/hero-grocery-basket.webp"

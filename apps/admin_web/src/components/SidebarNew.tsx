@@ -10,7 +10,7 @@ import {
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
   Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, 
   LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag, TrendingDown,
-  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send,
+  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send, Languages,
   type LucideIcon
 } from 'lucide-react';
 
@@ -101,6 +101,7 @@ function useNavGroups(): NavGroup[] {
         { icon: Settings, label: t('nav.settings', 'Settings'), path: '/settings' },
         { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
         { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
+        { icon: Languages, label: t('nav.translations'), path: '/translations' },
       ]
     }
   ], [t]);

@@ -102,14 +102,14 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
       tone="night"
       className="deal-panel space-y-5 p-4 sm:space-y-6 sm:p-5"
     >
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
+      <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:gap-y-2">
         <div className="min-w-0">
-          <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">
+          <h2 id="weekly-deal-title" className="deal-panel-title text-balance text-xl font-black tracking-tight sm:text-2xl">
             The Weekly Special
           </h2>
         </div>
-        <DealCountdown />
-        <p className="deal-panel-copy col-span-1 max-w-2xl text-sm">
+        <DealCountdown className="justify-self-start sm:justify-self-end" />
+        <p className="deal-panel-copy max-w-2xl text-sm">
           A cherished kitchen staple, handpicked for you at an exceptional price.
         </p>
       </div>
@@ -152,9 +152,9 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
             <p className="line-clamp-2 text-xs leading-5 text-warm-muted">{leadProduct.description}</p>
 
             <div className="flex flex-wrap items-baseline gap-2 pt-2">
-              <span className="text-xl font-black text-warm-fg">৳{leadProduct.price}</span>
+              <span className="text-xl font-black tabular-nums text-warm-fg">৳{leadProduct.price}</span>
               {leadProduct.originalPrice && (
-                <span className="text-sm font-bold text-warm-muted line-through">
+                <span className="text-sm font-bold tabular-nums text-warm-muted line-through">
                   ৳{leadProduct.originalPrice}
                 </span>
               )}
@@ -175,7 +175,7 @@ export function DealOfTheWeek({ products }: DealOfTheWeekProps) {
         {supportingProducts.length > 0 && (
           <div className="min-w-0 space-y-3 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="deal-panel-title text-sm font-extrabold">More deals</h3>
+              <h3 className="deal-panel-title text-sm font-extrabold">More Deals</h3>
               <div className="flex items-center gap-3">
                 <Link
                   href="/category?theme=deals"

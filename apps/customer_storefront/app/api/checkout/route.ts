@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    const idempotencyKey = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : '';
     const clientItems: CheckoutItem[] = body.items ?? [];
 
     if (!clientItems.length) {
@@ -120,13 +121,23 @@ export async function POST(req: NextRequest) {
     const clientTotal = Number(body.total ?? 0);
     if (Math.abs(clientTotal - total) > 0.01) {
       return NextResponse.json(
-        { ok: false, error: 'Price mismatch — please refresh and try again' },
+        {
+          ok: false,
+          code: 'PRICE_MISMATCH',
+          error: 'Some prices changed. Review the updated total before placing your order.',
+          items: verifiedItems,
+          subtotal,
+          deliveryFee,
+          total,
+        },
         { status: 400 }
       );
     }
 
     const now = new Date();
-    const orderNumber = `LSO-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const orderNumber = typeof body.orderNumber === 'string' && body.orderNumber.trim()
+      ? body.orderNumber.trim()
+      : `LSO-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
     const order = await createOrder({
       orderNumber,
@@ -146,6 +157,7 @@ export async function POST(req: NextRequest) {
       subtotal,
       deliveryFee,
       total,
+      idempotencyKey,
     });
 
     notifyAdminWeb(order).catch(console.error);
