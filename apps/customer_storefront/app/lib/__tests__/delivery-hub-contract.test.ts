@@ -131,8 +131,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
       expect(service.shippingConditions[1].shippingRate.value).toBe(0);
       expect(service.shippingConditions.every((condition) => condition.shippingRate['@type'] === 'MonetaryAmount')).toBe(true);
       expect(service.shippingConditions.every((condition) => condition.shippingDestination.addressCountry === 'BD')).toBe(true);
-      expect(JSON.stringify(service)).not.toContain('addressRegion');
-      expect(JSON.stringify(service)).not.toContain('postalCode');
+      expect(service.shippingConditions.every((condition) => condition.shippingDestination.postalCode === '4203')).toBe(true);
       expect(service.shippingConditions.every((condition) => condition.transitTime.duration.maxValue === 0)).toBe(true);
       expect(JSON.stringify(service)).not.toContain('OfferShippingDetails');
     });

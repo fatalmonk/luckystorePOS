@@ -126,8 +126,8 @@ jobs:
           cp -r .next/static .next/standalone/apps/customer_storefront/.next/static
 
       - run: npx playwright install chromium
-      - name: Run Chromium E2E (excluding full checkout flow)
-        run: cd apps/customer_storefront && npx playwright test --config playwright.config.ts --project=chromium --grep-invert "completes a full checkout"
+      - name: Run Chromium E2E
+        run: cd apps/customer_storefront && npx playwright test --config playwright.config.ts --project=chromium
 
       - name: Upload Playwright diagnostics
         if: failure()

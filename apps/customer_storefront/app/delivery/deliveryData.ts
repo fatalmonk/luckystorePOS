@@ -34,6 +34,9 @@ const SHIPPING_SERVICE_ID = `${DELIVERY_POLICY.canonicalUrl}#shipping-service`;
 const SHIPPING_DESTINATION = {
   '@type': 'DefinedRegion',
   addressCountry: 'BD',
+  // Keep the structured-data destination narrower than country-wide delivery.
+  // The exact 1 km boundary remains represented by DeliveryService.areaServed.
+  postalCode: '4203',
 } as const;
 
 const SHIPPING_TIME = {
