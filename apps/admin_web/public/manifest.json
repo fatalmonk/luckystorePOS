@@ -1,6 +1,6 @@
 {
-  "name": "Lucky Store POS",
-  "short_name": "LuckyPOS",
+  "name": "Lucky Store - Admin Dashboard",
+  "short_name": "LuckyAdmin",
   "description": "Lucky Store retail inventory & point-of-sale management portal",
   "id": "/",
   "start_url": "/",
