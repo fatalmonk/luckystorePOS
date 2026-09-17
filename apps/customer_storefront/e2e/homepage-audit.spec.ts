@@ -75,9 +75,9 @@ test.describe('Storefront homepage shell audit', () => {
     }
 
     const trust = page.getByRole('region', { name: 'Why shop with Lucky Store' });
-    await expect(trust.getByText('Local delivery')).toBeVisible();
-    await expect(trust.getByText('Since 1947')).toBeVisible();
-    await expect(trust.getByText('Pay on delivery')).toBeVisible();
+    await expect(trust.getByText(/Free Delivery/i)).toBeVisible();
+    await expect(trust.getByText(/Established 1947/i)).toBeVisible();
+    await expect(trust.getByText(/Cash on Delivery/i)).toBeVisible();
     await expect(trust.getByText(/10k\+|500\+|Local Reviews/i)).toHaveCount(0);
 
     const footer = page.getByRole('contentinfo');

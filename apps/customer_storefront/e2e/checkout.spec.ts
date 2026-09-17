@@ -107,7 +107,7 @@ test.describe('Checkout Flow', () => {
     await page.click('[data-testid="checkout-review-btn"]');
 
     await expect(page.getByRole('radio', { name: /Cash on Delivery/ })).toBeChecked();
-    await page.getByRole('radio', { name: /bKash/ }).check();
+    await page.getByTestId('checkout-payment-bkash').check({ force: true });
     await expect(page.getByText('Pay to 01731944544.')).toBeVisible();
 
     // Place order
