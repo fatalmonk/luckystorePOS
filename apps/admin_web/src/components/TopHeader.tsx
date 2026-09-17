@@ -1,4 +1,4 @@
-import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, User } from 'lucide-react';
+import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, User, Eye, EyeOff } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +34,9 @@ export function TopHeader({
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+  const [isPrivacyMode, setIsPrivacyMode] = useState(() => {
+    return localStorage.getItem('privacy_mode') === 'true';
   });
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isBengali = i18n.language === 'bn';
@@ -101,7 +104,17 @@ export function TopHeader({
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
+  useEffect(() => {
+    if (isPrivacyMode) {
+      document.documentElement.setAttribute('data-privacy', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-privacy');
+    }
+    localStorage.setItem('privacy_mode', isPrivacyMode ? 'true' : 'false');
+  }, [isPrivacyMode]);
+
   const toggleTheme = () => setIsDark(!isDark);
+  const togglePrivacy = () => setIsPrivacyMode(!isPrivacyMode);
 
   const handleSearchKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (!isCommandPaletteOpen) return;
@@ -179,8 +192,16 @@ export function TopHeader({
               <div
                 className="w-full max-w-2xl max-h-[calc(100vh-6rem)] overflow-y-auto rounded-lg border border-border-default bg-surface p-2 shadow-level-3"
                 role="dialog"
+                aria-modal="true"
                 aria-label={isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
                 onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab') {
+                    // Keep focus constrained inside command palette
+                    e.preventDefault();
+                    searchInputRef.current?.focus();
+                  }
+                }}
               >
                 <p className="px-3 py-2 text-label-sm text-text-muted">
                   {isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
@@ -192,6 +213,7 @@ export function TopHeader({
                       key={command.path}
                       type="button"
                       role="option"
+                      tabIndex={-1}
                       aria-selected={index === activeCommandIndex}
                       className={`flex min-h-11 w-full flex-col rounded-md px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary ${index === activeCommandIndex ? 'bg-background-subtle' : 'hover:bg-background-subtle'}`}
                       onMouseEnter={() => setActiveCommandIndex(index)}
@@ -227,6 +249,16 @@ export function TopHeader({
         <button className="header-button" aria-label="View notifications" type="button">
           <span className="sr-only">Notifications</span>
           <Bell size={16} />
+        </button>
+        <button
+          className="header-button"
+          onClick={togglePrivacy}
+          aria-label={isPrivacyMode ? 'Disable privacy mode' : 'Enable privacy mode'}
+          title={isPrivacyMode ? (isBengali ? 'প্রাইভেসি মোড বন্ধ করুন' : 'Disable privacy mode') : (isBengali ? 'প্রাইভেসি মোড চালু করুন' : 'Enable privacy mode')}
+          type="button"
+        >
+          <span className="sr-only">Toggle privacy mode</span>
+          {isPrivacyMode ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
         <button className="header-button" onClick={toggleTheme} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} type="button">
           <span className="sr-only">Toggle theme</span>
