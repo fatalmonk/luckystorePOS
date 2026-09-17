@@ -57,6 +57,16 @@ export function DaybookTab({ startDate, endDate }: DaybookTabProps) {
     // Map Daily Sales & Cash Collections
     (dailySalesData || []).forEach((sale) => {
       if (sale.totalSales > 0) {
+        const tenderCount = (sale.cashAmount > 0 ? 1 : 0) + (sale.bkashAmount > 0 ? 1 : 0) + (sale.creditAmount > 0 ? 1 : 0);
+        let method = 'Cash';
+        if (tenderCount > 1) {
+          method = 'Split Tender';
+        } else if (sale.creditAmount > 0) {
+          method = 'Credit';
+        } else if (sale.bkashAmount > 0) {
+          method = 'Digital/Bkash';
+        }
+
         items.push({
           id: `sale-${sale.id}`,
           date: sale.saleDate,
@@ -65,7 +75,7 @@ export function DaybookTab({ startDate, endDate }: DaybookTabProps) {
           reference: sale.id ? `DS-${sale.id.slice(0, 8)}` : undefined,
           inflow: sale.totalSales,
           outflow: 0,
-          paymentMethod: sale.cashAmount > 0 && (sale.bkashAmount > 0 || sale.creditAmount > 0) ? 'Split Tender' : sale.bkashAmount > 0 ? 'Digital/Bkash' : 'Cash',
+          paymentMethod: method,
         });
       }
 
@@ -81,14 +91,28 @@ export function DaybookTab({ startDate, endDate }: DaybookTabProps) {
           paymentMethod: 'Cash/Supplier',
         });
       }
+
+      if (sale.dailyExpense > 0) {
+        items.push({
+          id: `daily-expense-${sale.id}`,
+          date: sale.saleDate,
+          category: 'expenses',
+          description: 'Daily Shop Expense',
+          reference: sale.id ? `DE-${sale.id.slice(0, 8)}` : undefined,
+          inflow: 0,
+          outflow: sale.dailyExpense,
+          paymentMethod: 'Cash',
+        });
+      }
     });
 
     // Map Operating Expenses
     (expensesData || []).forEach((exp) => {
+      const isStockPurchase = exp.category === 'Stock Purchase';
       items.push({
         id: `exp-${exp.id}`,
         date: exp.expenseDate,
-        category: 'expenses',
+        category: isStockPurchase ? 'purchases' : 'expenses',
         description: exp.description || exp.category || 'Operating Expense',
         reference: exp.vendorName || exp.category,
         inflow: 0,
@@ -128,19 +152,26 @@ export function DaybookTab({ startDate, endDate }: DaybookTabProps) {
   const totalOutflow = useMemo(() => activityItems.reduce((acc, i) => acc + i.outflow, 0), [activityItems]);
   const netDailyBalance = totalInflow - totalOutflow;
 
+  const escapeCSVCell = (val: unknown): string => {
+    if (val === null || val === undefined) return '';
+    const str = String(val);
+    const sanitized = /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+    return `"${sanitized.replace(/"/g, '""')}"`;
+  };
+
   const handleExportCSV = () => {
     if (filteredItems.length === 0) return;
     const headers = ['Date', 'Category', 'Description', 'Reference', 'Inflow', 'Outflow', 'Payment Method'];
     const rows = filteredItems.map((item) => [
-      item.date,
-      `"${item.category.replace(/"/g, '""')}"`,
-      `"${item.description.replace(/"/g, '""')}"`,
-      `"${(item.reference || '').replace(/"/g, '""')}"`,
-      item.inflow,
-      item.outflow,
-      `"${(item.paymentMethod || '').replace(/"/g, '""')}"`,
+      escapeCSVCell(item.date),
+      escapeCSVCell(item.category),
+      escapeCSVCell(item.description),
+      escapeCSVCell(item.reference || ''),
+      escapeCSVCell(item.inflow),
+      escapeCSVCell(item.outflow),
+      escapeCSVCell(item.paymentMethod || ''),
     ]);
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
