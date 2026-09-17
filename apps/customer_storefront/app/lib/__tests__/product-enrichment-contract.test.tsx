@@ -165,8 +165,11 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       // Shipping details validation
       expect(offers.shippingDetails).toBeDefined();
       expect(offers.shippingDetails['@type']).toBe('OfferShippingDetails');
-      expect(offers.shippingDetails.shippingRate.shippingRate.value).toBe('40');
-      expect(offers.shippingDetails.shippingRate.freeShippingThreshold.price).toBe('500');
+      expect(offers.shippingDetails.hasShippingService['@id']).toBe(
+        'https://www.luckystore1947.com/delivery#shipping-service',
+      );
+      expect(offers.shippingDetails.shippingRate).toBeUndefined();
+      expect(JSON.stringify(offers.shippingDetails)).not.toContain('ShippingRateSettings');
 
       // Return policy validation
       expect(offers.hasMerchantReturnPolicy).toBeDefined();
