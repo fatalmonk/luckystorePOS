@@ -13,6 +13,7 @@ import { HeaderStats } from './HeaderStats';
 import { TrendCard } from './TrendCard';
 import { CashflowChart } from './CashflowChart';
 import { RecentActivity } from './RecentActivity';
+import { SetupChecklist } from './SetupChecklist';
 import { format, subDays, parseISO } from 'date-fns';
 import { formatCurrency } from '../../lib/format';
 
@@ -219,11 +220,37 @@ export function DashboardPage() {
     enabled: !!storeId,
   });
 
+  // Queries for Setup Checklist completeness derivation
+  const receiptConfigQuery = useQuery({
+    queryKey: ['settings-receipt', storeId],
+    queryFn: () => api.settings.getReceiptConfig(storeId!),
+    enabled: !!storeId,
+  });
+  const paymentMethodsQuery = useQuery({
+    queryKey: ['settings-payment-methods', storeId],
+    queryFn: () => api.settings.getPaymentMethods(storeId!),
+    enabled: !!storeId,
+  });
+  const usersQuery = useQuery({
+    queryKey: ['settings-users', storeId],
+    queryFn: () => api.settings.getUsers(storeId!),
+    enabled: !!storeId,
+  });
+
   const stats = statsQuery.data;
   const lowStock = lowStockQuery.data;
   const kpis: any = retailKpisQuery.data || {};
   const dailySales = dailySalesQuery.data || [];
   const expenses = expensesQuery.data || [];
+  const receiptConfig = receiptConfigQuery.data;
+  const paymentMethods = paymentMethodsQuery.data || [];
+  const usersList = usersQuery.data || [];
+
+  const hasProducts = Number(stats?.totalProducts || 0) > 0;
+  const hasPaymentMethods = paymentMethods.length > 0;
+  const hasStaff = usersList.length > 1; // More than 1 user or explicitly added
+  const isStoreConfigured = Boolean(receiptConfig?.store_name && receiptConfig.store_name.trim().length > 0);
+
   const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
   const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
 
@@ -356,6 +383,20 @@ export function DashboardPage() {
           </button>
         </div>
       </header>
+
+      {/* Onboarding & Setup Checklist */}
+      <SetupChecklist
+        hasProducts={hasProducts}
+        hasPaymentMethods={hasPaymentMethods}
+        hasStaff={hasStaff}
+        isStoreConfigured={isStoreConfigured}
+        onRefresh={() => {
+          statsQuery.refetch();
+          receiptConfigQuery.refetch();
+          paymentMethodsQuery.refetch();
+          usersQuery.refetch();
+        }}
+      />
 
       {/* Monthly Trends */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
