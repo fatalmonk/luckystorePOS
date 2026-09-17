@@ -15,6 +15,7 @@ describe('install-prompt module', () => {
     const callback = vi.fn();
     const unsubscribe = subscribeInstallPrompt(callback);
 
+    expect(callback).toHaveBeenCalledTimes(1);
     expect(callback).toHaveBeenCalledWith(null);
 
     const fakePrompt = {
@@ -26,10 +27,17 @@ describe('install-prompt module', () => {
     window.dispatchEvent(Object.assign(new Event('beforeinstallprompt'), fakePrompt));
 
     expect(getInstallPrompt()).toBeDefined();
+    expect(callback).toHaveBeenCalledTimes(2);
+    expect(callback).toHaveBeenLastCalledWith(getInstallPrompt());
 
     clearInstallPrompt();
     expect(getInstallPrompt()).toBeNull();
+    expect(callback).toHaveBeenCalledTimes(3);
+    expect(callback).toHaveBeenLastCalledWith(null);
 
     unsubscribe();
+
+    window.dispatchEvent(Object.assign(new Event('beforeinstallprompt'), fakePrompt));
+    expect(callback).toHaveBeenCalledTimes(3);
   });
 });
