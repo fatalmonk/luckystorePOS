@@ -1,9 +1,10 @@
-import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, User, Eye, EyeOff } from 'lucide-react';
+import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, User, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
+import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -38,6 +39,7 @@ export function TopHeader({
   const [isPrivacyMode, setIsPrivacyMode] = useState(() => {
     return localStorage.getItem('privacy_mode') === 'true';
   });
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isBengali = i18n.language === 'bn';
 
@@ -58,34 +60,57 @@ export function TopHeader({
     return !normalizedQuery || `${command.label} ${command.description}`.toLocaleLowerCase().includes(normalizedQuery);
   });
 
-  const closeCommandPalette = useCallback(() => {
-    setIsCommandPaletteOpen(false);
-    setSearchQuery('');
-    setActiveCommandIndex(0);
-  }, []);
-
   const openCommandPalette = useCallback(() => {
     setIsCommandPaletteOpen(true);
+    setActiveCommandIndex(0);
     onSearchFocus?.();
     requestAnimationFrame(() => searchInputRef.current?.focus());
   }, [onSearchFocus]);
 
-  const runCommand = useCallback((path: string) => {
-    navigate(path);
+  const closeCommandPalette = useCallback(() => {
+    setIsCommandPaletteOpen(false);
+    setActiveCommandIndex(0);
+    setSearchQuery('');
+  }, []);
+
+  const runCommand = (path: string) => {
     closeCommandPalette();
-  }, [closeCommandPalette, navigate]);
+    navigate(path);
+  };
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
+
+  const togglePrivacy = () => {
+    setIsPrivacyMode(!isPrivacyMode);
+  };
 
   const toggleLanguage = () => {
     const next = i18n.language === 'bn' ? 'en' : 'bn';
     i18n.changeLanguage(next);
   };
 
-  // Keyboard shortcut: Cmd/Ctrl+K to open the bounded route-command palette.
+  // Global Keyboard shortcuts: Cmd/Ctrl+K (command palette), ? (help/shortcuts guide), / (focus search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInputActive = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName);
+
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         openCommandPalette();
+        return;
+      }
+      if (e.key === '?' && !e.ctrlKey && !e.altKey && !e.metaKey && !isInputActive) {
+        e.preventDefault();
+        setIsHelpOpen((prev) => !prev);
+        return;
+      }
+      if (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey && !isInputActive) {
+        e.preventDefault();
+        openCommandPalette();
+        return;
       }
       if (e.key === 'Escape' && isCommandPaletteOpen) {
         closeCommandPalette();
@@ -112,9 +137,6 @@ export function TopHeader({
     }
     localStorage.setItem('privacy_mode', isPrivacyMode ? 'true' : 'false');
   }, [isPrivacyMode]);
-
-  const toggleTheme = () => setIsDark(!isDark);
-  const togglePrivacy = () => setIsPrivacyMode(!isPrivacyMode);
 
   const handleSearchKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (!isCommandPaletteOpen) return;
@@ -252,6 +274,16 @@ export function TopHeader({
         </button>
         <button
           className="header-button"
+          onClick={() => setIsHelpOpen(true)}
+          aria-label={isBengali ? 'কীবোর্ড শর্টকাট ও সাহায্য' : 'Keyboard shortcuts & help'}
+          title={isBengali ? 'কীবোর্ড শর্টকাট (?)' : 'Keyboard shortcuts (?)'}
+          type="button"
+        >
+          <span className="sr-only">Help & Shortcuts</span>
+          <HelpCircle size={16} />
+        </button>
+        <button
+          className="header-button"
           onClick={togglePrivacy}
           aria-label={isPrivacyMode ? 'Disable privacy mode' : 'Enable privacy mode'}
           title={isPrivacyMode ? (isBengali ? 'প্রাইভেসি মোড বন্ধ করুন' : 'Disable privacy mode') : (isBengali ? 'প্রাইভেসি মোড চালু করুন' : 'Enable privacy mode')}
@@ -269,6 +301,11 @@ export function TopHeader({
           <span className="user-name">{userName}</span>
         </div>
       </div>
+
+      <KeyboardShortcutsModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
     </header>
   );
 }

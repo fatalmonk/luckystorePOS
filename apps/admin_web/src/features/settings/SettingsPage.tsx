@@ -1,4 +1,5 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -18,9 +19,20 @@ const ROLE_LABELS: Record<string, string> = {
   cashier: 'Staff',
 };
 
+const VALID_TABS = ['users', 'payments', 'receipt'] as const;
+type SettingsTab = typeof VALID_TABS[number];
+
 export function SettingsPage() {
   const { storeId } = useAuth();
-  const [activeTab, setActiveTab] = useState<'users' | 'payments' | 'receipt'>('users');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: SettingsTab = tabParam && (VALID_TABS as readonly string[]).includes(tabParam)
+    ? (tabParam as SettingsTab)
+    : 'users';
+
+  const handleTabChange = (tab: SettingsTab) => {
+    setSearchParams({ tab });
+  };
 
   return (
     <div className="settings-container">
@@ -33,7 +45,7 @@ export function SettingsPage() {
         {/* Vertical Tabs */}
         <aside style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
           <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => handleTabChange('users')}
             className={clsx('tab-btn', activeTab === 'users' && 'active')}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
@@ -45,7 +57,7 @@ export function SettingsPage() {
             <Users size={18} /> Users & Roles
           </button>
           <button
-            onClick={() => setActiveTab('payments')}
+            onClick={() => handleTabChange('payments')}
             className={clsx('tab-btn', activeTab === 'payments' && 'active')}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
@@ -57,7 +69,7 @@ export function SettingsPage() {
             <CreditCard size={18} /> Payment Methods
           </button>
           <button
-            onClick={() => setActiveTab('receipt')}
+            onClick={() => handleTabChange('receipt')}
             className={clsx('tab-btn', activeTab === 'receipt' && 'active')}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',

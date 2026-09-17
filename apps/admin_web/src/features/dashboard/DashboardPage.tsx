@@ -13,6 +13,7 @@ import { HeaderStats } from './HeaderStats';
 import { TrendCard } from './TrendCard';
 import { CashflowChart } from './CashflowChart';
 import { RecentActivity } from './RecentActivity';
+import { SetupChecklist } from './SetupChecklist';
 import { format, subDays, parseISO } from 'date-fns';
 import { formatCurrency } from '../../lib/format';
 
@@ -219,11 +220,44 @@ export function DashboardPage() {
     enabled: !!storeId,
   });
 
+  // Queries for Setup Checklist completeness derivation
+  const inventoryCountQuery = useQuery({
+    queryKey: ['inventory', storeId],
+    queryFn: () => api.inventory.list(storeId!),
+    enabled: !!storeId,
+  });
+  const receiptConfigQuery = useQuery({
+    queryKey: ['settings-receipt', storeId],
+    queryFn: () => api.settings.getReceiptConfig(storeId!),
+    enabled: !!storeId,
+  });
+  const paymentMethodsQuery = useQuery({
+    queryKey: ['settings-payment-methods', storeId],
+    queryFn: () => api.settings.getPaymentMethods(storeId!),
+    enabled: !!storeId,
+  });
+  const usersQuery = useQuery({
+    queryKey: ['settings-users', storeId],
+    queryFn: () => api.settings.getUsers(storeId!),
+    enabled: !!storeId,
+  });
+
   const stats = statsQuery.data;
   const lowStock = lowStockQuery.data;
   const kpis: any = retailKpisQuery.data || {};
   const dailySales = dailySalesQuery.data || [];
   const expenses = expensesQuery.data || [];
+  const receiptConfig = receiptConfigQuery.data;
+  const paymentMethods = paymentMethodsQuery.data || [];
+  const usersList = usersQuery.data || [];
+  const inventoryItems = inventoryCountQuery.data || [];
+
+  const hasProducts = inventoryItems.length > 0;
+  const hasPaymentMethods = paymentMethods.length > 0;
+  // Verify explicit staff roles (cashier, staff, manager, etc.)
+  const hasStaff = usersList.some((u: { role?: string }) => ['cashier', 'staff', 'manager'].includes(u.role?.toLowerCase() || ''));
+  const isStoreConfigured = Boolean(receiptConfig?.store_name && receiptConfig.store_name.trim().length > 0);
+
   const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
   const isError = statsQuery.isError || dailySalesQuery.isError || expensesQuery.isError;
 
@@ -356,6 +390,22 @@ export function DashboardPage() {
           </button>
         </div>
       </header>
+
+      {/* Onboarding & Setup Checklist */}
+      <SetupChecklist
+        storeId={storeId}
+        hasProducts={hasProducts}
+        hasPaymentMethods={hasPaymentMethods}
+        hasStaff={hasStaff}
+        isStoreConfigured={isStoreConfigured}
+        onRefresh={() => {
+          statsQuery.refetch();
+          inventoryCountQuery.refetch();
+          receiptConfigQuery.refetch();
+          paymentMethodsQuery.refetch();
+          usersQuery.refetch();
+        }}
+      />
 
       {/* Monthly Trends */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

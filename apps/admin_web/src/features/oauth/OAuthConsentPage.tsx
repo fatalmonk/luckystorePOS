@@ -116,10 +116,16 @@ export function OAuthConsentPage() {
       <div className="bg-surface rounded-3xl border border-border shadow-2xl overflow-hidden transition-all hover:shadow-primary/5">
         {/* Header Section */}
         <div className="bg-surface p-8 text-center border-b border-border relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface p-4 rounded-2xl border border-border shadow-lg">
-            <Shield className="w-10 h-10 text-primary" />
+          <div className="flex justify-center mb-3">
+            <img
+              src="/oauth-logo-120.png"
+              alt="Lucky Store POS"
+              width={120}
+              height={120}
+              className="w-[120px] h-[120px] rounded-2xl border border-border shadow-md object-contain bg-[#0B0B0D] p-2"
+            />
           </div>
-          <h1 className="text-3xl font-bold mt-4 mb-2">Allow Access?</h1>
+          <h1 className="text-3xl font-bold mt-2 mb-2">Allow Access?</h1>
           <p className="text-text-primary font-medium opacity-80">
             A third-party application is requesting access to your Lucky Store account.
           </p>
