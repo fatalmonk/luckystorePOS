@@ -5,6 +5,7 @@ import { getCachedProductBySlug } from '../../../lib/products/getCachedProduct';
 import { supabase } from '../../../lib/supabase';
 import { toProductSlug } from '../../../lib/products/slugify';
 import { formatBdt } from '../../../lib/formatPrice';
+import { isMissingItemTranslationsTableError } from '../../../lib/translationErrors';
 import type { Product } from '../../../lib/products/types';
 import ProductClient from '../../../product/[slug]/ProductClient';
 
@@ -21,7 +22,24 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
     .eq('locale', 'bn')
     .eq('review_status', 'published')
     .maybeSingle();
-  if (error) throw error;
+
+  // Bengali translations are an optional overlay. If the translation
+  // migration has not reached an environment yet, keep the product usable
+  // with its canonical English content instead of failing the route.
+  if (error) {
+    if (!isMissingItemTranslationsTableError(error)) {
+      console.error('Failed to load Bengali product translation', {
+        itemId: product.id,
+        error,
+      });
+    }
+    return {
+      sourceName: product.name,
+      translated: false,
+      product,
+    };
+  }
+
   return {
     sourceName: product.name,
     translated: Boolean(translation),

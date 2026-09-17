@@ -9,6 +9,7 @@ import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { getDeliveryShippingServiceSchema } from './delivery/deliveryData';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -217,36 +218,7 @@ export default function RootLayout({
                 returnMethod: 'https://schema.org/ReturnInStore',
                 returnFees: 'https://schema.org/FreeReturn',
               },
-              shippingDetails: {
-                '@type': 'OfferShippingDetails',
-                shippingDestination: {
-                  '@type': 'DefinedRegion',
-                  addressCountry: 'BD',
-                  addressRegion: 'Chattogram',
-                  postalCode: '4203',
-                },
-                shippingRate: {
-                  '@type': 'ShippingRateSettings',
-                  shippingLabel: 'Lucky Store Standard Local Delivery',
-                  shippingDestination: {
-                    '@type': 'DefinedRegion',
-                    addressCountry: 'BD',
-                    addressRegion: 'Chattogram',
-                    postalCode: '4203',
-                  },
-                  shippingRate: {
-                    '@type': 'MonetaryAmount',
-                    value: '40',
-                    currency: 'BDT',
-                  },
-                  freeShippingThreshold: {
-                    '@type': 'DeliveryChargeSpecification',
-                    appliesToDeliveryMethod: 'https://schema.org/DeliveryModeOwnFleet',
-                    price: '500',
-                    priceCurrency: 'BDT',
-                  },
-                },
-              },
+              hasShippingService: getDeliveryShippingServiceSchema(),
               sameAs: [
                 'https://facebook.com/luckystore1947',
                 'https://instagram.com/luckystore1947',
@@ -422,7 +394,7 @@ export default function RootLayout({
             </CartProvider>
           </ThemeProvider>
         </AuthProvider>
-        <SpeedInsights />
+        {process.env.VERCEL === '1' ? <SpeedInsights /> : null}
       </body>
     </html>
   );

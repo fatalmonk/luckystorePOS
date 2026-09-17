@@ -2,7 +2,6 @@ import React from 'react';
 import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
 import { validateGtin } from '../../lib/products/gtin';
-import { getDeliveryOfferShippingDetailsSchema } from '../../delivery/deliveryData';
 import { JsonLd } from './JsonLd';
 
 interface ProductJsonLdProps {
@@ -52,7 +51,6 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
         name: 'Lucky Store',
         url: 'https://www.luckystore1947.com',
       },
-      shippingDetails: getDeliveryOfferShippingDetailsSchema(),
       hasMerchantReturnPolicy: {
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'BD',

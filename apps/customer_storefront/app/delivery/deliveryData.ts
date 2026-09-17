@@ -29,6 +29,26 @@ export const DELIVERY_POLICY = {
   canonicalUrl: 'https://www.luckystore1947.com/delivery',
 } as const;
 
+const SHIPPING_SERVICE_ID = `${DELIVERY_POLICY.canonicalUrl}#shipping-service`;
+
+const SHIPPING_DESTINATION = {
+  '@type': 'DefinedRegion',
+  addressCountry: 'BD',
+  // Keep the structured-data destination narrower than country-wide delivery.
+  // The exact 1 km boundary remains represented by DeliveryService.areaServed.
+  postalCode: '4203',
+} as const;
+
+const SHIPPING_TIME = {
+  '@type': 'ServicePeriod',
+  duration: {
+    '@type': 'QuantitativeValue',
+    minValue: 0,
+    maxValue: 0,
+    unitCode: 'DAY',
+  },
+} as const;
+
 export interface CoveredAreaItem {
   name: string;
   desc: string;
@@ -78,65 +98,46 @@ export const DELIVERY_FAQS: DeliveryFaqItem[] = [
   },
 ];
 
-export function getDeliveryOfferShippingDetailsSchema() {
+export function getDeliveryShippingServiceSchema() {
   return {
-    '@context': 'https://schema.org',
-    '@type': 'OfferShippingDetails',
-    '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-policy`,
-    shippingDestination: {
-      '@type': 'DefinedRegion',
-      addressCountry: 'BD',
-      addressRegion: 'Chattogram',
-      postalCode: '4203',
-    },
-    shippingRate: {
-      '@type': 'ShippingRateSettings',
-      '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-rate-settings`,
-      shippingLabel: `${DELIVERY_POLICY.storeName} Standard Local Delivery`,
-      shippingDestination: {
-        '@type': 'DefinedRegion',
-        addressCountry: 'BD',
-        addressRegion: 'Chattogram',
-        postalCode: '4203',
+    '@type': 'ShippingService',
+    '@id': SHIPPING_SERVICE_ID,
+    name: `${DELIVERY_POLICY.storeName} Standard Local Delivery`,
+    description: `Free delivery on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} and above; ৳${DELIVERY_POLICY.standardDeliveryFeeBdt} below the threshold within the store delivery area.`,
+    fulfillmentType: 'https://schema.org/FulfillmentTypeDelivery',
+    shippingConditions: [
+      {
+        '@type': 'ShippingConditions',
+        shippingDestination: SHIPPING_DESTINATION,
+        orderValue: {
+          '@type': 'MonetaryAmount',
+          minValue: 0,
+          maxValue: DELIVERY_POLICY.freeDeliveryThresholdBdt - 1,
+          currency: 'BDT',
+        },
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: DELIVERY_POLICY.standardDeliveryFeeBdt,
+          currency: 'BDT',
+        },
+        transitTime: SHIPPING_TIME,
       },
-      shippingRate: {
-        '@type': 'MonetaryAmount',
-        value: String(DELIVERY_POLICY.standardDeliveryFeeBdt),
-        currency: 'BDT',
+      {
+        '@type': 'ShippingConditions',
+        shippingDestination: SHIPPING_DESTINATION,
+        orderValue: {
+          '@type': 'MonetaryAmount',
+          minValue: DELIVERY_POLICY.freeDeliveryThresholdBdt,
+          currency: 'BDT',
+        },
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: 0,
+          currency: 'BDT',
+        },
+        transitTime: SHIPPING_TIME,
       },
-      freeShippingThreshold: {
-        '@type': 'DeliveryChargeSpecification',
-        appliesToDeliveryMethod: 'https://schema.org/DeliveryModeOwnFleet',
-        price: String(DELIVERY_POLICY.freeDeliveryThresholdBdt),
-        priceCurrency: 'BDT',
-      },
-    },
-  };
-}
-
-export function getDeliveryShippingRateSettingsSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'ShippingRateSettings',
-    '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-rate-settings`,
-    shippingLabel: `${DELIVERY_POLICY.storeName} Standard Local Delivery`,
-    shippingDestination: {
-      '@type': 'DefinedRegion',
-      addressCountry: 'BD',
-      addressRegion: 'Chattogram',
-      postalCode: '4203',
-    },
-    shippingRate: {
-      '@type': 'MonetaryAmount',
-      value: String(DELIVERY_POLICY.standardDeliveryFeeBdt),
-      currency: 'BDT',
-    },
-    freeShippingThreshold: {
-      '@type': 'DeliveryChargeSpecification',
-      appliesToDeliveryMethod: 'https://schema.org/DeliveryModeOwnFleet',
-      price: String(DELIVERY_POLICY.freeDeliveryThresholdBdt),
-      priceCurrency: 'BDT',
-    },
+    ],
   };
 }
 

@@ -69,6 +69,13 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
 test.describe('Checkout Flow', () => {
   test.setTimeout(120000);
 
+  test.beforeEach(async ({ page }) => {
+    // Keep checkout interactions deterministic without changing production consent behavior.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('lucky-analytics-consent', 'denied');
+    });
+  });
+
   test('redirects an empty cart before showing personal-data fields', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.removeItem('lucky-cart'));
@@ -109,6 +116,7 @@ test.describe('Checkout Flow', () => {
     await expect(page.getByRole('radio', { name: /Cash on Delivery/ })).toBeChecked();
     await page.getByRole('radio', { name: /bKash/ }).check();
     await expect(page.getByText('Pay to 01731944544.')).toBeVisible();
+    await page.fill('[data-testid="checkout-bkash-trxid"]', 'E2E123456');
 
     // Place order
     await page.click('[data-testid="checkout-place-order-btn"]');
