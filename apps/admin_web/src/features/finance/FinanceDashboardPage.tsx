@@ -3,11 +3,12 @@ import { PageHeader } from '@/components';
 import { DailySalesTab } from '../sales/DailySalesTab';
 import { ExpensesTab } from '../expenses/ExpensesTab';
 import { ProfitAndLossTab } from './ProfitAndLossTab';
-import { Calculator, Receipt, TrendingUp, Calendar } from 'lucide-react';
+import { DaybookTab } from './DaybookTab';
+import { Calculator, Receipt, TrendingUp, Calendar, BookOpen } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { api } from '../../lib/api';
 
-type Tab = 'pnl' | 'sales' | 'expenses';
+type Tab = 'pnl' | 'daybook' | 'sales' | 'expenses';
 
 export function FinanceDashboardPage() {
   const { storeId } = useAuth();
@@ -74,6 +75,7 @@ export function FinanceDashboardPage() {
 
   const tabs = [
     { id: 'pnl' as Tab, label: 'Profit & Loss', icon: TrendingUp },
+    { id: 'daybook' as Tab, label: 'Daybook', icon: BookOpen },
     { id: 'sales' as Tab, label: 'Daily Sales', icon: Calculator },
     { id: 'expenses' as Tab, label: 'Expenses', icon: Receipt },
   ];
@@ -147,6 +149,7 @@ export function FinanceDashboardPage() {
       {/* Tab content with entry animation */}
       <div className="px-6 finance-tab-content">
         {activeTab === 'pnl' && <ProfitAndLossTab startDate={startDate} endDate={endDate} />}
+        {activeTab === 'daybook' && <DaybookTab startDate={startDate} endDate={endDate} />}
         {activeTab === 'sales' && <DailySalesTab startDate={startDate} endDate={endDate} />}
         {activeTab === 'expenses' && <ExpensesTab startDate={startDate} endDate={endDate} />}
       </div>
