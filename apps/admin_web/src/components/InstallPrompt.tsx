@@ -54,44 +54,47 @@ export function InstallPrompt() {
         bottom: '80px',
         right: '24px',
         zIndex: 9997,
-        backgroundColor: 'white',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+        backgroundColor: 'var(--bg-surface, #ffffff)',
+        border: '1px solid var(--border-color, rgba(0,0,0,0.1))',
+        borderRadius: 'var(--radius-lg, 12px)',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.18)',
         padding: 'var(--space-4) var(--space-5)',
         display: 'flex',
         alignItems: 'center',
         gap: 'var(--space-3)',
-        maxWidth: '320px',
+        maxWidth: '340px',
+        color: 'var(--text-primary, #0B0B0D)',
       }}
     >
       <div
         style={{
           width: 40,
           height: 40,
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: '#863bff',
+          borderRadius: 'var(--radius-md, 8px)',
+          backgroundColor: '#f0c444',
+          color: '#0B0B0D',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
         }}
       >
-        <Download size={20} color="white" />
+        <Download size={20} color="#0B0B0D" />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: '14px' }}>Install LuckyPOS</div>
-        <div style={{ fontSize: '12px', color: '#666', marginTop: 2 }}>
-          Add to home screen for fast access
+        <div style={{ fontWeight: 700, fontSize: '14px' }}>Install Lucky Store POS</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-muted, #666)', marginTop: 2 }}>
+          Install as Chrome App for quick standalone launch
         </div>
       </div>
       <button
         onClick={handleInstall}
         style={{
-          padding: '6px 14px',
-          backgroundColor: '#863bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: 'var(--radius-md)',
+          padding: '8px 14px',
+          backgroundColor: '#0B0B0D',
+          color: '#f0c444',
+          border: '1px solid #f0c444',
+          borderRadius: 'var(--radius-md, 8px)',
           fontSize: '13px',
           fontWeight: 600,
           cursor: 'pointer',
