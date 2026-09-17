@@ -54,24 +54,24 @@ export function InstallPrompt() {
         bottom: '80px',
         right: '24px',
         zIndex: 9997,
-        backgroundColor: 'var(--bg-surface, #ffffff)',
-        border: '1px solid var(--border-color, rgba(0,0,0,0.1))',
-        borderRadius: 'var(--radius-lg, 12px)',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.18)',
-        padding: 'var(--space-4) var(--space-5)',
+        backgroundColor: 'var(--color-surface, #ffffff)',
+        border: '1px solid var(--color-border, #e7e5e4)',
+        borderRadius: 'var(--radius-lg, 16px)',
+        boxShadow: 'var(--shadow-lg, 0 8px 30px rgba(0,0,0,0.18))',
+        padding: 'var(--space-4, 16px) var(--space-5, 20px)',
         display: 'flex',
         alignItems: 'center',
-        gap: 'var(--space-3)',
+        gap: 'var(--space-3, 12px)',
         maxWidth: '340px',
-        color: 'var(--text-primary, #0B0B0D)',
+        color: 'var(--color-foreground, #0B0B0D)',
       }}
     >
       <div
         style={{
           width: 40,
           height: 40,
-          borderRadius: 'var(--radius-md, 8px)',
-          backgroundColor: '#f0c444',
+          borderRadius: 'var(--radius-md, 12px)',
+          backgroundColor: 'var(--color-accent, #f0c444)',
           color: '#0B0B0D',
           display: 'flex',
           alignItems: 'center',
@@ -82,8 +82,10 @@ export function InstallPrompt() {
         <Download size={20} color="#0B0B0D" />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: '14px' }}>Install Lucky Store POS</div>
-        <div style={{ fontSize: '12px', color: 'var(--text-muted, #666)', marginTop: 2 }}>
+        <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-foreground, #0B0B0D)' }}>
+          Install Lucky Store POS
+        </div>
+        <div style={{ fontSize: '12px', color: 'var(--color-muted, #78716c)', marginTop: 2 }}>
           Install as Chrome App for quick standalone launch
         </div>
       </div>
@@ -94,7 +96,7 @@ export function InstallPrompt() {
           backgroundColor: '#0B0B0D',
           color: '#f0c444',
           border: '1px solid #f0c444',
-          borderRadius: 'var(--radius-md, 8px)',
+          borderRadius: 'var(--radius-md, 12px)',
           fontSize: '13px',
           fontWeight: 600,
           cursor: 'pointer',
@@ -105,15 +107,19 @@ export function InstallPrompt() {
       </button>
       <button
         onClick={handleDismiss}
+        aria-label="Dismiss install prompt"
         style={{
           position: 'absolute',
-          top: 4,
-          right: 4,
+          top: 6,
+          right: 6,
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          color: '#999',
+          color: 'var(--color-muted, #78716c)',
           padding: 4,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <X size={14} />
