@@ -1,4 +1,5 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -20,7 +21,24 @@ const ROLE_LABELS: Record<string, string> = {
 
 export function SettingsPage() {
   const { storeId } = useAuth();
-  const [activeTab, setActiveTab] = useState<'users' | 'payments' | 'receipt'>('users');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab');
+  const validTabs: ('users' | 'payments' | 'receipt')[] = ['users', 'payments', 'receipt'];
+  const [activeTab, setActiveTab] = useState<'users' | 'payments' | 'receipt'>(() => {
+    return initialTab && (validTabs as string[]).includes(initialTab) ? (initialTab as 'users' | 'payments' | 'receipt') : 'users';
+  });
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && (validTabs as string[]).includes(tabParam)) {
+      setActiveTab(tabParam as 'users' | 'payments' | 'receipt');
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: 'users' | 'payments' | 'receipt') => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
 
   return (
     <div className="settings-container">
@@ -33,7 +51,7 @@ export function SettingsPage() {
         {/* Vertical Tabs */}
         <aside style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
           <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => handleTabChange('users')}
             className={clsx('tab-btn', activeTab === 'users' && 'active')}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
@@ -45,7 +63,7 @@ export function SettingsPage() {
             <Users size={18} /> Users & Roles
           </button>
           <button
-            onClick={() => setActiveTab('payments')}
+            onClick={() => handleTabChange('payments')}
             className={clsx('tab-btn', activeTab === 'payments' && 'active')}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
@@ -57,7 +75,7 @@ export function SettingsPage() {
             <CreditCard size={18} /> Payment Methods
           </button>
           <button
-            onClick={() => setActiveTab('receipt')}
+            onClick={() => handleTabChange('receipt')}
             className={clsx('tab-btn', activeTab === 'receipt' && 'active')}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',

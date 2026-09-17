@@ -221,6 +221,11 @@ export function DashboardPage() {
   });
 
   // Queries for Setup Checklist completeness derivation
+  const inventoryCountQuery = useQuery({
+    queryKey: ['inventory', storeId],
+    queryFn: () => api.inventory.list(storeId!),
+    enabled: !!storeId,
+  });
   const receiptConfigQuery = useQuery({
     queryKey: ['settings-receipt', storeId],
     queryFn: () => api.settings.getReceiptConfig(storeId!),
@@ -245,10 +250,12 @@ export function DashboardPage() {
   const receiptConfig = receiptConfigQuery.data;
   const paymentMethods = paymentMethodsQuery.data || [];
   const usersList = usersQuery.data || [];
+  const inventoryItems = inventoryCountQuery.data || [];
 
-  const hasProducts = Number(stats?.totalProducts || 0) > 0;
+  const hasProducts = inventoryItems.length > 0;
   const hasPaymentMethods = paymentMethods.length > 0;
-  const hasStaff = usersList.length > 1; // More than 1 user or explicitly added
+  // Verify explicit staff roles (cashier, staff, manager, etc.)
+  const hasStaff = usersList.some((u: { role?: string }) => ['cashier', 'staff', 'manager'].includes(u.role?.toLowerCase() || ''));
   const isStoreConfigured = Boolean(receiptConfig?.store_name && receiptConfig.store_name.trim().length > 0);
 
   const isLoading = statsQuery.isLoading || dailySalesQuery.isLoading || expensesQuery.isLoading;
@@ -386,12 +393,14 @@ export function DashboardPage() {
 
       {/* Onboarding & Setup Checklist */}
       <SetupChecklist
+        storeId={storeId}
         hasProducts={hasProducts}
         hasPaymentMethods={hasPaymentMethods}
         hasStaff={hasStaff}
         isStoreConfigured={isStoreConfigured}
         onRefresh={() => {
           statsQuery.refetch();
+          inventoryCountQuery.refetch();
           receiptConfigQuery.refetch();
           paymentMethodsQuery.refetch();
           usersQuery.refetch();

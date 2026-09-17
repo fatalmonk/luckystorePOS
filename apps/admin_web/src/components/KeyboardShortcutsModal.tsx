@@ -18,21 +18,64 @@ interface ShortcutGroup {
 
 export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsModalProps) {
   const { i18n } = useTranslation();
-  const isBengali = i18n.language === 'bn';
+  const isBengali = i18n.language?.startsWith('bn') || i18n.resolvedLanguage?.startsWith('bn');
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+
+    previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+
+    // Move focus inside dialog
+    requestAnimationFrame(() => {
+      const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable && focusable.length > 0) {
+        focusable[0].focus();
+      } else {
+        modalRef.current?.focus();
+      }
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previousActiveElementRef.current?.focus?.();
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -97,7 +140,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
       role="presentation"
     >
@@ -106,7 +149,8 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
         role="dialog"
         aria-modal="true"
         aria-label={isBengali ? 'কীবোর্ড শর্টকাট' : 'Keyboard Shortcuts'}
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-border-default bg-surface p-6 shadow-level-3"
+        tabIndex={-1}
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-border-default bg-surface p-6 shadow-level-3 focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border-default pb-4">
@@ -115,7 +159,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
               <Keyboard size={18} />
             </span>
             <div>
-              <h2 className="text-title-lg font-bold text-text-primary">
+              <h2 className="text-xl font-bold text-text-primary">
                 {isBengali ? 'কীবোর্ড শর্টকাট' : 'Keyboard Shortcuts'}
               </h2>
               <p className="text-body-sm text-text-muted">

@@ -63,7 +63,9 @@ export function TopHeader({
   const openCommandPalette = useCallback(() => {
     setIsCommandPaletteOpen(true);
     setActiveCommandIndex(0);
-  }, []);
+    onSearchFocus?.();
+    requestAnimationFrame(() => searchInputRef.current?.focus());
+  }, [onSearchFocus]);
 
   const closeCommandPalette = useCallback(() => {
     setIsCommandPaletteOpen(false);

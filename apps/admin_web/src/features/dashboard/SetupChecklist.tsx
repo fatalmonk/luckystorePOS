@@ -14,6 +14,7 @@ export interface SetupChecklistItem {
 }
 
 interface SetupChecklistProps {
+  storeId?: string;
   hasProducts: boolean;
   hasPaymentMethods: boolean;
   hasStaff: boolean;
@@ -22,6 +23,7 @@ interface SetupChecklistProps {
 }
 
 export function SetupChecklist({
+  storeId,
   hasProducts,
   hasPaymentMethods,
   hasStaff,
@@ -30,10 +32,11 @@ export function SetupChecklist({
 }: SetupChecklistProps) {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const isBengali = i18n.language === 'bn';
+  const isBengali = i18n.language?.startsWith('bn') || i18n.resolvedLanguage?.startsWith('bn');
+  const storageKey = `lucky_setup_checklist_dismissed_${storeId || 'default'}`;
 
   const [isDismissed, setIsDismissed] = useState(() => {
-    return localStorage.getItem('lucky_setup_checklist_dismissed') === 'true';
+    return localStorage.getItem(storageKey) === 'true';
   });
 
   const items: SetupChecklistItem[] = [
@@ -45,8 +48,8 @@ export function SetupChecklist({
         : 'Configure shop identity, receipt header & footer message.',
       icon: Building2,
       isCompleted: isStoreConfigured,
-      actionPath: '/settings',
-      actionLabel: isBengali ? 'সেটিংস দেখুন' : 'Go to Settings',
+      actionPath: '/settings?tab=receipt',
+      actionLabel: isBengali ? 'রসিদ সেটিংস' : 'Receipt Settings',
     },
     {
       id: 'catalog-init',
@@ -67,8 +70,8 @@ export function SetupChecklist({
         : 'Verify Cash, bKash, and digital payment methods for POS checkout.',
       icon: CreditCard,
       isCompleted: hasPaymentMethods,
-      actionPath: '/settings',
-      actionLabel: isBengali ? 'পেমেন্ট দেখুন' : 'Check Payments',
+      actionPath: '/settings?tab=payments',
+      actionLabel: isBengali ? 'পেমেন্ট সেটিংস' : 'Payment Methods',
     },
     {
       id: 'staff-roles',
@@ -78,7 +81,7 @@ export function SetupChecklist({
         : 'Create cashier accounts with quick-login PINs for daily operations.',
       icon: Users,
       isCompleted: hasStaff,
-      actionPath: '/settings',
+      actionPath: '/settings?tab=users',
       actionLabel: isBengali ? 'কর্মী পরিচালনা' : 'Manage Staff',
     },
   ];
@@ -87,12 +90,12 @@ export function SetupChecklist({
   const progressPercent = Math.round((completedCount / items.length) * 100);
 
   const handleDismiss = () => {
-    localStorage.setItem('lucky_setup_checklist_dismissed', 'true');
+    localStorage.setItem(storageKey, 'true');
     setIsDismissed(true);
   };
 
   const handleRestore = () => {
-    localStorage.removeItem('lucky_setup_checklist_dismissed');
+    localStorage.removeItem(storageKey);
     setIsDismissed(false);
   };
 
@@ -173,7 +176,14 @@ export function SetupChecklist({
           <span>{isBengali ? 'অগ্রগতি' : 'Progress'}</span>
           <span className="font-semibold text-text-primary">{progressPercent}%</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-background-subtle">
+        <div
+          role="progressbar"
+          aria-valuenow={progressPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={isBengali ? 'সেটআপ অগ্রগতি' : 'Setup progress'}
+          className="h-2 w-full overflow-hidden rounded-full bg-background-subtle"
+        >
           <div
             className="h-full bg-warm-accent transition-all duration-500"
             style={{ width: `${progressPercent}%` }}
