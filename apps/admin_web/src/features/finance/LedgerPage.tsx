@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
-import { Plus } from 'lucide-react';
+import { Plus, Search, Download } from 'lucide-react';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard, SkeletonRow } from '@/components';
 import { PageHeader } from '@/components';
 import { Drawer } from '@/components';
@@ -47,6 +47,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   emptyLedgerText,
 }) => {
   const [parties, setParties] = useState<Party[]>([]);
+  const [partySearch, setPartySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
@@ -61,6 +62,12 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const { notify } = useNotify();
 
   const openAddParty = () => setShowAddParty(true);
+
+  const filteredParties = parties.filter((p) => {
+    const q = partySearch.trim().toLowerCase();
+    if (!q) return true;
+    return p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q));
+  });
 
 
   const fetchParties = useCallback(async () => {
@@ -154,48 +161,78 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
       } />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
-        {/* Party List */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
-          {parties.length === 0 ? (
-            <div className="card col-[1/-1]">
-              <EmptyState
-                icon={<Icon size={48} />}
-                title={emptyTitle}
-                description={emptyDescription}
-                action={
-                  <button type="button" className="button-primary" onClick={openAddParty}>
-                    <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
-                  </button>
-                }
+        {/* Party Search and List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {parties.length > 0 && (
+            <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
+              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                placeholder={`Search ${partyType === 'supplier' ? 'suppliers' : 'customers'} by name or phone...`}
+                value={partySearch}
+                onChange={(e) => setPartySearch(e.target.value)}
+                className="input"
+                style={{ paddingLeft: '36px', width: '100%' }}
+                aria-label={`Search ${partyType}s`}
               />
             </div>
-          ) : parties.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => fetchLedger(p)}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: 'var(--space-4)',
-                borderRadius: 'var(--radius-lg)',
-                border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
-                backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast)',
-                boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
-              }}
-              className="card"
-            >
-              <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
-              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
-              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: p.current_balance > 0 ? balanceColorPositive : 'var(--color-success)' }}>{formatCurrency(p.current_balance)}
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+            {parties.length === 0 ? (
+              <div className="card col-[1/-1]">
+                <EmptyState
+                  icon={<Icon size={48} />}
+                  title={emptyTitle}
+                  description={emptyDescription}
+                  action={
+                    <button type="button" className="button-primary" onClick={openAddParty}>
+                      <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
+                    </button>
+                  }
+                />
               </div>
-              <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
-                {balanceLabel}
+            ) : filteredParties.length === 0 ? (
+              <div className="card col-[1/-1]">
+                <EmptyState
+                  icon={<Search size={48} />}
+                  title={`No matching ${partyType}s`}
+                  description={`No ${partyType}s found matching "${partySearch}".`}
+                  action={
+                    <button type="button" className="button-outline" onClick={() => setPartySearch('')}>
+                      Clear Search
+                    </button>
+                  }
+                />
               </div>
-            </button>
-          ))}
+            ) : filteredParties.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => fetchLedger(p)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: 'var(--space-4)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: selectedParty?.id === p.id ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
+                  backgroundColor: selectedParty?.id === p.id ? 'var(--color-primary-subtle)' : 'var(--bg-card)',
+                  cursor: 'pointer',
+                  transition: 'all var(--transition-fast)',
+                  boxShadow: selectedParty?.id === p.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
+                }}
+                className="card"
+              >
+                <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{p.name}</div>
+                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>{p.phone || 'No phone'}</div>
+                <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-lg)', fontWeight: '700', color: p.current_balance > 0 ? balanceColorPositive : 'var(--color-success)' }}>{formatCurrency(p.current_balance)}
+                </div>
+                <div style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)', marginTop: '2px' }}>
+                  {balanceLabel}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Ledger Detail */}
@@ -207,19 +244,54 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               backgroundColor: 'var(--color-background-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 'var(--space-2)'
             }}>
               <div>
                 <h2 style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedParty.name}</h2>
                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{statementSubtitle}</p>
               </div>
-              <button
-                className="button-outline"
-                onClick={() => window.print()}
-                disabled={ledgerLoading}
-              >
-                Print Statement
-              </button>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <button
+                  type="button"
+                  className="button-outline"
+                  onClick={() => {
+                    if (!selectedParty || ledgerEntries.length === 0) return;
+                    const headers = ['Date', 'Reference Type', 'Reference ID', debitLabel, creditLabel, 'Balance'];
+                    const rows = ledgerEntries.map((entry, idx) => [
+                      format(new Date(entry.effective_date), 'yyyy-MM-dd'),
+                      `"${entry.reference_type.replace(/"/g, '""')}"`,
+                      `"${(entry.reference_id || '').replace(/"/g, '""')}"`,
+                      entry.debit_amount || 0,
+                      entry.credit_amount || 0,
+                      balanceAtPoint(idx),
+                    ]);
+                    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `${selectedParty.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_statement.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                  disabled={ledgerLoading || ledgerEntries.length === 0}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Download size={14} /> Export CSV
+                </button>
+                <button
+                  type="button"
+                  className="button-outline"
+                  onClick={() => window.print()}
+                  disabled={ledgerLoading}
+                >
+                  Print Statement
+                </button>
+              </div>
             </div>
 
             {ledgerError ? (
