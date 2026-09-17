@@ -1,5 +1,5 @@
--- The idempotent storefront checkout wrapper must use the live items column
--- name. The items table exposes is_active, not active.
+-- Reapply the checkout boundary hardening for environments where the earlier
+-- correction migration has already been recorded.
 
 create or replace function public.create_order_with_stock_idempotent(
   p_order_number text,
@@ -48,7 +48,6 @@ begin
   if jsonb_typeof(p_items) is distinct from 'array' then
     raise exception 'Items must be a JSON array';
   end if;
-
   if jsonb_array_length(p_items) = 0 then
     raise exception 'Cart is empty';
   end if;
@@ -57,18 +56,15 @@ begin
     if jsonb_typeof(v_item) is distinct from 'object' then
       raise exception 'Each cart item must be a JSON object';
     end if;
-
     begin
       v_id := (v_item->>'id')::uuid;
       v_qty := (v_item->>'qty')::integer;
     exception when invalid_text_representation then
       raise exception 'Cart item id and quantity are invalid';
     end;
-
     if v_qty is null or v_qty <= 0 then
       raise exception 'Item quantity must be a positive integer';
     end if;
-
     if not exists (
       select 1
       from public.items i
@@ -83,9 +79,6 @@ begin
     end if;
   end loop;
 
-  -- Build the order snapshot from canonical catalog prices and names. This
-  -- keeps the security-definer boundary safe even when called directly by anon.
-  -- Grouping also makes repeated item IDs reserve stock only once per total qty.
   select
     jsonb_agg(
       jsonb_build_object(
@@ -115,7 +108,6 @@ begin
   if v_canonical_items is null then
     raise exception 'Cart is empty';
   end if;
-
   v_delivery_fee := case when v_subtotal >= 500 then 0 else 40 end;
   v_total := v_subtotal + v_delivery_fee;
 
@@ -133,47 +125,32 @@ begin
     insert into public.idempotency_keys (idempotency_key, tenant_id, locked_at)
     values (trim(p_idempotency_key), v_expected_tenant_id, clock_timestamp())
     on conflict (idempotency_key) do nothing;
-
     get diagnostics v_rows = row_count;
     if v_rows = 0 then
       select response_body into v_response
       from public.idempotency_keys
       where idempotency_key = trim(p_idempotency_key)
         and tenant_id = v_expected_tenant_id;
-
       if v_response is not null then
         return jsonb_build_object('order', v_response, 'replayed', true);
       end if;
-
       raise exception 'This order is already being processed';
     end if;
   end if;
 
   begin
     v_response := public.create_order_with_stock_v2(
-      p_order_number,
-      v_expected_tenant_id,
-      p_store_id,
-      p_customer_name,
-      p_customer_phone,
-      p_customer_address,
-      v_canonical_items,
-      v_subtotal,
-      v_delivery_fee,
-      v_total,
-      p_payment_method,
-      p_notes,
+      p_order_number, v_expected_tenant_id, p_store_id, p_customer_name,
+      p_customer_phone, p_customer_address, v_canonical_items,
+      v_subtotal, v_delivery_fee, v_total, p_payment_method, p_notes,
       p_delivery_slot
     );
-
     if nullif(trim(p_idempotency_key), '') is not null then
       update public.idempotency_keys
-      set response_body = v_response,
-          completed_at = clock_timestamp()
+      set response_body = v_response, completed_at = clock_timestamp()
       where idempotency_key = trim(p_idempotency_key)
         and tenant_id = v_expected_tenant_id;
     end if;
-
     return jsonb_build_object('order', v_response, 'replayed', false);
   exception when others then
     if nullif(trim(p_idempotency_key), '') is not null then
@@ -190,13 +167,10 @@ $function$;
 revoke all on function public.create_order_with_stock_idempotent(
   text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text, text
 ) from public, anon, authenticated;
-
 grant execute on function public.create_order_with_stock_idempotent(
   text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text, text
 ) to anon, authenticated;
 
--- The lower-level function accepts client-provided prices and is only safe
--- behind the canonicalizing wrapper above.
 revoke all on function public.create_order_with_stock_v2(
   text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text
 ) from public, anon, authenticated;
