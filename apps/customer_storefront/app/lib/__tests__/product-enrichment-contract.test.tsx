@@ -139,7 +139,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(json.brand.name).toBe('Fortune');
     });
 
-    it('emits valid shippingDetails and hasMerchantReturnPolicy matching store delivery policies', () => {
+    it('omits standard shippingDetails and emits the merchant return policy', () => {
       const product: Product = {
         id: createProductId('radhuni-test-item-123'),
         name: 'Radhuni Holud Gura 100g',
@@ -162,14 +162,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(offers.price).toBe(65);
       expect(offers.availability).toBe('https://schema.org/InStock');
 
-      // Shipping details validation
-      expect(offers.shippingDetails).toBeDefined();
-      expect(offers.shippingDetails['@type']).toBe('OfferShippingDetails');
-      expect(offers.shippingDetails.hasShippingService['@id']).toBe(
-        'https://www.luckystore1947.com/delivery#shipping-service',
-      );
-      expect(offers.shippingDetails.shippingRate).toBeUndefined();
-      expect(JSON.stringify(offers.shippingDetails)).not.toContain('ShippingRateSettings');
+      expect(offers.shippingDetails).toBeUndefined();
 
       // Return policy validation
       expect(offers.hasMerchantReturnPolicy).toBeDefined();

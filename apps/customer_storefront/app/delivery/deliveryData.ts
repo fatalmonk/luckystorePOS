@@ -34,8 +34,6 @@ const SHIPPING_SERVICE_ID = `${DELIVERY_POLICY.canonicalUrl}#shipping-service`;
 const SHIPPING_DESTINATION = {
   '@type': 'DefinedRegion',
   addressCountry: 'BD',
-  addressRegion: 'Chattogram',
-  postalCode: '4203',
 } as const;
 
 const SHIPPING_TIME = {
@@ -43,7 +41,7 @@ const SHIPPING_TIME = {
   duration: {
     '@type': 'QuantitativeValue',
     minValue: 0,
-    maxValue: 1,
+    maxValue: 0,
     unitCode: 'DAY',
   },
 } as const;
@@ -96,17 +94,6 @@ export const DELIVERY_FAQS: DeliveryFaqItem[] = [
     answer: `If any item does not meet your complete satisfaction during doorstep inspection, you may hand it back to the delivery agent immediately with zero fee penalty. For support, call or WhatsApp our team at ${DELIVERY_POLICY.supportPhone}.`,
   },
 ];
-
-export function getDeliveryOfferShippingDetailsSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'OfferShippingDetails',
-    '@id': `${DELIVERY_POLICY.canonicalUrl}#shipping-policy`,
-    hasShippingService: {
-      '@id': SHIPPING_SERVICE_ID,
-    },
-  };
-}
 
 export function getDeliveryShippingServiceSchema() {
   return {

@@ -5,7 +5,6 @@ import {
   DELIVERY_POLICY,
   DELIVERY_FAQS,
   COVERED_AREAS,
-  getDeliveryOfferShippingDetailsSchema,
   getDeliveryShippingServiceSchema,
   getDeliveryServiceSchema,
   getDeliveryFaqSchema,
@@ -121,24 +120,6 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   });
 
   describe('Schema.org Precision & Validity', () => {
-    it('produces Google-compatible OfferShippingDetails referencing the global ShippingService', () => {
-      const schema = getDeliveryOfferShippingDetailsSchema();
-      expect(schema['@context']).toBe('https://schema.org');
-      expect(schema['@type']).toBe('OfferShippingDetails');
-      expect(schema['@id']).toBe(`${DELIVERY_POLICY.canonicalUrl}#shipping-policy`);
-
-      // In Schema.org, freeShippingThreshold is NOT a property of OfferShippingDetails
-      expect((schema as any).freeShippingThreshold).toBeUndefined();
-
-      expect(schema.hasShippingService['@id']).toBe(`${DELIVERY_POLICY.canonicalUrl}#shipping-service`);
-      expect((schema as any).shippingRate).toBeUndefined();
-      expect(JSON.stringify(schema)).not.toContain('ShippingRateSettings');
-
-      // Reject invalid / invented property appliesToDeliveryChargeMethod across the entire payload
-      expect(JSON.stringify(schema)).not.toContain('appliesToDeliveryChargeMethod');
-
-    });
-
     it('models the basket-dependent standard policy through ShippingService conditions', () => {
       const service = getDeliveryShippingServiceSchema();
       expect(service['@type']).toBe('ShippingService');
@@ -149,6 +130,10 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
       expect(service.shippingConditions[1].orderValue.minValue).toBe(500);
       expect(service.shippingConditions[1].shippingRate.value).toBe(0);
       expect(service.shippingConditions.every((condition) => condition.shippingRate['@type'] === 'MonetaryAmount')).toBe(true);
+      expect(service.shippingConditions.every((condition) => condition.shippingDestination.addressCountry === 'BD')).toBe(true);
+      expect(JSON.stringify(service)).not.toContain('addressRegion');
+      expect(JSON.stringify(service)).not.toContain('postalCode');
+      expect(service.shippingConditions.every((condition) => condition.transitTime.duration.maxValue === 0)).toBe(true);
       expect(JSON.stringify(service)).not.toContain('OfferShippingDetails');
     });
 

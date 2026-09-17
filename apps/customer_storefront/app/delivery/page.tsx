@@ -11,7 +11,6 @@ import {
   DELIVERY_POLICY,
   COVERED_AREAS,
   getDeliveryFaqSchema,
-  getDeliveryOfferShippingDetailsSchema,
   getDeliveryServiceSchema,
 } from './deliveryData';
 
@@ -38,7 +37,6 @@ export const metadata: Metadata = {
 
 export default function DeliveryHubPage() {
   const faqSchema = getDeliveryFaqSchema();
-  const shippingDetailsSchema = getDeliveryOfferShippingDetailsSchema();
   const deliveryServiceSchema = getDeliveryServiceSchema();
 
   return (
@@ -47,11 +45,6 @@ export default function DeliveryHubPage() {
         id="delivery-faq-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <Script
-        id="delivery-shipping-details-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(shippingDetailsSchema) }}
       />
       <Script
         id="delivery-service-schema"
