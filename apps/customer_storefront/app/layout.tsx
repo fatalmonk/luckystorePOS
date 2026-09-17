@@ -394,7 +394,7 @@ export default function RootLayout({
             </CartProvider>
           </ThemeProvider>
         </AuthProvider>
-        <SpeedInsights />
+        {process.env.VERCEL === '1' ? <SpeedInsights /> : null}
       </body>
     </html>
   );

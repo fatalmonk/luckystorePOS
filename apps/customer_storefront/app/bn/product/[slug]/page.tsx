@@ -21,7 +21,18 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
     .eq('locale', 'bn')
     .eq('review_status', 'published')
     .maybeSingle();
-  if (error) throw error;
+
+  // Bengali translations are an optional overlay. If the translation
+  // migration has not reached an environment yet, keep the product usable
+  // with its canonical English content instead of failing the route.
+  if (error) {
+    return {
+      sourceName: product.name,
+      translated: false,
+      product,
+    };
+  }
+
   return {
     sourceName: product.name,
     translated: Boolean(translation),

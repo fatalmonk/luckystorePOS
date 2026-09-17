@@ -80,6 +80,20 @@ async function runPreflight() {
   }
   console.log(`✓ Items table accessible (${itemData.length} items sampled)`);
 
+  // Bengali storefront routes depend on the translation migration. Check it
+  // before Playwright so schema drift is reported as an environment failure,
+  // not as a noisy WebServer error during an unrelated browser test.
+  const { error: translationErr } = await adminClient
+    .from('item_translations')
+    .select('item_id')
+    .limit(1);
+  if (translationErr) {
+    throw new Error(
+      `item_translations table check failed: ${translationErr.message}. Apply migration 20260915220116_bengali_catalog_translations.sql to the approved test project.`,
+    );
+  }
+  console.log('✓ item_translations table accessible');
+
   // 3. search_items_pos RPC
   const { data: searchData, error: searchErr } = await client.rpc('search_items_pos', {
     p_store_id: STORE_ID,
