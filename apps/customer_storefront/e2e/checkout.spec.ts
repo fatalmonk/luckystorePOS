@@ -69,6 +69,13 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
 test.describe('Checkout Flow', () => {
   test.setTimeout(120000);
 
+  test.beforeEach(async ({ page }) => {
+    // Keep checkout interactions deterministic without changing production consent behavior.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('lucky-analytics-consent', 'denied');
+    });
+  });
+
   test('redirects an empty cart before showing personal-data fields', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.removeItem('lucky-cart'));
