@@ -1,6 +1,8 @@
 import { Search, Bell, Moon, Sun, Menu, PanelLeftClose, User } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 
 interface TopHeaderProps {
@@ -23,32 +25,72 @@ export function TopHeader({
   hidden = false,
 }: TopHeaderProps) {
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const userName = user?.name?.trim() || 'User';
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [activeCommandIndex, setActiveCommandIndex] = useState(0);
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const isBengali = i18n.language === 'bn';
+
+  const commands = [
+    { label: isBengali ? 'ড্যাশবোর্ড' : 'Dashboard', description: isBengali ? 'মূল সারসংক্ষেপ দেখুন' : 'View the main overview', path: '/' },
+    { label: isBengali ? 'পণ্য তালিকা' : 'Inventory', description: isBengali ? 'পণ্য ও স্টক পরিচালনা করুন' : 'Manage products and stock', path: '/inventory' },
+    { label: isBengali ? 'নতুন ক্রয়' : 'New purchase', description: isBengali ? 'ক্রয় গ্রহণ শুরু করুন' : 'Start purchase receiving', path: '/purchase' },
+    { label: isBengali ? 'বিক্রয় ইতিহাস' : 'Sales history', description: isBengali ? 'সাম্প্রতিক বিক্রয় পর্যালোচনা করুন' : 'Review recent sales', path: '/sales' },
+    { label: isBengali ? 'গ্রাহক লেজার' : 'Customer ledger', description: isBengali ? 'গ্রাহক স্টেটমেন্ট দেখুন' : 'View customer statements', path: '/finance/customers' },
+    { label: isBengali ? 'সরবরাহকারী লেজার' : 'Supplier ledger', description: isBengali ? 'সরবরাহকারী স্টেটমেন্ট দেখুন' : 'View supplier statements', path: '/finance/suppliers' },
+    { label: isBengali ? 'আদায়' : 'Collections', description: isBengali ? 'গ্রাহক পেমেন্ট পরিচালনা করুন' : 'Manage customer payments', path: '/collections' },
+    { label: isBengali ? 'প্রতিবেদন' : 'Reports', description: isBengali ? 'বিক্রয় ও আর্থিক প্রতিবেদন দেখুন' : 'Review sales and financial reports', path: '/reports' },
+    { label: isBengali ? 'সেটিংস' : 'Settings', description: isBengali ? 'স্টোর সেটিংস পরিচালনা করুন' : 'Manage store settings', path: '/settings' },
+  ];
+
+  const filteredCommands = commands.filter((command) => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+    return !normalizedQuery || `${command.label} ${command.description}`.toLocaleLowerCase().includes(normalizedQuery);
+  });
+
+  const closeCommandPalette = useCallback(() => {
+    setIsCommandPaletteOpen(false);
+    setSearchQuery('');
+    setActiveCommandIndex(0);
+  }, []);
+
+  const openCommandPalette = useCallback(() => {
+    setIsCommandPaletteOpen(true);
+    onSearchFocus?.();
+    requestAnimationFrame(() => searchInputRef.current?.focus());
+  }, [onSearchFocus]);
+
+  const runCommand = useCallback((path: string) => {
+    navigate(path);
+    closeCommandPalette();
+  }, [closeCommandPalette, navigate]);
 
   const toggleLanguage = () => {
     const next = i18n.language === 'bn' ? 'en' : 'bn';
     i18n.changeLanguage(next);
   };
 
-  // Keyboard shortcut: Cmd/Ctrl+K to focus search
+  // Keyboard shortcut: Cmd/Ctrl+K to open the bounded route-command palette.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        searchInputRef.current?.focus();
-        onSearchFocus?.();
+        openCommandPalette();
+      }
+      if (e.key === 'Escape' && isCommandPaletteOpen) {
+        closeCommandPalette();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onSearchFocus]);
+  }, [closeCommandPalette, isCommandPaletteOpen, openCommandPalette]);
 
   useEffect(() => {
     if (isDark) {
@@ -60,6 +102,24 @@ export function TopHeader({
   }, [isDark]);
 
   const toggleTheme = () => setIsDark(!isDark);
+
+  const handleSearchKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (!isCommandPaletteOpen) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveCommandIndex((current) => Math.min(current + 1, filteredCommands.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveCommandIndex((current) => Math.max(current - 1, 0));
+    } else if (event.key === 'Enter' && filteredCommands[activeCommandIndex]) {
+      event.preventDefault();
+      runCommand(filteredCommands[activeCommandIndex].path);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeCommandPalette();
+    }
+  };
 
   return (
     <header className={`top-header ${hidden ? 'header--hidden' : ''}`} aria-hidden={hidden ? 'true' : undefined}>
@@ -90,17 +150,66 @@ export function TopHeader({
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search or create anything... (⌘K)"
+            placeholder={isBengali ? 'খুঁজুন বা একটি কাজ নির্বাচন করুন... (⌘K)' : 'Search or choose an action... (⌘K)'}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={openCommandPalette}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setActiveCommandIndex(0);
+              setIsCommandPaletteOpen(true);
+            }}
+            onKeyDown={handleSearchKeyDown}
             className="search-input"
             aria-label="Global search"
-            role="searchbox"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={isCommandPaletteOpen}
+            aria-controls="global-command-list"
+            aria-activedescendant={isCommandPaletteOpen && filteredCommands[activeCommandIndex] ? `global-command-${activeCommandIndex}` : undefined}
           />
           <div className="search-shortcut" aria-hidden="true">
             <span>⌘</span>
             <span>K</span>
           </div>
+          {isCommandPaletteOpen && createPortal(
+            <div
+              className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-20"
+              onClick={closeCommandPalette}
+            >
+              <div
+                className="w-full max-w-2xl max-h-[calc(100vh-6rem)] overflow-y-auto rounded-lg border border-border-default bg-surface p-2 shadow-level-3"
+                role="dialog"
+                aria-label={isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="px-3 py-2 text-label-sm text-text-muted">
+                  {isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
+                </p>
+                <div id="global-command-list" role="listbox" aria-label={isBengali ? 'কমান্ড ফলাফল' : 'Command results'}>
+                  {filteredCommands.length > 0 ? filteredCommands.map((command, index) => (
+                    <button
+                      id={`global-command-${index}`}
+                      key={command.path}
+                      type="button"
+                      role="option"
+                      aria-selected={index === activeCommandIndex}
+                      className={`flex min-h-11 w-full flex-col rounded-md px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary ${index === activeCommandIndex ? 'bg-background-subtle' : 'hover:bg-background-subtle'}`}
+                      onMouseEnter={() => setActiveCommandIndex(index)}
+                      onClick={() => runCommand(command.path)}
+                    >
+                      <span className="text-label-lg text-text-primary">{command.label}</span>
+                      <span className="text-body-sm text-text-muted">{command.description}</span>
+                    </button>
+                  )) : (
+                    <p className="px-3 py-6 text-center text-body-sm text-text-muted">
+                      {isBengali ? 'কোনো কাজ পাওয়া যায়নি।' : 'No matching actions found.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )}
         </div>
       </div>
 
