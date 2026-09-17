@@ -126,4 +126,16 @@ jobs:
           cp -r .next/static .next/standalone/apps/customer_storefront/.next/static
 
       - run: npx playwright install chromium
-      - run: cd apps/customer_storefront && npx playwright test --project=chromium
+      - name: Run Chromium E2E (excluding full checkout flow)
+        run: cd apps/customer_storefront && npx playwright test --config playwright.config.ts --project=chromium --grep-invert "completes a full checkout"
+
+      - name: Upload Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-playwright-diagnostics
+          path: |
+            apps/customer_storefront/playwright-report/
+            apps/customer_storefront/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

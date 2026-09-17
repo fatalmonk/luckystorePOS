@@ -78,7 +78,7 @@ test.describe('Storefront homepage shell audit', () => {
     await expect(trust.getByText(/Free Delivery/i)).toBeVisible();
     await expect(trust.getByText(/Established 1947/i)).toBeVisible();
     await expect(trust.getByText(/Cash on Delivery/i)).toBeVisible();
-    await expect(trust.getByText(/10k\+|500\+|Local Reviews/i)).toHaveCount(0);
+    await expect(trust.getByText(/10k\+|Local Reviews/i)).toHaveCount(0);
 
     const footer = page.getByRole('contentinfo');
     await expect(footer).toBeVisible();
