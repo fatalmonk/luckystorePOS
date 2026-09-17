@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import type { Category } from '../lib/types';
+import { getCanonicalCategorySlug } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
 
 import { withLocale, type Locale } from '../lib/i18n/config';
@@ -74,8 +75,10 @@ export function CategoryQuickGrid({ categories, locale = 'en' }: CategoryQuickGr
           c.name.toLowerCase().replace(/\s+/g, '-') === slug
         ),
     );
+    const rawSlug = match?.slug ?? groupSlug;
+    const targetSlug = getCanonicalCategorySlug(rawSlug) || rawSlug;
     return {
-      href: withLocale(`/category/${match?.slug ?? groupSlug}`, locale),
+      href: withLocale(`/category/${targetSlug}`, locale),
       accessibleLabel: locale === 'bn' ? fallbackLabel : (match?.name ?? fallbackLabel),
     };
   };

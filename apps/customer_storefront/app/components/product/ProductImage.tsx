@@ -172,8 +172,9 @@ export function ProductImage({
 }: ProductImageProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const normalizedSrc = src?.trim() || null;
-  const usableSrc = normalizedSrc === '/images/products/default.svg' ? null : normalizedSrc;
+  const rawSrc = src?.trim() || null;
+  const secureSrc = rawSrc?.startsWith('http://') ? 'https://' + rawSrc.slice('http://'.length) : rawSrc;
+  const usableSrc = secureSrc === '/images/products/default.svg' ? null : secureSrc;
 
   useEffect(() => {
     setImageError(false);

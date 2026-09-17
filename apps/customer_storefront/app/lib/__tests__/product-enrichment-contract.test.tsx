@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import React from 'react';
@@ -199,7 +200,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
 
     it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
       const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
-      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(25);
+      expect(enrichmentKeys.length).toBeGreaterThanOrEqual(85);
       expect(PILOT_ENRICHED_PRODUCTS).toBe(PRODUCT_ENRICHMENTS);
 
       for (const key of enrichmentKeys) {
@@ -457,6 +458,70 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(cup?.netQuantity).toBe('70g');
       expect(cup?.specifications.find((s) => s.label === 'Calories')?.value).toBe('300 per 70g cup');
       expect(cup?.evidenceManifest.PACK_NUTRITION.evidenceRef).toContain('640mg sodium');
+    });
+
+    it('verifies additional Buldak cups and Rose pouch manufacturer evidence contracts', () => {
+      const cheeseCup = getEnrichedProductData('0c815bf1');
+      expect(cheeseCup).toBeDefined();
+      expect(cheeseCup?.brand).toBe('Samyang');
+      expect(cheeseCup?.netQuantity).toBe('70g');
+      expect(cheeseCup?.summary).toContain('creamy cheese');
+      expect(cheeseCup?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
+        'https://buldak.com/us/product/buldak-ramen-cheese-cup/',
+      );
+
+      const origCup = getEnrichedProductData('4bbb76d4');
+      expect(origCup).toBeDefined();
+      expect(origCup?.brand).toBe('Samyang');
+      expect(origCup?.netQuantity).toBe('70g');
+      expect(origCup?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
+        'https://buldak.com/us/product/buldak-ramen-original-cup/',
+      );
+
+      const rose = getEnrichedProductData('841b013d');
+      expect(rose).toBeDefined();
+      expect(rose?.brand).toBe('Samyang');
+      expect(rose?.netQuantity).toBe('140g');
+      expect(rose?.summary).toContain('gochujang');
+      expect(rose?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
+        'https://buldak.com/us/product/buldak-ramen-rose/',
+      );
+    });
+
+    it('verifies Polar Ice Cream cohort manufacturer evidence contracts', () => {
+      const butterscotch = getEnrichedProductData('5830390b');
+      expect(butterscotch).toBeDefined();
+      expect(butterscotch?.brand).toBe('Polar');
+      expect(butterscotch?.netQuantity).toBe('120 ml');
+      expect(butterscotch?.specifications.find((s) => s.label === 'Energy')?.value).toBe('320.53 kcal per 100g');
+      expect(butterscotch?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
+        'https://polarbd.com/en/product/cone-carnival-butterscotch/',
+      );
+
+      const vanillaCone = getEnrichedProductData('e8771528');
+      expect(vanillaCone).toBeDefined();
+      expect(vanillaCone?.brand).toBe('Polar');
+      expect(vanillaCone?.netQuantity).toBe('120 ml');
+
+      const chocobar = getEnrichedProductData('fc6d963a');
+      expect(chocobar).toBeDefined();
+      expect(chocobar?.brand).toBe('Polar');
+      expect(chocobar?.netQuantity).toBe('72 ml');
+
+      const coffee = getEnrichedProductData('2e948079');
+      expect(coffee).toBeDefined();
+      expect(coffee?.brand).toBe('Polar');
+      expect(coffee?.netQuantity).toBe('1 Litre');
+
+      const doi = getEnrichedProductData('54a7520e');
+      expect(doi).toBeDefined();
+      expect(doi?.brand).toBe('Polar');
+      expect(doi?.summary).toContain('Doi');
+
+      const robusto = getEnrichedProductData('2c367e44');
+      expect(robusto).toBeDefined();
+      expect(robusto?.brand).toBe('Polar');
+      expect(robusto?.specifications.find((s) => s.label === 'Energy')?.value).toBe('301 kcal per piece');
     });
   });
 

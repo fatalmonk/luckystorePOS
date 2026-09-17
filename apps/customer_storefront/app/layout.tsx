@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { headers } from 'next/headers';
 import Script from 'next/script';
 import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
@@ -10,7 +9,6 @@ import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { getLocaleFromPathname } from './lib/i18n/config';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -142,14 +140,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = getLocaleFromPathname((await headers()).get('x-lucky-pathname'));
   return (
-    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.luckystore1947.com" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
@@ -158,7 +155,7 @@ export default async function RootLayout({
         <script
           data-cfasync="false"
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('lucky-theme')||'light';if(t==='dark')document.documentElement.dataset.theme='dark';})();`,
+            __html: `(function(){try{if(location.pathname==='/bn'||location.pathname.startsWith('/bn/'))document.documentElement.lang='bn';}catch(e){}try{var t=localStorage.getItem('lucky-theme');if(t==='dark')document.documentElement.dataset.theme='dark';}catch(e){}})();`,
           }}
         />
         <script
@@ -175,7 +172,6 @@ export default async function RootLayout({
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               currenciesAccepted: 'BDT',
-              paymentAccepted: 'Cash, bKash',
               hasMap: 'https://maps.google.com/?cid=1342606622879549324',
               areaServed: {
                 '@type': 'GeoCircle',

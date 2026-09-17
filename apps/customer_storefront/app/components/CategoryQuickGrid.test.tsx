@@ -17,7 +17,7 @@ describe('CategoryQuickGrid', () => {
 
     expect(screen.getByRole('link', { name: 'Tea & Coffee' })).toHaveAttribute(
       'href',
-      '/category/tea-&-coffee',
+      '/category/tea-and-coffee',
     );
     expect(screen.getByRole('link', { name: 'Ice Cream' })).toHaveAttribute(
       'href',

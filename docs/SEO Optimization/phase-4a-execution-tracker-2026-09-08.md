@@ -112,7 +112,7 @@ All contracts are verified by automated tests in `apps/customer_storefront/app/l
 ## Rollout Status
 
 - **Phase 4A Pilot Code**: Complete and tested.
-- **Enriched Catalog Cohort**: 25 evidence-backed product records live in the registry.
+- **Enriched Catalog Cohort**: 85 evidence-backed product records live in the registry (14.7% of active catalog).
 - **Rollout Gate**: Expand enrichment across catalog categories following GSC query+page evidence.
 
 ## Post-merge continuation gate
