@@ -6,6 +6,9 @@ on:
     paths:
       - 'apps/customer_storefront/**'
       - 'supabase/migrations/**'
+      # Admin-only migrations use the `_admin_` name segment and do not change
+      # the storefront contract; all other migrations keep storefront coverage.
+      - '!supabase/migrations/**_admin_*.sql'
       - 'scripts/ci/**'
       - 'supabase/seed/**'
       - '.github/workflows/storefront.yml'
@@ -14,6 +17,8 @@ on:
     paths:
       - 'apps/customer_storefront/**'
       - 'supabase/migrations/**'
+      # Keep this in sync with the push filter above.
+      - '!supabase/migrations/**_admin_*.sql'
       - 'scripts/ci/**'
       - 'supabase/seed/**'
       - '.github/workflows/storefront.yml'
