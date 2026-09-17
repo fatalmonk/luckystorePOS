@@ -70,6 +70,7 @@ export function HomeShell({
         </main>
         <Footer locale={locale} />
         <BottomNav locale={locale} />
+        <InstallPrompt locale={locale} />
       </>
     );
   }

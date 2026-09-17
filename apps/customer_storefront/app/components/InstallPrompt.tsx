@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Download, X } from 'lucide-react';
 import { type Locale } from '../lib/i18n/config';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import {
+  type BeforeInstallPromptEvent,
+  clearInstallPrompt,
+  subscribeInstallPrompt,
+} from '../lib/install-prompt';
 
 export function InstallPrompt({ locale = 'en' }: { locale?: Locale }) {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -27,23 +27,22 @@ export function InstallPrompt({ locale = 'en' }: { locale?: Locale }) {
 
     setDismissed(false);
 
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setPrompt(e as BeforeInstallPromptEvent);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    const unsubscribe = subscribeInstallPrompt((p) => {
+      setPrompt(p);
+    });
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      unsubscribe();
     };
   }, []);
 
   const handleInstall = async () => {
     if (!prompt) return;
-    await prompt.prompt();
-    const { outcome } = await prompt.userChoice;
-    if (outcome === 'accepted') {
+    try {
+      await prompt.prompt();
+      await prompt.userChoice;
+    } finally {
+      clearInstallPrompt();
       setPrompt(null);
     }
   };
