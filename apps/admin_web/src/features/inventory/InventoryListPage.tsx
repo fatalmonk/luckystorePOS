@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
-import { ErrorState } from '../../components/PageState';
+import { EmptyState, ErrorState } from '../../components/PageState';
 import { History, Package, AlertTriangle, TrendingDown, Wallet, Plus } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { Link } from 'react-router-dom';
@@ -71,8 +71,15 @@ export function InventoryListPage() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
 
-  // Whether any filter (beyond 'all') is active — used to show Clear Filters button
-  const hasActiveFilters = stockFilter !== 'all' || minPrice !== '' || maxPrice !== '';
+  const hasActiveFilters = searchTerm.trim() !== '' || selectedCategoryId !== null || stockFilter !== 'all' || minPrice !== '' || maxPrice !== '';
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategoryId(null);
+    setStockFilter('all');
+    setMinPrice('');
+    setMaxPrice('');
+  };
 
   // Deferred search to avoid blocking render thread
   const deferredSearch = useDeferredValue(debouncedSearch);
@@ -407,8 +414,23 @@ export function InventoryListPage() {
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <Card className="p-8 text-center text-text-muted">
-            No inventory items found. Add products to start tracking stock levels.
+          <Card className="p-8">
+            <EmptyState
+              icon={<Package size={48} />}
+              title={hasActiveFilters ? 'No matching products' : 'No inventory items yet'}
+              description={hasActiveFilters
+                ? 'Try changing or clearing your search and filters.'
+                : 'Add a product to start tracking stock levels.'}
+              action={
+                <button
+                  type="button"
+                  className="button-primary"
+                  onClick={hasActiveFilters ? clearFilters : () => setIsAddModalOpen(true)}
+                >
+                  {hasActiveFilters ? 'Clear filters' : 'Add new product'}
+                </button>
+              }
+            />
           </Card>
         ) : (
           <InventoryListTable

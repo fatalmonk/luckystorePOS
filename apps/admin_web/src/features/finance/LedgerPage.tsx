@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from "@/lib/supabase";
 import type { Party, LedgerEntry } from '../../types/finance';
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
 import { Plus } from 'lucide-react';
-import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard } from '@/components';
+import { ErrorState, EmptyState, SkeletonBlock, SkeletonCard, SkeletonRow } from '@/components';
 import { PageHeader } from '@/components';
 import { Drawer } from '@/components';
 import { useAuth } from '../../lib/AuthContext';
@@ -51,11 +51,16 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
+  const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [ledgerError, setLedgerError] = useState<string | null>(null);
+  const ledgerRequestVersion = useRef(0);
   const [showAddParty, setShowAddParty] = useState(false);
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyPhone, setNewPartyPhone] = useState('');
   const { tenantId } = useAuth();
   const { notify } = useNotify();
+
+  const openAddParty = () => setShowAddParty(true);
 
 
   const fetchParties = useCallback(async () => {
@@ -80,19 +85,34 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
     fetchParties();
   }, [fetchParties]);
 
-  // parties loaded via useQuery below
+  useEffect(() => () => {
+    ledgerRequestVersion.current += 1;
+  }, []);
 
   const fetchLedger = async (party: Party) => {
+    const requestVersion = ++ledgerRequestVersion.current;
     setSelectedParty(party);
+    setLedgerEntries([]);
+    setLedgerError(null);
+    setLedgerLoading(true);
+
     const { data, error } = await supabase
       .from('ledger_entries')
       .select('*')
       .eq('party_id', party.id)
       .order('effective_date', { ascending: false });
 
-    if (!error && data) {
+    if (requestVersion !== ledgerRequestVersion.current) {
+      return;
+    }
+
+    if (error) {
+      setLedgerError('Failed to load this statement.');
+    } else if (data) {
       setLedgerEntries(data as LedgerEntry[]);
     }
+
+    setLedgerLoading(false);
   };
 
   if (loading) {
@@ -128,7 +148,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
   return (
     <div className="dashboard-container">
       <PageHeader title={title} subtitle={subtitle} actions={
-        <button className="button-primary" onClick={() => setShowAddParty(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+        <button className="button-primary" onClick={openAddParty} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
           <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
         </button>
       } />
@@ -142,6 +162,11 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
                 icon={<Icon size={48} />}
                 title={emptyTitle}
                 description={emptyDescription}
+                action={
+                  <button type="button" className="button-primary" onClick={openAddParty}>
+                    <Plus size={18} /> Add {partyType === 'supplier' ? 'Supplier' : 'Customer'}
+                  </button>
+                }
               />
             </div>
           ) : parties.map((p) => (
@@ -175,7 +200,7 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
 
         {/* Ledger Detail */}
         {selectedParty ? (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }} aria-busy={ledgerLoading}>
             <div style={{
               padding: 'var(--space-4)',
               borderBottom: '1px solid var(--border-color)',
@@ -191,62 +216,69 @@ export const LedgerPage: React.FC<LedgerPageConfig> = ({
               <button
                 className="button-outline"
                 onClick={() => window.print()}
+                disabled={ledgerLoading}
               >
                 Print Statement
               </button>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{
-                    textAlign: 'left',
-                    borderBottom: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--color-background-subtle)',
-                    color: 'var(--text-muted)',
-                    fontSize: 'var(--font-size-xs)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    <th style={{ padding: 'var(--space-4)' }}>Date</th>
-                    <th style={{ padding: 'var(--space-4)' }}>Reference</th>
-                    <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{debitLabel}</th>
-                    <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{creditLabel}</th>
-                    <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ledgerEntries.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        <p style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', color: 'var(--text-main)', marginBottom: 'var(--space-1)' }}>{emptyLedgerText}</p>
-                        <p style={{ fontSize: 'var(--font-size-sm)' }}>Transactions will appear once sales or payments are recorded.</p>
-                      </td>
+            {ledgerError ? (
+              <ErrorState message={ledgerError} onRetry={() => fetchLedger(selectedParty)} />
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{
+                      textAlign: 'left',
+                      borderBottom: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--color-background-subtle)',
+                      color: 'var(--text-muted)',
+                      fontSize: 'var(--font-size-xs)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      <th style={{ padding: 'var(--space-4)' }}>Date</th>
+                      <th style={{ padding: 'var(--space-4)' }}>Reference</th>
+                      <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{debitLabel}</th>
+                      <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>{creditLabel}</th>
+                      <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Balance</th>
                     </tr>
-                  ) : ledgerEntries.map((entry, idx) => (
-                    <tr key={entry.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                        {format(new Date(entry.effective_date), 'MMM dd, yyyy')}
-                      </td>
-                      <td style={{ padding: 'var(--space-4)' }}>
-                        <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>{entry.reference_type}</div>
-                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-light)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {entry.reference_id}
-                        </div>
-                      </td>
-                      <td style={{ padding: 'var(--space-4)', textAlign: 'right', color: debitColor, fontWeight: '600' }}>
-                        {entry.debit_amount > 0 ? formatCurrency(entry.debit_amount) : '-'}
-                      </td>
-                      <td style={{ padding: 'var(--space-4)', textAlign: 'right', color: creditColor, fontWeight: '600' }}>
-                        {entry.credit_amount > 0 ? formatCurrency(entry.credit_amount) : '-'}
-                      </td>
-                      <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>{formatCurrency(balanceAtPoint(idx))}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {ledgerLoading ? (
+                      Array.from({ length: 4 }).map((_, index) => <SkeletonRow key={index} />)
+                    ) : ledgerEntries.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          <p style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', color: 'var(--text-main)', marginBottom: 'var(--space-1)' }}>{emptyLedgerText}</p>
+                          <p style={{ fontSize: 'var(--font-size-sm)' }}>Transactions will appear once sales or payments are recorded.</p>
+                        </td>
+                      </tr>
+                    ) : ledgerEntries.map((entry, idx) => (
+                      <tr key={entry.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                          {format(new Date(entry.effective_date), 'MMM dd, yyyy')}
+                        </td>
+                        <td style={{ padding: 'var(--space-4)' }}>
+                          <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>{entry.reference_type}</div>
+                          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-light)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {entry.reference_id}
+                          </div>
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'right', color: debitColor, fontWeight: '600' }}>
+                          {entry.debit_amount > 0 ? formatCurrency(entry.debit_amount) : '-'}
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'right', color: creditColor, fontWeight: '600' }}>
+                          {entry.credit_amount > 0 ? formatCurrency(entry.credit_amount) : '-'}
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: '700', color: 'var(--text-main)' }}>{formatCurrency(balanceAtPoint(idx))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         ) : (
           <div className="card" style={{
