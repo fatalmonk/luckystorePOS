@@ -19,7 +19,6 @@ import { BulkEditBar } from '../../components/inventory/BulkEditBar';
 import { useInventoryBulkActions, useInventoryKeyboardShortcuts, useInventoryEditing } from '@/hooks';
 import { AnalyticsWidgets } from '../../components/inventory/AnalyticsWidgets';
 import { InventoryFilterToolbar } from '../../components/inventory/InventoryFilterToolbar';
-import { KeyboardShortcutsModal } from '../../components/KeyboardShortcutsModal';
 
 // Lazy-loaded modals and drawers to minimize initial bundle size and optimize FCP/LCP
 const ProductDetailDrawer = lazy(() => import('../products/ProductDetailDrawer').then(m => ({ default: m.ProductDetailDrawer })));
@@ -105,20 +104,6 @@ export function InventoryListPage() {
     toggleSelectAll,
     toggleSelect,
   } = useInventoryBulkActions(storeId!, tenantId, inventory);
-
-  // Wire inventory keyboard shortcuts (Shift+A/E/G/S/X and ?)
-  const { showShortcuts, setShowShortcuts } = useInventoryKeyboardShortcuts({
-    isListView: userViewMode === 'table',
-    setIsListView: (val) => handleViewChange(val ? 'table' : 'card'),
-    setIsBulkEditMode: (val) => {
-      const next = typeof val === 'function' ? val(selectedIds.size > 0) : val;
-      if (!next) setSelectedIds(new Set());
-      else if (inventory && inventory.length > 0) toggleSelectAll(inventory.map((i) => i.id), true);
-    },
-    onAddProduct: () => setIsAddModalOpen(true),
-    onExport: handleExportSelected,
-    onScan: () => setIsBarcodeModalOpen(true),
-  });
 
   // Stable callbacks — prevent memoized card re-renders on every parent render
   const handleViewProduct = useCallback((item: InventoryItem) => setViewingProductId(item.id), []);
@@ -231,6 +216,20 @@ export function InventoryListPage() {
       }
     });
   }, [inventory, categories, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
+
+  // Wire inventory keyboard shortcuts (Shift+A/E/G/S/X)
+  useInventoryKeyboardShortcuts({
+    isListView: viewMode === 'table',
+    setIsListView: (val) => handleViewChange(val ? 'table' : 'card'),
+    setIsBulkEditMode: (val) => {
+      const next = typeof val === 'function' ? val(selectedIds.size > 0) : val;
+      if (!next) setSelectedIds(new Set());
+      else if (filteredItems.length > 0) toggleSelectAll(filteredItems.map((i) => i.id), true);
+    },
+    onAddProduct: () => setIsAddModalOpen(true),
+    onExport: handleExportSelected,
+    onScan: () => setIsBarcodeModalOpen(true),
+  });
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
@@ -543,11 +542,6 @@ export function InventoryListPage() {
           onExport={handleExportSelected}
         />
       )}
-
-      <KeyboardShortcutsModal
-        isOpen={showShortcuts}
-        onClose={() => setShowShortcuts(false)}
-      />
     </div>
   );
 }

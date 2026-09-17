@@ -27,12 +27,6 @@ export function useInventoryKeyboardShortcuts({
         return;
       }
 
-      if (e.key === '?' && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
-        return;
-      }
-
       // Shift + E - Toggle bulk edit mode
       if (e.shiftKey && e.key === 'E') {
         e.preventDefault();

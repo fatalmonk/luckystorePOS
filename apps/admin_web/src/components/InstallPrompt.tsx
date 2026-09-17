@@ -83,7 +83,7 @@ export function InstallPrompt() {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-foreground, #0B0B0D)' }}>
-          Install Lucky Store POS
+          Install Lucky Store Admin Portal
         </div>
         <div style={{ fontSize: '12px', color: 'var(--color-muted, #78716c)', marginTop: 2 }}>
           Install as Chrome App for quick standalone launch
