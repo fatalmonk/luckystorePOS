@@ -9,6 +9,7 @@ import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { ProductGridSection } from './ProductGridSection';
 import { HeritageParallax } from './parallax/HeritageParallax';
+import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
@@ -198,6 +199,7 @@ export function HomeShell({
       </main>
       <Footer locale={locale} />
       <BottomNav locale={locale} />
+      <InstallPrompt locale={locale} />
     </>
   );
 }
