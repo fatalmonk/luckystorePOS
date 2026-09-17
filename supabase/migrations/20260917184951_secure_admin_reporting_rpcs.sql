@@ -38,7 +38,7 @@ BEGIN
   WHERE s.store_id = p_store_id
     AND s.status = 'completed'
     AND s.created_at >= p_start_date::timestamptz
-    AND s.created_at <= (p_end_date || 'T23:59:59')::timestamptz;
+    AND s.created_at < (p_end_date::date + interval '1 day')::timestamptz;
 
   SELECT json_agg(t) INTO v_top_products FROM (
     SELECT i.name, SUM(si.qty) AS quantity, SUM(si.qty * si.price) AS revenue
@@ -48,7 +48,7 @@ BEGIN
     WHERE s.store_id = p_store_id
       AND s.status = 'completed'
       AND s.created_at >= p_start_date::timestamptz
-      AND s.created_at <= (p_end_date || 'T23:59:59')::timestamptz
+      AND s.created_at < (p_end_date::date + interval '1 day')::timestamptz
     GROUP BY i.name
     ORDER BY quantity DESC
     LIMIT 10
@@ -60,7 +60,7 @@ BEGIN
     WHERE s.store_id = p_store_id
       AND s.status = 'completed'
       AND s.created_at >= p_start_date::timestamptz
-      AND s.created_at <= (p_end_date || 'T23:59:59')::timestamptz
+      AND s.created_at < (p_end_date::date + interval '1 day')::timestamptz
     GROUP BY date(s.created_at)
   ) d;
 
@@ -106,7 +106,8 @@ BEGIN
     INTO v_total_items, v_total_value, v_out_of_stock, v_low_stock_count
   FROM public.items i
   LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
-  WHERE i.is_active = true;
+  WHERE i.is_active = true
+    AND i.tenant_id = v_user.tenant_id;
 
   SELECT json_agg(inv ORDER BY inv.total_value DESC) INTO v_inventory FROM (
     SELECT i.id, i.name, i.sku, COALESCE(sl.qty, 0)::int AS qty,
@@ -115,6 +116,7 @@ BEGIN
     FROM public.items i
     LEFT JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
     WHERE i.is_active = true
+      AND i.tenant_id = v_user.tenant_id
   ) inv;
 
   RETURN json_build_object(
@@ -159,14 +161,14 @@ BEGIN
   FROM public.sales s
   WHERE s.store_id = p_store_id AND s.status = 'completed'
     AND s.created_at >= p_start_date::timestamptz
-    AND s.created_at <= (p_end_date || 'T23:59:59')::timestamptz;
+    AND s.created_at < (p_end_date::date + interval '1 day')::timestamptz;
 
   SELECT COALESCE(SUM(si.qty * si.cost), 0) INTO v_cogs
   FROM public.sale_items si
   JOIN public.sales s ON s.id = si.sale_id
   WHERE s.store_id = p_store_id AND s.status = 'completed'
     AND s.created_at >= p_start_date::timestamptz
-    AND s.created_at <= (p_end_date || 'T23:59:59')::timestamptz;
+    AND s.created_at < (p_end_date::date + interval '1 day')::timestamptz;
 
   SELECT COALESCE(SUM(e.amount), 0) INTO v_total_expenses
   FROM public.expenses e

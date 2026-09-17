@@ -71,7 +71,10 @@ export function InventoryListPage() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
 
-  const hasActiveFilters = searchTerm.trim() !== '' || selectedCategoryId !== null || stockFilter !== 'all' || minPrice !== '' || maxPrice !== '';
+  // Deferred search to avoid blocking render thread
+  const deferredSearch = useDeferredValue(debouncedSearch);
+
+  const hasActiveFilters = deferredSearch.trim() !== '' || selectedCategoryId !== null || stockFilter !== 'all' || minPrice !== '' || maxPrice !== '';
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -80,9 +83,6 @@ export function InventoryListPage() {
     setMinPrice('');
     setMaxPrice('');
   };
-
-  // Deferred search to avoid blocking render thread
-  const deferredSearch = useDeferredValue(debouncedSearch);
   
   // Modal Open States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

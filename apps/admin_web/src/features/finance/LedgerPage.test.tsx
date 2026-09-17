@@ -57,11 +57,19 @@ function query(result: Promise<QueryResult> | QueryResult) {
 
 function setupQueries(ledgerResults: Array<Promise<QueryResult> | QueryResult>) {
   const mockFrom = vi.mocked(supabase.from);
+  const tableResults: Record<string, Array<Promise<QueryResult> | QueryResult>> = {
+    ledger_entries: ledgerResults,
+  };
+
   mockFrom.mockImplementation(((table: string) => {
     if (table === 'parties') {
       return query({ data: [customerA, customerB], error: null });
     }
-    return query(ledgerResults.shift()!);
+    const results = tableResults[table];
+    if (!results || results.length === 0) {
+      throw new Error(`Unexpected query for table "${table}"`);
+    }
+    return query(results.shift()!);
   }) as never);
 }
 

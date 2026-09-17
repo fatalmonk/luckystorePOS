@@ -161,7 +161,8 @@ export function TopHeader({
             onKeyDown={handleSearchKeyDown}
             className="search-input"
             aria-label="Global search"
-            role="searchbox"
+            role="combobox"
+            aria-autocomplete="list"
             aria-expanded={isCommandPaletteOpen}
             aria-controls="global-command-list"
             aria-activedescendant={isCommandPaletteOpen && filteredCommands[activeCommandIndex] ? `global-command-${activeCommandIndex}` : undefined}
@@ -172,33 +173,39 @@ export function TopHeader({
           </div>
           {isCommandPaletteOpen && createPortal(
             <div
-              className="fixed inset-x-4 top-20 z-[100] mx-auto max-w-2xl rounded-lg border border-border-default bg-surface p-2 shadow-level-3"
-              role="dialog"
-              aria-label={isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
+              className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-20"
+              onClick={closeCommandPalette}
             >
-              <p className="px-3 py-2 text-label-sm text-text-muted">
-                {isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
-              </p>
-              <div id="global-command-list" role="listbox" aria-label={isBengali ? 'কমান্ড ফলাফল' : 'Command results'}>
-                {filteredCommands.length > 0 ? filteredCommands.map((command, index) => (
-                  <button
-                    id={`global-command-${index}`}
-                    key={command.path}
-                    type="button"
-                    role="option"
-                    aria-selected={index === activeCommandIndex}
-                    className={`flex min-h-11 w-full flex-col rounded-md px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary ${index === activeCommandIndex ? 'bg-background-subtle' : 'hover:bg-background-subtle'}`}
-                    onMouseEnter={() => setActiveCommandIndex(index)}
-                    onClick={() => runCommand(command.path)}
-                  >
-                    <span className="text-label-lg text-text-primary">{command.label}</span>
-                    <span className="text-body-sm text-text-muted">{command.description}</span>
-                  </button>
-                )) : (
-                  <p className="px-3 py-6 text-center text-body-sm text-text-muted">
-                    {isBengali ? 'কোনো কাজ পাওয়া যায়নি।' : 'No matching actions found.'}
-                  </p>
-                )}
+              <div
+                className="w-full max-w-2xl max-h-[calc(100vh-6rem)] overflow-y-auto rounded-lg border border-border-default bg-surface p-2 shadow-level-3"
+                role="dialog"
+                aria-label={isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="px-3 py-2 text-label-sm text-text-muted">
+                  {isBengali ? 'দ্রুত কাজ' : 'Quick actions'}
+                </p>
+                <div id="global-command-list" role="listbox" aria-label={isBengali ? 'কমান্ড ফলাফল' : 'Command results'}>
+                  {filteredCommands.length > 0 ? filteredCommands.map((command, index) => (
+                    <button
+                      id={`global-command-${index}`}
+                      key={command.path}
+                      type="button"
+                      role="option"
+                      aria-selected={index === activeCommandIndex}
+                      className={`flex min-h-11 w-full flex-col rounded-md px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary ${index === activeCommandIndex ? 'bg-background-subtle' : 'hover:bg-background-subtle'}`}
+                      onMouseEnter={() => setActiveCommandIndex(index)}
+                      onClick={() => runCommand(command.path)}
+                    >
+                      <span className="text-label-lg text-text-primary">{command.label}</span>
+                      <span className="text-body-sm text-text-muted">{command.description}</span>
+                    </button>
+                  )) : (
+                    <p className="px-3 py-6 text-center text-body-sm text-text-muted">
+                      {isBengali ? 'কোনো কাজ পাওয়া যায়নি।' : 'No matching actions found.'}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>,
             document.body,
