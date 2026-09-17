@@ -19,24 +19,18 @@ const ROLE_LABELS: Record<string, string> = {
   cashier: 'Staff',
 };
 
+const VALID_TABS = ['users', 'payments', 'receipt'] as const;
+type SettingsTab = typeof VALID_TABS[number];
+
 export function SettingsPage() {
   const { storeId } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab');
-  const validTabs: ('users' | 'payments' | 'receipt')[] = ['users', 'payments', 'receipt'];
-  const [activeTab, setActiveTab] = useState<'users' | 'payments' | 'receipt'>(() => {
-    return initialTab && (validTabs as string[]).includes(initialTab) ? (initialTab as 'users' | 'payments' | 'receipt') : 'users';
-  });
+  const tabParam = searchParams.get('tab');
+  const activeTab: SettingsTab = tabParam && (VALID_TABS as readonly string[]).includes(tabParam)
+    ? (tabParam as SettingsTab)
+    : 'users';
 
-  useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam && (validTabs as string[]).includes(tabParam)) {
-      setActiveTab(tabParam as 'users' | 'payments' | 'receipt');
-    }
-  }, [searchParams]);
-
-  const handleTabChange = (tab: 'users' | 'payments' | 'receipt') => {
-    setActiveTab(tab);
+  const handleTabChange = (tab: SettingsTab) => {
     setSearchParams({ tab });
   };
 
