@@ -9,6 +9,7 @@ import { WebMCPInit } from './components/WebMCPInit';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 import { getDeliveryShippingServiceSchema } from './delivery/deliveryData';
 
 const bricolage = Bricolage_Grotesque({
@@ -395,6 +396,7 @@ export default function RootLayout({
           </ThemeProvider>
         </AuthProvider>
         {process.env.VERCEL === '1' ? <SpeedInsights /> : null}
+        {process.env.VERCEL === '1' ? <Analytics /> : null}
       </body>
     </html>
   );
