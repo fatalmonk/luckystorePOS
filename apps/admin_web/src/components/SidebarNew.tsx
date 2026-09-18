@@ -247,22 +247,10 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
               </div>
             )}
           </div>
-          {!isMobile && (
-            <button
-              onClick={onToggleCollapse}
-              className={clsx(
-                'p-1.5 rounded-lg text-warm-muted hover:bg-warm-border-warm hover:text-warm-fg transition-colors flex-shrink-0',
-                !isExpandedView ? 'mt-2' : ''
-              )}
-              title={collapsed ? 'Pin Sidebar Expanded' : 'Collapse to Single Column'}
-            >
-              {!isExpandedView ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-            </button>
-          )}
         </div>
 
         {/* Navigation Groups / Accordions */}
-        <div className="sidebar-nav-container !p-3 space-y-2 scrollbar-thin">
+        <div className="sidebar-nav-container !p-3 space-y-2 scrollbar-hide">
           {navGroups.map((group) => {
             const isExpanded = !!expandedGroups[group.id];
             const isAnyActive = isGroupActive(group);

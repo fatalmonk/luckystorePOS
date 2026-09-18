@@ -32,16 +32,11 @@ export function Layout() {
     });
   };
   
-  // Persist sidebar collapse preference across page refresh
+  // Always default to collapsed (single column) on desktop, expand on hover
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (isPosPage) return true;
-    // Check saved preference first
-    const saved = localStorage.getItem('sidebar-collapsed');
-    if (saved !== null) return saved === 'true';
-    // Fallback to responsive default
-    const width = window.innerWidth;
-    return width >= 768 && width < 1024;
+    if (typeof window === 'undefined') return true;
+    const isMobileView = window.innerWidth < 768;
+    return !isMobileView;
   });
 
   const setSidebarCollapsed = (value: boolean | ((prev: boolean) => boolean)) => {
