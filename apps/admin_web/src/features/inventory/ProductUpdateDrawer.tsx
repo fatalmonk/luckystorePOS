@@ -348,16 +348,16 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   return (
     <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity z-40" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-opacity z-40" onClick={onClose} aria-hidden="true" />
 
       {/* Drawer Panel */}
       <div
         ref={drawerRef}
         style={dragOffset > 0 ? { transform: `translateY(${dragOffset}px)` } : undefined}
         className={`
-          fixed z-50 bg-surface dark:bg-[#141417]/85 dark:backdrop-blur-2xl shadow-2xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col
-          lg:relative lg:ml-auto lg:w-full lg:max-w-[480px] lg:h-full lg:border-l lg:border-border dark:lg:border-white/[0.12] dark:lg:border-t-white/[0.22] lg:animate-slideInRight
-          max-lg:bottom-0 max-lg:left-0 max-lg:right-0 max-lg:max-h-[92dvh] max-lg:h-[90dvh] max-lg:rounded-t-3xl max-lg:border-t max-lg:border-border dark:max-lg:border-white/[0.15] max-lg:animate-slideUp
+          fixed z-50 bg-surface dark:bg-[#18181b] shadow-2xl flex flex-col
+          lg:relative lg:ml-auto lg:w-full lg:max-w-[480px] lg:h-full lg:border-l lg:border-border dark:lg:border-border-strong lg:animate-slideInRight
+          max-lg:bottom-0 max-lg:left-0 max-lg:right-0 max-lg:max-h-[92dvh] max-lg:h-[90dvh] max-lg:rounded-t-3xl max-lg:border-t max-lg:border-border dark:max-lg:border-border-strong max-lg:animate-slideUp
         `}
       >
         {/* Drag handle for mobile */}
@@ -367,15 +367,15 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="w-12 h-1.5 rounded-full bg-border/80 dark:bg-white/20" />
+          <div className="w-12 h-1.5 rounded-full bg-border-strong dark:bg-[#3f3f46]" />
         </div>
 
         {/* Header */}
-        <header className="flex justify-between items-center px-4 py-3 sm:p-5 border-b border-border dark:border-white/[0.08] bg-surface/80 dark:bg-[#141417]/80 backdrop-blur-md sticky top-0 z-10">
+        <header className="flex justify-between items-center px-4 py-3 sm:p-5 border-b border-border dark:border-border-strong bg-surface dark:bg-[#18181b] sticky top-0 z-10">
           <div className="flex gap-3 items-center min-w-0">
             {/* Quick Image Upload */}
             <div 
-              className="relative group cursor-pointer w-12 h-12 sm:w-13 sm:h-13 rounded-xl border border-border dark:border-white/[0.12] bg-surface-raised dark:bg-white/[0.04] overflow-hidden flex-shrink-0 shadow-sm"
+              className="relative group cursor-pointer w-12 h-12 sm:w-13 sm:h-13 rounded-xl border border-border dark:border-border-strong bg-surface-raised dark:bg-[#27272a] overflow-hidden flex-shrink-0 shadow-sm"
               onClick={() => fileInputRef.current?.click()}
               title="Click to change image"
             >
@@ -406,14 +406,14 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             />
 
             <div className="min-w-0">
-              <h2 id="drawer-title" className="text-base sm:text-lg font-bold text-text-primary truncate">Update Product</h2>
-              <p className="text-xs text-text-muted truncate mt-0.5" title={product.name}>{product.name}</p>
+              <h2 id="drawer-title" className="text-base sm:text-lg font-bold text-text-primary dark:text-[#f4f4f5] truncate">Update Product</h2>
+              <p className="text-xs text-text-secondary dark:text-[#a1a1aa] truncate mt-0.5" title={product.name}>{product.name}</p>
             </div>
           </div>
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full text-text-secondary hover:text-text-primary hover:bg-background-subtle dark:hover:bg-white/[0.08] active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full text-text-secondary dark:text-[#a1a1aa] hover:text-text-primary dark:hover:text-[#f4f4f5] hover:bg-background-subtle dark:hover:bg-[#27272a] active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Close drawer"
           >
             <X size={20} />
@@ -421,15 +421,15 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         </header>
 
         {/* Tabs - Segmented Control */}
-        <div className="mx-4 sm:mx-6 mt-3 sm:mt-4 p-1 bg-background-subtle dark:bg-white/[0.06] dark:backdrop-blur-md rounded-xl flex border border-border/40 dark:border-white/[0.06] flex-shrink-0">
+        <div className="mx-4 sm:mx-6 mt-3 sm:mt-4 p-1 bg-background-subtle dark:bg-[#27272a] rounded-xl flex border border-border dark:border-border-strong flex-shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('info')}
             className={clsx(
               'flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-lg transition-all',
               activeTab === 'info'
-                ? 'bg-surface dark:bg-white/[0.12] text-primary dark:text-white shadow-sm'
-                : 'text-text-muted hover:text-text-primary'
+                ? 'bg-surface dark:bg-[#18181b] text-primary dark:text-primary shadow-sm'
+                : 'text-text-secondary dark:text-[#a1a1aa] hover:text-text-primary dark:hover:text-[#f4f4f5]'
             )}
           >
             <Info size={14} />
@@ -441,8 +441,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             className={clsx(
               'flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-lg transition-all',
               activeTab === 'stock'
-                ? 'bg-surface dark:bg-white/[0.12] text-primary dark:text-white shadow-sm'
-                : 'text-text-muted hover:text-text-primary'
+                ? 'bg-surface dark:bg-[#18181b] text-primary dark:text-primary shadow-sm'
+                : 'text-text-secondary dark:text-[#a1a1aa] hover:text-text-primary dark:hover:text-[#f4f4f5]'
             )}
           >
             <Package size={14} />
@@ -455,8 +455,8 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             className={clsx(
               'flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-lg transition-all',
               activeTab === 'pricing'
-                ? 'bg-surface dark:bg-white/[0.12] text-primary dark:text-white shadow-sm'
-                : 'text-text-muted hover:text-text-primary'
+                ? 'bg-surface dark:bg-[#18181b] text-primary dark:text-primary shadow-sm'
+                : 'text-text-secondary dark:text-[#a1a1aa] hover:text-text-primary dark:hover:text-[#f4f4f5]'
             )}
           >
             <DollarSign size={14} />
@@ -470,20 +470,20 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             {activeTab === 'info' ? (
               <div className="flex flex-col gap-3.5 sm:gap-4 animate-fadeIn">
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">SKU</p>
-                  <p className="text-sm font-medium text-text-primary font-mono truncate">{product.sku || '—'}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">SKU</p>
+                  <p className="text-sm font-semibold text-text-primary dark:text-[#f4f4f5] font-mono truncate">{product.sku || '—'}</p>
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Barcode</p>
-                  <p className="text-sm font-medium text-text-primary font-mono truncate">{product.barcode || '—'}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Barcode</p>
+                  <p className="text-sm font-semibold text-text-primary dark:text-[#f4f4f5] font-mono truncate">{product.barcode || '—'}</p>
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Current Stock</p>
-                  <p className="text-sm font-semibold text-text-primary tabular-nums">{product.current_qty ?? '—'}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Current Stock</p>
+                  <p className="text-sm font-bold text-text-primary dark:text-[#f4f4f5] tabular-nums">{product.current_qty ?? '—'}</p>
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Category</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Category</p>
                   <CategoryPicker
                     value={categoryId}
                     categories={categories?.map((c: any) => ({ id: c.id, name: c.name || c.category || '', parent_id: c.parent_id })) ?? []}
@@ -491,25 +491,25 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     size="md"
                   />
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Cost (Per Unit)</p>
-                  <p className="text-sm font-semibold text-text-primary tabular-nums">৳{(product.cost || 0).toFixed(2)}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Cost (Per Unit)</p>
+                  <p className="text-sm font-bold text-text-primary dark:text-[#f4f4f5] tabular-nums">৳{(product.cost || 0).toFixed(2)}</p>
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Selling Price</p>
-                  <p className="text-sm font-semibold text-text-primary tabular-nums">৳{(product.price || 0).toFixed(2)}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Selling Price</p>
+                  <p className="text-sm font-bold text-text-primary dark:text-[#f4f4f5] tabular-nums">৳{(product.price || 0).toFixed(2)}</p>
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">MRP</p>
-                  <p className="text-sm font-medium text-text-primary tabular-nums">৳{(product.mrp || 0).toFixed(2)}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">MRP</p>
+                  <p className="text-sm font-bold text-text-primary dark:text-[#f4f4f5] tabular-nums">৳{(product.mrp || 0).toFixed(2)}</p>
                 </div>
-                <div className="p-3 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Status</p>
-                  <p className="text-sm font-medium text-text-primary">{product.reorder_status || (product.is_active ? 'Active' : 'Inactive')}</p>
+                <div className="p-3 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Status</p>
+                  <p className="text-sm font-bold text-text-primary dark:text-[#f4f4f5]">{product.reorder_status || (product.is_active ? 'Active' : 'Inactive')}</p>
                 </div>
                 {/* Low Stock Alert (editable) */}
-                <div className="p-3.5 bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08] rounded-xl shadow-sm col-span-2">
-                  <p className="text-[11px] text-text-muted tracking-wide mb-1">Low Stock Alert (min_qty)</p>
+                <div className="p-3.5 bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong rounded-xl shadow-sm col-span-2">
+                  <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] tracking-wide mb-1 font-medium">Low Stock Alert (min_qty)</p>
                   {isEditingMinQty ? (
                     <div className="flex items-center gap-2">
                       <input
@@ -518,32 +518,32 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                         value={editingMinQty ?? ''}
                         onChange={(e) => setEditingMinQty(parseInt(e.target.value) || 0)}
                         aria-label="Low stock alert threshold (min_qty)"
-                        className="w-24 rounded-lg border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary text-sm px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary tabular-nums"
+                        className="w-24 rounded-lg border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] text-sm px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary tabular-nums"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={() => minQtyMutation.mutate(editingMinQty ?? 0)}
                         disabled={minQtyMutation.isPending}
-                        className="px-3 py-1.5 rounded-lg bg-primary text-primary-on text-xs font-semibold disabled:opacity-50 shadow-sm"
+                        className="px-3 py-1.5 rounded-lg bg-primary text-primary-on text-xs font-bold disabled:opacity-50 shadow-sm"
                       >
                         {minQtyMutation.isPending ? 'Saving...' : 'Save'}
                       </button>
                       <button
                         type="button"
                         onClick={() => { setIsEditingMinQty(false); setEditingMinQty(null); }}
-                        className="px-3 py-1.5 rounded-lg border border-border dark:border-white/[0.12] text-text-muted text-xs hover:text-text-primary"
+                        className="px-3 py-1.5 rounded-lg border border-border dark:border-border-strong text-text-secondary dark:text-[#a1a1aa] text-xs hover:text-text-primary"
                       >
                         Cancel
                       </button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-text-primary tabular-nums">{(product as any).min_qty ?? 5}</p>
+                      <p className="text-sm font-bold text-text-primary dark:text-[#f4f4f5] tabular-nums">{(product as any).min_qty ?? 5}</p>
                       <button
                         type="button"
                         onClick={() => { setEditingMinQty((product as any).min_qty ?? 5); setIsEditingMinQty(true); }}
-                        className="text-xs text-primary font-semibold hover:underline"
+                        className="text-xs text-primary font-bold hover:underline"
                       >
                         Edit
                       </button>
@@ -551,13 +551,13 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                   )}
                 </div>
               </div>
-              <div className="p-4 bg-background-subtle dark:bg-white/[0.03] dark:backdrop-blur-sm rounded-xl border border-border dark:border-white/[0.08] mt-2">
+              <div className="p-4 bg-background-subtle dark:bg-[#27272a] rounded-xl border border-border dark:border-border-strong mt-2">
                  <div className="flex items-center gap-2 mb-2">
-                    <Activity size={16} className="text-text-muted"/>
-                    <h3 className="text-sm font-semibold text-text-primary">History & Insights</h3>
+                    <Activity size={16} className="text-text-secondary dark:text-[#a1a1aa]"/>
+                    <h3 className="text-sm font-semibold text-text-primary dark:text-[#f4f4f5]">History & Insights</h3>
                  </div>
-                 <p className="text-xs text-text-muted mb-1">Last Purchased: <span className="text-text-primary font-medium">{product.last_purchased_date ? new Date(product.last_purchased_date).toLocaleDateString() : 'Unknown'}</span></p>
-                 <p className="text-xs text-text-muted">To view detailed price history or ledger entries, visit the item's ledger page.</p>
+                 <p className="text-xs text-text-secondary dark:text-[#a1a1aa] mb-1">Last Purchased: <span className="text-text-primary dark:text-[#f4f4f5] font-semibold">{product.last_purchased_date ? new Date(product.last_purchased_date).toLocaleDateString() : 'Unknown'}</span></p>
+                 <p className="text-xs text-text-muted dark:text-[#71717a]">To view detailed price history or ledger entries, visit the item's ledger page.</p>
               </div>
             </div>
           ) : activeTab === 'stock' ? (
@@ -571,7 +571,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     'flex flex-col items-center gap-1 p-3 rounded-xl border transition-all duration-150 focus:outline-none focus:ring-2 active:scale-95',
                     stockMode === 'add'
                       ? `${stockColors.add.bg} ${stockColors.add.text} ${stockColors.add.border} font-bold shadow-sm`
-                      : 'bg-surface dark:bg-white/[0.03] text-text-muted border-border dark:border-white/[0.08] hover:bg-background-subtle'
+                      : 'bg-surface-raised dark:bg-[#27272a] text-text-secondary dark:text-[#a1a1aa] border-border dark:border-border-strong hover:bg-background-subtle dark:hover:bg-[#323238]'
                   )}
                   aria-pressed={stockMode === 'add' ? true : false}
                 >
@@ -584,7 +584,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     'flex flex-col items-center gap-1 p-3 rounded-xl border transition-all duration-150 focus:outline-none focus:ring-2 active:scale-95',
                     stockMode === 'remove'
                       ? `${stockColors.remove.bg} ${stockColors.remove.text} ${stockColors.remove.border} font-bold shadow-sm`
-                      : 'bg-surface dark:bg-white/[0.03] text-text-muted border-border dark:border-white/[0.08] hover:bg-background-subtle'
+                      : 'bg-surface-raised dark:bg-[#27272a] text-text-secondary dark:text-[#a1a1aa] border-border dark:border-border-strong hover:bg-background-subtle dark:hover:bg-[#323238]'
                   )}
                   aria-pressed={stockMode === 'remove' ? true : false}
                 >
@@ -597,7 +597,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     'flex flex-col items-center gap-1 p-3 rounded-xl border transition-all duration-150 focus:outline-none focus:ring-2 active:scale-95',
                     stockMode === 'set'
                       ? `${stockColors.set.bg} ${stockColors.set.text} ${stockColors.set.border} font-bold shadow-sm`
-                      : 'bg-surface dark:bg-white/[0.03] text-text-muted border-border dark:border-white/[0.08] hover:bg-background-subtle'
+                      : 'bg-surface-raised dark:bg-[#27272a] text-text-secondary dark:text-[#a1a1aa] border-border dark:border-border-strong hover:bg-background-subtle dark:hover:bg-[#323238]'
                   )}
                   aria-pressed={stockMode === 'set' ? true : false}
                 >
@@ -607,7 +607,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
               {/* Quantity Input */}
               <div className="form-group">
-                <label htmlFor="quantity-input" className="block text-xs font-medium text-text-muted mb-1.5">
+                <label htmlFor="quantity-input" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">
                   {stockMode === 'set' ? 'Target Stock' : `Quantity to ${stockMode === 'add' ? 'Add' : 'Remove'}`}
                 </label>
                 <input
@@ -617,19 +617,19 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                   required
                   min={0}
-                  className="w-full px-3.5 rounded-xl border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
+                  className="w-full px-3.5 rounded-xl border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
                 />
               </div>
 
               {/* Reason Selection */}
               <div className="form-group">
-                <label htmlFor="reason-select" className="block text-xs font-medium text-text-muted mb-1.5">Reason for change</label>
+                <label htmlFor="reason-select" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">Reason for change</label>
                 <select
                   id="reason-select"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   required
-                  className="w-full px-3.5 rounded-xl border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-sm"
+                  className="w-full px-3.5 rounded-xl border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-sm"
                 >
                   {stockReasons.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))}
                 </select>
@@ -637,14 +637,14 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
               {/* Notes */}
               <div className="form-group">
-                <label htmlFor="notes-textarea" className="block text-xs font-medium text-text-muted mb-1.5">Notes <span className="text-text-muted/70 font-normal">(optional)</span></label>
+                <label htmlFor="notes-textarea" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">Notes <span className="text-text-muted dark:text-[#71717a] font-normal">(optional)</span></label>
                 <textarea
                   id="notes-textarea"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Received new shipment from supplier"
                   rows={3}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all text-sm"
                 />
               </div>
             </>
@@ -653,11 +653,11 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
             <>
               {/* Selling Price */}
               <div className="form-group">
-                <label htmlFor="selling-price" className="block text-xs font-medium text-text-muted mb-1.5">
+                <label htmlFor="selling-price" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">
                   Selling Price <span className="text-danger">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted font-medium">৳</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-[#a1a1aa] font-bold">৳</span>
                   <input
                     id="selling-price"
                     type="number"
@@ -666,16 +666,16 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     required
                     value={sellingPrice || ''}
                     onChange={(e) => setSellingPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full pl-9 pr-3.5 rounded-xl border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
+                    className="w-full pl-9 pr-3.5 rounded-xl border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
                   />
                 </div>
               </div>
 
               {/* MRP */}
               <div className="form-group">
-                <label htmlFor="mrp" className="block text-xs font-medium text-text-muted mb-1.5">MRP</label>
+                <label htmlFor="mrp" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">MRP</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted font-medium">৳</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-[#a1a1aa] font-bold">৳</span>
                   <input
                     id="mrp"
                     type="number"
@@ -683,17 +683,17 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     step="0.01"
                     value={mrp ?? ''}
                     onChange={(e) => setMrp(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
-                    className="w-full pl-9 pr-3.5 rounded-xl border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
+                    className="w-full pl-9 pr-3.5 rounded-xl border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
                   />
                 </div>
-                <p className="text-[11px] text-text-muted mt-1">Shown to customers as reference / sticker price</p>
+                <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] mt-1">Shown to customers as reference / sticker price</p>
               </div>
 
               {/* Cost Price */}
               <div className="form-group">
-                <label htmlFor="cost-price" className="block text-xs font-medium text-text-muted mb-1.5">Cost Price</label>
+                <label htmlFor="cost-price" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">Cost Price</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted font-medium">৳</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-[#a1a1aa] font-bold">৳</span>
                   <input
                     id="cost-price"
                     type="number"
@@ -701,52 +701,52 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     step="0.01"
                     value={costPrice ?? ''}
                     onChange={(e) => setCostPrice(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
-                    className="w-full pl-9 pr-3.5 rounded-xl border border-border dark:border-white/[0.12] bg-surface dark:bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
+                    className="w-full pl-9 pr-3.5 rounded-xl border border-border dark:border-[#3f3f46] bg-surface dark:bg-[#18181b] text-text-primary dark:text-[#f4f4f5] focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-12 text-base tabular-nums"
                   />
                 </div>
-                <p className="text-[11px] text-text-muted mt-1">Used for accurate gross profit margin calculations</p>
+                <p className="text-[11px] text-text-secondary dark:text-[#a1a1aa] mt-1">Used for accurate gross profit margin calculations</p>
               </div>
 
               {/* Live Margin Preview */}
-              <div className="p-4 rounded-xl bg-primary/10 dark:bg-primary/[0.08] dark:backdrop-blur-md border border-primary/20 dark:border-primary/30 dark:border-t-primary/50">
-                <p className="text-xs text-text-muted tracking-wide mb-1 font-medium">Expected Profit Margin</p>
+              <div className="p-4 rounded-xl bg-primary/10 dark:bg-primary/20 border border-primary/30 dark:border-primary/40">
+                <p className="text-xs text-text-secondary dark:text-[#d4d4d8] tracking-wide mb-1 font-semibold">Expected Profit Margin</p>
                 {margin ? (
                   <p className="text-lg font-bold text-primary tabular-nums">
                     ৳{margin.profit.toFixed(2)} ({margin.pct.toFixed(1)}%)
                   </p>
                 ) : (
-                  <p className="text-xs text-text-muted">Enter cost and selling price to see live margin</p>
+                  <p className="text-xs text-text-secondary dark:text-[#a1a1aa]">Enter cost and selling price to see live margin</p>
                 )}
               </div>
 
               {/* Price History */}
-              <div className="p-4 rounded-xl bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08]">
+              <div className="p-4 rounded-xl bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold text-text-primary">Price History</h3>
+                  <h3 className="text-xs font-semibold text-text-primary dark:text-[#f4f4f5]">Price History</h3>
                 </div>
                 <PriceHistoryMini productId={product?.id} storeId={storeId} />
               </div>
 
               {/* Competitor Prices */}
-              <div className="p-4 rounded-xl bg-surface dark:bg-white/[0.03] dark:backdrop-blur-sm border border-border dark:border-white/[0.08]">
+              <div className="p-4 rounded-xl bg-surface-raised dark:bg-[#27272a] border border-border dark:border-border-strong">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold text-text-primary">Competitor Prices</h3>
+                  <h3 className="text-xs font-semibold text-text-primary dark:text-[#f4f4f5]">Competitor Prices</h3>
                 </div>
                 {isLoadingCompetitors ? (
-                  <p className="text-xs text-text-muted animate-pulse">Loading...</p>
+                  <p className="text-xs text-text-secondary dark:text-[#a1a1aa] animate-pulse">Loading...</p>
                 ) : competitorPrices && competitorPrices.length > 0 ? (
                   <ul className="space-y-2">
                     {competitorPrices.map(comp => (
                       <li key={comp.id} className="flex items-center justify-between text-xs">
-                        <span className="text-text-primary font-medium">{comp.competitor_name}</span>
+                        <span className="text-text-primary dark:text-[#f4f4f5] font-medium">{comp.competitor_name}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-text-primary font-semibold tabular-nums">৳{comp.competitor_price}</span>
+                          <span className="text-text-primary dark:text-[#f4f4f5] font-bold tabular-nums">৳{comp.competitor_price}</span>
                           {comp.competitor_url && (
                             <a 
                               href={comp.competitor_url} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-primary hover:underline text-[11px]"
+                              className="text-primary hover:underline text-[11px] font-semibold"
                             >
                               Link
                             </a>
@@ -756,7 +756,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs text-text-muted">No competitor prices found.</p>
+                  <p className="text-xs text-text-secondary dark:text-[#a1a1aa]">No competitor prices found.</p>
                 )}
               </div>
             </>
@@ -765,7 +765,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
           </div>
 
           {/* Sticky Submit Footer */}
-          <div className="p-4 sm:px-6 sm:py-4 bg-surface/95 dark:bg-[#141417]/95 backdrop-blur-lg border-t border-border/40 dark:border-white/[0.08] shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.4)] pb-[max(env(safe-area-inset-bottom,16px),16px)] flex-shrink-0">
+          <div className="p-4 sm:px-6 sm:py-4 bg-surface dark:bg-[#18181b] border-t border-border dark:border-border-strong shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.4)] pb-[max(env(safe-area-inset-bottom,16px),16px)] flex-shrink-0">
             <button
               type="submit"
               disabled={isButtonDisabled}

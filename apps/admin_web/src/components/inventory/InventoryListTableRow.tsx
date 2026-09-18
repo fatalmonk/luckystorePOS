@@ -35,6 +35,7 @@ function formatDate(dateStr?: string | null): string {
 
 interface InventoryListTableRowProps {
   item: InventoryItem;
+  rowIndex?: number;
   virtualRowSize: number;
   onRowHeightChange: (height: number) => void;
   isSelected: boolean;
@@ -54,6 +55,7 @@ interface InventoryListTableRowProps {
 
 function InventoryListTableRowComponent({
   item,
+  rowIndex,
   virtualRowSize,
   onRowHeightChange,
   isSelected,
@@ -187,6 +189,7 @@ function InventoryListTableRowComponent({
   return (
     <tr
       ref={rowRef}
+      aria-rowindex={rowIndex}
       className={clsx(
         'relative transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] group',
         isSelected && 'bg-primary/10 hover:bg-primary/15 [&>td]:!bg-transparent'

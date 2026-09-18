@@ -250,6 +250,8 @@ export function InventoryListTable({
       >
         <table
           className="text-left border-collapse [&_th]:border-r [&_th]:border-border/70 [&_td]:border-r [&_td]:border-b [&_td]:border-border/60 [&_tr>*:last-child]:border-r-0"
+          aria-rowcount={items.length}
+          aria-colcount={10}
           style={{
             tableLayout: 'fixed',
             width: 52 + 72 + Object.values(columnWidths).reduce((sum, width) => sum + width, 0),
@@ -294,7 +296,7 @@ export function InventoryListTable({
           </thead>
           <tbody>
             {paddingTop > 0 && (
-              <tr>
+              <tr aria-hidden="true">
                 <td style={{ height: `${paddingTop}px` }} colSpan={10} />
               </tr>
             )}
@@ -305,6 +307,7 @@ export function InventoryListTable({
                 <InventoryListTableRow
                   key={item.id}
                   item={item}
+                  rowIndex={virtualRow.index + 1}
                   virtualRowSize={virtualRow.size}
                   onRowHeightChange={(height) => resizeRow(virtualRow.index, item.id, height)}
                   isSelected={selectedIds.has(item.id)}
@@ -323,7 +326,7 @@ export function InventoryListTable({
               );
             })}
             {paddingBottom > 0 && (
-              <tr>
+              <tr aria-hidden="true">
                 <td style={{ height: `${paddingBottom}px` }} colSpan={10} />
               </tr>
             )}
