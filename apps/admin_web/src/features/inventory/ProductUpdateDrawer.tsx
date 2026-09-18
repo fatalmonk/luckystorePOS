@@ -557,7 +557,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
                     <h3 className="text-sm font-semibold text-text-primary dark:text-[#f4f4f5]">History & Insights</h3>
                  </div>
                  <p className="text-xs text-text-secondary dark:text-[#a1a1aa] mb-1">Last Purchased: <span className="text-text-primary dark:text-[#f4f4f5] font-semibold">{product.last_purchased_date ? new Date(product.last_purchased_date).toLocaleDateString() : 'Unknown'}</span></p>
-                 <p className="text-xs text-text-muted dark:text-[#71717a]">To view detailed price history or ledger entries, visit the item's ledger page.</p>
+                 <p className="text-xs text-text-secondary dark:text-[#a1a1aa]">To view detailed price history or ledger entries, visit the item's ledger page.</p>
               </div>
             </div>
           ) : activeTab === 'stock' ? (
@@ -637,7 +637,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
 
               {/* Notes */}
               <div className="form-group">
-                <label htmlFor="notes-textarea" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">Notes <span className="text-text-muted dark:text-[#71717a] font-normal">(optional)</span></label>
+                <label htmlFor="notes-textarea" className="block text-xs font-semibold text-text-secondary dark:text-[#a1a1aa] mb-1.5">Notes <span className="text-text-secondary dark:text-[#a1a1aa] font-normal">(optional)</span></label>
                 <textarea
                   id="notes-textarea"
                   value={notes}

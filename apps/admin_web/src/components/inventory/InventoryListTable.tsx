@@ -250,7 +250,7 @@ export function InventoryListTable({
       >
         <table
           className="text-left border-collapse [&_th]:border-r [&_th]:border-border/70 [&_td]:border-r [&_td]:border-b [&_td]:border-border/60 [&_tr>*:last-child]:border-r-0"
-          aria-rowcount={items.length}
+          aria-rowcount={items.length + 1}
           aria-colcount={10}
           style={{
             tableLayout: 'fixed',
@@ -307,7 +307,7 @@ export function InventoryListTable({
                 <InventoryListTableRow
                   key={item.id}
                   item={item}
-                  rowIndex={virtualRow.index + 1}
+                  rowIndex={virtualRow.index + 2}
                   virtualRowSize={virtualRow.size}
                   onRowHeightChange={(height) => resizeRow(virtualRow.index, item.id, height)}
                   isSelected={selectedIds.has(item.id)}
