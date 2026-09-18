@@ -124,8 +124,8 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Chrome vertical tab behavior: when collapsed on desktop, hover expands the drawer
-  const isExpandedView = !isMobile && (!collapsed || isHovered);
+  // Chrome vertical tab behavior: on mobile the slide-out drawer is always expanded; on desktop when collapsed, hover expands the drawer
+  const isExpandedView = isMobile ? true : (!collapsed || isHovered);
 
   const handleMouseEnter = () => {
     if (!isMobile && collapsed) {

@@ -120,13 +120,10 @@ export function Layout() {
         setSidebarHiddenState(true);
         setSidebarCollapsedState(false);
       } else {
+        setSidebarCollapsedState(true);
         const savedHidden = localStorage.getItem('sidebar-hidden');
         if (savedHidden !== null) {
           setSidebarHiddenState(savedHidden === 'true');
-        }
-        const savedCollapsed = localStorage.getItem('sidebar-collapsed');
-        if (savedCollapsed !== null) {
-          setSidebarCollapsedState(savedCollapsed === 'true');
         }
       }
     };
@@ -134,24 +131,10 @@ export function Layout() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Force sidebar collapse when entering POS mode (desktop), but save preference
+  // Ensure desktop is always in collapsed single-column mode with hover-to-expand
   useLayoutEffect(() => {
-    if (isPosPage && !isMobile) {
-      // Save current preference before forcing collapse
-      const saved = localStorage.getItem('sidebar-collapsed');
-      if (saved !== 'true') {
-        localStorage.setItem('sidebar-collapsed-restore', saved || 'false');
-      }
-      // Defer state update to avoid cascading renders warning
+    if (!isMobile) {
       setTimeout(() => setSidebarCollapsedState(true), 0);
-    } else if (!isPosPage && !isMobile) {
-      // Restore previous preference when leaving POS
-      const restore = localStorage.getItem('sidebar-collapsed-restore');
-      if (restore !== null) {
-        // Defer state update to avoid cascading renders warning
-        setTimeout(() => setSidebarCollapsedState(restore === 'true'), 0);
-        localStorage.removeItem('sidebar-collapsed-restore');
-      }
     }
   }, [isPosPage, isMobile]);
 

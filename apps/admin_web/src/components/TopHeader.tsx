@@ -159,7 +159,7 @@ export function TopHeader({
   return (
     <header className={`top-header ${hidden ? 'header--hidden' : ''}`} aria-hidden={hidden ? 'true' : undefined}>
       <div className="header-left">
-        {isMobile && (
+        {(isMobile || sidebarHidden) && (
           <button 
             className="header-button" 
             onClick={onToggleSidebar} 
