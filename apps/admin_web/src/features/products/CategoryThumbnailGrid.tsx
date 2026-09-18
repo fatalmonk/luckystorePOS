@@ -110,6 +110,7 @@ export const CategoryThumbnailGrid = React.memo(function CategoryThumbnailGrid({
           {/* All button */}
           <button
             onClick={() => onSelect(null)}
+            aria-pressed={selectedId === null || selectedId === undefined}
             className={clsx(
               'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors whitespace-nowrap',
               selectedId === null || selectedId === undefined
@@ -127,6 +128,7 @@ export const CategoryThumbnailGrid = React.memo(function CategoryThumbnailGrid({
               <button
                 key={cat.id}
                 onClick={() => onSelect(cat.id)}
+                aria-pressed={isSelected}
                 className={clsx(
                   'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors whitespace-nowrap',
                   isSelected
@@ -156,6 +158,7 @@ export const CategoryThumbnailGrid = React.memo(function CategoryThumbnailGrid({
           <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-0.5 scrollbar-hide">
             <button
               onClick={() => onSelect(activeParentId)}
+              aria-pressed={selectedId === activeParentId}
               className={clsx(
                 'flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors whitespace-nowrap',
                 selectedId === activeParentId
@@ -173,6 +176,7 @@ export const CategoryThumbnailGrid = React.memo(function CategoryThumbnailGrid({
                 <button
                   key={child.id}
                   onClick={() => onSelect(child.id)}
+                  aria-pressed={isSelected}
                   className={clsx(
                     'flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors whitespace-nowrap',
                     isSelected
