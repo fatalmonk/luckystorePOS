@@ -159,24 +159,16 @@ export function TopHeader({
   return (
     <header className={`top-header ${hidden ? 'header--hidden' : ''}`} aria-hidden={hidden ? 'true' : undefined}>
       <div className="header-left">
-        {!sidebarHidden && !isMobile && onToggleCollapse && (
+        {(isMobile || sidebarHidden) && (
           <button 
             className="header-button" 
-            onClick={onToggleCollapse} 
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={onToggleSidebar} 
+            title={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
+            aria-label={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
           >
-            {collapsed ? <PanelLeftClose size={20} /> : <Menu size={20} />}
+            {sidebarHidden ? <Menu size={20} /> : <PanelLeftClose size={20} />}
           </button>
         )}
-        <button 
-          className="header-button" 
-          onClick={onToggleSidebar} 
-          title={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
-          aria-label={sidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
-        >
-          {sidebarHidden ? <Menu size={20} /> : <PanelLeftClose size={20} />}
-        </button>
       </div>
 
       <div className="header-center">

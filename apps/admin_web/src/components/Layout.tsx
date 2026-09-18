@@ -32,16 +32,11 @@ export function Layout() {
     });
   };
   
-  // Persist sidebar collapse preference across page refresh
+  // Always default to collapsed (single column) on desktop, expand on hover
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (isPosPage) return true;
-    // Check saved preference first
-    const saved = localStorage.getItem('sidebar-collapsed');
-    if (saved !== null) return saved === 'true';
-    // Fallback to responsive default
-    const width = window.innerWidth;
-    return width >= 768 && width < 1024;
+    if (typeof window === 'undefined') return true;
+    const isMobileView = window.innerWidth < 768;
+    return !isMobileView;
   });
 
   const setSidebarCollapsed = (value: boolean | ((prev: boolean) => boolean)) => {
@@ -125,13 +120,10 @@ export function Layout() {
         setSidebarHiddenState(true);
         setSidebarCollapsedState(false);
       } else {
+        setSidebarCollapsedState(true);
         const savedHidden = localStorage.getItem('sidebar-hidden');
         if (savedHidden !== null) {
           setSidebarHiddenState(savedHidden === 'true');
-        }
-        const savedCollapsed = localStorage.getItem('sidebar-collapsed');
-        if (savedCollapsed !== null) {
-          setSidebarCollapsedState(savedCollapsed === 'true');
         }
       }
     };
@@ -139,24 +131,10 @@ export function Layout() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Force sidebar collapse when entering POS mode (desktop), but save preference
+  // Ensure desktop is always in collapsed single-column mode with hover-to-expand
   useLayoutEffect(() => {
-    if (isPosPage && !isMobile) {
-      // Save current preference before forcing collapse
-      const saved = localStorage.getItem('sidebar-collapsed');
-      if (saved !== 'true') {
-        localStorage.setItem('sidebar-collapsed-restore', saved || 'false');
-      }
-      // Defer state update to avoid cascading renders warning
+    if (!isMobile) {
       setTimeout(() => setSidebarCollapsedState(true), 0);
-    } else if (!isPosPage && !isMobile) {
-      // Restore previous preference when leaving POS
-      const restore = localStorage.getItem('sidebar-collapsed-restore');
-      if (restore !== null) {
-        // Defer state update to avoid cascading renders warning
-        setTimeout(() => setSidebarCollapsedState(restore === 'true'), 0);
-        localStorage.removeItem('sidebar-collapsed-restore');
-      }
     }
   }, [isPosPage, isMobile]);
 
