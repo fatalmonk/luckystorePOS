@@ -121,6 +121,29 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   const location = useLocation();
   const { t } = useTranslation();
   const sidebarRef = useRef<HTMLElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Chrome vertical tab behavior: when collapsed on desktop, hover expands the drawer
+  const isExpandedView = !isMobile && (!collapsed || isHovered);
+
+  const handleMouseEnter = () => {
+    if (!isMobile && collapsed) {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsHovered(true);
+      }, 50);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsHovered(false);
+      }, 120);
+    }
+  };
 
   useGSAP(() => {
     if (isMobile && !hidden && sidebarRef.current) {
@@ -204,18 +227,21 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
       )}
       <aside
         ref={sidebarRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={clsx(
           'sidebar',
           hidden ? 'sidebar--hidden' : '',
           !isMobile && collapsed ? 'sidebar-collapsed' : '',
+          !isMobile && collapsed && isHovered ? 'sidebar-hover-expanded' : '',
           '!bg-warm-surface !border-warm-border-warm flex flex-col h-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]'
         )}
       >
         {/* Sidebar Header */}
-        <div className={clsx('p-4 border-b border-warm-border-warm flex items-center justify-between gap-3 nav-reveal-item', collapsed && 'flex-col justify-center')}>
+        <div className={clsx('p-4 border-b border-warm-border-warm flex items-center justify-between gap-3 nav-reveal-item', !isExpandedView && 'flex-col justify-center')}>
           <div className="flex items-center gap-3 min-w-0">
-            <Logo collapsed={collapsed} />
-            {!collapsed && (
+            <Logo collapsed={!isExpandedView} />
+            {isExpandedView && (
               <div className="flex flex-col min-w-0">
                 <p className="text-[9px] text-warm-muted font-bold uppercase tracking-widest opacity-75 truncate mt-0.5">Admin Portal</p>
               </div>
@@ -226,11 +252,11 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
               onClick={onToggleCollapse}
               className={clsx(
                 'p-1.5 rounded-lg text-warm-muted hover:bg-warm-border-warm hover:text-warm-fg transition-colors flex-shrink-0',
-                collapsed ? 'mt-2' : ''
+                !isExpandedView ? 'mt-2' : ''
               )}
-              title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              title={collapsed ? 'Pin Sidebar Expanded' : 'Collapse to Single Column'}
             >
-              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+              {!isExpandedView ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
           )}
         </div>
@@ -243,8 +269,8 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
 
             return (
               <div key={group.id} className="flex flex-col gap-1 border-b border-warm-border-warm/20 pb-2 last:border-0 last:pb-0 nav-reveal-item">
-                {collapsed ? (
-                  // Collapsed Mode: Just render icon triggers or flat items
+                {!isExpandedView ? (
+                  // Collapsed Single Column Mode: Clean icon triggers
                   <div className="flex flex-col gap-1 items-center">
                     {group.items.map((item) => {
                       const isActive = isRouteActive(item.path, !!item.children);
@@ -350,10 +376,10 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
         {/* Footer – branch selector & user menu */}
         <footer className="mt-auto p-4 border-t border-warm-border-warm flex flex-col gap-3">
           {/* Branch selector */}
-          <div className={clsx('flex items-center gap-2 text-xs', collapsed && 'justify-center')}>
+          <div className={clsx('flex items-center gap-2 text-xs', !isExpandedView && 'justify-center')}>
             <span className="w-2 h-2 rounded-full bg-warm-success flex-shrink-0" title="online"></span>
             <GitBranch className="text-warm-accent flex-shrink-0" size={16} />
-            {!collapsed && (
+            {isExpandedView && (
               <div className="flex-1 flex justify-between items-center min-w-0">
                 <span className="truncate text-warm-fg font-semibold">Main Store</span>
                 <button className="text-warm-accent hover:text-warm-accent-light hover:underline font-bold text-[10px] uppercase tracking-wider" onClick={() => {/* placeholder */}}>
@@ -364,11 +390,11 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
           </div>
 
           {/* User profile & Logout */}
-          <div className={clsx('flex items-center gap-2 border-t border-warm-border/50 pt-3', collapsed && 'flex-col justify-center')}>
+          <div className={clsx('flex items-center gap-2 border-t border-warm-border/50 pt-3', !isExpandedView && 'flex-col justify-center')}>
             <div className="avatar flex items-center justify-center rounded-full bg-warm-accent text-white font-bold text-xs w-7 h-7 flex-shrink-0">
               {userInitial}
             </div>
-            {!collapsed ? (
+            {isExpandedView ? (
               <div className="flex-1 min-w-0 flex flex-col">
                 <span className="truncate text-warm-fg text-xs font-bold leading-tight">{userName}</span>
                 <span className="truncate text-[10px] text-warm-muted">Store Manager</span>
@@ -379,7 +405,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
               onClick={signOut}
               className={clsx(
                 'text-warm-danger hover:bg-warm-danger/10 transition-colors rounded-lg flex items-center justify-center flex-shrink-0',
-                collapsed ? 'p-1 mt-1' : 'p-1.5'
+                !isExpandedView ? 'p-1 mt-1' : 'p-1.5'
               )}
               title="Logout Session"
             >
