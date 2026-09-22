@@ -40,6 +40,22 @@ These remain off-limits for any code changes, edits, or implementation:
 - Auth flow logic
 - Core business logic
 
+### Scoped Purchase Ledger Exception
+
+The purchase-receiving remediation is an explicit exception to the migration
+restriction above. Agents may modify the focused purchase migration required to
+rewrite `record_purchase_v2` from the legacy journal schema to the live
+`ledger_batches` / `ledger_entries` / `ledger_accounts` schema. This includes
+replacing `journal_batches` / `journal_batch_id` with `ledger_batches` /
+`batch_id`, writing balanced ledger amounts, resolving the store-scoped
+`1200_INVENTORY` account, and validating tenant, store, authenticated-user,
+supplier, item, idempotency, draft, payment-account, payable-account, and
+stock-movement boundaries.
+
+This exception is limited to the purchase-posting RPC and focused tests. It
+does not authorize unrelated migration changes, client-side direct ledger
+writes, `PosProvider`, auth flow logic, or unrelated core business logic.
+
 ---
 
 ## Phase 1A Scope (Read-Only Audit)

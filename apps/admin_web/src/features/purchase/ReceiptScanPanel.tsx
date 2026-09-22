@@ -108,7 +108,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
 
   return (
     <section
-      className={`card p-4 transition-colors ${isDragging ? 'border-primary border-dashed bg-primary/5' : ''}`}
+      className={`card p-4 transition-colors ${isDragging ? 'border-primary border-dashed bg-primary/5 shadow-md' : ''}`}
       aria-labelledby="receipt-scan-title"
       onDragOver={(e) => {
         e.preventDefault();
@@ -140,7 +140,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isScanning}
-          className="button-outline shrink-0 flex items-center gap-2"
+          className="button-outline flex shrink-0 items-center gap-2 transition-transform active:scale-[0.96]"
         >
           {isScanning ? <LoaderCircle size={16} className="animate-spin" /> : <Upload size={16} />}
           {isScanning ? (statusText || 'Scanning…') : 'Upload Receipt'}
@@ -150,7 +150,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="mt-3 w-full cursor-pointer rounded-lg border border-dashed border-border-color py-3 px-4 text-center hover:border-text-muted transition-colors"
+        className="mt-3 min-h-11 w-full cursor-pointer rounded-lg border border-dashed border-border-color px-4 py-3 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
         aria-label="Click to upload a receipt image"
       >
         <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
@@ -223,7 +223,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
             <img
               src={previewUrl}
               alt="Receipt full preview"
-              className="max-h-[500px] w-auto max-w-full rounded-lg object-contain shadow-md border border-border-color"
+              className="max-h-[500px] w-auto max-w-full rounded-lg object-contain shadow-md outline outline-1 outline-black/10"
             />
           </div>
         </div>
@@ -249,7 +249,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
             </div>
             <div>
               <dt className="text-xs">Total</dt>
-              <dd className="text-text-main font-semibold">{result.invoiceTotal ? `৳ ${result.invoiceTotal}` : 'Not found'}</dd>
+              <dd className="text-text-main font-semibold tabular-nums">{result.invoiceTotal ? `৳ ${result.invoiceTotal}` : 'Not found'}</dd>
             </div>
           </dl>
 
@@ -312,7 +312,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
             </div>
           )}
 
-          <button type="button" onClick={() => onApply(result)} className="button-primary mt-3">
+          <button type="button" onClick={() => onApply(result)} className="button-primary mt-3 transition-transform active:scale-[0.96]">
             Apply to form
           </button>
         </div>

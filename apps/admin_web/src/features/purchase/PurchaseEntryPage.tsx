@@ -68,8 +68,9 @@ type PaymentMethod = 'Cash' | 'Bank transfer' | 'Bkash';
 
 type Account = {
   id: string;
+  code: string;
   name: string;
-  type: string;
+  account_type: string;
 };
 
 export const PurchaseEntryPage: React.FC = () => {
@@ -262,31 +263,27 @@ export const PurchaseEntryPage: React.FC = () => {
   });
 
   const { data: accounts = [] } = useQuery({
-    queryKey: ['purchase-accounts', tenantId],
-    enabled: Boolean(tenantId),
+    queryKey: ['purchase-ledger-accounts', storeId],
+    enabled: Boolean(storeId),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('accounts')
-        .select('id, name, type')
-        .eq('tenant_id', tenantId!)
-        .order('name');
+        .from('ledger_accounts')
+        .select('id, code, name, account_type')
+        .eq('store_id', storeId!)
+        .order('code');
       if (error) throw error;
       return (data || []) as Account[];
     },
   });
 
-  const payableAccount = accounts.find(account => account.name.toLowerCase() === 'accounts payable');
+  const payableAccount = accounts.find(account => account.code === '2000_ACCOUNTS_PAYABLE');
   const paymentAccount = useMemo(() => {
-    const normalized = accounts
-      .filter(account => account.type === 'asset')
-      .map(account => ({ ...account, normalizedName: account.name.trim().toLowerCase() }));
-    if (paymentMethod === 'Cash') {
-      return normalized.find(account => account.normalizedName === 'cash on hand' || account.normalizedName === 'cash');
-    }
-    if (paymentMethod === 'Bank transfer') {
-      return normalized.find(account => account.normalizedName.includes('bank') || account.normalizedName.includes('transfer'));
-    }
-    return normalized.find(account => account.normalizedName.includes('bkash') || account.normalizedName.includes('mobile banking'));
+    const accountCodeByMethod: Record<PaymentMethod, string> = {
+      Cash: '1000_CASH',
+      'Bank transfer': '1100_BANK',
+      Bkash: '1010_BANK',
+    };
+    return accounts.find(account => account.code === accountCodeByMethod[paymentMethod]);
   }, [accounts, paymentMethod]);
 
   const paymentAccountId = paymentAccount?.id || '';
@@ -618,7 +615,7 @@ export const PurchaseEntryPage: React.FC = () => {
   };
 
   return (
-    <div className={clsx('app-warm p-6 max-w-5xl mx-auto pb-24 lg:pb-6')}>
+    <div className={clsx('app-warm mx-auto max-w-6xl p-4 pb-28 sm:p-6 lg:pb-6')}>
       <PageHeader
         title="Purchase Receiving"
         subtitle="Record incoming stock from suppliers."
@@ -656,20 +653,20 @@ export const PurchaseEntryPage: React.FC = () => {
           <ReceiptScanPanel suppliers={suppliers} onApply={applyReceiptScan} />
 
           {/* Supplier */}
-          <div className="card p-4">
+          <section className="card p-4" aria-labelledby="purchase-supplier-heading">
             <div className="flex items-center justify-between mb-2">
-              <label htmlFor="supplier-search" className="text-sm text-text-muted font-medium">Supplier</label>
+              <h2 id="purchase-supplier-heading" className="text-sm font-semibold text-text-main">Supplier</h2>
               <button
                 type="button"
                 onClick={() => { setShowAddSupplier(true); setNewSupplierName(supplierSearch); setAddSupplierError(''); }}
-                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                className="inline-flex min-h-10 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
               >
                 <Plus size={13} /> Add new
               </button>
             </div>
             <div className="relative" ref={supplierComboRef}>
-              <div className="flex items-center gap-2">
-                <Search size={16} className="text-text-muted" aria-hidden="true" />
+              <div className="input flex items-center gap-2 px-3">
+                <Search size={16} strokeWidth={1.5} className="text-text-muted" aria-hidden="true" />
                 <input
                   id="supplier-search"
                   type="text"
@@ -686,7 +683,7 @@ export const PurchaseEntryPage: React.FC = () => {
                   }}
                   onFocus={() => setShowSupplierDropdown(true)}
                   placeholder="Search supplier by name or phone..."
-                  className="flex-1 bg-transparent border-none outline-none text-sm w-full py-2"
+                  className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none"
                 />
               </div>
               {showSupplierDropdown && (
@@ -711,7 +708,7 @@ export const PurchaseEntryPage: React.FC = () => {
                       role="option"
                       aria-selected={selectedSupplier?.id === s.id}
                       onClick={() => selectSupplier(s)}
-                      className="w-full text-left px-4 py-3 hover:bg-border-light flex justify-between items-center transition-colors"
+                      className="flex min-h-11 w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-border-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
                     >
                       <span className="font-medium">{s.name}</span>
                       <span className="text-text-muted text-sm">{s.phone}</span>
@@ -720,10 +717,11 @@ export const PurchaseEntryPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          </section>
 
           {/* Invoice Info */}
-          <div className="card p-4">
+          <section className="card p-4" aria-labelledby="invoice-details-heading">
+            <h2 id="invoice-details-heading" className="mb-4 text-sm font-semibold text-text-main">Invoice details</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label htmlFor="invoice-number" className="block text-sm text-text-muted mb-2 font-medium">Invoice # (optional)</label>
@@ -758,16 +756,16 @@ export const PurchaseEntryPage: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Item Quick Add */}
-          <div className="card p-4">
+          <section className="card p-4" aria-labelledby="purchase-items-heading">
             <div className="flex justify-between items-center mb-2">
-              <label htmlFor="item-search" className="text-sm text-text-muted font-medium">Add Items (barcode / SKU / name)</label>
+              <h2 id="purchase-items-heading" className="text-sm font-semibold text-text-main">Add items</h2>
               <button
                 type="button"
                 onClick={() => openAddItemModal()}
-                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                className="inline-flex min-h-10 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
               >
                 <Plus size={13} /> Add new item
               </button>
@@ -820,13 +818,13 @@ export const PurchaseEntryPage: React.FC = () => {
                         role="option"
                         aria-selected={false}
                         onClick={() => addItem(item)}
-                        className="w-full text-left px-4 py-3 hover:bg-border-light flex justify-between items-center transition-colors"
+                        className="flex min-h-11 w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-border-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
                       >
                         <div>
                           <div className="font-medium text-text-main">{item.name}</div>
                           <div className="text-text-muted text-xs">{item.sku || ''} {item.barcode || ''}</div>
                         </div>
-                        <div className="font-bold shrink-0 ml-3 text-text-main">৳ {item.cost ?? item.price ?? 0}</div>
+                        <div className="ml-3 shrink-0 font-bold tabular-nums text-text-main">৳ {item.cost ?? item.price ?? 0}</div>
                       </button>
                     ))
                   )}
@@ -913,12 +911,15 @@ export const PurchaseEntryPage: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Receipt Lines */}
           <div className="card p-0 overflow-hidden">
             <div className="p-4 border-b border-border-color">
-              <h3 className="font-semibold text-text-main">Receipt Lines ({lines.length})</h3>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-semibold text-text-main">Receipt lines</h2>
+                <span className="rounded-full bg-[var(--bg-input)] px-2.5 py-1 text-xs font-semibold tabular-nums text-text-muted">{lines.length}</span>
+              </div>
             </div>
             {lines.length === 0 ? (
               <div className="p-8 text-center">
@@ -936,13 +937,13 @@ export const PurchaseEntryPage: React.FC = () => {
                           <button type="button" onClick={() => openAddItemModal(undefined, l.item)} className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200">Needs details</button>
                         )}
                       </div>
-                      <div className="text-text-muted text-sm">
+                      <div className="text-text-muted text-sm tabular-nums">
                         {l.quantity} × ৳{l.unitCost} = ৳{(l.quantity * l.unitCost).toFixed(2)}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button type="button" onClick={() => openAddItemModal(undefined, l.item)} className="text-text-muted hover:text-text-main transition-colors" aria-label={`Edit ${l.item.name}`}><Pencil size={16} /></button>
-                      <button type="button" onClick={() => removeLine(i)} className="text-color-danger hover:opacity-80 transition-opacity" aria-label={`Remove ${l.item.name}`}><Trash2 size={16} /></button>
+                      <button type="button" onClick={() => openAddItemModal(undefined, l.item)} className="inline-flex size-10 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[var(--bg-input)] hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]" aria-label={`Edit ${l.item.name}`}><Pencil size={16} /></button>
+                      <button type="button" onClick={() => removeLine(i)} className="inline-flex size-10 items-center justify-center rounded-md text-color-danger transition-colors hover:bg-[var(--color-danger-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-danger/40 active:scale-[0.96]" aria-label={`Remove ${l.item.name}`}><Trash2 size={16} /></button>
                     </div>
                   </div>
                 ))}
@@ -959,7 +960,7 @@ export const PurchaseEntryPage: React.FC = () => {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-text-muted">Total Cost</span>
-                <span className="font-bold">৳ {totalCost.toFixed(2)}</span>
+                <span className="font-bold tabular-nums">৳ {totalCost.toFixed(2)}</span>
               </div>
 
               <div>
@@ -986,7 +987,7 @@ export const PurchaseEntryPage: React.FC = () => {
 
               <div className="flex justify-between pt-3 border-t border-border-color">
                 <span className="text-text-muted">Payable (Remaining)</span>
-                <span className={clsx("font-bold", payable > 0 ? 'text-color-danger' : 'text-color-success')}>
+                <span className={clsx("font-bold tabular-nums", payable > 0 ? 'text-color-danger' : 'text-color-success')}>
                   ৳ {payable.toFixed(2)}
                 </span>
               </div>
@@ -997,7 +998,7 @@ export const PurchaseEntryPage: React.FC = () => {
                 title="Post purchase receipt to ledger"
                 onClick={() => submit(false)}
                 disabled={loading}
-                className="button-primary w-full py-3 flex items-center justify-center gap-2"
+                className="button-primary flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
               >
                 <Send size={18} />
                 {loading ? 'Posting...' : 'POST RECEIPT'}
@@ -1006,7 +1007,7 @@ export const PurchaseEntryPage: React.FC = () => {
                 title="Save purchase as draft"
                 onClick={() => submit(true)}
                 disabled={loading}
-                className="button-outline w-full py-3 flex items-center justify-center gap-2"
+                className="button-outline flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
               >
                 <Save size={18} />
                 Save as Draft
@@ -1017,7 +1018,7 @@ export const PurchaseEntryPage: React.FC = () => {
       </div>
 
       {/* ── Mobile sticky action bar (shown only below lg) ──────── */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card border-t border-border-color px-4 py-3 flex items-center gap-3 shadow-lg">
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border-color bg-card/95 px-4 py-3 shadow-lg backdrop-blur-md lg:hidden">
         <div className="flex-1 min-w-0">
           <div className="text-xs text-text-muted">Total</div>
           <div className="font-bold text-text-main tabular-nums">৳ {totalCost.toFixed(2)}</div>
@@ -1026,7 +1027,7 @@ export const PurchaseEntryPage: React.FC = () => {
           title="Save purchase as draft"
           onClick={() => submit(true)}
           disabled={loading}
-          className="button-outline px-4 py-2 flex items-center gap-2 shrink-0"
+          className="button-outline flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
         >
           <Save size={16} />
           <span className="hidden sm:inline">Draft</span>
@@ -1035,7 +1036,7 @@ export const PurchaseEntryPage: React.FC = () => {
           title="Post purchase receipt to ledger"
           onClick={() => submit(false)}
           disabled={loading}
-          className="button-primary px-4 py-2 flex items-center gap-2 shrink-0"
+          className="button-primary flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
           style={{ width: 'auto' }}
         >
           <Send size={16} />
