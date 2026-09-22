@@ -11,9 +11,35 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   v_rows integer;
+  v_has_party_type boolean;
+  v_has_type boolean;
 BEGIN
   IF p_batch_size < 1 OR p_batch_size > 5000 THEN
     RAISE EXCEPTION 'party type backfill batch size must be between 1 and 5000';
+  END IF;
+
+  SELECT
+    EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'parties'
+        AND column_name = 'party_type'
+    ),
+    EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'parties'
+        AND column_name = 'type'
+    )
+  INTO v_has_party_type, v_has_type;
+
+  -- Older deployments may already have one canonical column but lack the
+  -- transitional alias. There is nothing to reconcile in that shape; do not
+  -- reference a missing column and make the replay fail.
+  IF NOT v_has_party_type OR NOT v_has_type THEN
+    RETURN;
   END IF;
 
   LOOP

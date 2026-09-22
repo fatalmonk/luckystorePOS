@@ -108,6 +108,10 @@ BEGIN
 END $$;
 
 -- Validate constraint now that all active rows are backfilled
+-- The composite foreign key above can queue deferred trigger events during the
+-- mapping updates. Flush them before ALTER TABLE validation.
+SET CONSTRAINTS ALL IMMEDIATE;
+
 ALTER TABLE public.payment_methods
 VALIDATE CONSTRAINT chk_payment_methods_active_account_mapped;
 

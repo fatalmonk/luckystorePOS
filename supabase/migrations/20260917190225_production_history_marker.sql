@@ -1,0 +1,3 @@
+-- Historical migration ledger marker.
+-- Production recorded migration version 20260917190225.
+-- Intentionally no-op; preserves production migration history.
