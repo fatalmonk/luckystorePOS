@@ -124,7 +124,7 @@ begin
   if nullif(trim(p_idempotency_key), '') is not null then
     insert into public.idempotency_keys (idempotency_key, tenant_id, locked_at)
     values (trim(p_idempotency_key), v_expected_tenant_id, clock_timestamp())
-    on conflict (idempotency_key) do nothing;
+    on conflict (tenant_id, idempotency_key) do nothing;
     get diagnostics v_rows = row_count;
     if v_rows = 0 then
       select response_body into v_response
