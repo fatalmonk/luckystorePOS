@@ -124,10 +124,10 @@ BEGIN
     END IF;
 
     INSERT INTO public.stock_movements (
-      tenant_id, store_id, item_id, delta,
+      tenant_id, store_id, item_id, delta, reason,
       weighted_average_cost, reference_type, reference_id, created_by
     ) VALUES (
-      p_tenant_id, p_store_id, v_item.item_id, v_item.quantity,
+      p_tenant_id, p_store_id, v_item.item_id, v_item.quantity, 'Purchase receipt',
       v_new_avg_cost, 'PURCHASE_RECEIPT', v_receipt_id, v_user_id
     );
 
