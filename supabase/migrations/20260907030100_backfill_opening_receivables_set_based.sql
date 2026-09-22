@@ -10,6 +10,8 @@ DO $backfill$
 DECLARE
   v_party_store_expression text;
   v_party_type_expression text;
+  v_has_party_type boolean;
+  v_has_legacy_type boolean;
   v_ambiguous_count bigint;
   v_cross_tenant_store_count bigint;
   v_missing_cashier_count bigint;
@@ -24,19 +26,20 @@ BEGIN
     ELSE 'NULL::uuid'
   END;
 
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'parties' AND column_name = 'party_type'
+  ) INTO v_has_party_type;
+
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'parties' AND column_name = 'type'
+  ) INTO v_has_legacy_type;
+
   v_party_type_expression := CASE
-    WHEN EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'parties'
-        AND column_name = 'party_type'
-    ) THEN 'COALESCE(p.party_type, p.type)'
-    WHEN EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'parties'
-        AND column_name = 'type'
-    ) THEN 'p.type'
+    WHEN v_has_party_type AND v_has_legacy_type THEN 'COALESCE(p.party_type, p.type)'
+    WHEN v_has_party_type THEN 'p.party_type'
+    WHEN v_has_legacy_type THEN 'p.type'
     ELSE NULL
   END;
 
@@ -184,9 +187,6 @@ BEGIN
       credit_status = EXCLUDED.credit_status,
       notes = EXCLUDED.notes;
 
-  -- Existing invoices can already be overdue when this migration runs. Keep
-  -- their status consistent with the same remaining-balance definition used by
-  -- the aging report and allocator.
   UPDATE public.sales s
   SET credit_status = 'OVERDUE',
       updated_at = now()
