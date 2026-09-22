@@ -188,8 +188,7 @@ BEGIN
       notes = EXCLUDED.notes;
 
   UPDATE public.sales s
-  SET credit_status = 'OVERDUE',
-      updated_at = now()
+  SET credit_status = 'OVERDUE'
   WHERE s.due_date < CURRENT_DATE
     AND s.credit_status IN ('UNPAID', 'PARTIALLY_PAID')
     AND s.total_amount > COALESCE((
