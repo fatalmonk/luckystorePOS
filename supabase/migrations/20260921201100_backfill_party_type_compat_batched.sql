@@ -8,7 +8,6 @@ CREATE OR REPLACE PROCEDURE public.backfill_party_type_compat(
   p_batch_size integer DEFAULT 500
 )
 LANGUAGE plpgsql
-SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_rows integer;
