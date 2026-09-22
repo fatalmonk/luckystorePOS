@@ -133,7 +133,8 @@ export const PurchaseEntryPage: React.FC = () => {
     getControls()[0]?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        showAddSupplier ? setShowAddSupplier(false) : setShowAddItem(false);
+        if (showAddSupplier) setShowAddSupplier(false);
+        else setShowAddItem(false);
       } else if (event.key === 'Tab') {
         const controls = getControls();
         if (!controls.length) return;

@@ -117,7 +117,7 @@ export function parseReceiptFilename(
 }
 
 function normalizeFilenameDate(value: string): string {
-  const parts = value.split(/[\/.\-_]/).map(Number);
+  const parts = value.split(/[/.\-_]/).map(Number);
   if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return value;
   let year: number, month: number, day: number;
   if (parts[0] >= 1000) [year, month, day] = parts;
