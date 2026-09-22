@@ -243,13 +243,55 @@ DECLARE
     v_sale_id UUID;
     v_created_invoices INTEGER := 0;
     v_total_opening_ar NUMERIC(12,2) := 0;
+    v_party_store_expression text;
+    v_party_type_expression text;
 BEGIN
     -- Loop over customer parties that have an active positive balance in parties
-    FOR r_cust IN
-        SELECT p.id, p.tenant_id, p.store_id, p.name, p.current_balance, p.created_at
-        FROM public.parties p
-        WHERE p.party_type = 'customer'
-          AND p.current_balance > 0
+    -- `parties.store_id` is optional in older database histories. Preserve it
+    -- where present and otherwise resolve the tenant's earliest store below.
+    v_party_store_expression := CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'parties'
+              AND column_name = 'store_id'
+        ) THEN 'p.store_id'
+        ELSE 'NULL::uuid'
+    END;
+
+    -- The canonical `party_type` name was introduced after some historical
+    -- deployments, which still expose the legacy `type` column.
+    v_party_type_expression := CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'parties'
+              AND column_name = 'party_type'
+        ) THEN 'p.party_type'
+        WHEN EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'parties'
+              AND column_name = 'type'
+        ) THEN 'p.type'
+        ELSE NULL
+    END;
+
+    IF v_party_type_expression IS NULL THEN
+        RAISE EXCEPTION 'public.parties requires party_type or legacy type';
+    END IF;
+
+    FOR r_cust IN EXECUTE format(
+        'SELECT p.id, p.tenant_id, %s AS store_id, p.name, p.current_balance, p.created_at
+         FROM public.parties p
+         WHERE %s = ''customer''
+           AND p.current_balance > 0',
+        v_party_store_expression,
+        v_party_type_expression
+    )
     LOOP
         -- Calculate existing unallocated open sales for this customer
         SELECT COALESCE(SUM(s.total_amount - COALESCE(alloc.paid, 0)), 0)
