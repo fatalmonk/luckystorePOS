@@ -1,6 +1,10 @@
 -- Ensure hierarchical category support is replayable in all environments.
 -- Production already has this shape; disposable/test databases may not because
 -- the original hierarchy rollout lived under scripts/db instead of migrations.
+--
+-- Keep this migration transactional: it installs only the column/FK contract.
+-- The supporting index is built concurrently in the immediately following
+-- nontransactional migration.
 
 ALTER TABLE public.categories
   ADD COLUMN IF NOT EXISTS parent_id uuid;
@@ -21,6 +25,3 @@ BEGIN
   END IF;
 END
 $migration$;
-
-CREATE INDEX IF NOT EXISTS idx_categories_parent_id
-  ON public.categories(parent_id);
