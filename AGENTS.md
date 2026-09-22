@@ -40,6 +40,29 @@ These remain off-limits for any code changes, edits, or implementation:
 - Auth flow logic
 - Core business logic
 
+### Scoped Purchase Ledger Exception
+
+The purchase-receiving remediation is an explicit exception to the migration
+restriction above. For PR #388 only, implementation is permitted in these exact
+files:
+
+- `supabase/migrations/20260922130000_fix_record_purchase_v2_stock_delta.sql`
+- `supabase/migrations/20260922144139_fix_purchase_posting_live_ledger_schema.sql`
+- `supabase/migrations/20260922170019_fix_purchase_receipts_select_rls.sql`
+- `supabase/tests/record_purchase_v2_security_test.sql`
+
+The RPC files may be changed only to repair `record_purchase_v2` purchase
+validation, authorization, stock movement/balance and costing, draft-line
+persistence, idempotency, and balanced posting against the live
+`ledger_batches` / `ledger_entries` / `ledger_accounts` schema. This includes
+using the store-scoped `1200_INVENTORY` account and active store payment/payable
+accounts. The RLS migration may be changed only to enforce store-scoped receipt
+reads while retaining authorized receipt mutations.
+
+This exception does not authorize changes to other migrations or tests,
+unrelated migration changes, client-side direct ledger writes, `PosProvider`,
+auth flow logic, or unrelated core business logic.
+
 ---
 
 ## Phase 1A Scope (Read-Only Audit)

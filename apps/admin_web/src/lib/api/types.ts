@@ -190,6 +190,33 @@ export interface ProductCreateInput {
   group_tag?: string;
 }
 
+export interface FindOrCreateItemInput {
+  id?: string | null;
+  name: string;
+  barcode?: string | null;
+  sku?: string | null;
+  cost?: number | null;
+  price?: number | null;
+  mrp?: number | null;
+  brand?: string | null;
+  /** Preferred database-column spelling for new callers. */
+  category_id?: string | null;
+  image_url?: string | null;
+}
+
+export interface ItemSummary {
+  id: string;
+  name: string;
+  sku?: string | null;
+  barcode?: string | null;
+  cost?: number | null;
+  price?: number | null;
+  mrp?: number | null;
+  brand?: string | null;
+  category_id?: string | null;
+  image_url?: string | null;
+}
+
 export type ProductUpdateInput = Partial<ProductCreateInput>;
 
 // =============================================================================
@@ -386,4 +413,3 @@ export type CompetitorPriceFilters = {
   matchedOnly?: boolean;
   unmatchedOnly?: boolean;
 };
-
