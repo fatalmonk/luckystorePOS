@@ -1,5 +1,8 @@
--- Reapply the checkout boundary hardening for environments where the earlier
--- correction migration has already been recorded.
+-- Reapply the storefront checkout idempotency RPC after the later migration
+-- changes idempotency_keys from global-key uniqueness to tenant-scoped
+-- uniqueness. Environments that already recorded the earlier checkout RPC
+-- migration otherwise retain ON CONFLICT (idempotency_key), which no longer
+-- matches any unique/exclusion constraint.
 
 create or replace function public.create_order_with_stock_idempotent(
   p_order_number text,
