@@ -49,6 +49,20 @@ type PendingOcrItem = ReceiptOcrResult['items'][number] & {
   match?: Item;
 };
 
+type PurchaseDraftSnapshot = {
+  supplierSearch: string;
+  selectedSupplier: Supplier | null;
+  invoiceNumber: string;
+  invoiceDate: string;
+  invoiceTotal: string;
+  lines: ReceiptLine[];
+  amountPaid: string;
+  itemSearch: string;
+  quickQty: number;
+  quickCost: string;
+  pendingOcrItems: PendingOcrItem[];
+};
+
 export const PurchaseEntryPage: React.FC = () => {
   // Form state
   const [supplierSearch, setSupplierSearch] = useState('');
@@ -101,6 +115,79 @@ export const PurchaseEntryPage: React.FC = () => {
   // Auth context
   const { tenantId, storeId } = useAuth();
   const queryClient = useQueryClient();
+  const purchaseDraftKey = useMemo(
+    () => tenantId && storeId ? `lucky-store:purchase-draft:${tenantId}:${storeId}` : null,
+    [storeId, tenantId],
+  );
+  const [draftRestored, setDraftRestored] = useState(false);
+  const draftHydratedRef = useRef(false);
+  const skipDraftPersistenceRef = useRef(false);
+
+  /* eslint-disable react-hooks/set-state-in-effect -- hydrate the form from external localStorage state. */
+  useEffect(() => {
+    if (!purchaseDraftKey || typeof window === 'undefined') return;
+
+    draftHydratedRef.current = false;
+    try {
+      const raw = window.localStorage.getItem(purchaseDraftKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as Partial<PurchaseDraftSnapshot>;
+        if (typeof draft.supplierSearch === 'string') setSupplierSearch(draft.supplierSearch);
+        if (draft.selectedSupplier) setSelectedSupplier(draft.selectedSupplier);
+        if (typeof draft.invoiceNumber === 'string') setInvoiceNumber(draft.invoiceNumber);
+        if (typeof draft.invoiceDate === 'string') setInvoiceDate(draft.invoiceDate);
+        if (typeof draft.invoiceTotal === 'string') setInvoiceTotal(draft.invoiceTotal);
+        if (Array.isArray(draft.lines)) setLines(draft.lines);
+        if (typeof draft.amountPaid === 'string') setAmountPaid(draft.amountPaid);
+        if (typeof draft.itemSearch === 'string') setItemSearch(draft.itemSearch);
+        if (typeof draft.quickQty === 'number' && Number.isFinite(draft.quickQty)) setQuickQty(draft.quickQty);
+        if (typeof draft.quickCost === 'string') setQuickCost(draft.quickCost);
+        if (Array.isArray(draft.pendingOcrItems)) setPendingOcrItems(draft.pendingOcrItems);
+        setDraftRestored(true);
+      }
+    } catch {
+      window.localStorage.removeItem(purchaseDraftKey);
+    } finally {
+      draftHydratedRef.current = true;
+    }
+  }, [purchaseDraftKey]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!purchaseDraftKey || !draftHydratedRef.current || typeof window === 'undefined') return;
+    if (skipDraftPersistenceRef.current) {
+      skipDraftPersistenceRef.current = false;
+      return;
+    }
+
+    const snapshot: PurchaseDraftSnapshot = {
+      supplierSearch,
+      selectedSupplier,
+      invoiceNumber,
+      invoiceDate,
+      invoiceTotal,
+      lines,
+      amountPaid,
+      itemSearch,
+      quickQty,
+      quickCost,
+      pendingOcrItems,
+    };
+
+    try {
+      const hasWork = Boolean(
+        supplierSearch || selectedSupplier || invoiceNumber || invoiceDate || invoiceTotal ||
+        lines.length || pendingOcrItems.length || itemSearch || quickCost || amountPaid !== '0',
+      );
+      if (hasWork) {
+        window.localStorage.setItem(purchaseDraftKey, JSON.stringify(snapshot));
+      } else {
+        window.localStorage.removeItem(purchaseDraftKey);
+      }
+    } catch {
+      // Local draft recovery is best-effort and must never block receiving.
+    }
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, pendingOcrItems, purchaseDraftKey, quickCost, quickQty, selectedSupplier, supplierSearch]);
 
   // Outside-click ref for supplier combobox
   const supplierComboRef = useRef<HTMLDivElement>(null);
@@ -459,6 +546,11 @@ export const PurchaseEntryPage: React.FC = () => {
       setError(error.message || 'Submission failed');
     } else {
       setSuccess(asDraft ? 'Draft saved!' : 'Purchase posted successfully!');
+      if (purchaseDraftKey && typeof window !== 'undefined') {
+        window.localStorage.removeItem(purchaseDraftKey);
+        skipDraftPersistenceRef.current = true;
+        setDraftRestored(false);
+      }
       // Reset form
       setSelectedSupplier(null);
       setSupplierSearch('');
@@ -476,6 +568,12 @@ export const PurchaseEntryPage: React.FC = () => {
         title="Purchase Receiving"
         subtitle="Record incoming stock from suppliers."
       />
+
+      {draftRestored && (
+        <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-text-muted" role="status">
+          Unsaved purchase work was restored from this store on this device.
+        </div>
+      )}
 
       {error && (
         <div
