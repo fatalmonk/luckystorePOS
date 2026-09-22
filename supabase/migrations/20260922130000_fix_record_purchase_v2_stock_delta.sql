@@ -100,7 +100,7 @@ BEGIN
     AS x(item_id UUID, quantity NUMERIC, unit_cost NUMERIC)
   LOOP
     IF NOT EXISTS (
-      SELECT 1 FROM public.inventory_items
+      SELECT 1 FROM public.items
       WHERE id = v_item.item_id AND tenant_id = p_tenant_id
     ) THEN
       RAISE EXCEPTION 'Item % not found in tenant', v_item.item_id;
