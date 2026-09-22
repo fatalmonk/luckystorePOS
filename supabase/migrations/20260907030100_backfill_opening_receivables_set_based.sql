@@ -11,6 +11,7 @@ DECLARE
   v_party_store_expression text;
   v_party_type_expression text;
   v_ambiguous_count bigint;
+  v_cross_tenant_store_count bigint;
   v_missing_cashier_count bigint;
 BEGIN
   v_party_store_expression := CASE
@@ -61,7 +62,10 @@ BEGIN
       GROUP BY s.customer_id
     ),
     tenant_stores AS (
-      SELECT tenant_id, COUNT(*) AS store_count, MIN(id) AS only_store_id
+      SELECT
+        tenant_id,
+        COUNT(*) AS store_count,
+        (array_agg(id ORDER BY created_at ASC, id ASC))[1] AS only_store_id
       FROM public.stores
       GROUP BY tenant_id
     ),
@@ -101,6 +105,17 @@ BEGIN
     RAISE EXCEPTION
       'Opening AR backfill refused: % positive-balance customer(s) have no unambiguous store assignment; assign party.store_id or reduce tenant to one store before replay',
       v_ambiguous_count;
+  END IF;
+
+  SELECT COUNT(*) INTO v_cross_tenant_store_count
+  FROM opening_ar_candidates c
+  LEFT JOIN public.stores st ON st.id = c.resolved_store_id
+  WHERE st.id IS NULL OR st.tenant_id IS DISTINCT FROM c.tenant_id;
+
+  IF v_cross_tenant_store_count > 0 THEN
+    RAISE EXCEPTION
+      'Opening AR backfill refused: % candidate customer(s) resolve to a store outside their tenant',
+      v_cross_tenant_store_count;
   END IF;
 
   SELECT COUNT(*) INTO v_missing_cashier_count
