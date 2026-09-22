@@ -63,6 +63,10 @@ BEGIN
     RAISE EXCEPTION 'Access denied: store does not belong to tenant' USING ERRCODE = '42501';
   END IF;
 
+  IF COALESCE(v_calling_user.role, '') NOT IN ('admin', 'manager', 'stock') THEN
+    RAISE EXCEPTION 'Access denied: role cannot record purchase receipts' USING ERRCODE = '42501';
+  END IF;
+
   v_response := public.check_idempotency(p_idempotency_key, p_tenant_id);
   IF v_response IS NOT NULL THEN RETURN v_response; END IF;
 
@@ -85,6 +89,9 @@ BEGIN
     RAISE EXCEPTION 'Duplicate invoice number % for this supplier', p_invoice_number;
   END IF;
 
+  IF p_items IS NULL OR jsonb_typeof(p_items) <> 'array' THEN
+    RAISE EXCEPTION 'Purchase items must be a JSON array';
+  END IF;
   IF jsonb_array_length(p_items) = 0 THEN RAISE EXCEPTION 'No items provided for purchase'; END IF;
 
   FOR v_item IN SELECT * FROM jsonb_to_recordset(p_items)
@@ -119,6 +126,16 @@ BEGIN
     RAISE EXCEPTION 'Amount paid (%) cannot exceed total cost (%)', p_amount_paid, v_total_cost;
   END IF;
 
+  IF p_status = 'posted' THEN
+    -- Ledger columns are two-decimal amounts. Normalize once before persisting
+    -- header totals or calculating the balancing payable entry.
+    v_total_cost := round(v_total_cost, 2);
+    p_amount_paid := round(p_amount_paid, 2);
+    IF v_total_cost <= 0 THEN
+      RAISE EXCEPTION 'Posted purchase receipt must have a positive total at ledger precision';
+    END IF;
+  END IF;
+
   INSERT INTO public.purchase_receipts (
     tenant_id, store_id, supplier_id, invoice_number,
     invoice_total, amount_paid, status, notes, created_by
@@ -128,6 +145,10 @@ BEGIN
   ) RETURNING id INTO v_receipt_id;
 
   IF p_status = 'draft' THEN
+    INSERT INTO public.purchase_receipt_items (receipt_id, item_id, quantity, unit_cost)
+    SELECT v_receipt_id, x.item_id, x.quantity, x.unit_cost
+    FROM jsonb_to_recordset(p_items) AS x(item_id UUID, quantity NUMERIC, unit_cost NUMERIC);
+
     v_response := jsonb_build_object(
       'status', 'success', 'receipt_id', v_receipt_id,
       'total_cost', v_total_cost, 'state', 'draft'
@@ -188,11 +209,11 @@ BEGIN
 
     SELECT COALESCE(SUM(delta), 0) INTO v_current_qty
     FROM public.stock_movements
-    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id;
+    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id AND store_id = p_store_id;
 
     SELECT weighted_average_cost INTO v_current_avg_cost
     FROM public.stock_movements
-    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id
+    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id AND store_id = p_store_id
     ORDER BY created_at DESC LIMIT 1;
     v_current_avg_cost := COALESCE(v_current_avg_cost, 0);
 
@@ -210,6 +231,15 @@ BEGIN
       p_tenant_id, p_store_id, v_item.item_id, v_item.quantity, 'Purchase receipt',
       v_new_avg_cost, 'PURCHASE_RECEIPT', v_receipt_id, v_calling_user.id
     );
+
+    INSERT INTO public.stock_levels (store_id, item_id, qty)
+    VALUES (p_store_id, v_item.item_id, v_item.quantity::integer)
+    ON CONFLICT (store_id, item_id) DO UPDATE
+      SET qty = COALESCE(public.stock_levels.qty, 0) + EXCLUDED.qty;
+
+    UPDATE public.items
+    SET cost = v_new_avg_cost, updated_at = NOW()
+    WHERE id = v_item.item_id AND tenant_id = p_tenant_id;
 
     INSERT INTO public.purchase_receipt_items (receipt_id, item_id, quantity, unit_cost)
     VALUES (v_receipt_id, v_item.item_id, v_item.quantity, v_item.unit_cost);

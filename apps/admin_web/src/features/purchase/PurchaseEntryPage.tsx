@@ -121,6 +121,37 @@ export const PurchaseEntryPage: React.FC = () => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [addingItem, setAddingItem] = useState(false);
   const [addItemError, setAddItemError] = useState('');
+  const supplierDialogRef = useRef<HTMLDivElement>(null);
+  const itemDialogRef = useRef<HTMLDivElement>(null);
+  const dialogOpenerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const dialog = showAddSupplier ? supplierDialogRef.current : showAddItem ? itemDialogRef.current : null;
+    if (!dialog) return;
+    const opener = dialogOpenerRef.current;
+    const getControls = () => Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    getControls()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        showAddSupplier ? setShowAddSupplier(false) : setShowAddItem(false);
+      } else if (event.key === 'Tab') {
+        const controls = getControls();
+        if (!controls.length) return;
+        if (event.shiftKey && document.activeElement === controls[0]) {
+          event.preventDefault();
+          controls[controls.length - 1].focus();
+        } else if (!event.shiftKey && document.activeElement === controls[controls.length - 1]) {
+          event.preventDefault();
+          controls[0].focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      opener?.focus();
+    };
+  }, [showAddSupplier, showAddItem]);
   const [pendingOcrItems, setPendingOcrItems] = useState<PendingOcrItem[]>([]);
 
   // Auth context
@@ -280,7 +311,7 @@ export const PurchaseEntryPage: React.FC = () => {
   const paymentAccount = useMemo(() => {
     const accountCodeByMethod: Record<PaymentMethod, string> = {
       Cash: '1000_CASH',
-      'Bank transfer': '1100_BANK',
+      'Bank transfer': '1010_BANK',
       Bkash: '1010_BANK',
     };
     return accounts.find(account => account.code === accountCodeByMethod[paymentMethod]);
@@ -341,6 +372,7 @@ export const PurchaseEntryPage: React.FC = () => {
   };
 
   const openAddItemModal = (prefillName?: string, existingItem?: Item, prefillCost?: number, prefillQuantity?: number) => {
+    dialogOpenerRef.current = document.activeElement as HTMLElement | null;
     const raw = (prefillName ?? existingItem?.name ?? itemSearch).trim();
     const isDigits = /^\d{5,}$/.test(raw);
     setEditingItemId(existingItem?.id || null);
@@ -378,9 +410,9 @@ export const PurchaseEntryPage: React.FC = () => {
       let created = await api.products.findOrCreate(tenantId, {
         id: editingItemId,
         name: newItemName.trim(),
-        barcode: newItemBarcode.trim() || undefined,
-        sku: newItemSku.trim() || undefined,
-        brand: newItemBrand.trim() || undefined,
+        barcode: newItemBarcode.trim() || null,
+        sku: newItemSku.trim() || null,
+        brand: newItemBrand.trim() || null,
         category_id: newItemCategoryId,
         cost: costNum,
         price: priceNum,
@@ -420,7 +452,7 @@ export const PurchaseEntryPage: React.FC = () => {
       if (editingItemId) {
         setLines(previous => previous.map(line => line.item.id === editingItemId ? { ...line, item: completeItem } : line));
       } else {
-        addItem(completeItem);
+        addItem(completeItem, quickQty, costNum);
       }
       setPendingOcrItems(previous => previous.filter(candidate => candidate.name.trim().toLowerCase() !== completeItem.name.trim().toLowerCase()));
 
@@ -486,8 +518,6 @@ export const PurchaseEntryPage: React.FC = () => {
 
         if (data && data.length > 0) {
           matched = data[0] as unknown as Item;
-        } else {
-          pendingCandidates.push(scannedItem);
         }
 
         pendingCandidates.push({ ...scannedItem, match: matched || undefined });
@@ -522,8 +552,8 @@ export const PurchaseEntryPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [debouncedItemSearch]);
 
-  const addItem = (item: Item, quantityOverride?: number) => {
-    const cost = quickCost ? parseFloat(quickCost) : (item.cost ?? item.price ?? 0);
+  const addItem = (item: Item, quantityOverride?: number, unitCostOverride?: number) => {
+    const cost = unitCostOverride ?? (quickCost ? parseFloat(quickCost) : (item.cost ?? item.price ?? 0));
     const quantity = quantityOverride || quickQty;
     setLines(prev => {
       const existing = prev.findIndex(l => l.item.id === item.id);
@@ -559,7 +589,7 @@ export const PurchaseEntryPage: React.FC = () => {
     setSuccess('');
     if (!selectedSupplier) { setError('Please select a supplier'); return; }
     if (lines.length === 0) { setError('Add at least one item'); return; }
-    if (hasIncompleteLines) { setError('Complete category and selling price for every receipt line before posting'); return; }
+    if (!asDraft && hasIncompleteLines) { setError('Complete category and selling price for every receipt line before posting'); return; }
     if (paid > totalCost) { setError('Amount paid cannot exceed total cost'); return; }
     if (!asDraft && paid > 0 && !paymentAccountId) {
       setError(`${paymentMethod} account is not configured for this tenant`);
@@ -609,6 +639,7 @@ export const PurchaseEntryPage: React.FC = () => {
       setInvoiceDate('');
       setInvoiceTotal('');
       setLines([]);
+      setPendingOcrItems([]);
       setAmountPaid('0');
       setPaymentMethod('Cash');
     }
@@ -658,7 +689,7 @@ export const PurchaseEntryPage: React.FC = () => {
               <h2 id="purchase-supplier-heading" className="text-sm font-semibold text-text-main">Supplier</h2>
               <button
                 type="button"
-                onClick={() => { setShowAddSupplier(true); setNewSupplierName(supplierSearch); setAddSupplierError(''); }}
+                onClick={event => { dialogOpenerRef.current = event.currentTarget; setShowAddSupplier(true); setNewSupplierName(supplierSearch); setAddSupplierError(''); }}
                 className="inline-flex min-h-10 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
               >
                 <Plus size={13} /> Add new
@@ -670,6 +701,7 @@ export const PurchaseEntryPage: React.FC = () => {
                 <input
                   id="supplier-search"
                   type="text"
+                  aria-label="Supplier"
                   role="combobox"
                   aria-autocomplete="list"
                   aria-expanded={showSupplierDropdown}
@@ -776,6 +808,7 @@ export const PurchaseEntryPage: React.FC = () => {
                 <input
                   id="item-search"
                   type="text"
+                  aria-label="Add items by barcode, SKU, or name"
                   role="combobox"
                   aria-autocomplete="list"
                   aria-expanded={showItemDropdown && debouncedItemSearch.length >= 2}
@@ -866,7 +899,7 @@ export const PurchaseEntryPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            addItem(candidate.match!, candidate.quantity);
+                            addItem(candidate.match!, candidate.quantity, candidate.unitPrice);
                             setPendingOcrItems(previous => previous.filter(item => item !== candidate));
                           }}
                           className="shrink-0 text-sm font-medium text-primary hover:underline"
@@ -1050,9 +1083,9 @@ export const PurchaseEntryPage: React.FC = () => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowAddSupplier(false); }}
         >
-          <div className="bg-card border border-border-color rounded-2xl w-full max-w-sm shadow-2xl p-6">
+          <div ref={supplierDialogRef} role="dialog" aria-modal="true" aria-labelledby="add-supplier-title" tabIndex={-1} className="bg-card border border-border-color rounded-2xl w-full max-w-sm shadow-2xl p-6">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-text-main text-base">Add New Supplier</h3>
+              <h3 id="add-supplier-title" className="font-semibold text-text-main text-base">Add New Supplier</h3>
               <button
                 type="button"
                 aria-label="Close"
@@ -1065,8 +1098,9 @@ export const PurchaseEntryPage: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-text-muted mb-1.5 font-medium">Name *</label>
+                <label htmlFor="new-supplier-name" className="block text-xs text-text-muted mb-1.5 font-medium">Name *</label>
                 <input
+                  id="new-supplier-name"
                   type="text"
                   autoFocus
                   value={newSupplierName}
@@ -1077,8 +1111,9 @@ export const PurchaseEntryPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs text-text-muted mb-1.5 font-medium">Phone (optional)</label>
+                <label htmlFor="new-supplier-phone" className="block text-xs text-text-muted mb-1.5 font-medium">Phone (optional)</label>
                 <input
+                  id="new-supplier-phone"
                   type="tel"
                   value={newSupplierPhone}
                   onChange={e => setNewSupplierPhone(e.target.value)}
@@ -1119,9 +1154,9 @@ export const PurchaseEntryPage: React.FC = () => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowAddItem(false); }}
         >
-          <div className="bg-card border border-border-color rounded-2xl w-full max-w-sm shadow-2xl p-6">
+          <div ref={itemDialogRef} role="dialog" aria-modal="true" aria-labelledby="add-item-title" tabIndex={-1} className="bg-card border border-border-color rounded-2xl w-full max-w-sm shadow-2xl p-6">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-text-main text-base">Add New Item</h3>
+              <h3 id="add-item-title" className="font-semibold text-text-main text-base">Add New Item</h3>
               <button
                 type="button"
                 aria-label="Close"
@@ -1150,8 +1185,9 @@ export const PurchaseEntryPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-text-muted mb-1.5 font-medium">Item Name *</label>
+                <label htmlFor="new-item-name" className="block text-xs text-text-muted mb-1.5 font-medium">Item Name *</label>
                 <input
+                  id="new-item-name"
                   type="text"
                   autoFocus
                   value={newItemName}
@@ -1173,8 +1209,9 @@ export const PurchaseEntryPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-muted mb-1.5 font-medium">Barcode (optional)</label>
+                <label htmlFor="new-item-barcode" className="block text-xs text-text-muted mb-1.5 font-medium">Barcode (optional)</label>
                 <input
+                  id="new-item-barcode"
                   type="text"
                   value={newItemBarcode}
                   onChange={e => setNewItemBarcode(e.target.value)}
@@ -1185,18 +1222,19 @@ export const PurchaseEntryPage: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-text-muted mb-1.5 font-medium">SKU (optional)</label>
-                  <input type="text" value={newItemSku} onChange={e => setNewItemSku(e.target.value)} placeholder="GEN-XXXXX if blank" className="input w-full" />
+                  <label htmlFor="new-item-sku" className="block text-xs text-text-muted mb-1.5 font-medium">SKU (optional)</label>
+                  <input id="new-item-sku" type="text" value={newItemSku} onChange={e => setNewItemSku(e.target.value)} placeholder="GEN-XXXXX if blank" className="input w-full" />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-muted mb-1.5 font-medium">Brand (optional)</label>
-                  <input type="text" value={newItemBrand} onChange={e => setNewItemBrand(e.target.value)} placeholder="e.g. Nestlé" className="input w-full" />
+                  <label htmlFor="new-item-brand" className="block text-xs text-text-muted mb-1.5 font-medium">Brand (optional)</label>
+                  <input id="new-item-brand" type="text" value={newItemBrand} onChange={e => setNewItemBrand(e.target.value)} placeholder="e.g. Nestlé" className="input w-full" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-text-muted mb-1.5 font-medium">Unit Cost (৳) *</label>
+                  <label htmlFor="new-item-cost" className="block text-xs text-text-muted mb-1.5 font-medium">Unit Cost (৳) *</label>
                   <input
+                    id="new-item-cost"
                     type="number"
                     min="0"
                     step="any"
@@ -1208,8 +1246,9 @@ export const PurchaseEntryPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-muted mb-1.5 font-medium">Selling Price (৳) *</label>
+                  <label htmlFor="new-item-price" className="block text-xs text-text-muted mb-1.5 font-medium">Selling Price (৳) *</label>
                   <input
+                    id="new-item-price"
                     type="number"
                     min="0"
                     step="any"
@@ -1223,8 +1262,8 @@ export const PurchaseEntryPage: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-text-muted mb-1.5 font-medium">MRP (optional)</label>
-                  <input type="number" min="0" step="0.01" value={newItemMrp} onChange={e => setNewItemMrp(e.target.value)} placeholder="0.00" className="input w-full" />
+                  <label htmlFor="new-item-mrp" className="block text-xs text-text-muted mb-1.5 font-medium">MRP (optional)</label>
+                  <input id="new-item-mrp" type="number" min="0" step="0.01" value={newItemMrp} onChange={e => setNewItemMrp(e.target.value)} placeholder="0.00" className="input w-full" />
                 </div>
                 <div className="rounded-lg bg-border-light px-3 py-2">
                   <div className="text-xs text-text-muted">Gross margin</div>

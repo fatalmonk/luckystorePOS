@@ -29,7 +29,28 @@ DECLARE
   v_user_id UUID := auth.uid();
   v_supplier_type TEXT;
   v_payable_amount NUMERIC(15, 4);
+  v_user public.users%ROWTYPE;
 BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
+  END IF;
+
+  SELECT * INTO v_user FROM public.users WHERE auth_id = v_user_id;
+  IF NOT FOUND OR v_user.tenant_id IS DISTINCT FROM p_tenant_id THEN
+    RAISE EXCEPTION 'Access denied: caller is not in the target tenant' USING ERRCODE = '42501';
+  END IF;
+  IF v_user.role NOT IN ('admin', 'manager') AND v_user.store_id IS DISTINCT FROM p_store_id THEN
+    RAISE EXCEPTION 'Access denied: caller is not authorized for this store' USING ERRCODE = '42501';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.stores WHERE id = p_store_id AND tenant_id = p_tenant_id
+  ) THEN
+    RAISE EXCEPTION 'Access denied: store does not belong to tenant' USING ERRCODE = '42501';
+  END IF;
+  IF COALESCE(v_user.role, '') NOT IN ('admin', 'manager', 'stock') THEN
+    RAISE EXCEPTION 'Access denied: role cannot record purchase receipts' USING ERRCODE = '42501';
+  END IF;
+
   v_response := public.check_idempotency(p_idempotency_key, p_tenant_id);
   IF v_response IS NOT NULL THEN RETURN v_response; END IF;
 
@@ -58,11 +79,20 @@ BEGIN
     RAISE EXCEPTION 'Inventory Asset account not configured for tenant';
   END IF;
 
+  IF p_items IS NULL OR jsonb_typeof(p_items) <> 'array' THEN
+    RAISE EXCEPTION 'Purchase items must be a JSON array';
+  END IF;
   IF jsonb_array_length(p_items) = 0 THEN RAISE EXCEPTION 'No items provided for purchase'; END IF;
 
   FOR v_item IN SELECT * FROM jsonb_to_recordset(p_items)
     AS x(item_id UUID, quantity NUMERIC, unit_cost NUMERIC)
   LOOP
+    IF v_item.item_id IS NULL OR v_item.quantity IS NULL OR v_item.quantity <= 0 THEN
+      RAISE EXCEPTION 'Each purchase item requires a valid item and positive quantity';
+    END IF;
+    IF v_item.unit_cost IS NULL OR v_item.unit_cost < 0 THEN
+      RAISE EXCEPTION 'Each purchase item requires a non-negative unit cost';
+    END IF;
     v_total_cost := v_total_cost + (v_item.quantity * v_item.unit_cost);
   END LOOP;
 
@@ -70,9 +100,21 @@ BEGIN
      AND ABS(v_total_cost - p_invoice_total) > 1.00 THEN
     RAISE EXCEPTION 'Invoice total mismatch: calculated % but invoice says %', v_total_cost, p_invoice_total;
   END IF;
-  IF p_amount_paid < 0 THEN RAISE EXCEPTION 'Amount paid cannot be negative'; END IF;
+  IF p_amount_paid IS NULL OR p_amount_paid < 0 THEN RAISE EXCEPTION 'Amount paid cannot be negative'; END IF;
   IF p_amount_paid > v_total_cost THEN
     RAISE EXCEPTION 'Amount paid (%) cannot exceed total cost (%)', p_amount_paid, v_total_cost;
+  END IF;
+  IF p_amount_paid > 0 AND NOT EXISTS (
+    SELECT 1 FROM public.accounts
+    WHERE id = p_payment_account_id AND tenant_id = p_tenant_id
+  ) THEN
+    RAISE EXCEPTION 'Payment account is not configured for tenant';
+  END IF;
+  IF v_total_cost - p_amount_paid > 0 AND NOT EXISTS (
+    SELECT 1 FROM public.accounts
+    WHERE id = p_payable_account_id AND tenant_id = p_tenant_id
+  ) THEN
+    RAISE EXCEPTION 'Payable account is not configured for tenant';
   END IF;
 
   INSERT INTO public.purchase_receipts (
@@ -99,6 +141,14 @@ BEGIN
   FOR v_item IN SELECT * FROM jsonb_to_recordset(p_items)
     AS x(item_id UUID, quantity NUMERIC, unit_cost NUMERIC)
   LOOP
+    PERFORM 1 FROM public.items
+    WHERE id = v_item.item_id AND tenant_id = p_tenant_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Item % not found in tenant', v_item.item_id;
+    END IF;
+
     IF NOT EXISTS (
       SELECT 1 FROM public.items
       WHERE id = v_item.item_id AND tenant_id = p_tenant_id
@@ -108,11 +158,11 @@ BEGIN
 
     SELECT COALESCE(SUM(delta), 0) INTO v_current_qty
     FROM public.stock_movements
-    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id;
+    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id AND store_id = p_store_id;
 
     SELECT weighted_average_cost INTO v_current_avg_cost
     FROM public.stock_movements
-    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id
+    WHERE item_id = v_item.item_id AND tenant_id = p_tenant_id AND store_id = p_store_id
     ORDER BY created_at DESC LIMIT 1;
     v_current_avg_cost := COALESCE(v_current_avg_cost, 0);
 
@@ -133,6 +183,10 @@ BEGIN
 
     INSERT INTO public.purchase_receipt_items (receipt_id, item_id, quantity, unit_cost)
     VALUES (v_receipt_id, v_item.item_id, v_item.quantity, v_item.unit_cost);
+
+    UPDATE public.items
+    SET cost = v_new_avg_cost, updated_at = NOW()
+    WHERE id = v_item.item_id AND tenant_id = p_tenant_id;
   END LOOP;
 
   INSERT INTO public.ledger_entries (

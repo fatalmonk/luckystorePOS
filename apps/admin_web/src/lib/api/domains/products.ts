@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import type { ProductCreateInput, ProductUpdateInput, FindOrCreateItemInput, ItemSummary } from '../types';
 
 const AUTO_SKU_PREFIX = 'GEN-';
-const generateSku = () => `${AUTO_SKU_PREFIX}${Math.floor(10000 + Math.random() * 90000)}`;
+const generateSku = () => `${AUTO_SKU_PREFIX}${Math.random().toString(36).slice(2, 14).toUpperCase()}`;
 
 const asNonNegativeNumber = (value: number | null | undefined, fallback: number | null) =>
   value != null && Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : fallback;
@@ -45,8 +45,8 @@ export const products = {
     const mrp = asNonNegativeNumber(input.mrp, null);
     const barcode = input.barcode?.trim() || null;
     const sku = input.sku?.trim() || null;
-    const categoryId = input.category_id ?? input.categoryId ?? null;
-    const imageUrl = input.image_url ?? input.imageUrl ?? null;
+    const categoryId = input.category_id ?? null;
+    const imageUrl = input.image_url ?? null;
     const brand = input.brand?.trim() || null;
 
     // 1. If explicit item ID was passed (e.g. completing details for an OCR auto-created item)
@@ -54,12 +54,12 @@ export const products = {
       const updateData: Record<string, any> = { name: trimmedName };
       if (input.cost != null && Number.isFinite(Number(input.cost))) updateData.cost = cost;
       if (input.price != null && Number.isFinite(Number(input.price))) updateData.price = price;
-      if (input.mrp != null && Number.isFinite(Number(input.mrp))) updateData.mrp = mrp;
-      if (barcode) updateData.barcode = barcode;
-      if (sku) updateData.sku = sku;
-      if (categoryId) updateData.category_id = categoryId;
-      if (imageUrl) updateData.image_url = imageUrl;
-      if (brand) updateData.brand = brand;
+      if (input.mrp !== undefined && (input.mrp === null || Number.isFinite(Number(input.mrp)))) updateData.mrp = mrp;
+      if (input.barcode !== undefined) updateData.barcode = barcode;
+      if (input.sku !== undefined) updateData.sku = sku;
+      if (input.category_id !== undefined) updateData.category_id = categoryId;
+      if (input.image_url !== undefined) updateData.image_url = imageUrl;
+      if (input.brand !== undefined) updateData.brand = brand;
 
       const { data: updated, error: updateError } = await supabase
         .from('items')
@@ -76,8 +76,7 @@ export const products = {
     // 2. Check if item already exists by barcode, sku, or case-insensitive exact name
     let matchQuery = supabase
       .from('items')
-      .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
-      .eq('is_active', true);
+      .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url, is_active');
 
     if (tenantId) {
       matchQuery = matchQuery.eq('tenant_id', tenantId);
@@ -91,25 +90,31 @@ export const products = {
       matchQuery = matchQuery.ilike('name', escapeLikePattern(trimmedName));
     }
 
-    const { data: existing, error: searchError } = await matchQuery.limit(1);
+    let { data: existing, error: searchError } = await matchQuery.limit(1);
+    if ((!existing || existing.length === 0) && barcode && sku) {
+      let skuQuery = supabase.from('items')
+        .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url, is_active')
+        .eq('sku', sku);
+      if (tenantId) skuQuery = skuQuery.eq('tenant_id', tenantId);
+      const skuResult = await skuQuery.limit(1);
+      existing = skuResult.data;
+      searchError = skuResult.error;
+    }
     if (!searchError && existing && existing.length > 0) {
-      return existing[0] as ItemSummary;
-    }
-
-    // If searched by barcode/sku but didn't find, also verify if exact name matches
-    if (barcode || sku) {
-      let nameQuery = supabase
-        .from('items')
-        .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
-        .ilike('name', escapeLikePattern(trimmedName))
-        .eq('is_active', true);
-      if (tenantId) nameQuery = nameQuery.eq('tenant_id', tenantId);
-      const { data: nameMatches } = await nameQuery.limit(1);
-      if (nameMatches && nameMatches.length > 0) {
-        return nameMatches[0] as ItemSummary;
+      const row = existing[0] as ItemSummary & { is_active: boolean };
+      if (!row.is_active) {
+        let reactivateQuery = supabase.from('items')
+          .update({ is_active: true, name: trimmedName, cost, price: price ?? 0, mrp, ...(barcode ? { barcode } : {}), ...(sku ? { sku } : {}) } as any)
+          .eq('id', row.id);
+        if (tenantId) reactivateQuery = reactivateQuery.eq('tenant_id', tenantId);
+        const { data: reactivated, error: reactivateError } = await reactivateQuery
+          .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
+          .single();
+        if (reactivateError) throw new Error(reactivateError.message || 'Failed to reactivate item');
+        return reactivated as ItemSummary;
       }
+      return row;
     }
-
     // 3. Insert new item if not found
     // The unique indexes are the final authority. Retry only an automatically
     // generated SKU collision; explicit barcode/SKU conflicts must be surfaced.

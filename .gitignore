@@ -245,6 +245,8 @@ data/
 apps/customer_storefront/public/images/*_400.webp
 apps/customer_storefront/public/images/*_600.webp
 apps/customer_storefront/public/images/*_800.webp
+apps/admin_web/public/ocr/worker.min.js
+apps/admin_web/public/ocr/core/
 apps/customer_storefront/public/images/*_1200.webp
 apps/customer_storefront/public/images/*.avif
 apps/customer_storefront/public/banners/

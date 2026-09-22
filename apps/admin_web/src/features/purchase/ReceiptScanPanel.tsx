@@ -9,6 +9,7 @@ type ReceiptScanPanelProps = {
 
 export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scanIdRef = useRef(0);
   const [isScanning, setIsScanning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -24,28 +25,24 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
       return;
     }
 
+    const scanId = ++scanIdRef.current;
+    const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
+    setResult(fileMeta && (fileMeta.invoiceNumber || fileMeta.supplier || fileMeta.invoiceTotal)
+      ? { ...fileMeta, items: [] }
+      : null);
+    setShowRawText(false);
+    setError(null);
     if (source instanceof File) {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(URL.createObjectURL(source));
 
-      // Instantly parse filename metadata before OCR finishes
-      const fileMeta = parseReceiptFilename(source.name, suppliers);
-      if (fileMeta.invoiceNumber || fileMeta.supplier || fileMeta.invoiceTotal) {
-        setResult({
-          invoiceNumber: fileMeta.invoiceNumber,
-          invoiceDate: fileMeta.invoiceDate,
-          invoiceTotal: fileMeta.invoiceTotal,
-          supplier: fileMeta.supplier,
-          items: [],
-        });
-      }
     }
 
-    setError(null);
     setIsScanning(true);
     setStatusText('Reading text from receipt…');
     try {
       const ocrResult = await scanReceiptImage(source, suppliers, (progress, status) => {
+        if (scanId !== scanIdRef.current) return;
         if (status === 'recognizing text') {
           setStatusText(`Reading image (${progress}%)`);
         } else if (status.includes('loading') || status.includes('initializing')) {
@@ -56,25 +53,27 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
       });
 
       // Merge: Keep filename invoice/supplier/total if present, overlay extracted items
-      setResult((prev) => ({
-        invoiceNumber: prev?.invoiceNumber || ocrResult.invoiceNumber,
-        invoiceDate: prev?.invoiceDate || ocrResult.invoiceDate,
-        invoiceTotal: prev?.invoiceTotal || ocrResult.invoiceTotal,
-        supplier: prev?.supplier || ocrResult.supplier,
-        items: ocrResult.items?.length ? ocrResult.items : (prev?.items || []),
+      if (scanId === scanIdRef.current) setResult({
+        invoiceNumber: fileMeta?.invoiceNumber || ocrResult.invoiceNumber,
+        invoiceDate: fileMeta?.invoiceDate || ocrResult.invoiceDate,
+        invoiceTotal: fileMeta?.invoiceTotal || ocrResult.invoiceTotal,
+        supplier: fileMeta?.supplier || ocrResult.supplier,
+        items: ocrResult.items || [],
         rawText: ocrResult.rawText,
-      }));
+      });
     } catch (error) {
       console.error('Receipt OCR failed:', error);
-      setError(
+      if (scanId === scanIdRef.current) setError(
         error instanceof Error
           ? error.message
           : 'Receipt scanning failed for an unknown reason.',
       );
     } finally {
-      setIsScanning(false);
-      setStatusText('');
-      if (source instanceof File && fileInputRef.current) fileInputRef.current.value = '';
+      if (scanId === scanIdRef.current) {
+        setIsScanning(false);
+        setStatusText('');
+        if (source instanceof File && fileInputRef.current) fileInputRef.current.value = '';
+      }
     }
   }, [previewUrl, suppliers]);
 
@@ -102,8 +101,19 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    if (isScanning) return;
     const file = e.dataTransfer.files?.[0];
     if (file) void scan(file);
+  };
+
+  const removeReceipt = () => {
+    scanIdRef.current += 1;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setResult(null);
+    setError(null);
+    setIsScanning(false);
+    setStatusText('');
   };
 
   return (
@@ -111,6 +121,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
       className={`card p-4 transition-colors ${isDragging ? 'border-primary border-dashed bg-primary/5 shadow-md' : ''}`}
       aria-labelledby="receipt-scan-title"
       onDragOver={(e) => {
+        if (isScanning) return;
         e.preventDefault();
         setIsDragging(true);
       }}
@@ -152,6 +163,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
         onClick={() => fileInputRef.current?.click()}
         className="mt-3 min-h-11 w-full cursor-pointer rounded-lg border border-dashed border-border-color px-4 py-3 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
         aria-label="Click to upload a receipt image"
+        disabled={isScanning}
       >
         <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
           <ImageIcon size={14} aria-hidden="true" />
@@ -162,7 +174,9 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
       </button>
 
       <div className="mt-3 flex gap-2">
+        <label htmlFor="receipt-title-input" className="sr-only">Receipt title or filename</label>
         <input
+          id="receipt-title-input"
           type="text"
           placeholder="Or paste receipt title: e.g. LS69-16/04/26-Savoy-9534BDT"
           className="input flex-1 text-xs py-1.5"
@@ -208,10 +222,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
               <button
                 type="button"
                 onClick={() => {
-                  if (previewUrl) URL.revokeObjectURL(previewUrl);
-                  setPreviewUrl(null);
-                  setResult(null);
-                  setError(null);
+                  removeReceipt();
                 }}
                 className="text-xs font-medium text-color-danger hover:underline px-1.5 py-0.5"
               >
@@ -229,7 +240,8 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
         </div>
       )}
 
-      {error && <p className="mt-3 text-sm text-color-danger">{error}</p>}
+      <p className="sr-only" role="status" aria-live="polite">{statusText || (result ? 'Receipt scan complete.' : '')}</p>
+      {error && <p className="mt-3 text-sm text-color-danger" role="alert">{error}</p>}
 
       {result && (
         <div className="mt-4 rounded-lg border border-border-color p-3 text-sm">
@@ -282,6 +294,8 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
             <div className="mt-3 pt-3 border-t border-border-color">
               <button
                 type="button"
+                aria-expanded={showRawText}
+                aria-controls="receipt-raw-ocr-text"
                 onClick={() => setShowRawText(v => !v)}
                 className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-main transition-colors w-full"
               >
@@ -290,8 +304,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
                 <span className="ml-auto text-[10px] opacity-60">reference while adding items manually</span>
               </button>
 
-              {showRawText && (
-                <div className="mt-2 relative">
+              <div id="receipt-raw-ocr-text" hidden={!showRawText} className="mt-2 relative">
                   <pre className="text-[11px] leading-relaxed text-text-muted bg-[var(--color-border-light)] rounded-lg p-3 max-h-64 overflow-y-auto whitespace-pre-wrap break-words font-mono border border-border-color">
                     {result.rawText}
                   </pre>
@@ -307,8 +320,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
                     <ClipboardCopy size={11} />
                     {copied ? 'Copied!' : 'Copy'}
                   </button>
-                </div>
-              )}
+              </div>
             </div>
           )}
 

@@ -13,9 +13,15 @@ export const purchases = {
     if (filters?.status) query = query.eq('status', filters.status);
     if (filters?.supplierId) query = query.eq('supplier_id', filters.supplierId);
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
+    const pageSize = 1000;
+    const rows: any[] = [];
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await query.range(from, from + pageSize - 1);
+      if (error) throw error;
+      rows.push(...(data || []));
+      if (!data || data.length < pageSize) break;
+    }
+    return rows;
   },
 
   getDetails: async (receiptId: string) => {
@@ -37,14 +43,18 @@ export const purchases = {
 
     if (countError) throw countError;
 
-    const { data: totalData, error: totalError } = await supabase
-      .from('purchase_receipts')
-      .select('invoice_total')
-      .eq('store_id', storeId);
-
-    if (totalError) throw totalError;
-
-    const totalValue = totalData?.reduce((sum: number, r: any) => sum + (r.invoice_total || 0), 0) || 0;
+    let totalValue = 0;
+    const pageSize = 1000;
+    for (let from = 0; ; from += pageSize) {
+      const { data, error: totalError } = await supabase
+        .from('purchase_receipts')
+        .select('invoice_total')
+        .eq('store_id', storeId)
+        .range(from, from + pageSize - 1);
+      if (totalError) throw totalError;
+      totalValue += data?.reduce((sum: number, r: any) => sum + (r.invoice_total || 0), 0) || 0;
+      if (!data || data.length < pageSize) break;
+    }
 
     const { count: draftCount, error: draftError } = await supabase
       .from('purchase_receipts')

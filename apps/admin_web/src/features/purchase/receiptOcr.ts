@@ -30,7 +30,16 @@ export function parseReceiptFilename(
   supplier: ReceiptOcrSupplier | null;
   invoiceTotal: string | null;
 } {
-  const cleanName = decodeURIComponent(name).replace(/\.[a-zA-Z0-9]+$/, '').trim();
+  let decodedName = name;
+  try {
+    decodedName = decodeURIComponent(name);
+  } catch {
+    // Browser-provided filenames can contain literal, unescaped percent signs.
+  }
+  const cleanName = decodedName.replace(/\.[a-zA-Z0-9]+$/, '').trim();
+  if (/^(?:receipt|image|photo|scan|screenshot)(?:[\s_-]+(?:photo|image|scan))?$/i.test(cleanName)) {
+    return { invoiceNumber: null, invoiceDate: null, supplier: null, invoiceTotal: null };
+  }
 
   // Pattern: [Invoice] [Date] [Supplier] [Amount]
   // Accepts hyphens (-), underscores (_), slashes (/), or spaces as separators
@@ -40,7 +49,7 @@ export function parseReceiptFilename(
 
   if (match) {
     const invoiceNumber = match[1].toUpperCase();
-    const invoiceDate = match[2];
+    const invoiceDate = normalizeFilenameDate(match[2]);
     const rawSupplierName = match[3].trim();
     const invoiceTotal = match[4];
 
@@ -54,6 +63,10 @@ export function parseReceiptFilename(
       supplier: matchedSupplier,
       invoiceTotal,
     };
+  }
+
+  if (/^(?:receipt|image|photo|scan|screenshot)(?:$|[\s_-])/i.test(cleanName)) {
+    return { invoiceNumber: null, invoiceDate: null, supplier: null, invoiceTotal: null };
   }
 
   // Fallback: tokenize and identify parts
@@ -71,7 +84,7 @@ export function parseReceiptFilename(
   // Extract date
   const dateMatch = cleanName.match(/([0-9]{1,4}[/_.-][0-9]{1,2}[/_.-][0-9]{1,4})/);
   if (dateMatch) {
-    invoiceDate = dateMatch[1];
+    invoiceDate = normalizeFilenameDate(dateMatch[1]);
   }
 
   // Extract invoice (first alphanumeric word e.g. LS69)
@@ -88,7 +101,7 @@ export function parseReceiptFilename(
     }
   }
 
-  if (!supplier) {
+  if (!supplier && (invoiceDate || invoiceTotal)) {
     // Strip matched numbers and invoice, keep remaining letters as supplier name
     let rest = cleanName;
     if (invoiceNumber) rest = rest.replace(new RegExp('^' + invoiceNumber, 'i'), '');
@@ -101,6 +114,20 @@ export function parseReceiptFilename(
   }
 
   return { invoiceNumber, invoiceDate, supplier, invoiceTotal };
+}
+
+function normalizeFilenameDate(value: string): string {
+  const parts = value.split(/[\/.\-_]/).map(Number);
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return value;
+  let year: number, month: number, day: number;
+  if (parts[0] >= 1000) [year, month, day] = parts;
+  else if (parts[2] >= 1000) [day, month, year] = parts;
+  else {
+    [day, month] = parts;
+    year = parts[2] >= 70 ? 1900 + parts[2] : 2000 + parts[2];
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) return value;
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 export function toGoogleDriveDownloadUrl(value: string): string | null {
@@ -326,9 +353,11 @@ export async function scanReceiptImage(
 
   if (typeof source === 'string') {
     try {
+      const sourceUrl = new URL(source);
+      if (sourceUrl.protocol !== 'https:') throw new Error('Receipt image URLs must use HTTPS.');
       const response = await fetch(source, {
         method: 'GET',
-        redirect: 'follow',
+        redirect: 'error',
       });
 
       if (!response.ok) {
@@ -357,7 +386,12 @@ export async function scanReceiptImage(
 
   const processedSource = await preprocessImageForOcr(imageSource);
 
+  const ocrAssetBase = new URL(`${import.meta.env.BASE_URL}ocr/`, window.location.origin).href;
   const worker = await createWorker(['eng', 'ben'], undefined, {
+    workerPath: `${ocrAssetBase}worker.min.js`,
+    corePath: `${ocrAssetBase}core/`,
+    langPath: `${ocrAssetBase}lang`,
+    gzip: true,
     logger: (m) => {
       if (onProgress && m.status) {
         onProgress(Math.round((m.progress || 0) * 100), m.status);

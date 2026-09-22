@@ -201,11 +201,7 @@ export interface FindOrCreateItemInput {
   brand?: string | null;
   /** Preferred database-column spelling for new callers. */
   category_id?: string | null;
-  /** @deprecated Use category_id. Kept for existing callers. */
-  categoryId?: string | null;
   image_url?: string | null;
-  /** @deprecated Use image_url. Kept for existing callers. */
-  imageUrl?: string | null;
 }
 
 export interface ItemSummary {

@@ -40,7 +40,7 @@ interface PurchaseReceipt {
 
 function getReceiptMetadata(notes: string | null) {
   const invoiceDate = notes?.match(/(?:^|\n)Invoice Date:\s*(\d{4}-\d{2}-\d{2})/)?.[1] || null;
-  const imageUrl = notes?.match(/(?:^|\n)Receipt Image:\s*(https?:\/\/\S+)/)?.[1] || null;
+  const imageUrl = notes?.match(/(?:^|\n)Receipt Image:\s*(https:\/\/\S+)/)?.[1] || null;
   return { invoiceDate, imageUrl };
 }
 
