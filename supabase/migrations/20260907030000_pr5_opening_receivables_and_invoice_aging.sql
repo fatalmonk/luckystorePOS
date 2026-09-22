@@ -1,18 +1,8 @@
 -- Migration: 20260907030000_pr5_opening_receivables_and_invoice_aging.sql
--- Description: PR 5 - Opening Receivables, Invoice Terms & Aging
---              1. Alter public.sales:
---                 - Add customer_id (FK to public.parties)
---                 - Add invoice_date, due_date, credit_terms_days, credit_status
---                 - Add performance indexes
---              2. Create public.sale_payment_allocations table & RLS policies.
---              3. Opening Receivable Documents:
---                 - Generates opening invoices for pre-existing ledger-only customer balances.
---                 - Asserts 1:1 match between sum of open receivables and GL AR control account.
---              4. Payment-to-Invoice Allocation Engine:
---                 - allocate_payment_to_invoices (FIFO application to open invoices).
---              5. Invoice Aging Report RPC:
---                 - get_invoice_aging_report (multi-tenant, bucketed: current, 1-30, 31-60, 61-90, 90+).
---              6. Grant matrix: authenticated, service_role.
+-- Description: PR 5 - invoice terms, allocation engine, and aging RPC.
+-- Opening-receivable data conversion is intentionally separated into the next
+-- migration so large datasets are handled set-wise and ambiguous store
+-- attribution can fail closed before any rows are written.
 
 -- ============================================================================
 -- 1. EXTEND PUBLIC.SALES WITH INVOICE & CREDIT TERMS COLUMNS
@@ -25,25 +15,18 @@ ALTER TABLE public.sales
     ADD COLUMN IF NOT EXISTS credit_terms_days INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS credit_status TEXT DEFAULT 'PAID';
 
--- Add check constraint for credit_status
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint
-        WHERE conname = 'chk_sales_credit_status'
+        SELECT 1 FROM pg_constraint WHERE conname = 'chk_sales_credit_status'
     ) THEN
         ALTER TABLE public.sales
         ADD CONSTRAINT chk_sales_credit_status
         CHECK (credit_status IN ('PAID', 'PARTIALLY_PAID', 'UNPAID', 'OVERDUE'));
     END IF;
-END $$;
 
--- Add check constraint for credit_terms_days
-DO $$
-BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint
-        WHERE conname = 'chk_sales_credit_terms_days'
+        SELECT 1 FROM pg_constraint WHERE conname = 'chk_sales_credit_terms_days'
     ) THEN
         ALTER TABLE public.sales
         ADD CONSTRAINT chk_sales_credit_terms_days
@@ -51,7 +34,6 @@ BEGIN
     END IF;
 END $$;
 
--- Backfill default dates on existing sales where null
 UPDATE public.sales
 SET invoice_date = COALESCE(invoice_date, created_at::date, CURRENT_DATE),
     due_date = COALESCE(due_date, created_at::date, CURRENT_DATE),
@@ -59,7 +41,6 @@ SET invoice_date = COALESCE(invoice_date, created_at::date, CURRENT_DATE),
     credit_status = COALESCE(credit_status, 'PAID')
 WHERE invoice_date IS NULL OR due_date IS NULL OR credit_status IS NULL;
 
--- Make invoice_date and due_date NOT NULL with defaults
 ALTER TABLE public.sales
     ALTER COLUMN invoice_date SET DEFAULT CURRENT_DATE,
     ALTER COLUMN invoice_date SET NOT NULL,
@@ -68,16 +49,15 @@ ALTER TABLE public.sales
     ALTER COLUMN credit_status SET DEFAULT 'PAID',
     ALTER COLUMN credit_status SET NOT NULL;
 
--- Indexes for invoice lookups and aging
-CREATE INDEX IF NOT EXISTS idx_sales_customer_id 
+CREATE INDEX IF NOT EXISTS idx_sales_customer_id
     ON public.sales (customer_id);
-CREATE INDEX IF NOT EXISTS idx_sales_credit_status 
+CREATE INDEX IF NOT EXISTS idx_sales_credit_status
     ON public.sales (credit_status) WHERE credit_status != 'PAID';
-CREATE INDEX IF NOT EXISTS idx_sales_due_date 
+CREATE INDEX IF NOT EXISTS idx_sales_due_date
     ON public.sales (due_date);
-CREATE INDEX IF NOT EXISTS idx_sales_store_credit_status 
+CREATE INDEX IF NOT EXISTS idx_sales_store_credit_status
     ON public.sales (store_id, credit_status);
-CREATE INDEX IF NOT EXISTS idx_sales_invoice_date 
+CREATE INDEX IF NOT EXISTS idx_sales_invoice_date
     ON public.sales (invoice_date);
 
 -- ============================================================================
@@ -94,11 +74,11 @@ CREATE TABLE IF NOT EXISTS public.sale_payment_allocations (
     notes TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_sale_payment_allocations_sale 
+CREATE INDEX IF NOT EXISTS idx_sale_payment_allocations_sale
     ON public.sale_payment_allocations (sale_id);
-CREATE INDEX IF NOT EXISTS idx_sale_payment_allocations_payment 
+CREATE INDEX IF NOT EXISTS idx_sale_payment_allocations_payment
     ON public.sale_payment_allocations (payment_id);
-CREATE INDEX IF NOT EXISTS idx_sale_payment_allocations_batch 
+CREATE INDEX IF NOT EXISTS idx_sale_payment_allocations_batch
     ON public.sale_payment_allocations (ledger_batch_id);
 
 ALTER TABLE public.sale_payment_allocations ENABLE ROW LEVEL SECURITY;
@@ -151,23 +131,28 @@ BEGIN
         );
     END IF;
 
-    -- Iterate through open invoices for this customer in FIFO order (oldest due_date first)
     FOR v_sale IN
-        SELECT 
+        SELECT
             s.id,
             s.sale_number,
             s.total_amount,
             s.due_date,
-            COALESCE(SUM(spa.allocated_amount), 0) AS total_paid
+            COALESCE((
+                SELECT SUM(spa.allocated_amount)
+                FROM public.sale_payment_allocations spa
+                WHERE spa.sale_id = s.id
+            ), 0) AS total_paid
         FROM public.sales s
         JOIN public.stores st ON st.id = s.store_id
-        LEFT JOIN public.sale_payment_allocations spa ON spa.sale_id = s.id
         WHERE s.customer_id = p_party_id
           AND st.tenant_id = p_tenant_id
           AND s.credit_status != 'PAID'
-        GROUP BY s.id, s.sale_number, s.total_amount, s.due_date
-        HAVING s.total_amount > COALESCE(SUM(spa.allocated_amount), 0)
-        ORDER BY s.due_date ASC, s.created_at ASC
+          AND s.total_amount > COALESCE((
+              SELECT SUM(spa2.allocated_amount)
+              FROM public.sale_payment_allocations spa2
+              WHERE spa2.sale_id = s.id
+          ), 0)
+        ORDER BY s.due_date ASC, s.created_at ASC, s.id ASC
         FOR UPDATE OF s
     LOOP
         EXIT WHEN v_remaining <= 0;
@@ -177,16 +162,9 @@ BEGIN
 
         IF v_alloc_amount > 0 THEN
             INSERT INTO public.sale_payment_allocations (
-                sale_id,
-                payment_id,
-                ledger_batch_id,
-                allocated_amount,
-                notes
+                sale_id, payment_id, ledger_batch_id, allocated_amount, notes
             ) VALUES (
-                v_sale.id,
-                p_payment_id,
-                p_ledger_batch_id,
-                v_alloc_amount,
+                v_sale.id, p_payment_id, p_ledger_batch_id, v_alloc_amount,
                 'FIFO payment allocation'
             );
 
@@ -194,18 +172,13 @@ BEGIN
             v_allocated_total := v_allocated_total + v_alloc_amount;
             v_invoice_count := v_invoice_count + 1;
 
-            -- Update sale credit_status
-            IF (v_sale.total_paid + v_alloc_amount) >= v_sale.total_amount THEN
-                UPDATE public.sales
-                SET credit_status = 'PAID',
-                    updated_at = now()
-                WHERE id = v_sale.id;
-            ELSE
-                UPDATE public.sales
-                SET credit_status = 'PARTIALLY_PAID',
-                    updated_at = now()
-                WHERE id = v_sale.id;
-            END IF;
+            UPDATE public.sales
+            SET credit_status = CASE
+                    WHEN (v_sale.total_paid + v_alloc_amount) >= v_sale.total_amount THEN 'PAID'
+                    ELSE 'PARTIALLY_PAID'
+                END,
+                updated_at = now()
+            WHERE id = v_sale.id;
 
             v_allocations := v_allocations || jsonb_build_object(
                 'sale_id', v_sale.id,
@@ -230,160 +203,11 @@ REVOKE ALL ON FUNCTION public.allocate_payment_to_invoices(UUID, UUID, NUMERIC, 
 GRANT EXECUTE ON FUNCTION public.allocate_payment_to_invoices(UUID, UUID, NUMERIC, UUID, UUID) TO authenticated, service_role;
 
 -- ============================================================================
--- 4. OPENING RECEIVABLE DOCUMENTS GENERATION & 1:1 RECONCILIATION
+-- 4. OPENING RECEIVABLE DATA MIGRATION
 -- ============================================================================
-
-DO $$
-DECLARE
-    r_cust RECORD;
-    v_open_sales_balance NUMERIC(12,2);
-    v_opening_amount NUMERIC(12,2);
-    v_store_id UUID;
-    v_cashier_id UUID;
-    v_sale_id UUID;
-    v_created_invoices INTEGER := 0;
-    v_total_opening_ar NUMERIC(12,2) := 0;
-    v_party_store_expression text;
-    v_party_type_expression text;
-BEGIN
-    -- Loop over customer parties that have an active positive balance in parties
-    -- `parties.store_id` is optional in older database histories. Preserve it
-    -- where present and otherwise resolve the tenant's earliest store below.
-    v_party_store_expression := CASE
-        WHEN EXISTS (
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'parties'
-              AND column_name = 'store_id'
-        ) THEN 'p.store_id'
-        ELSE 'NULL::uuid'
-    END;
-
-    -- The canonical `party_type` name was introduced after some historical
-    -- deployments, which still expose the legacy `type` column.
-    v_party_type_expression := CASE
-        WHEN EXISTS (
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'parties'
-              AND column_name = 'party_type'
-        ) THEN 'p.party_type'
-        WHEN EXISTS (
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'parties'
-              AND column_name = 'type'
-        ) THEN 'p.type'
-        ELSE NULL
-    END;
-
-    IF v_party_type_expression IS NULL THEN
-        RAISE EXCEPTION 'public.parties requires party_type or legacy type';
-    END IF;
-
-    FOR r_cust IN EXECUTE format(
-        'SELECT p.id, p.tenant_id, %s AS store_id, p.name, p.current_balance, p.created_at
-         FROM public.parties p
-         WHERE %s = ''customer''
-           AND p.current_balance > 0',
-        v_party_store_expression,
-        v_party_type_expression
-    )
-    LOOP
-        -- Calculate existing unallocated open sales for this customer
-        SELECT COALESCE(SUM(s.total_amount - COALESCE(alloc.paid, 0)), 0)
-        INTO v_open_sales_balance
-        FROM public.sales s
-        LEFT JOIN (
-            SELECT sale_id, SUM(allocated_amount) AS paid
-            FROM public.sale_payment_allocations
-            GROUP BY sale_id
-        ) alloc ON alloc.sale_id = s.id
-        WHERE s.customer_id = r_cust.id
-          AND s.credit_status != 'PAID';
-
-        IF r_cust.current_balance > v_open_sales_balance THEN
-            v_opening_amount := ROUND(r_cust.current_balance - v_open_sales_balance, 2);
-
-            -- Resolve store
-            v_store_id := r_cust.store_id;
-            IF v_store_id IS NULL THEN
-                SELECT id INTO v_store_id
-                FROM public.stores
-                WHERE tenant_id = r_cust.tenant_id
-                ORDER BY created_at ASC
-                LIMIT 1;
-            END IF;
-
-            -- Resolve cashier/admin
-            SELECT id INTO v_cashier_id
-            FROM public.users
-            WHERE tenant_id = r_cust.tenant_id
-              AND role IN ('admin', 'manager')
-            ORDER BY created_at ASC
-            LIMIT 1;
-
-            IF v_store_id IS NOT NULL AND v_cashier_id IS NOT NULL THEN
-                INSERT INTO public.sales (
-                    store_id,
-                    cashier_id,
-                    customer_id,
-                    sale_number,
-                    status,
-                    subtotal,
-                    discount_amount,
-                    total_amount,
-                    amount_tendered,
-                    change_due,
-                    payment_method,
-                    credit_terms_days,
-                    invoice_date,
-                    due_date,
-                    credit_status,
-                    accounting_posting_status,
-                    notes
-                ) VALUES (
-                    v_store_id,
-                    v_cashier_id,
-                    r_cust.id,
-                    'OPEN-AR-' || SUBSTRING(REPLACE(r_cust.id::text, '-', ''), 1, 8),
-                    'completed',
-                    v_opening_amount,
-                    0,
-                    v_opening_amount,
-                    0,
-                    0,
-                    'Credit',
-                    30,
-                    r_cust.created_at::date,
-                    (r_cust.created_at::date + interval '30 days')::date,
-                    'UNPAID',
-                    'POSTED',
-                    'Opening Accounts Receivable document migrated from general ledger'
-                )
-                ON CONFLICT (sale_number) DO UPDATE
-                SET total_amount = EXCLUDED.total_amount,
-                    subtotal = EXCLUDED.subtotal
-                RETURNING id INTO v_sale_id;
-
-                v_created_invoices := v_created_invoices + 1;
-                v_total_opening_ar := v_total_opening_ar + v_opening_amount;
-            END IF;
-        END IF;
-    END LOOP;
-
-    RAISE NOTICE 'Opening AR Migration: Created/updated % opening receivable invoices totaling % BDT',
-        v_created_invoices, v_total_opening_ar;
-END $$;
-
--- Update status for any unpaid sales past their due date
-UPDATE public.sales
-SET credit_status = 'OVERDUE'
-WHERE credit_status IN ('UNPAID', 'PARTIALLY_PAID')
-  AND due_date < CURRENT_DATE;
+-- Deliberately deferred to 20260907030100_backfill_opening_receivables_set_based.sql.
+-- Keeping schema/RPC installation separate makes the data phase restartable and
+-- prevents an unbounded procedural loop from holding one migration transaction.
 
 -- ============================================================================
 -- 5. GET_INVOICE_AGING_REPORT RPC
@@ -418,7 +242,6 @@ DECLARE
     r RECORD;
     r_cust RECORD;
 BEGIN
-    -- 1. Authentication Check
     IF NOT v_is_service_role THEN
         IF v_auth_uid IS NULL THEN
             RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
@@ -433,12 +256,9 @@ BEGIN
         END IF;
     END IF;
 
-    -- 2. Build Invoice-Level Aging Records
     FOR r IN
         WITH invoice_payments AS (
-            SELECT 
-                sale_id,
-                COALESCE(SUM(allocated_amount), 0) AS paid_amount
+            SELECT sale_id, COALESCE(SUM(allocated_amount), 0) AS paid_amount
             FROM public.sale_payment_allocations
             GROUP BY sale_id
         )
@@ -517,12 +337,9 @@ BEGIN
         );
     END LOOP;
 
-    -- 3. Customer Aggregation
     FOR r_cust IN
         WITH invoice_payments AS (
-            SELECT 
-                sale_id,
-                COALESCE(SUM(allocated_amount), 0) AS paid_amount
+            SELECT sale_id, COALESCE(SUM(allocated_amount), 0) AS paid_amount
             FROM public.sale_payment_allocations
             GROUP BY sale_id
         ),
