@@ -57,10 +57,19 @@ type PurchaseDraftSnapshot = {
   invoiceTotal: string;
   lines: ReceiptLine[];
   amountPaid: string;
+  paymentMethod: PaymentMethod;
   itemSearch: string;
   quickQty: number;
   quickCost: string;
   pendingOcrItems: PendingOcrItem[];
+};
+
+type PaymentMethod = 'Cash' | 'Bank transfer' | 'Bkash';
+
+type Account = {
+  id: string;
+  name: string;
+  type: string;
 };
 
 export const PurchaseEntryPage: React.FC = () => {
@@ -74,6 +83,7 @@ export const PurchaseEntryPage: React.FC = () => {
   const [invoiceTotal, setInvoiceTotal] = useState('');
   const [lines, setLines] = useState<ReceiptLine[]>([]);
   const [amountPaid, setAmountPaid] = useState('0');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
 
   // Item search
   const [itemSearch, setItemSearch] = useState('');
@@ -139,6 +149,9 @@ export const PurchaseEntryPage: React.FC = () => {
         if (typeof draft.invoiceTotal === 'string') setInvoiceTotal(draft.invoiceTotal);
         if (Array.isArray(draft.lines)) setLines(draft.lines);
         if (typeof draft.amountPaid === 'string') setAmountPaid(draft.amountPaid);
+        if (draft.paymentMethod === 'Cash' || draft.paymentMethod === 'Bank transfer' || draft.paymentMethod === 'Bkash') {
+          setPaymentMethod(draft.paymentMethod);
+        }
         if (typeof draft.itemSearch === 'string') setItemSearch(draft.itemSearch);
         if (typeof draft.quickQty === 'number' && Number.isFinite(draft.quickQty)) setQuickQty(draft.quickQty);
         if (typeof draft.quickCost === 'string') setQuickCost(draft.quickCost);
@@ -168,6 +181,7 @@ export const PurchaseEntryPage: React.FC = () => {
       invoiceTotal,
       lines,
       amountPaid,
+      paymentMethod,
       itemSearch,
       quickQty,
       quickCost,
@@ -177,7 +191,7 @@ export const PurchaseEntryPage: React.FC = () => {
     try {
       const hasWork = Boolean(
         supplierSearch || selectedSupplier || invoiceNumber || invoiceDate || invoiceTotal ||
-        lines.length || pendingOcrItems.length || itemSearch || quickCost || amountPaid !== '0',
+        lines.length || pendingOcrItems.length || itemSearch || quickCost || amountPaid !== '0' || paymentMethod !== 'Cash',
       );
       if (hasWork) {
         window.localStorage.setItem(purchaseDraftKey, JSON.stringify(snapshot));
@@ -187,7 +201,7 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       // Local draft recovery is best-effort and must never block receiving.
     }
-  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, pendingOcrItems, purchaseDraftKey, quickCost, quickQty, selectedSupplier, supplierSearch]);
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, quickCost, quickQty, selectedSupplier, supplierSearch]);
 
   // Outside-click ref for supplier combobox
   const supplierComboRef = useRef<HTMLDivElement>(null);
@@ -246,6 +260,36 @@ export const PurchaseEntryPage: React.FC = () => {
       return (data || []) as Category[];
     },
   });
+
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['purchase-accounts', tenantId],
+    enabled: Boolean(tenantId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, name, type')
+        .eq('tenant_id', tenantId!)
+        .order('name');
+      if (error) throw error;
+      return (data || []) as Account[];
+    },
+  });
+
+  const payableAccount = accounts.find(account => account.name.toLowerCase() === 'accounts payable');
+  const paymentAccount = useMemo(() => {
+    const normalized = accounts
+      .filter(account => account.type === 'asset')
+      .map(account => ({ ...account, normalizedName: account.name.trim().toLowerCase() }));
+    if (paymentMethod === 'Cash') {
+      return normalized.find(account => account.normalizedName === 'cash on hand' || account.normalizedName === 'cash');
+    }
+    if (paymentMethod === 'Bank transfer') {
+      return normalized.find(account => account.normalizedName.includes('bank') || account.normalizedName.includes('transfer'));
+    }
+    return normalized.find(account => account.normalizedName.includes('bkash') || account.normalizedName.includes('mobile banking'));
+  }, [accounts, paymentMethod]);
+
+  const paymentAccountId = paymentAccount?.id || '';
 
   const categoryOptions = useMemo(() => {
     const childrenByParent = new Map<string, Category[]>();
@@ -520,6 +564,14 @@ export const PurchaseEntryPage: React.FC = () => {
     if (lines.length === 0) { setError('Add at least one item'); return; }
     if (hasIncompleteLines) { setError('Complete category and selling price for every receipt line before posting'); return; }
     if (paid > totalCost) { setError('Amount paid cannot exceed total cost'); return; }
+    if (!asDraft && paid > 0 && !paymentAccountId) {
+      setError(`${paymentMethod} account is not configured for this tenant`);
+      return;
+    }
+    if (!asDraft && payable > 0 && !payableAccount?.id) {
+      setError('Accounts Payable account is not configured for this tenant');
+      return;
+    }
 
     setLoading(true);
     const itemsJson = lines.map(l => ({
@@ -537,6 +589,8 @@ export const PurchaseEntryPage: React.FC = () => {
       p_invoice_total: invoiceTotal ? parseFloat(invoiceTotal) : null,
       p_items: itemsJson,
       p_amount_paid: paid,
+      p_payment_account_id: paid > 0 ? paymentAccountId : null,
+      p_payable_account_id: payable > 0 ? payableAccount.id : null,
       p_status: asDraft ? 'draft' : 'posted',
       p_notes: invoiceDate ? `Invoice Date: ${invoiceDate}` : null,
     });
@@ -559,6 +613,7 @@ export const PurchaseEntryPage: React.FC = () => {
       setInvoiceTotal('');
       setLines([]);
       setAmountPaid('0');
+      setPaymentMethod('Cash');
     }
   };
 
@@ -908,7 +963,18 @@ export const PurchaseEntryPage: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="cash-paid" className="block text-text-muted mb-1 font-medium">Cash Paid Now (৳)</label>
+                <label htmlFor="payment-method" className="block text-text-muted mb-1 font-medium">Payment Method</label>
+                <select
+                  id="payment-method"
+                  value={paymentMethod}
+                  onChange={e => setPaymentMethod(e.target.value as PaymentMethod)}
+                  className="input w-full mb-3"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Bank transfer">Bank Transfer</option>
+                  <option value="Bkash">bKash</option>
+                </select>
+                <label htmlFor="cash-paid" className="block text-text-muted mb-1 font-medium">Paid Now (৳)</label>
                 <input
                   id="cash-paid"
                   type="number"
