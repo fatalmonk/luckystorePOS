@@ -2,6 +2,9 @@
 -- exists but the physical table is absent or retains its legacy global key.
 -- The canonical identity is tenant-scoped: the same idempotency key may be
 -- used independently by different tenants.
+--
+-- The preceding phases normalize columns and build the composite candidate
+-- index CONCURRENTLY. This phase only performs short metadata/constraint locks.
 
 CREATE TABLE IF NOT EXISTS public.idempotency_keys (
   tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
@@ -17,8 +20,6 @@ DO $migration$
 DECLARE
   v_constraint_name text;
 BEGIN
-  -- Bring older physical tables up to the state-machine contract without
-  -- assuming which subset of the historical migrations actually ran.
   ALTER TABLE public.idempotency_keys
     ADD COLUMN IF NOT EXISTS tenant_id uuid,
     ADD COLUMN IF NOT EXISTS idempotency_key text,
@@ -52,8 +53,8 @@ BEGIN
     ALTER COLUMN idempotency_key SET NOT NULL,
     ALTER COLUMN status SET NOT NULL;
 
-  -- A historical primary/unique key on idempotency_key alone rejects the same
-  -- key across tenants. Remove only those global key constraints.
+  -- Drop legacy global key constraints only after the tenant-scoped candidate
+  -- index has been built and validated by PostgreSQL in the prior migration.
   FOR v_constraint_name IN
     SELECT c.conname
     FROM pg_constraint AS c
@@ -80,7 +81,8 @@ BEGIN
       AND contype = 'p'
   ) THEN
     ALTER TABLE public.idempotency_keys
-      ADD CONSTRAINT idempotency_keys_pkey PRIMARY KEY (tenant_id, idempotency_key);
+      ADD CONSTRAINT idempotency_keys_pkey
+      PRIMARY KEY USING INDEX idx_idempotency_keys_tenant_pkey_prepared;
   END IF;
 
   IF NOT EXISTS (
