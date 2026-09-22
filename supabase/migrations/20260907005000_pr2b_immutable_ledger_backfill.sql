@@ -61,26 +61,42 @@ ON CONFLICT (remediation_id, ledger_entry_id) DO NOTHING;
 -- ============================================================================
 -- 3. CONTROLLED MAINTENANCE BACKFILL TRANSACTION & CONSTRAINT VALIDATION
 -- ============================================================================
+
+-- Temporarily make the immutability trigger maintenance-aware.
+-- This avoids ALTER TABLE ... DISABLE TRIGGER, which PostgreSQL rejects when
+-- deferred trigger events are pending. The replacement is transactional: if
+-- this migration fails, PostgreSQL restores the original function definition.
+CREATE OR REPLACE FUNCTION public.prevent_ledger_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF current_setting('app.ledger_maintenance', true) = 'on' THEN
+    IF TG_OP = 'DELETE' THEN
+      RETURN OLD;
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  RAISE EXCEPTION 'Ledger is immutable once posted';
+END;
+$$;
+
 DO $$
 DECLARE
   v_expected integer;
   v_actual integer;
 BEGIN
-  -- 1. Read expected count from manifest
-  SELECT COUNT(*) INTO v_expected 
-  FROM _remediation.remediation_manifest 
+  SELECT COUNT(*)
+  INTO v_expected
+  FROM _remediation.remediation_manifest
   WHERE remediation_id = 'RUN_20260906_BACKFILL';
 
-  -- Only perform update if divergent rows exist
   IF v_expected > 0 THEN
-    -- Lock table in SHARE ROW EXCLUSIVE MODE to prevent concurrent writes
     LOCK TABLE public.ledger_entries IN SHARE ROW EXCLUSIVE MODE;
 
-    -- Temporarily disable immutability trigger for this transaction
-    ALTER TABLE public.ledger_entries
-    DISABLE TRIGGER trg_prevent_ledger_entries_mutation;
+    PERFORM set_config('app.ledger_maintenance', 'on', true);
 
-    -- Synchronize debit_amount and credit_amount strictly to manifest rows
     UPDATE public.ledger_entries le
     SET
       debit_amount = le.debit,
@@ -95,17 +111,30 @@ BEGIN
 
     GET DIAGNOSTICS v_actual = ROW_COUNT;
 
-    -- Re-enable immutability trigger immediately
-    ALTER TABLE public.ledger_entries
-    ENABLE TRIGGER trg_prevent_ledger_entries_mutation;
+    PERFORM set_config('app.ledger_maintenance', 'off', true);
 
-    -- Strict verification gate
     IF v_actual != v_expected THEN
-      RAISE EXCEPTION 'Backfill count mismatch: expected %, updated %; rolling back', v_expected, v_actual;
+      RAISE EXCEPTION
+        'Backfill count mismatch: expected %, updated %; rolling back',
+        v_expected,
+        v_actual;
     END IF;
+
+    -- Flush deferred ledger constraint-trigger events before ALTER TABLE.
+    EXECUTE 'SET CONSTRAINTS ALL IMMEDIATE';
   END IF;
 
-  -- 2. Validate CHECK constraint now that all rows are guaranteed in sync
   ALTER TABLE public.ledger_entries
-  VALIDATE CONSTRAINT chk_ledger_entries_debit_credit_sync;
-END $$;
+    VALIDATE CONSTRAINT chk_ledger_entries_debit_credit_sync;
+END
+$$;
+
+-- Restore strict ledger immutability after maintenance.
+CREATE OR REPLACE FUNCTION public.prevent_ledger_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'Ledger is immutable once posted';
+END;
+$$;
