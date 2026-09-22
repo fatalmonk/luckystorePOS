@@ -47,8 +47,10 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
+export const createDbClient = () => new Client({ connectionString: dbUrl });
+
 export const runSql = async (sql: string, params: any[] = []) => {
-  const client = new Client({ connectionString: dbUrl });
+  const client = createDbClient();
   await client.connect();
   try {
     const res = await client.query(sql, params);
