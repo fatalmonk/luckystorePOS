@@ -23,7 +23,13 @@ DECLARE
   v_store_tenant_id uuid;
   v_is_public_storefront boolean;
 BEGIN
-  SELECT tenant_id, (metadata->>'is_public_storefront')::boolean
+  SELECT
+    tenant_id,
+    CASE
+      WHEN jsonb_typeof(metadata->'is_public_storefront') = 'boolean'
+        THEN (metadata->>'is_public_storefront')::boolean
+      ELSE false
+    END
     INTO v_store_tenant_id, v_is_public_storefront
   FROM public.stores
   WHERE id = p_store_id;
@@ -32,7 +38,6 @@ BEGIN
     RAISE EXCEPTION 'Store not found' USING ERRCODE = '42501';
   END IF;
 
-  -- Fail closed: absent metadata is private.
   IF v_is_public_storefront IS NOT TRUE THEN
     RAISE EXCEPTION 'Store not accessible to anonymous users' USING ERRCODE = '42501';
   END IF;
@@ -89,7 +94,6 @@ BEGIN
     RAISE EXCEPTION 'Access denied: store belongs to different tenant' USING ERRCODE = '42501';
   END IF;
 
-  -- NULL assignment is not a wildcard.
   IF v_user.role = 'cashier' AND v_user.store_id IS DISTINCT FROM p_store_id THEN
     RAISE EXCEPTION 'Access denied: cashier not assigned to this store' USING ERRCODE = '42501';
   END IF;
@@ -116,8 +120,6 @@ GRANT EXECUTE ON FUNCTION public.lookup_item_by_scan(text, uuid) TO authenticate
 -- P0.2: preserve the five-argument FIFO allocator and add authorization
 -- ============================================================================
 
--- Remove only the broken experimental overload if it was created by an earlier
--- replay. Never CASCADE-drop the production five-argument allocator.
 DROP FUNCTION IF EXISTS public.allocate_payment_to_invoices(uuid, uuid);
 
 CREATE OR REPLACE FUNCTION public.allocate_payment_to_invoices(
@@ -135,6 +137,7 @@ AS $$
 DECLARE
   v_is_service_role boolean := COALESCE(auth.jwt()->>'role', '') = 'service_role';
   v_user_tenant_id uuid;
+  v_user_role text;
   v_party_tenant_id uuid;
   v_remaining numeric(12,2) := ROUND(p_payment_amount, 2);
   v_sale record;
@@ -149,12 +152,20 @@ BEGIN
       RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
     END IF;
 
-    SELECT tenant_id INTO v_user_tenant_id
+    SELECT tenant_id, role
+      INTO v_user_tenant_id, v_user_role
     FROM public.users
     WHERE auth_id = auth.uid();
 
     IF v_user_tenant_id IS DISTINCT FROM p_tenant_id THEN
       RAISE EXCEPTION 'Access denied: caller not in target tenant' USING ERRCODE = '42501';
+    END IF;
+
+    -- Allocation can mutate multiple invoices/stores for one customer, so it is
+    -- a tenant-level financial operation. Store-scoped cashier authorization is
+    -- insufficient; only tenant managers/admins may invoke it directly.
+    IF v_user_role NOT IN ('admin', 'manager') THEN
+      RAISE EXCEPTION 'Access denied: invoice allocation requires manager or admin role' USING ERRCODE = '42501';
     END IF;
   END IF;
 
@@ -198,8 +209,6 @@ BEGIN
     );
   END IF;
 
-  -- FIFO by due date, then creation time. The correlated allocation aggregate
-  -- keeps FOR UPDATE legal (the historical GROUP BY + FOR UPDATE shape does not).
   FOR v_sale IN
     SELECT
       s.id,
@@ -274,18 +283,11 @@ GRANT EXECUTE ON FUNCTION public.allocate_payment_to_invoices(uuid, uuid, numeri
 -- ============================================================================
 -- P0.3: party type compatibility
 -- ============================================================================
--- Keep both names during the compatibility window because existing payment RPCs
--- still read `type` while newer invoice code reads `party_type`.
+-- Keep both names during the compatibility window. Existing-row reconciliation
+-- is intentionally deferred to the next nontransactional batched migration.
 
 ALTER TABLE public.parties ADD COLUMN IF NOT EXISTS party_type text;
 ALTER TABLE public.parties ADD COLUMN IF NOT EXISTS type text;
-
-UPDATE public.parties
-SET party_type = COALESCE(party_type, type, 'customer'),
-    type = COALESCE(party_type, type, 'customer')
-WHERE party_type IS NULL
-   OR type IS NULL
-   OR party_type IS DISTINCT FROM type;
 
 CREATE OR REPLACE FUNCTION public.sync_party_type_columns()
 RETURNS trigger
@@ -323,8 +325,6 @@ FOR EACH ROW EXECUTE FUNCTION public.sync_party_type_columns();
 -- ============================================================================
 -- P1.1: tenant-scoped idempotency uniqueness/state contract
 -- ============================================================================
--- The unique constraint is attached in the immediately preceding phased
--- migrations after CREATE UNIQUE INDEX CONCURRENTLY. Do not rebuild it here.
 
 DO $$
 BEGIN
@@ -345,8 +345,6 @@ ALTER TABLE public.idempotency_keys
   ADD COLUMN IF NOT EXISTS completed_at timestamptz,
   ADD COLUMN IF NOT EXISTS locked_at timestamptz;
 
--- Any successful legacy caller that writes completion fields becomes terminal,
--- even if that caller predates the explicit status state machine.
 CREATE OR REPLACE FUNCTION public.normalize_idempotency_terminal_status()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -515,7 +513,7 @@ $$;
 
 REVOKE ALL ON FUNCTION public.check_idempotency(text, uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.check_idempotency_in_progress(text, uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.check_idempotency_complete(text, uuid, jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.check_idempotency_complete(text, uuid, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.check_idempotency(text, uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.check_idempotency_in_progress(text, uuid) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.check_idempotency_complete(text, uuid, jsonb) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.check_idempotency_complete(text, uuid, jsonb) TO service_role;
