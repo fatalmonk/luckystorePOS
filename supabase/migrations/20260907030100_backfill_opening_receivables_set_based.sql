@@ -1,7 +1,7 @@
 -- Phase 2 of the opening-receivables migration.
 --
 -- Recovery model:
---   * deterministic OPEN-AR-<party> sale numbers make this phase rerunnable;
+--   * deterministic OPEN-AR-<full-party-uuid> sale numbers make this rerunnable;
 --   * ON CONFLICT updates the derived opening amount instead of duplicating it;
 --   * all attribution is preflighted before INSERT, so ambiguous multi-store
 --     parties fail closed and leave no partial opening invoices.
@@ -30,7 +30,7 @@ BEGIN
       WHERE table_schema = 'public'
         AND table_name = 'parties'
         AND column_name = 'party_type'
-    ) THEN 'p.party_type'
+    ) THEN 'COALESCE(p.party_type, p.type)'
     WHEN EXISTS (
       SELECT 1 FROM information_schema.columns
       WHERE table_schema = 'public'
@@ -54,12 +54,14 @@ BEGIN
     open_sales AS (
       SELECT
         s.customer_id,
+        st.tenant_id,
         SUM(GREATEST(s.total_amount - COALESCE(a.paid, 0), 0)) AS open_balance
       FROM public.sales s
+      JOIN public.stores st ON st.id = s.store_id
       LEFT JOIN allocation_totals a ON a.sale_id = s.id
       WHERE s.customer_id IS NOT NULL
         AND s.credit_status <> 'PAID'
-      GROUP BY s.customer_id
+      GROUP BY s.customer_id, st.tenant_id
     ),
     tenant_stores AS (
       SELECT
@@ -89,7 +91,9 @@ BEGIN
       ROUND(p.current_balance - COALESCE(os.open_balance, 0), 2) AS opening_amount,
       ts.store_count
     FROM public.parties p
-    LEFT JOIN open_sales os ON os.customer_id = p.id
+    LEFT JOIN open_sales os
+      ON os.customer_id = p.id
+     AND os.tenant_id = p.tenant_id
     LEFT JOIN tenant_stores ts ON ts.tenant_id = p.tenant_id
     LEFT JOIN tenant_cashiers tc ON tc.tenant_id = p.tenant_id
     WHERE %s = 'customer'
@@ -151,7 +155,7 @@ BEGIN
     c.resolved_store_id,
     c.cashier_id,
     c.party_id,
-    'OPEN-AR-' || SUBSTRING(REPLACE(c.party_id::text, '-', ''), 1, 8),
+    'OPEN-AR-' || REPLACE(c.party_id::text, '-', ''),
     'completed',
     c.opening_amount,
     0,
@@ -172,11 +176,26 @@ BEGIN
   ON CONFLICT (sale_number) DO UPDATE
   SET store_id = EXCLUDED.store_id,
       cashier_id = EXCLUDED.cashier_id,
+      customer_id = EXCLUDED.customer_id,
       subtotal = EXCLUDED.subtotal,
       total_amount = EXCLUDED.total_amount,
       invoice_date = EXCLUDED.invoice_date,
       due_date = EXCLUDED.due_date,
       credit_status = EXCLUDED.credit_status,
       notes = EXCLUDED.notes;
+
+  -- Existing invoices can already be overdue when this migration runs. Keep
+  -- their status consistent with the same remaining-balance definition used by
+  -- the aging report and allocator.
+  UPDATE public.sales s
+  SET credit_status = 'OVERDUE',
+      updated_at = now()
+  WHERE s.due_date < CURRENT_DATE
+    AND s.credit_status IN ('UNPAID', 'PARTIALLY_PAID')
+    AND s.total_amount > COALESCE((
+      SELECT SUM(spa.allocated_amount)
+      FROM public.sale_payment_allocations spa
+      WHERE spa.sale_id = s.id
+    ), 0);
 END
 $backfill$;
