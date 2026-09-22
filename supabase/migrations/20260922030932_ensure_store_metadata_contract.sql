@@ -18,7 +18,13 @@ DECLARE
   v_store_tenant_id uuid;
   v_is_public_storefront boolean;
 BEGIN
-  SELECT tenant_id, (metadata->>'is_public_storefront')::boolean
+  SELECT
+    tenant_id,
+    CASE
+      WHEN jsonb_typeof(metadata->'is_public_storefront') = 'boolean'
+        THEN (metadata->>'is_public_storefront')::boolean
+      ELSE false
+    END
     INTO v_store_tenant_id, v_is_public_storefront
   FROM public.stores
   WHERE id = p_store_id;
@@ -27,7 +33,7 @@ BEGIN
     RAISE EXCEPTION 'Store not found' USING ERRCODE = '42501';
   END IF;
 
-  -- Missing, malformed-to-NULL, or false metadata must all remain private.
+  -- Missing, malformed, or false metadata all remain private.
   IF v_is_public_storefront IS NOT TRUE THEN
     RAISE EXCEPTION 'Store not accessible to anonymous users' USING ERRCODE = '42501';
   END IF;
