@@ -157,7 +157,9 @@ export default function OrderContent() {
 
   const handleShare = async () => {
     if (!order) return;
-    const shareUrl = `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}`;
+    const shareUrl = order.trackingToken
+      ? `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}#track=${encodeURIComponent(order.trackingToken)}`
+      : `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}`;
     try {
       if (navigator.share) {
         await navigator.share({

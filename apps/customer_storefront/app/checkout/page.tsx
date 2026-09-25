@@ -90,7 +90,7 @@ function CheckoutContent() {
   const getCheckoutIdentity = () => {
     const payloadSignature = JSON.stringify({
       total,
-      items: cart.map((i) => ({ id: i.id, qty: i.quantity, price: i.price })),
+      items: cart.map((i) => ({ id: i.id, qty: i.qty, price: i.price })),
     });
 
     if (
