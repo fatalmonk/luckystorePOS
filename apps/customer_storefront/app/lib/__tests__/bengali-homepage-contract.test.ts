@@ -168,6 +168,58 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(CATEGORY_GROUPS.map(({ slug }) => slug).filter((slug) => !BENGALI_CATEGORY_NAMES[slug])).toEqual([]);
   });
 
+  it('provides comprehensive checkout dictionary keys across all locales', () => {
+    const enDict = getDictionary('en');
+    const bnDict = getDictionary('bn');
+
+    // Ensure complete parity of checkout keys
+    const enKeys = Object.keys(enDict.checkout).sort();
+    const bnKeys = Object.keys(bnDict.checkout).sort();
+    expect(bnKeys).toEqual(enKeys);
+
+    // Verify all checkout labels have non-empty, localized values
+    expect(enDict.checkout.title).toBe('Checkout');
+    expect(bnDict.checkout.title).toBe('চেকআউট');
+    expect(enDict.checkout.yourInfo).toBe('Your Info');
+    expect(bnDict.checkout.yourInfo).toBe('আপনার তথ্য');
+    expect(enDict.checkout.review).toBe('Review');
+    expect(bnDict.checkout.review).toBe('অর্ডার পর্যালোচনা');
+    expect(enDict.checkout.fullName).toBe('Full Name');
+    expect(bnDict.checkout.fullName).toBe('আপনার নাম');
+    expect(enDict.checkout.mobileNumber).toBe('Mobile Number');
+    expect(bnDict.checkout.mobileNumber).toBe('মোবাইল নম্বর');
+    expect(enDict.checkout.deliveryAddress).toBe('Delivery Address');
+    expect(bnDict.checkout.deliveryAddress).toBe('ডেলিভারি ঠিকানা');
+    expect(enDict.checkout.deliveryNotes).toBe('Delivery Notes (Optional)');
+    expect(bnDict.checkout.deliveryNotes).toBe('ডেলিভারি সংক্রান্ত নোট (ঐচ্ছিক)');
+    expect(enDict.checkout.paymentMethod).toBe('Payment Method');
+    expect(bnDict.checkout.paymentMethod).toBe('পেমেন্ট পদ্ধতি');
+    expect(enDict.checkout.cashOnDelivery).toBe('Cash on Delivery');
+    expect(bnDict.checkout.cashOnDelivery).toBe('ক্যাশ অন ডেলিভারি');
+    expect(enDict.checkout.bKash).toBe('bKash');
+    expect(bnDict.checkout.bKash).toBe('বিকাশ (bKash)');
+    expect(enDict.checkout.confirmOrder).toBe('Confirm Order');
+    expect(bnDict.checkout.confirmOrder).toBe('অর্ডার নিশ্চিত করুন');
+    expect(enDict.checkout.placeOrder).toBe('Place Order');
+    expect(bnDict.checkout.placeOrder).toBe('অর্ডার সম্পন্ন করুন');
+    expect(enDict.checkout.orderSummary).toBe('Order Summary');
+    expect(bnDict.checkout.orderSummary).toBe('অর্ডারের বিবরণ');
+    expect(enDict.checkout.subtotal).toBe('Subtotal');
+    expect(bnDict.checkout.subtotal).toBe('মোট পণ্যের মূল্য');
+    expect(enDict.checkout.deliveryFee).toBe('Delivery Fee');
+    expect(bnDict.checkout.deliveryFee).toBe('ডেলিভারি চার্জ');
+    expect(enDict.checkout.free).toBe('Free');
+    expect(bnDict.checkout.free).toBe('ফ্রি');
+    expect(enDict.checkout.total).toBe('Total');
+    expect(bnDict.checkout.total).toBe('সর্বমোট');
+    expect(enDict.checkout.emptyCart).toBe('Your cart is empty');
+    expect(bnDict.checkout.emptyCart).toBe('আপনার ব্যাগ বর্তমানে খালি আছে');
+    expect(enDict.checkout.outOfStock).toBe('Product is currently out of stock');
+    expect(bnDict.checkout.outOfStock).toBe('পণ্যটির স্টক বর্তমানে শেষ');
+    expect(enDict.checkout.deliveryRestriction).toBe('Sorry, this address is outside our 1 km delivery zone');
+    expect(bnDict.checkout.deliveryRestriction).toBe('দুঃখিত, এই এলাকাটি আমাদের ১ কিমি ডেলিভারি জোনের বাইরে');
+  });
+
   it('fetches homepage data and overlays Bengali product translations in bn locale', async () => {
     const data = await getHomePageData('bn');
     expect(data).toHaveProperty('inStock');

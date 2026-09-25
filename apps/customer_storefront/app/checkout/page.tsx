@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../components/providers/AuthProvider';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Minus, Money, Plus, WarningCircle } from '@phosphor-icons/react';
 import { Header } from '../components/updated/Header';
@@ -19,11 +19,8 @@ import {
   trackBeginCheckout,
   trackPurchase,
 } from '../lib/analytics';
-
-const STEPS = [
-  { id: 1, label: 'Your Info' },
-  { id: 2, label: 'Review' },
-];
+import { getLocaleFromPathname, withLocale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
 interface FormErrors {
   name?: string;
@@ -66,9 +63,17 @@ function QuantityControls({
 
 function CheckoutContent() {
   const router = useRouter();
+  const pathname = usePathname() || '/';
+  const locale = getLocaleFromPathname(pathname);
+  const dict = getDictionary(locale);
   const { showToast } = useToast();
   const { cart, subtotal, deliveryFee, total, clearCart, syncPrices, updateQty, isLoaded } = useCartContext();
   const [currentStep, setCurrentStep] = useState(1);
+
+  const steps = [
+    { id: 1, label: dict.checkout.yourInfo },
+    { id: 2, label: dict.checkout.review },
+  ];
   const [isPlacing, setIsPlacing] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -100,9 +105,9 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (isLoaded && cart.length === 0 && !isPlacing) {
-      router.replace('/cart');
+      router.replace(withLocale('/cart', locale));
     }
-  }, [cart.length, isLoaded, isPlacing, router]);
+  }, [cart.length, isLoaded, isPlacing, locale, router]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -275,7 +280,7 @@ function CheckoutContent() {
         console.warn('Order created, but confirmation details could not be saved:', storageError);
       }
       clearCart();
-      router.push(`/order?num=${order.order_number}`);
+      router.push(withLocale(`/order?num=${order.order_number}`, locale));
     } catch (e: any) {
       setSubmitError(e?.message || 'Something went wrong. Please try again.');
       showToast(e?.message || `Couldn't place order — please try again`);
@@ -320,13 +325,15 @@ function CheckoutContent() {
       <Header />
       <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="mx-auto w-full max-w-5xl p-4 pb-24 sm:p-6 lg:p-8">
-          <h1 className="text-2xl font-extrabold tracking-tight text-warm-fg">Checkout</h1>
-          <p className="mt-1 text-sm text-warm-muted">A few details, then we’ll prepare your order.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-warm-fg">{dict.checkout.title}</h1>
+          <p className="mt-1 text-sm text-warm-muted">
+            {locale === 'bn' ? 'অর্ডারের বিবরণ পূরণ করে সহজেই অর্ডার সম্পন্ন করুন।' : 'A few details, then we’ll prepare your order.'}
+          </p>
 
           {/* Steps */}
           <nav aria-label="Checkout progress" className="py-6">
             <ol className="flex items-center justify-center gap-1.5">
-            {STEPS.map((step, index) => (
+            {steps.map((step, index) => (
               <li key={step.id} className="flex items-center">
                 <div
                   aria-current={currentStep === step.id ? 'step' : undefined}
@@ -341,7 +348,7 @@ function CheckoutContent() {
                   {currentStep > step.id ? '✓' : step.id}
                 </div>
                 <span className={`ml-2 hidden text-sm font-bold sm:inline ${currentStep === step.id ? 'text-warm-fg' : 'text-warm-muted'}`}>{step.label}</span>
-                {index < STEPS.length - 1 && (
+                {index < steps.length - 1 && (
                   <div
                     className={`w-8 h-0.5 mx-1 transition-colors ${
                       currentStep > step.id ? 'bg-warm-success' : 'bg-warm-border-light'
@@ -368,12 +375,12 @@ function CheckoutContent() {
 
               <Input
                 ref={nameRef}
-                label="Full Name *"
+                label={`${dict.checkout.fullName} *`}
                 required
                 value={formData.name}
                 onChange={(e) => updateField('name', e.target.value)}
                 onBlur={() => setErrors((p) => ({ ...p, name: validateField('name', formData.name) }))}
-                placeholder="e.g. Karim Ahmed"
+                placeholder={locale === 'bn' ? 'উদাঃ করিম আহমেদ' : 'e.g. Karim Ahmed'}
                 maxLength={100}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? 'checkout-name-error' : undefined}
@@ -383,7 +390,7 @@ function CheckoutContent() {
 
               <Input
                 ref={phoneRef}
-                label="WhatsApp Number *"
+                label={`${dict.checkout.mobileNumber} *`}
                 required
                 value={formData.phone}
                 onChange={(e) => updateField('phone', e.target.value)}
@@ -396,18 +403,21 @@ function CheckoutContent() {
               {errors.phone ? (
                 <p id="checkout-phone-error" role="alert" className="text-xs text-warm-danger -mt-2 mb-3">{errors.phone}</p>
               ) : (
-                <p className="text-[11px] text-warm-muted -mt-2 mb-3">Use 01XXXXXXXXX or +8801XXXXXXXXX</p>
+                <p className="text-[11px] text-warm-muted -mt-2 mb-3">
+                  {locale === 'bn' ? '01XXXXXXXXX অথবা +8801XXXXXXXXX ব্যবহার করুন' : 'Use 01XXXXXXXXX or +8801XXXXXXXXX'}
+                </p>
               )}
 
               <TextArea
                 ref={addressRef}
-                label="Delivery Address *"
+                label={`${dict.checkout.deliveryAddress} *`}
                 required
                 value={formData.address}
                 onChange={(e) => updateField('address', e.target.value)}
                 onBlur={() => setErrors((p) => ({ ...p, address: validateField('address', formData.address) }))}
-                placeholder="House, road, area…"
+                placeholder={locale === 'bn' ? 'বাসা/ফ্ল্যাট নং, রোড, এলাকা, ল্যান্ডমার্ক...' : 'House/Flat no., Road, Area, Landmark...'}
                 maxLength={300}
+                rows={3}
                 aria-invalid={!!errors.address}
                 aria-describedby={errors.address ? 'checkout-address-error' : undefined}
                 data-testid="checkout-address-input"
@@ -415,12 +425,11 @@ function CheckoutContent() {
               {errors.address && <p id="checkout-address-error" role="alert" className="text-xs text-warm-danger -mt-2 mb-3">{errors.address}</p>}
 
               <Input
-                label="Instructions (optional)"
+                label={dict.checkout.deliveryNotes}
                 value={formData.notes}
                 onChange={(e) => updateField('notes', e.target.value)}
-                onBlur={() => setErrors((p) => ({ ...p, notes: validateField('notes', formData.notes) }))}
-                placeholder="e.g. Ring bell twice, call before arriving"
-                maxLength={300}
+                placeholder={locale === 'bn' ? 'উদাঃ বেল বাজাবেন না, গেটে রেখে যান' : 'e.g. Call before delivery, leave with guard'}
+                maxLength={200}
                 aria-invalid={!!errors.notes}
                 aria-describedby={errors.notes ? 'checkout-notes-error' : undefined}
               />
@@ -461,7 +470,7 @@ function CheckoutContent() {
               </div>
 
               <Button type="submit" fullWidth data-testid="checkout-review-btn">
-                Review Your Order →
+                {locale === 'bn' ? 'অর্ডার পর্যালোচনা করুন →' : 'Review Your Order →'}
               </Button>
               </div>
 
@@ -513,7 +522,9 @@ function CheckoutContent() {
                     </div>
                   )}
 
-                  <h2 ref={stepHeadingRef} tabIndex={-1} className="text-xl font-extrabold tracking-tight text-warm-fg mb-4 outline-none">Order summary</h2>
+                  <h2 ref={stepHeadingRef} tabIndex={-1} className="text-xl font-extrabold tracking-tight text-warm-fg mb-4 outline-none">
+                    {dict.checkout.orderSummary}
+                  </h2>
 
                   <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start lg:gap-6">
                   <div className="min-w-0">
@@ -576,20 +587,20 @@ function CheckoutContent() {
                   <div className="min-w-0 lg:sticky lg:top-4">
                   <div className="bg-warm-surface border border-warm-border rounded-[14px] p-[18px] mb-6">
                     <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
-                      <span>Subtotal</span>
+                      <span>{dict.checkout.subtotal}</span>
                       <span>{formatBdt(subtotal)}</span>
                     </div>
                     <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
-                      <span>Delivery</span>
-                      <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
+                      <span>{dict.checkout.deliveryFee}</span>
+                      <span>{deliveryFee === 0 ? dict.checkout.free : formatBdt(deliveryFee)}</span>
                     </div>
                     <div className="flex justify-between pt-3 border-t border-warm-border-light text-lg font-extrabold text-warm-fg">
-                      <span>Total</span>
+                      <span>{dict.checkout.total}</span>
                       <span>{formatBdt(total)}</span>
                     </div>
                     <fieldset className="mt-4">
                       <legend className="text-sm font-bold text-warm-fg">
-                        Payment method
+                        {dict.checkout.paymentMethod}
                       </legend>
                       <div className="mt-2 grid gap-2">
                         <label
@@ -610,9 +621,9 @@ function CheckoutContent() {
                             />
                           <span>
                               <span className="flex items-center gap-1 text-sm font-extrabold text-warm-fg">
-                                <Money size={16} weight="bold" aria-hidden="true" /> Cash on Delivery
+                                <Money size={16} weight="bold" aria-hidden="true" /> {dict.checkout.cashOnDelivery}
                               </span>
-                              <span className="mt-0.5 block text-xs text-warm-muted">Pay the rider when your order arrives.</span>
+                              <span className="mt-0.5 block text-xs text-warm-muted">{locale === 'bn' ? 'পণ্য হাতে পেয়ে নগদ টাকা পরিশোধ করুন।' : 'Pay the rider when your order arrives.'}</span>
                             </span>
                           </span>
                         </label>
@@ -635,8 +646,8 @@ function CheckoutContent() {
                               data-testid="checkout-payment-bkash"
                             />
                             <span>
-                              <span className="block text-sm font-extrabold text-warm-fg">bKash</span>
-                              <span className="mt-0.5 block text-xs text-warm-muted">Pay to 01731944544.</span>
+                              <span className="block text-sm font-extrabold text-warm-fg">{dict.checkout.bKash}</span>
+                              <span className="mt-0.5 block text-xs text-warm-muted">{locale === 'bn' ? '01731944544 নম্বরে বিকাশ করুন।' : 'Pay to 01731944544.'}</span>
                             </span>
                           </span>
                         </label>
@@ -682,13 +693,19 @@ function CheckoutContent() {
                   </div>
 
                   <div className="flex gap-3">
-                    <Button type="button" variant="secondary" onClick={() => goToStep(1)} className="flex-1">← Edit Details</Button>
-                    <Button type="submit" className="hidden flex-1 lg:inline-flex" data-testid="checkout-place-order-btn">Place Order</Button>
+                    <Button type="button" variant="secondary" onClick={() => goToStep(1)} className="flex-1">
+                      {locale === 'bn' ? '← তথ্য সংশোধন' : '← Edit Details'}
+                    </Button>
+                    <Button type="submit" className="hidden flex-1 lg:inline-flex" data-testid="checkout-place-order-btn">
+                      {dict.checkout.placeOrder}
+                    </Button>
                   </div>
                   </div>
                   </div>
                   <div className="fixed inset-x-0 bottom-0 z-20 border-t border-warm-border bg-warm-surface/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
-                    <Button type="submit" fullWidth data-testid="checkout-place-order-mobile">Place order · {formatBdt(total)}</Button>
+                    <Button type="submit" fullWidth data-testid="checkout-place-order-mobile">
+                      {dict.checkout.placeOrder} · {formatBdt(total)}
+                    </Button>
                   </div>
                 </>
               ) : (
