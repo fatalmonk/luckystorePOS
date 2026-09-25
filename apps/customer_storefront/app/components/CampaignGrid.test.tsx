@@ -74,6 +74,7 @@ describe('CampaignGrid', () => {
     const title = screen.getByRole('heading', {
       name: 'Daily essentials from a store Chittagong knows.',
     });
+    expect(title.tagName).toBe('H1');
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 

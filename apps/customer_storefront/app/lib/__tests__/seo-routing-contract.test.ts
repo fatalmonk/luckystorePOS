@@ -423,13 +423,13 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     it('falls back to factual metadata for non-money category without delivery speed claims', async () => {
       const { generateMetadata } = await import('../../category/[slug]/page');
       const meta = await generateMetadata({
-        params: Promise.resolve({ slug: 'snacks' }),
+        params: Promise.resolve({ slug: 'personal-care' }),
         searchParams: Promise.resolve({}),
       });
 
-      expect(meta.title).toBe('Snacks in Chittagong');
+      expect(meta.title).toBe('Personal Care in Chittagong');
       expect(meta.description).toBe(
-        'Shop Snacks online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.',
+        'Shop Personal Care online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.',
       );
       expect(meta.description).not.toContain('fast');
       expect(meta.description).not.toContain('Quality items');

@@ -5,7 +5,7 @@ import { BottomNav } from '../components/BottomNav';
 
 export const metadata: Metadata = {
   title: 'Data Deletion Instructions',
-  description: 'Request deletion of your personal and business data from Lucky Store.',
+  description: 'Learn how to request deletion of personal or business data held by Lucky Store, including the details needed to process your request.',
   robots: {
     index: true,
     follow: true,

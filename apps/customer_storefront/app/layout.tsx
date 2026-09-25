@@ -165,12 +165,19 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': ['Store', 'GroceryStore'],
-              '@id': 'https://www.luckystore1947.com/#grocerystore',
+              '@type': ['Store', 'GroceryStore', 'Organization'],
+              '@id': 'https://www.luckystore1947.com/#organization',
               name: 'Lucky Store',
               alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
               description: 'Lucky Store delivers groceries within 1 km of the store in Chattogram. Delivery is free for orders over ৳500 and costs ৳40 for orders below ৳500.',
               url: 'https://www.luckystore1947.com',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://www.luckystore1947.com/logo-main.png',
+                width: '512',
+                height: '512',
+              },
+              image: 'https://www.luckystore1947.com/lucky-store-social-share-v2.png',
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               currenciesAccepted: 'BDT',
@@ -271,7 +278,25 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             window.gtag = gtag;
+            var consentStorageKey = 'lucky-analytics-consent';
+            var getAnalyticsChoice = function(){
+              try { return localStorage.getItem(consentStorageKey); } catch (error) { return null; }
+            };
+            var clearGoogleAnalyticsCookies = function(){
+              var hostParts = location.hostname.split('.');
+              var domains = ['', location.hostname];
+              if (hostParts.length > 2) domains.push('.' + hostParts.slice(-2).join('.'));
+              document.cookie.split(';').forEach(function(cookie){
+                var name = cookie.split('=')[0].trim();
+                if (name === '_ga' || name.indexOf('_ga_') === 0) {
+                  domains.forEach(function(domain){
+                    document.cookie = name + '=; Max-Age=0; path=/' + (domain ? '; domain=' + domain : '');
+                  });
+                }
+              });
+            };
             var loadGtag = function(){
+              if (getAnalyticsChoice() !== 'granted') return;
               if (document.querySelector('script[data-lucky-gtag]')) return;
               if (window.zaraz) {
                 // Cloudflare Zaraz is active at edge; skip direct gtag.js download
@@ -288,12 +313,14 @@ export default function RootLayout({
               };
               document.head.appendChild(script);
             };
+            window.luckyLoadGoogleAnalytics = loadGtag;
+            window.luckyClearGoogleAnalytics = clearGoogleAnalyticsCookies;
             var scheduleGtag = function(){
               window.setTimeout(loadGtag, 3000);
             };
-            if ('requestIdleCallback' in window) {
+            if (getAnalyticsChoice() === 'granted' && 'requestIdleCallback' in window) {
               window.requestIdleCallback(scheduleGtag, { timeout: 5000 });
-            } else {
+            } else if (getAnalyticsChoice() === 'granted') {
               scheduleGtag();
             }
           `}
@@ -311,6 +338,17 @@ export default function RootLayout({
           </h2>
           <p id="lucky-consent-description" className="mt-1 text-sm leading-relaxed text-warm-muted">
             We use optional Google Analytics to understand site traffic. Advertising storage and personalization remain disabled.
+          </p>
+          <p className="mt-2 text-xs leading-5 text-warm-muted">
+            Read our{' '}
+            <a href="/privacy" className="font-semibold text-warm-fg underline underline-offset-2 hover:no-underline">
+              Privacy Policy
+            </a>{' '}
+            and{' '}
+            <a href="/terms" className="font-semibold text-warm-fg underline underline-offset-2 hover:no-underline">
+              Terms
+            </a>
+            .
           </p>
           <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
@@ -368,11 +406,13 @@ export default function RootLayout({
               accept.addEventListener('click', function () {
                 saveChoice('granted');
                 updateConsent('granted');
+                if (window.luckyLoadGoogleAnalytics) window.luckyLoadGoogleAnalytics();
                 hideBanner();
               });
               reject.addEventListener('click', function () {
                 saveChoice('denied');
                 updateConsent('denied');
+                if (window.luckyClearGoogleAnalytics) window.luckyClearGoogleAnalytics();
                 hideBanner();
               });
 

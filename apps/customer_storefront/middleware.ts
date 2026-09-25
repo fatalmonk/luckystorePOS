@@ -1,6 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
 import { getCanonicalCategorySlug } from './app/lib/types';
+import { isBareUuid, toProductSlug } from './app/lib/products/slugify';
+
+const STOREFRONT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+
+async function resolveProductNameForCanonicalRedirect(productId: string): Promise<string | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+
+  const restHeaders = {
+    apikey: supabaseAnonKey,
+    authorization: `Bearer ${supabaseAnonKey}`,
+  };
+
+  try {
+    const itemUrl = new URL('/rest/v1/items', supabaseUrl);
+    itemUrl.searchParams.set('select', 'id,name');
+    itemUrl.searchParams.set('id', `eq.${productId}`);
+    itemUrl.searchParams.set('is_active', 'eq.true');
+    itemUrl.searchParams.set('limit', '1');
+
+    const itemResponse = await fetch(itemUrl, {
+      headers: restHeaders,
+      cache: 'no-store',
+    });
+
+    if (itemResponse.ok) {
+      const rows = await itemResponse.json();
+      const name = Array.isArray(rows) ? rows[0]?.name : null;
+      if (typeof name === 'string' && name.trim()) return name.trim();
+    }
+
+    const rpcResponse = await fetch(new URL('/rest/v1/rpc/search_items_pos', supabaseUrl), {
+      method: 'POST',
+      headers: {
+        ...restHeaders,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        p_store_id: STOREFRONT_STORE_ID,
+        p_query: '',
+        p_category_id: null,
+        p_limit: 1000,
+        p_offset: 0,
+      }),
+      cache: 'no-store',
+    });
+
+    if (!rpcResponse.ok) return null;
+
+    const rows = await rpcResponse.json();
+    const match = Array.isArray(rows)
+      ? rows.find((row: any) => String(row?.id ?? row?.item_id) === productId)
+      : null;
+    const name = match?.name;
+
+    return typeof name === 'string' && name.trim() ? name.trim() : null;
+  } catch (error) {
+    console.error('Failed to resolve product UUID redirect', { productId, error });
+    return null;
+  }
+}
 
 /**
  * Middleware for Markdown-for-Agents content negotiation.
@@ -16,6 +79,30 @@ import { getCanonicalCategorySlug } from './app/lib/types';
  */
 
 export async function middleware(request: NextRequest) {
+  // Pre-session canonical redirect: consolidate raw UUID product URLs to human-readable slug URLs.
+  // Google has indexed both /product/{uuid} and /product/{slug}--{prefix}; this must happen
+  // before the product page can emit duplicate HTML.
+  const productUuidMatch = request.nextUrl.pathname.match(/^\/(bn\/)?product\/([^/]+)\/?$/);
+  if (productUuidMatch) {
+    const localePrefix = productUuidMatch[1] ?? '';
+    const rawProductSlug = productUuidMatch[2];
+    let decodedProductSlug: string;
+    try {
+      decodedProductSlug = decodeURIComponent(rawProductSlug);
+    } catch {
+      return NextResponse.next();
+    }
+
+    if (isBareUuid(decodedProductSlug)) {
+      const productName = await resolveProductNameForCanonicalRedirect(decodedProductSlug);
+      if (productName) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/${localePrefix}product/${toProductSlug(productName, decodedProductSlug)}`;
+        return NextResponse.redirect(url, 308);
+      }
+    }
+  }
+
   // Pre-session canonical redirect: consolidate delivery hub aliases to single authoritative hub
   // (e.g. /delivery/chattogram -> /delivery, /delivery/ -> /delivery)
   if (
