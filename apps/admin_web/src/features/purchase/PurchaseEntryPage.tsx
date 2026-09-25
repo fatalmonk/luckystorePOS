@@ -675,6 +675,11 @@ export const PurchaseEntryPage: React.FC = () => {
   const payable = Math.max(0, totalCost - paid);
   const hasIncompleteLines = lines.some(line => !line.item.category_id || !line.item.price || line.item.price <= 0);
 
+  const handleDiscardRetryAttempt = () => {
+    setRetryAttempt(null);
+    setPurchaseIdempotencyKey(createPurchaseIdempotencyKey());
+  };
+
   // ── Submit ──────────────────────────────────────────────────────
   const submit = async (asDraft: boolean) => {
     setError('');
@@ -777,8 +782,17 @@ export const PurchaseEntryPage: React.FC = () => {
         </div>
       )}
       {retryAttempt && (
-        <div className="mb-4 rounded-xl border border-[var(--color-warning)]/40 bg-[var(--color-warning-bg)] px-4 py-3 text-sm text-text-main" role="status">
-          A previous {retryAttempt.args.p_status === 'draft' ? 'draft save' : 'receipt post'} may have completed. Retry sends that exact submission with its original idempotency key. Changes made since then are kept separately.
+        <div className="mb-4 rounded-xl border border-[var(--color-warning)]/40 bg-[var(--color-warning-bg)] px-4 py-3 text-sm text-text-main flex flex-wrap items-center justify-between gap-2" role="status">
+          <span className="flex-1">
+            A previous {retryAttempt.args.p_status === 'draft' ? 'draft save' : 'receipt post'} may have completed. Retry sends that exact submission with its original idempotency key. Changes made since then are kept separately.
+          </span>
+          <button
+            type="button"
+            onClick={handleDiscardRetryAttempt}
+            className="text-xs font-semibold underline hover:no-underline text-text-main shrink-0"
+          >
+            Discard retry &amp; start new attempt
+          </button>
         </div>
       )}
 
@@ -1203,15 +1217,26 @@ export const PurchaseEntryPage: React.FC = () => {
             </div>
 
             <div className="mt-6 space-y-3">
-              {retryAttempt ? <button
-                title="Retry the exact earlier submission"
-                onClick={() => submit(retryAttempt.args.p_status === 'draft')}
-                disabled={loading}
-                className="button-primary flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
-              >
-                {retryAttempt.args.p_status === 'draft' ? <Save size={18} /> : <Send size={18} />}
-                {loading ? 'Retrying…' : retryAttempt.args.p_status === 'draft' ? 'RETRY EARLIER DRAFT' : 'RETRY EARLIER POST'}
-              </button> : <>
+              {retryAttempt ? <>
+                <button
+                  title="Retry the exact earlier submission"
+                  onClick={() => submit(retryAttempt.args.p_status === 'draft')}
+                  disabled={loading}
+                  className="button-primary flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
+                >
+                  {retryAttempt.args.p_status === 'draft' ? <Save size={18} /> : <Send size={18} />}
+                  {loading ? 'Retrying…' : retryAttempt.args.p_status === 'draft' ? 'RETRY EARLIER DRAFT' : 'RETRY EARLIER POST'}
+                </button>
+                <button
+                  type="button"
+                  title="Discard saved retry attempt and edit current form values with a new idempotency key"
+                  onClick={handleDiscardRetryAttempt}
+                  disabled={loading}
+                  className="button-outline flex w-full items-center justify-center gap-2 py-2 text-xs transition-transform active:scale-[0.96]"
+                >
+                  Discard Retry &amp; Edit Form
+                </button>
+              </> : <>
               <button
                 title="Post purchase receipt to ledger"
                 onClick={() => submit(false)}
@@ -1242,17 +1267,29 @@ export const PurchaseEntryPage: React.FC = () => {
           <div className="text-xs text-text-muted">Total</div>
           <div className="font-bold text-text-main tabular-nums">৳ {totalCost.toFixed(2)}</div>
         </div>
-        {retryAttempt ? <button
-          aria-label="Retry the exact earlier submission"
-          title="Retry the exact earlier submission"
-          onClick={() => submit(retryAttempt.args.p_status === 'draft')}
-          disabled={loading}
-          className="button-primary flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
-          style={{ width: 'auto' }}
-        >
-          {retryAttempt.args.p_status === 'draft' ? <Save size={16} /> : <Send size={16} />}
-          {loading ? 'Retrying…' : retryAttempt.args.p_status === 'draft' ? 'RETRY DRAFT' : 'RETRY POST'}
-        </button> : <>
+        {retryAttempt ? <>
+          <button
+            aria-label="Retry the exact earlier submission"
+            title="Retry the exact earlier submission"
+            onClick={() => submit(retryAttempt.args.p_status === 'draft')}
+            disabled={loading}
+            className="button-primary flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
+            style={{ width: 'auto' }}
+          >
+            {retryAttempt.args.p_status === 'draft' ? <Save size={16} /> : <Send size={16} />}
+            {loading ? 'Retrying…' : retryAttempt.args.p_status === 'draft' ? 'RETRY DRAFT' : 'RETRY POST'}
+          </button>
+          <button
+            type="button"
+            aria-label="Discard saved retry attempt"
+            title="Discard saved attempt and edit current form"
+            onClick={handleDiscardRetryAttempt}
+            disabled={loading}
+            className="button-outline flex shrink-0 items-center gap-2 px-3 py-2 text-xs transition-transform active:scale-[0.96]"
+          >
+            Discard Retry
+          </button>
+        </> : <>
         <button
           aria-label="Save purchase as draft"
           title="Save purchase as draft"

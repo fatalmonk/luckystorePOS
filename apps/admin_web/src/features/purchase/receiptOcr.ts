@@ -478,6 +478,7 @@ export async function scanReceiptImage(
         const errorBody = await res.json().catch(() => null) as { error?: string; code?: string } | null;
         const providerUnavailable = errorBody?.code === 'PROVIDER_CREDITS_EXHAUSTED'
           || errorBody?.code === 'PROVIDER_NOT_CONFIGURED'
+          || errorBody?.code === 'PROVIDER_CONFIGURATION_INVALID'
           || errorBody?.code === 'PROVIDER_AUTH_FAILED'
           || errorBody?.code === 'PROVIDER_INVALID_RESPONSE'
           || errorBody?.code === 'PROVIDER_REQUEST_REJECTED';
@@ -487,7 +488,7 @@ export async function scanReceiptImage(
         if (res.status === 401 || res.status === 403) throw new Error('NO_FALLBACK: Unauthorized access to AI extraction');
         if (res.status === 413) throw new Error('NO_FALLBACK: Image file is too large');
         if (res.status === 415 || res.status === 400) throw new Error(`NO_FALLBACK: Invalid image or format (HTTP ${res.status})`);
-        if (errorBody?.code === 'PROVIDER_RATE_LIMIT') {
+        if (errorBody?.code === 'PROVIDER_RATE_LIMIT' || errorBody?.code === 'RATE_LIMITED' || res.status === 429) {
           throw new Error('NO_FALLBACK: Vision provider is rate limited. Retry the scan shortly.');
         }
         throw new Error(`AI Provider Error: HTTP ${res.status}`);
