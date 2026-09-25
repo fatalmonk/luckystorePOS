@@ -19,7 +19,10 @@ export function LanguageSwitcher() {
     cleanPath === '/delivery' ||
     cleanPath === '/category' ||
     cleanPath.startsWith('/category/') ||
-    cleanPath.startsWith('/product/');
+    cleanPath.startsWith('/product/') ||
+    cleanPath === '/privacy' ||
+    cleanPath === '/terms' ||
+    cleanPath === '/contact';
   const targetPath = targetLocale === 'bn' && !supportsBengaliRoute ? '/' : pathname;
 
   return (

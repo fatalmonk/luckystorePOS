@@ -120,6 +120,18 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(getCategoryBreadcrumbHref('personal-care', 'bn')).toBe('/bn/category/personal-care');
   });
 
+  it('provides comprehensive appDrawer dictionary keys across all locales', () => {
+    const enDict = getDictionary('en');
+    const bnDict = getDictionary('bn');
+
+    expect(enDict.appDrawer.categories).toBe('Categories');
+    expect(bnDict.appDrawer.categories).toBe('ক্যাটাগরি');
+    expect(enDict.appDrawer.home).toBe('Home');
+    expect(bnDict.appDrawer.home).toBe('হোম');
+    expect(enDict.appDrawer.shopAll).toBe('Shop All');
+    expect(bnDict.appDrawer.shopAll).toBe('সব পণ্য');
+  });
+
   it('fetches homepage data and overlays Bengali product translations in bn locale', async () => {
     const data = await getHomePageData('bn');
     expect(data).toHaveProperty('inStock');

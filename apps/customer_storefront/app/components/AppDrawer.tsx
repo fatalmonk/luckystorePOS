@@ -2,30 +2,38 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { X, House, ShoppingCart, Tag, Fire, Storefront, MapPin, Phone, Heart, Question, Sun, Moon } from '@phosphor-icons/react';
 import { CATEGORY_GROUPS } from '../lib/types';
+import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
 import { lockBodyScroll } from '../lib/bodyScrollLock';
 import { Logo } from './ui/Logo';
 import { useTheme } from './providers/ThemeProvider';
 import { getCategoryIcon } from './icons/CategoryIcons';
+import { getLocaleFromPathname, withLocale, type Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
 interface AppDrawerProps {
   open: boolean;
   onClose: () => void;
+  locale?: Locale;
 }
 
-const TOP_LINKS = [
-  { href: '/', label: 'Home', icon: House },
-  { href: '/category', label: 'Shop All', icon: Storefront },
-  { href: '/category?theme=deals', label: 'Deals', icon: Fire },
-  { href: '/category?theme=new', label: 'New Arrivals', icon: Tag },
-];
-
-export function AppDrawer({ open, onClose }: AppDrawerProps) {
+export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
+  const pathname = usePathname() || '/';
+  const effectiveLocale = locale ?? getLocaleFromPathname(pathname);
+  const dict = getDictionary(effectiveLocale);
   const { theme, toggleTheme } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  const topLinks = [
+    { href: withLocale('/', effectiveLocale), label: dict.appDrawer.home, icon: House },
+    { href: withLocale('/category', effectiveLocale), label: dict.appDrawer.shopAll, icon: Storefront },
+    { href: withLocale('/category?theme=deals', effectiveLocale), label: dict.appDrawer.deals, icon: Fire },
+    { href: withLocale('/category?theme=new', effectiveLocale), label: dict.appDrawer.newArrivals, icon: Tag },
+  ];
 
   // Manage focus, Escape, and keyboard containment while the drawer is open.
   useEffect(() => {
@@ -104,17 +112,17 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-muted hover:text-warm-fg hover:bg-warm-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            aria-label="Close menu"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-muted transition-colors hover:bg-warm-border hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-label={dict.appDrawer.closeMenu}
           >
             <X weight="bold" size={20} aria-hidden="true" />
           </button>
         </div>
 
         {/* Top Links */}
-        <nav className="px-3 py-3 border-b border-warm-border" aria-label="Main navigation">
+        <nav className="px-3 py-3 border-b border-warm-border" aria-label={effectiveLocale === 'bn' ? 'প্রধান নেভিগেশন' : 'Main navigation'}>
           <ul className="space-y-0.5">
-            {TOP_LINKS.map(({ href, label, icon: Icon }) => (
+            {topLinks.map(({ href, label, icon: Icon }) => (
               <li key={href}>
                 <Link
                   href={href}
@@ -131,19 +139,21 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
 
         {/* Categories */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
-          <p className="px-3 mb-2 text-xs font-black text-warm-dim uppercase tracking-widest">Categories</p>
+          <p className="px-3 mb-2 text-xs font-black text-warm-dim uppercase tracking-widest">{dict.appDrawer.categories}</p>
           <ul className="space-y-0.5">
             {CATEGORY_GROUPS.map((group) => (
               <li key={group.slug}>
                 <Link
-                  href={`/category/${group.slug}`}
+                  href={withLocale(`/category/${group.slug}`, effectiveLocale)}
                   onClick={onClose}
                   className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 >
                   <span className="shrink-0 text-warm-muted" aria-hidden="true">
                     {getCategoryIcon(group.slug, 18)}
                   </span>
-                  <span className="truncate">{group.label}</span>
+                  <span className="truncate">
+                    {effectiveLocale === 'bn' ? BENGALI_CATEGORY_NAMES[group.slug] || group.label : group.label}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -154,11 +164,11 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
         <div className="px-4 py-4 border-t border-warm-border shrink-0 space-y-3">
           <div className="space-y-1.5">
             <Link
-              href="/delivery"
+              href={withLocale('/delivery', effectiveLocale)}
               onClick={onClose}
               className="text-xs font-semibold leading-5 text-warm-fg hover:text-warm-accent transition-colors block"
             >
-              Free delivery on ৳500+ (1 km Chawkbazar) →
+              {dict.appDrawer.freeDeliveryPromo}
             </Link>
             <a
               href="tel:+8801731944544"
@@ -168,30 +178,30 @@ export function AppDrawer({ open, onClose }: AppDrawerProps) {
               +880 1731-944544
             </a>
             <Link
-              href="/delivery"
+              href={withLocale('/delivery', effectiveLocale)}
               onClick={onClose}
               className="flex items-center gap-2 text-xs font-semibold text-warm-muted transition-colors hover:text-warm-accent"
             >
               <MapPin weight="bold" size={14} aria-hidden="true" />
-              Delivery Areas &amp; Info
+              {dict.appDrawer.deliveryInfo}
             </Link>
             <Link
-              href="/#how-it-works"
+              href={withLocale('/#how-it-works', effectiveLocale)}
               onClick={onClose}
               className="flex items-center gap-2 text-xs font-semibold text-warm-muted transition-colors hover:text-warm-accent"
             >
               <Question weight="bold" size={14} aria-hidden="true" />
-              Help Center
+              {dict.appDrawer.helpCenter}
             </Link>
           </div>
           <button
             type="button"
             onClick={toggleTheme}
             className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-warm-border text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? dict.appDrawer.switchToLight : dict.appDrawer.switchToDark}
           >
             {theme === 'dark' ? <Sun weight="bold" size={16} aria-hidden="true" /> : <Moon weight="bold" size={16} aria-hidden="true" />}
-            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            {theme === 'dark' ? dict.appDrawer.lightMode : dict.appDrawer.darkMode}
           </button>
           <div className="flex items-center gap-2">
             <Link
