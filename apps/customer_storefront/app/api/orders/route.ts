@@ -70,15 +70,10 @@ export async function GET(req: NextRequest) {
 
     if (!user) return privateJson({ ok: false, error: 'Unauthorized' }, 401);
 
-    const userPhone = typeof user.phone === 'string' && user.phone.trim() ? user.phone.trim() : null;
-    let query = serviceClient.from('orders').select(ORDER_FIELDS);
-    if (userPhone && userPhone.length >= 10) {
-      query = query.or(`customer_user_id.eq.${user.id},and(customer_user_id.is.null,customer_phone.eq.${userPhone})`);
-    } else {
-      query = query.eq('customer_user_id', user.id);
-    }
-
-    const { data: orders, error } = await query
+    const { data: orders, error } = await serviceClient
+      .from('orders')
+      .select(ORDER_FIELDS)
+      .eq('customer_user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50);
 

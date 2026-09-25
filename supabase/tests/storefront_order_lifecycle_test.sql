@@ -33,7 +33,7 @@ VALUES (
   '96000000-0000-0000-0000-000000000099',
   '96000000-0000-0000-0000-000000000099',
   'staff-order-test@luckystore.invalid',
-  'staff',
+  'stock',
   '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
   '00000000-0000-0000-0000-000000000001',
   'Store Staff'
@@ -82,6 +82,8 @@ SELECT lives_ok(
 );
 SELECT throws_ok(
   $$UPDATE public.orders SET status = 'pending' WHERE id = '96000000-0000-0000-0000-000000000001'$$,
+  'P0001',
+  'Invalid order status transition: delivered to pending',
   'invalid status transitions are blocked by trigger'
 );
 
