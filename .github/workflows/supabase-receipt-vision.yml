@@ -33,7 +33,7 @@ jobs:
         run: deno check supabase/functions/extract-receipt-vision/index.ts
 
   deploy:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: ${{ inputs.target }}
     env:
@@ -60,5 +60,22 @@ jobs:
           esac
           test -n "$project_ref" || { echo "Missing project-ref variable for the $DEPLOY_TARGET environment." >&2; exit 1; }
           echo "SUPABASE_PROJECT_REF=$project_ref" >> "$GITHUB_ENV"
+      - name: Require a configured vision provider secret
+        shell: bash
+        run: |
+          set -o pipefail
+          supabase secrets list --project-ref "$SUPABASE_PROJECT_REF" | node -e '
+            let input = "";
+            process.stdin.setEncoding("utf8");
+            process.stdin.on("data", chunk => input += chunk);
+            process.stdin.on("end", () => {
+              const hasSecret = name => new RegExp(`\\b${name}\\b`).test(input);
+              const configured = ["OMNI_ROUTE_API_KEY", "OMNIROUTE_API_KEY", "OPENAI_API_KEY"].some(hasSecret);
+              const corsConfigured = ["ALLOWED_ORIGINS", "ALLOWED_ORIGIN"].some(hasSecret);
+              if (!configured) { console.error("No supported vision-provider secret is configured for this Supabase project."); process.exit(1); }
+              if (!corsConfigured) { console.error("No browser-origin allow-list is configured for this Supabase project."); process.exit(1); }
+              console.log("Vision-provider and browser-origin configuration are present.");
+            });
+          '
       - name: Deploy receipt vision function
         run: supabase functions deploy extract-receipt-vision --project-ref "$SUPABASE_PROJECT_REF"

@@ -3,15 +3,26 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { checkRateLimitDB, getRateLimitHeaders } from '../_shared/rate-limit.ts'
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? '*'
+const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? Deno.env.get('ALLOWED_ORIGIN') ?? '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin')
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  }
+  const originAllowed = !origin || allowedOrigins.includes(origin)
+  if (origin && originAllowed) headers['Access-Control-Allow-Origin'] = origin
+  return { headers, originAllowed }
 }
 
-async function extractWithOpenAI(imageBase64: string, mimeType: string, apiKey: string) {
+async function extractWithOpenAI(imageBase64: string, mimeType: string, apiKey: string, baseUrl: string) {
   const model = Deno.env.get('AI_MODEL') || 'gpt-4o';
   const systemPrompt = `You extract evidence from supplier invoices for a retail purchase-entry system. The document may contain Bengali and English.
 Inspect the original image visually, including table geometry, row boundaries, column headings, printed text, handwriting, and how handwritten values align with printed rows. Associate handwritten quantity, unit price, and amount with the populated printed product row they occupy. Distinguish populated rows from unused template rows.
@@ -67,11 +78,26 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
     }
   };
 
-  let aiUrl = Deno.env.get('AI_BASE_URL') || 'https://api.openai.com/v1/chat/completions';
-      if (aiUrl.endsWith('/')) aiUrl = aiUrl.slice(0, -1);
-      if (aiUrl.endsWith('/v1')) aiUrl += '/chat/completions';
-      
-  const providerName = aiUrl.includes('api.openai.com') ? 'openai' : 'openai-compatible';
+  let aiEndpoint: URL
+  try {
+    aiEndpoint = new URL(baseUrl)
+  } catch {
+    throw Object.assign(new Error('Vision provider URL is invalid.'), { code: 'PROVIDER_CONFIGURATION_INVALID', status: 500 })
+  }
+  if (aiEndpoint.protocol !== 'https:' || aiEndpoint.username || aiEndpoint.password || aiEndpoint.hash) {
+    throw Object.assign(new Error('Vision provider URL must use HTTPS and cannot contain credentials or a fragment.'), {
+      code: 'PROVIDER_CONFIGURATION_INVALID',
+      status: 500,
+    })
+  }
+  aiEndpoint.pathname = aiEndpoint.pathname.replace(/\/+$/, '')
+  if (aiEndpoint.pathname.endsWith('/v1')) aiEndpoint.pathname += '/chat/completions'
+  else if (!aiEndpoint.pathname.endsWith('/chat/completions')) {
+    aiEndpoint.pathname += aiEndpoint.pathname ? '/chat/completions' : '/v1/chat/completions'
+  }
+
+  const aiUrl = aiEndpoint.toString()
+  const providerName = aiEndpoint.hostname === 'api.openai.com' ? 'openai' : 'openai-compatible'
   const res = await fetch(aiUrl, {
     method: "POST",
     headers: {
@@ -168,8 +194,22 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
 }
 
 serve(async (req) => {
+  const { headers: corsHeaders, originAllowed } = getCorsHeaders(req)
+  if (!originAllowed) {
+    return new Response(JSON.stringify({ error: 'Origin is not allowed.' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed.' }), {
+      status: 405,
+      headers: { ...corsHeaders, Allow: 'POST, OPTIONS', 'Content-Type': 'application/json' },
+    })
   }
 
   try {
@@ -188,6 +228,23 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     }
 
+    const rateLimit = await checkRateLimitDB(supabase, `receipt-vision:user:${user.id}`, {
+      maxRequests: 10,
+      windowMs: 60 * 1000,
+    })
+    const rateLimitHeaders = getRateLimitHeaders(rateLimit.remaining, rateLimit.resetAfter, 10)
+    if (!rateLimit.allowed) {
+      return new Response(JSON.stringify({ error: 'Too many receipt extraction requests.', code: 'RATE_LIMITED' }), {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          ...rateLimitHeaders,
+          'Content-Type': 'application/json',
+          'Retry-After': Math.max(1, Math.ceil(rateLimit.resetAfter / 1000)).toString(),
+        },
+      })
+    }
+
     const { imageBase64, mimeType = 'image/jpeg' } = await req.json();
     if (!imageBase64) {
       return new Response(JSON.stringify({ error: 'Missing imageBase64' }), { status: 400, headers: corsHeaders });
@@ -201,15 +258,26 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Payload too large' }), { status: 413, headers: corsHeaders });
     }
 
-    const apiKey = Deno.env.get('OMNI_ROUTE_API_KEY') || Deno.env.get('OMNIROUTE_API_KEY') || Deno.env.get('OPENAI_API_KEY');
+    const omniRouteKey = Deno.env.get('OMNI_ROUTE_API_KEY') || Deno.env.get('OMNIROUTE_API_KEY')
+    const openAiKey = Deno.env.get('OPENAI_API_KEY')
+    const apiKey = omniRouteKey || openAiKey
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'Vision provider is not configured.', code: 'PROVIDER_NOT_CONFIGURED' }), { status: 501, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { parsed, provider, model } = await extractWithOpenAI(imageBase64, mimeType, apiKey);
+    const configuredBaseUrl = Deno.env.get('AI_BASE_URL')?.trim()
+    if (omniRouteKey && !configuredBaseUrl) {
+      return new Response(JSON.stringify({
+        error: 'AI_BASE_URL must be configured when using an OmniRoute API key.',
+        code: 'PROVIDER_NOT_CONFIGURED',
+      }), { status: 501, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const baseUrl = configuredBaseUrl || 'https://api.openai.com/v1/chat/completions'
+
+    const { parsed, provider, model } = await extractWithOpenAI(imageBase64, mimeType, apiKey, baseUrl);
 
     return new Response(JSON.stringify({ success: true, data: parsed, diagnostics: { provider, model } }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
