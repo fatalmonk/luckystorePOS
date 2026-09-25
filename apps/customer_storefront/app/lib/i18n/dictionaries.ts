@@ -139,6 +139,8 @@ export const dictionaries = {
       shopAll: 'Shop All',
       deals: 'Deals',
       newArrivals: 'New Arrivals',
+      wishlist: 'Wishlist',
+      cart: 'Cart',
     },
   },
   bn: {
@@ -279,6 +281,8 @@ export const dictionaries = {
       shopAll: 'সব পণ্য',
       deals: 'অফার',
       newArrivals: 'নতুন পণ্য',
+      wishlist: 'পছন্দের তালিকা',
+      cart: 'ব্যাগ',
     },
   },
 } as const;

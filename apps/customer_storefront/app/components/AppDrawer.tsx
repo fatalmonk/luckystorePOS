@@ -211,7 +211,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
               className="flex h-11 items-center gap-2 rounded-full border border-warm-border px-4 text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >
               <Heart weight="bold" size={16} aria-hidden="true" />
-              Wishlist
+              {dict.appDrawer.wishlist}
             </Link>
             <Link
               href="/cart"
@@ -219,7 +219,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
               className="flex h-11 items-center gap-2 rounded-full bg-warm-accent px-4 text-xs font-bold text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >
               <ShoppingCart weight="bold" size={16} aria-hidden="true" />
-              Cart
+              {dict.appDrawer.cart}
             </Link>
           </div>
         </div>
