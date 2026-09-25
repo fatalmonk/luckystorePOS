@@ -84,8 +84,56 @@ function CheckoutContent() {
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const checkoutTrackedRef = useRef(false);
   const shippingTrackedRef = useRef(false);
-  const orderNumberRef = useRef(`LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`);
-  const idempotencyKeyRef = useRef(crypto.randomUUID());
+  const orderNumberRef = useRef<string | null>(null);
+  const idempotencyKeyRef = useRef<string | null>(null);
+
+  const getCheckoutIdentity = () => {
+    const payloadSignature = JSON.stringify({
+      total,
+      items: cart.map((i) => ({ id: i.id, qty: i.qty, price: i.price })),
+    });
+
+    if (
+      orderNumberRef.current &&
+      idempotencyKeyRef.current &&
+      (idempotencyKeyRef.current as any).payloadSignature === payloadSignature
+    ) {
+      return { orderNumber: orderNumberRef.current, idempotencyKey: idempotencyKeyRef.current };
+    }
+
+    try {
+      const saved = sessionStorage.getItem('pendingCheckoutIdentity');
+      if (saved) {
+        const identity = JSON.parse(saved);
+        if (
+          typeof identity.orderNumber === 'string' &&
+          typeof identity.idempotencyKey === 'string' &&
+          identity.payloadSignature === payloadSignature &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identity.idempotencyKey)
+        ) {
+          orderNumberRef.current = identity.orderNumber;
+          idempotencyKeyRef.current = identity.idempotencyKey;
+          return identity as { orderNumber: string; idempotencyKey: string };
+        }
+      }
+    } catch {
+      // Generate a new identity when browser storage is unavailable or invalid.
+    }
+
+    const identity = {
+      orderNumber: `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
+      idempotencyKey: crypto.randomUUID(),
+      payloadSignature,
+    };
+    orderNumberRef.current = identity.orderNumber;
+    idempotencyKeyRef.current = identity.idempotencyKey;
+    try {
+      sessionStorage.setItem('pendingCheckoutIdentity', JSON.stringify(identity));
+    } catch {
+      // The in-memory key still protects retries during the current page visit.
+    }
+    return identity;
+  };
 
   useEffect(() => {
     if (!isLoaded || cart.length === 0 || checkoutTrackedRef.current) return;
@@ -213,12 +261,13 @@ function CheckoutContent() {
     try {
       trackAddPaymentInfo(cart, total, formData.paymentMethod);
       const cleanPhone = formData.phone.replace(/[\s-]/g, '');
+      const checkoutIdentity = getCheckoutIdentity();
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orderNumber: orderNumberRef.current,
-          idempotencyKey: idempotencyKeyRef.current,
+          orderNumber: checkoutIdentity.orderNumber,
+          idempotencyKey: checkoutIdentity.idempotencyKey,
           customerName: formData.name,
           customerPhone: cleanPhone,
           customerAddress: formData.address,
@@ -251,36 +300,15 @@ function CheckoutContent() {
         shipping: deliveryFee,
       });
 
-      // Transform API response (snake_case) to OrderData (camelCase) for the confirmation page
-      const orderData = {
-        orderNumber: order.order_number,
-        name: formData.name,
-        phone: cleanPhone,
-        address: formData.address,
-        notes: formData.notes || undefined,
-        deliverySlot: formData.deliverySlot,
-        paymentMethod: formData.paymentMethod,
-        items: cart.map(c => ({
-          id: c.id,
-          name: c.name,
-          price: c.price,
-          qty: c.qty,
-          unit: c.unit,
-          total: c.price * c.qty,
-        })),
-        subtotal,
-        deliveryFee,
-        discount: 0,
-        total,
-        time: new Date().toISOString(),
-      };
       try {
-        sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+        if (order.trackingToken) sessionStorage.setItem('lastOrderTrackingToken', order.trackingToken);
+        sessionStorage.removeItem('pendingCheckoutIdentity');
       } catch (storageError) {
-        console.warn('Order created, but confirmation details could not be saved:', storageError);
+        console.warn('Order created, but browser tracking state could not be saved:', storageError);
       }
       clearCart();
-      router.push(withLocale(`/order?num=${order.order_number}`, locale));
+      const trackingHash = order.trackingToken ? `#track=${encodeURIComponent(order.trackingToken)}` : '';
+      router.push(withLocale(`/order?num=${encodeURIComponent(order.order_number)}${trackingHash}`, locale));
     } catch (e: any) {
       setSubmitError(e?.message || 'Something went wrong. Please try again.');
       showToast(e?.message || `Couldn't place order — please try again`);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOrder } from '../../lib/orders';
 import { supabase } from '../../lib/supabase';
+import { createClient as createServerClient } from '../../lib/supabase/server';
 
 const CHECKOUT_RATE_LIMIT = new Map<string, { count: number; reset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -134,11 +135,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idempotencyKey)) {
+      return NextResponse.json({ ok: false, error: 'Refresh checkout and try again.' }, { status: 400 });
+    }
+
     const now = new Date();
     const orderNumber = typeof body.orderNumber === 'string' && body.orderNumber.trim()
       ? body.orderNumber.trim()
       : `LSO-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
+    const requestClient = await createServerClient();
+    const { error: authError } = await requestClient.auth.getUser();
+    if (
+      authError &&
+      authError.name !== 'AuthSessionMissingError' &&
+      !authError.message?.includes('Auth session missing') &&
+      !authError.message?.includes('session')
+    ) {
+      return NextResponse.json({ ok: false, error: 'Unable to verify your account. Please try again.' }, { status: 503 });
+    }
     const order = await createOrder({
       orderNumber,
       customerName: body.customerName,
@@ -158,25 +173,16 @@ export async function POST(req: NextRequest) {
       deliveryFee,
       total,
       idempotencyKey,
-    });
+    }, requestClient);
 
-    if (order.replayed !== true) {
-      notifyAdminWeb(order).catch(console.error);
-      sendWhatsApp(order).catch(console.error);
-    }
-
-    return NextResponse.json({ ok: true, order });
+    return NextResponse.json({
+      ok: true,
+      order: {
+        ...order,
+        trackingToken: typeof order.trackingToken === 'string' ? order.trackingToken : undefined,
+      },
+    }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 400 });
   }
-}
-
-async function notifyAdminWeb(order: any) {
-  // TODO: webhook to admin_web
-  console.log('Admin notification:', order);
-}
-
-async function sendWhatsApp(order: any) {
-  // TODO: WhatsApp Cloud API
-  console.log('WhatsApp notification:', order);
 }

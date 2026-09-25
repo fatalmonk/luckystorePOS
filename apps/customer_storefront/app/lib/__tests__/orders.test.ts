@@ -3,21 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock supabase module
 vi.mock('../supabase', () => {
   const mockRpc = vi.fn();
-  const mockChannel = vi.fn(() => ({
-    subscribe: vi.fn((cb: (status: string) => void) => {
-      // Simulate successful subscription
-      setTimeout(() => cb('SUBSCRIBED'), 0);
-      return { send: vi.fn().mockResolvedValue(undefined) };
-    }),
-    send: vi.fn().mockResolvedValue(undefined),
-  }));
-  const mockRemoveChannel = vi.fn();
 
   return {
     supabase: {
       rpc: mockRpc,
-      channel: mockChannel,
-      removeChannel: mockRemoveChannel,
     },
   };
 });
@@ -26,6 +15,7 @@ import { createOrder } from '../orders';
 
 const validInput = {
   orderNumber: 'LSO-20260101-ABCD1234',
+  idempotencyKey: 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f',
   customerName: 'Karim Ahmed',
   customerPhone: '01712345678',
   customerAddress: '123 Test Road, Chittagong',
@@ -51,6 +41,25 @@ describe('createOrder', () => {
     const result = await createOrder(validInput);
     expect(result.id).toBe('order-123');
     expect(result.order_number).toBe('LSO-20260101-ABCD1234');
+  });
+
+  it('preserves the guest tracking capability returned by the order RPC', async () => {
+    const { supabase } = await import('../supabase');
+    (supabase.rpc as any).mockResolvedValue({
+      data: {
+        order: {
+          id: 'order-guest',
+          order_number: 'LSO-20260101-ABCD1234',
+          trackingToken: validInput.idempotencyKey,
+        },
+        replayed: false,
+      },
+      error: null,
+    });
+
+    const result = await createOrder(validInput);
+
+    expect(result.trackingToken).toBe(validInput.idempotencyKey);
   });
 
   it('throws on validation failure (invalid phone)', async () => {
@@ -147,13 +156,12 @@ describe('createOrder', () => {
       error: null,
     });
 
-    const result = await createOrder({ ...validInput, idempotencyKey: `  ${'k'.repeat(100)}  ` });
+    const result = await createOrder({ ...validInput, idempotencyKey: `  ${validInput.idempotencyKey}  ` });
 
     expect(result).toMatchObject({ id: 'order-replayed', replayed: true });
     expect(supabase.rpc).toHaveBeenCalledWith(
       'create_order_with_stock_idempotent',
-      expect.objectContaining({ p_idempotency_key: 'k'.repeat(100) }),
+      expect.objectContaining({ p_idempotency_key: validInput.idempotencyKey }),
     );
-    expect(supabase.channel).not.toHaveBeenCalled();
   });
 });

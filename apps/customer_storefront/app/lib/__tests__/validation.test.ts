@@ -3,6 +3,7 @@ import { checkoutSchema } from '../validation';
 
 const validBase = {
   orderNumber: 'LSO-20260101-ABCD1234',
+  idempotencyKey: 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f',
   tenantId: '00000000-0000-0000-0000-000000000001',
   storeId: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
   customerName: 'Karim Ahmed',
@@ -107,9 +108,9 @@ describe('checkoutSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('bounds the optional idempotency key', () => {
-    expect(checkoutSchema.safeParse({ ...validBase, idempotencyKey: 'k'.repeat(100) }).success).toBe(true);
-    expect(checkoutSchema.safeParse({ ...validBase, idempotencyKey: 'k'.repeat(101) }).success).toBe(false);
+  it('requires a UUIDv4 idempotency and guest tracking key', () => {
+    expect(checkoutSchema.safeParse({ ...validBase, idempotencyKey: undefined }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...validBase, idempotencyKey: 'not-a-token' }).success).toBe(false);
   });
 
   it('accepts bKash as a payment method', () => {

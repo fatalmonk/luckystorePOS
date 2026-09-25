@@ -254,6 +254,12 @@ export default function ProfilePage() {
                         <span className="text-warm-muted font-medium">Total Amount</span>
                         <span className="text-base font-bold text-warm-fg">{formatBdt(order.total)}</span>
                       </div>
+                      <Link
+                        href={`/order?num=${encodeURIComponent(order.order_number)}`}
+                        className="inline-flex min-h-9 items-center text-xs font-bold text-warm-success hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-success"
+                      >
+                        View live order status
+                      </Link>
                     </div>
                   </div>
                 ))}

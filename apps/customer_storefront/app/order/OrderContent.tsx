@@ -9,6 +9,8 @@ import { useToast } from '../components/Toast';
 import { formatBdt } from '../lib/formatPrice';
 
 interface OrderData {
+  id?: string;
+  trackingToken?: string;
   orderNumber: string;
   name: string;
   phone: string;
@@ -22,6 +24,7 @@ interface OrderData {
   discount: number;
   total: number;
   time: string;
+  status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
 }
 
 const formatItemsList = (items: OrderData['items']) =>
@@ -63,49 +66,110 @@ const formatOrderMessage = (order: OrderData): string => {
 };
 
 const TIMELINE_STEPS = [
-  { id: 'placed', label: 'Order Placed', time: 'Just now', state: 'done' as const },
-  { id: 'confirmed', label: 'Awaiting Confirmation', time: 'Store will review and confirm', state: 'active' as const },
-  { id: 'preparing', label: 'Preparing', time: 'Packing your items', state: 'upcoming' as const },
-  { id: 'delivery', label: 'Out for Delivery', time: 'Est. 45–60 min', state: 'upcoming' as const },
-  { id: 'delivered', label: 'Delivered', time: null, state: 'upcoming' as const },
-];
+  { id: 'pending', label: 'Order placed' },
+  { id: 'confirmed', label: 'Order confirmed' },
+  { id: 'preparing', label: 'Preparing' },
+  { id: 'out_for_delivery', label: 'Out for delivery' },
+  { id: 'delivered', label: 'Delivered' },
+] as const;
 
 export default function OrderContent() {
   const router = useRouter();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
+  const orderNumber = searchParams.get('num');
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem('lastOrder');
-    let orderData: OrderData | null = null;
-    if (saved) {
-      try {
-        orderData = JSON.parse(saved);
-      } catch {
-        // Invalid sessionStorage — leave as null
-      }
-    }
-    const timer = setTimeout(() => {
-      setOrder(orderData);
+    if (!orderNumber) {
       setLoading(false);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
+      return;
+    }
+
+    const hashToken = new URLSearchParams(window.location.hash.slice(1)).get('track');
+    let savedToken: string | null = null;
+    try {
+      savedToken = sessionStorage.getItem('lastOrderTrackingToken');
+    } catch {
+      // Tracking still works for signed-in customers without browser storage.
+    }
+    const token = hashToken || savedToken;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const refreshOrder = async () => {
+      let retryOnError = true;
+      try {
+        const response = await fetch(`/api/orders?num=${encodeURIComponent(orderNumber)}`, {
+          cache: 'no-store',
+          headers: token ? { 'x-order-tracking-token': token } : {},
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok || !result.order) {
+          retryOnError = response.status >= 500 || response.status === 429;
+          if (!retryOnError && active) setOrder(null);
+          if (retryOnError) throw new Error('Order status refresh failed');
+          return;
+        }
+
+        retryOnError = false;
+        const row = result.order;
+        const nextOrder: OrderData = {
+          id: row.id,
+          trackingToken: token || undefined,
+          orderNumber: row.order_number,
+          name: row.customer_name,
+          phone: row.customer_phone,
+          address: row.customer_address,
+          notes: row.notes || undefined,
+          deliverySlot: row.delivery_slot || undefined,
+          paymentMethod: row.payment_method,
+          items: (Array.isArray(row.items) ? row.items : []).map((item: any) => ({
+            ...item,
+            total: Number(item.price) * Number(item.qty),
+          })),
+          subtotal: Number(row.subtotal),
+          deliveryFee: Number(row.delivery_fee),
+          discount: 0,
+          total: Number(row.total),
+          time: row.created_at,
+          status: row.status,
+        };
+        if (!active) return;
+        setOrder(nextOrder);
+        if (!['delivered', 'cancelled'].includes(nextOrder.status)) {
+          timer = setTimeout(refreshOrder, 15000);
+        }
+      } catch {
+        if (active && retryOnError) timer = setTimeout(refreshOrder, 15000);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void refreshOrder();
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+    };
+  }, [orderNumber]);
 
   const handleShare = async () => {
-    const url = window.location.href;
+    if (!order) return;
+    const shareUrl = order.trackingToken
+      ? `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}#track=${encodeURIComponent(order.trackingToken)}`
+      : `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}`;
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Order #${order?.orderNumber} — Lucky Store`,
-          text: `Track my order at Lucky Store`,
-          url,
+          title: `Order #${order.orderNumber} — Lucky Store`,
+          text: `Track order #${order.orderNumber} at Lucky Store`,
+          url: shareUrl,
         });
         return;
       }
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       showToast('Order link copied');
     } catch (err) {
       // User cancelled share or permission denied — silent fail
@@ -145,7 +209,9 @@ export default function OrderContent() {
             <div>
               <p className="mb-1 text-sm font-bold text-warm-success">Thanks, {order.name.split(' ')[0]}</p>
               <h1 className="text-[22px] font-extrabold tracking-tight" data-testid="order-confirmed-heading">Order placed</h1>
-              <p className="mt-1 text-sm text-warm-muted">We’ll review it and confirm shortly.</p>
+          <p className="mt-1 text-sm text-warm-muted" aria-live="polite">
+            {order.status === 'cancelled' ? 'This order was cancelled.' : `Current status: ${order.status.replace(/_/g, ' ')}.`}
+          </p>
             </div>
           </div>
           <div className="sm:text-right">
@@ -199,32 +265,36 @@ export default function OrderContent() {
         <div className="relative mb-8 pl-7">
           <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-warm-border-light" />
           <div className="space-y-6">
-            {TIMELINE_STEPS.map((step) => (
+            {TIMELINE_STEPS.map((step, index) => {
+              const currentIndex = TIMELINE_STEPS.findIndex(({ id }) => id === order.status);
+              const isCancelled = order.status === 'cancelled';
+              const state = isCancelled ? 'upcoming' : index < currentIndex ? 'done' : index === currentIndex ? 'active' : 'upcoming';
+              return (
               <div key={step.id} className="relative">
                 <div
                   className={`absolute -left-[19px] w-[18px] h-[18px] rounded-full border-2 transition-colors ${
-                    step.state === 'done'
+                    state === 'done'
                       ? 'bg-warm-success border-warm-success'
-                      : step.state === 'active'
+                      : state === 'active'
                       ? 'bg-warm-surface border-warm-accent'
                       : 'bg-warm-border-light border-warm-border'
                   }`}
                 >
-                  {step.state === 'done' && (
+                  {state === 'done' && (
                     <span className="block text-center text-[10px] text-white leading-[16px]">✓</span>
                   )}
-                  {step.state === 'active' && (
+                  {state === 'active' && (
                     <span className="block text-center text-[10px] text-warm-fg leading-[16px]">●</span>
                   )}
                 </div>
-                <p className={`font-bold text-sm ${step.state === 'upcoming' ? 'text-warm-muted' : 'text-warm-fg'}`}>
+                <p className={`font-bold text-sm ${state === 'upcoming' ? 'text-warm-muted' : 'text-warm-fg'}`}>
                   {step.label}
                 </p>
-                <p className="text-[13px] text-warm-muted">
-                  {step.time || (order.paymentMethod === 'bkash' ? 'Payment by bKash' : `Pay ${formatBdt(order.total)} to rider`)}
-                </p>
+                {state === 'active' && <p className="text-[13px] text-warm-muted">{order.status === 'pending' ? 'The store will review your order.' : 'This is the latest update from the store.'}</p>}
               </div>
-            ))}
+              );
+            })}
+            {order.status === 'cancelled' && <p className="text-sm font-semibold text-red-700">Order cancelled</p>}
           </div>
         </div>
         </div>
@@ -232,9 +302,9 @@ export default function OrderContent() {
 
         {/* WhatsApp confirmation — no API credentials needed */}
         <div className="mt-6 rounded-[14px] border border-[#25D366]/40 bg-[#25D366]/[0.06] p-4 sm:p-5 lg:mt-8">
-          <h3 className="flex items-center gap-2 text-sm font-bold mb-1 text-[#128C7E]"><WhatsappLogo size={20} weight="fill" aria-hidden="true" /> Get updates on WhatsApp</h3>
+          <h3 className="flex items-center gap-2 text-sm font-bold mb-1 text-[#128C7E]"><WhatsappLogo size={20} weight="fill" aria-hidden="true" /> Contact Lucky Store</h3>
           <p className="text-sm text-warm-muted mb-3">
-            Tap below to send your order details to our store WhatsApp.
+            Send your order details to our store WhatsApp if you need help or want to confirm anything.
           </p>
           <a
             href={`https://wa.me/8801731944544?text=${encodeURIComponent(formatOrderMessage(order))}`}
@@ -243,7 +313,7 @@ export default function OrderContent() {
             className="block w-full"
           >
             <Button fullWidth className="!bg-[#25D366] !text-white hover:!bg-[#20bd5a] focus-visible:ring-2 focus-visible:ring-[#128C7E]">
-              Message on WhatsApp
+              Message Lucky Store
             </Button>
           </a>
         </div>
@@ -253,9 +323,11 @@ export default function OrderContent() {
           <Button fullWidth onClick={() => router.push('/')}>
             Continue Shopping
           </Button>
-          <Button variant="secondary" fullWidth onClick={handleShare}>
-            Share Order
-          </Button>
+          {order.trackingToken && (
+            <Button variant="secondary" fullWidth onClick={handleShare}>
+              Share Order
+            </Button>
+          )}
         </div>
       </div>
     </div>

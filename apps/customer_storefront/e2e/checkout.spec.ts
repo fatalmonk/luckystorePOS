@@ -5,6 +5,7 @@ const mutationSafety = getMutationSafety();
 const canMutatePreview = mutationSafety.allowed;
 
 async function mockSuccessfulCheckout(page: Page, orderNumber: string) {
+  const trackingToken = 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f';
   await page.route('**/api/checkout', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.fallback();
@@ -16,7 +17,33 @@ async function mockSuccessfulCheckout(page: Page, orderNumber: string) {
       contentType: 'application/json',
       body: JSON.stringify({
         ok: true,
-        order: { id: 'e2e-mocked-order', order_number: orderNumber },
+        order: { id: 'e2e-mocked-order', order_number: orderNumber, trackingToken },
+      }),
+    });
+  });
+  await page.route('**/api/orders?num=*', async (route) => {
+    expect(route.request().headers()['x-order-tracking-token']).toBe(trackingToken);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        order: {
+          id: 'e2e-mocked-order',
+          order_number: orderNumber,
+          customer_name: 'Test User',
+          customer_phone: '01712345678',
+          customer_address: '123 Test Road, Chittagong',
+          notes: null,
+          items: [{ id: 'mock-item', name: 'Test item', price: 80, qty: 1 }],
+          subtotal: 80,
+          delivery_fee: 40,
+          total: 120,
+          status: 'pending',
+          payment_method: 'bkash',
+          delivery_slot: 'morning',
+          created_at: new Date().toISOString(),
+        },
       }),
     });
   });
@@ -124,6 +151,8 @@ test.describe('Checkout Flow', () => {
     // Should reach order page
     await page.waitForURL(/\/order/);
     await expect(page.locator('[data-testid="order-confirmed-heading"]')).toBeVisible();
+    await expect(page).toHaveURL(/#track=ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f$/);
+    await expect(page.getByText('Current status: pending.')).toBeVisible();
   });
 
   test('shows validation errors for invalid phone', async ({ page }) => {
@@ -152,28 +181,40 @@ test.describe('Checkout Flow', () => {
 
 test.describe('Checkout Price Tampering', () => {
   test('rejects tampered total with 400', async ({ page, request }) => {
+    test.skip(!canMutatePreview, mutationSafety.reason);
+
     // First, get a valid product from the storefront
     await page.goto('/');
     await expect(page.getByTestId('grid-product-card').first()).toBeVisible({ timeout: 10000 });
 
     // Intercept the checkout API call to inspect the response
     // Instead of going through the UI, we'll directly POST with a tampered body
+    const productsResponse = await request.get('/api/products?limit=1');
+    expect(productsResponse.ok()).toBe(true);
+    const { products } = await productsResponse.json();
+    const product = products[0];
+    const subtotal = Number(product.price);
+    const deliveryFee = subtotal >= 500 ? 0 : 40;
+
     const response = await request.post('/api/checkout', {
       data: {
-        orderNumber: '',
+        orderNumber: 'LSO-20990101-TAMPER01',
+        idempotencyKey: 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f',
         customerName: 'Tamper Test',
         customerPhone: '01712345678',
         customerAddress: '123 Test Road, Chittagong',
-        items: [{ id: '550e8400-e29b-41d4-a716-446655440000', name: 'Test', price: 1, qty: 1 }],
-        subtotal: 1,
-        deliveryFee: 0,
-        total: 1, // Tampered — actual price would be different
+        paymentMethod: 'cod',
+        items: [{ id: product.id, name: product.name, price: subtotal, qty: 1 }],
+        subtotal,
+        deliveryFee,
+        total: subtotal + deliveryFee + 1, // Tampered by ৳1
       },
     });
 
-    // Server should reject because DB price won't match the tampered total
+    // The request has a valid product and retry key, so rejection proves total validation.
     const body = await response.json();
     expect(body.ok).toBe(false);
+    expect(body.code).toBe('PRICE_MISMATCH');
     expect(response.status()).toBe(400);
   });
 });
