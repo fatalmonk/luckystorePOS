@@ -78,7 +78,7 @@ function sendEcommerceEvent(
       return true;
     }
   } catch {
-    return false;
+    return sendAnalyticsEvent(fallbackEventName, fallbackParams);
   }
 
   return sendAnalyticsEvent(fallbackEventName, fallbackParams);
