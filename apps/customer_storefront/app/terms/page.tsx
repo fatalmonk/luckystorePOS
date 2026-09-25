@@ -12,11 +12,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.luckystore1947.com/terms',
-    languages: {
-      'en-BD': 'https://www.luckystore1947.com/terms',
-      'bn-BD': 'https://www.luckystore1947.com/bn/terms',
-      'x-default': 'https://www.luckystore1947.com/terms',
-    },
   },
 };
 
