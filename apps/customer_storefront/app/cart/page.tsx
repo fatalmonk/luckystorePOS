@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '../components/updated/Header';
 import { BottomNav } from '../components/BottomNav';
@@ -14,6 +14,8 @@ import { EmptyCartIcon } from '../components/icons';
 import { formatBdt } from '../lib/formatPrice';
 import { ProductImage } from '../components/product/ProductImage';
 import { trackViewCart } from '../lib/analytics';
+import { getLocaleFromPathname, withLocale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
 const PROMO_CODES: Record<string, { label: string; amount: number; minSubtotal: number }> = {
   FREE500: { label: 'FREE500', amount: 40, minSubtotal: 500 },
@@ -21,6 +23,9 @@ const PROMO_CODES: Record<string, { label: string; amount: number; minSubtotal: 
 
 function CartContent() {
   const router = useRouter();
+  const pathname = usePathname() || '/';
+  const locale = getLocaleFromPathname(pathname);
+  const dict = getDictionary(locale);
   const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, discount, total, isLoaded } = useCartContext();
   const { showToast } = useToast();
   const trackedViewRef = useRef(false);
@@ -76,17 +81,19 @@ function CartContent() {
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-4">
         <div className="p-[18px]">
-          <h2 className="text-lg font-extrabold tracking-tight text-warm-fg mb-3">Cart</h2>
+          <h2 className="text-lg font-extrabold tracking-tight text-warm-fg mb-3">{dict.appDrawer.cart}</h2>
 
           {isEmpty ? (
             <div className="text-center py-16">
               <div className="flex items-center justify-center mb-4">
                 <EmptyCartIcon size={64} className="text-warm-muted" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Your cart is empty</h3>
-              <p className="text-sm text-warm-muted mb-6">Add items from the store to get started</p>
-              <Button onClick={() => router.push('/')} className="max-w-[220px] mx-auto">
-                Start Shopping
+              <h3 className="text-lg font-bold mb-2">{dict.checkout.emptyCart}</h3>
+              <p className="text-sm text-warm-muted mb-6">
+                {locale === 'bn' ? 'আপনার নিত্যপ্রয়োজনীয় পণ্য সহজে খুঁজে নিতে কেনাকাটা শুরু করুন।' : 'Add items from the store to get started'}
+              </p>
+              <Button onClick={() => router.push(withLocale('/category', locale))} className="max-w-[220px] mx-auto">
+                {locale === 'bn' ? 'কেনাকাটা শুরু করুন' : 'Start Shopping'}
               </Button>
             </div>
           ) : (
@@ -151,40 +158,42 @@ function CartContent() {
               {/* Summary */}
               <div className="bg-warm-surface border border-warm-border rounded-[14px] p-[18px] mb-5">
                 <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
-                  <span>Subtotal</span>
+                  <span>{dict.checkout.subtotal}</span>
                   <span>{formatBdt(subtotal)}</span>
                 </div>
                 <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
-                  <span>Delivery</span>
-                  <span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span>
+                  <span>{dict.checkout.deliveryFee}</span>
+                  <span>{deliveryFee === 0 ? dict.checkout.free : formatBdt(deliveryFee)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between mb-2.5 text-sm text-warm-fg">
-                    <span>Discount (FREE500)</span>
+                    <span>{locale === 'bn' ? 'ডিসকাউন্ট (FREE500)' : 'Discount (FREE500)'}</span>
                     <span>−{formatBdt(discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-3 border-t border-warm-border-light text-lg font-extrabold text-warm-fg">
-                  <span>Total</span>
+                  <span>{dict.checkout.total}</span>
                   <span>{formatBdt(total)}</span>
                 </div>
-                <p className="text-xs text-warm-muted mt-2">Cash on Delivery · Pay when you receive</p>
+                <p className="text-xs text-warm-muted mt-2">
+                  {locale === 'bn' ? 'ক্যাশ অন ডেলিভারি · পণ্য বুঝে নিয়ে মূল্য পরিশোধ করুন' : 'Cash on Delivery · Pay when you receive'}
+                </p>
               </div>
 
               {/* Checkout CTA */}
               <div className="bg-warm-fg text-warm-surface rounded-[14px] p-[18px] flex items-center gap-3.5 mb-5 shadow-warm-sm">
                 <div className="flex-1">
                   <p className="text-[11px] text-warm-surface/70 uppercase tracking-widest font-semibold mb-0.5">
-                    {totalItems} items
+                    {totalItems} {locale === 'bn' ? 'টি পণ্য' : 'items'}
                   </p>
                   <p className="text-xl font-extrabold">{formatBdt(total)}</p>
                 </div>
                 <Button
-                  onClick={() => router.push('/checkout')}
-                  className="flex-0 w-[140px] bg-warm-surface text-warm-fg hover:bg-warm-bg"
-                  data-testid="cart-checkout-btn"
+                  onClick={() => router.push(withLocale('/checkout', locale))}
+                  variant="primary"
+                  className="font-bold shrink-0"
                 >
-                  Checkout →
+                  {dict.checkout.title} →
                 </Button>
               </div>
 
