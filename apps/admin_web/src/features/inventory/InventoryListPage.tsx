@@ -34,6 +34,9 @@ export function InventoryListPage() {
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [inventoryShortcutsEnabled, setInventoryShortcutsEnabled] = useState(() =>
+    localStorage.getItem('inventory-keyboard-shortcuts-enabled') === 'true'
+  );
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
@@ -105,20 +108,6 @@ export function InventoryListPage() {
     toggleSelectAll,
     toggleSelect,
   } = useInventoryBulkActions(storeId!, tenantId, inventory);
-
-  // Wire inventory keyboard shortcuts (Shift+A/E/G/S/X and ?)
-  const { showShortcuts, setShowShortcuts } = useInventoryKeyboardShortcuts({
-    isListView: userViewMode === 'table',
-    setIsListView: (val) => handleViewChange(val ? 'table' : 'card'),
-    setIsBulkEditMode: (val) => {
-      const next = typeof val === 'function' ? val(selectedIds.size > 0) : val;
-      if (!next) setSelectedIds(new Set());
-      else if (inventory && inventory.length > 0) toggleSelectAll(inventory.map((i) => i.id), true);
-    },
-    onAddProduct: () => setIsAddModalOpen(true),
-    onExport: handleExportSelected,
-    onScan: () => setIsBarcodeModalOpen(true),
-  });
 
   // Stable callbacks — prevent memoized card re-renders on every parent render
   const handleViewProduct = useCallback((item: InventoryItem) => setViewingProductId(item.id), []);
@@ -231,6 +220,26 @@ export function InventoryListPage() {
       }
     });
   }, [inventory, categories, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
+
+  // Inventory shortcuts are opt-in because Shift+letter bindings can conflict with assistive technology.
+  useInventoryKeyboardShortcuts({
+    enabled: inventoryShortcutsEnabled,
+    isListView: viewMode === 'table',
+    setIsListView: (val) => handleViewChange(val ? 'table' : 'card'),
+    setIsBulkEditMode: (val) => {
+      const next = typeof val === 'function' ? val(selectedIds.size > 0) : val;
+      if (!next) setSelectedIds(new Set());
+      else if (filteredItems.length > 0) toggleSelectAll(filteredItems.map((i) => i.id), true);
+    },
+    onAddProduct: () => setIsAddModalOpen(true),
+    onExport: handleExportSelected,
+    onScan: () => setIsBarcodeModalOpen(true),
+  });
+
+  const handleInventoryShortcutsChange = (enabled: boolean) => {
+    setInventoryShortcutsEnabled(enabled);
+    localStorage.setItem('inventory-keyboard-shortcuts-enabled', String(enabled));
+  };
 
   const stats = useMemo(() => {
     const all = inventory ?? [];
@@ -408,6 +417,8 @@ export function InventoryListPage() {
             onOpenBarcode={() => setIsBarcodeModalOpen(true)}
             view={viewMode}
             onViewChange={handleViewChange}
+            inventoryShortcutsEnabled={inventoryShortcutsEnabled}
+            onInventoryShortcutsChange={handleInventoryShortcutsChange}
           />
         </div>
       </div>
@@ -544,10 +555,6 @@ export function InventoryListPage() {
         />
       )}
 
-      <KeyboardShortcutsModal
-        isOpen={showShortcuts}
-        onClose={() => setShowShortcuts(false)}
-      />
     </div>
   );
 }

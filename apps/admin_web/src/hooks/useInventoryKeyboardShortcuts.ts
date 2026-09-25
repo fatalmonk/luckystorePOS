@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface UseInventoryKeyboardShortcutsOptions {
+  enabled: boolean;
   isListView: boolean;
   setIsListView: (value: boolean) => void;
   setIsBulkEditMode: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -10,6 +11,7 @@ interface UseInventoryKeyboardShortcutsOptions {
 }
 
 export function useInventoryKeyboardShortcuts({
+  enabled,
   isListView,
   setIsListView,
   setIsBulkEditMode,
@@ -17,19 +19,14 @@ export function useInventoryKeyboardShortcuts({
   onExport,
   onScan,
 }: UseInventoryKeyboardShortcutsOptions) {
-  const [showShortcuts, setShowShortcuts] = useState(false);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle shortcuts when not in an input field
-      const target = e.target as HTMLElement;
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
-        return;
-      }
+      if (!enabled) return;
 
-      if (e.key === '?' && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
+      const target = e.target;
+      if (!(target instanceof HTMLElement) || target.isContentEditable || target.closest(
+        'input, textarea, select, button, [role="button"], [role="checkbox"], [role="combobox"], [contenteditable="true"], [role="dialog"][aria-modal="true"]'
+      )) {
         return;
       }
 
@@ -71,7 +68,5 @@ export function useInventoryKeyboardShortcuts({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isListView, setIsListView, setIsBulkEditMode, onAddProduct, onExport, onScan]);
-
-  return { showShortcuts, setShowShortcuts };
+  }, [enabled, isListView, setIsListView, setIsBulkEditMode, onAddProduct, onExport, onScan]);
 }

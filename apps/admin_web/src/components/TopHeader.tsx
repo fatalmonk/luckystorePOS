@@ -73,6 +73,8 @@ export function TopHeader({
     setSearchQuery('');
   }, []);
 
+  const closeHelp = useCallback(() => setIsHelpOpen(false), []);
+
   const runCommand = (path: string) => {
     closeCommandPalette();
     navigate(path);
@@ -95,7 +97,12 @@ export function TopHeader({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isInputActive = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName);
+      const isInputActive = target?.isContentEditable || !!target?.closest(
+        'input, textarea, select, button, [role="button"], [role="checkbox"], [role="combobox"], [contenteditable="true"], [role="dialog"][aria-modal="true"]'
+      );
+
+      // Keep the help dialog as the sole active modal until it closes.
+      if (isHelpOpen) return;
 
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -118,7 +125,7 @@ export function TopHeader({
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [closeCommandPalette, isCommandPaletteOpen, openCommandPalette]);
+  }, [closeCommandPalette, isCommandPaletteOpen, isHelpOpen, openCommandPalette]);
 
   useEffect(() => {
     if (isDark) {
@@ -296,7 +303,7 @@ export function TopHeader({
 
       <KeyboardShortcutsModal
         isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
+        onClose={closeHelp}
       />
     </header>
   );

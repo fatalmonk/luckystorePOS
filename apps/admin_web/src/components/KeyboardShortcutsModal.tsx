@@ -165,6 +165,11 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
               <p className="text-body-sm text-text-muted">
                 {isBengali ? 'কীবোর্ড ব্যবহার করে দ্রুত কাজ পরিচালনা করুন' : 'Navigate Lucky Store faster with keyboard actions'}
               </p>
+              <p className="text-caption text-text-muted mt-1">
+                {isBengali
+                  ? 'ইনভেন্টরি শর্টকাট ডিফল্টভাবে বন্ধ থাকে; ইনভেন্টরি টুলবার থেকে চালু করুন।'
+                  : 'Inventory shortcuts are off by default. Enable them from the inventory toolbar.'}
+              </p>
             </div>
           </div>
           <button

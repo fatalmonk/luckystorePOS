@@ -9,6 +9,8 @@ interface InventoryFilterToolbarProps {
   onOpenBarcode: () => void;
   view?: 'card' | 'table';
   onViewChange?: (view: 'card' | 'table') => void;
+  inventoryShortcutsEnabled: boolean;
+  onInventoryShortcutsChange: (enabled: boolean) => void;
 }
 
 export function InventoryFilterToolbar({
@@ -19,6 +21,8 @@ export function InventoryFilterToolbar({
   onOpenBarcode,
   view = 'card',
   onViewChange,
+  inventoryShortcutsEnabled,
+  onInventoryShortcutsChange,
 }: InventoryFilterToolbarProps) {
   return (
     <div className="flex items-center gap-2 w-full min-w-0">
@@ -37,6 +41,15 @@ export function InventoryFilterToolbar({
 
       {/* Controls Group */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <label className="flex items-center gap-1.5 text-xs text-text-muted whitespace-nowrap" title="Shift+letter inventory shortcuts can conflict with assistive technology">
+          <input
+            type="checkbox"
+            aria-label="Enable inventory keyboard shortcuts"
+            checked={inventoryShortcutsEnabled}
+            onChange={(event) => onInventoryShortcutsChange(event.target.checked)}
+          />
+          <span className="text-[10px]">Shortcuts</span>
+        </label>
         {/* Sort Dropdown */}
         <div className="relative">
           <ArrowUpDown size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
