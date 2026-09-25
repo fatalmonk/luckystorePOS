@@ -7,19 +7,82 @@ export type ReceiptOcrSupplier = {
 
 export type ReceiptOcrItem = {
   name: string;
-  quantity: number;
+  quantity: number | undefined;
   unitPrice?: number;
   total?: number;
+  packSize?: string | null;
+  unit?: string | null;
+  confidence?: 'high' | 'medium' | 'low';
+  warnings?: string[];
 };
+
+export type OcrExtractionMethod = 'vision' | 'tesseract' | 'filename';
 
 export type ReceiptOcrResult = {
   invoiceNumber: string | null;
   invoiceTotal: string | null;
+  subtotal?: number | null;
+  discount?: number | null;
+  vat?: number | null;
   invoiceDate?: string | null;
   supplier: ReceiptOcrSupplier | null;
   items: ReceiptOcrItem[];
   rawText?: string;
+  confidence?: 'high' | 'medium' | 'low';
+  warnings?: string[];
+  extractionMethod?: OcrExtractionMethod;
 };
+
+
+export function validateOcrResult(result: ReceiptOcrResult): ReceiptOcrResult {
+  if (!result.warnings) result.warnings = [];
+
+  let calculatedLinesTotal = 0;
+
+  for (const item of result.items) {
+    if (!item.warnings) item.warnings = [];
+
+    if (item.quantity != null && item.unitPrice != null) {
+      const expectedTotal = item.quantity * item.unitPrice;
+      if (item.total != null) {
+        if (Math.abs(expectedTotal - item.total) > 0.05) {
+          item.warnings.push(`Quantity × unit price (${expectedTotal.toFixed(2)}) differs from extracted total (${item.total.toFixed(2)}).`);
+        }
+      } else {
+        item.warnings.push(`Line total was not extracted; quantity × unit price is ${expectedTotal.toFixed(2)}.`);
+      }
+    }
+
+    if (item.total != null) {
+      calculatedLinesTotal += item.total;
+    }
+  }
+
+  const allLineTotalsPresent = result.items.length > 0 && result.items.every((item) => item.total != null);
+  const extractedSubtotal = result.subtotal == null ? null : Number(result.subtotal);
+  if (result.invoiceTotal != null) {
+    const rawInvTotal = parseFloat(String(result.invoiceTotal).replace(/[^0-9.-]+/g, ''));
+    if (!isNaN(rawInvTotal)) {
+      const subtotal = result.subtotal != null ? parseFloat(String(result.subtotal)) : calculatedLinesTotal;
+      const discount = result.discount != null ? parseFloat(String(result.discount)) : 0;
+      const vat = result.vat != null ? parseFloat(String(result.vat)) : 0;
+
+      const expectedInvoiceTotal = subtotal - discount + vat;
+
+      if (result.items.length > 0 && Math.abs(expectedInvoiceTotal - rawInvTotal) > 5.0) {
+        result.warnings.push(`Extracted lines total (${subtotal.toFixed(2)}) - discount + tax differs from invoice total (${rawInvTotal.toFixed(2)}).`);
+      }
+      if (allLineTotalsPresent && Math.abs(calculatedLinesTotal - rawInvTotal) > 0.05) {
+        result.warnings.push(`Sum of extracted line totals (${calculatedLinesTotal.toFixed(2)}) differs from invoice total (${rawInvTotal.toFixed(2)}).`);
+      }
+    }
+  }
+  if (allLineTotalsPresent && extractedSubtotal != null && Number.isFinite(extractedSubtotal)
+      && Math.abs(calculatedLinesTotal - extractedSubtotal) > 0.05) {
+    result.warnings.push(`Sum of extracted line totals (${calculatedLinesTotal.toFixed(2)}) differs from extracted subtotal (${extractedSubtotal.toFixed(2)}).`);
+  }
+  return result;
+}
 
 export function parseReceiptFilename(
   name: string,
@@ -53,9 +116,7 @@ export function parseReceiptFilename(
     const rawSupplierName = match[3].trim();
     const invoiceTotal = match[4];
 
-    const matchedSupplier = suppliers.find(
-      (s) => s.name.toLowerCase().includes(rawSupplierName.toLowerCase()) || rawSupplierName.toLowerCase().includes(s.name.toLowerCase())
-    ) ?? { id: '', name: rawSupplierName };
+    const matchedSupplier = resolveSupplierName(rawSupplierName, suppliers) ?? { id: '', name: rawSupplierName };
 
     return {
       invoiceNumber,
@@ -94,12 +155,8 @@ export function parseReceiptFilename(
   }
 
   // Find supplier from known suppliers or remaining letters
-  for (const s of suppliers) {
-    if (cleanName.toLowerCase().includes(s.name.toLowerCase())) {
-      supplier = s;
-      break;
-    }
-  }
+  const filenameSupplierMatches = suppliers.filter((candidate) => cleanName.toLowerCase().includes(candidate.name.toLowerCase()));
+  if (filenameSupplierMatches.length === 1) supplier = filenameSupplierMatches[0];
 
   if (!supplier && (invoiceDate || invoiceTotal)) {
     // Strip matched numbers and invoice, keep remaining letters as supplier name
@@ -114,6 +171,16 @@ export function parseReceiptFilename(
   }
 
   return { invoiceNumber, invoiceDate, supplier, invoiceTotal };
+}
+
+function resolveSupplierName(name: string, suppliers: ReceiptOcrSupplier[]): ReceiptOcrSupplier | null {
+  const normalized = name.trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+  if (!normalized) return null;
+  const matches = suppliers.filter((supplier) => {
+    const candidate = supplier.name.trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+    return candidate === normalized || candidate.includes(normalized) || normalized.includes(candidate);
+  });
+  return matches.length === 1 ? matches[0] : null;
 }
 
 function normalizeFilenameDate(value: string): string {
@@ -154,36 +221,16 @@ const compact = (value: string) => value.toLowerCase().replace(/[\s\p{P}\p{S}]+/
 
 function findSupplier(text: string, suppliers: ReceiptOcrSupplier[]): ReceiptOcrSupplier | null {
   const normalizedReceipt = compact(text);
-
-  // 1. Direct substring match (longest first)
-  const exactMatch = suppliers
-    .filter((supplier) => compact(supplier.name).length >= 3 && normalizedReceipt.includes(compact(supplier.name)))
-    .sort((a, b) => compact(b.name).length - compact(a.name).length)[0];
-  if (exactMatch) return exactMatch;
-
-  // 2. Token match (e.g. "FM" or "Distribution")
-  for (const supplier of suppliers) {
-    const tokens = supplier.name.toLowerCase().split(/[\s_/-]+/).filter((t) => t.length >= 2);
-    for (const token of tokens) {
-      if (normalizedReceipt.includes(token)) {
-        return supplier;
-      }
-    }
-  }
-
-  // 3. Match from top header text
   const headerLines = text.split(/\r?\n/).slice(0, 8);
-  for (const line of headerLines) {
-    const cleanLine = line.trim();
-    if (cleanLine.length < 3) continue;
-    const matched = suppliers.find((s) => 
-      cleanLine.toLowerCase().includes(s.name.toLowerCase()) || 
-      s.name.toLowerCase().includes(cleanLine.toLowerCase())
-    );
-    if (matched) return matched;
-  }
-
-  return null;
+  const normalizedHeader = compact(headerLines.join(' '));
+  const matches = suppliers.filter((supplier) => {
+    const fullName = compact(supplier.name);
+    const tokens = supplier.name.toLowerCase().split(/[\s_/-]+/).filter((token) => token.length >= 3);
+    return fullName.length >= 3 && (normalizedReceipt.includes(fullName)
+      || normalizedHeader.includes(fullName)
+      || tokens.some((token) => normalizedReceipt.includes(token) || normalizedHeader.includes(token)));
+  });
+  return matches.length === 1 ? matches[0] : null;
 }
 
 function findInvoiceNumber(text: string): string | null {
@@ -202,7 +249,7 @@ function findTotal(text: string): string | null {
   const normalized = normalizeDigits(text);
   const totalKeywords = /(?:সাব\s*টোটাল|টোটাল|সর্বমোট|নিট\s*(?:দেয়|বিল)?|মোট\s*(?:টাকা|বিল)?|grand\s*total|net\s*(?:payable|amount)|sub\s*total|total\s*(?:amount|payable)?|amount\s*due)/i;
   const lines = normalized.split(/\r?\n/);
-  
+
   const totalLineCandidates: string[] = [];
   for (const line of lines) {
     if (totalKeywords.test(line)) {
@@ -347,7 +394,8 @@ async function preprocessImageForOcr(source: File | Blob): Promise<Blob> {
 export async function scanReceiptImage(
   source: File | string,
   suppliers: ReceiptOcrSupplier[],
-  onProgress?: (progress: number, status: string) => void
+  onProgress?: (progress: number, status: string) => void,
+  authToken?: string
 ): Promise<ReceiptOcrResult> {
   let imageSource: File | Blob;
 
@@ -384,6 +432,95 @@ export async function scanReceiptImage(
     imageSource = source;
   }
 
+
+  const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
+  const sourceType = source instanceof File ? source.type || 'image/jpeg' : 'image/jpeg';
+
+  if (!authToken) throw new Error('NO_FALLBACK: Sign in again to scan a receipt securely.');
+
+  if (authToken) {
+    if (onProgress) onProgress(10, 'Analyzing image with secure vision AI...');
+    try {
+      const buffer = await imageSource.arrayBuffer();
+      // btoa chunking
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.length; i += 8192) {
+        binary += String.fromCharCode.apply(null, Array.from(bytes.slice(i, i + 8192)));
+      }
+      const imageBase64 = btoa(binary);
+
+      const edgeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-receipt-vision`;
+      const res = await fetch(edgeUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ imageBase64, mimeType: sourceType }),
+      });
+
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null) as { error?: string; code?: string } | null;
+        const providerUnavailable = errorBody?.code === 'PROVIDER_CREDITS_EXHAUSTED'
+          || errorBody?.code === 'PROVIDER_NOT_CONFIGURED'
+          || errorBody?.code === 'PROVIDER_AUTH_FAILED'
+          || errorBody?.code === 'PROVIDER_INVALID_RESPONSE'
+          || errorBody?.code === 'PROVIDER_REQUEST_REJECTED';
+        if (providerUnavailable || res.status === 501) {
+          throw new Error(`NO_FALLBACK: ${errorBody?.error || 'Vision extraction is unavailable. Contact an administrator.'}`);
+        }
+        if (res.status === 401 || res.status === 403) throw new Error('NO_FALLBACK: Unauthorized access to AI extraction');
+        if (res.status === 413) throw new Error('NO_FALLBACK: Image file is too large');
+        if (res.status === 415 || res.status === 400) throw new Error(`NO_FALLBACK: Invalid image or format (HTTP ${res.status})`);
+        if (errorBody?.code === 'PROVIDER_RATE_LIMIT') {
+          throw new Error('NO_FALLBACK: Vision provider is rate limited. Retry the scan shortly.');
+        }
+        throw new Error(`AI Provider Error: HTTP ${res.status}`);
+      }
+
+      const resultJson = await res.json();
+      if (resultJson.success && resultJson.data) {
+        const aiResult = resultJson.data;
+
+        const matchSupplier = fileMeta?.supplier
+          ?? resolveSupplierName(aiResult.supplierName || '', suppliers)
+          ?? { id: '', name: aiResult.supplierName || '' };
+
+        if (onProgress) onProgress(100, 'Vision AI extraction complete');
+
+        return validateOcrResult({
+          invoiceNumber: fileMeta?.invoiceNumber ?? aiResult.invoiceNumber ?? null,
+          invoiceTotal: fileMeta?.invoiceTotal ?? (aiResult.invoiceTotal != null ? String(aiResult.invoiceTotal) : null),
+          invoiceDate: aiResult.invoiceDate ?? fileMeta?.invoiceDate ?? null,
+          subtotal: aiResult.subtotal,
+          discount: aiResult.discount,
+          vat: aiResult.vat,
+          supplier: matchSupplier.name ? matchSupplier : null,
+          confidence: aiResult.confidence,
+          extractionMethod: 'vision',
+          items: (aiResult.items || []).map((it: any) => ({
+            name: it.name,
+            quantity: typeof it.quantity === 'number' ? it.quantity : undefined,
+            unitPrice: typeof it.unitPrice === 'number' ? it.unitPrice : undefined,
+            total: typeof it.total === 'number' ? it.total : undefined,
+            packSize: it.packSize,
+            unit: it.unit,
+            confidence: it.confidence,
+            warnings: []
+          }))
+        });
+      }
+    } catch (e: any) {
+      if (e.message && e.message.includes('NO_FALLBACK')) {
+        throw e;
+      }
+      console.warn('Vision extraction failed, falling back to Tesseract OCR', e);
+    }
+  }
+
+  if (onProgress) onProgress(20, 'Falling back to local OCR extraction...');
+
   const processedSource = await preprocessImageForOcr(imageSource);
 
   const ocrAssetBase = new URL(`${import.meta.env.BASE_URL}ocr/`, window.location.origin).href;
@@ -403,16 +540,15 @@ export async function scanReceiptImage(
     const { data } = await worker.recognize(processedSource);
 
     // If source is a File, parse its filename first (e.g. LS69-16/04/26-Savoy-9534BDT)
-    const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
-
-    return {
+    return validateOcrResult({
       invoiceNumber: fileMeta?.invoiceNumber || findInvoiceNumber(data.text),
       invoiceDate: fileMeta?.invoiceDate || null,
       invoiceTotal: fileMeta?.invoiceTotal || findTotal(data.text),
       supplier: fileMeta?.supplier?.name ? (suppliers.find(s => s.name.toLowerCase() === fileMeta.supplier?.name.toLowerCase()) || fileMeta.supplier) : findSupplier(data.text, suppliers),
       items: findItems(data.text),
       rawText: data.text,
-    };
+      extractionMethod: 'tesseract',
+    });
   } finally {
     await worker.terminate();
   }
