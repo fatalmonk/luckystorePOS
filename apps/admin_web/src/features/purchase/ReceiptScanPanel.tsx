@@ -6,9 +6,10 @@ import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, s
 type ReceiptScanPanelProps = {
   suppliers: ReceiptOcrSupplier[];
   onApply: (result: ReceiptOcrResult) => void;
+  onScanStart?: () => void;
 };
 
-export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) {
+export function ReceiptScanPanel({ suppliers, onApply, onScanStart }: ReceiptScanPanelProps) {
   const { session } = useAuth();
   const accessToken = session?.access_token;
 
@@ -30,6 +31,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
     }
 
     const scanId = ++scanIdRef.current;
+    onScanStart?.();
     const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
     setResult(fileMeta && (fileMeta.invoiceNumber || fileMeta.supplier || fileMeta.invoiceTotal)
       ? { ...fileMeta, items: [] }
@@ -79,7 +81,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
         if (source instanceof File && fileInputRef.current) fileInputRef.current.value = '';
       }
     }
-  }, [accessToken, previewUrl, suppliers]);
+  }, [accessToken, onScanStart, previewUrl, suppliers]);
 
   // Clipboard paste support (e.g. Cmd+V copied screenshot/image from Google Drive)
   useEffect(() => {
@@ -112,6 +114,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
 
   const removeReceipt = () => {
     scanIdRef.current += 1;
+    onScanStart?.();
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setResult(null);

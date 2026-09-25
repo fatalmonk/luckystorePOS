@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseReceiptFilename, scanReceiptImage, validateOcrResult, type ReceiptOcrResult } from './receiptOcr';
+import { getReceiptVisionEndpoint, parseReceiptFilename, scanReceiptImage, validateOcrResult, type ReceiptOcrResult } from './receiptOcr';
 
 describe('parseReceiptFilename', () => {
   const suppliers = [{ id: 'supplier-1', name: 'Savoy Distributors' }];
@@ -132,9 +132,18 @@ describe('validateOcrResult', () => {
       items: [{ name: 'Atta', quantity: 24, unitPrice: 51, total: 1224 }],
     };
     validateOcrResult(result);
-    expect(result.warnings).toContain('Sum of extracted line totals (1224.00) differs from invoice total (3672.00).');
+    expect(result.warnings).not.toContain('Sum of extracted line totals (1224.00) differs from invoice total (3672.00).');
     expect(result.warnings).toContain('Sum of extracted line totals (1224.00) differs from extracted subtotal (3672.00).');
     expect(result.items[0].total).toBe(1224);
+  });
+
+  it('does not compare item totals directly with the adjusted invoice total', () => {
+    const result: ReceiptOcrResult = {
+      invoiceNumber: 'INV003', invoiceTotal: '95', subtotal: 100,
+      discount: 10, vat: 5, supplier: null,
+      items: [{ name: 'Item', quantity: 1, unitPrice: 100, total: 100 }],
+    };
+    expect(validateOcrResult(result).warnings).toEqual([]);
   });
 });
 
@@ -150,9 +159,6 @@ vi.mock('tesseract.js', () => ({
 }));
 import * as tesseract from 'tesseract.js';
 
-
-// Mock Vite env vars
-vi.stubGlobal('import', { meta: { env: { BASE_URL: '/', VITE_SUPABASE_URL: 'http://test' } } });
 
 describe('scanReceiptImage Edge Function Fallback Security', () => {
   class TestURL extends URL {
@@ -172,6 +178,27 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('sends a URL-backed PNG using the downloaded blob MIME type', async () => {
+    const pngBlob = new Blob(['png'], { type: 'image/png' });
+    Object.defineProperty(pngBlob, 'arrayBuffer', { value: async () => new TextEncoder().encode('png').buffer });
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce({ ok: true, headers: { get: () => 'image/png' }, blob: async () => pngBlob })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ success: true, data: { items: [] } }) });
+    vi.stubGlobal('fetch', fetchSpy);
+
+    await scanReceiptImage('https://images.example.test/receipt.png', [], undefined, 'token');
+
+    expect(JSON.parse(fetchSpy.mock.calls[1][1].body).mimeType).toBe('image/png');
+  });
+
+  it('rejects an HTTP Supabase endpoint', () => {
+    expect(() => getReceiptVisionEndpoint('http://test.supabase.co')).toThrow('requires an HTTPS URL');
+  });
+
+  it('rejects an invalid Supabase endpoint configuration', () => {
+    expect(() => getReceiptVisionEndpoint(undefined)).toThrow('valid HTTPS URL');
   });
 
   const runWithMockFetch = async (status: number, ok: boolean, errorText = '') => {

@@ -33,6 +33,19 @@ export type ReceiptOcrResult = {
   extractionMethod?: OcrExtractionMethod;
 };
 
+export function getReceiptVisionEndpoint(supabaseBaseUrl: string | undefined): string {
+  let supabaseUrl: URL;
+  try {
+    supabaseUrl = new URL(supabaseBaseUrl ?? '');
+  } catch {
+    throw new Error('NO_FALLBACK: Secure vision extraction is not configured with a valid HTTPS URL.');
+  }
+  if (supabaseUrl.protocol !== 'https:') {
+    throw new Error('NO_FALLBACK: Secure vision extraction requires an HTTPS URL.');
+  }
+  return new URL('/functions/v1/extract-receipt-vision', supabaseUrl).toString();
+}
+
 
 export function validateOcrResult(result: ReceiptOcrResult): ReceiptOcrResult {
   if (!result.warnings) result.warnings = [];
@@ -72,7 +85,8 @@ export function validateOcrResult(result: ReceiptOcrResult): ReceiptOcrResult {
       if (result.items.length > 0 && Math.abs(expectedInvoiceTotal - rawInvTotal) > 5.0) {
         result.warnings.push(`Extracted lines total (${subtotal.toFixed(2)}) - discount + tax differs from invoice total (${rawInvTotal.toFixed(2)}).`);
       }
-      if (allLineTotalsPresent && Math.abs(calculatedLinesTotal - rawInvTotal) > 0.05) {
+      if (result.subtotal == null && discount === 0 && vat === 0
+          && allLineTotalsPresent && Math.abs(calculatedLinesTotal - rawInvTotal) > 0.05) {
         result.warnings.push(`Sum of extracted line totals (${calculatedLinesTotal.toFixed(2)}) differs from invoice total (${rawInvTotal.toFixed(2)}).`);
       }
     }
@@ -434,7 +448,7 @@ export async function scanReceiptImage(
 
 
   const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
-  const sourceType = source instanceof File ? source.type || 'image/jpeg' : 'image/jpeg';
+  const sourceType = imageSource.type || 'image/jpeg';
 
   if (!authToken) throw new Error('NO_FALLBACK: Sign in again to scan a receipt securely.');
 
@@ -450,7 +464,7 @@ export async function scanReceiptImage(
       }
       const imageBase64 = btoa(binary);
 
-      const edgeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-receipt-vision`;
+      const edgeUrl = getReceiptVisionEndpoint(import.meta.env.VITE_SUPABASE_URL);
       const res = await fetch(edgeUrl, {
         method: 'POST',
         headers: {
