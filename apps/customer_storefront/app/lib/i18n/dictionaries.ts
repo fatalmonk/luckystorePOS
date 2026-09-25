@@ -161,7 +161,7 @@ export const dictionaries = {
       deliveryFee: 'Delivery Fee',
       free: 'Free',
       total: 'Total',
-      emptyCart: 'Your cart is currently empty',
+      emptyCart: 'Your cart is empty',
       outOfStock: 'Product is currently out of stock',
       deliveryRestriction: 'Sorry, this address is outside our 1 km delivery zone',
     },

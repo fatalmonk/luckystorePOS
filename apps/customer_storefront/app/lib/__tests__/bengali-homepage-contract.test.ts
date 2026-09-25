@@ -212,7 +212,7 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(bnDict.checkout.free).toBe('ফ্রি');
     expect(enDict.checkout.total).toBe('Total');
     expect(bnDict.checkout.total).toBe('সর্বমোট');
-    expect(enDict.checkout.emptyCart).toBe('Your cart is currently empty');
+    expect(enDict.checkout.emptyCart).toBe('Your cart is empty');
     expect(bnDict.checkout.emptyCart).toBe('আপনার ব্যাগ বর্তমানে খালি আছে');
     expect(enDict.checkout.outOfStock).toBe('Product is currently out of stock');
     expect(bnDict.checkout.outOfStock).toBe('পণ্যটির স্টক বর্তমানে শেষ');
