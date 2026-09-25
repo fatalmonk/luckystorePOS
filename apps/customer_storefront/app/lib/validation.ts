@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const checkoutSchema = z.object({
   orderNumber: z.string().min(1),
-  idempotencyKey: z.string().trim().max(100).optional(),
+  idempotencyKey: z.string().trim().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
   tenantId: z.string().uuid(),
   storeId: z.string().uuid(),
   customerName: z.string().trim().min(2).max(100),

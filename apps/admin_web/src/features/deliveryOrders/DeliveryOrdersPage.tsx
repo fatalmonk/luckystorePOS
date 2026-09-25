@@ -8,7 +8,7 @@ import { useRealtimeSubscription } from '@/hooks';
 import { PageHeader } from '@/components';
 import { SkeletonCard, ErrorState } from '@/components';
 import { 
-  ShoppingBag, Search, Filter, Phone, MapPin, User, 
+  ShoppingBag, Search, Filter, Phone, MapPin, User, MessageCircle,
   Calendar, Check, ChevronDown, ChevronUp, AlertCircle 
 } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
@@ -51,6 +51,7 @@ export function DeliveryOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
+  const [customerUpdate, setCustomerUpdate] = useState<{ orderId: string; status: OrderStatus } | null>(null);
 
   // Fetch Delivery Orders
   const { data: orders = [], isLoading, isError, refetch } = useQuery<Order[]>({
@@ -103,6 +104,7 @@ export function DeliveryOrdersPage() {
     },
     onSuccess: (_, variables) => {
       notify(`Status updated to ${variables.nextStatus}`, 'success');
+      setCustomerUpdate({ orderId: variables.orderId, status: variables.nextStatus });
       queryClient.invalidateQueries({ queryKey: ['delivery-orders', storeId] });
     },
     onError: (err: any) => {
@@ -317,8 +319,30 @@ export function DeliveryOrdersPage() {
                 </div>
 
                 {/* Card Actions Footer */}
-                {['pending', 'confirmed', 'preparing', 'out_for_delivery'].includes(order.status) && (
-                  <div className="p-4 border-t border-warm-border-warm/50 bg-warm-bg/20 flex justify-end gap-2.5">
+                {(['pending', 'confirmed', 'preparing', 'out_for_delivery'].includes(order.status)
+                  || (customerUpdate?.orderId === order.id && customerUpdate.status === order.status)) && (
+                  <div className="p-4 border-t border-warm-border-warm/50 bg-warm-bg/20 flex flex-wrap justify-between gap-2.5">
+                    <div>
+                      {customerUpdate?.orderId === order.id && customerUpdate.status === order.status && (() => {
+                        const phone = order.customer_phone.replace(/\D/g, '');
+                        const whatsappPhone = phone.startsWith('0') ? `88${phone}` : phone;
+                        const statusLabel = order.status.replace(/_/g, ' ');
+                        const message = `Lucky Store update: your order #${order.order_number} is now ${statusLabel}.`;
+                        return (
+                          <a
+                            href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setCustomerUpdate(null)}
+                            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-[#25D366]/40 bg-white px-3 text-xs font-bold text-[#128C7E] hover:bg-[#25D366]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#128C7E]"
+                          >
+                            <MessageCircle size={15} aria-hidden="true" />
+                            Send WhatsApp update
+                          </a>
+                        );
+                      })()}
+                    </div>
+                    <div className="flex justify-end gap-2.5">
                     {order.status === 'pending' && (
                       <>
                         <button 
@@ -364,6 +388,7 @@ export function DeliveryOrdersPage() {
                         Mark Delivered
                       </button>
                     )}
+                    </div>
                   </div>
                 )}
               </div>

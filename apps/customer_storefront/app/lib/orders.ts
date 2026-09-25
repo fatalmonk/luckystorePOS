@@ -16,13 +16,14 @@ export interface OrderInput {
   subtotal: number;
   deliveryFee: number;
   total: number;
-  idempotencyKey?: string;
+  idempotencyKey: string;
 }
 
 export interface CreatedOrder {
   id: string;
   order_number: string;
   replayed?: boolean;
+  trackingToken?: string;
 }
 
 interface RpcOrderResult {
@@ -32,7 +33,7 @@ interface RpcOrderResult {
   order_number?: string;
 }
 
-export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
+export async function createOrder(input: OrderInput, rpcClient = supabase): Promise<CreatedOrder> {
   // Validate input with Zod — use parsed.data, NOT raw input
   const parsed = checkoutSchema.safeParse({
     ...input,
@@ -44,7 +45,7 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
   }
   const data = parsed.data;
 
-  const { data: result, error } = await supabase.rpc('create_order_with_stock_idempotent', {
+  const { data: result, error } = await rpcClient.rpc('create_order_with_stock_idempotent', {
     p_order_number: data.orderNumber,
     p_tenant_id: TENANT_ID,
     p_store_id: STORE_ID,
@@ -68,86 +69,6 @@ export async function createOrder(input: OrderInput): Promise<CreatedOrder> {
   const replayed = rpcResult.order ? rpcResult.replayed === true : false;
 
   if (replayed) return { ...order, replayed: true } as CreatedOrder;
-
-  // Broadcast realtime notification to admin web and mobile app
-  // Use a timeout to ensure channel cleanup even if subscription hangs
-  let channel: ReturnType<typeof supabase.channel> | null = null;
-  const cleanupTimer = setTimeout(() => {
-    if (channel) {
-      try {
-        supabase.removeChannel(channel);
-        channel = null;
-      } catch (err) {
-        console.error('Failed to cleanup channel after timeout:', err);
-      }
-    }
-  }, 10_000); // 10s max wait for subscription
-
-  const safelyRemoveChannel = (ch: any) => {
-    if (!ch) return;
-    setTimeout(() => {
-      try {
-        supabase.removeChannel(ch);
-      } catch (err) {
-        console.error('Error removing channel:', err);
-      }
-    }, 0);
-  };
-
-  try {
-    channel = supabase.channel(`store-notifications:${STORE_ID}`);
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        Promise.resolve(
-          channel!.send({
-            type: 'broadcast',
-            event: 'new-delivery-order',
-            payload: {
-              id: (result as any).id,
-              orderNumber: (result as any).order_number || data.orderNumber,
-              customerName: data.customerName,
-              customerPhone: data.customerPhone,
-              customerAddress: data.customerAddress,
-              total: data.total,
-              itemsCount: data.items.length,
-              paymentMethod: data.paymentMethod,
-              storeId: STORE_ID,
-            },
-          })
-        ).then(() => {
-          clearTimeout(cleanupTimer);
-          if (channel) {
-            const ch = channel;
-            channel = null;
-            safelyRemoveChannel(ch);
-          }
-        }).catch((err) => {
-          clearTimeout(cleanupTimer);
-          console.error('Failed to send broadcast:', err);
-          if (channel) {
-            const ch = channel;
-            channel = null;
-            safelyRemoveChannel(ch);
-          }
-        });
-      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-        clearTimeout(cleanupTimer);
-        if (channel) {
-          const ch = channel;
-          channel = null;
-          safelyRemoveChannel(ch);
-        }
-      }
-    });
-  } catch (err) {
-    clearTimeout(cleanupTimer);
-    console.error('Failed to send realtime broadcast:', err);
-    if (channel) {
-      const ch = channel;
-      channel = null;
-      safelyRemoveChannel(ch);
-    }
-  }
 
   return { ...order, replayed } as CreatedOrder;
 }

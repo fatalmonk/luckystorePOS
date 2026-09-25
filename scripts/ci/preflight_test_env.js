@@ -125,7 +125,7 @@ async function runPreflight() {
     p_payment_method: 'cod',
     p_notes: null,
     p_delivery_slot: null,
-    p_idempotency_key: null,
+    p_idempotency_key: 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f',
   });
 
   if (orderRpcErr) {
