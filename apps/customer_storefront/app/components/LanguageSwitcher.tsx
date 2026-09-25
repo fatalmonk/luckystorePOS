@@ -18,6 +18,8 @@ export function LanguageSwitcher() {
     cleanPath === '/' ||
     cleanPath === '/delivery' ||
     cleanPath === '/category' ||
+    cleanPath === '/cart' ||
+    cleanPath === '/checkout' ||
     cleanPath.startsWith('/category/') ||
     cleanPath.startsWith('/product/');
   const targetPath = targetLocale === 'bn' && !supportsBengaliRoute ? '/' : pathname;

@@ -205,7 +205,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
           </button>
           <div className="flex items-center gap-2">
             <Link
-              href="/wishlist"
+              href={withLocale('/wishlist', effectiveLocale)}
               prefetch={false}
               onClick={onClose}
               className="flex h-11 items-center gap-2 rounded-full border border-warm-border px-4 text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
@@ -214,7 +214,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
               {dict.appDrawer.wishlist}
             </Link>
             <Link
-              href="/cart"
+              href={withLocale('/cart', effectiveLocale)}
               onClick={onClose}
               className="flex h-11 items-center gap-2 rounded-full bg-warm-accent px-4 text-xs font-bold text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             >

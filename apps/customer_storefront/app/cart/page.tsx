@@ -192,6 +192,7 @@ function CartContent() {
                   onClick={() => router.push(withLocale('/checkout', locale))}
                   variant="primary"
                   className="font-bold shrink-0"
+                  data-testid="cart-checkout-btn"
                 >
                   {dict.checkout.title} →
                 </Button>
