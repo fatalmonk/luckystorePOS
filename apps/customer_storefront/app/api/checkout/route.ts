@@ -146,7 +146,12 @@ export async function POST(req: NextRequest) {
 
     const requestClient = await createServerClient();
     const { error: authError } = await requestClient.auth.getUser();
-    if (authError) {
+    if (
+      authError &&
+      authError.name !== 'AuthSessionMissingError' &&
+      !authError.message?.includes('Auth session missing') &&
+      !authError.message?.includes('session')
+    ) {
       return NextResponse.json({ ok: false, error: 'Unable to verify your account. Please try again.' }, { status: 503 });
     }
     const order = await createOrder({

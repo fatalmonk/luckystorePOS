@@ -181,6 +181,8 @@ test.describe('Checkout Flow', () => {
 
 test.describe('Checkout Price Tampering', () => {
   test('rejects tampered total with 400', async ({ page, request }) => {
+    test.skip(!canMutatePreview, mutationSafety.reason);
+
     // First, get a valid product from the storefront
     await page.goto('/');
     await expect(page.getByTestId('grid-product-card').first()).toBeVisible({ timeout: 10000 });

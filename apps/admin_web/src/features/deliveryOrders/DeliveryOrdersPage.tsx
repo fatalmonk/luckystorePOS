@@ -51,7 +51,7 @@ export function DeliveryOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
-  const [customerUpdate, setCustomerUpdate] = useState<{ orderId: string; status: OrderStatus } | null>(null);
+  const [customerUpdates, setCustomerUpdates] = useState<Record<string, OrderStatus>>({});
 
   // Fetch Delivery Orders
   const { data: orders = [], isLoading, isError, refetch } = useQuery<Order[]>({
@@ -104,7 +104,7 @@ export function DeliveryOrdersPage() {
     },
     onSuccess: (_, variables) => {
       notify(`Status updated to ${variables.nextStatus}`, 'success');
-      setCustomerUpdate({ orderId: variables.orderId, status: variables.nextStatus });
+      setCustomerUpdates((prev) => ({ ...prev, [variables.orderId]: variables.nextStatus }));
       queryClient.invalidateQueries({ queryKey: ['delivery-orders', storeId] });
     },
     onError: (err: any) => {
@@ -320,10 +320,10 @@ export function DeliveryOrdersPage() {
 
                 {/* Card Actions Footer */}
                 {(['pending', 'confirmed', 'preparing', 'out_for_delivery'].includes(order.status)
-                  || (customerUpdate?.orderId === order.id && customerUpdate.status === order.status)) && (
+                  || customerUpdates[order.id] === order.status) && (
                   <div className="p-4 border-t border-warm-border-warm/50 bg-warm-bg/20 flex flex-wrap justify-between gap-2.5">
                     <div>
-                      {customerUpdate?.orderId === order.id && customerUpdate.status === order.status && (() => {
+                      {customerUpdates[order.id] === order.status && (() => {
                         const phone = order.customer_phone.replace(/\D/g, '');
                         const whatsappPhone = phone.startsWith('0') ? `88${phone}` : phone;
                         const statusLabel = order.status.replace(/_/g, ' ');
@@ -333,8 +333,14 @@ export function DeliveryOrdersPage() {
                             href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={() => setCustomerUpdate(null)}
-                            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-[#25D366]/40 bg-white px-3 text-xs font-bold text-[#128C7E] hover:bg-[#25D366]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#128C7E]"
+                            onClick={() =>
+                              setCustomerUpdates((prev) => {
+                                const next = { ...prev };
+                                delete next[order.id];
+                                return next;
+                              })
+                            }
+                            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-[#25D366]/40 bg-white px-3 text-xs font-bold text-[#0F766E] hover:bg-[#25D366]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
                           >
                             <MessageCircle size={15} aria-hidden="true" />
                             Send WhatsApp update

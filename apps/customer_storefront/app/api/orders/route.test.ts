@@ -78,6 +78,25 @@ describe('GET /api/orders', () => {
     ]);
   });
 
+  it('returns 404 when valid-format token exists but order number does not match', async () => {
+    const token = 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f';
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    mocks.order = { id: 'order-1', order_number: 'LSO-REAL', guest_tracking_token_hash: tokenHash };
+    const response = await GET(new NextRequest('https://store.test/api/orders?num=LSO-OTHER', {
+      headers: { 'x-order-tracking-token': token },
+    }));
+    expect(response.status).toBe(404);
+  });
+
+  it('returns 404 when token hashes to no tracking row', async () => {
+    const token = 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f';
+    mocks.order = null;
+    const response = await GET(new NextRequest('https://store.test/api/orders?num=LSO-1', {
+      headers: { 'x-order-tracking-token': token },
+    }));
+    expect(response.status).toBe(404);
+  });
+
   it('allows an authenticated customer to use a guest tracking capability', async () => {
     const token = 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f';
     const tokenHash = createHash('sha256').update(token).digest('hex');

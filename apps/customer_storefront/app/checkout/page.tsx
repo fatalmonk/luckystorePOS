@@ -88,7 +88,16 @@ function CheckoutContent() {
   const idempotencyKeyRef = useRef<string | null>(null);
 
   const getCheckoutIdentity = () => {
-    if (orderNumberRef.current && idempotencyKeyRef.current) {
+    const payloadSignature = JSON.stringify({
+      total,
+      items: cart.map((i) => ({ id: i.id, qty: i.quantity, price: i.price })),
+    });
+
+    if (
+      orderNumberRef.current &&
+      idempotencyKeyRef.current &&
+      (idempotencyKeyRef.current as any).payloadSignature === payloadSignature
+    ) {
       return { orderNumber: orderNumberRef.current, idempotencyKey: idempotencyKeyRef.current };
     }
 
@@ -96,9 +105,12 @@ function CheckoutContent() {
       const saved = sessionStorage.getItem('pendingCheckoutIdentity');
       if (saved) {
         const identity = JSON.parse(saved);
-        if (typeof identity.orderNumber === 'string'
-          && typeof identity.idempotencyKey === 'string'
-          && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identity.idempotencyKey)) {
+        if (
+          typeof identity.orderNumber === 'string' &&
+          typeof identity.idempotencyKey === 'string' &&
+          identity.payloadSignature === payloadSignature &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identity.idempotencyKey)
+        ) {
           orderNumberRef.current = identity.orderNumber;
           idempotencyKeyRef.current = identity.idempotencyKey;
           return identity as { orderNumber: string; idempotencyKey: string };
@@ -111,6 +123,7 @@ function CheckoutContent() {
     const identity = {
       orderNumber: `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
       idempotencyKey: crypto.randomUUID(),
+      payloadSignature,
     };
     orderNumberRef.current = identity.orderNumber;
     idempotencyKeyRef.current = identity.idempotencyKey;
