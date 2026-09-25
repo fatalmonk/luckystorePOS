@@ -3,6 +3,7 @@ import { X, Plus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import type { Database } from '../../lib/database.types';
+import { settingsQueryKeys } from '../../lib/queryKeys';
 
 type PaymentType = Database['public']['Enums']['payment_type'];
 
@@ -36,7 +37,7 @@ export function AddPaymentMethodModal({ isOpen, storeId, onClose }: AddPaymentMe
     mutationFn: (method: { name: string; type: PaymentType; isActive: boolean }) =>
       api.settings.addPaymentMethod(storeId, method),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
+      queryClient.invalidateQueries({ queryKey: settingsQueryKeys.paymentMethods(storeId) });
       setFormData({ name: '', type: 'cash', isActive: true });
       setError(null);
       onClose();

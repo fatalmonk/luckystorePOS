@@ -21,9 +21,9 @@ export function InventoryFilterToolbar({
   onViewChange,
 }: InventoryFilterToolbarProps) {
   return (
-    <div className="flex items-center gap-2 w-full min-w-0">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full min-w-0">
       {/* Search Bar - expands to fill space */}
-      <div className="relative flex-1 min-w-0">
+      <div className="relative w-full sm:flex-1 min-w-0">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         <input
           type="text"
@@ -36,16 +36,16 @@ export function InventoryFilterToolbar({
       </div>
 
       {/* Controls Group */}
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+      <div className="flex w-full sm:w-auto items-center gap-1.5 sm:gap-2 sm:flex-shrink-0">
         {/* Sort Dropdown */}
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <ArrowUpDown size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           <select
             id="inventory-sort-by"
             aria-label="Sort inventory items"
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
-            className="h-9 pl-7 pr-7 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer shadow-xs max-w-[130px] sm:max-w-[180px] truncate font-medium"
+            className="h-9 w-full pl-7 pr-7 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer shadow-xs sm:max-w-[180px] truncate font-medium"
           >
             <option value="name-asc">Name A→Z</option>
             <option value="name-desc">Name Z→A</option>

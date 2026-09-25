@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 interface UseInventoryKeyboardShortcutsOptions {
+  regionRef: RefObject<HTMLElement | null>;
+  disabled?: boolean;
   isListView: boolean;
   setIsListView: (value: boolean) => void;
   setIsBulkEditMode: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -10,6 +12,8 @@ interface UseInventoryKeyboardShortcutsOptions {
 }
 
 export function useInventoryKeyboardShortcuts({
+  regionRef,
+  disabled = false,
   isListView,
   setIsListView,
   setIsBulkEditMode,
@@ -17,19 +21,19 @@ export function useInventoryKeyboardShortcuts({
   onExport,
   onScan,
 }: UseInventoryKeyboardShortcutsOptions) {
-  const [showShortcuts, setShowShortcuts] = useState(false);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle shortcuts when not in an input field
-      const target = e.target as HTMLElement;
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
-        return;
-      }
-
-      if (e.key === '?' && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
+      const activeElement = document.activeElement;
+      const target = e.target instanceof Element
+        ? e.target
+        : activeElement instanceof Element
+          ? activeElement
+          : null;
+      const isWithinRegion = activeElement instanceof Node && regionRef.current?.contains(activeElement);
+      const isEditable = target !== null
+        && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || (target as HTMLElement).isContentEditable);
+      const isInDialog = target !== null && target.closest('[role="dialog"]') !== null;
+      if (disabled || !target || !isWithinRegion || isEditable || isInDialog) {
         return;
       }
 
@@ -71,7 +75,5 @@ export function useInventoryKeyboardShortcuts({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isListView, setIsListView, setIsBulkEditMode, onAddProduct, onExport, onScan]);
-
-  return { showShortcuts, setShowShortcuts };
+  }, [regionRef, disabled, isListView, setIsListView, setIsBulkEditMode, onAddProduct, onExport, onScan]);
 }

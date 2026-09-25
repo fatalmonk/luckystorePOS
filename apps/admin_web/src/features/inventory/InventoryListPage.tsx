@@ -19,7 +19,6 @@ import { BulkEditBar } from '../../components/inventory/BulkEditBar';
 import { useInventoryBulkActions, useInventoryKeyboardShortcuts, useInventoryEditing } from '@/hooks';
 import { AnalyticsWidgets } from '../../components/inventory/AnalyticsWidgets';
 import { InventoryFilterToolbar } from '../../components/inventory/InventoryFilterToolbar';
-import { KeyboardShortcutsModal } from '../../components/KeyboardShortcutsModal';
 
 // Lazy-loaded modals and drawers to minimize initial bundle size and optimize FCP/LCP
 const ProductDetailDrawer = lazy(() => import('../products/ProductDetailDrawer').then(m => ({ default: m.ProductDetailDrawer })));
@@ -30,6 +29,7 @@ const BulkStockModal = lazy(() => import('../../components/inventory/BulkStockMo
 const BarcodeScannerModal = lazy(() => import('../../components/inventory/BarcodeScannerModal').then(m => ({ default: m.BarcodeScannerModal })));
 
 export function InventoryListPage() {
+  const inventoryRegionRef = useRef<HTMLDivElement>(null);
   const { storeId, tenantId } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
@@ -105,20 +105,6 @@ export function InventoryListPage() {
     toggleSelectAll,
     toggleSelect,
   } = useInventoryBulkActions(storeId!, tenantId, inventory);
-
-  // Wire inventory keyboard shortcuts (Shift+A/E/G/S/X and ?)
-  const { showShortcuts, setShowShortcuts } = useInventoryKeyboardShortcuts({
-    isListView: userViewMode === 'table',
-    setIsListView: (val) => handleViewChange(val ? 'table' : 'card'),
-    setIsBulkEditMode: (val) => {
-      const next = typeof val === 'function' ? val(selectedIds.size > 0) : val;
-      if (!next) setSelectedIds(new Set());
-      else if (inventory && inventory.length > 0) toggleSelectAll(inventory.map((i) => i.id), true);
-    },
-    onAddProduct: () => setIsAddModalOpen(true),
-    onExport: handleExportSelected,
-    onScan: () => setIsBarcodeModalOpen(true),
-  });
 
   // Stable callbacks — prevent memoized card re-renders on every parent render
   const handleViewProduct = useCallback((item: InventoryItem) => setViewingProductId(item.id), []);
@@ -232,6 +218,28 @@ export function InventoryListPage() {
     });
   }, [inventory, categories, deferredSearch, selectedCategoryId, sortBy, stockFilter, minPrice, maxPrice]);
 
+  useInventoryKeyboardShortcuts({
+    regionRef: inventoryRegionRef,
+    disabled: Boolean(
+      isAddModalOpen
+      || editingProduct
+      || viewingProductId
+      || isBulkPriceModalOpen
+      || isBulkStockModalOpen
+      || isBarcodeModalOpen
+    ),
+    isListView: viewMode === 'table',
+    setIsListView: (val) => handleViewChange(val ? 'table' : 'card'),
+    setIsBulkEditMode: (val) => {
+      const next = typeof val === 'function' ? val(selectedIds.size > 0) : val;
+      if (!next) setSelectedIds(new Set());
+      else if (filteredItems.length > 0) toggleSelectAll(filteredItems.map((i) => i.id), true);
+    },
+    onAddProduct: () => setIsAddModalOpen(true),
+    onExport: handleExportSelected,
+    onScan: () => setIsBarcodeModalOpen(true),
+  });
+
   const stats = useMemo(() => {
     const all = inventory ?? [];
     const total = all.length;
@@ -309,7 +317,7 @@ export function InventoryListPage() {
   }
 
   return (
-    <div className="inventory-container flex flex-col pt-6">
+    <div ref={inventoryRegionRef} tabIndex={-1} className="inventory-container flex flex-col pt-6">
         {/* Cinematic Page Header (gpt-taste) */}
       <div className="relative w-full max-w-6xl mx-auto py-16 md:py-24 flex flex-col items-center justify-center text-center">
         {/* Ambient background wash */}
@@ -544,10 +552,6 @@ export function InventoryListPage() {
         />
       )}
 
-      <KeyboardShortcutsModal
-        isOpen={showShortcuts}
-        onClose={() => setShowShortcuts(false)}
-      />
     </div>
   );
 }

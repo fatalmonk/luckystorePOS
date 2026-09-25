@@ -1,6 +1,7 @@
 import { useState, useLayoutEffect, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { settingsQueryKeys } from '../../lib/queryKeys';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { ErrorState, EmptyState, SkeletonBlock, SkeletonRow } from '@/components';
@@ -240,7 +241,7 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
   const queryClient = useQueryClient();
   const { notify } = useNotify();
   const { data: payments, isLoading, isError, refetch: refetchPayments } = useQuery({
-    queryKey: ['settings-payments', storeId],
+    queryKey: settingsQueryKeys.paymentMethods(storeId),
     queryFn: () => api.settings.getPaymentMethods(storeId),
   });
 
@@ -248,14 +249,14 @@ function PaymentsSettings({ storeId }: { storeId: string }) {
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       api.settings.togglePaymentMethod(id, isActive),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
+      queryClient.invalidateQueries({ queryKey: settingsQueryKeys.paymentMethods(storeId) });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.settings.deletePaymentMethod(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings-payments'] });
+      queryClient.invalidateQueries({ queryKey: settingsQueryKeys.paymentMethods(storeId) });
       setDeletingMethodId(null);
       notify('Payment method deleted', 'success');
     },

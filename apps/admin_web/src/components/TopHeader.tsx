@@ -73,6 +73,8 @@ export function TopHeader({
     setSearchQuery('');
   }, []);
 
+  const closeHelp = useCallback(() => setIsHelpOpen(false), []);
+
   const runCommand = (path: string) => {
     closeCommandPalette();
     navigate(path);
@@ -94,10 +96,17 @@ export function TopHeader({
   // Global Keyboard shortcuts: Cmd/Ctrl+K (command palette), ? (help/shortcuts guide), / (focus search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isInputActive = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName);
+      const target = e.target instanceof Element ? e.target : null;
+      const isInputActive = target !== null
+        && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || (target as HTMLElement).isContentEditable);
+      const isDialogActive = target !== null && target.closest('[role="dialog"]') !== null;
 
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        if (isHelpOpen) {
+          e.preventDefault();
+          return;
+        }
+        if (isInputActive || isDialogActive) return;
         e.preventDefault();
         openCommandPalette();
         return;
@@ -109,6 +118,7 @@ export function TopHeader({
       }
       if (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey && !isInputActive) {
         e.preventDefault();
+        if (isHelpOpen) return;
         openCommandPalette();
         return;
       }
@@ -118,7 +128,7 @@ export function TopHeader({
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [closeCommandPalette, isCommandPaletteOpen, openCommandPalette]);
+  }, [closeCommandPalette, isCommandPaletteOpen, isHelpOpen, openCommandPalette]);
 
   useEffect(() => {
     if (isDark) {
@@ -296,7 +306,7 @@ export function TopHeader({
 
       <KeyboardShortcutsModal
         isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
+        onClose={closeHelp}
       />
     </header>
   );

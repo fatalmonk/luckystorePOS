@@ -16,6 +16,8 @@ import { RecentActivity } from './RecentActivity';
 import { SetupChecklist } from './SetupChecklist';
 import { format, subDays, parseISO } from 'date-fns';
 import { formatCurrency } from '../../lib/format';
+import { settingsQueryKeys } from '../../lib/queryKeys';
+import { hasActivePaymentMethod } from './setupChecklistState';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -221,9 +223,9 @@ export function DashboardPage() {
   });
 
   // Queries for Setup Checklist completeness derivation
-  const inventoryCountQuery = useQuery({
-    queryKey: ['inventory', storeId],
-    queryFn: () => api.inventory.list(storeId!),
+  const inventoryExistsQuery = useQuery({
+    queryKey: ['inventory-exists', storeId],
+    queryFn: () => api.inventory.hasAny(storeId!),
     enabled: !!storeId,
   });
   const receiptConfigQuery = useQuery({
@@ -232,7 +234,7 @@ export function DashboardPage() {
     enabled: !!storeId,
   });
   const paymentMethodsQuery = useQuery({
-    queryKey: ['settings-payment-methods', storeId],
+    queryKey: settingsQueryKeys.paymentMethods(storeId),
     queryFn: () => api.settings.getPaymentMethods(storeId!),
     enabled: !!storeId,
   });
@@ -250,10 +252,8 @@ export function DashboardPage() {
   const receiptConfig = receiptConfigQuery.data;
   const paymentMethods = paymentMethodsQuery.data || [];
   const usersList = usersQuery.data || [];
-  const inventoryItems = inventoryCountQuery.data || [];
-
-  const hasProducts = inventoryItems.length > 0;
-  const hasPaymentMethods = paymentMethods.length > 0;
+  const hasProducts = inventoryExistsQuery.data === true;
+  const hasPaymentMethods = hasActivePaymentMethod(paymentMethods);
   // Verify explicit staff roles (cashier, staff, manager, etc.)
   const hasStaff = usersList.some((u: { role?: string }) => ['cashier', 'staff', 'manager'].includes(u.role?.toLowerCase() || ''));
   const isStoreConfigured = Boolean(receiptConfig?.store_name && receiptConfig.store_name.trim().length > 0);
@@ -398,9 +398,15 @@ export function DashboardPage() {
         hasPaymentMethods={hasPaymentMethods}
         hasStaff={hasStaff}
         isStoreConfigured={isStoreConfigured}
+        statuses={{
+          products: inventoryExistsQuery.status,
+          paymentMethods: paymentMethodsQuery.status,
+          staff: usersQuery.status,
+          store: receiptConfigQuery.status,
+        }}
         onRefresh={() => {
           statsQuery.refetch();
-          inventoryCountQuery.refetch();
+          inventoryExistsQuery.refetch();
           receiptConfigQuery.refetch();
           paymentMethodsQuery.refetch();
           usersQuery.refetch();
