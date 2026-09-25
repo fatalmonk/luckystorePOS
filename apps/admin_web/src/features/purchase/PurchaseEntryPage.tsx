@@ -676,6 +676,7 @@ export const PurchaseEntryPage: React.FC = () => {
   const hasIncompleteLines = lines.some(line => !line.item.category_id || !line.item.price || line.item.price <= 0);
 
   const handleDiscardRetryAttempt = () => {
+    if (loading) return;
     setRetryAttempt(null);
     setPurchaseIdempotencyKey(createPurchaseIdempotencyKey());
   };
@@ -789,6 +790,7 @@ export const PurchaseEntryPage: React.FC = () => {
           <button
             type="button"
             onClick={handleDiscardRetryAttempt}
+            disabled={loading}
             className="text-xs font-semibold underline hover:no-underline text-text-main shrink-0"
           >
             Discard retry &amp; start new attempt
