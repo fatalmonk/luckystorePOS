@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.luckystore1947.com/privacy',
+    languages: {
+      'en-BD': 'https://www.luckystore1947.com/privacy',
+      'bn-BD': 'https://www.luckystore1947.com/bn/privacy',
+      'x-default': 'https://www.luckystore1947.com/privacy',
+    },
   },
 };
 

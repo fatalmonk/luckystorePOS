@@ -10,7 +10,12 @@ export const metadata: Metadata = {
   title: 'Contact Us',
   description: 'Get in touch with Lucky Store in Chattogram. Contact customer support for grocery orders, delivery assistance, or product inquiries.',
   alternates: {
-    canonical: '/contact',
+    canonical: 'https://www.luckystore1947.com/contact',
+    languages: {
+      'en-BD': 'https://www.luckystore1947.com/contact',
+      'bn-BD': 'https://www.luckystore1947.com/bn/contact',
+      'x-default': 'https://www.luckystore1947.com/contact',
+    },
   },
 };
 

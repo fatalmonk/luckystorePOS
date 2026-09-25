@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection. View timings & areas.`,
   alternates: {
     canonical: DELIVERY_POLICY.canonicalUrl,
+    languages: {
+      'en-BD': 'https://www.luckystore1947.com/delivery',
+      'bn-BD': 'https://www.luckystore1947.com/bn/delivery',
+      'x-default': 'https://www.luckystore1947.com/delivery',
+    },
   },
   openGraph: {
     title: 'Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store',
