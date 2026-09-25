@@ -3,9 +3,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, codex/receipt-vision-pipeline ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, codex/receipt-vision-pipeline ]
 
 jobs:
   admin_web_check:
