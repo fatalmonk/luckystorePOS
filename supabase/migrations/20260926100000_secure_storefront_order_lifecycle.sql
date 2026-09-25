@@ -20,7 +20,11 @@ alter table public.idempotency_keys
 
 alter table public.idempotency_keys
   add constraint idempotency_keys_request_hash_check
-  check (request_hash is null or request_hash ~ '^[0-9a-f]{64}$');
+  check (request_hash is null or request_hash ~ '^[0-9a-f]{64}$')
+  not valid;
+
+alter table public.idempotency_keys
+  validate constraint idempotency_keys_request_hash_check;
 
 -- Keep the old implementation private, then wrap it so ownership is attached
 -- in the same transaction as order creation and idempotency persistence.
@@ -108,7 +112,8 @@ begin
             'id', entry.item->>'id',
             'name', entry.item->>'name',
             'price', (entry.item->>'price')::numeric,
-            'qty', (entry.item->>'qty')::integer
+            'qty', (entry.item->>'qty')::integer,
+            'unit', coalesce(entry.item->>'unit', '')
           ) order by entry.ordinality)
           from jsonb_array_elements(o.items) with ordinality as entry(item, ordinality)
         ) = (
@@ -116,7 +121,8 @@ begin
             'id', entry.item->>'id',
             'name', entry.item->>'name',
             'price', (entry.item->>'price')::numeric,
-            'qty', (entry.item->>'qty')::integer
+            'qty', (entry.item->>'qty')::integer,
+            'unit', coalesce(entry.item->>'unit', '')
           ) order by entry.ordinality)
           from jsonb_array_elements(p_items) with ordinality as entry(item, ordinality)
         )
@@ -171,6 +177,12 @@ begin
           and o.customer_user_id is null
       ) into v_guest_tracked;
       v_linked := v_guest_tracked;
+      if v_guest_tracked and auth.uid() is not null then
+        update public.orders
+        set customer_user_id = auth.uid()
+        where id = (v_order->>'id')::uuid
+          and customer_user_id is null;
+      end if;
     end if;
   end if;
 

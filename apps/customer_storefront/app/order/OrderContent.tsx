@@ -156,17 +156,20 @@ export default function OrderContent() {
   }, [orderNumber]);
 
   const handleShare = async () => {
-    const url = window.location.href;
+    if (!order) return;
+    const shareUrl = order.trackingToken
+      ? `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}#track=${encodeURIComponent(order.trackingToken)}`
+      : `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}`;
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Order #${order?.orderNumber} — Lucky Store`,
-          text: `Track my order at Lucky Store`,
-          url,
+          title: `Order #${order.orderNumber} — Lucky Store`,
+          text: `Track order #${order.orderNumber} at Lucky Store`,
+          url: shareUrl,
         });
         return;
       }
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       showToast('Order link copied');
     } catch (err) {
       // User cancelled share or permission denied — silent fail
