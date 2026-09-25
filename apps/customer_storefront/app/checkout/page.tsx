@@ -105,9 +105,9 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (isLoaded && cart.length === 0 && !isPlacing) {
-      router.replace('/cart');
+      router.replace(withLocale('/cart', locale));
     }
-  }, [cart.length, isLoaded, isPlacing, router]);
+  }, [cart.length, isLoaded, isPlacing, locale, router]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -280,7 +280,7 @@ function CheckoutContent() {
         console.warn('Order created, but confirmation details could not be saved:', storageError);
       }
       clearCart();
-      router.push(`/order?num=${order.order_number}`);
+      router.push(withLocale(`/order?num=${order.order_number}`, locale));
     } catch (e: any) {
       setSubmitError(e?.message || 'Something went wrong. Please try again.');
       showToast(e?.message || `Couldn't place order — please try again`);

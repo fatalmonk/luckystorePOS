@@ -200,10 +200,10 @@ function CartContent() {
 
               <div className="text-center mb-4">
                 <button
-                  onClick={() => router.push('/category')}
+                  onClick={() => router.push(withLocale('/category', locale))}
                   className="text-sm text-warm-muted hover:text-warm-fg font-medium underline underline-offset-2"
                 >
-                  ← Continue Shopping
+                  {locale === 'bn' ? '← কেনাকাটা চালিয়ে যান' : '← Continue Shopping'}
                 </button>
               </div>
             </>
