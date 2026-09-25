@@ -9,6 +9,7 @@ export interface SetupChecklistItem {
   description: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   isCompleted: boolean;
+  status: 'pending' | 'error' | 'success';
   actionPath: string;
   actionLabel: string;
 }
@@ -19,6 +20,12 @@ interface SetupChecklistProps {
   hasPaymentMethods: boolean;
   hasStaff: boolean;
   isStoreConfigured: boolean;
+  statuses: {
+    products: 'pending' | 'error' | 'success';
+    paymentMethods: 'pending' | 'error' | 'success';
+    staff: 'pending' | 'error' | 'success';
+    store: 'pending' | 'error' | 'success';
+  };
   onRefresh?: () => void;
 }
 
@@ -28,6 +35,7 @@ export function SetupChecklist({
   hasPaymentMethods,
   hasStaff,
   isStoreConfigured,
+  statuses,
   onRefresh,
 }: SetupChecklistProps) {
   const { i18n } = useTranslation();
@@ -48,6 +56,7 @@ export function SetupChecklist({
         : 'Configure shop identity, receipt header & footer message.',
       icon: Building2,
       isCompleted: isStoreConfigured,
+      status: statuses.store,
       actionPath: '/settings?tab=receipt',
       actionLabel: isBengali ? 'রসিদ সেটিংস' : 'Receipt Settings',
     },
@@ -59,6 +68,7 @@ export function SetupChecklist({
         : 'Populate your catalog with initial products, pricing, and stock.',
       icon: Package,
       isCompleted: hasProducts,
+      status: statuses.products,
       actionPath: '/inventory',
       actionLabel: isBengali ? 'ইনভেন্টরি খুলুন' : 'Open Inventory',
     },
@@ -70,6 +80,7 @@ export function SetupChecklist({
         : 'Verify Cash, bKash, and digital payment methods for POS checkout.',
       icon: CreditCard,
       isCompleted: hasPaymentMethods,
+      status: statuses.paymentMethods,
       actionPath: '/settings?tab=payments',
       actionLabel: isBengali ? 'পেমেন্ট সেটিংস' : 'Payment Methods',
     },
@@ -81,12 +92,13 @@ export function SetupChecklist({
         : 'Create cashier accounts with quick-login PINs for daily operations.',
       icon: Users,
       isCompleted: hasStaff,
+      status: statuses.staff,
       actionPath: '/settings?tab=users',
       actionLabel: isBengali ? 'কর্মী পরিচালনা' : 'Manage Staff',
     },
   ];
 
-  const completedCount = items.filter((i) => i.isCompleted).length;
+  const completedCount = items.filter((i) => i.status === 'success' && i.isCompleted).length;
   const progressPercent = Math.round((completedCount / items.length) * 100);
 
   const handleDismiss = () => {
@@ -199,7 +211,7 @@ export function SetupChecklist({
             <div
               key={item.id}
               className={`flex flex-col justify-between rounded-lg border p-4 transition-all ${
-                item.isCompleted
+                item.status === 'success' && item.isCompleted
                   ? 'border-warm-success/20 bg-warm-success/5'
                   : 'border-border-default bg-surface hover:border-warm-accent/40'
               }`}
@@ -208,14 +220,26 @@ export function SetupChecklist({
                 <div className="flex items-start justify-between gap-2">
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                      item.isCompleted
+                      item.status === 'success' && item.isCompleted
                         ? 'bg-warm-success/15 text-warm-success'
                         : 'bg-background-subtle text-text-muted'
                     }`}
                   >
                     <Icon size={18} />
                   </div>
-                  {item.isCompleted ? (
+                  {item.status === 'pending' ? (
+                    <span className="text-label-sm font-medium text-text-muted" role="status">
+                      {isBengali ? 'লোড হচ্ছে' : 'Loading'}
+                    </span>
+                  ) : item.status === 'error' ? (
+                    <button
+                      type="button"
+                      onClick={onRefresh}
+                      className="text-label-sm font-medium text-warm-warning hover:underline"
+                    >
+                      {isBengali ? 'আবার চেষ্টা করুন' : 'Unavailable — retry'}
+                    </button>
+                  ) : item.isCompleted ? (
                     <span className="flex items-center gap-1 text-label-sm font-medium text-warm-success">
                       <CheckCircle2 size={16} />
                       <span>{isBengali ? 'সম্পন্ন' : 'Done'}</span>
@@ -233,7 +257,7 @@ export function SetupChecklist({
                 type="button"
                 onClick={() => navigate(item.actionPath)}
                 className={`mt-4 flex items-center justify-between rounded-md px-3 py-2 text-label-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                  item.isCompleted
+                  item.status === 'success' && item.isCompleted
                     ? 'bg-transparent text-text-muted hover:bg-background-subtle hover:text-text-primary'
                     : 'bg-warm-accent/15 text-warm-accent hover:bg-warm-accent/25'
                 }`}

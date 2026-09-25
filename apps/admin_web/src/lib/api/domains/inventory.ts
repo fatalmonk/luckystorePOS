@@ -1,6 +1,15 @@
 import { supabase } from "@/lib/supabase";
 
 export const inventory = {
+  hasAny: async (storeId: string): Promise<boolean> => {
+    const { data, error } = await supabase.rpc('get_inventory_list_v2', {
+      p_store_id: storeId,
+      p_limit: 1,
+      p_offset: 0,
+    });
+    if (error) throw error;
+    return (data?.length ?? 0) > 0;
+  },
   list: async (storeId: string) => {
     const { data, error } = await supabase.rpc('get_inventory_list', { p_store_id: storeId });
     if (error) throw error;

@@ -28,6 +28,10 @@ jobs:
         run: |
           cd apps/admin_web
           npm run lint
+      - name: Unit tests
+        run: |
+          cd apps/admin_web
+          npx vitest run
       - name: Production build
         run: |
           cd apps/admin_web

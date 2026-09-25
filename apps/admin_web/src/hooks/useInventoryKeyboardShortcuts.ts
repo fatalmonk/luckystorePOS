@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 interface UseInventoryKeyboardShortcutsOptions {
-  enabled: boolean;
+  regionRef: RefObject<HTMLElement | null>;
+  disabled?: boolean;
   isListView: boolean;
   setIsListView: (value: boolean) => void;
   setIsBulkEditMode: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -11,7 +12,8 @@ interface UseInventoryKeyboardShortcutsOptions {
 }
 
 export function useInventoryKeyboardShortcuts({
-  enabled,
+  regionRef,
+  disabled = false,
   isListView,
   setIsListView,
   setIsBulkEditMode,
@@ -21,12 +23,17 @@ export function useInventoryKeyboardShortcuts({
 }: UseInventoryKeyboardShortcutsOptions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!enabled) return;
-
-      const target = e.target;
-      if (!(target instanceof HTMLElement) || target.isContentEditable || target.closest(
-        'input, textarea, select, button, [role="button"], [role="checkbox"], [role="combobox"], [contenteditable="true"], [role="dialog"][aria-modal="true"]'
-      )) {
+      const activeElement = document.activeElement;
+      const target = e.target instanceof Element
+        ? e.target
+        : activeElement instanceof Element
+          ? activeElement
+          : null;
+      const isWithinRegion = activeElement instanceof Node && regionRef.current?.contains(activeElement);
+      const isEditable = target !== null
+        && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || (target as HTMLElement).isContentEditable);
+      const isInDialog = target !== null && target.closest('[role="dialog"]') !== null;
+      if (disabled || !target || !isWithinRegion || isEditable || isInDialog) {
         return;
       }
 
@@ -68,5 +75,5 @@ export function useInventoryKeyboardShortcuts({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [enabled, isListView, setIsListView, setIsBulkEditMode, onAddProduct, onExport, onScan]);
+  }, [regionRef, disabled, isListView, setIsListView, setIsBulkEditMode, onAddProduct, onExport, onScan]);
 }

@@ -96,15 +96,17 @@ export function TopHeader({
   // Global Keyboard shortcuts: Cmd/Ctrl+K (command palette), ? (help/shortcuts guide), / (focus search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isInputActive = target?.isContentEditable || !!target?.closest(
-        'input, textarea, select, button, [role="button"], [role="checkbox"], [role="combobox"], [contenteditable="true"], [role="dialog"][aria-modal="true"]'
-      );
-
-      // Keep the help dialog as the sole active modal until it closes.
-      if (isHelpOpen) return;
+      const target = e.target instanceof Element ? e.target : null;
+      const isInputActive = target !== null
+        && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || (target as HTMLElement).isContentEditable);
+      const isDialogActive = target !== null && target.closest('[role="dialog"]') !== null;
 
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        if (isHelpOpen) {
+          e.preventDefault();
+          return;
+        }
+        if (isInputActive || isDialogActive) return;
         e.preventDefault();
         openCommandPalette();
         return;
@@ -116,6 +118,7 @@ export function TopHeader({
       }
       if (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey && !isInputActive) {
         e.preventDefault();
+        if (isHelpOpen) return;
         openCommandPalette();
         return;
       }
