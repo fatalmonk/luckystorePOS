@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from "@/lib/supabase";
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
@@ -47,9 +47,13 @@ type ReceiptLine = {
 
 type PendingOcrItem = ReceiptOcrResult['items'][number] & {
   match?: Item;
+  candidates?: Item[];
+  selectedMatchId?: string;
 };
 
 type PurchaseDraftSnapshot = {
+  idempotencyKey?: string;
+  retryAttempt?: PurchaseRetryAttempt;
   supplierSearch: string;
   selectedSupplier: Supplier | null;
   invoiceNumber: string;
@@ -64,6 +68,27 @@ type PurchaseDraftSnapshot = {
   pendingOcrItems: PendingOcrItem[];
 };
 
+type PurchaseFormSnapshot = Omit<PurchaseDraftSnapshot, 'idempotencyKey' | 'retryAttempt'>;
+type PurchaseRpcArgs = {
+  p_idempotency_key: string;
+  p_tenant_id: string | null;
+  p_store_id: string | null;
+  p_supplier_id: string;
+  p_invoice_number: string | null;
+  p_invoice_total: number | null;
+  p_items: Array<{ item_id: string; quantity: number; unit_cost: number }>;
+  p_amount_paid: number;
+  p_payment_account_id: string | null;
+  p_payable_account_id: string | null;
+  p_status: 'draft' | 'posted';
+  p_notes: string | null;
+};
+type PurchaseRetryAttempt = {
+  idempotencyKey: string;
+  form: PurchaseFormSnapshot;
+  args: PurchaseRpcArgs;
+};
+
 type PaymentMethod = 'Cash' | 'Bank transfer' | 'Bkash';
 
 type Account = {
@@ -72,6 +97,29 @@ type Account = {
   name: string;
   account_type: string;
 };
+
+const OCR_CONFIDENCE_STYLES: Record<'high' | 'medium' | 'low', React.CSSProperties> = {
+  high: { color: 'var(--color-success)', backgroundColor: 'var(--color-success-bg)' },
+  medium: { color: 'var(--color-warning)', backgroundColor: 'var(--color-warning-bg)' },
+  low: { color: 'var(--color-danger)', backgroundColor: 'var(--color-danger-bg)' },
+};
+
+const createPurchaseIdempotencyKey = () =>
+  `pr_${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(36).slice(2)}`}`;
+
+function normalizeReceiptDate(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const parts = value.split(/[-/._]/).map(Number);
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return value;
+  const [first, second, third] = parts;
+  const [day, month, year] = first >= 1000
+    ? [third, second, first]
+    : [first, second, third < 1000 ? 2000 + third : third];
+  if (month < 1 || month > 12 || day < 1 || day > 31) return value;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return value;
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
 
 export const PurchaseEntryPage: React.FC = () => {
   // Form state
@@ -147,13 +195,19 @@ export const PurchaseEntryPage: React.FC = () => {
         }
       }
     };
+    const onFocusIn = (event: FocusEvent) => {
+      if (!dialog.contains(event.target as Node)) getControls()[0]?.focus();
+    };
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('focusin', onFocusIn);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
-      opener?.focus();
+      document.removeEventListener('focusin', onFocusIn);
+      if (opener?.isConnected) opener.focus();
     };
   }, [showAddSupplier, showAddItem]);
   const [pendingOcrItems, setPendingOcrItems] = useState<PendingOcrItem[]>([]);
+  const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
 
   // Auth context
   const { tenantId, storeId } = useAuth();
@@ -163,6 +217,9 @@ export const PurchaseEntryPage: React.FC = () => {
     [storeId, tenantId],
   );
   const [draftRestored, setDraftRestored] = useState(false);
+  const [purchaseIdempotencyKey, setPurchaseIdempotencyKey] = useState(createPurchaseIdempotencyKey);
+  const [retryAttempt, setRetryAttempt] = useState<PurchaseRetryAttempt | null>(null);
+  const receiptScanGenerationRef = useRef(0);
   const draftHydratedRef = useRef(false);
   const skipDraftPersistenceRef = useRef(false);
 
@@ -175,6 +232,8 @@ export const PurchaseEntryPage: React.FC = () => {
       const raw = window.localStorage.getItem(purchaseDraftKey);
       if (raw) {
         const draft = JSON.parse(raw) as Partial<PurchaseDraftSnapshot>;
+        if (typeof draft.idempotencyKey === 'string' && draft.idempotencyKey) setPurchaseIdempotencyKey(draft.idempotencyKey);
+        if (draft.retryAttempt?.idempotencyKey && draft.retryAttempt.args) setRetryAttempt(draft.retryAttempt);
         if (typeof draft.supplierSearch === 'string') setSupplierSearch(draft.supplierSearch);
         if (draft.selectedSupplier) setSelectedSupplier(draft.selectedSupplier);
         if (typeof draft.invoiceNumber === 'string') setInvoiceNumber(draft.invoiceNumber);
@@ -207,6 +266,8 @@ export const PurchaseEntryPage: React.FC = () => {
     }
 
     const snapshot: PurchaseDraftSnapshot = {
+      idempotencyKey: purchaseIdempotencyKey,
+      retryAttempt: retryAttempt ?? undefined,
       supplierSearch,
       selectedSupplier,
       invoiceNumber,
@@ -234,7 +295,16 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       // Local draft recovery is best-effort and must never block receiving.
     }
-  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, quickCost, quickQty, selectedSupplier, supplierSearch]);
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, selectedSupplier, supplierSearch]);
+
+  const currentFormSnapshot: PurchaseFormSnapshot = {
+    supplierSearch, selectedSupplier, invoiceNumber, invoiceDate, invoiceTotal, lines,
+    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems,
+  };
+  const currentFormSnapshotRef = useRef(currentFormSnapshot);
+  useLayoutEffect(() => {
+    currentFormSnapshotRef.current = currentFormSnapshot;
+  });
 
   // Outside-click ref for supplier combobox
   const supplierComboRef = useRef<HTMLDivElement>(null);
@@ -478,25 +548,41 @@ export const PurchaseEntryPage: React.FC = () => {
   };
 
   const applyReceiptScan = async (result: ReceiptOcrResult) => {
+    const scanGeneration = receiptScanGenerationRef.current;
+    if (result.warnings) setOcrWarnings(result.warnings);
+    else setOcrWarnings([]);
     if (result.supplier) {
       if (result.supplier.id) {
         selectSupplier(result.supplier);
       } else {
         // Unregistered supplier name from receipt/filename
+        setSelectedSupplier(null);
         setSupplierSearch(result.supplier.name);
       }
     }
-    if (result.invoiceNumber) setInvoiceNumber(result.invoiceNumber);
-    if (result.invoiceDate) {
-      // Normalise date to YYYY-MM-DD for the date input (accepts DD/MM/YY, YY/MM/DD etc.)
-      const parts = result.invoiceDate.split(/[-/._]/);
-      if (parts.length === 3) {
-        const [dd, mm, yy] = parts.map(Number); // filename format: DD-MM-YY
-        const yyyy = yy < 100 ? 2000 + yy : yy;
-        setInvoiceDate(`${String(yyyy).padStart(4,'0')}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`);
-      } else {
-        setInvoiceDate(result.invoiceDate);
+    if (result.invoiceNumber) {
+      setInvoiceNumber(result.invoiceNumber);
+      if (tenantId && result.supplier?.id) {
+        const fetchDuplicate = async () => {
+          const { data } = await supabase
+            .from('purchase_receipts')
+            .select('id, supplier_id, invoice_number, created_at')
+            .eq('tenant_id', tenantId)
+            .eq('supplier_id', result.supplier!.id)
+            .eq('invoice_number', result.invoiceNumber!)
+            .limit(1);
+          if (data && data.length > 0 && scanGeneration === receiptScanGenerationRef.current) {
+            setOcrWarnings(prev => [
+              ...prev,
+              `The invoice number "${result.invoiceNumber}" already exists for this supplier (recorded on ${new Date(data[0].created_at).toLocaleDateString()}). Please verify this isn't a duplicate.`
+            ]);
+          }
+        };
+        void fetchDuplicate();
       }
+    }
+    if (result.invoiceDate) {
+      setInvoiceDate(normalizeReceiptDate(result.invoiceDate));
     }
     if (result.invoiceTotal) setInvoiceTotal(result.invoiceTotal);
 
@@ -507,21 +593,26 @@ export const PurchaseEntryPage: React.FC = () => {
       for (const scannedItem of result.items) {
         const rawName = scannedItem.name.trim();
         if (!rawName) continue;
-        const queryTerm = rawName.slice(0, 20);
         let matched: Item | null = null;
 
+        const escapedName = rawName.replace(/[\\%_]/g, '\\$&');
         const { data } = await supabase
           .from('items')
           .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
-          .ilike('name', `%${queryTerm}%`)
-          .eq('is_active', true)
-          .limit(1);
+          .ilike('name', escapedName)
+          .eq('is_active', true);
 
-        if (data && data.length > 0) {
-          matched = data[0] as unknown as Item;
+        if (data) {
+          if (data.length === 1) {
+            matched = data[0] as unknown as Item;
+          }
         }
 
-        pendingCandidates.push({ ...scannedItem, match: matched || undefined });
+        pendingCandidates.push({
+          ...scannedItem,
+          match: matched || undefined,
+          candidates: data as unknown as Item[] | undefined,
+        });
       }
       if (pendingCandidates.length > 0) {
         setPendingOcrItems(previous => {
@@ -584,65 +675,98 @@ export const PurchaseEntryPage: React.FC = () => {
   const payable = Math.max(0, totalCost - paid);
   const hasIncompleteLines = lines.some(line => !line.item.category_id || !line.item.price || line.item.price <= 0);
 
+  const handleDiscardRetryAttempt = () => {
+    if (loading) return;
+    setRetryAttempt(null);
+    setPurchaseIdempotencyKey(createPurchaseIdempotencyKey());
+  };
+
   // ── Submit ──────────────────────────────────────────────────────
   const submit = async (asDraft: boolean) => {
     setError('');
     setSuccess('');
-    if (!selectedSupplier) { setError('Please select a supplier'); return; }
-    if (lines.length === 0) { setError('Add at least one item'); return; }
-    if (!asDraft && hasIncompleteLines) { setError('Complete category and selling price for every receipt line before posting'); return; }
-    if (paid > totalCost) { setError('Amount paid cannot exceed total cost'); return; }
-    if (!asDraft && paid > 0 && !paymentAccountId) {
-      setError(`${paymentMethod} account is not configured for this tenant`);
-      return;
-    }
-    if (!asDraft && payable > 0 && !payableAccount?.id) {
-      setError('Accounts Payable account is not configured for this tenant');
-      return;
+    let attempt = retryAttempt;
+    if (!attempt) {
+      if (!selectedSupplier) { setError('Please select a supplier'); return; }
+      if (lines.length === 0) { setError('Add at least one item'); return; }
+      if (!asDraft && hasIncompleteLines) { setError('Complete category and selling price for every receipt line before posting'); return; }
+      if (paid > totalCost) { setError('Amount paid cannot exceed total cost'); return; }
+      if (!asDraft && paid > 0 && !paymentAccountId) {
+        setError(`${paymentMethod} account is not configured for this tenant`);
+        return;
+      }
+      if (!asDraft && payable > 0 && !payableAccount?.id) {
+        setError('Accounts Payable account is not configured for this tenant');
+        return;
+      }
+
+      const idempotencyKey = purchaseIdempotencyKey;
+      const args: PurchaseRpcArgs = {
+        p_idempotency_key: idempotencyKey,
+        p_tenant_id: tenantId,
+        p_store_id: storeId,
+        p_supplier_id: selectedSupplier.id,
+        p_invoice_number: invoiceNumber || null,
+        p_invoice_total: invoiceTotal ? parseFloat(invoiceTotal) : null,
+        p_items: lines.map(line => ({ item_id: line.item.id, quantity: line.quantity, unit_cost: line.unitCost })),
+        p_amount_paid: paid,
+        p_payment_account_id: paid > 0 ? paymentAccountId : null,
+        p_payable_account_id: payable > 0 ? payableAccount?.id ?? null : null,
+        p_status: asDraft ? 'draft' : 'posted',
+        p_notes: invoiceDate ? `Invoice Date: ${invoiceDate}` : null,
+      };
+      attempt = { idempotencyKey, form: currentFormSnapshot, args };
+      setRetryAttempt(attempt);
     }
 
     setLoading(true);
-    const itemsJson = lines.map(l => ({
-      item_id: l.item.id,
-      quantity: l.quantity,
-      unit_cost: l.unitCost,
-    }));
+    if (purchaseDraftKey && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(purchaseDraftKey, JSON.stringify({
+          ...attempt.form,
+          idempotencyKey: attempt.idempotencyKey,
+          retryAttempt: attempt,
+        } satisfies PurchaseDraftSnapshot));
+      } catch {
+        // Retain the immutable attempt in component state if storage is unavailable.
+      }
+    }
 
-    const { error } = await supabase.rpc('record_purchase_v2', {
-      p_idempotency_key: `pr_${Date.now()}_${selectedSupplier.id}`,
-      p_tenant_id: tenantId,
-      p_store_id: storeId,
-      p_supplier_id: selectedSupplier.id,
-      p_invoice_number: invoiceNumber || null,
-      p_invoice_total: invoiceTotal ? parseFloat(invoiceTotal) : null,
-      p_items: itemsJson,
-      p_amount_paid: paid,
-      p_payment_account_id: paid > 0 ? paymentAccountId : null,
-      p_payable_account_id: payable > 0 ? payableAccount.id : null,
-      p_status: asDraft ? 'draft' : 'posted',
-      p_notes: invoiceDate ? `Invoice Date: ${invoiceDate}` : null,
-    });
+    let error: { message: string } | null = null;
+    try {
+      ({ error } = await supabase.rpc('record_purchase_v2', attempt.args));
+    } catch (requestError) {
+      error = { message: requestError instanceof Error ? requestError.message : 'Submission failed. Retry safely.' };
+    }
 
     setLoading(false);
     if (error) {
       setError(error.message || 'Submission failed');
     } else {
-      setSuccess(asDraft ? 'Draft saved!' : 'Purchase posted successfully!');
-      if (purchaseDraftKey && typeof window !== 'undefined') {
-        window.localStorage.removeItem(purchaseDraftKey);
-        skipDraftPersistenceRef.current = true;
-        setDraftRestored(false);
+      receiptScanGenerationRef.current += 1;
+      const currentFormUnchanged = JSON.stringify(currentFormSnapshotRef.current) === JSON.stringify(attempt.form);
+      setSuccess(currentFormUnchanged
+        ? (attempt.args.p_status === 'draft' ? 'Draft saved!' : 'Purchase posted successfully!')
+        : `${attempt.args.p_status === 'draft' ? 'Draft saved' : 'Purchase posted'} from the earlier submission. Your newer edits were kept.`);
+      setRetryAttempt(null);
+      if (currentFormUnchanged) {
+        if (purchaseDraftKey && typeof window !== 'undefined') {
+          window.localStorage.removeItem(purchaseDraftKey);
+          skipDraftPersistenceRef.current = true;
+          setDraftRestored(false);
+        }
+        setSelectedSupplier(null);
+        setSupplierSearch('');
+        setInvoiceNumber('');
+        setInvoiceDate('');
+        setInvoiceTotal('');
+        setLines([]);
+        setPendingOcrItems([]);
+        setOcrWarnings([]);
+        setAmountPaid('0');
+        setPaymentMethod('Cash');
       }
-      // Reset form
-      setSelectedSupplier(null);
-      setSupplierSearch('');
-      setInvoiceNumber('');
-      setInvoiceDate('');
-      setInvoiceTotal('');
-      setLines([]);
-      setPendingOcrItems([]);
-      setAmountPaid('0');
-      setPaymentMethod('Cash');
+      setPurchaseIdempotencyKey(createPurchaseIdempotencyKey());
     }
   };
 
@@ -656,6 +780,21 @@ export const PurchaseEntryPage: React.FC = () => {
       {draftRestored && (
         <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-text-muted" role="status">
           Unsaved purchase work was restored from this store on this device.
+        </div>
+      )}
+      {retryAttempt && (
+        <div className="mb-4 rounded-xl border border-[var(--color-warning)]/40 bg-[var(--color-warning-bg)] px-4 py-3 text-sm text-text-main flex flex-wrap items-center justify-between gap-2" role="status">
+          <span className="flex-1">
+            A previous {retryAttempt.args.p_status === 'draft' ? 'draft save' : 'receipt post'} may have completed. Retry sends that exact submission with its original idempotency key. Changes made since then are kept separately.
+          </span>
+          <button
+            type="button"
+            onClick={handleDiscardRetryAttempt}
+            disabled={loading}
+            className="text-xs font-semibold underline hover:no-underline text-text-main shrink-0"
+          >
+            Discard retry &amp; start new attempt
+          </button>
         </div>
       )}
 
@@ -682,7 +821,11 @@ export const PurchaseEntryPage: React.FC = () => {
         {/* Left: Form */}
         <div className="lg:col-span-2 space-y-6">
 
-          <ReceiptScanPanel suppliers={suppliers} onApply={applyReceiptScan} />
+          <ReceiptScanPanel
+            suppliers={suppliers}
+            onApply={applyReceiptScan}
+            onScanStart={() => { receiptScanGenerationRef.current += 1; }}
+          />
 
           {/* Supplier */}
           <section className="card p-4" aria-labelledby="purchase-supplier-heading">
@@ -874,8 +1017,18 @@ export const PurchaseEntryPage: React.FC = () => {
               )}
             </div>
 
+            {ocrWarnings.length > 0 && (
+              <div className="card p-4 mb-4" style={{ borderColor: 'var(--color-warning)', backgroundColor: 'var(--color-warning-bg)' }} role="status" aria-live="polite" aria-atomic="true">
+                <h3 className="font-medium mb-2" style={{ color: 'var(--color-warning)' }}>Invoice Reconciliation Warnings</h3>
+                <ul className="list-disc pl-5 text-sm font-semibold space-y-1" style={{ color: 'var(--color-warning)' }}>
+                  {ocrWarnings.map((warning, idx) => (
+                    <li key={idx}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {pendingOcrItems.length > 0 && (
-              <div className="card p-4 border-amber-300/40 bg-amber-50/5" role="region" aria-label="Receipt items awaiting review">
+              <div className="card p-4" style={{ borderColor: 'var(--color-warning-strong)', backgroundColor: 'var(--color-warning-bg)' }} role="region" aria-label="Receipt items awaiting review">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-medium text-text-main">Receipt items awaiting review</h3>
@@ -888,36 +1041,74 @@ export const PurchaseEntryPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="mt-3 space-y-2">
-                  {pendingOcrItems.map((candidate) => (
-                    <div key={`${candidate.name}-${candidate.quantity}`} className="flex items-center justify-between gap-3 rounded-lg border border-border-color px-3 py-2">
+                  {pendingOcrItems.map((candidate, candidateIndex) => {
+                    const hasReviewedValues = Number.isInteger(candidate.quantity) && Number(candidate.quantity) > 0
+                      && candidate.unitPrice != null && Number.isFinite(candidate.unitPrice) && candidate.unitPrice >= 0;
+                    const selectedMatch = candidate.match
+                      ?? candidate.candidates?.find((item) => item.id === candidate.selectedMatchId);
+                    return <div key={`${candidate.name}-${candidateIndex}`} className="flex items-center justify-between gap-3 rounded-lg border border-border-color px-3 py-2">
                       <div className="min-w-0">
                         <div className="truncate font-medium text-text-main">{candidate.name}</div>
-                        <div className="text-xs text-text-muted">
-                          Qty: {candidate.quantity}{candidate.unitPrice ? ` · Cost: ৳${candidate.unitPrice}` : ''}
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted">
+                          <label className="flex items-center gap-1">Qty
+                            <input aria-label={`Quantity for ${candidate.name}`} type="number" min="1" step="1" value={candidate.quantity ?? ''}
+                              onChange={(event) => setPendingOcrItems(previous => previous.map((item, index) => index === candidateIndex ? { ...item, quantity: event.target.value === '' ? undefined : Number(event.target.value) } : item))}
+                              className="input w-20 py-1" />
+                          </label>
+                          <label className="flex items-center gap-1">Unit cost ৳
+                            <input aria-label={`Unit cost for ${candidate.name}`} type="number" min="0" step="0.01" value={candidate.unitPrice ?? ''}
+                              onChange={(event) => setPendingOcrItems(previous => previous.map((item, index) => index === candidateIndex ? { ...item, unitPrice: event.target.value === '' ? undefined : Number(event.target.value) } : item))}
+                              className="input w-24 py-1" />
+                          </label>
                         </div>
+                        {candidate.warnings && candidate.warnings.length > 0 && (
+                          <div className="text-xs font-semibold mt-0.5" style={{ color: 'var(--color-warning)' }}>
+                            {candidate.warnings.join(' ')}
+                          </div>
+                        )}
+                        {candidate.confidence && (
+                          <div className="text-xs mt-0.5 font-medium px-1.5 py-0.5 rounded-full inline-block" style={OCR_CONFIDENCE_STYLES[candidate.confidence]}>
+                            Confidence: {candidate.confidence}
+                          </div>
+                        )}
                       </div>
-                      {candidate.match ? (
+                      {candidate.candidates && candidate.candidates.length > 1 && (
+                        <label className="sr-only" htmlFor={`ocr-item-match-${candidateIndex}`}>Choose inventory match for {candidate.name}</label>
+                      )}
+                      {candidate.candidates && candidate.candidates.length > 1 && (
+                        <select id={`ocr-item-match-${candidateIndex}`} aria-label={`Inventory match for ${candidate.name}`}
+                          className="input max-w-56 text-sm"
+                          value={candidate.selectedMatchId || ''}
+                          onChange={(event) => setPendingOcrItems(previous => previous.map((item, index) => index === candidateIndex ? { ...item, selectedMatchId: event.target.value || undefined } : item))}>
+                          <option value="">Select matching SKU…</option>
+                          {candidate.candidates.map((item) => <option key={item.id} value={item.id}>{item.name}{item.sku ? ` · ${item.sku}` : ''}</option>)}
+                        </select>
+                      )}
+                      {candidate.match || (candidate.candidates && candidate.candidates.length > 1) ? (
                         <button
                           type="button"
                           onClick={() => {
-                            addItem(candidate.match!, candidate.quantity, candidate.unitPrice);
+                            if (!hasReviewedValues || !selectedMatch) return;
+                            addItem(selectedMatch, candidate.quantity, candidate.unitPrice);
                             setPendingOcrItems(previous => previous.filter(item => item !== candidate));
                           }}
-                          className="shrink-0 text-sm font-medium text-primary hover:underline"
+                          disabled={!hasReviewedValues || !selectedMatch}
+                          className="shrink-0 text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Add existing item
                         </button>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => openAddItemModal(candidate.name, undefined, candidate.unitPrice, candidate.quantity)}
-                          className="shrink-0 text-sm font-medium text-primary hover:underline"
+                          onClick={() => { if (hasReviewedValues) openAddItemModal(candidate.name, undefined, candidate.unitPrice, candidate.quantity); }}
+                          disabled={!hasReviewedValues}
+                          className="shrink-0 text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Complete item
                         </button>
                       )}
-                    </div>
-                  ))}
+                    </div>;
+                  })}
                 </div>
               </div>
             )}
@@ -1028,6 +1219,26 @@ export const PurchaseEntryPage: React.FC = () => {
             </div>
 
             <div className="mt-6 space-y-3">
+              {retryAttempt ? <>
+                <button
+                  title="Retry the exact earlier submission"
+                  onClick={() => submit(retryAttempt.args.p_status === 'draft')}
+                  disabled={loading}
+                  className="button-primary flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
+                >
+                  {retryAttempt.args.p_status === 'draft' ? <Save size={18} /> : <Send size={18} />}
+                  {loading ? 'Retrying…' : retryAttempt.args.p_status === 'draft' ? 'RETRY EARLIER DRAFT' : 'RETRY EARLIER POST'}
+                </button>
+                <button
+                  type="button"
+                  title="Discard saved retry attempt and edit current form values with a new idempotency key"
+                  onClick={handleDiscardRetryAttempt}
+                  disabled={loading}
+                  className="button-outline flex w-full items-center justify-center gap-2 py-2 text-xs transition-transform active:scale-[0.96]"
+                >
+                  Discard Retry &amp; Edit Form
+                </button>
+              </> : <>
               <button
                 title="Post purchase receipt to ledger"
                 onClick={() => submit(false)}
@@ -1046,6 +1257,7 @@ export const PurchaseEntryPage: React.FC = () => {
                 <Save size={18} />
                 Save as Draft
               </button>
+              </>}
             </div>
           </div>
         </div>
@@ -1057,7 +1269,31 @@ export const PurchaseEntryPage: React.FC = () => {
           <div className="text-xs text-text-muted">Total</div>
           <div className="font-bold text-text-main tabular-nums">৳ {totalCost.toFixed(2)}</div>
         </div>
+        {retryAttempt ? <>
+          <button
+            aria-label="Retry the exact earlier submission"
+            title="Retry the exact earlier submission"
+            onClick={() => submit(retryAttempt.args.p_status === 'draft')}
+            disabled={loading}
+            className="button-primary flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
+            style={{ width: 'auto' }}
+          >
+            {retryAttempt.args.p_status === 'draft' ? <Save size={16} /> : <Send size={16} />}
+            {loading ? 'Retrying…' : retryAttempt.args.p_status === 'draft' ? 'RETRY DRAFT' : 'RETRY POST'}
+          </button>
+          <button
+            type="button"
+            aria-label="Discard saved retry attempt"
+            title="Discard saved attempt and edit current form"
+            onClick={handleDiscardRetryAttempt}
+            disabled={loading}
+            className="button-outline flex shrink-0 items-center gap-2 px-3 py-2 text-xs transition-transform active:scale-[0.96]"
+          >
+            Discard Retry
+          </button>
+        </> : <>
         <button
+          aria-label="Save purchase as draft"
           title="Save purchase as draft"
           onClick={() => submit(true)}
           disabled={loading}
@@ -1067,6 +1303,7 @@ export const PurchaseEntryPage: React.FC = () => {
           <span className="hidden sm:inline">Draft</span>
         </button>
         <button
+          aria-label="Post purchase receipt to ledger"
           title="Post purchase receipt to ledger"
           onClick={() => submit(false)}
           disabled={loading}
@@ -1076,6 +1313,7 @@ export const PurchaseEntryPage: React.FC = () => {
           <Send size={16} />
           {loading ? 'Posting\u2026' : 'POST'}
         </button>
+        </>}
       </div>
 
       {/* ── Add Supplier Modal ─────────────────────────────────────── */}

@@ -4,6 +4,11 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('https://test.supabase.co'),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify('test-anon-key'),
+    'import.meta.env.VITE_FACEBOOK_PAGE_ID': JSON.stringify('123456789'),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

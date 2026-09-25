@@ -1,16 +1,7 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
-// Mock environment variables
-vi.stubGlobal('import', {
-  meta: {
-    env: {
-      VITE_SUPABASE_URL: 'https://test.supabase.co',
-      VITE_SUPABASE_ANON_KEY: 'test-anon-key',
-      VITE_FACEBOOK_PAGE_ID: '123456789',
-    },
-  },
-});
+// import.meta.env test values are defined in vitest.config.ts.
 
 // Mock Supabase client
 vi.mock('@/lib/supabase', () => ({

@@ -1,13 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, ClipboardCopy, FileScan, ImageIcon, LoaderCircle, Upload } from 'lucide-react';
+import { useAuth } from '../../lib/AuthContext';
 import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, scanReceiptImage } from './receiptOcr';
 
 type ReceiptScanPanelProps = {
   suppliers: ReceiptOcrSupplier[];
   onApply: (result: ReceiptOcrResult) => void;
+  onScanStart?: () => void;
 };
 
-export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) {
+export function ReceiptScanPanel({ suppliers, onApply, onScanStart }: ReceiptScanPanelProps) {
+  const { session } = useAuth();
+  const accessToken = session?.access_token;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scanIdRef = useRef(0);
   const [isScanning, setIsScanning] = useState(false);
@@ -26,6 +31,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
     }
 
     const scanId = ++scanIdRef.current;
+    onScanStart?.();
     const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
     setResult(fileMeta && (fileMeta.invoiceNumber || fileMeta.supplier || fileMeta.invoiceTotal)
       ? { ...fileMeta, items: [] }
@@ -50,16 +56,16 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
         } else {
           setStatusText(status);
         }
-      });
+      }, accessToken);
 
       // Merge: Keep filename invoice/supplier/total if present, overlay extracted items
       if (scanId === scanIdRef.current) setResult({
+        ...ocrResult,
         invoiceNumber: fileMeta?.invoiceNumber || ocrResult.invoiceNumber,
         invoiceDate: fileMeta?.invoiceDate || ocrResult.invoiceDate,
         invoiceTotal: fileMeta?.invoiceTotal || ocrResult.invoiceTotal,
         supplier: fileMeta?.supplier || ocrResult.supplier,
         items: ocrResult.items || [],
-        rawText: ocrResult.rawText,
       });
     } catch (error) {
       console.error('Receipt OCR failed:', error);
@@ -75,7 +81,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
         if (source instanceof File && fileInputRef.current) fileInputRef.current.value = '';
       }
     }
-  }, [previewUrl, suppliers]);
+  }, [accessToken, onScanStart, previewUrl, suppliers]);
 
   // Clipboard paste support (e.g. Cmd+V copied screenshot/image from Google Drive)
   useEffect(() => {
@@ -108,6 +114,7 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
 
   const removeReceipt = () => {
     scanIdRef.current += 1;
+    onScanStart?.();
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setResult(null);
@@ -246,6 +253,9 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
       {result && (
         <div className="mt-4 rounded-lg border border-border-color p-3 text-sm">
           <p className="font-medium text-text-main">Review scanned values</p>
+          {result.extractionMethod && (
+            <p className="mt-1 text-xs text-text-muted">Extraction: {result.extractionMethod === 'vision' ? 'Vision' : result.extractionMethod === 'tesseract' ? 'Tesseract fallback' : 'Filename metadata'}</p>
+          )}
           <dl className="mt-2 grid grid-cols-2 gap-2 text-text-muted sm:grid-cols-4">
             <div>
               <dt className="text-xs">Supplier</dt>
@@ -264,6 +274,12 @@ export function ReceiptScanPanel({ suppliers, onApply }: ReceiptScanPanelProps) 
               <dd className="text-text-main font-semibold tabular-nums">{result.invoiceTotal ? `৳ ${result.invoiceTotal}` : 'Not found'}</dd>
             </div>
           </dl>
+
+          {result.warnings && result.warnings.length > 0 && (
+            <ul className="mt-2 list-disc pl-5 text-xs text-[var(--color-warning)]" role="status">
+              {result.warnings.map((warning, index) => <li key={`${index}-${warning}`}>{warning}</li>)}
+            </ul>
+          )}
 
           {result.items && result.items.length > 0 && (
             <div className="mt-3 pt-3 border-t border-border-color">

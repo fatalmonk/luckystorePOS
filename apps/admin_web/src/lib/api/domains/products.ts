@@ -35,6 +35,7 @@ export const products = {
     return data;
   },
   findOrCreate: async (tenantId: string, input: FindOrCreateItemInput): Promise<ItemSummary> => {
+    if (!tenantId) throw new Error('Tenant context is required to resolve purchase items');
     const trimmedName = input.name.trim();
     if (!trimmedName) {
       throw new Error('Item name is required');
@@ -78,9 +79,7 @@ export const products = {
       .from('items')
       .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url, is_active');
 
-    if (tenantId) {
-      matchQuery = matchQuery.eq('tenant_id', tenantId);
-    }
+    matchQuery = matchQuery.eq('tenant_id', tenantId);
 
     if (barcode) {
       matchQuery = matchQuery.eq('barcode', barcode);
@@ -90,23 +89,27 @@ export const products = {
       matchQuery = matchQuery.ilike('name', escapeLikePattern(trimmedName));
     }
 
-    let { data: existing, error: searchError } = await matchQuery.limit(1);
+    let { data: existing, error: searchError } = await matchQuery;
     if ((!existing || existing.length === 0) && barcode && sku) {
       let skuQuery = supabase.from('items')
         .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url, is_active')
         .eq('sku', sku);
-      if (tenantId) skuQuery = skuQuery.eq('tenant_id', tenantId);
-      const skuResult = await skuQuery.limit(1);
+      skuQuery = skuQuery.eq('tenant_id', tenantId);
+      const skuResult = await skuQuery;
       existing = skuResult.data;
       searchError = skuResult.error;
     }
-    if (!searchError && existing && existing.length > 0) {
+    if (searchError) throw new Error(searchError.message || 'Failed to resolve existing item');
+    if (existing && existing.length > 1) {
+      throw new Error('More than one inventory item matches this receipt line. Select a specific SKU before completing it.');
+    }
+    if (existing && existing.length === 1) {
       const row = existing[0] as ItemSummary & { is_active: boolean };
       if (!row.is_active) {
         let reactivateQuery = supabase.from('items')
           .update({ is_active: true, name: trimmedName, cost, price: price ?? 0, mrp, ...(barcode ? { barcode } : {}), ...(sku ? { sku } : {}) } as any)
           .eq('id', row.id);
-        if (tenantId) reactivateQuery = reactivateQuery.eq('tenant_id', tenantId);
+        reactivateQuery = reactivateQuery.eq('tenant_id', tenantId);
         const { data: reactivated, error: reactivateError } = await reactivateQuery
           .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
           .single();
@@ -129,7 +132,7 @@ export const products = {
         brand,
         is_active: true,
       };
-      if (tenantId) insertPayload.tenant_id = tenantId;
+      insertPayload.tenant_id = tenantId;
       if (barcode) insertPayload.barcode = barcode;
       if (categoryId) insertPayload.category_id = categoryId;
       if (imageUrl) insertPayload.image_url = imageUrl;
