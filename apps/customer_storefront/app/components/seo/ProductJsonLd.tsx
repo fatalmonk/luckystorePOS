@@ -26,6 +26,7 @@ function getOfferShippingDetails(product: Product) {
     shippingDestination: {
       '@type': 'DefinedRegion',
       addressCountry: 'BD',
+      postalCode: '4203',
     },
     shippingRate: {
       '@type': 'MonetaryAmount',
