@@ -98,7 +98,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation menu"
+        aria-label={dict.appDrawer.navigationMenu}
         aria-hidden={!open}
         inert={!open}
         className={`fixed left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] bg-warm-surface border-r border-warm-border flex flex-col shadow-2xl transition-transform duration-300 ease-out ${
@@ -107,7 +107,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
       >
         {/* Header */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-warm-border px-4">
-          <Logo href="/" onClick={onClose} className="[&_img]:!h-11 [&_img]:w-auto" />
+          <Logo href={withLocale('/', effectiveLocale)} locale={effectiveLocale} onClick={onClose} className="[&_img]:!h-11 [&_img]:w-auto" />
           <button
             ref={closeButtonRef}
             type="button"
