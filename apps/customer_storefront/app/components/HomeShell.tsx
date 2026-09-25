@@ -7,6 +7,7 @@ import { BottomNav } from './BottomNav';
 import { FaqJsonLd } from './seo/FaqJsonLd';
 import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
+import { HomeConfidence } from './HomeConfidence';
 import { ProductGridSection } from './ProductGridSection';
 import { HeritageParallax } from './parallax/HeritageParallax';
 import { InstallPrompt } from './InstallPrompt';
@@ -78,11 +79,6 @@ export function HomeShell({
 
   return (
     <>
-      <h1 className="sr-only">
-        {locale === 'bn'
-          ? 'লাকি স্টোর — চট্টগ্রামে অনলাইন গ্রোসারি ও দৈনন্দিন বাজার (স্থাপিত ১৯৪৭)'
-          : 'Lucky Store — Online Grocery & Daily Bazaar in Chattogram (Est. 1947)'}
-      </h1>
       <FaqJsonLd />
       <Header locale={locale} />
       <CartStorageNotice />
@@ -150,6 +146,12 @@ export function HomeShell({
               >
                 {dict.popularBazaar.tea}
               </Link>
+              <Link
+                href="/fortune-cookies-near-me"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              >
+                {dict.popularBazaar.fortuneCookies}
+              </Link>
             </nav>
 
             <ProductGridSection
@@ -170,6 +172,8 @@ export function HomeShell({
               ctaLabel={dict.reels.seeAll}
               locale={locale}
             />
+
+            <HomeConfidence locale={locale} />
 
             <div className="py-2 sm:py-4">
               <DealOfTheWeek products={inStock} locale={locale} />

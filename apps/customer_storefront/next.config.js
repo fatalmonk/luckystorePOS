@@ -62,6 +62,7 @@ const nextConfig = {
       '</.well-known/mcp/server-card.json>; rel="service-meta"',
       '</.well-known/agent-skills/index.json>; rel="service-doc"',
       '</auth.md>; rel="service-doc"',
+      '</llms.txt>; rel="service-doc"',
       '</robots.txt>; rel="service-doc"',
       '</sitemap.xml>; rel="sitemap"',
     ];

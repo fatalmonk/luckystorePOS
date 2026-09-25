@@ -40,6 +40,40 @@ export const dictionaries = {
       codTitle: 'Cash on Delivery',
       codDesc: 'Doorstep check & bKash',
     },
+    confidence: {
+      kicker: 'Order with confidence',
+      title: 'Clear answers before your groceries leave the store.',
+      subtitle: 'A quick guide to delivery, payment, and doorstep checks for families ordering from Chawkbazar.',
+      deliveryCta: 'Delivery details',
+      proofs: [
+        {
+          title: 'Packed from the Chawkbazar counter',
+          body: 'Orders are picked from our own shelves, so your rice, tea, oil, snacks, and home essentials come through the same store families already know.',
+        },
+        {
+          title: 'Free delivery on ৳500+',
+          body: 'Within the 1 km Chawkbazar delivery area, larger daily-bazaar orders qualify for free doorstep delivery.',
+        },
+        {
+          title: 'Check first, then pay',
+          body: 'Cash on Delivery and bKash are settled when your order arrives, after you inspect the products at the door.',
+        },
+      ],
+      faqs: [
+        {
+          question: 'How far does Lucky Store deliver?',
+          answer: 'Delivery is available within the verified 1 km Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.',
+        },
+        {
+          question: 'Do I need to pay online first?',
+          answer: 'No prepayment is required. You can pay by Cash on Delivery or bKash when the delivery partner reaches your doorstep.',
+        },
+        {
+          question: 'What if something is missing or damaged?',
+          answer: 'Inspect the order when it arrives. If an item is missing, damaged, or not acceptable, hand it back immediately and contact the store team for support.',
+        },
+      ],
+    },
     categoryGrid: {
       dailyCooking: 'Daily Cooking',
       breakfast: 'Breakfast',
@@ -53,6 +87,7 @@ export const dictionaries = {
       oil: 'Edible Oils & Mustard Oil',
       cooking: 'Daily Bazaar & Pantry',
       tea: 'Ispahani Tea & Coffee',
+      fortuneCookies: 'Fortune Cookies',
     },
     reels: {
       popularTitle: 'Popular Right Now',
@@ -205,6 +240,40 @@ export const dictionaries = {
       codTitle: 'ক্যাশ অন ডেলিভারি',
       codDesc: 'পণ্য দেখে মূল্য পরিশোধ ও বিকাশ',
     },
+    confidence: {
+      kicker: 'নিশ্চিন্তে অর্ডার করুন',
+      title: 'দোকান থেকে পণ্য বের হওয়ার আগেই সব প্রশ্নের পরিষ্কার উত্তর।',
+      subtitle: 'চকবাজার থেকে অর্ডার করা পরিবারগুলোর জন্য ডেলিভারি, পেমেন্ট ও পণ্য যাচাইয়ের সংক্ষিপ্ত নির্দেশনা।',
+      deliveryCta: 'ডেলিভারি তথ্য',
+      proofs: [
+        {
+          title: 'চকবাজারের কাউন্টার থেকেই প্যাক করা',
+          body: 'চাল, চা, তেল, নাস্তা ও ঘরের প্রয়োজনীয় পণ্য আমাদের নিজস্ব তাক থেকেই বাছাই করা হয়।',
+        },
+        {
+          title: '৳৫০০+ অর্ডারে ফ্রি ডেলিভারি',
+          body: 'চকবাজারের ১ কিমি ডেলিভারি এলাকার মধ্যে বড় দৈনন্দিন বাজারে ফ্রি হোম ডেলিভারি পাওয়া যায়।',
+        },
+        {
+          title: 'আগে পণ্য দেখুন, তারপর পেমেন্ট',
+          body: 'ডেলিভারি পৌঁছানোর পর পণ্য দেখে ক্যাশ অন ডেলিভারি বা বিকাশে পেমেন্ট করতে পারবেন।',
+        },
+      ],
+      faqs: [
+        {
+          question: 'লাকি স্টোর কত দূর পর্যন্ত ডেলিভারি দেয়?',
+          answer: 'চকবাজার কেন্দ্র করে যাচাইকৃত ১ কিমি ডেলিভারি এলাকায় ডেলিভারি দেওয়া হয়। চেকআউটে আপনার ঠিকানা ও কাছের ল্যান্ডমার্ক লিখুন।',
+        },
+        {
+          question: 'আগে অনলাইনে টাকা দিতে হবে?',
+          answer: 'না। ডেলিভারি পার্টনার আপনার দরজায় পৌঁছানোর পর ক্যাশ অন ডেলিভারি বা বিকাশে পেমেন্ট করতে পারবেন।',
+        },
+        {
+          question: 'কোনো পণ্য কম বা ক্ষতিগ্রস্ত হলে কী করব?',
+          answer: 'ডেলিভারি আসার সময় পণ্য দেখে নিন। কোনো পণ্য কম, ক্ষতিগ্রস্ত বা গ্রহণযোগ্য না হলে সঙ্গে সঙ্গে ফেরত দিন এবং দোকানের টিমকে জানান।',
+        },
+      ],
+    },
     categoryGrid: {
       dailyCooking: 'নিত্য রান্না',
       breakfast: 'সকালের নাস্তা',
@@ -218,6 +287,7 @@ export const dictionaries = {
       oil: 'সয়াবিন ও সরিষার তেল',
       cooking: 'নিত্যপ্রয়োজনীয় রান্না',
       tea: 'ইস্পাহানি চা ও কফি',
+      fortuneCookies: 'ফরচুন কুকিজ',
     },
     reels: {
       popularTitle: 'এখন সবচেয়ে জনপ্রিয়',

@@ -7,26 +7,26 @@ export function FaqJsonLd() {
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'Does Lucky Store offer home delivery for online grocery in Chittagong?',
+        name: 'How far does Lucky Store deliver?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. Lucky Store provides fast online grocery home delivery across Chittagong, including free home delivery options on eligible staple orders. You can order fresh food, pantry essentials, and household goods online.',
+          text: 'Delivery is available within the verified 1 km Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Where can I find an organic grocery shop near me in Chittagong?',
+        name: 'Do I need to pay online first?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Lucky Store offers fresh organic grocery items, organic food, and daily essentials online at luckystore1947.com with direct home delivery to your doorstep in Chittagong.',
+          text: 'No prepayment is required. You can pay by Cash on Delivery or bKash when the delivery partner reaches your doorstep.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Can I get discount groceries and pay cash on delivery?',
+        name: 'What if something is missing or damaged?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. Lucky Store features daily discount grocery items on pantry staples, rice, oil, and fresh food with Cash on Delivery (COD) accepted at your door.',
+          text: 'Inspect the order when it arrives. If an item is missing, damaged, or not acceptable, hand it back immediately and contact the store team for support.',
         },
       },
       {
