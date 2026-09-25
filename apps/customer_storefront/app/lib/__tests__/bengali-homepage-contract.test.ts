@@ -3,6 +3,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { getDictionary } from '../i18n/dictionaries';
 import { toBengaliNumerals, withLocale, stripLocalePrefix } from '../i18n/config';
+import { CATEGORY_GROUPS } from '../types';
 
 afterEach(() => {
   cleanup();
@@ -65,7 +66,7 @@ vi.mock('../products/index', () => ({
   })),
 }));
 
-import { getHomePageData } from '../products/getHomePageData';
+import { BENGALI_CATEGORY_NAMES, getHomePageData } from '../products/getHomePageData';
 import { formatLocalizedBdt } from '../../components/GridProductCard';
 import { getCategoryBreadcrumbHref } from '../../product/[slug]/ProductClient';
 
@@ -118,6 +119,53 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(stripLocalePrefix('/category/snacks')).toBe('/category/snacks');
     expect(getCategoryBreadcrumbHref('snacks', 'bn')).toBe('/bn/category/snacks');
     expect(getCategoryBreadcrumbHref('personal-care', 'bn')).toBe('/bn/category/personal-care');
+  });
+
+  it('provides comprehensive appDrawer dictionary keys across all locales', () => {
+    const enDict = getDictionary('en');
+    const bnDict = getDictionary('bn');
+
+    expect(Object.keys(bnDict.appDrawer)).toEqual(Object.keys(enDict.appDrawer));
+    expect(enDict.appDrawer).toEqual({
+      categories: 'Categories',
+      freeDeliveryPromo: 'Free delivery on ৳500+ (1 km Chawkbazar) →',
+      deliveryInfo: 'Delivery Areas & Info',
+      helpCenter: 'Help Center',
+      lightMode: 'Light mode',
+      darkMode: 'Dark mode',
+      switchToLight: 'Switch to light mode',
+      switchToDark: 'Switch to dark mode',
+      closeMenu: 'Close menu',
+      navigationMenu: 'Navigation menu',
+      home: 'Home',
+      shopAll: 'Shop All',
+      deals: 'Deals',
+      newArrivals: 'New Arrivals',
+      wishlist: 'Wishlist',
+      cart: 'Cart',
+    });
+    expect(bnDict.appDrawer).toEqual({
+      categories: 'ক্যাটাগরি',
+      freeDeliveryPromo: 'ফ্রি ডেলিভারি ৳৫০০+ (১ কিমি চকবাজার) →',
+      deliveryInfo: 'ডেলিভারি এলাকা ও তথ্য',
+      helpCenter: 'সহায়তা কেন্দ্র',
+      lightMode: 'লাইট মোড',
+      darkMode: 'ডার্ক মোড',
+      switchToLight: 'লাইট মোডে পরিবর্তন করুন',
+      switchToDark: 'ডার্ক মোডে পরিবর্তন করুন',
+      closeMenu: 'মেনু বন্ধ করুন',
+      navigationMenu: 'নেভিগেশন মেনু',
+      home: 'হোম',
+      shopAll: 'সব পণ্য',
+      deals: 'অফার',
+      newArrivals: 'নতুন পণ্য',
+      wishlist: 'পছন্দের তালিকা',
+      cart: 'ব্যাগ',
+    });
+  });
+
+  it('provides Bengali labels for every drawer category group', () => {
+    expect(CATEGORY_GROUPS.map(({ slug }) => slug).filter((slug) => !BENGALI_CATEGORY_NAMES[slug])).toEqual([]);
   });
 
   it('fetches homepage data and overlays Bengali product translations in bn locale', async () => {
