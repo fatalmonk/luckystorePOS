@@ -168,6 +168,18 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(CATEGORY_GROUPS.map(({ slug }) => slug).filter((slug) => !BENGALI_CATEGORY_NAMES[slug])).toEqual([]);
   });
 
+  it('provides comprehensive checkout dictionary keys across all locales', () => {
+    const enDict = getDictionary('en');
+    const bnDict = getDictionary('bn');
+
+    expect(enDict.checkout.fullName).toBe('Full Name');
+    expect(bnDict.checkout.fullName).toBe('আপনার নাম');
+    expect(enDict.checkout.cashOnDelivery).toBe('Cash on Delivery');
+    expect(bnDict.checkout.cashOnDelivery).toBe('ক্যাশ অন ডেলিভারি');
+    expect(enDict.checkout.confirmOrder).toBe('Confirm Order');
+    expect(bnDict.checkout.confirmOrder).toBe('অর্ডার নিশ্চিত করুন');
+  });
+
   it('fetches homepage data and overlays Bengali product translations in bn locale', async () => {
     const data = await getHomePageData('bn');
     expect(data).toHaveProperty('inStock');
