@@ -6,6 +6,8 @@ const CURRENCY = 'BDT';
 
 type AnalyticsValue = string | number | boolean | undefined | AnalyticsItem[];
 
+type ZarazEcommerceValue = string | number | undefined | ZarazEcommerceProduct | ZarazEcommerceProduct[];
+
 export interface AnalyticsItem {
   item_id: string;
   item_name: string;
@@ -18,12 +20,23 @@ export interface AnalyticsItem {
   item_list_name?: string;
 }
 
+interface ZarazEcommerceProduct {
+  product_id: string;
+  category?: string;
+  name: string;
+  variant?: string;
+  price: number;
+  quantity: number;
+  position?: number;
+}
+
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
     zaraz?: {
       track?: (eventName: string, properties?: Record<string, AnalyticsValue>) => void;
+      ecommerce?: (eventName: string, properties?: Record<string, ZarazEcommerceValue>) => void;
     };
   }
 }
@@ -35,6 +48,40 @@ function hasAnalyticsConsent(): boolean {
   } catch {
     return false;
   }
+}
+
+function toZarazEcommerceProduct(
+  item: AnalyticsItem,
+): ZarazEcommerceProduct {
+  return {
+    product_id: item.item_id,
+    category: item.item_category,
+    name: item.item_name,
+    variant: item.item_variant,
+    price: item.price,
+    quantity: item.quantity,
+    position: item.index,
+  };
+}
+
+function sendEcommerceEvent(
+  zarazEventName: string,
+  zarazParams: Record<string, ZarazEcommerceValue>,
+  fallbackEventName: string,
+  fallbackParams: Record<string, AnalyticsValue>,
+): boolean {
+  if (!hasAnalyticsConsent()) return false;
+
+  try {
+    if (typeof window.zaraz?.ecommerce === 'function') {
+      window.zaraz.ecommerce(zarazEventName, zarazParams);
+      return true;
+    }
+  } catch {
+    return sendAnalyticsEvent(fallbackEventName, fallbackParams);
+  }
+
+  return sendAnalyticsEvent(fallbackEventName, fallbackParams);
 }
 
 export function sendAnalyticsEvent(
@@ -87,12 +134,15 @@ export function trackViewItemList(
   listName: string,
 ): boolean {
   if (!products.length) return false;
-  return sendAnalyticsEvent('view_item_list', {
+  const items = products.map((product, index) =>
+    toAnalyticsItem(product, { index, listId, listName }),
+  );
+  return sendEcommerceEvent('Product List Viewed', {
+    products: items.map(toZarazEcommerceProduct),
+  }, 'view_item_list', {
     item_list_id: listId,
     item_list_name: listName,
-    items: products.map((product, index) =>
-      toAnalyticsItem(product, { index, listId, listName }),
-    ),
+    items,
   });
 }
 
@@ -100,44 +150,67 @@ export function trackSelectItem(
   product: Product,
   options: { index?: number; listId?: string; listName?: string } = {},
 ): boolean {
-  return sendAnalyticsEvent('select_item', {
+  const item = toAnalyticsItem(product, options);
+  return sendEcommerceEvent('Product Clicked', {
+    ...toZarazEcommerceProduct(item),
+  }, 'select_item', {
     item_list_id: options.listId,
     item_list_name: options.listName,
-    items: [toAnalyticsItem(product, options)],
+    items: [item],
   });
 }
 
 export function trackViewItem(product: Product): boolean {
-  return sendAnalyticsEvent('view_item', {
+  const item = toAnalyticsItem(product);
+  return sendEcommerceEvent('Product Viewed', {
+    ...toZarazEcommerceProduct(item),
     currency: CURRENCY,
     value: Number(product.price),
-    items: [toAnalyticsItem(product)],
+  }, 'view_item', {
+    currency: CURRENCY,
+    value: Number(product.price),
+    items: [item],
   });
 }
 
 export function trackAddToCart(product: Product, quantity = 1): boolean {
-  return sendAnalyticsEvent('add_to_cart', {
+  const item = toAnalyticsItem(product, { quantity });
+  return sendEcommerceEvent('Product Added', {
+    ...toZarazEcommerceProduct(item),
     currency: CURRENCY,
     value: Number(product.price) * quantity,
-    items: [toAnalyticsItem(product, { quantity })],
+  }, 'add_to_cart', {
+    currency: CURRENCY,
+    value: Number(product.price) * quantity,
+    items: [item],
   });
 }
 
 export function trackViewCart(items: CartItem[], value: number): boolean {
   if (!items.length) return false;
-  return sendAnalyticsEvent('view_cart', {
+  const analyticsItems = items.map((item) => toAnalyticsItem(item));
+  return sendEcommerceEvent('Cart Viewed', {
     currency: CURRENCY,
     value,
-    items: items.map((item) => toAnalyticsItem(item)),
+    products: analyticsItems.map(toZarazEcommerceProduct),
+  }, 'view_cart', {
+    currency: CURRENCY,
+    value,
+    items: analyticsItems,
   });
 }
 
 export function trackBeginCheckout(items: CartItem[], value: number): boolean {
   if (!items.length) return false;
-  return sendAnalyticsEvent('begin_checkout', {
+  const analyticsItems = items.map((item) => toAnalyticsItem(item));
+  return sendEcommerceEvent('Checkout Started', {
     currency: CURRENCY,
     value,
-    items: items.map((item) => toAnalyticsItem(item)),
+    products: analyticsItems.map(toZarazEcommerceProduct),
+  }, 'begin_checkout', {
+    currency: CURRENCY,
+    value,
+    items: analyticsItems,
   });
 }
 
@@ -147,11 +220,17 @@ export function trackAddShippingInfo(
   shippingTier: string,
 ): boolean {
   if (!items.length) return false;
-  return sendAnalyticsEvent('add_shipping_info', {
+  const analyticsItems = items.map((item) => toAnalyticsItem(item));
+  return sendEcommerceEvent('Shipping Info Entered', {
     currency: CURRENCY,
     value,
     shipping_tier: shippingTier,
-    items: items.map((item) => toAnalyticsItem(item)),
+    products: analyticsItems.map(toZarazEcommerceProduct),
+  }, 'add_shipping_info', {
+    currency: CURRENCY,
+    value,
+    shipping_tier: shippingTier,
+    items: analyticsItems,
   });
 }
 
@@ -161,11 +240,17 @@ export function trackAddPaymentInfo(
   paymentType: 'cod' | 'bkash',
 ): boolean {
   if (!items.length) return false;
-  return sendAnalyticsEvent('add_payment_info', {
+  const analyticsItems = items.map((item) => toAnalyticsItem(item));
+  return sendEcommerceEvent('Payment Info Entered', {
     currency: CURRENCY,
     value,
     payment_type: paymentType,
-    items: items.map((item) => toAnalyticsItem(item)),
+    products: analyticsItems.map(toZarazEcommerceProduct),
+  }, 'add_payment_info', {
+    currency: CURRENCY,
+    value,
+    payment_type: paymentType,
+    items: analyticsItems,
   });
 }
 
@@ -184,12 +269,19 @@ export function trackPurchase(input: {
     // Continue without storage-based deduplication when storage is unavailable.
   }
 
-  const sent = sendAnalyticsEvent('purchase', {
+  const analyticsItems = input.items.map((item) => toAnalyticsItem(item));
+  const sent = sendEcommerceEvent('Order Completed', {
+    order_id: input.transactionId,
+    currency: CURRENCY,
+    total: input.value,
+    shipping: input.shipping,
+    products: analyticsItems.map(toZarazEcommerceProduct),
+  }, 'purchase', {
     transaction_id: input.transactionId,
     currency: CURRENCY,
     value: input.value,
     shipping: input.shipping,
-    items: input.items.map((item) => toAnalyticsItem(item)),
+    items: analyticsItems,
   });
 
   if (sent) {

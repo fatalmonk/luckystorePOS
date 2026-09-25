@@ -6,6 +6,7 @@ import {
   sendAnalyticsEvent,
   toAnalyticsItem,
   trackPurchase,
+  trackAddToCart,
   trackAddPaymentInfo,
 } from '../analytics';
 import type { CartItem, Product } from '../types';
@@ -51,6 +52,53 @@ describe('commerce analytics', () => {
     expect(sendAnalyticsEvent('view_item', { value: 120 })).toBe(true);
     expect(track).toHaveBeenCalledWith('view_item', { value: 120 });
     expect(window.gtag).not.toHaveBeenCalled();
+  });
+
+  it('uses Zaraz ecommerce events for product additions', () => {
+    const ecommerce = vi.fn();
+    const track = vi.fn();
+    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
+    window.zaraz = { track, ecommerce };
+
+    expect(trackAddToCart(product, 2)).toBe(true);
+    expect(ecommerce).toHaveBeenCalledWith('Product Added', expect.objectContaining({
+      product_id: 'prod-1',
+      name: 'Test Rice 1kg',
+      price: 120,
+      quantity: 2,
+      currency: 'BDT',
+      value: 240,
+    }));
+    expect(track).not.toHaveBeenCalled();
+    expect(window.gtag).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the GA4 add_to_cart event when Zaraz ecommerce is unavailable', () => {
+    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
+
+    expect(trackAddToCart(product, 2)).toBe(true);
+    expect(window.gtag).toHaveBeenCalledWith('event', 'add_to_cart', expect.objectContaining({
+      currency: 'BDT',
+      value: 240,
+      items: [expect.objectContaining({
+        item_id: 'prod-1',
+        item_name: 'Test Rice 1kg',
+        price: 120,
+        quantity: 2,
+      })],
+    }));
+  });
+
+  it('falls back to GA4 if a Zaraz ecommerce call throws', () => {
+    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
+    window.zaraz = { ecommerce: vi.fn(() => { throw new Error('Zaraz unavailable'); }) };
+
+    expect(trackAddToCart(product, 2)).toBe(true);
+    expect(window.gtag).toHaveBeenCalledWith('event', 'add_to_cart', expect.objectContaining({
+      currency: 'BDT',
+      value: 240,
+      items: [expect.objectContaining({ item_id: 'prod-1', quantity: 2 })],
+    }));
   });
 
   it('normalizes products to GA4 item parameters without personal data', () => {
