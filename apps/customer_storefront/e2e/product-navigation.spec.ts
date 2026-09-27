@@ -14,7 +14,7 @@ test.describe('Product detail navigation', () => {
     await expect(titleLink).toHaveAttribute('href', /^\/product\/[^/]+$/);
 
     const homepageUrl = page.url();
-    await firstCard.getByRole('button', { name: new RegExp(`^Add to cart: ${escapeRegExp(title!)}$`) }).click();
+    await firstCard.getByRole('button', { name: new RegExp(`^Add to Cart: ${escapeRegExp(title!)}$`) }).click();
     await expect(page).toHaveURL(homepageUrl);
 
     await titleLink.click();
