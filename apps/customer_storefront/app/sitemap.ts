@@ -12,6 +12,8 @@ export const revalidate = 86_400;
 const dynamicIndexRoutes = [
   { path: '', priority: 1.0, changefreq: 'daily' },
   { path: '/category', priority: 0.8, changefreq: 'daily' },
+  { path: '/bn', priority: 1.0, changefreq: 'daily' },
+  { path: '/bn/category', priority: 0.8, changefreq: 'daily' },
 ] as const;
 
 // Truly static pages — content rarely changes; hardcoded dates are appropriate
@@ -43,25 +45,12 @@ async function getCategories(): Promise<{ slug: string }[]> {
     return result;
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
-    // Return empty list on failure — never inject fabricated fallback URLs
     return [];
   }
 }
 
 /**
  * Product Sitemap Eligibility Predicate
- *
- * Database RPC Contract:
- * - Supabase RPC `search_items_pos` filters strictly at the SQL level via `WHERE i.is_active = true`.
- * - The RPC returns rows that are guaranteed to be active in PostgreSQL, but omits the `is_active`
- *   column from its JSON projection.
- *
- * Eligibility Criteria:
- * 1. ID: Must be a non-empty string.
- * 2. Name: Must be a non-empty string.
- * 3. Price: Must be a finite, positive number (> 0).
- * 4. Active flags: When present (e.g. from table queries or mock objects), `is_active` and `active`
- *    must NOT be false.
  */
 export function isProductSitemapEligible(item: {
   id?: unknown;
@@ -119,8 +108,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getProducts(),
   ]);
 
-  // Derive homepage/listing lastMod from the newest *real* product timestamp only.
-  // When no legitimate timestamp is available, lastModified is omitted (never use Date.now()).
   const productUpdatedAts = products
     .map((p) => p.updatedAt)
     .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
@@ -143,20 +130,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.priority,
   }));
 
-  const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${BASE_URL}/category/${cat.slug}`,
-    changeFrequency: 'daily',
-    priority: 0.9,
-  }));
+  const categoryEntries: MetadataRoute.Sitemap = [];
+  for (const cat of categories) {
+    const url = `${BASE_URL}/category/${cat.slug}`;
+    const bnUrl = `${BASE_URL}/bn/category/${cat.slug}`;
+    categoryEntries.push({
+      url,
+      changeFrequency: 'daily',
+      priority: 0.9,
+      alternates: { languages: { 'bn-BD': bnUrl } },
+    });
+    categoryEntries.push({
+      url: bnUrl,
+      changeFrequency: 'daily',
+      priority: 0.9,
+      alternates: { languages: { 'en-BD': url } },
+    });
+  }
 
-  const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${BASE_URL}/product/${toProductSlug(product.name, product.id)}`,
-    ...(product.updatedAt
+  const productEntries: MetadataRoute.Sitemap = [];
+  for (const product of products) {
+    const slug = toProductSlug(product.name, product.id);
+    const url = `${BASE_URL}/product/${slug}`;
+    const bnUrl = `${BASE_URL}/bn/product/${slug}`;
+    const lastMod = product.updatedAt
       ? { lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z' }
-      : {}),
-    changeFrequency: 'daily',
-    priority: 0.8,
-  }));
+      : {};
+    
+    productEntries.push({
+      url,
+      ...lastMod,
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: { languages: { 'bn-BD': bnUrl } },
+    });
+    productEntries.push({
+      url: bnUrl,
+      ...lastMod,
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: { languages: { 'en-BD': url } },
+    });
+  }
 
   return [
     ...dynamicIndexEntries,
