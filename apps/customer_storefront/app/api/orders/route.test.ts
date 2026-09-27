@@ -112,7 +112,7 @@ describe('GET /api/orders', () => {
     expect(mocks.filters).toContainEqual(['token_hash', tokenHash]);
   });
 
-  it('rejects unauthenticated fuzzy lookup even when profile metadata exists', async () => {
+  it('rejects unauthenticated order list requests', async () => {
     const response = await GET(new NextRequest('https://store.test/api/orders'));
     expect(response.status).toBe(401);
     expect(mocks.filters).toEqual([]);

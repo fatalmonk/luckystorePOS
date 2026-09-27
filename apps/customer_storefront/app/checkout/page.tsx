@@ -86,6 +86,7 @@ function CheckoutContent() {
   const shippingTrackedRef = useRef(false);
   const orderNumberRef = useRef<string | null>(null);
   const idempotencyKeyRef = useRef<string | null>(null);
+  const payloadSignatureRef = useRef<string | null>(null);
 
   const getCheckoutIdentity = () => {
     const payloadSignature = JSON.stringify({
@@ -96,7 +97,7 @@ function CheckoutContent() {
     if (
       orderNumberRef.current &&
       idempotencyKeyRef.current &&
-      (idempotencyKeyRef.current as any).payloadSignature === payloadSignature
+      payloadSignatureRef.current === payloadSignature
     ) {
       return { orderNumber: orderNumberRef.current, idempotencyKey: idempotencyKeyRef.current };
     }
@@ -113,6 +114,7 @@ function CheckoutContent() {
         ) {
           orderNumberRef.current = identity.orderNumber;
           idempotencyKeyRef.current = identity.idempotencyKey;
+          payloadSignatureRef.current = payloadSignature;
           return identity as { orderNumber: string; idempotencyKey: string };
         }
       }
@@ -127,10 +129,11 @@ function CheckoutContent() {
     };
     orderNumberRef.current = identity.orderNumber;
     idempotencyKeyRef.current = identity.idempotencyKey;
+    payloadSignatureRef.current = payloadSignature;
     try {
       sessionStorage.setItem('pendingCheckoutIdentity', JSON.stringify(identity));
     } catch {
-      // The in-memory key still protects retries during the current page visit.
+      // Storage unavailable or quota exceeded
     }
     return identity;
   };
