@@ -119,6 +119,9 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(stripLocalePrefix('/category/snacks')).toBe('/category/snacks');
     expect(getCategoryBreadcrumbHref('snacks', 'bn')).toBe('/bn/category/snacks');
     expect(getCategoryBreadcrumbHref('personal-care', 'bn')).toBe('/bn/category/personal-care');
+    expect(getCategoryBreadcrumbHref('Rice & Grains', 'en')).toBe('/category/rice-and-grain');
+    expect(getCategoryBreadcrumbHref('Rice & Grains', 'bn')).toBe('/bn/category/rice-and-grain');
+    expect(getCategoryBreadcrumbHref('Tea & Coffee', 'bn')).toBe('/bn/category/tea-and-coffee');
   });
 
   it('provides comprehensive appDrawer dictionary keys across all locales', () => {

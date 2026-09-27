@@ -313,6 +313,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(getCanonicalCategorySlug('personal-care')).toBe('personal-care');
       expect(getCanonicalCategorySlug('snacks')).toBe('snacks');
       expect(getCanonicalCategorySlug('rice-and-grain')).toBe('rice-and-grain');
+      expect(getCanonicalCategorySlug('Rice & Grains')).toBe('rice-and-grain');
     });
   });
 

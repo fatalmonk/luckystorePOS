@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { toProductSlug } from '../../lib/products/slugify';
 import { withLocale, type Locale } from '../../lib/i18n/config';
+import { getCanonicalCategorySlug, normalizeCategorySlug } from '../../lib/types';
 import { useEffect } from 'react';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
@@ -30,7 +31,8 @@ interface ProductClientProps {
 }
 
 export function getCategoryBreadcrumbHref(category: string, locale: Locale): string {
-  return withLocale(`/category/${encodeURIComponent(category)}`, locale);
+  const canonical = getCanonicalCategorySlug(category) || normalizeCategorySlug(category) || category;
+  return withLocale(`/category/${canonical}`, locale);
 }
 
 function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {
