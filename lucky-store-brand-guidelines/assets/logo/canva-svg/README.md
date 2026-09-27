@@ -90,7 +90,8 @@ Add these to your **Document Colors**:
 | Name | Hex | Usage |
 |------|-----|-------|
 | **Saffron** | `#F0C444` | CTAs, brand dot, badges, active states |
-| Saffron Hover / Dark | `#E0B434` | Button hover and pressed states |
+| Saffron Hover | `#E0B434` | Button hover in the light theme |
+| Saffron Dark | `#D4A820` | Button hover in the dark theme |
 | Yellow Muted | `#FFF8E1` | Soft background tints |
 | Accent Text | `#0B0B0D` | Text on Saffron |
 | Warm Bone | `#FDFBF7` | Main background (feels like paper) |
