@@ -20,7 +20,7 @@ export async function generateMetadata({
   );
 
   return {
-    title: 'Browse Products',
+    title: { absolute: 'Browse Products | Lucky Store Chittagong' },
     description: 'Browse all products at Lucky Store — fresh groceries, household items, and more. Search by category, price, and availability. Same-day delivery in Chittagong.',
     robots: hasFilters ? {
       index: false,
