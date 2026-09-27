@@ -10,7 +10,7 @@ The design system is purely **Sans-Serif**, conveying approachability, clarity, 
 
 ## Brand Strategy & Design System
 
-*   **Primary Logo (Panel 1):** Bold, stacked, all-caps wordmark `LUCKY STORE` in Geist Black (`#0B0B0D`). The `O` in `STORE` is a solid Saffron circle (`#f0c444`). Below the wordmark, the founding year `1947` in Geist Mono Warm Grey (`#6B6B6B`). — **This is the only approved primary logo.**
+*   **Primary Logo (Panel 1):** Bold, stacked, all-caps wordmark `LUCKY STORE` in Geist Black (`#0B0B0D`). The `O` in `STORE` is a solid Saffron circle (`#F0C444`). Below the wordmark, the founding year `1947` in Geist Mono muted text (`#525252`). — **This is the only approved primary logo.**
 *   **Aesthetic Vibe:** Warm-minimalist, clean, tactile, and highly structural.
 *   **Design Anchors:** Double-bezel cards (6px padding) and floating fluid-island navigation.
 
@@ -31,10 +31,10 @@ The design system is purely **Sans-Serif**, conveying approachability, clarity, 
 | Canvas / Background | `var(--color-paper)` | `#FDFBF7` | Warm bone white — softer than pure white |
 | Primary Surface | `var(--color-surface)` | `#FFFFFF` | Clean, tactile product cards |
 | Text Primary | `var(--color-foreground)` | `#0B0B0D` | Deep Night for readability |
-| Text Secondary | `var(--color-muted)` | `#6B6B6B` | Warm grey for metadata and secondary info |
-| **Brand Yellow** | `var(--color-accent)` | **#f0c444** | **Primary accent (Saffron) — CTAs, badges, highlights, hover states** |
+| Text Secondary | `var(--color-muted)` | `#525252` | Muted text for metadata and secondary info |
+| **Saffron** | `var(--color-accent)` | **#F0C444** | **Primary accent — CTAs, badges, highlights** |
 | Yellow Light | `var(--color-accent-muted)` | `#FFF8E1` | Soft yellow background tints, tags, highlights |
-| Yellow Dark | `var(--color-accent-dark)` | `#C79400` | Deep yellow for high-contrast text on yellow tags |
+| Accent Hover / Dark | `var(--color-accent-dark)` | `#E0B434` | Saffron hover and pressed state |
 | Structural Borders | `var(--color-border)` | `#E8E4DC` | Warm grey dividers — never cold `#E5E7EB` |
 | Error / Alert | `var(--color-danger)` | `#E34234` | Red for out-of-stock and system alerts |
 | Success | `var(--color-success)` | `#16A34A` | Green for success checkmarks and delivery states |
@@ -55,4 +55,4 @@ The design system is purely **Sans-Serif**, conveying approachability, clarity, 
 
 1.  **Tailwind Class Mapping:** All elements in the storefront codebase have been refactored to use Tailwind classes (`bg-warm-bg`, `text-warm-fg`, `text-warm-muted`, `border-warm-border`, `bg-warm-accent`, `font-body`, `font-mono`) to automatically inherit these design rules.
 2.  **Double-Bezel Layout:** Cards use outer `#E8E4DC` bezels with concentric internal padding to emphasize structured craftsmanship.
-3.  **Contrast Standards:** All text on Brand Yellow backgrounds uses `#1A1A1A` or deep `#C79400` to satisfy WCAG AA legibility targets.
+3.  **Contrast Standards:** Text on Saffron backgrounds uses Deep Night `#0B0B0D` as configured by `--color-accent-text`.
