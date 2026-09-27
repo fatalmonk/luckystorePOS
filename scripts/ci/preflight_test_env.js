@@ -18,6 +18,7 @@ import { createClient } from '@supabase/supabase-js';
 const PRODUCTION_REF = 'hvmyxyccfnkrbxqbhlnm';
 const APPROVED_TEST_REF = 'grxxenvdhfwzafzyykgo';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+const PROBE_IDEMPOTENCY_KEY = 'ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.TEST_SUPABASE_URL || '';
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.TEST_SUPABASE_ANON_KEY || '';
@@ -110,7 +111,8 @@ async function runPreflight() {
   console.log(`✓ search_items_pos RPC verified (${items.length} items returned for store)`);
 
   // 4. Probe the order RPC with an invalid store so existence is tested without
-  // inserting an order or touching stock/idempotency state.
+  // inserting an order or touching stock/idempotency state. The wrapper checks
+  // key format first, so use a valid v4 key to reach the inner store validation.
   const { error: orderRpcErr } = await client.rpc('create_order_with_stock_idempotent', {
     p_order_number: 'INVALID-PROBE',
     p_tenant_id: '00000000-0000-0000-0000-000000000001',
@@ -125,7 +127,7 @@ async function runPreflight() {
     p_payment_method: 'cod',
     p_notes: null,
     p_delivery_slot: null,
-    p_idempotency_key: null,
+    p_idempotency_key: PROBE_IDEMPOTENCY_KEY,
   });
 
   if (orderRpcErr) {
