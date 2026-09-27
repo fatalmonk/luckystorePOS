@@ -144,7 +144,10 @@ export function DeliveryOrdersPage() {
       order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customer_phone.includes(searchQuery);
 
-    const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
+    const matchesStatus =
+      selectedStatus === 'all' ||
+      order.status === selectedStatus ||
+      customerUpdates[order.id] !== undefined;
 
     return matchesSearch && matchesStatus;
   });
