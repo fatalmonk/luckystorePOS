@@ -2,6 +2,16 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /order
+Disallow: /login
+Disallow: /signup
+Disallow: /bn/checkout
+Disallow: /bn/cart
+Disallow: /bn/profile
+Disallow: /bn/order
 
 Content-Signal: ai-train=no, search=yes, ai-input=no
 
