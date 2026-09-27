@@ -107,7 +107,7 @@ describe('Bengali Category Routes Contract', () => {
     });
 
     expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/bn/category/snacks');
-    expect(meta.title).toContain('নাস্তা ও পানীয়');
+    expect(meta.title).toEqual({ absolute: 'নাস্তা ও পানীয় | লাকি স্টোর চট্টগ্রাম' });
     expect(mockNotFound).not.toHaveBeenCalled();
   });
 

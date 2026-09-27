@@ -21,20 +21,45 @@ export async function generateMetadata({
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
 
+  const canonicalUrl = 'https://www.luckystore1947.com/bn/category';
+  const title = 'পণ্য ব্রাউজ করুন | লাকি স্টোর চট্টগ্রাম';
+  const description = 'লাকি স্টোরের সব পণ্য দেখুন — তাজা মুদি বাজার, চকবাজারে ক্যাশ অন ডেলিভারি।';
+  const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
+
   return {
-    title: { absolute: 'পণ্য ব্রাউজ করুন | লাকি স্টোর চট্টগ্রাম' },
-    description: 'লাকি স্টোরের সব পণ্য দেখুন — তাজা মুদি বাজার, চকবাজারে ক্যাশ অন ডেলিভারি।',
+    title: { absolute: title },
+    description,
     robots: hasFilters ? {
       index: false,
       follow: true,
     } : undefined,
     alternates: {
-      canonical: 'https://www.luckystore1947.com/bn/category',
+      canonical: canonicalUrl,
       languages: {
         'en-BD': 'https://www.luckystore1947.com/category',
-        'bn-BD': 'https://www.luckystore1947.com/bn/category',
+        'bn-BD': canonicalUrl,
         'x-default': 'https://www.luckystore1947.com/category',
       },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: 'লাকি স্টোর',
+      locale: 'bn_BD',
+      type: 'website',
+      images: [
+        {
+          url: imageUrl,
+          alt: 'লাকি স্টোর ক্যাটালগ',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
     },
   };
 }

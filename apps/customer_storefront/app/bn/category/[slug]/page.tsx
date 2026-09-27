@@ -67,27 +67,44 @@ export async function generateMetadata({
   const titleName = BENGALI_CATEGORY_NAMES[canonicalSlug] || (group?.slug && BENGALI_CATEGORY_NAMES[group.slug]) || rawTitleName;
   const description = BENGALI_CATEGORY_DESCRIPTIONS[canonicalSlug] || `${titleName} অনলাইনে কিনুন লাকি স্টোর চট্টগ্রাম থেকে। ক্যাশ অন ডেলিভারি এবং দ্রুত হোম ডেলিভারি।`;
 
+  const canonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}`;
+  const enCanonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}`;
+  const fullTitle = `${titleName} | লাকি স্টোর চট্টগ্রাম`;
+  const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
+
   return {
-    title: `${titleName} | লাকি স্টোর চট্টগ্রাম`,
+    title: { absolute: fullTitle },
     description,
     openGraph: {
-      title: `${titleName} | লাকি স্টোর`,
+      title: fullTitle,
       description,
-      url: `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
+      url: canonicalUrl,
       siteName: 'লাকি স্টোর',
       locale: 'bn_BD',
       type: 'website',
+      images: [
+        {
+          url: imageUrl,
+          alt: `${titleName} - লাকি স্টোর`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: fullTitle,
+      description,
+      images: [imageUrl],
     },
     robots: hasFilters ? {
       index: false,
       follow: true,
     } : undefined,
     alternates: {
-      canonical: `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
+      canonical: canonicalUrl,
       languages: {
-        'en-BD': `https://www.luckystore1947.com/category/${canonicalSlug}`,
-        'bn-BD': `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
-        'x-default': `https://www.luckystore1947.com/category/${canonicalSlug}`,
+        'en-BD': enCanonicalUrl,
+        'bn-BD': canonicalUrl,
+        'x-default': enCanonicalUrl,
       },
     },
   };

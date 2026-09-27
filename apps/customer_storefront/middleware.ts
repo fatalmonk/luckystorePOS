@@ -112,7 +112,7 @@ export async function middleware(request: NextRequest) {
         // Malformed percent-encoding (URIError): pass through to route handler which returns 404
         return NextResponse.next();
       }
-      const canonical = getCanonicalCategorySlug(decoded);
+      const canonical = getCanonicalCategorySlug(decoded.toLowerCase());
       if (canonical && rawSlug !== canonical) {
         const url = request.nextUrl.clone();
         url.pathname = `/category/${canonical}`;
