@@ -4,7 +4,6 @@ import { DELIVERY_POLICY } from '../../delivery/deliveryData';
 export const dictionaries = {
   en: {
     language: 'বাংলা',
-    languageLabel: 'Switch to Bengali',
     header: {
       promoText: 'Free doorstep delivery across Chittagong on orders over ৳500',
       searchPlaceholder: 'Search for milk, rice, oil...',
@@ -204,7 +203,6 @@ export const dictionaries = {
   },
   bn: {
     language: 'English',
-    languageLabel: 'ইংরেজিতে পরিবর্তন করুন',
     header: {
       promoText: 'চকবাজার ও চট্টগ্রামে ৳৫০০+ অর্ডারে ফ্রি হোম ডেলিভারি',
       searchPlaceholder: 'চাল, ডাল, তেল বা দুধ খুঁজুন...',

@@ -135,7 +135,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
-        <link rel="preconnect" href="https://images.luckystore1947.com" />
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
         <meta name="theme-color" content="#0B0B0D" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
