@@ -1,4 +1,5 @@
 import React from 'react';
+import { DELIVERY_POLICY } from '../../delivery/deliveryData';
 
 export interface FaqItem {
   question: string;
@@ -22,7 +23,7 @@ export function FaqJsonLd({ items }: { items?: readonly FaqItem[] }) {
         name: 'How far does Lucky Store deliver?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Delivery is available within the verified 1 km Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.',
+          text: `Delivery is available within the verified ${DELIVERY_POLICY.radiusLabel} Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.`,
         },
       },
       {

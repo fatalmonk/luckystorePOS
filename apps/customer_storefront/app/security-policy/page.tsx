@@ -107,6 +107,9 @@ export default function SecurityPolicyPage() {
               <p>
                 We use <strong>Google Analytics</strong> (G-K5JLJNSW6D) only after you accept analytics in the privacy banner. Advertising storage and personalization remain disabled.
               </p>
+              <p>
+                When hosted on Vercel, Vercel Analytics and Speed Insights also collect usage and performance measurements regardless of your Google Analytics consent choice.
+              </p>
             </PolicySection>
 
             <PolicySection icon="🍪" title="Cookies & Local Storage">
@@ -117,7 +120,7 @@ export default function SecurityPolicyPage() {
                 <li>Cart persistence across sessions</li>
                 <li>Session authentication tokens</li>
                 <li>Your analytics consent choice</li>
-                <li>Analytics and performance monitoring only after consent</li>
+                <li>Google Analytics cookies, only after consent</li>
               </ul>
               <p>No third-party advertising cookies are deployed.</p>
             </PolicySection>

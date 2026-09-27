@@ -147,7 +147,7 @@ export function HomeShell({
                 {dict.popularBazaar.tea}
               </Link>
               <Link
-                href="/fortune-cookies-near-me"
+                href={withLocale('/fortune-cookies-near-me', locale)}
                 className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.fortuneCookies}

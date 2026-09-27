@@ -1,4 +1,5 @@
 import type { Locale } from './config';
+import { DELIVERY_POLICY } from '../../delivery/deliveryData';
 
 export const dictionaries = {
   en: {
@@ -52,7 +53,7 @@ export const dictionaries = {
         },
         {
           title: 'Free delivery on ৳500+',
-          body: 'Within the 1 km Chawkbazar delivery area, larger daily-bazaar orders qualify for free doorstep delivery.',
+          body: `Within the ${DELIVERY_POLICY.radiusLabel} Chawkbazar delivery area, larger daily-bazaar orders qualify for free doorstep delivery.`,
         },
         {
           title: 'Check first, then pay',
@@ -62,7 +63,7 @@ export const dictionaries = {
       faqs: [
         {
           question: 'How far does Lucky Store deliver?',
-          answer: 'Delivery is available within the verified 1 km Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.',
+          answer: `Delivery is available within the verified ${DELIVERY_POLICY.radiusLabel} Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.`,
         },
         {
           question: 'Do I need to pay online first?',
@@ -252,7 +253,7 @@ export const dictionaries = {
         },
         {
           title: '৳৫০০+ অর্ডারে ফ্রি ডেলিভারি',
-          body: 'চকবাজারের ১ কিমি ডেলিভারি এলাকার মধ্যে বড় দৈনন্দিন বাজারে ফ্রি হোম ডেলিভারি পাওয়া যায়।',
+          body: `চকবাজারের ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমি ডেলিভারি এলাকার মধ্যে বড় দৈনন্দিন বাজারে ফ্রি হোম ডেলিভারি পাওয়া যায়।`,
         },
         {
           title: 'আগে পণ্য দেখুন, তারপর পেমেন্ট',
@@ -262,7 +263,7 @@ export const dictionaries = {
       faqs: [
         {
           question: 'লাকি স্টোর কত দূর পর্যন্ত ডেলিভারি দেয়?',
-          answer: 'চকবাজার কেন্দ্র করে যাচাইকৃত ১ কিমি ডেলিভারি এলাকায় ডেলিভারি দেওয়া হয়। চেকআউটে আপনার ঠিকানা ও কাছের ল্যান্ডমার্ক লিখুন।',
+          answer: `চকবাজার কেন্দ্র করে যাচাইকৃত ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমি ডেলিভারি এলাকায় ডেলিভারি দেওয়া হয়। চেকআউটে আপনার ঠিকানা ও কাছের ল্যান্ডমার্ক লিখুন।`,
         },
         {
           question: 'আগে অনলাইনে টাকা দিতে হবে?',
