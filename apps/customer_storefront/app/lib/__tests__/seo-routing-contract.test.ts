@@ -249,8 +249,10 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       );
 
       // Assert CategoryShell received the loaded products
-      expect(result.props.categorySlug).toBe('rice-and-grain');
-      expect(result.props.products).toEqual([mockProduct]);
+      const children = Array.isArray(result?.props?.children) ? result.props.children : [result];
+      const shell = children.find((child: any) => child?.props?.categorySlug) || result;
+      expect(shell.props.categorySlug).toBe('rice-and-grain');
+      expect(shell.props.products).toEqual([mockProduct]);
     });
 
     it('valid group root category aggregates subcategories and loads products', async () => {
@@ -268,8 +270,10 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         }),
       );
 
-      expect(result.props.categorySlug).toBe('personal-care');
-      expect(result.props.products.length).toBeGreaterThan(0);
+      const children = Array.isArray(result?.props?.children) ? result.props.children : [result];
+      const shell = children.find((child: any) => child?.props?.categorySlug) || result;
+      expect(shell.props.categorySlug).toBe('personal-care');
+      expect(shell.props.products.length).toBeGreaterThan(0);
     });
   });
 
