@@ -8,6 +8,7 @@ import { formatBdt } from '../../../lib/formatPrice';
 import { isMissingItemTranslationsTableError } from '../../../lib/translationErrors';
 import type { Product } from '../../../lib/products/types';
 import ProductClient from '../../../product/[slug]/ProductClient';
+import { getCanonicalCategorySlug } from '../../../lib/types';
 
 type LocalizedProduct = { product: Product; sourceName: string; translated: boolean };
 
@@ -83,13 +84,45 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
   const canonicalSlug = toProductSlug(localized.sourceName, localized.product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
+  const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'হোম',
+        item: 'https://www.luckystore1947.com/bn',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: localized.product.category,
+        item: `https://www.luckystore1947.com/bn/category/${getCanonicalCategorySlug(localized.product.category)}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: localized.product.name,
+        item: canonicalUrl,
+      },
+    ],
+  };
+
   return (
-    <ProductClient
-      product={localized.product}
-      crossSell={[]}
-      locale="bn"
-      productUrlName={localized.sourceName}
-      productCanonicalUrl={`https://www.luckystore1947.com/bn/product/${canonicalSlug}`}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }}
+      />
+      <ProductClient
+        product={localized.product}
+        crossSell={[]}
+        locale="bn"
+        productUrlName={localized.sourceName}
+        productCanonicalUrl={canonicalUrl}
+      />
+    </>
   );
 }

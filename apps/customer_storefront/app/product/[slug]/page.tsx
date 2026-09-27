@@ -7,6 +7,7 @@ import {
 } from '../../lib/products/getCachedCrossSell';
 import { toProductSlug } from '../../lib/products/slugify';
 import { getEnrichedProductData } from '../../lib/products/productEnrichment';
+import { getCanonicalCategorySlug } from '../../lib/types';
 import {
   formatProductMetaTitle,
   formatProductMetaDescription,
@@ -93,5 +94,40 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const crossSellProducts = prepareCrossSell(crossSell);
   const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(product.id);
 
-  return <ProductClient product={product} crossSell={crossSellProducts} enrichment={enrichment} />;
+  const canonicalUrl = `https://www.luckystore1947.com/product/${canonicalSlug}`;
+  const effectiveName = enrichment?.exactName || product.name;
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://www.luckystore1947.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: product.category,
+        item: `https://www.luckystore1947.com/category/${getCanonicalCategorySlug(product.category)}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: effectiveName,
+        item: canonicalUrl,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }}
+      />
+      <ProductClient product={product} crossSell={crossSellProducts} enrichment={enrichment} />
+    </>
+  );
 }

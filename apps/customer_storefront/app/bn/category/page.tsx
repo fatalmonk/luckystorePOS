@@ -22,7 +22,7 @@ export async function generateMetadata({
   );
 
   return {
-    title: 'পণ্য ব্রাউজ করুন | লাকি স্টোর',
+    title: { absolute: 'পণ্য ব্রাউজ করুন | লাকি স্টোর চট্টগ্রাম' },
     description: 'লাকি স্টোরের সব পণ্য দেখুন — তাজা মুদি বাজার, চকবাজারে ক্যাশ অন ডেলিভারি।',
     robots: hasFilters ? {
       index: false,

@@ -86,7 +86,8 @@ describe('Bengali Category Routes Contract', () => {
     expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/bn/category');
     expect(meta.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category');
     expect(meta.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category');
-    expect(meta.title).toContain('পণ্য ব্রাউজ করুন');
+    expect(typeof meta.title === 'object' && meta.title !== null ? meta.title.absolute : meta.title)
+      .toContain('পণ্য ব্রাউজ করুন');
   });
 
   it('renders CategoryShell with locale="bn" on /bn/category', async () => {
