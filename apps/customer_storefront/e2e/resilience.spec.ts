@@ -60,7 +60,7 @@ test('cart changes remain usable when cart storage fails', async ({ page }) => {
 
   await page.goto('/');
   await expect(page.getByText('Cart saving is unavailable.', { exact: false })).toBeVisible();
-  const addButton = page.getByRole('button', { name: /^Add .+ to cart$/ }).first();
+  const addButton = page.getByRole('button', { name: /^Add to cart: .+$/ }).first();
   await expect(addButton).toBeVisible();
   await addButton.click();
   await expect(page.getByRole('button', { name: /^Remove one .+$/ }).first()).toBeVisible();
