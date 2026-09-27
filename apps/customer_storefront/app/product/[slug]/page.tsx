@@ -49,6 +49,11 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: canonicalUrl,
+      languages: {
+        'en-BD': canonicalUrl,
+        'bn-BD': `https://www.luckystore1947.com/bn/product/${canonicalSlug}`,
+        'x-default': canonicalUrl,
+      },
     },
     openGraph: {
       type: 'website',

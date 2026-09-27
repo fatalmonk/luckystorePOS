@@ -19,15 +19,45 @@ export async function generateMetadata({
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
 
+  const canonicalUrl = 'https://www.luckystore1947.com/category';
+  const title = 'Browse Products | Lucky Store Chittagong';
+  const description = 'Browse all products at Lucky Store — fresh groceries, household items, and more. Search by category, price, and availability. Same-day delivery in Chittagong.';
+  const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
+
   return {
-    title: { absolute: 'Browse Products | Lucky Store Chittagong' },
-    description: 'Browse all products at Lucky Store — fresh groceries, household items, and more. Search by category, price, and availability. Same-day delivery in Chittagong.',
+    title: { absolute: title },
+    description,
     robots: hasFilters ? {
       index: false,
       follow: true,
     } : undefined,
     alternates: {
-      canonical: '/category',
+      canonical: canonicalUrl,
+      languages: {
+        'en-BD': canonicalUrl,
+        'bn-BD': 'https://www.luckystore1947.com/bn/category',
+        'x-default': canonicalUrl,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: 'Lucky Store',
+      locale: 'en_BD',
+      type: 'website',
+      images: [
+        {
+          url: imageUrl,
+          alt: 'Lucky Store Chittagong Catalog',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
     },
   };
 }

@@ -86,23 +86,44 @@ export async function generateMetadata({
   const title = customMeta?.title || `${titleName} in Chittagong | Lucky Store`;
   const description = customMeta?.description || `Shop ${titleName} online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.`;
 
+  const canonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}`;
+  const bnCanonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}`;
+  const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
+
   return {
     title: customMeta ? { absolute: customMeta.title } : `${titleName} in Chittagong`,
     description,
     openGraph: {
       title,
       description,
-      url: `https://www.luckystore1947.com/category/${canonicalSlug}`,
+      url: canonicalUrl,
       siteName: 'Lucky Store',
       locale: 'en_BD',
       type: 'website',
+      images: [
+        {
+          url: imageUrl,
+          alt: `${titleName} at Lucky Store`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
     },
     robots: hasFilters ? {
       index: false,
       follow: true,
     } : undefined,
     alternates: {
-      canonical: `https://www.luckystore1947.com/category/${canonicalSlug}`,
+      canonical: canonicalUrl,
+      languages: {
+        'en-BD': canonicalUrl,
+        'bn-BD': bnCanonicalUrl,
+        'x-default': canonicalUrl,
+      },
     },
   };
 }

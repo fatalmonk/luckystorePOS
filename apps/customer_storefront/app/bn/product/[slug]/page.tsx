@@ -60,8 +60,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
   const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
+  const imageUrl = localized.product.image_url || 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
+  const title = `${localized.product.name} – ${formatBdt(localized.product.price)}`;
+
   return {
-    title: { absolute: `${localized.product.name} – ${formatBdt(localized.product.price)}` },
+    title: { absolute: title },
     description: localized.product.description,
     alternates: {
       canonical: canonicalUrl,
@@ -71,7 +74,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         'x-default': `https://www.luckystore1947.com/product/${canonicalSlug}`,
       },
     },
-    openGraph: { type: 'website', locale: 'bn_BD', url: canonicalUrl, title: localized.product.name, description: localized.product.description },
+    openGraph: {
+      type: 'website',
+      siteName: 'লাকি স্টোর',
+      locale: 'bn_BD',
+      url: canonicalUrl,
+      title,
+      description: localized.product.description,
+      images: [
+        {
+          url: imageUrl,
+          alt: localized.product.name,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: localized.product.description,
+      images: [imageUrl],
+    },
   };
 }
 
