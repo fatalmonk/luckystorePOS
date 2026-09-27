@@ -147,7 +147,7 @@ export function DeliveryOrdersPage() {
     const matchesStatus =
       selectedStatus === 'all' ||
       order.status === selectedStatus ||
-      customerUpdates[order.id] !== undefined;
+      customerUpdates[order.id] === order.status;
 
     return matchesSearch && matchesStatus;
   });
