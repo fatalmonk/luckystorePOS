@@ -1,14 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ProductImage } from './ProductImage';
-
-vi.mock('next/image', () => ({
-  default: ({ fill: _fill, priority: _priority, alt = '', ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean; priority?: boolean }) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img alt={alt} {...props} />
-  ),
-}));
 
 describe('ProductImage', () => {
   it('renders a known category-family glyph when an image is missing', () => {
@@ -51,7 +44,10 @@ describe('ProductImage', () => {
       />,
     );
 
-    fireEvent.error(screen.getByRole('img', { name: 'Broken item' }));
+    const image = screen.getByRole('img', { name: 'Broken item' });
+    expect(image).toHaveAttribute('src', 'https://example.com/broken.webp');
+
+    fireEvent.error(image);
     expect(screen.getByRole('img', { name: 'Broken item image unavailable' })).toBeInTheDocument();
   });
 });
