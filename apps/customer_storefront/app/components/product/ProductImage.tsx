@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { CategoryIcon, resolveCategoryIcon } from '../icons/CategoryIcons';
 
@@ -205,14 +204,17 @@ export function ProductImage({
           }}
         />
       ) : showImage && usableSrc ? (
-        <Image
+        // Keep the supplied object URL intact. The browser uses the source's
+        // actual format; product derivative filenames are not guaranteed.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           src={usableSrc}
           alt={alt}
-          fill
           sizes={sizes}
-          className={imageClassName}
-          priority={priority}
-          loading={priority ? undefined : 'lazy'}
+          className={`absolute inset-0 h-full w-full ${imageClassName}`}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : 'auto'}
           onLoad={() => setImageLoaded(true)}
           onError={() => {
             setImageLoaded(true);
