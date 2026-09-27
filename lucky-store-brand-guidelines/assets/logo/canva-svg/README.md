@@ -15,7 +15,7 @@ ST●RE
  1947
 ```
 
-- `LUCKY` on the first line, `ST●RE` on the second (the O is replaced by a solid **Brand Yellow #F5C518** circle)
+- `LUCKY` on the first line, `ST●RE` on the second (the O is replaced by a solid **Saffron #F0C444** circle)
 - `1947` in small monospace below
 - **No bag, no leaf, no icon** — the wordmark IS the logo
 - All text in geometric sans-serif weight 800
@@ -33,7 +33,7 @@ ST●RE
 5. **Right-click → Ungroup** to access layers:
    - `line-lucky` — "LUCKY" wordmark text
    - `line-store` — "ST  RE" wordmark text
-   - `dot-o` — Brand Yellow circle (the O)
+   - `dot-o` — Saffron `#F0C444` circle (the O)
    - `year` — "1947" monospace text
 
 ### Method 2: PNG (Easiest)
@@ -89,18 +89,21 @@ Add these to your **Document Colors**:
 
 | Name | Hex | Usage |
 |------|-----|-------|
-| **Brand Yellow** | `#F5C518` | CTAs, brand dot, badges, active states |
-| Yellow Hover | `#E0B410` | Button hover states |
+| **Saffron** | `#F0C444` | CTAs, brand dot, badges, active states |
+| Saffron Hover | `#E0B434` | Button hover in the light theme |
+| Saffron Dark | `#D4A820` | Button hover in the dark theme |
 | Yellow Muted | `#FFF8E1` | Soft background tints |
-| Yellow Dark | `#C79400` | High-contrast text on yellow |
+| Accent Text | `#0B0B0D` | Text on Saffron |
 | Warm Bone | `#FDFBF7` | Main background (feels like paper) |
-| Charcoal | `#1A1A1A` | Headlines, wordmark, primary text |
-| Warm Grey | `#6B6B6B` | Subtitles, metadata, year |
+| Deep Night | `#0B0B0D` | Headlines, wordmark, primary text |
+| Muted Text | `#525252` | Subtitles and metadata |
 | Warm Border | `#E8E4DC` | Divider lines |
+| Image Well | `#F7F1E8` | Product image backgrounds |
+| Image Well Border | `#E8E0D4` | Image well borders |
 | Success Green | `#16A34A` | In-stock, confirmed |
-| Error Red | `#DC2626` | Sold out, alerts |
+| Error Red | `#E34234` | Sold out, alerts |
 
-> ⚠️ **Deprecated colors:** `#E8B84B`, `#dc5f3b`, `#0F172A`, `#15803D`, all Slate tokens. Do NOT use.
+> Use the storefront palette above as the source of truth. Replace older yellow and charcoal values with Saffron `#F0C444` and Deep Night `#0B0B0D`.
 
 ---
 
@@ -110,8 +113,8 @@ Add these to your **Document Colors**:
 |---------|-------|-----|
 | Logo looks blurry | Canvas too small | Start at 1080px minimum, export at 2x |
 | Font doesn't match | Canva lacks Geist | Use Plus Jakarta Sans ExtraBold |
-| Yellow dot misaligned | Ungrouped wrong | Position circle manually over the O gap |
-| Wrong yellow shade | Used old gold #E8B84B | Use only `#F5C518` |
+| Saffron dot misaligned | Ungrouped wrong | Position circle manually over the O gap |
+| Wrong yellow shade | Used a retired palette color | Use only Saffron `#F0C444` |
 | Text has serif | Used wrong font | Switch to geometric sans-serif immediately |
 
 ---
@@ -135,12 +138,12 @@ Add these to your **Document Colors**:
 Before downloading from Canva:
 
 - [ ] Logo is locked in position
-- [ ] Colors match brand swatches (#F5C518, #1A1A1A, #FDFBF7)
+- [ ] Colors match storefront swatches (#F0C444, #0B0B0D, #FDFBF7)
 - [ ] Font is Plus Jakarta Sans ExtraBold (or Outfit ExtraBold)
 - [ ] No filters applied to logo
 - [ ] Canvas size matches target platform
 - [ ] Export as PNG (for web/social) or PDF (for print)
-- [ ] No old colors (#E8B84B, #dc5f3b) anywhere
+- [ ] No retired yellow or charcoal colors remain
 
 ---
 

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" width="1080" height="3240" viewBox="0 0 1080 3240">
+  <title id="title">Lucky Store storefront color palette</title>
+  <desc id="desc">Warm Bone, White Surface, Saffron, Deep Night, and Muted Text colors from the active storefront palette.</desc>
+  <rect x="0" y="0" width="1080" height="648" fill="#FDFBF7"/>
+  <text x="540" y="312" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="600" fill="#0B0B0D">Warm Bone</text>
+  <text x="540" y="372" text-anchor="middle" font-family="monospace" font-size="32" fill="#0B0B0D">#FDFBF7</text>
+  <rect x="0" y="648" width="1080" height="648" fill="#FFFFFF"/>
+  <text x="540" y="960" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="600" fill="#0B0B0D">White Surface</text>
+  <text x="540" y="1020" text-anchor="middle" font-family="monospace" font-size="32" fill="#0B0B0D">#FFFFFF</text>
+  <rect x="0" y="1296" width="1080" height="648" fill="#F0C444"/>
+  <text x="540" y="1608" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="600" fill="#0B0B0D">Saffron</text>
+  <text x="540" y="1668" text-anchor="middle" font-family="monospace" font-size="32" fill="#0B0B0D">#F0C444</text>
+  <rect x="0" y="1944" width="1080" height="648" fill="#0B0B0D"/>
+  <text x="540" y="2256" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="600" fill="#FFFFFF">Deep Night</text>
+  <text x="540" y="2316" text-anchor="middle" font-family="monospace" font-size="32" fill="#FFFFFF">#0B0B0D</text>
+  <rect x="0" y="2592" width="1080" height="648" fill="#525252"/>
+  <text x="540" y="2860" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="600" fill="#FFFFFF">Muted Text</text>
+  <text x="540" y="2920" text-anchor="middle" font-family="monospace" font-size="32" fill="#FFFFFF">#525252</text>
+</svg>

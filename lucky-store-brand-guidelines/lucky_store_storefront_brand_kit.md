@@ -8,7 +8,7 @@ This system is characterized by a **Warm-Minimalist / Tactile Storefront** desig
 
 ## Brand Strategy & Design System
 
-*   **Primary Logo:** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#0B0B0D`) — the `O` in STORE is replaced by a solid Saffron circle (`#f0c444`). Year `1947` set beneath in Geist Mono `#6B6B6B`. **This is the one and only approved primary logo — as shown in Panel 1 of the brand kit.**
+*   **Primary Logo:** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#0B0B0D`) — the `O` in STORE is replaced by a solid Saffron circle (`#F0C444`). Year `1947` set beneath in Geist Mono muted text `#525252`. **This is the one and only approved primary logo — as shown in Panel 1 of the brand kit.**
 *   **Card Architecture:** The custom **“Double-Bezel”** component pattern. Every primary content card is nested in a dual-enclosure system to provide haptic depth.
 *   **Navigation:** The **“Fluid Island”** navbar—a floating glass pill detached from the viewport edges.
 
@@ -16,7 +16,7 @@ This system is characterized by a **Warm-Minimalist / Tactile Storefront** desig
 
 ## Visual Presentation
 
-> **Panel 1 = Primary Logo** — Bold stacked `LUCKY STORE` wordmark with Saffron `#f0c444` dot-O and `1947` in Geist Mono.
+> **Panel 1 = Primary Logo** — Bold stacked `LUCKY STORE` wordmark with Saffron `#F0C444` dot-O and `1947` in Geist Mono.
 
 ![Lucky Store 1947 Sans-Serif Brand Kit (v2.0 — Primary)](./lucky_store_sans_brandkit_1782395179572.png)
 
@@ -26,9 +26,9 @@ This system is characterized by a **Warm-Minimalist / Tactile Storefront** desig
 
 ### 1. Color Palette (As Implemented)
 *   **Bone** (`#FDFBF7`): Main body background; soft, organic light surface that feels like premium paper.
-*   **Saffron** (`#f0c444`): Primary brand action color, used on high-priority interactive states (buttons, active category pills, brand dot).
+*   **Saffron** (`#F0C444`): Primary brand action color, used on high-priority interactive states (buttons, active category pills, brand dot).
 *   **Deep Night** (`#0B0B0D`): Primary text, headings, and high-contrast containers.
-*   **Warm Grey** (`#6B6B6B`): Supporting text, secondary actions, and minor details.
+*   **Muted Text** (`#525252`): Supporting text, secondary actions, and minor details.
 *   **Warm Border** (`#E8E4DC`): Thin, clean dividers and outer bezel lines.
 
 ### 2. Double-Bezel Architecture

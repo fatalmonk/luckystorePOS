@@ -1,8 +1,8 @@
 # Lucky Store 1947 — Social Media & Marketing Kit
 > **Handoff Date:** June 2026
 > **Prepared for:** Social Media Marketing Team
-> **Brand System:** v2.0 — Premium Sans-Serif Edition
-> **Files Location:** `brand/assets/`
+> **Brand System:** Storefront palette — Deep Night & Saffron
+> **Files Location:** `lucky-store-brand-guidelines/`
 
 ---
 
@@ -10,12 +10,11 @@
 
 | Folder | Contents | For |
 |--------|----------|-----|
-| `brand/assets/logo/svg/` | Primary wordmark, mark-only, inverse logos | Web, print, apps, signage |
-| `brand/assets/logo/pngs/` | Raster exports @1x, @2x, @3x | Social avatars, Instagram, Facebook |
-| `brand/assets/templates/` | Canva/Figma-ready templates | Stories, feed posts, flyers |
-| `brand/assets/fonts/` | Geist + Geist Mono | All digital touchpoints |
-| `docs/BRAND_GUIDELINES.md` | Full brand bible | Reference |
-| `docs/DESIGN_SYSTEM.md` | Code tokens, Tailwind colors | Dev team |
+| `assets/logo/svg/` | Primary wordmark, mark-only, inverse logos | Web, print, apps, signage |
+| `assets/logo/canva-svg/` | Canva-ready logo exports and instructions | Social and marketing |
+| `fonts/` | Geist font files | Brand materials |
+| `storefront-color-palette.svg` | Approved storefront palette swatches | Design reference |
+| `lucky_store_storefront_brand_kit.md` | Storefront-specific brand system | Reference |
 
 ---
 
@@ -23,20 +22,18 @@
 
 ### ⭐ Primary Logo — Bold Stacked Wordmark (Panel 1)
 
-> **This is the official primary logo.** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#1A1A1A`). The `O` in STORE is replaced by a solid Brand Yellow circle (`#F5C518`). Founding year `1947` set beneath in Geist Mono Warm Grey (`#6B6B6B`).
+> **This is the official primary logo.** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#0B0B0D`). The `O` in STORE is replaced by a solid Saffron circle (`#F0C444`). Founding year `1947` set beneath in Geist Mono muted text (`#525252`).
 > **Why it works:** Maximum legibility at any size. Zero decorative noise. Conveys neighborhood trust and premium clarity in a single glance.
 
 ### Files
 
 | File | Use Case | Spec |
 |------|----------|------|
-| `lucky-store-primary.svg` | Website header, signage, print | Full wordmark + year |
-| `lucky-store-mark.svg` | App icon, favicon, social avatar | Yellow dot + `LS` initials |
-| `lucky-store-inverse.svg` | Dark backgrounds, Brand Yellow surfaces | White wordmark |
-| `lucky-store-primary@2x.png` | Website retina, Instagram | 400×480px |
-| `lucky-store-mark@2x.png` | App store icon, social avatar | 400×400px |
-| `lucky-store-mark@3x.png` | iOS app icon, splash screen | 600×600px |
-| `lucky-store-inverse@2x.png` | Instagram story overlays, dark posts | 400×480px |
+| `assets/logo/svg/logo-main.svg` | Main Latin wordmark | Primary logo |
+| `assets/logo/svg/logo-bangla.svg` | Bengali wordmark | Bengali materials |
+| `assets/logo/svg/logo-white.svg` | White wordmark | Dark backgrounds |
+| `assets/logo/svg/favicon-new.svg` | Store icon | Browser and app icon |
+| `assets/logo/canva-svg/` | Editable Canva logo exports | Social and marketing |
 
 ### Clear Space Rule
 > Maintain clear space = cap height of the `L` on all four sides. Never crowd the wordmark.
@@ -66,12 +63,12 @@
 | Element | Light BG | Dark / Saffron BG |
 |---------|----------|-----------------|
 | Wordmark `LUCKY STORE` | `#0B0B0D` Deep Night | `#FFFFFF` White |
-| Saffron Dot | `#f0c444` | `#f0c444` |
-| Year `1947` (mono) | `#6B6B6B` Warm Grey | `#FFFFFF` White |
+| Saffron Dot | `#F0C444` | `#F0C444` |
+| Year `1947` (mono) | `#525252` Muted text | `#FFFFFF` White |
 
 ### ❌ Never Do
 - Stretch, rotate, or warp the wordmark
-- Replace the Brand Yellow dot with any other color
+- Replace the Saffron dot with any other color
 - Use Inter, Roboto, Arial, or any non-Geist typeface in brand materials
 - Add drop shadows, outlines, or glows not in the approved files
 - Place on busy photos without a clear background safe zone
@@ -87,16 +84,19 @@ Use these exact hex values in all design tools.
 |------|-----|------|-------|
 | Warm Bone | `#FDFBF7` | Canvas / Background | Main body background; feels like premium paper |
 | White Surface | `#FFFFFF` | Primary Surface | Clean product cards and UI panels |
-| **Saffron** | **`#f0c444`** | **Primary Accent** | **CTAs, badges, active states, brand dot** |
+| **Saffron** | **`#F0C444`** | **Primary Accent** | **CTAs, badges, active states, brand dot** |
+| Saffron Hover / Dark | `#E0B434` | Accent Interaction | Hover and pressed states |
 | Yellow Muted | `#FFF8E1` | Accent Background | Soft yellow tints, tags, chip backgrounds |
-| Yellow Dark | `#C79400` | Accent Pressed | High-contrast text on yellow, hover states |
+| Accent Text | `#0B0B0D` | Text on Saffron | Primary foreground on accent surfaces |
 | Deep Night | `#0B0B0D` | Text Primary | Headlines, body, high-contrast containers |
-| Warm Grey | `#6B6B6B` | Text Secondary | Supporting text, secondary actions, metadata |
+| Muted Text | `#525252` | Text Secondary | Supporting text, secondary actions, metadata |
 | Warm Border | `#E8E4DC` | Structural Border | Thin dividers, outer bezel lines |
+| Image Well | `#F7F1E8` | Image Background | Product image wells |
+| Image Well Border | `#E8E0D4` | Image Border | Borders around image wells |
 | Error Red | `#E34234` | Danger | Out-of-stock, system alerts |
 | Success Green | `#16A34A` | Success | Confirmed, in-stock, delivery states |
 
-> ⚠️ **Deprecated:** `#F5C518`, `#1A1A1A`, `#E8B84B`, `#D4941A`, `#0F172A`, `#F8FAFC`, `#15803D` and all Slate/Teal tokens are **removed** as of v2.1.
+> Use the storefront tokens above as the source of truth. Older materials may contain retired yellow and charcoal values; replace them with `#F0C444` and `#0B0B0D`.
 
 ---
 
@@ -125,7 +125,7 @@ All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospac
 | Style | Ultra-lightweight line icons — minimal stroke weight |
 | Library | `@phosphor-icons/web` (Light variant) or equivalent thin-line set |
 | Core Set | Shopping bag, egg carton, jar, loaf, delivery bag, grocery basket, storefront |
-| Color | Charcoal `#1A1A1A` on light BG; White `#FFFFFF` on dark/yellow BG |
+| Color | Deep Night `#0B0B0D` on light BG; White `#FFFFFF` on dark BG |
 | Avoid | Thick-stroked Lucide, FontAwesome solid fill, Material Icons filled |
 
 ---
@@ -147,7 +147,7 @@ All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospac
 │  💰 ৳25/kg    🛵 Same Day │
 │                          │
 │  ┌───────────────────┐   │
-│  │  Order Now  ↗     │   │  ← Brand Yellow pill
+│  │  Order Now  ↗     │   │  ← Saffron pill (`#F0C444`)
 │  └───────────────────┘   │
 │       luckystore1947.com   │
 └─────────────────────────┘
@@ -157,7 +157,7 @@ All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospac
 - Canvas: `1080×1350px` (4:5) or `1080×1080px` (1:1)
 - Photo area: Top 65%, warm natural light
 - Background: Warm Bone `#FDFBF7`
-- Price CTA pill: Brand Yellow `#F5C518`, text Charcoal `#1A1A1A`
+- Price CTA pill: Saffron `#F0C444`, text Deep Night `#0B0B0D`
 - Font: **Geist Bold** (English), **Noto Sans Bengali Bold** (Bangla)
 
 ### Instagram Story (9:16)
@@ -172,7 +172,7 @@ All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospac
 │   warm photo]  │
 │                │
 │  ┌──────────┐  │
-│  │  Order ↗ │  │  ← Brand Yellow pill, bottom
+│  │  Order ↗ │  │  ← Saffron pill (`#F0C444`), bottom
 │  └──────────┘  │
 └────────────────┘
 ```
@@ -180,8 +180,8 @@ All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospac
 **Specs:**
 - Canvas: `1080×1920px`
 - Full-bleed photo with warm tones
-- Badge: Geist Bold, white, `rgba(26, 26, 26, 0.5)` backdrop
-- CTA pill: `#F5C518`, text `#1A1A1A`, `border-radius: 9999px`
+- Badge: Geist Bold, white, `rgba(11, 11, 13, 0.5)` backdrop
+- CTA pill: `#F0C444`, text `#0B0B0D`, `border-radius: 9999px`
 
 ### Facebook Cover (16:9)
 
@@ -348,7 +348,7 @@ Join him: luckystore1947.com
 Before going live:
 
 - [ ] Logo pack downloaded and organized (SVG + PNG)
-- [ ] Brand Yellow `#F5C518` + Charcoal `#1A1A1A` + Warm Bone `#FDFBF7` added to your design tool
+- [ ] Saffron `#F0C444` + Deep Night `#0B0B0D` + Warm Bone `#FDFBF7` added to your design tool
 - [ ] **Geist** + **Geist Mono** + Noto Sans Bengali fonts installed
 - [ ] Canva/Figma templates created (feed, story, flyer)
 - [ ] Instagram Business account connected to `hello@luckystore1947.com`
