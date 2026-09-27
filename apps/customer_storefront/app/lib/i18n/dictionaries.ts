@@ -53,7 +53,7 @@ export const dictionaries = {
         },
         {
           title: 'Free delivery on ৳500+',
-          body: `Within the ${DELIVERY_POLICY.radiusLabel} Chawkbazar delivery area, larger daily-bazaar orders qualify for free doorstep delivery.`,
+          body: `Within the ${DELIVERY_POLICY.radiusKm} km Chawkbazar delivery area, larger daily-bazaar orders qualify for free doorstep delivery.`,
         },
         {
           title: 'Check first, then pay',
@@ -63,7 +63,7 @@ export const dictionaries = {
       faqs: [
         {
           question: 'How far does Lucky Store deliver?',
-          answer: `Delivery is available within the verified ${DELIVERY_POLICY.radiusLabel} Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.`,
+          answer: `Delivery is available within the verified ${DELIVERY_POLICY.radiusKm} km Chawkbazar delivery radius. Add your address at checkout and include a nearby landmark so the team can confirm coverage.`,
         },
         {
           question: 'Do I need to pay online first?',
