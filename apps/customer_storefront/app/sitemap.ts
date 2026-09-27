@@ -8,21 +8,74 @@ const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 export const revalidate = 86_400;
 
-// Dynamic index pages — lastMod derived at runtime from newest DB content only
+// Dynamic index pairs — reciprocal alternates & real DB-derived newest lastMod
 const dynamicIndexRoutes = [
-  { path: '', priority: 1.0, changefreq: 'daily' },
-  { path: '/category', priority: 0.8, changefreq: 'daily' },
+  {
+    enPath: '',
+    bnPath: '/bn',
+    priority: 1.0,
+    changefreq: 'daily',
+  },
+  {
+    enPath: '/category',
+    bnPath: '/bn/category',
+    priority: 0.8,
+    changefreq: 'daily',
+  },
 ] as const;
 
-// Truly static pages — content rarely changes; hardcoded dates are appropriate
+// Truly static routes: audited for exact localized /bn/... route existence.
+// Only routes with verified page implementations emit localized counterparts and alternates.
 const staticRoutes = [
-  { path: '/fortune-cookies-near-me', priority: 0.8, changefreq: 'weekly', lastMod: '2026-09-25T00:00:00Z' },
-  { path: '/delivery', priority: 0.8, changefreq: 'weekly', lastMod: '2026-09-08T00:00:00Z' },
-  { path: '/contact', priority: 0.5, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
-  { path: '/privacy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
-  { path: '/terms', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
-  { path: '/security-policy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
-  { path: '/data-deletion', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
+  {
+    enPath: '/fortune-cookies-near-me',
+    bnPath: '/bn/fortune-cookies-near-me',
+    priority: 0.8,
+    changefreq: 'weekly',
+    lastMod: '2026-09-25T00:00:00Z',
+  },
+  {
+    enPath: '/delivery',
+    bnPath: '/bn/delivery',
+    priority: 0.8,
+    changefreq: 'weekly',
+    lastMod: '2026-09-08T00:00:00Z',
+  },
+  {
+    enPath: '/contact',
+    bnPath: null,
+    priority: 0.5,
+    changefreq: 'monthly',
+    lastMod: '2026-06-01T00:00:00Z',
+  },
+  {
+    enPath: '/privacy',
+    bnPath: null,
+    priority: 0.3,
+    changefreq: 'monthly',
+    lastMod: '2026-06-01T00:00:00Z',
+  },
+  {
+    enPath: '/terms',
+    bnPath: null,
+    priority: 0.3,
+    changefreq: 'monthly',
+    lastMod: '2026-06-01T00:00:00Z',
+  },
+  {
+    enPath: '/security-policy',
+    bnPath: null,
+    priority: 0.3,
+    changefreq: 'monthly',
+    lastMod: '2026-06-01T00:00:00Z',
+  },
+  {
+    enPath: '/data-deletion',
+    bnPath: null,
+    priority: 0.3,
+    changefreq: 'monthly',
+    lastMod: '2026-06-01T00:00:00Z',
+  },
 ] as const;
 
 // Dynamic category pages: shares the exact canonical slug normalization used by category routing
@@ -43,25 +96,12 @@ async function getCategories(): Promise<{ slug: string }[]> {
     return result;
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error);
-    // Return empty list on failure — never inject fabricated fallback URLs
     return [];
   }
 }
 
 /**
  * Product Sitemap Eligibility Predicate
- *
- * Database RPC Contract:
- * - Supabase RPC `search_items_pos` filters strictly at the SQL level via `WHERE i.is_active = true`.
- * - The RPC returns rows that are guaranteed to be active in PostgreSQL, but omits the `is_active`
- *   column from its JSON projection.
- *
- * Eligibility Criteria:
- * 1. ID: Must be a non-empty string.
- * 2. Name: Must be a non-empty string.
- * 3. Price: Must be a finite, positive number (> 0).
- * 4. Active flags: When present (e.g. from table queries or mock objects), `is_active` and `active`
- *    must NOT be false.
  */
 export function isProductSitemapEligible(item: {
   id?: unknown;
@@ -119,8 +159,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getProducts(),
   ]);
 
-  // Derive homepage/listing lastMod from the newest *real* product timestamp only.
-  // When no legitimate timestamp is available, lastModified is omitted (never use Date.now()).
   const productUpdatedAts = products
     .map((p) => p.updatedAt)
     .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
@@ -129,34 +167,146 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ? new Date(productUpdatedAts.reduce((a, b) => (a > b ? a : b))).toISOString().split('.')[0] + 'Z'
     : undefined;
 
-  const dynamicIndexEntries: MetadataRoute.Sitemap = dynamicIndexRoutes.map((route) => ({
-    url: `${BASE_URL}${route.path}`,
-    ...(newestMod ? { lastModified: newestMod } : {}),
-    changeFrequency: route.changefreq as any,
-    priority: route.priority,
-  }));
+  const dynamicIndexEntries: MetadataRoute.Sitemap = [];
+  for (const route of dynamicIndexRoutes) {
+    const enUrl = `${BASE_URL}${route.enPath}`;
+    const bnUrl = `${BASE_URL}${route.bnPath}`;
 
-  const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
-    url: `${BASE_URL}${route.path}`,
-    lastModified: route.lastMod,
-    changeFrequency: route.changefreq as any,
-    priority: route.priority,
-  }));
+    dynamicIndexEntries.push({
+      url: enUrl,
+      ...(newestMod ? { lastModified: newestMod } : {}),
+      changeFrequency: route.changefreq as any,
+      priority: route.priority,
+      alternates: {
+        languages: {
+          'en-BD': enUrl,
+          'bn-BD': bnUrl,
+          'x-default': enUrl,
+        },
+      },
+    });
 
-  const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${BASE_URL}/category/${cat.slug}`,
-    changeFrequency: 'daily',
-    priority: 0.9,
-  }));
+    dynamicIndexEntries.push({
+      url: bnUrl,
+      ...(newestMod ? { lastModified: newestMod } : {}),
+      changeFrequency: route.changefreq as any,
+      priority: route.priority,
+      alternates: {
+        languages: {
+          'en-BD': enUrl,
+          'bn-BD': bnUrl,
+          'x-default': enUrl,
+        },
+      },
+    });
+  }
 
-  const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${BASE_URL}/product/${toProductSlug(product.name, product.id)}`,
-    ...(product.updatedAt
+  const staticEntries: MetadataRoute.Sitemap = [];
+  for (const route of staticRoutes) {
+    const enUrl = `${BASE_URL}${route.enPath}`;
+    const bnUrl = route.bnPath ? `${BASE_URL}${route.bnPath}` : null;
+
+    staticEntries.push({
+      url: enUrl,
+      lastModified: route.lastMod,
+      changeFrequency: route.changefreq as any,
+      priority: route.priority,
+      ...(bnUrl
+        ? {
+            alternates: {
+              languages: {
+                'en-BD': enUrl,
+                'bn-BD': bnUrl,
+                'x-default': enUrl,
+              },
+            },
+          }
+        : {}),
+    });
+
+    if (bnUrl) {
+      staticEntries.push({
+        url: bnUrl,
+        lastModified: route.lastMod,
+        changeFrequency: route.changefreq as any,
+        priority: route.priority,
+        alternates: {
+          languages: {
+            'en-BD': enUrl,
+            'bn-BD': bnUrl,
+            'x-default': enUrl,
+          },
+        },
+      });
+    }
+  }
+
+  const categoryEntries: MetadataRoute.Sitemap = [];
+  for (const cat of categories) {
+    const url = `${BASE_URL}/category/${cat.slug}`;
+    const bnUrl = `${BASE_URL}/bn/category/${cat.slug}`;
+    categoryEntries.push({
+      url,
+      changeFrequency: 'daily',
+      priority: 0.9,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+    categoryEntries.push({
+      url: bnUrl,
+      changeFrequency: 'daily',
+      priority: 0.9,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+  }
+
+  const productEntries: MetadataRoute.Sitemap = [];
+  for (const product of products) {
+    const slug = toProductSlug(product.name, product.id);
+    const url = `${BASE_URL}/product/${slug}`;
+    const bnUrl = `${BASE_URL}/bn/product/${slug}`;
+    const lastMod = product.updatedAt
       ? { lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z' }
-      : {}),
-    changeFrequency: 'daily',
-    priority: 0.8,
-  }));
+      : {};
+    
+    productEntries.push({
+      url,
+      ...lastMod,
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+    productEntries.push({
+      url: bnUrl,
+      ...lastMod,
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+  }
 
   return [
     ...dynamicIndexEntries,
