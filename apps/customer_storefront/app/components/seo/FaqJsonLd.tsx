@@ -1,10 +1,22 @@
 import React from 'react';
 
-export function FaqJsonLd() {
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export function FaqJsonLd({ items }: { items?: FaqItem[] }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: [
+    mainEntity: items?.length ? items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })) : [
       {
         '@type': 'Question',
         name: 'How far does Lucky Store deliver?',

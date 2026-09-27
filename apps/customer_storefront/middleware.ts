@@ -3,8 +3,6 @@ import { updateSession } from './app/lib/supabase/middleware';
 import { getCanonicalCategorySlug } from './app/lib/types';
 import { isBareUuid, toProductSlug } from './app/lib/products/slugify';
 
-const STOREFRONT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
-
 async function resolveProductNameForCanonicalRedirect(productId: string): Promise<string | null> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -28,36 +26,10 @@ async function resolveProductNameForCanonicalRedirect(productId: string): Promis
       cache: 'no-store',
     });
 
-    if (itemResponse.ok) {
-      const rows = await itemResponse.json();
-      const name = Array.isArray(rows) ? rows[0]?.name : null;
-      if (typeof name === 'string' && name.trim()) return name.trim();
-    }
+    if (!itemResponse.ok) return null;
 
-    const rpcResponse = await fetch(new URL('/rest/v1/rpc/search_items_pos', supabaseUrl), {
-      method: 'POST',
-      headers: {
-        ...restHeaders,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        p_store_id: STOREFRONT_STORE_ID,
-        p_query: '',
-        p_category_id: null,
-        p_limit: 1000,
-        p_offset: 0,
-      }),
-      cache: 'no-store',
-    });
-
-    if (!rpcResponse.ok) return null;
-
-    const rows = await rpcResponse.json();
-    const match = Array.isArray(rows)
-      ? rows.find((row: any) => String(row?.id ?? row?.item_id) === productId)
-      : null;
-    const name = match?.name;
-
+    const rows = await itemResponse.json();
+    const name = Array.isArray(rows) ? rows[0]?.name : null;
     return typeof name === 'string' && name.trim() ? name.trim() : null;
   } catch (error) {
     console.error('Failed to resolve product UUID redirect', { productId, error });
@@ -94,10 +66,11 @@ export async function middleware(request: NextRequest) {
     }
 
     if (isBareUuid(decodedProductSlug)) {
-      const productName = await resolveProductNameForCanonicalRedirect(decodedProductSlug);
+      const productId = decodedProductSlug.toLowerCase();
+      const productName = await resolveProductNameForCanonicalRedirect(productId);
       if (productName) {
         const url = request.nextUrl.clone();
-        url.pathname = `/${localePrefix}product/${toProductSlug(productName, decodedProductSlug)}`;
+        url.pathname = `/${localePrefix}product/${toProductSlug(productName, productId)}`;
         return NextResponse.redirect(url, 308);
       }
     }

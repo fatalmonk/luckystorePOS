@@ -150,7 +150,7 @@ export function getDeliveryServiceSchema() {
     serviceType: 'Local Grocery Delivery',
     provider: {
       '@type': 'GroceryStore',
-      '@id': 'https://www.luckystore1947.com/#grocerystore',
+      '@id': 'https://www.luckystore1947.com/#organization',
       name: DELIVERY_POLICY.storeName,
       url: 'https://www.luckystore1947.com',
       telephone: DELIVERY_POLICY.supportPhone,

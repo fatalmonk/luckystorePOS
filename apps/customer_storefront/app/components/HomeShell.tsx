@@ -79,7 +79,7 @@ export function HomeShell({
 
   return (
     <>
-      <FaqJsonLd />
+      <FaqJsonLd items={dict.confidence.faqs} />
       <Header locale={locale} />
       <CartStorageNotice />
       <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">

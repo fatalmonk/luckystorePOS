@@ -201,7 +201,7 @@ function CheckoutContent() {
     return undefined;
   };
 
-  const validateAll = (includePaymentReference = false): boolean => {
+  const validateAll = (): boolean => {
     const checkoutNotes = [
       formData.notes.trim(),
       formData.paymentMethod === 'bkash' && formData.trxId.trim() ? `bKash TrxID: ${formData.trxId.trim()}` : '',
@@ -211,7 +211,6 @@ function CheckoutContent() {
       phone: validateField('phone', formData.phone),
       address: validateField('address', formData.address),
       notes: checkoutNotes.length > 300 ? 'Keep combined instructions and payment reference under 300 characters' : validateField('notes', formData.notes),
-      trxId: includePaymentReference && formData.paymentMethod === 'bkash' && !formData.trxId.trim() ? 'Enter the bKash transaction reference' : undefined,
     };
     setErrors(newErrors);
     const hasErrors = Object.values(newErrors).some(Boolean);
@@ -236,7 +235,7 @@ function CheckoutContent() {
       showToast('Your cart is empty');
       return;
     }
-    if (step === 2 && !validateAll(false)) {
+    if (step === 2 && !validateAll()) {
       return;
     }
     if (step === 2 && !shippingTrackedRef.current) {
@@ -253,7 +252,7 @@ function CheckoutContent() {
   };
 
   const placeOrder = async () => {
-    if (!validateAll(true)) return;
+    if (!validateAll()) return;
 
     setIsPlacing(true);
     setSubmitError(null);
@@ -697,16 +696,15 @@ function CheckoutContent() {
                               <p className="text-sm font-extrabold text-warm-fg">Pay {formatBdt(total)} with bKash</p>
                               <p className="mt-1 text-xs leading-5 text-warm-muted">
                                 Scan the QR or send payment to <span className="font-bold text-warm-fg">01731944544</span>.
-                                Pay before placing the order, then add the transaction reference below. Payment is reviewed manually after submission.
+                                Pay when your order arrives. If you already paid, you can add the transaction reference below.
                               </p>
                               <Input
                                 ref={trxIdRef}
-                                label="bKash TrxID"
+                                label="bKash TrxID (optional)"
                                 value={formData.trxId}
                                 onChange={(e) => updateField('trxId', e.target.value)}
                                 placeholder="e.g. 9A1B2C3D4E"
                                 maxLength={100}
-                                required
                                 className="mt-3 bg-white"
                                 aria-invalid={!!errors.trxId}
                                 aria-describedby={errors.trxId ? 'checkout-trxid-error' : undefined}
