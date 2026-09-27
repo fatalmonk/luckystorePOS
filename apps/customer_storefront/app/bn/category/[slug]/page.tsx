@@ -250,45 +250,18 @@ export default async function BengaliCategorySlugPage({
     name: BENGALI_CATEGORY_NAMES[c.slug] || c.name,
   }));
 
-  const rawTitleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  const breadcrumbTitle = BENGALI_CATEGORY_NAMES[canonicalSlug] || (group?.slug && BENGALI_CATEGORY_NAMES[group.slug]) || rawTitleName;
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'হোম',
-        item: 'https://www.luckystore1947.com/bn',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: breadcrumbTitle,
-        item: `https://www.luckystore1947.com/bn/category/${canonicalSlug}`,
-      },
-    ],
-  };
-
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }}
-      />
-      <CategoryShell
-        categorySlug={canonicalSlug}
-        currentCat={currentCat}
-        group={group}
-        parentGroup={parentGroup}
-        categories={categories}
-        products={products}
-        theme={theme}
-        sort={sort}
-        searchParams={resolvedSearch}
-        locale="bn"
-      />
-    </>
+    <CategoryShell
+      categorySlug={canonicalSlug}
+      currentCat={currentCat}
+      group={group}
+      parentGroup={parentGroup}
+      categories={categories}
+      products={products}
+      theme={theme}
+      sort={sort}
+      searchParams={resolvedSearch}
+      locale="bn"
+    />
   );
 }

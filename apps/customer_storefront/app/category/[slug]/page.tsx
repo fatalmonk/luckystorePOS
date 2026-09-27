@@ -249,43 +249,17 @@ export default async function CategorySlugPage({
     console.error('Failed to fetch category products:', err);
   }
 
-  const breadcrumbTitle = group?.label || currentCatObj?.name || canonicalSlug.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: 'https://www.luckystore1947.com',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: breadcrumbTitle,
-        item: `https://www.luckystore1947.com/category/${canonicalSlug}`,
-      },
-    ],
-  };
-
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }}
-      />
-      <CategoryShell
-        categorySlug={canonicalSlug}
-        currentCat={currentCat}
-        group={group}
-        parentGroup={parentGroup}
-        categories={categories}
-        products={products}
-        theme={theme}
-        sort={sort}
-        searchParams={resolvedSearch}
-      />
-    </>
+    <CategoryShell
+      categorySlug={canonicalSlug}
+      currentCat={currentCat}
+      group={group}
+      parentGroup={parentGroup}
+      categories={categories}
+      products={products}
+      theme={theme}
+      sort={sort}
+      searchParams={resolvedSearch}
+    />
   );
 }

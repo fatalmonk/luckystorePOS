@@ -95,10 +95,8 @@ describe('Bengali Category Routes Contract', () => {
       searchParams: Promise.resolve({}),
     });
 
-    const children = Array.isArray(result?.props?.children) ? result.props.children : [result];
-    const shell = children.find((child: any) => child?.props?.categorySlug) || result;
-    expect(shell.props.locale).toBe('bn');
-    expect(shell.props.categorySlug).toBe('all');
+    expect(result.props.locale).toBe('bn');
+    expect(result.props.categorySlug).toBe('all');
   });
 
   it('generates canonical metadata for any valid category slug in Bengali', async () => {
@@ -144,9 +142,7 @@ describe('Bengali Category Routes Contract', () => {
       searchParams: Promise.resolve({}),
     });
 
-    const children = Array.isArray(result?.props?.children) ? result.props.children : [result];
-    const shell = children.find((child: any) => child?.props?.categorySlug) || result;
-    expect(shell.props.locale).toBe('bn');
-    expect(shell.props.categorySlug).toBe('rice-and-grain');
+    expect(result.props.locale).toBe('bn');
+    expect(result.props.categorySlug).toBe('rice-and-grain');
   });
 });
