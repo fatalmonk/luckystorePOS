@@ -1,0 +1,42 @@
+# Lucky Store
+
+> Online grocery and daily bazaar delivery from Lucky Store in Chawkbazar, Chattogram.
+
+Lucky Store is a neighborhood grocery store serving Chattogram families since 1947. The storefront lets customers browse groceries, pantry staples, tea, snacks, household essentials, and personal care items, then order for local doorstep delivery within the verified 1 km Chawkbazar delivery area. Orders support Cash on Delivery and bKash after doorstep inspection.
+
+## Core pages
+
+- [Home](https://www.luckystore1947.com): Featured groceries, popular categories, delivery confidence notes, and current product sections.
+- [All categories](https://www.luckystore1947.com/category): Browse the full public product catalog.
+- [Delivery information](https://www.luckystore1947.com/delivery): Delivery radius, fees, hours, Cash on Delivery, bKash, and doorstep inspection policy.
+- [Contact](https://www.luckystore1947.com/contact): Store address, phone, email, WhatsApp, map, and customer support form.
+- [Privacy policy](https://www.luckystore1947.com/privacy): Customer data handling and privacy terms.
+- [Terms of service](https://www.luckystore1947.com/terms): Storefront ordering and service terms.
+
+## Popular shopping paths
+
+- [Rice and grains](https://www.luckystore1947.com/category/rice-and-grain)
+- [Oil and ghee](https://www.luckystore1947.com/category/oil-and-ghee)
+- [Tea and coffee](https://www.luckystore1947.com/category/tea-and-coffee)
+- [Fortune Cookies near me](https://www.luckystore1947.com/fortune-cookies-near-me)
+- [Snacks](https://www.luckystore1947.com/category/snacks)
+- [Cleaning supplies](https://www.luckystore1947.com/category/cleaning-supplies)
+- [Personal care](https://www.luckystore1947.com/category/personal-care)
+
+## AI and agent resources
+
+- [auth.md](https://www.luckystore1947.com/auth.md): Agent authentication and user-controlled account access information.
+- [API catalog](https://www.luckystore1947.com/.well-known/api-catalog): Public API discovery metadata.
+- [Sitemap](https://www.luckystore1947.com/sitemap.xml): Crawlable public routes and product URLs.
+- [Robots policy](https://www.luckystore1947.com/robots.txt): Crawler permissions and content signal.
+
+## Store facts
+
+- Name: Lucky Store
+- Founded: 1947
+- Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203, Bangladesh
+- Phone and WhatsApp: +880 1731-944544
+- Email: hello@luckystore1947.com
+- Delivery area: verified 1 km radius around the Chawkbazar store
+- Payment: Cash on Delivery and bKash at doorstep
+- Languages: English and Bengali storefront routes

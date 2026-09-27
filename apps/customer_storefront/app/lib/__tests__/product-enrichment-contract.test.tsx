@@ -139,7 +139,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(json.brand.name).toBe('Fortune');
     });
 
-    it('omits standard shippingDetails and emits the merchant return policy', () => {
+    it('emits offer-level shipping details and the merchant return policy without fake reviews', () => {
       const product: Product = {
         id: createProductId('radhuni-test-item-123'),
         name: 'Radhuni Holud Gura 100g',
@@ -162,13 +162,37 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(offers.price).toBe(65);
       expect(offers.availability).toBe('https://schema.org/InStock');
 
-      expect(offers.shippingDetails).toBeUndefined();
+      expect(offers.shippingDetails).toBeDefined();
+      expect(offers.shippingDetails['@type']).toBe('OfferShippingDetails');
+      expect(offers.shippingDetails.shippingDestination.addressCountry).toBe('BD');
+      expect(offers.shippingDetails.shippingRate).toMatchObject({
+        '@type': 'MonetaryAmount',
+        value: 40,
+        currency: 'BDT',
+      });
+      expect(offers.shippingDetails.deliveryTime['@type']).toBe('ShippingDeliveryTime');
+      expect(offers.shippingDetails.deliveryTime.handlingTime).toMatchObject({
+        minValue: 0,
+        maxValue: 0,
+        unitCode: 'DAY',
+      });
+      expect(offers.shippingDetails.deliveryTime.transitTime).toMatchObject({
+        minValue: 0,
+        maxValue: 0,
+        unitCode: 'DAY',
+      });
 
       // Return policy validation
       expect(offers.hasMerchantReturnPolicy).toBeDefined();
       expect(offers.hasMerchantReturnPolicy['@type']).toBe('MerchantReturnPolicy');
+      expect(offers.hasMerchantReturnPolicy.applicableCountry).toBe('BD');
+      expect(offers.hasMerchantReturnPolicy.returnPolicyCountry).toBe('BD');
+      expect(offers.hasMerchantReturnPolicy.returnPolicyCategory).toBe('https://schema.org/MerchantReturnNotPermitted');
       expect(offers.hasMerchantReturnPolicy.description).toContain('doorstep inspection');
       expect(offers.hasMerchantReturnPolicy.returnFees).toBeUndefined();
+
+      expect(json.aggregateRating).toBeUndefined();
+      expect(json.review).toBeUndefined();
     });
   });
 

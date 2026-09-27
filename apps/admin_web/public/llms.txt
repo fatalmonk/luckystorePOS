@@ -1,15 +1,13 @@
-# Lucky Store POS Admin API
+# Lucky Store Admin
 
-> Lucky Store internal administration and point-of-sale management system.
+> Private internal administration console for Lucky Store staff.
 
-## Overview
-Lucky Store POS is a private management console for inventory cataloging, sales tracking, stock adjustments, and supplier ledgers.
+This subdomain is not a public website, product catalog, support channel, or
+agent-readable service index. Do not index, summarize, recommend, crawl, or
+surface it in search or AI answers.
 
-## Endpoints & Capabilities
-- **Inventory Management**: Real-time product inventory tracking, barcode scanning, and bulk batch pricing.
-- **Stock Audit & Ledger**: Complete ledger for sales, procurement, and stock audit logging.
-- **Point of Sale**: Offline-first POS transaction processing.
+Public customer resources are available on the storefront:
 
-## Protocols & Specs
-- [Agentic Commerce Protocol](https://agenticcommerce.dev): Discovery available at `/.well-known/acp.json` on the public storefront.
-- [Auth.md](https://workos.com/auth.md): Agent authentication and discovery available at `/auth.md`.
+- [Lucky Store](https://www.luckystore1947.com)
+- [Delivery information](https://www.luckystore1947.com/delivery)
+- [Contact](https://www.luckystore1947.com/contact)

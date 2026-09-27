@@ -27,4 +27,14 @@ describe('Breadcrumbs structured data', () => {
 
     expect(schema.itemListElement[1].item).toBe('https://www.luckystore1947.com/delivery');
   });
+
+  it('provides a readable name for empty breadcrumb labels', () => {
+    const { container } = render(
+      <Breadcrumbs items={[{ label: '', href: '/category/biscuits-and-cookies' }]} />,
+    );
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const schema = JSON.parse(script?.textContent || '{}');
+
+    expect(schema.itemListElement[1].name).toBe('Biscuits And Cookies');
+  });
 });

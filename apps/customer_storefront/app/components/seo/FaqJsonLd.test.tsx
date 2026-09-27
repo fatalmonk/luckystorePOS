@@ -12,7 +12,7 @@ describe('FaqJsonLd', () => {
     expect(json['@context']).toBe('https://schema.org');
     expect(json['@type']).toBe('FAQPage');
     expect(json.mainEntity).toHaveLength(4);
-    expect(json.mainEntity[0].name).toBe('Does Lucky Store offer home delivery for online grocery in Chittagong?');
-    expect(json.mainEntity[1].name).toBe('Where can I find an organic grocery shop near me in Chittagong?');
+    expect(json.mainEntity[0].name).toBe('How far does Lucky Store deliver?');
+    expect(json.mainEntity[1].name).toBe('Do I need to pay online first?');
   });
 });

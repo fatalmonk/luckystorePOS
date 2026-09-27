@@ -144,7 +144,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
 
       // Provider
       expect(schema.provider['@type']).toBe('GroceryStore');
-      expect(schema.provider['@id']).toBe('https://www.luckystore1947.com/#grocerystore');
+      expect(schema.provider['@id']).toBe('https://www.luckystore1947.com/#organization');
 
       // GeoCircle areaServed
       expect(schema.areaServed['@type']).toBe('GeoCircle');

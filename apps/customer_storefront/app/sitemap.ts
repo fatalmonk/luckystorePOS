@@ -6,6 +6,7 @@ import { getCanonicalCategorySlug } from './lib/types';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+export const revalidate = 86_400;
 
 // Dynamic index pages — lastMod derived at runtime from newest DB content only
 const dynamicIndexRoutes = [
@@ -15,6 +16,7 @@ const dynamicIndexRoutes = [
 
 // Truly static pages — content rarely changes; hardcoded dates are appropriate
 const staticRoutes = [
+  { path: '/fortune-cookies-near-me', priority: 0.8, changefreq: 'weekly', lastMod: '2026-09-25T00:00:00Z' },
   { path: '/delivery', priority: 0.8, changefreq: 'weekly', lastMod: '2026-09-08T00:00:00Z' },
   { path: '/contact', priority: 0.5, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },
   { path: '/privacy', priority: 0.3, changefreq: 'monthly', lastMod: '2026-06-01T00:00:00Z' },

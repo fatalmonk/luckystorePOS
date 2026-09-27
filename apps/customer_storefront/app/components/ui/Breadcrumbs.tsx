@@ -18,7 +18,26 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: BreadcrumbsProps) {
-  const allItems: BreadcrumbItem[] = [{ label: homeLabel, href: homeHref }, ...items];
+  const allItems: BreadcrumbItem[] = [{ label: homeLabel, href: homeHref }, ...items].map((item) => {
+    const label = typeof item.label === 'string' ? item.label.trim() : '';
+    if (label) return { ...item, label };
+
+    const segment = item.href.split(/[?#]/, 1)[0].split('/').filter(Boolean).at(-1);
+    if (!segment) return { ...item, label: homeLabel };
+
+    let decodedSegment = segment;
+    try {
+      decodedSegment = decodeURIComponent(segment);
+    } catch {
+      // Keep the readable URL segment when it contains malformed encoding.
+    }
+
+    const fallbackLabel = decodedSegment
+      .replace(/--[a-f0-9]{8}$/i, '')
+      .replace(/[-_]+/g, ' ')
+      .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+    return { ...item, label: fallbackLabel || homeLabel };
+  });
 
   const toCanonicalUrl = (href: string) => {
     if (/^https?:\/\//i.test(href)) return href;

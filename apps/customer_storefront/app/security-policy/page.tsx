@@ -105,7 +105,10 @@ export default function SecurityPolicyPage() {
                 We do <strong>not</strong> sell, rent, or share your personal data with third parties for marketing.
               </p>
               <p>
-                We use <strong>Google Analytics</strong> (G-K5JLJNSW6D) to understand site traffic patterns. All data is anonymized and aggregated. You can opt out via your browser&apos;s Do Not Track settings.
+                We use <strong>Google Analytics</strong> (G-K5JLJNSW6D) only after you accept analytics in the privacy banner. Advertising storage and personalization remain disabled.
+              </p>
+              <p>
+                When hosted on Vercel, Vercel Analytics and Speed Insights also collect usage and performance measurements regardless of your Google Analytics consent choice.
               </p>
             </PolicySection>
 
@@ -116,7 +119,8 @@ export default function SecurityPolicyPage() {
               <ul className="list-disc pl-4 space-y-1">
                 <li>Cart persistence across sessions</li>
                 <li>Session authentication tokens</li>
-                <li>Analytics and performance monitoring</li>
+                <li>Your analytics consent choice</li>
+                <li>Google Analytics cookies, only after consent</li>
               </ul>
               <p>No third-party advertising cookies are deployed.</p>
             </PolicySection>

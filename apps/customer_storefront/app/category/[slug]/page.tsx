@@ -12,6 +12,16 @@ import type { Category, Product } from '../../lib/products/types';
 import type { Metadata } from 'next';
 
 const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }> = {
+  'biscuits-and-cookies': {
+    title: 'Biscuits & Cookies in Chittagong | Lucky Store',
+    description:
+      'Browse biscuits, cookies and snack packs from Lucky Store in Chittagong. Check current prices and availability, then order online for local delivery.',
+  },
+  snacks: {
+    title: 'Snacks & Chips in Chittagong | Lucky Store',
+    description:
+      'Shop snacks and chips online from Lucky Store in Chittagong. Check current prices and availability for local delivery and Cash on Delivery.',
+  },
   'rice-and-grain': {
     title: 'Miniket & Chinigura Rice Price in Chittagong | Lucky Store',
     description:
