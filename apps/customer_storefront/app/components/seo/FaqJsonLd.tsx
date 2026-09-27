@@ -5,7 +5,7 @@ export interface FaqItem {
   answer: string;
 }
 
-export function FaqJsonLd({ items }: { items?: FaqItem[] }) {
+export function FaqJsonLd({ items }: { items?: readonly FaqItem[] }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
