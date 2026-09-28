@@ -115,11 +115,13 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
   if (!res.ok) {
     const providerBody = await res.json().catch(() => null);
     const providerCode = providerBody?.error?.code ?? providerBody?.error?.type;
+    const providerMessage = providerBody?.error?.message ?? null;
     console.error('Receipt vision provider rejected request', {
       provider: providerName,
       model,
       status: res.status,
       code: providerCode,
+      message: providerMessage,
     });
     if (res.status === 401 || res.status === 403) {
       throw Object.assign(new Error('Vision provider authentication failed. Contact an administrator.'), {
