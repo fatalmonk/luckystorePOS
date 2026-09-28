@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, ClipboardCopy, FileScan, ImageIcon, LoaderCircle, Upload } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
+import { uploadReceiptImage } from '../../lib/images';
 import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, scanReceiptImage } from './receiptOcr';
 
 type ReceiptScanPanelProps = {
   suppliers: ReceiptOcrSupplier[];
   onApply: (result: ReceiptOcrResult) => void;
   onScanStart?: () => void;
+  onImageUploaded?: (result: { url: string; key: string }) => void;
+  onImageRemoved?: () => void;
 };
 
-export function ReceiptScanPanel({ suppliers, onApply, onScanStart }: ReceiptScanPanelProps) {
-  const { session } = useAuth();
+export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploaded, onImageRemoved }: ReceiptScanPanelProps) {
+  const { session, tenantId } = useAuth();
   const accessToken = session?.access_token;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,7 +49,23 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart }: ReceiptSca
 
     setIsScanning(true);
     setStatusText('Reading text from receipt…');
+
+    let uploadedImageUrl: string | null = null;
+    let uploadError: string | null = null;
     try {
+      // Upload receipt image immediately when a File is provided
+      if (source instanceof File && tenantId) {
+        setStatusText('Uploading image…');
+        try {
+          const uploadResult = await uploadReceiptImage({ file: source, tenantId });
+          onImageUploaded?.(uploadResult);
+        } catch (err) {
+          console.error('Image upload failed:', err);
+          uploadError = err instanceof Error ? err.message : 'Upload failed.';
+          onImageRemoved?.();
+        }
+      }
+
       const ocrResult = await scanReceiptImage(source, suppliers, (progress, status) => {
         if (scanId !== scanIdRef.current) return;
         if (status === 'recognizing text') {
@@ -59,21 +78,23 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart }: ReceiptSca
       }, accessToken);
 
       // Merge: Keep filename invoice/supplier/total if present, overlay extracted items
-      if (scanId === scanIdRef.current) setResult({
-        ...ocrResult,
-        invoiceNumber: fileMeta?.invoiceNumber || ocrResult.invoiceNumber,
-        invoiceDate: fileMeta?.invoiceDate || ocrResult.invoiceDate,
-        invoiceTotal: fileMeta?.invoiceTotal || ocrResult.invoiceTotal,
-        supplier: fileMeta?.supplier || ocrResult.supplier,
-        items: ocrResult.items || [],
-      });
+      if (scanId === scanIdRef.current) {
+        setResult({
+          ...ocrResult,
+          invoiceNumber: fileMeta?.invoiceNumber || ocrResult.invoiceNumber,
+          invoiceDate: fileMeta?.invoiceDate || ocrResult.invoiceDate,
+          invoiceTotal: fileMeta?.invoiceTotal || ocrResult.invoiceTotal,
+          supplier: fileMeta?.supplier || ocrResult.supplier,
+          items: ocrResult.items || [],
+        });
+        if (uploadError) setError(`OCR succeeded, but image upload failed: ${uploadError}`);
+      }
     } catch (error) {
       console.error('Receipt OCR failed:', error);
-      if (scanId === scanIdRef.current) setError(
-        error instanceof Error
-          ? error.message
-          : 'Receipt scanning failed for an unknown reason.',
-      );
+      if (scanId === scanIdRef.current) {
+        const ocrErr = error instanceof Error ? error.message : 'Receipt scanning failed for an unknown reason.';
+        setError(uploadError ? `Upload failed: ${uploadError}. Also, OCR failed: ${ocrErr}` : ocrErr);
+      }
     } finally {
       if (scanId === scanIdRef.current) {
         setIsScanning(false);
@@ -121,6 +142,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart }: ReceiptSca
     setError(null);
     setIsScanning(false);
     setStatusText('');
+    onImageRemoved?.();
   };
 
   return (

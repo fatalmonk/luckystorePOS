@@ -202,6 +202,92 @@ export async function uploadCategoryImage({
   return `${publicUrl}?t=${Date.now()}`;
 }
 
+export async function uploadReceiptImage({
+  file,
+  tenantId,
+}: {
+  file: File;
+  tenantId: string;
+}): Promise<{ url: string; key: string }> {
+  let webpBlob: Blob;
+  try {
+    // Keep max dimensions higher for OCR readability, slightly lower quality
+    webpBlob = await convertToWebP(file, { maxWidth: 2000, maxHeight: 2000, quality: 0.75 });
+  } catch (err) {
+    throw new Error('Failed to convert receipt image to WebP format.');
+  }
+
+  const sanitizedTenantId = tenantId.replace(/[^a-zA-Z0-9-]/g, '_');
+  const key = `${sanitizedTenantId}/receipt_${crypto.randomUUID()}.webp`;
+
+  const webpFile = new File([webpBlob], `receipt.webp`, { type: 'image/webp' });
+
+  let url: string;
+  if (isR2Configured()) {
+    try {
+      url = await uploadToR2(webpFile, key);
+    } catch (err) {
+      console.warn('R2 upload failed for receipt, falling back to Supabase:', err);
+      url = await uploadReceiptToSupabase(webpFile, key);
+    }
+  } else {
+    url = await uploadReceiptToSupabase(webpFile, key);
+  }
+
+  return { url, key };
+}
+
+/**
+ * Fallback to Supabase private bucket for receipts. 
+ * Since the bucket is private, we upload and then create a signed URL so it can be previewed/accessed temporarily.
+ */
+async function uploadReceiptToSupabase(file: File, key: string): Promise<string> {
+  const { data: _data, error: uploadError } = await supabase.storage
+    .from('purchase-receipts')
+    .upload(key, file, {
+      contentType: 'image/webp',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    throw new Error(uploadError.message);
+  }
+
+  // Use a signed URL since the bucket is private
+  // 315360000 = 10 years (effectively static but secure since unguessable)
+  // or a shorter timeframe if preferred. 1 hour (3600), 1 week (604800)
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from('purchase-receipts')
+    .createSignedUrl(key, 315360000); 
+
+  if (signedUrlError) {
+    throw new Error(signedUrlError.message);
+  }
+
+  return signedUrlData.signedUrl;
+}
+
+export async function deleteReceiptImage(key: string): Promise<void> {
+  // Try to delete from R2 if configured
+  if (isR2Configured()) {
+    try {
+      // Assuming R2 proxy supports DELETE /key with secret
+      await fetch(`${process.env.VITE_R2_PUBLIC_URL}/${key}`, {
+        method: 'DELETE',
+        headers: { 'X-Store-Id': process.env.VITE_IMAGE_DELETE_SECRET || '' }
+      });
+    } catch (err) {
+      console.warn('R2 delete failed, falling back to Supabase:', err);
+    }
+  }
+
+  // Always try to delete from Supabase private bucket
+  const { error } = await supabase.storage.from('purchase-receipts').remove([key]);
+  if (error) {
+    console.error('Supabase receipt deletion failed:', error);
+  }
+}
+
 async function uploadToSupabaseFallback(file: File, key: string): Promise<string> {
   const { data: _data, error: uploadError } = await supabase.storage
     .from('product-images')
@@ -214,9 +300,10 @@ async function uploadToSupabaseFallback(file: File, key: string): Promise<string
     throw new Error(uploadError.message);
   }
 
+  // Since the bucket is public, we can just return the public URL directly based on the key
   const { data: publicUrlData } = supabase.storage
     .from('product-images')
     .getPublicUrl(key);
-
+    
   return publicUrlData.publicUrl;
 }
