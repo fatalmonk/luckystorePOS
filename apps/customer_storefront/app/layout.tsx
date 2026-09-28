@@ -1,4 +1,6 @@
+import React from 'react';
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import Script from 'next/script';
 import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
@@ -11,6 +13,10 @@ import { ThemeProvider } from './components/providers/ThemeProvider';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { getDeliveryShippingServiceSchema } from './delivery/deliveryData';
+
+function getDocumentLanguage(pathname: string | null): 'en' | 'bn' {
+  return pathname === '/bn' || pathname?.startsWith('/bn/') ? 'bn' : 'en';
+}
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -127,13 +133,16 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = (await headers()).get('x-lucky-pathname');
+  const documentLanguage = getDocumentLanguage(pathname);
+
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
+    <html lang={documentLanguage} suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
       <head>
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
         <meta name="theme-color" content="#0B0B0D" />
@@ -141,7 +150,7 @@ export default function RootLayout({
         <script
           data-cfasync="false"
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(location.pathname==='/bn'||location.pathname.startsWith('/bn/'))document.documentElement.lang='bn';}catch(e){}try{var t=localStorage.getItem('lucky-theme');if(t==='dark')document.documentElement.dataset.theme='dark';}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('lucky-theme');if(t==='dark')document.documentElement.dataset.theme='dark';}catch(e){}})();`,
           }}
         />
         <script
