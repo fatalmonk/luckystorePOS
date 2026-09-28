@@ -416,11 +416,7 @@ export default function RootLayoutDocument({
               <ToastProvider>
                 <CartSheetProvider>
                   <div className="app-container">
-                    <h1 className="sr-only">
-                      {lang === 'bn'
-                        ? 'লাকি স্টোর অনলাইন গ্রোসারি, চট্টগ্রাম'
-                        : 'Lucky Store online grocery in Chattogram'}
-                    </h1>
+
                     {children}
                   </div>
                 </CartSheetProvider>
