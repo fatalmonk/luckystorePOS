@@ -30,8 +30,22 @@ function getCorsHeaders(req: Request) {
 async function extractWithOpenRouter(imageBase64: string, mimeType: string, apiKey: string, baseUrl: string, modelOverride?: string) {
   const model = modelOverride || Deno.env.get('AI_MODEL') || 'gpt-4o';
   const systemPrompt = `You extract evidence from supplier invoices for a retail purchase-entry system. The document may contain Bengali and English.
-Inspect the original image visually, including table geometry, row boundaries, column headings, printed text, handwriting, and how handwritten values align with printed rows. Associate handwritten quantity, unit price, and amount with the populated printed product row they occupy. Distinguish populated rows from unused template rows.
-Preserve product descriptions and pack/size information. Extract quantities, unit costs, line amounts, and dates only when supported by the image. Return null for unreadable or uncertain fields; do not guess or alter values to make arithmetic reconcile. Never invent database IDs, supplier IDs, inventory identities, or accounting decisions. The document issuer and printed receipt number are document metadata; they are not Lucky Store's filename-derived business supplier or internal invoice reference.`;
+Inspect the original image visually, including table geometry, row boundaries, column headings, printed text, handwriting, and how handwritten values align with printed rows.
+
+For pre-printed product/catalog forms (invoices with pre-printed product lists):
+- Distinguish static template/catalog content from transaction-specific entries.
+- Include a product row in items ONLY when there is credible transaction-specific evidence on that row, such as an entered/handwritten purchased count, rate, or line amount. A pre-printed product name, package specification, or other static catalog content alone MUST NOT cause the row to be returned as a purchased item.
+- When Bengali catalog headings are present:
+  * "পণ্যের নাম" specifies the product name/description.
+  * "পরিমাণ" specifies the pre-printed package or product specification (map to packSize or unit as appropriate); NEVER map "পরিমাণ" to purchased quantity on this form.
+  * "সংখ্যা" specifies the purchased quantity (quantity).
+  * "দর" specifies the unit price/rate (unitPrice).
+  * "টাকা" specifies the line total (total).
+- Exclude clearly crossed-out, struck-through, voided, or cancelled transaction entries.
+
+For ordinary receipts (non-catalog receipts without a pre-printed product list), associate printed or handwritten quantity, unit price, and total with their respective product lines as normal.
+
+Preserve product descriptions and pack/size information. Extract quantities, unit costs, line amounts, and dates only when supported by the image. Return null for unreadable, missing, or uncertain fields; do not guess or alter values to make arithmetic reconcile. Do not invent missing transaction values. Never invent database IDs, supplier IDs, inventory identities, or accounting decisions. The document issuer and printed receipt number are document metadata; they are not Lucky Store's filename-derived business supplier or internal invoice reference.`;
 
   const requestBody = {
     model,

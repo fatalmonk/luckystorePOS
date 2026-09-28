@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   extractCandidateSpans,
   getReceiptVisionEndpoint,
@@ -99,6 +101,27 @@ describe('parseReceiptFilename', () => {
       supplier: jawadSuppliers[0],
       invoiceTotal: '3462',
     });
+  });
+});
+
+describe('extract-receipt-vision system prompt contract', () => {
+  it('contains mandatory instructions for pre-printed Bengali catalog forms and line-item extraction semantics', () => {
+    const edgeFunctionPath = path.resolve(__dirname, '../../../../../supabase/functions/extract-receipt-vision/index.ts');
+    const sourceCode = fs.readFileSync(edgeFunctionPath, 'utf-8');
+
+    expect(sourceCode).toContain('For pre-printed product/catalog forms (invoices with pre-printed product lists):');
+    expect(sourceCode).toContain('Include a product row in items ONLY when there is credible transaction-specific evidence on that row');
+    expect(sourceCode).toContain('A pre-printed product name, package specification, or other static catalog content alone MUST NOT cause the row to be returned as a purchased item');
+
+    expect(sourceCode).toContain('"পণ্যের নাম" specifies the product name/description.');
+    expect(sourceCode).toContain('"পরিমাণ" specifies the pre-printed package or product specification (map to packSize or unit as appropriate); NEVER map "পরিমাণ" to purchased quantity on this form.');
+    expect(sourceCode).toContain('"সংখ্যা" specifies the purchased quantity (quantity).');
+    expect(sourceCode).toContain('"দর" specifies the unit price/rate (unitPrice).');
+    expect(sourceCode).toContain('"টাকা" specifies the line total (total).');
+
+    expect(sourceCode).toContain('Exclude clearly crossed-out, struck-through, voided, or cancelled transaction entries.');
+    expect(sourceCode).toContain('Do not invent missing transaction values.');
+    expect(sourceCode).toContain('For ordinary receipts (non-catalog receipts without a pre-printed product list), associate printed or handwritten quantity, unit price, and total with their respective product lines as normal.');
   });
 });
 
