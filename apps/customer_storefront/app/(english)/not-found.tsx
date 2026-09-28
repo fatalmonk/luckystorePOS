@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Button } from '../components/ui/Button';
 
 function SearchIcon({ size = 56 }: { size?: number }) {
   return (
@@ -30,8 +29,11 @@ export default function NotFound() {
       <p className="text-sm text-warm-muted mb-6 max-w-sm">
         The page you&apos;re looking for doesn&apos;t exist or may have moved.
       </p>
-      <Link href="/">
-        <Button>Start Shopping</Button>
+      <Link
+        href="/"
+        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[14px] bg-warm-accent px-4 text-sm font-semibold text-warm-fg transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent active:scale-[0.98]"
+      >
+        Start Shopping
       </Link>
     </div>
   );
