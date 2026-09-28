@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   extractCandidateSpans,
   getReceiptVisionEndpoint,
@@ -63,6 +63,42 @@ describe('parseReceiptFilename', () => {
     ];
     expect(parseReceiptFilename('LS749-31-08-26-Pusti-3672BDT.jpg', matches).supplier)
       .toEqual({ id: '', name: 'Pusti' });
+  });
+
+  it('correctly parses space-separated, slash-separated, hyphen-separated, and dot-separated dates', () => {
+    const jawadSuppliers = [{ id: 'jawad-1', name: 'JawadTrading' }];
+
+    // Space-separated date (Google Drive upload regression case)
+    expect(parseReceiptFilename('LS578-01 08 26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+
+    // Slash-separated date
+    expect(parseReceiptFilename('LS578-01/08/26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+
+    // Hyphen-separated date
+    expect(parseReceiptFilename('LS578-01-08-26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+
+    // Dot-separated date
+    expect(parseReceiptFilename('LS578-01.08.26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
   });
 });
 
@@ -157,9 +193,6 @@ describe('validateOcrResult', () => {
   });
 });
 
-
-import { vi } from 'vitest';
-import { scanReceiptImage } from './receiptOcr';
 
 vi.mock('tesseract.js', () => ({
   createWorker: vi.fn().mockResolvedValue({

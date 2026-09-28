@@ -318,7 +318,7 @@ export function parseReceiptFilename(
   // Pattern: [Invoice] [Date] [Supplier] [Amount]
   // Accepts hyphens (-), underscores (_), slashes (/), or spaces as separators
   const match = cleanName.match(
-    /^([a-zA-Z0-9]{2,10})[\s_-]+([0-9]{1,4}[/_.-][0-9]{1,2}[/_.-][0-9]{1,4})[\s_-]+([a-zA-Z\u0980-\u09FF\s]+?)[\s_-]+([0-9]+(?:\.[0-9]{1,2})?)(?:BDT|tk|taka)?$/i
+    /^([a-zA-Z0-9]{2,10})[\s_-]+([0-9]{1,4}[\s/_.-][0-9]{1,2}[\s/_.-][0-9]{1,4})[\s_-]+([a-zA-Z\u0980-\u09FF\s]+?)[\s_-]+([0-9]+(?:\.[0-9]{1,2})?)(?:BDT|tk|taka)?$/i
   );
 
   if (match) {
@@ -354,7 +354,7 @@ export function parseReceiptFilename(
   }
 
   // Extract date
-  const dateMatch = cleanName.match(/([0-9]{1,4}[/_.-][0-9]{1,2}[/_.-][0-9]{1,4})/);
+  const dateMatch = cleanName.match(/([0-9]{1,4}[\s/_.-][0-9]{1,2}[\s/_.-][0-9]{1,4})/);
   if (dateMatch) {
     invoiceDate = normalizeFilenameDate(dateMatch[1]);
   }
@@ -395,7 +395,7 @@ function resolveSupplierName(name: string, suppliers: ReceiptOcrSupplier[]): Rec
 }
 
 function normalizeFilenameDate(value: string): string {
-  const parts = value.split(/[/.\-_]/).map(Number);
+  const parts = value.split(/[\s/.\-_]+/).map(Number);
   if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return value;
   let year: number, month: number, day: number;
   if (parts[0] >= 1000) [year, month, day] = parts;
