@@ -10,7 +10,7 @@ import { useDebounce } from '@/hooks';
 import { clsx } from 'clsx';
 import { ReceiptScanPanel } from './ReceiptScanPanel';
 import { type ReceiptOcrResult } from './receiptOcr';
-import { uploadProcessedImage } from '../../lib/images';
+import { uploadProcessedImage, deleteReceiptImage } from '../../lib/images';
 
 type Supplier = {
   id: string;
@@ -66,6 +66,8 @@ type PurchaseDraftSnapshot = {
   quickQty: number;
   quickCost: string;
   pendingOcrItems: PendingOcrItem[];
+  scannedReceiptUrl?: string | null;
+  scannedReceiptKey?: string | null;
 };
 
 type PurchaseFormSnapshot = Omit<PurchaseDraftSnapshot, 'idempotencyKey' | 'retryAttempt'>;
@@ -208,6 +210,9 @@ export const PurchaseEntryPage: React.FC = () => {
   }, [showAddSupplier, showAddItem]);
   const [pendingOcrItems, setPendingOcrItems] = useState<PendingOcrItem[]>([]);
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
+  const [scannedReceiptUrl, setScannedReceiptUrl] = useState<string | null>(null);
+  const [scannedReceiptKey, setScannedReceiptKey] = useState<string | null>(null);
+  const scannedReceiptKeyRef = useRef<string | null>(null);
 
   // Auth context
   const { tenantId, storeId } = useAuth();
@@ -248,6 +253,11 @@ export const PurchaseEntryPage: React.FC = () => {
         if (typeof draft.quickQty === 'number' && Number.isFinite(draft.quickQty)) setQuickQty(draft.quickQty);
         if (typeof draft.quickCost === 'string') setQuickCost(draft.quickCost);
         if (Array.isArray(draft.pendingOcrItems)) setPendingOcrItems(draft.pendingOcrItems);
+        if (typeof draft.scannedReceiptUrl === 'string') setScannedReceiptUrl(draft.scannedReceiptUrl);
+        if (typeof draft.scannedReceiptKey === 'string') {
+          scannedReceiptKeyRef.current = draft.scannedReceiptKey;
+          setScannedReceiptKey(draft.scannedReceiptKey);
+        }
         setDraftRestored(true);
       }
     } catch {
@@ -280,12 +290,14 @@ export const PurchaseEntryPage: React.FC = () => {
       quickQty,
       quickCost,
       pendingOcrItems,
+      scannedReceiptUrl,
+      scannedReceiptKey,
     };
 
     try {
       const hasWork = Boolean(
         supplierSearch || selectedSupplier || invoiceNumber || invoiceDate || invoiceTotal ||
-        lines.length || pendingOcrItems.length || itemSearch || quickCost || amountPaid !== '0' || paymentMethod !== 'Cash',
+        lines.length || pendingOcrItems.length || itemSearch || quickCost || amountPaid !== '0' || paymentMethod !== 'Cash' || scannedReceiptUrl,
       );
       if (hasWork) {
         window.localStorage.setItem(purchaseDraftKey, JSON.stringify(snapshot));
@@ -295,11 +307,11 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       // Local draft recovery is best-effort and must never block receiving.
     }
-  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, selectedSupplier, supplierSearch]);
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, scannedReceiptKey, scannedReceiptUrl, selectedSupplier, supplierSearch]);
 
   const currentFormSnapshot: PurchaseFormSnapshot = {
     supplierSearch, selectedSupplier, invoiceNumber, invoiceDate, invoiceTotal, lines,
-    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems,
+    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, scannedReceiptUrl, scannedReceiptKey
   };
   const currentFormSnapshotRef = useRef(currentFormSnapshot);
   useLayoutEffect(() => {
@@ -713,7 +725,12 @@ export const PurchaseEntryPage: React.FC = () => {
         p_payment_account_id: paid > 0 ? paymentAccountId : null,
         p_payable_account_id: payable > 0 ? payableAccount?.id ?? null : null,
         p_status: asDraft ? 'draft' : 'posted',
-        p_notes: invoiceDate ? `Invoice Date: ${invoiceDate}` : null,
+        p_notes: (() => {
+          const parts: string[] = [];
+          if (invoiceDate) parts.push(`Invoice Date: ${invoiceDate}`);
+          if (scannedReceiptUrl) parts.push(`Receipt Image: ${scannedReceiptUrl}`);
+          return parts.length > 0 ? parts.join('\n') : null;
+        })(),
       };
       attempt = { idempotencyKey, form: currentFormSnapshot, args };
       setRetryAttempt(attempt);
@@ -763,6 +780,9 @@ export const PurchaseEntryPage: React.FC = () => {
         setLines([]);
         setPendingOcrItems([]);
         setOcrWarnings([]);
+        setScannedReceiptUrl(null);
+        scannedReceiptKeyRef.current = null;
+        setScannedReceiptKey(null);
         setAmountPaid('0');
         setPaymentMethod('Cash');
       }
@@ -825,6 +845,20 @@ export const PurchaseEntryPage: React.FC = () => {
             suppliers={suppliers}
             onApply={applyReceiptScan}
             onScanStart={() => { receiptScanGenerationRef.current += 1; }}
+            onImageUploaded={result => {
+              const previousKey = scannedReceiptKeyRef.current;
+              scannedReceiptKeyRef.current = result.key;
+              setScannedReceiptUrl(result.url);
+              setScannedReceiptKey(result.key);
+              if (previousKey && previousKey !== result.key) void deleteReceiptImage(previousKey);
+            }}
+            onImageRemoved={() => {
+              const key = scannedReceiptKeyRef.current;
+              scannedReceiptKeyRef.current = null;
+              if (key) void deleteReceiptImage(key);
+              setScannedReceiptUrl(null);
+              setScannedReceiptKey(null);
+            }}
           />
 
           {/* Supplier */}
@@ -839,7 +873,7 @@ export const PurchaseEntryPage: React.FC = () => {
                 <Plus size={13} /> Add new
               </button>
             </div>
-            <div className="relative" ref={supplierComboRef}>
+            <div className="relative z-20" ref={supplierComboRef}>
               <div className="input flex items-center gap-2 px-3">
                 <Search size={16} strokeWidth={1.5} className="text-text-muted" aria-hidden="true" />
                 <input
@@ -867,7 +901,7 @@ export const PurchaseEntryPage: React.FC = () => {
                   id="supplier-listbox"
                   role="listbox"
                   aria-label="Suppliers"
-                  className="absolute z-10 top-full left-0 right-0 mt-2 bg-card border border-border-color rounded-xl max-h-48 overflow-y-auto shadow-lg"
+                  className="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-border-color rounded-xl max-h-48 overflow-y-auto shadow-xl backdrop-blur-sm"
                 >
                   {suppliersLoading ? (
                     Array.from({ length: 3 }).map((_, i) => (
@@ -981,7 +1015,7 @@ export const PurchaseEntryPage: React.FC = () => {
                   id="item-listbox"
                   role="listbox"
                   aria-label="Items"
-                  className="absolute z-10 top-full left-0 right-0 mt-1 bg-card border border-border-color rounded-xl max-h-56 overflow-y-auto shadow-lg divide-y divide-border-color/40"
+                  className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-border-color rounded-xl max-h-56 overflow-y-auto shadow-xl divide-y divide-border-color/40"
                 >
                   {itemResults.length === 0 ? (
                     <div className="p-3 text-center text-text-muted text-sm">
