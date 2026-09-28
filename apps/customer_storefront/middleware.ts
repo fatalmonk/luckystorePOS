@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
 import { getCanonicalCategorySlug, isCategoryGroup, normalizeCategorySlug } from './app/lib/types';
-import { isBareUuid, toProductSlug } from './app/lib/products/slugify';
+import { isBareUuid, toProductSlug, uuidPrefixRange } from './app/lib/products/slugify';
 
 type CanonicalProduct = { id: string; name: string };
 
@@ -32,8 +32,11 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
       itemUrl.searchParams.set('id', `eq.${identifier}`);
       itemUrl.searchParams.set('limit', '1');
     } else {
-      // UUID first segment is 8 hex chars; PostgREST `like` uses `*` as wildcard.
-      itemUrl.searchParams.set('id', `like.${identifier}-*`);
+      // uuid columns reject LIKE; bound the first UUID group with gte/lt instead.
+      const range = uuidPrefixRange(identifier);
+      if (!range) return null;
+      itemUrl.searchParams.append('id', `gte.${range.gte}`);
+      if (range.lt) itemUrl.searchParams.append('id', `lt.${range.lt}`);
       itemUrl.searchParams.set('limit', '2');
     }
 
@@ -47,10 +50,19 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
     const rows = await itemResponse.json();
     if (!Array.isArray(rows)) return null;
 
-    if (rows.length !== 1) return null;
+    const prefix = identifier.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
+    const matches = isBareUuid(identifier)
+      ? rows
+      : rows.filter(
+          (row) =>
+            typeof row?.id === 'string' &&
+            row.id.replace(/-/g, '').toLowerCase().startsWith(prefix),
+        );
 
-    const id = rows[0]?.id;
-    const name = rows[0]?.name;
+    if (matches.length !== 1) return null;
+
+    const id = matches[0]?.id;
+    const name = matches[0]?.name;
     return typeof id === 'string' && typeof name === 'string' && name.trim()
       ? { id, name: name.trim() }
       : null;

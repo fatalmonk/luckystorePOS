@@ -343,18 +343,77 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('returns a real 404 before session handling for unknown category slugs', async () => {
-      const { middleware } = await import('../../../middleware');
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+        new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
 
-      for (const pathname of [
-        '/category/definitely-unknown-category',
-        '/bn/category/definitely-unknown-category',
-      ]) {
-        const res = await middleware(new NextRequest(`https://www.luckystore1947.com${pathname}`));
-        expect(res.status).toBe(404);
-        expect(res.headers.get('x-robots-tag')).toBe('noindex');
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      try {
+        const { middleware } = await import('../../../middleware');
+
+        for (const pathname of [
+          '/category/definitely-unknown-category',
+          '/bn/category/definitely-unknown-category',
+        ]) {
+          const res = await middleware(new NextRequest(`https://www.luckystore1947.com${pathname}`));
+          expect(res.status).toBe(404);
+          expect(res.headers.get('x-robots-tag')).toBe('noindex');
+        }
+
+        expect(mockUpdateSession).not.toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalled();
+      } finally {
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
       }
+    });
 
-      expect(mockUpdateSession).not.toHaveBeenCalled();
+    it('resolves empty-name product prefixes with uuid range filters, not LIKE', async () => {
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(
+          JSON.stringify([{ id: '029b62d8-1111-2222-3333-444455556666', name: 'Radhuni Holud Gura 100gm' }]),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      try {
+        const { middleware } = await import('../../../middleware');
+        const res = await middleware(
+          new NextRequest('https://www.luckystore1947.com/product/--029b62d8'),
+        );
+
+        expect(res.status).toBe(308);
+        expect(res.headers.get('location')).toBe(
+          'https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8',
+        );
+
+        const requested = new URL(String(fetchSpy.mock.calls[0]?.[0]));
+        const idFilters = requested.searchParams.getAll('id');
+        expect(idFilters).toContain('gte.029b62d8-0000-0000-0000-000000000000');
+        expect(idFilters).toContain('lt.029b62d9-0000-0000-0000-000000000000');
+        expect(idFilters.some((value) => value.startsWith('like.'))).toBe(false);
+      } finally {
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
+      }
     });
 
     it('fails open to session handling when category validation upstream errors', async () => {
