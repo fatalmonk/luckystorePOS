@@ -13,6 +13,4 @@ Disallow: /bn/cart
 Disallow: /bn/profile
 Disallow: /bn/order
 
-Content-Signal: ai-train=no, search=yes, ai-input=no
-
 Sitemap: https://www.luckystore1947.com/sitemap.xml

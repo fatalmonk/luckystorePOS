@@ -6,7 +6,6 @@ import {
   DELIVERY_FAQS,
   COVERED_AREAS,
   getDeliveryShippingServiceSchema,
-  getDeliveryServiceSchema,
   getDeliveryFaqSchema,
   getDeliveryBreadcrumbSchema,
 } from '../deliveryData';
@@ -132,31 +131,14 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
       expect(service.shippingConditions.every((condition) => condition.shippingRate['@type'] === 'MonetaryAmount')).toBe(true);
       expect(service.shippingConditions.every((condition) => condition.shippingDestination.addressCountry === 'BD')).toBe(true);
       expect(service.shippingConditions.every((condition) => condition.shippingDestination.postalCode === '4203')).toBe(true);
-      expect(service.shippingConditions.every((condition) => condition.transitTime.duration.maxValue === 0)).toBe(true);
+      expect(service.shippingConditions.every((condition) => condition.transitTime.duration.maxValue === 1)).toBe(true);
       expect(JSON.stringify(service)).not.toContain('OfferShippingDetails');
     });
 
-    it('produces valid DeliveryService schema representing provider, 1 km GeoCircle, and delivery hours', () => {
-      const schema = getDeliveryServiceSchema();
-      expect(schema['@context']).toBe('https://schema.org');
-      expect(schema['@type']).toBe('DeliveryService');
-      expect(schema['@id']).toBe(`${DELIVERY_POLICY.canonicalUrl}#delivery-service`);
-
-      // Provider
-      expect(schema.provider['@type']).toBe('GroceryStore');
-      expect(schema.provider['@id']).toBe('https://www.luckystore1947.com/#organization');
-
-      // GeoCircle areaServed
-      expect(schema.areaServed['@type']).toBe('GeoCircle');
-      expect(schema.areaServed.geoRadius).toBe(String(DELIVERY_POLICY.radiusMeters));
-      expect(schema.areaServed.geoMidpoint['@type']).toBe('GeoCoordinates');
-      expect(schema.areaServed.geoMidpoint.latitude).toBe(DELIVERY_POLICY.hubCoordinates.latitude);
-      expect(schema.areaServed.geoMidpoint.longitude).toBe(DELIVERY_POLICY.hubCoordinates.longitude);
-
-      // Delivery opening hours specification
-      expect(schema.hoursAvailable['@type']).toBe('OpeningHoursSpecification');
-      expect(schema.hoursAvailable.opens).toBe('09:00');
-      expect(schema.hoursAvailable.closes).toBe('00:30');
+    it('does not model local delivery as an unsupported standalone DeliveryService', () => {
+      const service = getDeliveryShippingServiceSchema();
+      expect(service['@type']).toBe('ShippingService');
+      expect(JSON.stringify(service)).not.toContain('DeliveryService');
     });
 
     it('produces valid FAQPage and BreadcrumbList schemas', () => {

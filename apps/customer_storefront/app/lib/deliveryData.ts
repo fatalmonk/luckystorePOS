@@ -35,7 +35,7 @@ const SHIPPING_DESTINATION = {
   '@type': 'DefinedRegion',
   addressCountry: 'BD',
   // Keep the structured-data destination narrower than country-wide delivery.
-  // The exact 1 km boundary remains represented by DeliveryService.areaServed.
+  // The exact 1 km operational boundary is documented on the delivery page.
   postalCode: '4203',
 } as const;
 
@@ -44,7 +44,7 @@ const SHIPPING_TIME = {
   duration: {
     '@type': 'QuantitativeValue',
     minValue: 0,
-    maxValue: 0,
+    maxValue: 1,
     unitCode: 'DAY',
   },
 } as const;
@@ -138,54 +138,6 @@ export function getDeliveryShippingServiceSchema() {
         transitTime: SHIPPING_TIME,
       },
     ],
-  };
-}
-
-export function getDeliveryServiceSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'DeliveryService',
-    '@id': `${DELIVERY_POLICY.canonicalUrl}#delivery-service`,
-    name: `${DELIVERY_POLICY.storeName} Local Grocery Delivery`,
-    serviceType: 'Local Grocery Delivery',
-    provider: {
-      '@type': 'GroceryStore',
-      '@id': 'https://www.luckystore1947.com/#organization',
-      name: DELIVERY_POLICY.storeName,
-      url: 'https://www.luckystore1947.com',
-      telephone: DELIVERY_POLICY.supportPhone,
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: '665 Percival Hill Road, Emdad Park, Chawkbazar',
-        addressLocality: 'Chattogram',
-        addressRegion: 'Chattogram Division',
-        postalCode: '4203',
-        addressCountry: 'BD',
-      },
-    },
-    areaServed: {
-      '@type': 'GeoCircle',
-      geoMidpoint: {
-        '@type': 'GeoCoordinates',
-        latitude: DELIVERY_POLICY.hubCoordinates.latitude,
-        longitude: DELIVERY_POLICY.hubCoordinates.longitude,
-      },
-      geoRadius: String(DELIVERY_POLICY.radiusMeters),
-    },
-    hoursAvailable: {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ],
-      opens: '09:00',
-      closes: '00:30',
-    },
   };
 }
 

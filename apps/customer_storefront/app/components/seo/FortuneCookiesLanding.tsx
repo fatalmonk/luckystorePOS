@@ -107,7 +107,7 @@ export function FortuneCookiesLanding({ locale }: { locale: Locale }) {
                   {text.eyebrow}
                 </div>
                 <div className="space-y-3">
-                  <h1 className="text-balance text-3xl font-black tracking-tight text-warm-fg sm:text-5xl">{text.heading}</h1>
+                  <h2 className="text-balance text-3xl font-black tracking-tight text-warm-fg sm:text-5xl">{text.heading}</h2>
                   <p className="max-w-2xl text-base leading-7 text-warm-muted sm:text-lg">{text.intro}</p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">

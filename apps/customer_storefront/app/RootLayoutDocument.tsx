@@ -306,9 +306,9 @@ export default function RootLayoutDocument({
           hidden
           className="fixed inset-x-3 bottom-20 z-[80] mx-auto max-w-xl rounded-[var(--radius-md)] border border-warm-border bg-warm-surface p-4 text-warm-fg shadow-2xl sm:bottom-6 sm:p-5"
         >
-          <h2 id="lucky-consent-title" className="text-base font-bold">
+          <p id="lucky-consent-title" className="text-base font-bold">
             Your privacy choices
-          </h2>
+          </p>
           <p id="lucky-consent-description" className="mt-1 text-sm leading-relaxed text-warm-muted">
             We use optional Google Analytics to understand site traffic. Advertising storage and personalization remain disabled.
           </p>
@@ -416,6 +416,11 @@ export default function RootLayoutDocument({
               <ToastProvider>
                 <CartSheetProvider>
                   <div className="app-container">
+                    <h1 className="sr-only">
+                      {lang === 'bn'
+                        ? 'লাকি স্টোর অনলাইন গ্রোসারি, চট্টগ্রাম'
+                        : 'Lucky Store online grocery in Chattogram'}
+                    </h1>
                     {children}
                   </div>
                 </CartSheetProvider>

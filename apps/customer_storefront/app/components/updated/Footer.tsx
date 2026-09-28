@@ -21,12 +21,12 @@ const footerFocus =
 const socialLinks = [
   {
     label: 'Facebook',
-    href: 'https://facebook.com/luckystore1947',
+    href: 'https://www.facebook.com/luckystore1947',
     icon: FacebookLogo,
   },
   {
     label: 'Instagram',
-    href: 'https://instagram.com/luckystore1947',
+    href: 'https://www.instagram.com/luckystore1947',
     icon: InstagramLogo,
   },
   {
