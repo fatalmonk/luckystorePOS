@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, ClipboardCopy, FileScan, ImageIcon, LoaderCircle, Upload } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
-import { uploadReceiptImage } from '../../lib/images';
+import { deleteReceiptImage, uploadReceiptImage } from '../../lib/images';
 import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, scanReceiptImage } from './receiptOcr';
 
 type ReceiptScanPanelProps = {
@@ -50,7 +50,6 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
     setIsScanning(true);
     setStatusText('Reading text from receipt…');
 
-    let uploadedImageUrl: string | null = null;
     let uploadError: string | null = null;
     try {
       // Upload receipt image immediately when a File is provided
@@ -58,11 +57,14 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
         setStatusText('Uploading image…');
         try {
           const uploadResult = await uploadReceiptImage({ file: source, tenantId });
+          if (scanId !== scanIdRef.current) {
+            void deleteReceiptImage(uploadResult.key);
+            return;
+          }
           onImageUploaded?.(uploadResult);
         } catch (err) {
           console.error('Image upload failed:', err);
           uploadError = err instanceof Error ? err.message : 'Upload failed.';
-          onImageRemoved?.();
         }
       }
 
@@ -102,7 +104,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
         if (source instanceof File && fileInputRef.current) fileInputRef.current.value = '';
       }
     }
-  }, [accessToken, onScanStart, previewUrl, suppliers]);
+  }, [accessToken, onImageUploaded, onScanStart, previewUrl, suppliers, tenantId]);
 
   // Clipboard paste support (e.g. Cmd+V copied screenshot/image from Google Drive)
   useEffect(() => {

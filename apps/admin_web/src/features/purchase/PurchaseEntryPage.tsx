@@ -67,6 +67,7 @@ type PurchaseDraftSnapshot = {
   quickCost: string;
   pendingOcrItems: PendingOcrItem[];
   scannedReceiptUrl?: string | null;
+  scannedReceiptKey?: string | null;
 };
 
 type PurchaseFormSnapshot = Omit<PurchaseDraftSnapshot, 'idempotencyKey' | 'retryAttempt'>;
@@ -211,6 +212,7 @@ export const PurchaseEntryPage: React.FC = () => {
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [scannedReceiptUrl, setScannedReceiptUrl] = useState<string | null>(null);
   const [scannedReceiptKey, setScannedReceiptKey] = useState<string | null>(null);
+  const scannedReceiptKeyRef = useRef<string | null>(null);
 
   // Auth context
   const { tenantId, storeId } = useAuth();
@@ -252,6 +254,10 @@ export const PurchaseEntryPage: React.FC = () => {
         if (typeof draft.quickCost === 'string') setQuickCost(draft.quickCost);
         if (Array.isArray(draft.pendingOcrItems)) setPendingOcrItems(draft.pendingOcrItems);
         if (typeof draft.scannedReceiptUrl === 'string') setScannedReceiptUrl(draft.scannedReceiptUrl);
+        if (typeof draft.scannedReceiptKey === 'string') {
+          scannedReceiptKeyRef.current = draft.scannedReceiptKey;
+          setScannedReceiptKey(draft.scannedReceiptKey);
+        }
         setDraftRestored(true);
       }
     } catch {
@@ -285,6 +291,7 @@ export const PurchaseEntryPage: React.FC = () => {
       quickCost,
       pendingOcrItems,
       scannedReceiptUrl,
+      scannedReceiptKey,
     };
 
     try {
@@ -300,11 +307,11 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       // Local draft recovery is best-effort and must never block receiving.
     }
-  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, scannedReceiptUrl, selectedSupplier, supplierSearch]);
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, scannedReceiptKey, scannedReceiptUrl, selectedSupplier, supplierSearch]);
 
   const currentFormSnapshot: PurchaseFormSnapshot = {
     supplierSearch, selectedSupplier, invoiceNumber, invoiceDate, invoiceTotal, lines,
-    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, scannedReceiptUrl
+    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, scannedReceiptUrl, scannedReceiptKey
   };
   const currentFormSnapshotRef = useRef(currentFormSnapshot);
   useLayoutEffect(() => {
@@ -774,6 +781,7 @@ export const PurchaseEntryPage: React.FC = () => {
         setPendingOcrItems([]);
         setOcrWarnings([]);
         setScannedReceiptUrl(null);
+        scannedReceiptKeyRef.current = null;
         setScannedReceiptKey(null);
         setAmountPaid('0');
         setPaymentMethod('Cash');
@@ -837,9 +845,17 @@ export const PurchaseEntryPage: React.FC = () => {
             suppliers={suppliers}
             onApply={applyReceiptScan}
             onScanStart={() => { receiptScanGenerationRef.current += 1; }}
-            onImageUploaded={result => { setScannedReceiptUrl(result.url); setScannedReceiptKey(result.key); }}
+            onImageUploaded={result => {
+              const previousKey = scannedReceiptKeyRef.current;
+              scannedReceiptKeyRef.current = result.key;
+              setScannedReceiptUrl(result.url);
+              setScannedReceiptKey(result.key);
+              if (previousKey && previousKey !== result.key) void deleteReceiptImage(previousKey);
+            }}
             onImageRemoved={() => {
-              if (scannedReceiptKey) deleteReceiptImage(scannedReceiptKey);
+              const key = scannedReceiptKeyRef.current;
+              scannedReceiptKeyRef.current = null;
+              if (key) void deleteReceiptImage(key);
               setScannedReceiptUrl(null);
               setScannedReceiptKey(null);
             }}
