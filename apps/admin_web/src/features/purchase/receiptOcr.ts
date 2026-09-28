@@ -33,6 +33,203 @@ export type ReceiptOcrResult = {
   extractionMethod?: OcrExtractionMethod;
 };
 
+export type CandidateSpan<T = string> = {
+  value: T;
+  rawText: string;
+  sourceSpan?: string;
+  lineIndex?: number;
+  score: number;
+  confidence: 'high' | 'medium' | 'low';
+  reason?: string;
+};
+
+export type ProductMatchResult = {
+  score: number;
+  confidence: 'high' | 'medium' | 'low';
+  isExact: boolean;
+  noneFits: boolean;
+  matchId?: string;
+};
+
+export function extractCandidateSpans(text: string): {
+  totals: CandidateSpan<number>[];
+  dates: CandidateSpan<string>[];
+  invoiceNumbers: CandidateSpan<string>[];
+} {
+  const normalized = normalizeDigits(text);
+  const lines = normalized.split(/\r?\n/);
+
+  const totals: CandidateSpan<number>[] = [];
+  const dates: CandidateSpan<string>[] = [];
+  const invoiceNumbers: CandidateSpan<string>[] = [];
+
+  const totalKeywords = /(?:সাব\s*টোটাল|টোটাল|সর্বমোট|নিট|মোট|grand\s*total|net\s*(?:payable|amount)|sub\s*total|total|amount\s*due)/i;
+
+  lines.forEach((line, lineIdx) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    // Check totals
+    if (totalKeywords.test(trimmed)) {
+      const matches = Array.from(trimmed.matchAll(/(?:৳|tk\.?|bdt|rs\.?|\$)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/gi));
+      const valStr = matches.at(-1)?.[1]?.replace(/,/g, '');
+      if (valStr) {
+        const val = Number(valStr);
+        if (Number.isFinite(val) && val > 0) {
+          const isGrandTotal = /grand\s*total|সর্বমোট|net\s*payable|amount\s*due/i.test(trimmed);
+          totals.push({
+            value: val,
+            rawText: trimmed,
+            sourceSpan: valStr,
+            lineIndex: lineIdx,
+            score: isGrandTotal ? 0.95 : 0.8,
+            confidence: isGrandTotal ? 'high' : 'medium',
+            reason: isGrandTotal ? 'Grand total keyword match' : 'Subtotal/Total keyword match',
+          });
+        }
+      }
+    }
+
+    // Check dates
+    const dateMatch = trimmed.match(/([0-9]{1,4}[-/.\\ ][0-9]{1,2}[-/.\\ ][0-9]{1,4})/);
+    if (dateMatch) {
+      const parsedDate = normalizeFilenameDate(dateMatch[1]);
+      if (parsedDate) {
+        const hasDateKeyword = /(?:date|তারিখ)/i.test(trimmed);
+        dates.push({
+          value: parsedDate,
+          rawText: trimmed,
+          sourceSpan: dateMatch[1],
+          lineIndex: lineIdx,
+          score: hasDateKeyword ? 0.9 : 0.7,
+          confidence: hasDateKeyword ? 'high' : 'medium',
+          reason: hasDateKeyword ? 'Explicit date header' : 'Date pattern found',
+        });
+      }
+    }
+
+    // Check invoice numbers
+    const invMatch = trimmed.match(/(?:invoice|challan|memo|bill|চালান|মেমো|বিল|ক্যাশমেমো)\s*(?:no\.?|number|#|নং)?\s*[:#-]?\s*([a-z0-9][a-z0-9/-]{2,})/i);
+    if (invMatch?.[1]) {
+      invoiceNumbers.push({
+        value: invMatch[1].toUpperCase(),
+        rawText: trimmed,
+        sourceSpan: invMatch[1],
+        lineIndex: lineIdx,
+        score: 0.9,
+        confidence: 'high',
+        reason: 'Invoice number keyword pattern match',
+      });
+    }
+  });
+
+  return { totals, dates, invoiceNumbers };
+}
+
+export function selectBestFieldSpan<T>(
+  candidates: CandidateSpan<T>[],
+  minThreshold = 0.5
+): { selected: CandidateSpan<T> | null; confidence: 'high' | 'medium' | 'low'; noneFits: boolean } {
+  if (!candidates || candidates.length === 0) {
+    return { selected: null, confidence: 'low', noneFits: true };
+  }
+
+  const sorted = [...candidates].sort((a, b) => b.score - a.score);
+  const top = sorted[0];
+
+  if (top.score < minThreshold) {
+    return { selected: null, confidence: 'low', noneFits: true };
+  }
+
+  return { selected: top, confidence: top.confidence, noneFits: false };
+}
+
+export function scoreProductMatch(
+  ocrItemName: string,
+  candidate: { id: string; name: string; sku?: string; barcode?: string }
+): ProductMatchResult {
+  const normOcr = ocrItemName.trim().toLowerCase();
+  const normCandName = candidate.name.trim().toLowerCase();
+
+  // Exact SKU or Barcode match
+  if (
+    (candidate.barcode && candidate.barcode.trim().toLowerCase() === normOcr) ||
+    (candidate.sku && candidate.sku.trim().toLowerCase() === normOcr)
+  ) {
+    return { score: 1.0, confidence: 'high', isExact: true, noneFits: false, matchId: candidate.id };
+  }
+
+  // Exact Name match
+  if (normCandName === normOcr) {
+    return { score: 0.95, confidence: 'high', isExact: true, noneFits: false, matchId: candidate.id };
+  }
+
+  // Token Jaccard overlap
+  const ocrTokens = new Set(normOcr.split(/[\s_/-]+/).filter((t) => t.length >= 2));
+  const candTokens = new Set(normCandName.split(/[\s_/-]+/).filter((t) => t.length >= 2));
+
+  if (ocrTokens.size === 0 || candTokens.size === 0) {
+    return { score: 0, confidence: 'low', isExact: false, noneFits: true };
+  }
+
+  let intersection = 0;
+  ocrTokens.forEach((t) => {
+    if (candTokens.has(t)) intersection++;
+  });
+
+  const union = new Set([...ocrTokens, ...candTokens]).size;
+  const jaccardScore = intersection / union;
+
+  const isSubstring = normCandName.includes(normOcr) || normOcr.includes(normCandName);
+  const finalScore = isSubstring ? Math.max(jaccardScore, 0.65) : jaccardScore;
+
+  if (finalScore >= 0.7) {
+    return { score: finalScore, confidence: 'high', isExact: false, noneFits: false, matchId: candidate.id };
+  } else if (finalScore >= 0.45) {
+    return { score: finalScore, confidence: 'medium', isExact: false, noneFits: false, matchId: candidate.id };
+  }
+
+  return { score: finalScore, confidence: 'low', isExact: false, noneFits: true, matchId: undefined };
+}
+
+export function reconcileOcrItemCandidates<T extends { id: string; name: string; sku?: string; barcode?: string }>(
+  ocrItemName: string,
+  catalogItems: T[],
+  maxCandidates = 5
+): {
+  topMatch: T | null;
+  candidates: (T & { matchResult: ProductMatchResult })[];
+  confidence: 'high' | 'medium' | 'low';
+  noneFits: boolean;
+} {
+  const scored = catalogItems
+    .map((item) => ({
+      ...item,
+      matchResult: scoreProductMatch(ocrItemName, item),
+    }))
+    .filter((item) => item.matchResult.score > 0.1)
+    .sort((a, b) => b.matchResult.score - a.matchResult.score);
+
+  const sliced = scored.slice(0, maxCandidates);
+  const top = sliced[0];
+
+  if (!top || top.matchResult.noneFits) {
+    return {
+      topMatch: null,
+      candidates: sliced,
+      confidence: 'low',
+      noneFits: true,
+    };
+  }
+
+  return {
+    topMatch: top,
+    candidates: sliced,
+    confidence: top.matchResult.confidence,
+    noneFits: false,
+  };
+}
+
 export function getReceiptVisionEndpoint(supabaseBaseUrl: string | undefined): string {
   let supabaseUrl: URL;
   try {

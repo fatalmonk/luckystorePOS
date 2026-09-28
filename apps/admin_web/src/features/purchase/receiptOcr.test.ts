@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { getReceiptVisionEndpoint, parseReceiptFilename, scanReceiptImage, validateOcrResult, type ReceiptOcrResult } from './receiptOcr';
+import {
+  extractCandidateSpans,
+  getReceiptVisionEndpoint,
+  parseReceiptFilename,
+  reconcileOcrItemCandidates,
+  scanReceiptImage,
+  scoreProductMatch,
+  selectBestFieldSpan,
+  validateOcrResult,
+  type ReceiptOcrResult,
+} from './receiptOcr';
 
 describe('parseReceiptFilename', () => {
   const suppliers = [{ id: 'supplier-1', name: 'Savoy Distributors' }];
@@ -402,5 +412,84 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
       extractionMethod: 'vision',
       items: [{ name: 'Cooking Oil', quantity: 2, unitPrice: 60, total: 120 }],
     });
+  });
+});
+
+describe('TypeSafe AI Receipt & Product Candidate Primitives', () => {
+  it('extractCandidateSpans extracts totals, dates, and invoice numbers from raw text', () => {
+    const rawText = `
+      Savoy Distributors
+      Challan No: INV-9988
+      Date: 2026-09-28
+      Item 1: 5 x 100 = 500
+      Grand Total: ৳ 500.00
+    `;
+    const spans = extractCandidateSpans(rawText);
+
+    expect(spans.totals.length).toBeGreaterThan(0);
+    expect(spans.totals[0].value).toBe(500);
+    expect(spans.totals[0].confidence).toBe('high');
+
+    expect(spans.dates.length).toBeGreaterThan(0);
+    expect(spans.dates[0].value).toBe('2026-09-28');
+
+    expect(spans.invoiceNumbers.length).toBeGreaterThan(0);
+    expect(spans.invoiceNumbers[0].value).toBe('INV-9988');
+  });
+
+  it('selectBestFieldSpan picks top candidate or returns noneFits when under threshold', () => {
+    const candidateSpans = extractCandidateSpans('Grand Total: ৳ 1250.00').totals;
+    const selected = selectBestFieldSpan(candidateSpans, 0.5);
+
+    expect(selected.noneFits).toBe(false);
+    expect(selected.selected?.value).toBe(1250);
+
+    const emptySelection = selectBestFieldSpan([], 0.5);
+    expect(emptySelection.noneFits).toBe(true);
+    expect(emptySelection.selected).toBeNull();
+  });
+
+  it('scoreProductMatch performs exact SKU/barcode/name matching and fuzzy matching', () => {
+    const candidateItem = { id: 'p1', name: 'Fresh Milk 1L', barcode: '890123456789', sku: 'MILK-01' };
+
+    // Exact Barcode
+    expect(scoreProductMatch('890123456789', candidateItem)).toMatchObject({
+      score: 1.0,
+      confidence: 'high',
+      isExact: true,
+      noneFits: false,
+    });
+
+    // Exact Name
+    expect(scoreProductMatch('Fresh Milk 1L', candidateItem)).toMatchObject({
+      score: 0.95,
+      confidence: 'high',
+      isExact: true,
+      noneFits: false,
+    });
+
+    // Partial/Fuzzy match
+    const fuzzy = scoreProductMatch('Fresh Milk', candidateItem);
+    expect(fuzzy.score).toBeGreaterThan(0.4);
+    expect(fuzzy.noneFits).toBe(false);
+
+    // Completely unrelated
+    const unrelated = scoreProductMatch('Savoy Chocolate Ice Cream', candidateItem);
+    expect(unrelated.noneFits).toBe(true);
+  });
+
+  it('reconcileOcrItemCandidates ranks candidates and handles fallback noneFits', () => {
+    const catalog = [
+      { id: 'p1', name: 'Aarong Liquid Milk 1L' },
+      { id: 'p2', name: 'Pran Milk 500ml' },
+    ];
+
+    const matched = reconcileOcrItemCandidates('Aarong Milk 1L', catalog);
+    expect(matched.topMatch?.id).toBe('p1');
+    expect(matched.noneFits).toBe(false);
+
+    const unmatched = reconcileOcrItemCandidates('Toyota Car Engine Oil', catalog);
+    expect(unmatched.topMatch).toBeNull();
+    expect(unmatched.noneFits).toBe(true);
   });
 });
