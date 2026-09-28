@@ -1,0 +1,9 @@
+import type { ReactNode } from 'react';
+import React from 'react';
+import RootLayoutDocument, { metadata, viewport } from '../RootLayoutDocument';
+
+export { metadata, viewport };
+
+export default function EnglishRootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  return <RootLayoutDocument lang="en">{children}</RootLayoutDocument>;
+}

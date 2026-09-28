@@ -36,7 +36,7 @@ vi.mock('../supabase', () => ({
 }));
 
 // Mock CategoryShell to inspect rendered props
-vi.mock('../../category/CategoryShell', () => ({
+vi.mock('../../(english)/category/CategoryShell', () => ({
   CategoryShell: vi.fn((props: any) => ({
     type: 'CategoryShell',
     props,
@@ -78,7 +78,7 @@ describe('Bengali Category Routes Contract', () => {
   });
 
   it('generates canonical metadata for root Bengali category page (/bn/category)', async () => {
-    const { generateMetadata } = await import('../../bn/category/page');
+    const { generateMetadata } = await import('../../(bengali)/bn/category/page');
     const meta = await generateMetadata({
       searchParams: Promise.resolve({}),
     });
@@ -90,7 +90,7 @@ describe('Bengali Category Routes Contract', () => {
   });
 
   it('renders CategoryShell with locale="bn" on /bn/category', async () => {
-    const BengaliCategoryRootPage = (await import('../../bn/category/page')).default;
+    const BengaliCategoryRootPage = (await import('../../(bengali)/bn/category/page')).default;
     const result = await BengaliCategoryRootPage({
       searchParams: Promise.resolve({}),
     });
@@ -100,7 +100,7 @@ describe('Bengali Category Routes Contract', () => {
   });
 
   it('generates canonical metadata for any valid category slug in Bengali', async () => {
-    const { generateMetadata } = await import('../../bn/category/[slug]/page');
+    const { generateMetadata } = await import('../../(bengali)/bn/category/[slug]/page');
     const meta = await generateMetadata({
       params: Promise.resolve({ slug: 'snacks' }),
       searchParams: Promise.resolve({}),
@@ -112,7 +112,7 @@ describe('Bengali Category Routes Contract', () => {
   });
 
   it('triggers notFound() for invalid category slug in Bengali', async () => {
-    const { generateMetadata } = await import('../../bn/category/[slug]/page');
+    const { generateMetadata } = await import('../../(bengali)/bn/category/[slug]/page');
     await expect(
       generateMetadata({
         params: Promise.resolve({ slug: 'completely-invalid-slug' }),
@@ -124,7 +124,7 @@ describe('Bengali Category Routes Contract', () => {
   });
 
   it('triggers permanentRedirect for unnormalized category alias in Bengali', async () => {
-    const { generateMetadata } = await import('../../bn/category/[slug]/page');
+    const { generateMetadata } = await import('../../(bengali)/bn/category/[slug]/page');
     await expect(
       generateMetadata({
         params: Promise.resolve({ slug: 'Rice-And-Grain' }),
@@ -136,7 +136,7 @@ describe('Bengali Category Routes Contract', () => {
   });
 
   it('renders CategoryShell with locale="bn" and translated categories for /bn/category/[slug]', async () => {
-    const BengaliCategorySlugPage = (await import('../../bn/category/[slug]/page')).default;
+    const BengaliCategorySlugPage = (await import('../../(bengali)/bn/category/[slug]/page')).default;
     const result = await BengaliCategorySlugPage({
       params: Promise.resolve({ slug: 'rice-and-grain' }),
       searchParams: Promise.resolve({}),

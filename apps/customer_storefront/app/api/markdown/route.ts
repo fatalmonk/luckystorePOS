@@ -3,7 +3,7 @@ import { createProductRepository, createProductId } from '../../lib/products/ind
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
-import { DELIVERY_POLICY } from '../../delivery/deliveryData';
+import { DELIVERY_POLICY } from '../../lib/deliveryData';
 
 export const dynamic = 'force-dynamic';
 

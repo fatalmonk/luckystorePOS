@@ -1,0 +1,209 @@
+import Link from 'next/link';
+import React, { Suspense } from 'react';
+import { Header } from '../../components/updated/Header';
+import { Footer } from '../../components/updated/Footer';
+import { BottomNav } from '../../components/BottomNav';
+import { CatalogLayout } from '../../components/CatalogLayout';
+import { CategoryGrid } from '../../components/CategoryGrid';
+import { CategoryGridSkeleton } from '../../components/CategoryGridSkeleton';
+import { HeroBanner } from '../../components/updated/HeroBanner';
+import type { Product, Category, CategoryGroup } from '../../lib/types';
+import { img, srcSet, responsiveHeroBanner } from '../../lib/imageUrl';
+import type { Locale } from '../../lib/i18n/config';
+import { withLocale } from '../../lib/i18n/config';
+import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
+import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
+
+interface CategoryShellProps {
+  categorySlug: string;
+  currentCat: Category | 'all';
+  group?: CategoryGroup;
+  parentGroup?: CategoryGroup;
+  categories: { id: string; slug: Category; name: string; emoji: string }[];
+  products: Product[];
+  theme: string;
+  sort: string;
+  searchParams: Record<string, string | string[] | undefined>;
+  locale?: Locale;
+}
+
+const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: any }> = {
+  'ice-cream': {
+    title: 'Ice Cream & Frozen Delights',
+    subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
+    badge: 'Chilled & Sweet',
+    bgImage: responsiveHeroBanner('promo_ice_cream', 'Ice Cream & Frozen Delights'),
+  },
+  'ice-creams': {
+    title: 'Ice Cream & Frozen Delights',
+    subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
+    badge: 'Chilled & Sweet',
+    bgImage: responsiveHeroBanner('promo_ice_cream', 'Ice Cream & Frozen Delights'),
+  },
+  'cold-beverages': {
+    title: 'Cold Beverages & Drinks',
+    subtitle: 'Chilled sparklers, fresh juices, sodas, and energy drinks delivered ice-cold.',
+    badge: 'Chilled & Refreshing',
+    bgImage: responsiveHeroBanner('promo_beverages', 'Cold Beverages'),
+  },
+  'beverages': {
+    title: 'Cold Beverages & Drinks',
+    subtitle: 'Chilled sparklers, fresh juices, sodas, and energy drinks delivered ice-cold.',
+    badge: 'Chilled & Refreshing',
+    bgImage: responsiveHeroBanner('promo_beverages', 'Cold Beverages'),
+  },
+  'snacks': {
+    title: 'Snacks & Munchies',
+    subtitle: 'Bite-sized happiness, from sweet biscuits to savory local crisps.',
+    badge: 'Crispy & Sweet',
+    bgImage: responsiveHeroBanner('promo_snacks', 'Snacks'),
+  },
+  'biscuits-and-cookies': {
+    title: 'Biscuits & Cookies',
+    subtitle: 'Crunchy, sweet, and savory treats perfect for your tea time.',
+    badge: 'Tea Time Treats',
+    bgImage: responsiveHeroBanner('promo_biscuits', 'Biscuits & Cookies'),
+  },
+  'rice-and-grain': {
+    title: 'Miniket Rice & Daily Grains',
+    subtitle: 'Miniket, Chinigura, and Nazirshail rice for everyday cooking at displayed bazaar rates.',
+    badge: 'Daily Rice & Grains',
+    bgImage: responsiveHeroBanner('promo_cooking', 'Rice & Grains'),
+  },
+  'oil-and-ghee': {
+    title: 'Soybean Oil, Mustard Oil & Ghee',
+    subtitle: 'Soybean oil, mustard oil, and ghee from familiar household brands delivered to your door.',
+    badge: 'Edible Oils & Ghee',
+    bgImage: responsiveHeroBanner('promo_cooking', 'Oil & Ghee'),
+  },
+  'cooking-essentials': {
+    title: 'Daily Bazaar & Pantry Staples',
+    subtitle: 'Everyday cooking essentials: lentils, flour, spices, salt, and sugar at displayed bazaar prices.',
+    badge: 'Kitchen Staples',
+    bgImage: responsiveHeroBanner('promo_cooking', 'Cooking Essentials'),
+  },
+  'personal-care': {
+    title: 'Personal Care & Hygiene',
+    subtitle: 'Gentle soaps, premium hair care, skincare, and daily grooming essentials.',
+    badge: 'Hygiene & Care',
+    bgImage: responsiveHeroBanner('promo_personal', 'Personal care'),
+  },
+  'tea-and-coffee': {
+    title: 'Tea & Coffee Blends',
+    subtitle: 'Packaged tea and coffee from familiar brands available for local delivery in Chittagong.',
+    badge: 'Morning Brew',
+    bgImage: responsiveHeroBanner('promo_tea_coffee', 'Tea & Coffee'),
+  },
+};
+
+export function CategoryShell({
+  categorySlug,
+  group,
+  parentGroup,
+  categories,
+  products,
+  theme,
+  sort,
+  searchParams,
+  locale = 'en',
+}: CategoryShellProps) {
+  const isBn = locale === 'bn';
+  const isAllProducts = categorySlug === 'all';
+  const catObj = categories.find((c) => c.slug === categorySlug);
+  const rawPrettyName =
+    catObj?.name ||
+    categorySlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const prettyName = isBn
+    ? (BENGALI_CATEGORY_NAMES[categorySlug] || (group?.slug && BENGALI_CATEGORY_NAMES[group.slug]) || rawPrettyName)
+    : rawPrettyName;
+
+  const defaultBanner = {
+    title: prettyName,
+    subtitle: isBn
+      ? `আপনার ঘরে পৌঁছে দেওয়া হচ্ছে সেরা মানের ${prettyName} পণ্য।`
+      : `Explore top quality ${prettyName.toLowerCase()} products delivered directly to your home.`,
+    badge: isBn ? 'লাকি চয়েস' : 'Lucky Choice',
+    bgImage: responsiveHeroBanner('hero_grocery_banner', prettyName),
+  };
+
+  const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || defaultBanner;
+  const showFortuneCookiesIntentLink = categorySlug === 'biscuits-and-cookies';
+
+  return (
+    <>
+      <Header />
+      <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
+        {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (
+          <Suspense fallback={<CategoryGridSkeleton />}>
+            <CategoryGrid searchParams={searchParams} locale={locale} />
+          </Suspense>
+        ) : (
+          <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-4">
+              {!isAllProducts && (
+                <Breadcrumbs
+                  homeHref={withLocale('/', locale)}
+                  homeLabel={isBn ? 'হোম' : 'Home'}
+                  items={[
+                    { label: isBn ? 'ক্যাটাগরি' : 'Categories', href: withLocale('/category', locale) },
+                    ...(parentGroup && !group
+                      ? [{
+                          label: isBn ? (BENGALI_CATEGORY_NAMES[parentGroup.slug] || parentGroup.label) : parentGroup.label,
+                          href: withLocale(`/category/${parentGroup.slug}`, locale),
+                        }]
+                      : []),
+                    { label: prettyName, href: withLocale(`/category/${categorySlug}`, locale) },
+                  ]}
+                />
+              )}
+              <HeroBanner
+                slides={[
+                  {
+                    image: bannerConfig.bgImage,
+                    title: isBn ? prettyName : bannerConfig.title,
+                    subtitle: isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle,
+                    badge: isBn ? 'বিশেষ অফার' : bannerConfig.badge,
+                  },
+                ]}
+              />
+              {showFortuneCookiesIntentLink && (
+                <section className="rounded-warm-card border border-warm-border bg-warm-surface p-4 shadow-warm-sm sm:flex sm:items-center sm:justify-between sm:gap-4">
+                  <div>
+                    <h2 className="text-base font-black text-warm-fg">
+                      {isBn ? 'ফরচুন কুকিজ খুঁজছেন?' : 'Looking for Fortune Cookies?'}
+                    </h2>
+                    <p className="mt-1 text-sm leading-6 text-warm-muted">
+                      {isBn
+                        ? 'লাইভ বিস্কুট ও কুকিজ দেখুন, অথবা আজকের ফরচুন কুকিজ পাওয়া যাবে কি না জানতে আমাদের মেসেজ করুন।'
+                        : 'We are tracking local demand. Check the live biscuits catalog or ask the store team about today’s availability.'}
+                    </p>
+                  </div>
+                  <Link
+                    href="/fortune-cookies-near-me"
+                    className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-warm-border bg-warm-bg px-4 text-sm font-black text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:mt-0 sm:shrink-0"
+                  >
+                    {isBn ? 'পেজটি দেখুন' : 'Check Fortune Cookies'}
+                  </Link>
+                </section>
+              )}
+            </div>
+
+            <CatalogLayout
+              products={products}
+              categorySlug={categorySlug}
+              group={group}
+              parentGroup={parentGroup}
+              categories={categories}
+              theme={theme}
+              sort={sort}
+              searchParams={searchParams}
+              locale={locale}
+            />
+          </div>
+        )}
+        <Footer locale={locale} />
+      </main>
+      <BottomNav locale={locale} />
+    </>
+  );
+}
