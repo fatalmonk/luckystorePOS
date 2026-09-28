@@ -1,5 +1,5 @@
 import React from 'react';
-import { DELIVERY_POLICY } from '../../delivery/deliveryData';
+import { DELIVERY_POLICY } from '../../lib/deliveryData';
 
 export interface FaqItem {
   question: string;

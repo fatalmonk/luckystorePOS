@@ -2,7 +2,7 @@ import React from 'react';
 import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
 import { validateGtin } from '../../lib/products/gtin';
-import { DELIVERY_POLICY } from '../../delivery/deliveryData';
+import { DELIVERY_POLICY } from '../../lib/deliveryData';
 import { JsonLd } from './JsonLd';
 
 interface ProductJsonLdProps {

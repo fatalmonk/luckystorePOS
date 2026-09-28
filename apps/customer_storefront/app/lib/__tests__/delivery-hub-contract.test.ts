@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { metadata } from '../../delivery/page';
+import { metadata } from '../../(english)/delivery/page';
 import {
   DELIVERY_POLICY,
   DELIVERY_FAQS,
@@ -9,7 +9,7 @@ import {
   getDeliveryServiceSchema,
   getDeliveryFaqSchema,
   getDeliveryBreadcrumbSchema,
-} from '../../delivery/deliveryData';
+} from '../deliveryData';
 import { middleware } from '../../../middleware';
 import { GET as getMarkdown } from '../../api/markdown/route';
 

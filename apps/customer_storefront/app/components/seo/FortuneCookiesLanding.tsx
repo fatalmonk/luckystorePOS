@@ -4,7 +4,7 @@ import { BottomNav } from '../BottomNav';
 import { Footer } from '../updated/Footer';
 import { Header } from '../updated/Header';
 import { Breadcrumbs } from '../ui/Breadcrumbs';
-import { DELIVERY_POLICY } from '../../delivery/deliveryData';
+import { DELIVERY_POLICY } from '../../lib/deliveryData';
 import { withLocale, type Locale } from '../../lib/i18n/config';
 import { FaqJsonLd, type FaqItem } from './FaqJsonLd';
 

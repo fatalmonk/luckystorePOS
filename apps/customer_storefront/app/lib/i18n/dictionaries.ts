@@ -1,5 +1,5 @@
 import type { Locale } from './config';
-import { DELIVERY_POLICY } from '../../delivery/deliveryData';
+import { DELIVERY_POLICY } from '../deliveryData';
 
 export const dictionaries = {
   en: {

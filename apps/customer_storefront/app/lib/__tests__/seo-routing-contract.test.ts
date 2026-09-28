@@ -42,7 +42,7 @@ vi.mock('../../supabase', () => ({
 }));
 
 // Mock CategoryShell to inspect rendered props
-vi.mock('../../category/CategoryShell', () => ({
+vi.mock('../../(english)/category/CategoryShell', () => ({
   CategoryShell: vi.fn((props: any) => ({
     type: 'CategoryShell',
     props,
@@ -112,7 +112,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
   describe('Product Routing & Metadata Contract', () => {
     it('returns canonical metadata for valid canonical product slug', async () => {
-      const { generateMetadata } = await import('../../product/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/product/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'radhuni-holud-gura-100gm--029b62d8' }),
       });
@@ -125,7 +125,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers notFound() in generateMetadata for nonexistent product', async () => {
-      const { generateMetadata } = await import('../../product/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/product/[slug]/page');
       await expect(
         generateMetadata({
           params: Promise.resolve({ slug: 'nonexistent-item--99999999' }),
@@ -136,7 +136,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers 308 permanentRedirect for bare UUID product URL', async () => {
-      const { generateMetadata } = await import('../../product/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/product/[slug]/page');
       await expect(
         generateMetadata({
           params: Promise.resolve({ slug: '029b62d8-1111-2222-3333-444455556666' }),
@@ -149,7 +149,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers 308 permanentRedirect for outdated slug with valid UUID prefix', async () => {
-      const { generateMetadata } = await import('../../product/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/product/[slug]/page');
       await expect(
         generateMetadata({
           params: Promise.resolve({ slug: 'old-product-name--029b62d8' }),
@@ -162,7 +162,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers notFound() in ProductPage component for missing product', async () => {
-      const ProductPage = (await import('../../product/[slug]/page')).default;
+      const ProductPage = (await import('../../(english)/product/[slug]/page')).default;
       await expect(
         ProductPage({
           params: Promise.resolve({ slug: 'missing-product--99999999' }),
@@ -175,7 +175,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
   describe('Category Routing & Product Loading Contract', () => {
     it('returns 200 indexable canonical metadata for valid canonical category', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'personal-care' }),
         searchParams: Promise.resolve({}),
@@ -187,7 +187,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers notFound() in generateMetadata for invalid category slug (eliminates soft 404)', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       await expect(
         generateMetadata({
           params: Promise.resolve({ slug: 'absolute-nonsense-category' }),
@@ -199,7 +199,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers 308 permanentRedirect for unnormalized category alias (one-hop consolidation)', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       await expect(
         generateMetadata({
           params: Promise.resolve({ slug: 'Personal-Care' }),
@@ -211,7 +211,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('emits noindex,follow on filtered category views while preserving clean canonical', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'personal-care' }),
         searchParams: Promise.resolve({ sort: 'price-asc', q: 'soap' }),
@@ -222,7 +222,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers notFound() in CategorySlugPage component for nonexistent category', async () => {
-      const CategorySlugPage = (await import('../../category/[slug]/page')).default;
+      const CategorySlugPage = (await import('../../(english)/category/[slug]/page')).default;
       await expect(
         CategorySlugPage({
           params: Promise.resolve({ slug: 'completely-bogus-category' }),
@@ -234,7 +234,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('CRITICAL REGRESSION TEST: valid leaf category queries products by categoryId and renders them', async () => {
-      const CategorySlugPage = (await import('../../category/[slug]/page')).default;
+      const CategorySlugPage = (await import('../../(english)/category/[slug]/page')).default;
       const result = await CategorySlugPage({
         params: Promise.resolve({ slug: 'rice-and-grain' }),
         searchParams: Promise.resolve({}),
@@ -254,7 +254,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('valid group root category aggregates subcategories and loads products', async () => {
-      const CategorySlugPage = (await import('../../category/[slug]/page')).default;
+      const CategorySlugPage = (await import('../../(english)/category/[slug]/page')).default;
       const result = await CategorySlugPage({
         params: Promise.resolve({ slug: 'personal-care' }),
         searchParams: Promise.resolve({}),
@@ -346,7 +346,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
   describe('Phase 3: Money Page Metadata & Snippet Optimization Contract', () => {
     it('provides clean entity-level Homepage root metadata without product stuffing', async () => {
-      const { metadata } = await import('../../layout');
+      const { metadata } = await import('../../RootLayoutDocument');
       expect((metadata.title as any).default).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
       expect(metadata.description).toBe(
         'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
@@ -362,7 +362,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('generates high-intent snippet metadata for /category/rice-and-grain without unverified claims', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'rice-and-grain' }),
         searchParams: Promise.resolve({}),
@@ -377,7 +377,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('generates high-intent snippet metadata for /category/oil-and-ghee without unverified dispatch claims', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'oil-and-ghee' }),
         searchParams: Promise.resolve({}),
@@ -393,7 +393,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('generates high-intent snippet metadata for /category/cooking-essentials', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'cooking-essentials' }),
         searchParams: Promise.resolve({}),
@@ -407,7 +407,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('generates high-intent snippet metadata for /category/tea-and-coffee without sourcing fiction', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'tea-and-coffee' }),
         searchParams: Promise.resolve({}),
@@ -422,7 +422,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('falls back to factual metadata for non-money category without delivery speed claims', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'personal-care' }),
         searchParams: Promise.resolve({}),
@@ -457,7 +457,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('preserves clean parent canonical and adds noindex,follow on filtered category queries', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const meta = await generateMetadata({
         params: Promise.resolve({ slug: 'rice-and-grain' }),
         searchParams: Promise.resolve({ sort: 'price_asc', brand: 'teer' }),
@@ -468,7 +468,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('rejects unverified promotional claims across all money metadata entries', async () => {
-      const { generateMetadata } = await import('../../category/[slug]/page');
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
       const moneySlugs = ['rice-and-grain', 'oil-and-ghee', 'cooking-essentials', 'tea-and-coffee'];
       const forbiddenTerms = [
         'guaranteed weight',
@@ -512,7 +512,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     });
 
     it('triggers notFound() without throwing URIError 500 for malformed percent-encoded category slug in page & metadata', async () => {
-      const { generateMetadata, default: CategoryPage } = await import('../../category/[slug]/page');
+      const { generateMetadata, default: CategoryPage } = await import('../../(english)/category/[slug]/page');
 
       // generateMetadata should trigger notFound()
       await expect(

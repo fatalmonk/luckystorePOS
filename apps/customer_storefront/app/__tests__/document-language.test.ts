@@ -2,12 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-const mockPathname = vi.hoisted(() => ({ value: '/' }));
-
-vi.mock('next/headers', () => ({
-  headers: vi.fn(async () => new Headers({ 'x-lucky-pathname': mockPathname.value })),
-}));
-
 vi.mock('next/font/google', () => ({
   Bricolage_Grotesque: () => ({ variable: 'font-bricolage' }),
   Geist_Mono: () => ({ variable: 'font-geist-mono' }),
@@ -24,27 +18,19 @@ vi.mock('../components/providers/CartSheetProvider', () => ({ CartSheetProvider:
 vi.mock('../components/WebMCPInit', () => ({ WebMCPInit: () => null }));
 vi.mock('../components/providers/AuthProvider', () => ({ AuthProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('../components/providers/ThemeProvider', () => ({ ThemeProvider: ({ children }: { children: React.ReactNode }) => children }));
-vi.mock('../delivery/deliveryData', () => ({ getDeliveryShippingServiceSchema: () => ({}) }));
+vi.mock('../lib/deliveryData', () => ({ getDeliveryShippingServiceSchema: () => ({}) }));
 
-import RootLayout from '../layout';
-
-async function renderLayout(pathname: string) {
-  mockPathname.value = pathname;
-  return renderToStaticMarkup(await RootLayout({ children: React.createElement('main') }));
-}
+import EnglishRootLayout from '../(english)/layout';
+import BengaliRootLayout from '../(bengali)/layout';
 
 describe('RootLayout document language', () => {
-  it.each(['/bn', '/bn/', '/bn/category/dairy-and-eggs', '/bn/product/example--12345678'])(
-    'server-renders Bengali for %s',
-    async (pathname) => {
-      expect(await renderLayout(pathname)).toContain('<html lang="bn"');
-    }
-  );
+  it('server-renders the English root layout with lang=en', () => {
+    const markup = renderToStaticMarkup(EnglishRootLayout({ children: React.createElement('main') }));
+    expect(markup).toContain('<html lang="en"');
+  });
 
-  it.each(['/', '/category/dairy-and-eggs', '/product/example--12345678', '/bnews'])(
-    'server-renders English for %s',
-    async (pathname) => {
-      expect(await renderLayout(pathname)).toContain('<html lang="en"');
-    }
-  );
+  it('server-renders the Bengali root layout with lang=bn', () => {
+    const markup = renderToStaticMarkup(BengaliRootLayout({ children: React.createElement('main') }));
+    expect(markup).toContain('<html lang="bn"');
+  });
 });

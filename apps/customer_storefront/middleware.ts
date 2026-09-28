@@ -121,13 +121,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-lucky-pathname', request.nextUrl.pathname);
-  const localizedRequest = new NextRequest(request.url, {
-    headers: requestHeaders,
-    method: request.method,
-  });
-  const supabaseResponse = await updateSession(localizedRequest);
+  const supabaseResponse = await updateSession(request);
 
   const accept = request.headers.get('accept') || '';
   const userAgent = request.headers.get('user-agent') || '';

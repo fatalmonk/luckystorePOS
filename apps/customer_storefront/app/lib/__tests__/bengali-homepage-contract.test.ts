@@ -68,7 +68,7 @@ vi.mock('../products/index', () => ({
 
 import { BENGALI_CATEGORY_NAMES, getHomePageData } from '../products/getHomePageData';
 import { formatLocalizedBdt } from '../../components/GridProductCard';
-import { getCategoryBreadcrumbHref } from '../../product/[slug]/ProductClient';
+import { getCategoryBreadcrumbHref } from '../../(english)/product/[slug]/ProductClient';
 
 describe('Bengali Homepage & Seamless Switching Contract', () => {
   it('provides complete Bengali dictionaries for all homepage sections with key parity', () => {
