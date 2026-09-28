@@ -1,4 +1,17 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function firstHomepageProduct(page: Page, homepagePath: '/' | '/bn') {
+  await page.goto(homepagePath);
+  const productCard = page.getByTestId('grid-product-card').first();
+  await expect(productCard).toBeVisible();
+
+  const productHref = await productCard.locator('a[href*="/product/"]').first().getAttribute('href');
+  const productName = (await productCard.locator('h3').innerText()).trim();
+  expect(productHref).toBeTruthy();
+  expect(productName).not.toBe('');
+
+  return { productHref: productHref!, productName };
+}
 
 test.describe('Storefront H1 contract', () => {
   test('homepage has exactly one semantic H1', async ({ page }) => {
@@ -9,17 +22,12 @@ test.describe('Storefront H1 contract', () => {
   });
 
   test('product page has exactly one semantic H1', async ({ page }) => {
-    await page.goto('/');
-    const productLink = page.locator('a[href^="/product/"]').first();
-    await expect(productLink).toBeVisible();
-    const productHref = await productLink.getAttribute('href');
-    expect(productHref).toBeTruthy();
-
-    await page.goto(productHref!);
+    const { productHref, productName } = await firstHomepageProduct(page, '/');
+    await page.goto(productHref);
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).not.toHaveText('Page not found');
+    await expect(h1).toHaveText(productName);
   });
 
   test('delivery page has exactly one semantic H1', async ({ page }) => {
@@ -31,17 +39,12 @@ test.describe('Storefront H1 contract', () => {
   });
 
   test('localized product page has exactly one semantic H1', async ({ page }) => {
-    await page.goto('/');
-    const productLink = page.locator('a[href^="/product/"]').first();
-    await expect(productLink).toBeVisible();
-    const productHref = await productLink.getAttribute('href');
-    expect(productHref).toBeTruthy();
-
-    await page.goto(`/bn${productHref}`);
+    const { productHref, productName } = await firstHomepageProduct(page, '/bn');
+    await page.goto(productHref);
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).not.toHaveText('Page not found');
+    await expect(h1).toHaveText(productName);
   });
 
   test('English Fortune Cookies page has exactly one semantic H1', async ({ page }) => {
