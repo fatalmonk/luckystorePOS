@@ -5,10 +5,15 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { checkRateLimitDB, getRateLimitHeaders } from '../_shared/rate-limit.ts'
 
-const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? Deno.env.get('ALLOWED_ORIGIN') ?? '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
+const allowedOrigins = [
+  ...(Deno.env.get('ALLOWED_ORIGINS') ?? Deno.env.get('ALLOWED_ORIGIN') ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+  // Local Lucky Store development origins — always permitted regardless of env config.
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('Origin')
