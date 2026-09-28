@@ -33,12 +33,12 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-start gap-6">
         <div className="grid w-full grid-cols-[minmax(0,1fr)_6rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_10rem] sm:gap-5 md:grid-cols-[minmax(0,1fr)_13rem] md:gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem] lg:gap-10">
           <div className="campaign-copy relative max-w-3xl text-left">
-            <h2
+            <h1
               id="campaign-hero-title"
               className="campaign-headline campaign-display max-w-3xl text-balance text-[1.4rem] font-black leading-[1.02] tracking-tight sm:mt-2 sm:text-4xl sm:leading-[1.05] lg:text-5xl"
             >
               {dict.campaign.headline}
-            </h2>
+            </h1>
             <p className="campaign-on-image-muted mt-2 max-w-2xl text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7">
               <span className="sm:hidden">{dict.campaign.subtitleShort}</span>
               <span className="hidden sm:inline">{dict.campaign.subtitleLong}</span>
