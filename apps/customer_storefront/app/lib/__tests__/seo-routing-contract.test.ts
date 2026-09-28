@@ -3,6 +3,12 @@ import { NextRequest } from 'next/server';
 import { isProductSitemapEligible } from '../../sitemap';
 import { getCanonicalCategorySlug } from '../types';
 
+const mockUpdateSession = vi.fn(async () => new Response(null, { status: 200 }));
+
+vi.mock('../supabase/middleware', () => ({
+  updateSession: mockUpdateSession,
+}));
+
 // Mock next/navigation
 const mockNotFound = vi.fn(() => {
   const err = new Error('NEXT_NOT_FOUND');
@@ -34,12 +40,21 @@ vi.mock('next/font/google', () => ({
 }));
 
 // Mock Supabase
-vi.mock('../../supabase', () => ({
-  supabase: {
-    from: vi.fn(),
-    rpc: vi.fn(),
-  },
-}));
+vi.mock('../supabase', () => {
+  const query = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+  };
+
+  return {
+    supabase: {
+      from: vi.fn(() => query),
+      rpc: vi.fn(),
+    },
+  };
+});
 
 // Mock CategoryShell to inspect rendered props
 vi.mock('../../(english)/category/CategoryShell', () => ({
@@ -158,6 +173,19 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       expect(mockPermanentRedirect).toHaveBeenCalledWith(
         '/product/radhuni-holud-gura-100gm--029b62d8',
+      );
+    });
+
+    it('redirects resolvable empty-name Bengali product slugs by ID prefix', async () => {
+      const { generateMetadata } = await import('../../(bengali)/bn/product/[slug]/page');
+      await expect(
+        generateMetadata({
+          params: Promise.resolve({ slug: '--029b62d8' }),
+        }),
+      ).rejects.toThrow('NEXT_REDIRECT;replace;/bn/product/radhuni-holud-gura-100gm--029b62d8;308;');
+
+      expect(mockPermanentRedirect).toHaveBeenCalledWith(
+        '/bn/product/radhuni-holud-gura-100gm--029b62d8',
       );
     });
 
@@ -301,6 +329,156 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       expect(res.status).toBe(308);
       expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/personal-care');
+    });
+
+    it('redirects Bengali ampersand aliases without dropping the locale prefix', async () => {
+      const { middleware } = await import('../../../middleware');
+      const req = new NextRequest('https://www.luckystore1947.com/bn/category/tea-&-coffee');
+      const res = await middleware(req);
+
+      expect(res.status).toBe(308);
+      expect(res.headers.get('location')).toBe(
+        'https://www.luckystore1947.com/bn/category/tea-and-coffee',
+      );
+    });
+
+    it('returns a real 404 before session handling for unknown category slugs', async () => {
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+        new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      try {
+        const { middleware } = await import('../../../middleware');
+
+        for (const pathname of [
+          '/category/definitely-unknown-category',
+          '/bn/category/definitely-unknown-category',
+        ]) {
+          const res = await middleware(new NextRequest(`https://www.luckystore1947.com${pathname}`));
+          expect(res.status).toBe(404);
+          expect(res.headers.get('x-robots-tag')).toBe('noindex');
+        }
+
+        expect(mockUpdateSession).not.toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalled();
+      } finally {
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
+      }
+    });
+
+    it('resolves empty-name product prefixes with uuid range filters, not LIKE', async () => {
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(
+          JSON.stringify([{ id: '029b62d8-1111-2222-3333-444455556666', name: 'Radhuni Holud Gura 100gm' }]),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      try {
+        const { middleware } = await import('../../../middleware');
+        const res = await middleware(
+          new NextRequest('https://www.luckystore1947.com/product/--029b62d8'),
+        );
+
+        expect(res.status).toBe(308);
+        expect(res.headers.get('location')).toBe(
+          'https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8',
+        );
+
+        const requested = new URL(String(fetchSpy.mock.calls[0]?.[0]));
+        const idFilters = requested.searchParams.getAll('id');
+        expect(idFilters).toContain('gte.029b62d8-0000-0000-0000-000000000000');
+        expect(idFilters).toContain('lt.029b62d9-0000-0000-0000-000000000000');
+        expect(idFilters.some((value) => value.startsWith('like.'))).toBe(false);
+      } finally {
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
+      }
+    });
+
+    it('returns a real 404 before session handling for unresolvable product UUID and prefix URLs', async () => {
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+        new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      try {
+        const { middleware } = await import('../../../middleware');
+
+        for (const pathname of [
+          '/product/--deadbeef',
+          '/bn/product/--deadbeef',
+          '/product/deadbeef-0000-4000-8000-000000000000',
+          '/bn/product/deadbeef-0000-4000-8000-000000000000',
+        ]) {
+          const res = await middleware(new NextRequest(`https://www.luckystore1947.com${pathname}`));
+          expect(res.status).toBe(404);
+          expect(res.headers.get('x-robots-tag')).toBe('noindex');
+        }
+
+        expect(mockUpdateSession).not.toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalled();
+      } finally {
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
+      }
+    });
+
+    it('fails open to session handling when category validation upstream errors', async () => {
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('upstream error', { status: 503 }),
+      );
+
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      try {
+        const { middleware } = await import('../../../middleware');
+        const res = await middleware(
+          new NextRequest('https://www.luckystore1947.com/category/db-only-category'),
+        );
+
+        expect(res.status).not.toBe(404);
+        expect(mockUpdateSession).toHaveBeenCalled();
+      } finally {
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
+      }
     });
   });
 

@@ -34,3 +34,19 @@ export function extractIdFromSlug(slug: string): string {
 export function isBareUuid(s: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 }
+
+/**
+ * Inclusive/exclusive UUID bounds for an 8-char hex prefix (first UUID group).
+ * Prefer this over LIKE: Postgres/PostgREST reject pattern operators on uuid columns.
+ */
+export function uuidPrefixRange(prefix: string): { gte: string; lt: string | null } | null {
+  const clean = prefix.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
+  if (!/^[0-9a-f]{8}$/.test(clean)) return null;
+
+  const gte = `${clean}-0000-0000-0000-000000000000`;
+  const value = Number.parseInt(clean, 16);
+  if (value === 0xffffffff) return { gte, lt: null };
+
+  const next = (value + 1).toString(16).padStart(8, '0');
+  return { gte, lt: `${next}-0000-0000-0000-000000000000` };
+}

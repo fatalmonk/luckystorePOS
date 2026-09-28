@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
-import { getCanonicalCategorySlug } from './app/lib/types';
-import { isBareUuid, toProductSlug } from './app/lib/products/slugify';
+import { getCanonicalCategorySlug, isCategoryGroup, normalizeCategorySlug } from './app/lib/types';
+import { isBareUuid, toProductSlug, uuidPrefixRange } from './app/lib/products/slugify';
 
-async function resolveProductNameForCanonicalRedirect(productId: string): Promise<string | null> {
+type CanonicalProduct = { id: string; name: string };
+
+function notFoundResponse() {
+  return new NextResponse('Not Found', {
+    status: 404,
+    headers: { 'X-Robots-Tag': 'noindex' },
+  });
+}
+
+async function resolveProductForCanonicalRedirect(identifier: string): Promise<CanonicalProduct | null> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -17,9 +26,19 @@ async function resolveProductNameForCanonicalRedirect(productId: string): Promis
   try {
     const itemUrl = new URL('/rest/v1/items', supabaseUrl);
     itemUrl.searchParams.set('select', 'id,name');
-    itemUrl.searchParams.set('id', `eq.${productId}`);
     itemUrl.searchParams.set('is_active', 'eq.true');
-    itemUrl.searchParams.set('limit', '1');
+
+    if (isBareUuid(identifier)) {
+      itemUrl.searchParams.set('id', `eq.${identifier}`);
+      itemUrl.searchParams.set('limit', '1');
+    } else {
+      // uuid columns reject LIKE; bound the first UUID group with gte/lt instead.
+      const range = uuidPrefixRange(identifier);
+      if (!range) return null;
+      itemUrl.searchParams.append('id', `gte.${range.gte}`);
+      if (range.lt) itemUrl.searchParams.append('id', `lt.${range.lt}`);
+      itemUrl.searchParams.set('limit', '2');
+    }
 
     const itemResponse = await fetch(itemUrl, {
       headers: restHeaders,
@@ -29,11 +48,63 @@ async function resolveProductNameForCanonicalRedirect(productId: string): Promis
     if (!itemResponse.ok) return null;
 
     const rows = await itemResponse.json();
-    const name = Array.isArray(rows) ? rows[0]?.name : null;
-    return typeof name === 'string' && name.trim() ? name.trim() : null;
+    if (!Array.isArray(rows)) return null;
+
+    const prefix = identifier.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
+    const matches = isBareUuid(identifier)
+      ? rows
+      : rows.filter(
+          (row) =>
+            typeof row?.id === 'string' &&
+            row.id.replace(/-/g, '').toLowerCase().startsWith(prefix),
+        );
+
+    if (matches.length !== 1) return null;
+
+    const id = matches[0]?.id;
+    const name = matches[0]?.name;
+    return typeof id === 'string' && typeof name === 'string' && name.trim()
+      ? { id, name: name.trim() }
+      : null;
   } catch (error) {
-    console.error('Failed to resolve product UUID redirect', { productId, error });
+    console.error('Failed to resolve product canonical redirect', { identifier, error });
     return null;
+  }
+}
+
+async function isKnownCategorySlug(slug: string): Promise<boolean> {
+  // Covers group roots and static subcategory taxonomy without a network round-trip.
+  if (isCategoryGroup(slug)) return true;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Without env, cannot prove the slug exists; keep fail-closed so unknown routes 404 in tests/misconfig.
+  if (!supabaseUrl || !supabaseAnonKey) return false;
+
+  try {
+    const categoriesUrl = new URL('/rest/v1/categories', supabaseUrl);
+    categoriesUrl.searchParams.set('select', 'slug,name');
+    categoriesUrl.searchParams.set('active', 'eq.true');
+
+    const response = await fetch(categoriesUrl, {
+      headers: {
+        apikey: supabaseAnonKey,
+        authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      cache: 'no-store',
+    });
+    // Fail open on transient upstream errors so real category pages stay available.
+    if (!response.ok) return true;
+
+    const rows = await response.json();
+    if (!Array.isArray(rows)) return true;
+
+    return rows.some((row) =>
+      normalizeCategorySlug(row?.slug ?? row?.name ?? '') === slug,
+    );
+  } catch (error) {
+    console.error('Failed to validate category route', { slug, error });
+    return true;
   }
 }
 
@@ -62,17 +133,21 @@ export async function middleware(request: NextRequest) {
     try {
       decodedProductSlug = decodeURIComponent(rawProductSlug);
     } catch {
-      return NextResponse.next();
+      return notFoundResponse();
     }
 
-    if (isBareUuid(decodedProductSlug)) {
-      const productId = decodedProductSlug.toLowerCase();
-      const productName = await resolveProductNameForCanonicalRedirect(productId);
-      if (productName) {
+    const isLegacyPrefixSlug = /^--[0-9a-f]{8}$/i.test(decodedProductSlug);
+    if (isBareUuid(decodedProductSlug) || isLegacyPrefixSlug) {
+      const identifier = isLegacyPrefixSlug
+        ? decodedProductSlug.slice(2).toLowerCase()
+        : decodedProductSlug.toLowerCase();
+      const product = await resolveProductForCanonicalRedirect(identifier);
+      if (product) {
         const url = request.nextUrl.clone();
-        url.pathname = `/${localePrefix}product/${toProductSlug(productName, productId)}`;
+        url.pathname = `/${localePrefix}product/${toProductSlug(product.name, product.id)}`;
         return NextResponse.redirect(url, 308);
       }
+      return notFoundResponse();
     }
   }
 
@@ -101,23 +176,27 @@ export async function middleware(request: NextRequest) {
   }
 
   // Pre-session canonical redirect for unnormalized or aliased category path slugs
-  // (e.g. /category/Personal-Care -> /category/personal-care, /category/tea-coffee -> /category/tea-and-coffee)
-  if (request.nextUrl.pathname.startsWith('/category/')) {
-    const rawSlug = request.nextUrl.pathname.replace(/^\/category\//, '');
-    if (rawSlug && !rawSlug.includes('/')) {
-      let decoded: string;
-      try {
-        decoded = decodeURIComponent(rawSlug);
-      } catch {
-        // Malformed percent-encoding (URIError): pass through to route handler which returns 404
-        return NextResponse.next();
-      }
-      const canonical = getCanonicalCategorySlug(decoded.toLowerCase());
-      if (canonical && rawSlug !== canonical) {
-        const url = request.nextUrl.clone();
-        url.pathname = `/category/${canonical}`;
-        return NextResponse.redirect(url, 308);
-      }
+  // (e.g. /category/Personal-Care -> /category/personal-care, /bn/category/tea-&-coffee -> /bn/category/tea-and-coffee)
+  const categoryPathMatch = request.nextUrl.pathname.match(/^\/(bn\/)?category\/([^/]+)\/?$/);
+  if (categoryPathMatch) {
+    const localePrefix = categoryPathMatch[1] ?? '';
+    const rawSlug = categoryPathMatch[2];
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(rawSlug);
+    } catch {
+      return notFoundResponse();
+    }
+
+    const canonical = getCanonicalCategorySlug(decoded.toLowerCase());
+    if (!canonical || !(await isKnownCategorySlug(canonical))) {
+      return notFoundResponse();
+    }
+
+    if (rawSlug !== canonical) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${localePrefix}category/${canonical}`;
+      return NextResponse.redirect(url, 308);
     }
   }
 

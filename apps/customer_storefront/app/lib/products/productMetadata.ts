@@ -2,6 +2,8 @@ import { formatBdt } from '../formatPrice';
 
 /**
  * Formats a clean, high-intent product title within Google SERP display limits (<= 60 chars).
+ * Includes brand inline because product pages set `title.absolute`, which bypasses the
+ * root layout `%s | Lucky Store` template.
  */
 export function formatProductMetaTitle(name: string, price: number, unit?: string): string {
   const priceStr = formatBdt(price);
