@@ -72,9 +72,9 @@ describe('CampaignGrid', () => {
     renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const title = screen.getByRole('heading', {
+      level: 1,
       name: 'Daily essentials from a store Chittagong knows.',
     });
-    expect(title.tagName).toBe('H1');
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 
@@ -106,7 +106,10 @@ describe('CampaignGrid', () => {
     renderWithProviders(<CampaignGrid products={mockProducts} />);
 
     const hero = screen
-      .getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' })
+      .getByRole('heading', {
+        level: 1,
+        name: 'Daily essentials from a store Chittagong knows.',
+      })
       .closest('section')!;
 
     expect(hero).toHaveClass('campaign-hero');
