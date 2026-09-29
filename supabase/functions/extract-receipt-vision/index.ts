@@ -63,28 +63,30 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
         schema: {
           type: "object",
           properties: {
-            invoiceNumber: { type: ["string", "null"] },
+            invoiceNumber: { type: ["string", "null"], description: "Extracted document reference/invoice number" },
             invoiceDate: { type: ["string", "null"], description: "ISO date if parsable, else text" },
-            invoiceTotal: { type: ["number", "null"] },
-            subtotal: { type: ["number", "null"] },
-            discount: { type: ["number", "null"] },
-            vat: { type: ["number", "null"] },
-            supplierName: { type: ["string", "null"] },
+            invoiceTotal: { type: ["number", "null"], description: "Overall invoice grand total amount" },
+            subtotal: { type: ["number", "null"], description: "Subtotal before tax/discount" },
+            discount: { type: ["number", "null"], description: "Total discount amount" },
+            vat: { type: ["number", "null"], description: "Tax / VAT amount" },
+            supplierName: { type: ["string", "null"], description: "Printed document supplier or issuer name" },
             confidence: { type: "string", enum: ["high", "medium", "low"], description: "Overall extraction confidence" },
             items: {
               type: "array",
+              description: "Purchased transaction rows only. Exclude static pre-printed catalog/template rows that contain no transaction-specific purchase evidence.",
               items: {
                 type: "object",
                 properties: {
-                  name: { type: "string" },
-                  quantity: { type: ["number", "null"] },
-                  unitPrice: { type: ["number", "null"] },
-                  total: { type: ["number", "null"] },
-                  packSize: { type: ["string", "null"] },
-                  unit: { type: ["string", "null"] },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] }
+                  name: { type: "string", description: "Product description/name for an actual purchased transaction row. On pre-printed catalog forms, a static product name alone does not make the row a purchased item." },
+                  quantity: { type: ["number", "null"], description: "Actual purchased count from transaction-specific entries. For Bengali catalog forms, this corresponds strictly to 'সংখ্যা'. NEVER use static package/product specs such as pre-printed 'পরিমাণ' column values as purchased quantity. Use null when absent or uncertain." },
+                  unitPrice: { type: ["number", "null"], description: "Actual transaction unit price/rate. For Bengali catalog forms, this corresponds to 'দর'. Use null when no transaction-specific rate is present or it is uncertain." },
+                  total: { type: ["number", "null"], description: "Actual monetary line amount for the purchased row. For Bengali catalog forms, this corresponds to 'টাকা'. Use null when no transaction-specific line amount is present or it is uncertain." },
+                  packSize: { type: ["string", "null"], description: "Product/package specification rather than purchased count. On Bengali pre-printed catalog forms, values from 'পরিমাণ' belong here when they describe package/product spec. They MUST NOT be placed in quantity." },
+                  unit: { type: ["string", "null"], description: "Unit associated with the product spec or purchased quantity when explicitly supported by the document. Do not infer a unit solely from an unrelated printed number." },
+                  isPurchased: { type: "boolean", description: "True ONLY if this row represents an active purchased transaction with credible transaction entries (such as handwritten count 'সংখ্যা', rate 'দর', or amount 'টাকা'). Set false for static catalog rows, unpurchased items, or voided/crossed-out entries." },
+                  confidence: { type: "string", enum: ["high", "medium", "low"], description: "Confidence that this object represents an actual purchased transaction row and that its extracted transaction fields are visually supported." }
                 },
-                required: ["name", "quantity", "unitPrice", "total", "packSize", "unit", "confidence"],
+                required: ["name", "quantity", "unitPrice", "total", "packSize", "unit", "isPurchased", "confidence"],
                 additionalProperties: false
               }
             }
@@ -183,7 +185,7 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
   const confidence = (value: unknown) => value === 'high' || value === 'medium' || value === 'low';
   const optionalNumber = (value: unknown) => value === null || (typeof value === 'number' && Number.isFinite(value));
   const expectedFields = ['invoiceNumber', 'invoiceDate', 'invoiceTotal', 'subtotal', 'discount', 'vat', 'supplierName', 'confidence', 'items'];
-  const expectedItemFields = ['name', 'quantity', 'unitPrice', 'total', 'packSize', 'unit', 'confidence'];
+  const expectedItemFields = ['name', 'quantity', 'unitPrice', 'total', 'packSize', 'unit', 'isPurchased', 'confidence'];
   const valid = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
     && expectedFields.every((field) => Object.hasOwn(parsed, field))
     && Object.keys(parsed).every((field) => expectedFields.includes(field))
@@ -203,6 +205,7 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
       && optionalNumber(item.quantity) && optionalNumber(item.unitPrice) && optionalNumber(item.total)
       && (item.packSize === null || typeof item.packSize === 'string')
       && (item.unit === null || typeof item.unit === 'string')
+      && typeof item.isPurchased === 'boolean'
       && confidence(item.confidence));
   if (!valid) {
     throw Object.assign(new Error('Vision provider returned data that does not match the receipt extraction schema.'), {
@@ -210,6 +213,13 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
       status: 502,
     });
   }
+
+  // Filter out static catalog/template rows and voided entries that contain no transaction data
+  parsed.items = parsed.items.filter((item: any) => {
+    if (item.isPurchased === false) return false;
+    const hasTransactionData = item.quantity != null || item.unitPrice != null || item.total != null;
+    return hasTransactionData;
+  });
   return { parsed, provider: providerName, model };
 }
 

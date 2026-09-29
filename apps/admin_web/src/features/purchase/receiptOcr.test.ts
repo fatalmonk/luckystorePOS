@@ -122,6 +122,38 @@ describe('extract-receipt-vision system prompt contract', () => {
     expect(sourceCode).toContain('Exclude clearly crossed-out, struck-through, voided, or cancelled transaction entries.');
     expect(sourceCode).toContain('Do not invent missing transaction values.');
     expect(sourceCode).toContain('For ordinary receipts (non-catalog receipts without a pre-printed product list), associate printed or handwritten quantity, unit price, and total with their respective product lines as normal.');
+
+    // JSON Schema property descriptions and qualification checks
+    expect(sourceCode).toContain('"isPurchased"');
+    expect(sourceCode).toContain('NEVER use static package/product specs such as pre-printed \'পরিমাণ\' column values as purchased quantity');
+    expect(sourceCode).toContain('item.isPurchased === false');
+  });
+
+  it('correctly filters static catalog rows while preserving purchased items and ordinary receipt items', () => {
+    const mockItems = [
+      // Purchased catalog item 1 (valid purchased count + line total)
+      { name: 'Item 1', quantity: 2, unitPrice: 128, total: 256, packSize: '50 kg', unit: null, isPurchased: true, confidence: 'high' },
+      // Purchased catalog item 2 (valid purchased count + line total)
+      { name: 'Item 2', quantity: 5, unitPrice: 189, total: 945, packSize: '25 kg', unit: null, isPurchased: true, confidence: 'high' },
+      // Static catalog row (unpurchased, isPurchased = false)
+      { name: '১০ পিছ পরোটা', quantity: null, unitPrice: null, total: null, packSize: '20 pcs', unit: null, isPurchased: false, confidence: 'low' },
+      // Static catalog row (wrongly populated quantity without transaction values)
+      { name: 'ফ্যামিলি পরোটা', quantity: null, unitPrice: null, total: null, packSize: '20', unit: null, isPurchased: false, confidence: 'low' },
+      // Ordinary non-catalog receipt item (valid item)
+      { name: 'Ordinary Receipt Item', quantity: 1, unitPrice: 100, total: 100, packSize: null, unit: 'pcs', isPurchased: true, confidence: 'high' },
+    ];
+
+    // Mirror Edge Function post-extraction filter contract
+    const filtered = mockItems.filter((item: any) => {
+      if (item.isPurchased === false) return false;
+      const hasTransactionData = item.quantity != null || item.unitPrice != null || item.total != null;
+      return hasTransactionData;
+    });
+
+    expect(filtered.length).toBe(3);
+    expect(filtered.map(i => i.name)).toEqual(['Item 1', 'Item 2', 'Ordinary Receipt Item']);
+    expect(filtered.find(i => i.name === '১০ পিছ পরোটা')).toBeUndefined();
+    expect(filtered.find(i => i.name === 'ফ্যামিলি পরোটা')).toBeUndefined();
   });
 });
 
