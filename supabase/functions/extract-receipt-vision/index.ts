@@ -29,8 +29,124 @@ function getCorsHeaders(req: Request) {
 
 async function extractWithOpenRouter(imageBase64: string, mimeType: string, apiKey: string, baseUrl: string, modelOverride?: string) {
   const model = modelOverride || Deno.env.get('AI_MODEL') || 'gpt-4o';
+
+  let aiEndpoint: URL
+  try {
+    aiEndpoint = new URL(baseUrl)
+  } catch {
+    throw Object.assign(new Error('Vision provider URL is invalid.'), { code: 'PROVIDER_CONFIGURATION_INVALID', status: 500 })
+  }
+  if (aiEndpoint.protocol !== 'https:' || aiEndpoint.username || aiEndpoint.password || aiEndpoint.hash) {
+    throw Object.assign(new Error('Vision provider URL must use HTTPS and cannot contain credentials or a fragment.'), {
+      code: 'PROVIDER_CONFIGURATION_INVALID',
+      status: 500,
+    })
+  }
+  aiEndpoint.pathname = aiEndpoint.pathname.replace(/\/+$/, '')
+  if (!aiEndpoint.pathname.endsWith('/chat/completions')) {
+    aiEndpoint.pathname += '/chat/completions'
+  }
+
+  const aiUrl = aiEndpoint.toString()
+  const providerName = aiEndpoint.hostname === 'api.openai.com' ? 'openai' : 'openai-compatible'
+
+  // Pass 1: Document Classification & Active Row Detection
+  const detectionRequestBody = {
+    model,
+    messages: [
+      {
+        role: "system",
+        content: `You analyze supplier invoices for a retail purchase-entry system.
+Visually inspect the original document image.
+
+1. Classify documentType:
+   - "catalog_order_form": a pre-printed product catalog/order sheet where purchases are entered as handwritten values in specific transaction columns (e.g. 'সংখ্যা', 'টাকা').
+   - "ordinary_receipt": standard printed/handwritten POS receipt, invoice, or bill.
+   - "other": non-receipt document or photograph.
+
+2. For "catalog_order_form", locate ONLY the rows that contain actual handwritten or entered purchase entries (such as handwritten count 'সংখ্যা', unit rate 'দর', or line total 'টাকা').
+   - Ignore static pre-printed catalog rows that contain no handwritten transaction entries.
+   - Ignore printed list prices (such as printed values under 'দর') when there is no handwritten purchase count or handwritten line total on that row.
+   - Ignore crossed-out or cancelled rows.
+   - List the printed product descriptions for ONLY those active purchased rows in activeRows.`
+      },
+      {
+        role: "user",
+        content: [
+          { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } }
+        ]
+      }
+    ],
+    temperature: 0,
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "catalog_row_detection",
+        schema: {
+          type: "object",
+          properties: {
+            documentType: {
+              type: "string",
+              enum: ["catalog_order_form", "ordinary_receipt", "other"],
+              description: "Document classification"
+            },
+            activeRows: {
+              type: "array",
+              description: "List of active purchased rows with handwritten/entered transaction entries. Omit static catalog template rows.",
+              items: {
+                type: "object",
+                properties: {
+                  printedName: { type: "string", description: "Printed product name/identifier for the active row" },
+                  hasHandwrittenQuantity: { type: "boolean", description: "True if handwritten purchased count 'সংখ্যা' is present" },
+                  hasHandwrittenAmount: { type: "boolean", description: "True if handwritten line total 'টাকা' is present" }
+                },
+                required: ["printedName", "hasHandwrittenQuantity", "hasHandwrittenAmount"],
+                additionalProperties: false
+              }
+            }
+          },
+          required: ["documentType", "activeRows"],
+          additionalProperties: false
+        },
+        strict: true
+      }
+    }
+  };
+
+  let detectionResult: { documentType: string; activeRows: Array<{ printedName: string; hasHandwrittenQuantity: boolean; hasHandwrittenAmount: boolean }> } | null = null;
+  try {
+    const detectRes = await fetch(aiUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "ngrok-skip-browser-warning": "true",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(detectionRequestBody)
+    });
+    if (detectRes.ok) {
+      const detectData = await detectRes.json();
+      const content = detectData?.choices?.[0]?.message?.content;
+      if (typeof content === 'string') {
+        detectionResult = JSON.parse(content);
+      }
+    }
+  } catch {
+    // Non-fatal: fallback to single-pass prompt if classification call fails
+  }
+
+  const isCatalogForm = detectionResult?.documentType === 'catalog_order_form';
+  const activeRowsList = (detectionResult?.activeRows || [])
+    .filter(r => r.hasHandwrittenQuantity || r.hasHandwrittenAmount)
+    .map(r => r.printedName.trim())
+    .filter(Boolean);
+
+  const activeRowsHint = isCatalogForm && activeRowsList.length > 0
+    ? `\nActive transaction rows with handwritten entries identified on this form:\n${activeRowsList.map(name => `- ${name}`).join('\n')}\nONLY extract items for these active transaction rows. Do NOT extract any unpurchased catalog rows.`
+    : '';
+
   const systemPrompt = `You extract evidence from supplier invoices for a retail purchase-entry system. The document may contain Bengali and English.
-Inspect the original image visually, including table geometry, row boundaries, column headings, printed text, handwriting, and how handwritten values align with printed rows.
+Inspect the original image visually, including table geometry, row boundaries, column headings, printed text, handwriting, and how handwritten values align with printed rows.${activeRowsHint}
 
 For pre-printed product/catalog forms (invoices with pre-printed product lists):
 - Distinguish static template/catalog content from transaction-specific entries.
@@ -99,25 +215,6 @@ Preserve product descriptions and pack/size information. Extract quantities, uni
     }
   };
 
-  let aiEndpoint: URL
-  try {
-    aiEndpoint = new URL(baseUrl)
-  } catch {
-    throw Object.assign(new Error('Vision provider URL is invalid.'), { code: 'PROVIDER_CONFIGURATION_INVALID', status: 500 })
-  }
-  if (aiEndpoint.protocol !== 'https:' || aiEndpoint.username || aiEndpoint.password || aiEndpoint.hash) {
-    throw Object.assign(new Error('Vision provider URL must use HTTPS and cannot contain credentials or a fragment.'), {
-      code: 'PROVIDER_CONFIGURATION_INVALID',
-      status: 500,
-    })
-  }
-  aiEndpoint.pathname = aiEndpoint.pathname.replace(/\/+$/, '')
-  if (!aiEndpoint.pathname.endsWith('/chat/completions')) {
-    aiEndpoint.pathname += '/chat/completions'
-  }
-
-  const aiUrl = aiEndpoint.toString()
-  const providerName = aiEndpoint.hostname === 'api.openai.com' ? 'openai' : 'openai-compatible'
   const res = await fetch(aiUrl, {
     method: "POST",
     headers: {

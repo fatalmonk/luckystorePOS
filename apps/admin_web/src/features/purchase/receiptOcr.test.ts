@@ -127,6 +127,12 @@ describe('extract-receipt-vision system prompt contract', () => {
     expect(sourceCode).toContain('"isPurchased"');
     expect(sourceCode).toContain('NEVER use static package/product specs such as pre-printed \'পরিমাণ\' column values as purchased quantity');
     expect(sourceCode).toContain('item.isPurchased === false');
+
+    // Two-stage detection contract
+    expect(sourceCode).toContain('catalog_row_detection');
+    expect(sourceCode).toContain('catalog_order_form');
+    expect(sourceCode).toContain('hasHandwrittenQuantity');
+    expect(sourceCode).toContain('hasHandwrittenAmount');
   });
 
   it('correctly filters static catalog rows while preserving purchased items and ordinary receipt items', () => {
