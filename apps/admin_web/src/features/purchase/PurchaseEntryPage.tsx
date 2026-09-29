@@ -11,6 +11,7 @@ import { clsx } from 'clsx';
 import { ReceiptScanPanel } from './ReceiptScanPanel';
 import { type ReceiptOcrResult } from './receiptOcr';
 import { uploadProcessedImage, deleteReceiptImage } from '../../lib/images';
+import { candidatesForReceiptScan, clearPendingOcrCandidates, replaceReceiptScanCandidates } from './ocrReviewState';
 
 type Supplier = {
   id: string;
@@ -46,6 +47,7 @@ type ReceiptLine = {
 };
 
 type PendingOcrItem = ReceiptOcrResult['items'][number] & {
+  scanId: string;
   match?: Item;
   candidates?: Item[];
   selectedMatchId?: string;
@@ -66,6 +68,7 @@ type PurchaseDraftSnapshot = {
   quickQty: number;
   quickCost: string;
   pendingOcrItems: PendingOcrItem[];
+  receiptScanId?: string | null;
   scannedReceiptUrl?: string | null;
   scannedReceiptKey?: string | null;
 };
@@ -209,6 +212,7 @@ export const PurchaseEntryPage: React.FC = () => {
     };
   }, [showAddSupplier, showAddItem]);
   const [pendingOcrItems, setPendingOcrItems] = useState<PendingOcrItem[]>([]);
+  const [receiptScanId, setReceiptScanId] = useState<string | null>(null);
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [scannedReceiptUrl, setScannedReceiptUrl] = useState<string | null>(null);
   const [scannedReceiptKey, setScannedReceiptKey] = useState<string | null>(null);
@@ -225,6 +229,7 @@ export const PurchaseEntryPage: React.FC = () => {
   const [purchaseIdempotencyKey, setPurchaseIdempotencyKey] = useState(createPurchaseIdempotencyKey);
   const [retryAttempt, setRetryAttempt] = useState<PurchaseRetryAttempt | null>(null);
   const receiptScanGenerationRef = useRef(0);
+  const receiptScanIdRef = useRef<string | null>(null);
   const draftHydratedRef = useRef(false);
   const skipDraftPersistenceRef = useRef(false);
 
@@ -252,7 +257,10 @@ export const PurchaseEntryPage: React.FC = () => {
         if (typeof draft.itemSearch === 'string') setItemSearch(draft.itemSearch);
         if (typeof draft.quickQty === 'number' && Number.isFinite(draft.quickQty)) setQuickQty(draft.quickQty);
         if (typeof draft.quickCost === 'string') setQuickCost(draft.quickCost);
-        if (Array.isArray(draft.pendingOcrItems)) setPendingOcrItems(draft.pendingOcrItems);
+        const restoredScanId = typeof draft.receiptScanId === 'string' ? draft.receiptScanId : null;
+        receiptScanIdRef.current = restoredScanId;
+        setReceiptScanId(restoredScanId);
+        setPendingOcrItems(candidatesForReceiptScan(draft.pendingOcrItems, restoredScanId));
         if (typeof draft.scannedReceiptUrl === 'string') setScannedReceiptUrl(draft.scannedReceiptUrl);
         if (typeof draft.scannedReceiptKey === 'string') {
           scannedReceiptKeyRef.current = draft.scannedReceiptKey;
@@ -263,6 +271,8 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       window.localStorage.removeItem(purchaseDraftKey);
     } finally {
+      // Do not let the first persistence effect overwrite the draft before hydrated state renders.
+      skipDraftPersistenceRef.current = true;
       draftHydratedRef.current = true;
     }
   }, [purchaseDraftKey]);
@@ -290,6 +300,7 @@ export const PurchaseEntryPage: React.FC = () => {
       quickQty,
       quickCost,
       pendingOcrItems,
+      receiptScanId,
       scannedReceiptUrl,
       scannedReceiptKey,
     };
@@ -307,11 +318,11 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       // Local draft recovery is best-effort and must never block receiving.
     }
-  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, scannedReceiptKey, scannedReceiptUrl, selectedSupplier, supplierSearch]);
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, receiptScanId, retryAttempt, scannedReceiptKey, scannedReceiptUrl, selectedSupplier, supplierSearch]);
 
   const currentFormSnapshot: PurchaseFormSnapshot = {
     supplierSearch, selectedSupplier, invoiceNumber, invoiceDate, invoiceTotal, lines,
-    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, scannedReceiptUrl, scannedReceiptKey
+    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, receiptScanId, scannedReceiptUrl, scannedReceiptKey
   };
   const currentFormSnapshotRef = useRef(currentFormSnapshot);
   useLayoutEffect(() => {
@@ -561,6 +572,8 @@ export const PurchaseEntryPage: React.FC = () => {
 
   const applyReceiptScan = async (result: ReceiptOcrResult) => {
     const scanGeneration = receiptScanGenerationRef.current;
+    const scanId = receiptScanIdRef.current;
+    if (!scanId) return;
     if (result.warnings) setOcrWarnings(result.warnings);
     else setOcrWarnings([]);
     if (result.supplier) {
@@ -622,16 +635,16 @@ export const PurchaseEntryPage: React.FC = () => {
 
         pendingCandidates.push({
           ...scannedItem,
+          scanId,
           match: matched || undefined,
           candidates: data as unknown as Item[] | undefined,
         });
       }
-      if (pendingCandidates.length > 0) {
-        setPendingOcrItems(previous => {
-          const existing = new Set(previous.map(candidate => candidate.name.trim().toLowerCase()));
-          return [...previous, ...pendingCandidates.filter(candidate => !existing.has(candidate.name.trim().toLowerCase()))];
-        });
+      if (scanGeneration === receiptScanGenerationRef.current && receiptScanIdRef.current === scanId) {
+        setPendingOcrItems(previous => replaceReceiptScanCandidates(previous, pendingCandidates, scanId));
       }
+    } else if (scanGeneration === receiptScanGenerationRef.current && receiptScanIdRef.current === scanId) {
+      setPendingOcrItems([]);
     }
   };
 
@@ -779,6 +792,8 @@ export const PurchaseEntryPage: React.FC = () => {
         setInvoiceTotal('');
         setLines([]);
         setPendingOcrItems([]);
+        setReceiptScanId(null);
+        receiptScanIdRef.current = null;
         setOcrWarnings([]);
         setScannedReceiptUrl(null);
         scannedReceiptKeyRef.current = null;
@@ -844,7 +859,13 @@ export const PurchaseEntryPage: React.FC = () => {
           <ReceiptScanPanel
             suppliers={suppliers}
             onApply={applyReceiptScan}
-            onScanStart={() => { receiptScanGenerationRef.current += 1; }}
+            onScanStart={() => {
+              receiptScanGenerationRef.current += 1;
+              const nextScanId = globalThis.crypto?.randomUUID?.() ?? `scan_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+              receiptScanIdRef.current = nextScanId;
+              setReceiptScanId(nextScanId);
+              setPendingOcrItems([]);
+            }}
             onImageUploaded={result => {
               const previousKey = scannedReceiptKeyRef.current;
               scannedReceiptKeyRef.current = result.key;
@@ -1070,9 +1091,14 @@ export const PurchaseEntryPage: React.FC = () => {
                       These OCR candidates were not found in inventory. Complete each item before adding it to this receipt.
                     </p>
                   </div>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                    {pendingOcrItems.length}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                      {pendingOcrItems.length}
+                    </span>
+                    <button type="button" onClick={() => setPendingOcrItems(clearPendingOcrCandidates)} className="text-sm font-medium text-primary hover:underline">
+                    Clear pending OCR items
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-3 space-y-2">
                   {pendingOcrItems.map((candidate, candidateIndex) => {
