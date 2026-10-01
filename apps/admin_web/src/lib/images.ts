@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { uploadToR2, isR2Configured } from './r2';
+import { deleteFromR2, uploadToR2, isR2Configured } from './r2';
 
 /**
  * Generates an optimized image URL for Cloudflare Worker / CDN.
@@ -268,14 +268,10 @@ async function uploadReceiptToSupabase(file: File, key: string): Promise<string>
 }
 
 export async function deleteReceiptImage(key: string): Promise<void> {
-  // Try to delete from R2 if configured
+  // R2 configuration belongs to the Vite-aware R2 client; do not read process.env in browser code.
   if (isR2Configured()) {
     try {
-      // Assuming R2 proxy supports DELETE /key with secret
-      await fetch(`${process.env.VITE_R2_PUBLIC_URL}/${key}`, {
-        method: 'DELETE',
-        headers: { 'X-Store-Id': process.env.VITE_IMAGE_DELETE_SECRET || '' }
-      });
+      await deleteFromR2(key);
     } catch (err) {
       console.warn('R2 delete failed, falling back to Supabase:', err);
     }
