@@ -162,6 +162,18 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
     setError(null);
     setResult(previous => {
       const completedScan = wasScanning ? null : previous;
+      const visionTotal = completedScan?.fieldConflicts?.invoiceTotal?.visionValue
+        ?? (completedScan?.fieldSources?.invoiceTotal === 'vision' ? completedScan.invoiceTotal : null);
+      const filenameTotal = meta.invoiceTotal ?? completedScan?.fieldConflicts?.invoiceTotal?.filenameValue ?? null;
+      const totalConflict = visionTotal != null && filenameTotal != null
+        && Number.isFinite(Number(visionTotal)) && Number.isFinite(Number(filenameTotal))
+        && Math.abs(Number(visionTotal) - Number(filenameTotal)) > 0.5;
+      const totalConflictReason = totalConflict
+        ? `Filename total (${filenameTotal}) differs from vision-read total (${visionTotal}); the form uses the filename value. Verify both against the receipt.`
+        : null;
+      const otherReviewReason = completedScan?.reviewReason
+        ?.replace(/Filename total \([^)]*\) differs from vision-read total \([^)]*\); the form uses the (?:filename|vision(?:-read)?) value\. Verify both against the receipt\.\s*/g, '')
+        .trim() || undefined;
       return {
         ...completedScan,
         invoiceNumber: meta.invoiceNumber ?? completedScan?.invoiceNumber ?? null,
@@ -177,9 +189,16 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
           ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
           ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
         },
-        fieldConflicts: meta.invoiceTotal
-          ? { ...completedScan?.fieldConflicts, invoiceTotal: undefined }
-          : completedScan?.fieldConflicts,
+        reviewRequired: Boolean(otherReviewReason || totalConflict || (completedScan?.reviewRequired && !completedScan?.fieldConflicts?.invoiceTotal)),
+        reviewReason: [otherReviewReason, totalConflictReason].filter(Boolean).join(' ') || undefined,
+        fieldConflicts: totalConflict && visionTotal != null && filenameTotal != null
+          ? {
+              ...completedScan?.fieldConflicts,
+              invoiceTotal: { filenameValue: filenameTotal, visionValue: visionTotal, selectedSource: 'filename' as const },
+            }
+          : completedScan?.fieldConflicts?.invoiceTotal
+            ? { ...completedScan.fieldConflicts, invoiceTotal: undefined }
+            : completedScan?.fieldConflicts,
       };
     });
   };

@@ -158,8 +158,37 @@ describe('ReceiptScanPanel OCR flow', () => {
       invoiceTotal: '200',
       items: flaggedResult.items,
       reviewRequired: true,
-      reviewReason: flaggedResult.reviewReason,
+      reviewReason: 'Verify the handwritten amount. Filename total (200) differs from vision-read total (120); the form uses the filename value. Verify both against the receipt.',
       fieldSources: expect.objectContaining({ items: 'vision', invoiceTotal: 'filename' }),
+    }));
+  });
+
+  it('recomputes the filename-versus-vision total conflict after editing the filename', async () => {
+    const conflictedResult: ReceiptOcrResult = {
+      ...result,
+      invoiceTotal: '100',
+      reviewRequired: true,
+      reviewReason: 'Filename total (100) differs from vision-read total (120); the form uses the vision-read value. Verify both against the receipt.',
+      fieldSources: { invoiceTotal: 'vision' },
+      fieldConflicts: {
+        invoiceTotal: { filenameValue: '100', visionValue: '120', selectedSource: 'vision' },
+      },
+    };
+    scanReceiptImageMock.mockResolvedValueOnce(conflictedResult);
+    const onApply = vi.fn();
+    const { container } = render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} />);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+    fireEvent.change(fileInput!, { target: { files: [new File(['receipt'], 'receipt.jpg', { type: 'image/jpeg' })] } });
+    expect(await screen.findByText(/Filename total \(100\)/)).toBeTruthy();
+
+    fireEvent.change(screen.getByPlaceholderText(/Or paste receipt title/), {
+      target: { value: 'INV42-25-09-2026-Test Supplier-200BDT' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({
+      invoiceTotal: '200',
+      reviewReason: 'Filename total (200) differs from vision-read total (120); the form uses the filename value. Verify both against the receipt.',
+      fieldConflicts: { invoiceTotal: { filenameValue: '200', visionValue: '120', selectedSource: 'filename' } },
     }));
   });
 });
