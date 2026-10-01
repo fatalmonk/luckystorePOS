@@ -153,22 +153,34 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
   const applyFilenameMetadata = (value: string) => {
     const meta = parseReceiptFilename(value, suppliers);
     if (!meta.invoiceNumber && !meta.supplier && !meta.invoiceTotal) return;
+    const wasScanning = isScanning;
     // Supersede both the panel's in-flight OCR result and the parent's scan generation.
     scanIdRef.current += 1;
     onScanStart?.();
     setIsScanning(false);
     setStatusText('');
     setError(null);
-    setResult({
-      ...meta,
-      items: [],
-      extractionMethod: 'filename',
-      fieldSources: {
-        ...(meta.supplier ? { supplier: 'filename' as const } : {}),
-        ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
-        ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
-        ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
-      },
+    setResult(previous => {
+      const completedScan = wasScanning ? null : previous;
+      return {
+        ...completedScan,
+        invoiceNumber: meta.invoiceNumber ?? completedScan?.invoiceNumber ?? null,
+        invoiceDate: meta.invoiceDate ?? completedScan?.invoiceDate ?? null,
+        invoiceTotal: meta.invoiceTotal ?? completedScan?.invoiceTotal ?? null,
+        supplier: meta.supplier ?? completedScan?.supplier ?? null,
+        items: completedScan?.items ?? [],
+        extractionMethod: completedScan?.extractionMethod ?? 'filename',
+        fieldSources: {
+          ...completedScan?.fieldSources,
+          ...(meta.supplier ? { supplier: 'filename' as const } : {}),
+          ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
+          ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+          ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
+        },
+        fieldConflicts: meta.invoiceTotal
+          ? { ...completedScan?.fieldConflicts, invoiceTotal: undefined }
+          : completedScan?.fieldConflicts,
+      };
     });
   };
 

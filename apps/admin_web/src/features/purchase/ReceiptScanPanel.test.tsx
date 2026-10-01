@@ -134,4 +134,32 @@ describe('ReceiptScanPanel OCR flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ invoiceTotal: '200', extractionMethod: 'filename', items: [] }));
   });
+
+  it('keeps completed OCR items and review warnings when filename metadata is edited', async () => {
+    const flaggedResult: ReceiptOcrResult = {
+      ...result,
+      reviewRequired: true,
+      reviewReason: 'Verify the handwritten amount.',
+      fieldSources: { items: 'vision', invoiceTotal: 'vision' },
+    };
+    scanReceiptImageMock.mockResolvedValueOnce(flaggedResult);
+    const onApply = vi.fn();
+    const { container } = render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} />);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+    fireEvent.change(fileInput!, { target: { files: [new File(['receipt'], 'receipt.jpg', { type: 'image/jpeg' })] } });
+    expect(await screen.findByText('Cooking Oil')).toBeTruthy();
+    expect(screen.getByText('Manual review required')).toBeTruthy();
+
+    fireEvent.change(screen.getByPlaceholderText(/Or paste receipt title/), {
+      target: { value: 'INV42-25-09-2026-Test Supplier-200BDT' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({
+      invoiceTotal: '200',
+      items: flaggedResult.items,
+      reviewRequired: true,
+      reviewReason: flaggedResult.reviewReason,
+      fieldSources: expect.objectContaining({ items: 'vision', invoiceTotal: 'filename' }),
+    }));
+  });
 });
