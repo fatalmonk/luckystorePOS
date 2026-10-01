@@ -37,7 +37,17 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
     onScanStart?.();
     const fileMeta = source instanceof File ? parseReceiptFilename(source.name, suppliers) : null;
     setResult(fileMeta && (fileMeta.invoiceNumber || fileMeta.supplier || fileMeta.invoiceTotal)
-      ? { ...fileMeta, items: [] }
+      ? {
+          ...fileMeta,
+          items: [],
+          extractionMethod: 'filename',
+          fieldSources: {
+            ...(fileMeta.supplier ? { supplier: 'filename' as const } : {}),
+            ...(fileMeta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
+            ...(fileMeta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+            ...(fileMeta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
+          },
+        }
       : null);
     setShowRawText(false);
     setError(null);
@@ -261,11 +271,11 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
               </button>
             </div>
           </div>
-          <div className="p-2 flex justify-center bg-[var(--color-border-light)]">
+          <div className="p-2 flex justify-center rounded-xl bg-[var(--color-border-light)]">
             <img
               src={previewUrl}
               alt="Receipt full preview"
-              className="max-h-[500px] w-auto max-w-full rounded-lg object-contain shadow-md outline outline-1 outline-black/10"
+              className="max-h-[500px] w-auto max-w-full rounded-lg object-contain shadow-md outline outline-1 outline-black/10 dark:outline-white/10"
             />
           </div>
         </div>
@@ -275,27 +285,37 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
       {error && <p className="mt-3 text-sm text-color-danger" role="alert">{error}</p>}
 
       {result && (
-        <div className="mt-4 rounded-lg border border-border-color p-3 text-sm">
+        <div className="mt-4 rounded-lg border border-border-color p-3 text-sm shadow-sm">
           <p className="font-medium text-text-main">Review scanned values</p>
+          {result.reviewRequired && (
+            <div
+              className="mt-2 rounded-md border px-3 py-2 text-xs font-medium"
+              style={{ borderColor: 'var(--color-warning-strong)', backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}
+              role="alert"
+            >
+              <p className="font-semibold">Manual review required</p>
+              <p className="mt-1">{result.reviewReason || 'Verify all extracted values against the receipt before posting. Applying this scan only fills the editable form.'}</p>
+            </div>
+          )}
           {result.extractionMethod && (
             <p className="mt-1 text-xs text-text-muted">Extraction: {result.extractionMethod === 'vision' ? 'Vision' : result.extractionMethod === 'tesseract' ? 'Tesseract fallback' : 'Filename metadata'}</p>
           )}
           <dl className="mt-2 grid grid-cols-2 gap-2 text-text-muted sm:grid-cols-4">
             <div>
               <dt className="text-xs">Supplier</dt>
-              <dd className="text-text-main font-semibold">{result.supplier?.name ?? 'No match'}</dd>
+              <dd className="text-text-main font-semibold">{result.supplier?.name ?? 'No match'}{result.fieldSources?.supplier && <span className="ml-1 text-[10px] font-normal text-text-muted">· {result.fieldSources.supplier} source</span>}</dd>
             </div>
             <div>
               <dt className="text-xs">Invoice #</dt>
-              <dd className="text-text-main font-semibold">{result.invoiceNumber ?? 'Not found'}</dd>
+              <dd className="text-text-main font-semibold">{result.invoiceNumber ?? 'Not found'}{result.fieldSources?.invoiceNumber && <span className="ml-1 text-[10px] font-normal text-text-muted">· {result.fieldSources.invoiceNumber} source</span>}</dd>
             </div>
             <div>
               <dt className="text-xs">Date</dt>
-              <dd className="text-text-main font-semibold">{result.invoiceDate ?? 'Not found'}</dd>
+              <dd className="text-text-main font-semibold">{result.invoiceDate ?? 'Not found'}{result.fieldSources?.invoiceDate && <span className="ml-1 text-[10px] font-normal text-text-muted">· {result.fieldSources.invoiceDate} source</span>}</dd>
             </div>
             <div>
               <dt className="text-xs">Total</dt>
-              <dd className="text-text-main font-semibold tabular-nums">{result.invoiceTotal ? `৳ ${result.invoiceTotal}` : 'Not found'}</dd>
+              <dd className="text-text-main font-semibold tabular-nums">{result.invoiceTotal ? `৳ ${result.invoiceTotal}` : 'Not found'}{result.fieldSources?.invoiceTotal && <span className="ml-1 text-[10px] font-normal text-text-muted">· {result.fieldSources.invoiceTotal} source</span>}</dd>
             </div>
           </dl>
 
@@ -309,12 +329,13 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
             <div className="mt-3 pt-3 border-t border-border-color">
               <p className="text-xs font-medium text-text-muted mb-2">
                 Detected Line Items ({result.items.length})
+                {result.fieldSources?.items && <span className="ml-1 font-normal">· {result.fieldSources.items} source</span>}
               </p>
               <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
                 {result.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between text-xs py-1 px-2 rounded bg-[var(--color-border-light)]"
+                    className="flex items-center justify-between text-xs py-1 px-2 rounded bg-[var(--color-border-light)] shadow-xs"
                   >
                     <span className="font-medium text-text-main truncate max-w-[200px] sm:max-w-xs">
                       {item.name}

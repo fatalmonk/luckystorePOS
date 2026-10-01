@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PendingOcrItem, ReceiptLine } from './types';
-import { candidatesForReceiptScan, clearPendingOcrCandidates, replaceReceiptScanCandidates } from './ocrReviewState';
+import { candidatesForReceiptScan, clearPendingOcrCandidates, receiptPostingBlockReason, replaceReceiptScanCandidates } from './ocrReviewState';
 
 const candidate = (scanId: string, name: string): PendingOcrItem => ({
   scanId,
@@ -72,5 +72,42 @@ describe('receipt OCR candidate ownership', () => {
     expect(nextPending.map(item => item.name)).toEqual(['B1']);
     expect(confirmedLines).toHaveLength(1);
     expect(confirmedLines[0].item.id).toBe('item-1');
+  });
+});
+
+describe('receipt OCR posting review gate', () => {
+  const warnings = ['Line total differs from invoice total'];
+
+  it('blocks posting with warnings until the cashier acknowledges review', () => {
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: false,
+      warnings,
+      reviewAcknowledged: false,
+    })).toBe('Review the scanned receipt warnings and confirm them before posting.');
+  });
+
+  it('allows posting after review is acknowledged', () => {
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: false,
+      warnings,
+      reviewAcknowledged: true,
+    })).toBeNull();
+  });
+
+  it('blocks posting while the duplicate check is pending, but permits saving a draft', () => {
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: true,
+      warnings: [],
+      reviewAcknowledged: true,
+    })).toMatch(/Checking whether/);
+    expect(receiptPostingBlockReason({
+      isDraft: true,
+      duplicateCheckPending: true,
+      warnings,
+      reviewAcknowledged: false,
+    })).toBeNull();
   });
 });

@@ -118,6 +118,9 @@ describe('extract-receipt-vision system prompt contract', () => {
     expect(sourceCode).toContain('"সংখ্যা" specifies the purchased quantity (quantity).');
     expect(sourceCode).toContain('"দর" specifies the unit price/rate (unitPrice).');
     expect(sourceCode).toContain('"টাকা" specifies the line total (total).');
+    expect(sourceCode).toContain('Map "Order Qty" / "Order Quantity" to purchased quantity');
+    expect(sourceCode).toContain('Numbers embedded in the printed product description or pack specification');
+    expect(sourceCode).toContain('Preserve signs in transaction cells. A negative rate or amount');
 
     expect(sourceCode).toContain('Exclude clearly crossed-out, struck-through, voided, or cancelled transaction entries.');
     expect(sourceCode).toContain('Do not invent missing transaction values.');
@@ -125,7 +128,10 @@ describe('extract-receipt-vision system prompt contract', () => {
 
     // JSON Schema property descriptions and qualification checks
     expect(sourceCode).toContain('"isPurchased"');
-    expect(sourceCode).toContain('NEVER use static package/product specs such as pre-printed \'পরিমাণ\' column values as purchased quantity');
+    expect(sourceCode).toContain('NEVER use printed pack specification \'পরিমাণ\' or any numeric package value as quantity');
+    expect(sourceCode).toContain('a matching multiplication is not evidence the amount was read');
+    expect(sourceCode).toContain('return null unless a clearly labeled transaction-specific grand total is visibly present');
+    expect(sourceCode).not.toContain('Catalog extraction reconciliation mismatch');
     expect(sourceCode).toContain('item.isPurchased === false');
 
     // Two-stage detection contract
@@ -195,7 +201,27 @@ describe('validateOcrResult', () => {
 
     const validated = validateOcrResult(result);
     expect(validated.warnings?.length).toBeGreaterThan(0);
-    expect(validated.warnings![0]).toMatch(/Extracted lines total \(100.00\) - discount \+ tax differs from invoice total \(300.00\)/);
+    expect(validated.warnings).toEqual(['Extracted subtotal (100.00) differs from invoice total (300.00).']);
+  });
+
+  it('emits one invoice warning when extracted line totals are compared with the invoice total', () => {
+    const result: ReceiptOcrResult = {
+      invoiceNumber: 'INV004', invoiceTotal: '3462', supplier: null,
+      items: [
+        { name: 'One', quantity: 10, unitPrice: 22, total: 220 },
+        { name: 'Two', quantity: 10, unitPrice: 22, total: 220 },
+        { name: 'Three', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Four', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Five', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Six', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Seven', quantity: 10, unitPrice: 26, total: 260 },
+      ],
+    };
+
+    validateOcrResult(result);
+    expect(result.warnings).toEqual([
+      'Sum of extracted line totals (1900.00) differs from invoice total (3462.00).',
+    ]);
   });
 
   it('allows items where quantities or totals are missing (null) rather than coercing to wrong math', () => {
@@ -415,12 +441,14 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
     expect(createWorkerSpy).not.toHaveBeenCalled();
   });
 
-  it('keeps filename business supplier, reference, and total authoritative over document extraction', async () => {
+  it('uses vision totals when present and flags material filename conflicts', async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ success: true, data: {
-        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 3672, supplierName: 'Smart Corporation',
+        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 9862, supplierName: 'Smart Corporation',
+        reviewRequired: true,
+        reviewReason: 'Catalog extraction reconciliation mismatch: line sum (1900) differs materially from invoice total (9862). Receipt text needs manual security review.',
         items: [{ name: 'Atta', quantity: 24, unitPrice: 51, total: 1224 }],
       } }),
     });
@@ -430,7 +458,23 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
     Object.defineProperty(file, 'arrayBuffer', { value: async () => new TextEncoder().encode('receipt').buffer });
 
     const result = await scanReceiptImage(file, suppliers, undefined, 'token');
-    expect(result).toMatchObject({ invoiceNumber: 'LS749', invoiceTotal: '3672', supplier: suppliers[0] });
+    expect(result).toMatchObject({ invoiceNumber: 'LS749', invoiceTotal: '9862', supplier: suppliers[0] });
+    expect(result.reviewRequired).toBe(true);
+    expect(result.reviewReason).toContain('Filename total (3672) differs from vision-read total (9862); the form uses the vision-read value');
+    expect(result.reviewReason).not.toContain('Catalog extraction reconciliation mismatch');
+    expect(result.reviewReason).toContain('Receipt text needs manual security review.');
+    expect(result.fieldConflicts?.invoiceTotal).toEqual({
+      filenameValue: '3672',
+      visionValue: '9862',
+      selectedSource: 'vision',
+    });
+    expect(result.fieldSources).toEqual({
+      supplier: 'filename',
+      invoiceNumber: 'filename',
+      invoiceDate: 'vision',
+      invoiceTotal: 'vision',
+      items: 'vision',
+    });
     expect(result.items[0].name).toBe('Atta');
   });
 
@@ -439,7 +483,7 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
       ok: true,
       status: 200,
       json: async () => ({ success: true, data: {
-        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 3672, supplierName: 'Smart Corporation',
+        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 3672.12, supplierName: 'Smart Corporation',
         confidence: 'high', items: [],
       } }),
     }));
@@ -449,6 +493,9 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
     const result = await scanReceiptImage(file, suppliers, undefined, 'token');
     expect(result.supplier).toEqual({ id: '', name: 'Pusti' });
     expect(result.invoiceNumber).toBe('LS749');
+    expect(result.invoiceTotal).toBe('3672.12');
+    expect(result.fieldConflicts?.invoiceTotal).toBeUndefined();
+    expect(result.reviewReason).toBeUndefined();
   });
 
   it('falls back to Tesseract for 5xx Server Error', async () => {
@@ -505,6 +552,13 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
       confidence: 'high',
       extractionMethod: 'vision',
       items: [{ name: 'Cooking Oil', quantity: 2, unitPrice: 60, total: 120 }],
+    });
+    expect(result.fieldSources).toEqual({
+      supplier: 'vision',
+      invoiceNumber: 'vision',
+      invoiceDate: 'vision',
+      invoiceTotal: 'vision',
+      items: 'vision',
     });
   });
 });

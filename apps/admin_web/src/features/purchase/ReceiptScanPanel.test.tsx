@@ -64,4 +64,25 @@ describe('ReceiptScanPanel OCR flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
     expect(onApply).toHaveBeenCalledWith(result);
   });
+
+  it('keeps flagged scan values editable while clearly requiring review before posting', async () => {
+    const flaggedResult = {
+      ...result,
+      reviewRequired: true,
+      reviewReason: '',
+    };
+    scanReceiptImageMock.mockResolvedValueOnce(flaggedResult);
+    const onApply = vi.fn();
+    const { container } = render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} />);
+    const file = new File(['synthetic receipt bytes'], 'receipt.jpg', { type: 'image/jpeg' });
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+
+    fireEvent.change(fileInput!, { target: { files: [file] } });
+
+    expect(await screen.findByText('Manual review required')).toBeTruthy();
+    expect(screen.getByText('Verify all extracted values against the receipt before posting. Applying this scan only fills the editable form.')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(flaggedResult);
+  });
 });

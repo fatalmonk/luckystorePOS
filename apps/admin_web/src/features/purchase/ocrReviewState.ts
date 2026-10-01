@@ -21,3 +21,19 @@ export function replaceReceiptScanCandidates(
 export function clearPendingOcrCandidates(_previous: PendingOcrItem[]): PendingOcrItem[] {
   return [];
 }
+
+export function receiptPostingBlockReason(input: {
+  isDraft: boolean;
+  duplicateCheckPending: boolean;
+  warnings: string[];
+  reviewAcknowledged: boolean;
+}): string | null {
+  if (input.isDraft) return null;
+  if (input.duplicateCheckPending) {
+    return 'Checking whether this supplier invoice was already recorded. Try posting again shortly.';
+  }
+  if (input.warnings.length > 0 && !input.reviewAcknowledged) {
+    return 'Review the scanned receipt warnings and confirm them before posting.';
+  }
+  return null;
+}
