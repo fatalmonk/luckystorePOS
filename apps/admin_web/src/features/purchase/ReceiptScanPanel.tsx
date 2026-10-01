@@ -150,6 +150,28 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
     onImageRemoved?.();
   };
 
+  const applyFilenameMetadata = (value: string) => {
+    const meta = parseReceiptFilename(value, suppliers);
+    if (!meta.invoiceNumber && !meta.supplier && !meta.invoiceTotal) return;
+    // Supersede both the panel's in-flight OCR result and the parent's scan generation.
+    scanIdRef.current += 1;
+    onScanStart?.();
+    setIsScanning(false);
+    setStatusText('');
+    setError(null);
+    setResult({
+      ...meta,
+      items: [],
+      extractionMethod: 'filename',
+      fieldSources: {
+        ...(meta.supplier ? { supplier: 'filename' as const } : {}),
+        ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
+        ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+        ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
+      },
+    });
+  };
+
   return (
     <section
       className={`card p-4 transition-colors ${isDragging ? 'border-primary border-dashed bg-primary/5 shadow-md' : ''}`}
@@ -217,45 +239,13 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
           onKeyDown={(e) => {
             if (e.key === 'Enter' && e.currentTarget.value.trim()) {
               e.preventDefault();
-              const meta = parseReceiptFilename(e.currentTarget.value, suppliers);
-              onScanStart?.();
-              setResult({
-                invoiceNumber: meta.invoiceNumber,
-                invoiceDate: meta.invoiceDate,
-                invoiceTotal: meta.invoiceTotal,
-                supplier: meta.supplier,
-                items: [],
-                extractionMethod: 'filename',
-                fieldSources: {
-                  ...(meta.supplier ? { supplier: 'filename' as const } : {}),
-                  ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
-                  ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
-                  ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
-                },
-              });
+              applyFilenameMetadata(e.currentTarget.value);
             }
           }}
           onChange={(e) => {
             const val = e.target.value.trim();
             if (val.length >= 8 && (val.includes('-') || val.includes('_'))) {
-              const meta = parseReceiptFilename(val, suppliers);
-              if (meta.invoiceNumber || meta.supplier || meta.invoiceTotal) {
-                onScanStart?.();
-                setResult({
-                  invoiceNumber: meta.invoiceNumber,
-                  invoiceDate: meta.invoiceDate,
-                  invoiceTotal: meta.invoiceTotal,
-                  supplier: meta.supplier,
-                  items: [],
-                  extractionMethod: 'filename',
-                  fieldSources: {
-                    ...(meta.supplier ? { supplier: 'filename' as const } : {}),
-                    ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
-                    ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
-                    ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
-                  },
-                });
-              }
+              applyFilenameMetadata(val);
             }
           }}
         />

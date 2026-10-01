@@ -16,3 +16,22 @@ Deno.test('catalog rows require agreement between detector and extractor', () =>
     items: [purchased], reviewRequired: false,
   });
 });
+
+Deno.test('missing detector rows and duplicate occurrences require review', () => {
+  const second = { ...purchased, name: 'Rice' };
+  assertEquals(reconcileCatalogRows([purchased], ['Cooking Oil', 'Rice']), {
+    items: [purchased], reviewRequired: true,
+  });
+  assertEquals(reconcileCatalogRows([purchased], ['Cooking Oil', 'Cooking Oil']), {
+    items: [purchased], reviewRequired: true,
+  });
+  assertEquals(reconcileCatalogRows([purchased, second], ['Cooking Oil', 'Rice']), {
+    items: [purchased, second], reviewRequired: false,
+  });
+  assertEquals(reconcileCatalogRows([purchased, { ...purchased }], ['Cooking Oil', 'Cooking Oil']), {
+    items: [purchased, purchased], reviewRequired: false,
+  });
+  assertEquals(reconcileCatalogRows([purchased, { ...purchased }], ['Cooking Oil']), {
+    items: [purchased], reviewRequired: true,
+  });
+});

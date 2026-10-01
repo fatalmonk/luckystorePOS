@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { ReceiptScanPanel } from './ReceiptScanPanel';
 import type { ReceiptOcrResult } from './receiptOcr';
 
@@ -113,5 +113,25 @@ describe('ReceiptScanPanel OCR flow', () => {
     expect(onScanStart).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ invoiceTotal: '200', extractionMethod: 'filename' }));
+  });
+
+  it('does not let an older image scan replace pasted filename metadata', async () => {
+    let finishScan!: (value: ReceiptOcrResult) => void;
+    scanReceiptImageMock.mockReturnValueOnce(new Promise<ReceiptOcrResult>(resolve => { finishScan = resolve; }));
+    const onApply = vi.fn();
+    const onScanStart = vi.fn();
+    const { container } = render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} onScanStart={onScanStart} />);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+    fireEvent.change(fileInput!, { target: { files: [new File(['receipt'], 'receipt.jpg', { type: 'image/jpeg' })] } });
+    expect(scanReceiptImageMock).toHaveBeenCalled();
+
+    fireEvent.change(screen.getByPlaceholderText(/Or paste receipt title/), {
+      target: { value: 'INV42-25-09-2026-Test Supplier-200BDT' },
+    });
+    await act(async () => { finishScan(result); });
+    expect(screen.getByRole('button', { name: 'Upload Receipt' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ invoiceTotal: '200', extractionMethod: 'filename', items: [] }));
   });
 });
