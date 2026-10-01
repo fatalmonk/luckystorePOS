@@ -11,6 +11,7 @@ import { clsx } from 'clsx';
 import { ReceiptScanPanel } from './ReceiptScanPanel';
 import { type ReceiptOcrResult } from './receiptOcr';
 import { uploadProcessedImage, deleteReceiptImage } from '../../lib/images';
+import { candidatesForReceiptScan, clearPendingOcrCandidates, receiptPostingBlockReason, replaceReceiptScanCandidates } from './ocrReviewState';
 
 type Supplier = {
   id: string;
@@ -46,10 +47,19 @@ type ReceiptLine = {
 };
 
 type PendingOcrItem = ReceiptOcrResult['items'][number] & {
+  scanId: string;
   match?: Item;
   candidates?: Item[];
   selectedMatchId?: string;
 };
+
+function normalizeOcrInventoryMatchName(name: string): string {
+  return name
+    .trim()
+    .replace(/(\d+(?:\.\d+)?\s*(?:g|kg|ml|l))\s*[x×]\s*\d+(?:\s*[x×]\s*\d+)?\s*$/i, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 type PurchaseDraftSnapshot = {
   idempotencyKey?: string;
@@ -66,8 +76,12 @@ type PurchaseDraftSnapshot = {
   quickQty: number;
   quickCost: string;
   pendingOcrItems: PendingOcrItem[];
+  receiptScanId?: string | null;
   scannedReceiptUrl?: string | null;
   scannedReceiptKey?: string | null;
+  receiptReviewAcknowledged?: boolean;
+  receiptOcrWarnings?: string[];
+  receiptFieldSources?: Partial<ReceiptOcrResult['fieldSources']>;
 };
 
 type PurchaseFormSnapshot = Omit<PurchaseDraftSnapshot, 'idempotencyKey' | 'retryAttempt'>;
@@ -209,7 +223,11 @@ export const PurchaseEntryPage: React.FC = () => {
     };
   }, [showAddSupplier, showAddItem]);
   const [pendingOcrItems, setPendingOcrItems] = useState<PendingOcrItem[]>([]);
+  const [receiptScanId, setReceiptScanId] = useState<string | null>(null);
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
+  const [receiptReviewAcknowledged, setReceiptReviewAcknowledged] = useState(false);
+  const [duplicateInvoiceCheckPending, setDuplicateInvoiceCheckPending] = useState(false);
+  const [receiptFieldSources, setReceiptFieldSources] = useState<ReceiptOcrResult['fieldSources']>({});
   const [scannedReceiptUrl, setScannedReceiptUrl] = useState<string | null>(null);
   const [scannedReceiptKey, setScannedReceiptKey] = useState<string | null>(null);
   const scannedReceiptKeyRef = useRef<string | null>(null);
@@ -225,6 +243,7 @@ export const PurchaseEntryPage: React.FC = () => {
   const [purchaseIdempotencyKey, setPurchaseIdempotencyKey] = useState(createPurchaseIdempotencyKey);
   const [retryAttempt, setRetryAttempt] = useState<PurchaseRetryAttempt | null>(null);
   const receiptScanGenerationRef = useRef(0);
+  const receiptScanIdRef = useRef<string | null>(null);
   const draftHydratedRef = useRef(false);
   const skipDraftPersistenceRef = useRef(false);
 
@@ -252,8 +271,14 @@ export const PurchaseEntryPage: React.FC = () => {
         if (typeof draft.itemSearch === 'string') setItemSearch(draft.itemSearch);
         if (typeof draft.quickQty === 'number' && Number.isFinite(draft.quickQty)) setQuickQty(draft.quickQty);
         if (typeof draft.quickCost === 'string') setQuickCost(draft.quickCost);
-        if (Array.isArray(draft.pendingOcrItems)) setPendingOcrItems(draft.pendingOcrItems);
+        const restoredScanId = typeof draft.receiptScanId === 'string' ? draft.receiptScanId : null;
+        receiptScanIdRef.current = restoredScanId;
+        setReceiptScanId(restoredScanId);
+        setPendingOcrItems(candidatesForReceiptScan(draft.pendingOcrItems, restoredScanId));
         if (typeof draft.scannedReceiptUrl === 'string') setScannedReceiptUrl(draft.scannedReceiptUrl);
+        if (typeof draft.receiptReviewAcknowledged === 'boolean') setReceiptReviewAcknowledged(draft.receiptReviewAcknowledged);
+        if (Array.isArray(draft.receiptOcrWarnings)) setOcrWarnings(draft.receiptOcrWarnings.filter((warning): warning is string => typeof warning === 'string'));
+        if (draft.receiptFieldSources && typeof draft.receiptFieldSources === 'object') setReceiptFieldSources(draft.receiptFieldSources);
         if (typeof draft.scannedReceiptKey === 'string') {
           scannedReceiptKeyRef.current = draft.scannedReceiptKey;
           setScannedReceiptKey(draft.scannedReceiptKey);
@@ -263,6 +288,8 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       window.localStorage.removeItem(purchaseDraftKey);
     } finally {
+      // Do not let the first persistence effect overwrite the draft before hydrated state renders.
+      skipDraftPersistenceRef.current = true;
       draftHydratedRef.current = true;
     }
   }, [purchaseDraftKey]);
@@ -290,6 +317,10 @@ export const PurchaseEntryPage: React.FC = () => {
       quickQty,
       quickCost,
       pendingOcrItems,
+      receiptScanId,
+      receiptReviewAcknowledged,
+      receiptOcrWarnings: ocrWarnings,
+      receiptFieldSources,
       scannedReceiptUrl,
       scannedReceiptKey,
     };
@@ -307,11 +338,13 @@ export const PurchaseEntryPage: React.FC = () => {
     } catch {
       // Local draft recovery is best-effort and must never block receiving.
     }
-  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, retryAttempt, scannedReceiptKey, scannedReceiptUrl, selectedSupplier, supplierSearch]);
+  }, [amountPaid, invoiceDate, invoiceNumber, invoiceTotal, itemSearch, lines, ocrWarnings, paymentMethod, pendingOcrItems, purchaseDraftKey, purchaseIdempotencyKey, quickCost, quickQty, receiptFieldSources, receiptReviewAcknowledged, receiptScanId, retryAttempt, scannedReceiptKey, scannedReceiptUrl, selectedSupplier, supplierSearch]);
 
   const currentFormSnapshot: PurchaseFormSnapshot = {
     supplierSearch, selectedSupplier, invoiceNumber, invoiceDate, invoiceTotal, lines,
-    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, scannedReceiptUrl, scannedReceiptKey
+    amountPaid, paymentMethod, itemSearch, quickQty, quickCost, pendingOcrItems, receiptScanId, scannedReceiptUrl, scannedReceiptKey,
+    receiptReviewAcknowledged, receiptOcrWarnings: ocrWarnings,
+    receiptFieldSources,
   };
   const currentFormSnapshotRef = useRef(currentFormSnapshot);
   useLayoutEffect(() => {
@@ -561,8 +594,14 @@ export const PurchaseEntryPage: React.FC = () => {
 
   const applyReceiptScan = async (result: ReceiptOcrResult) => {
     const scanGeneration = receiptScanGenerationRef.current;
-    if (result.warnings) setOcrWarnings(result.warnings);
-    else setOcrWarnings([]);
+    const scanId = receiptScanIdRef.current;
+    if (!scanId) return;
+    setReceiptReviewAcknowledged(false);
+    setReceiptFieldSources(result.fieldSources ?? {});
+    const reviewWarning = result.reviewRequired
+      ? result.reviewReason || 'This extraction was flagged for manual review. Verify all values against the receipt.'
+      : null;
+    setOcrWarnings(Array.from(new Set([...(result.warnings ?? []), ...(reviewWarning ? [reviewWarning] : [])])));
     if (result.supplier) {
       if (result.supplier.id) {
         selectSupplier(result.supplier);
@@ -575,22 +614,30 @@ export const PurchaseEntryPage: React.FC = () => {
     if (result.invoiceNumber) {
       setInvoiceNumber(result.invoiceNumber);
       if (tenantId && result.supplier?.id) {
+        setDuplicateInvoiceCheckPending(true);
         const fetchDuplicate = async () => {
-          const { data } = await supabase
-            .from('purchase_receipts')
-            .select('id, supplier_id, invoice_number, created_at')
-            .eq('tenant_id', tenantId)
-            .eq('supplier_id', result.supplier!.id)
-            .eq('invoice_number', result.invoiceNumber!)
-            .limit(1);
-          if (data && data.length > 0 && scanGeneration === receiptScanGenerationRef.current) {
-            setOcrWarnings(prev => [
-              ...prev,
-              `The invoice number "${result.invoiceNumber}" already exists for this supplier (recorded on ${new Date(data[0].created_at).toLocaleDateString()}). Please verify this isn't a duplicate.`
-            ]);
+          try {
+            const { data } = await supabase
+              .from('purchase_receipts')
+              .select('id, supplier_id, invoice_number, created_at')
+              .eq('tenant_id', tenantId)
+              .eq('supplier_id', result.supplier!.id)
+              .eq('invoice_number', result.invoiceNumber!)
+              .limit(1);
+            if (data && data.length > 0 && scanGeneration === receiptScanGenerationRef.current) {
+              setReceiptReviewAcknowledged(false);
+              setOcrWarnings(prev => Array.from(new Set([
+                ...prev,
+                `The invoice number "${result.invoiceNumber}" already exists for this supplier (recorded on ${new Date(data[0].created_at).toLocaleDateString()}). Please verify this isn't a duplicate.`
+              ])));
+            }
+          } finally {
+            if (scanGeneration === receiptScanGenerationRef.current) setDuplicateInvoiceCheckPending(false);
           }
         };
-        void fetchDuplicate();
+        void fetchDuplicate().catch(() => {
+          if (scanGeneration === receiptScanGenerationRef.current) setDuplicateInvoiceCheckPending(false);
+        });
       }
     }
     if (result.invoiceDate) {
@@ -607,7 +654,8 @@ export const PurchaseEntryPage: React.FC = () => {
         if (!rawName) continue;
         let matched: Item | null = null;
 
-        const escapedName = rawName.replace(/[\\%_]/g, '\\$&');
+        const matchName = normalizeOcrInventoryMatchName(rawName);
+        const escapedName = matchName.replace(/[\\%_]/g, '\\$&');
         const { data } = await supabase
           .from('items')
           .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
@@ -622,16 +670,16 @@ export const PurchaseEntryPage: React.FC = () => {
 
         pendingCandidates.push({
           ...scannedItem,
+          scanId,
           match: matched || undefined,
           candidates: data as unknown as Item[] | undefined,
         });
       }
-      if (pendingCandidates.length > 0) {
-        setPendingOcrItems(previous => {
-          const existing = new Set(previous.map(candidate => candidate.name.trim().toLowerCase()));
-          return [...previous, ...pendingCandidates.filter(candidate => !existing.has(candidate.name.trim().toLowerCase()))];
-        });
+      if (scanGeneration === receiptScanGenerationRef.current && receiptScanIdRef.current === scanId) {
+        setPendingOcrItems(previous => replaceReceiptScanCandidates(previous, pendingCandidates, scanId));
       }
+    } else if (scanGeneration === receiptScanGenerationRef.current && receiptScanIdRef.current === scanId) {
+      setPendingOcrItems([]);
     }
   };
 
@@ -655,6 +703,34 @@ export const PurchaseEntryPage: React.FC = () => {
     fetchItems();
     return () => { cancelled = true; };
   }, [debouncedItemSearch]);
+
+  const findExistingOcrItem = async (candidate: PendingOcrItem, candidateIndex: number) => {
+    const matchName = normalizeOcrInventoryMatchName(candidate.name);
+    if (!matchName) return;
+    const escapedName = matchName.replace(/[\\%_]/g, '\\$&');
+    const { data, error } = await supabase
+      .from('items')
+      .select('id, name, sku, barcode, cost, price, mrp, brand, category_id, image_url')
+      .ilike('name', escapedName)
+      .eq('is_active', true)
+      .limit(10);
+    if (error) {
+      console.warn('Could not look up an existing inventory item for an OCR candidate.');
+      return;
+    }
+
+    const matches = (data ?? []) as unknown as Item[];
+    setPendingOcrItems(previous => previous.map((item, index) =>
+      index === candidateIndex && item.scanId === candidate.scanId && item.name === candidate.name
+        ? {
+            ...item,
+            match: matches.length === 1 ? matches[0] : undefined,
+            candidates: matches,
+            selectedMatchId: matches.length === 1 ? matches[0].id : undefined,
+          }
+        : item,
+    ));
+  };
 
   const addItem = (item: Item, quantityOverride?: number, unitCostOverride?: number) => {
     const cost = unitCostOverride ?? (quickCost ? parseFloat(quickCost) : (item.cost ?? item.price ?? 0));
@@ -693,11 +769,36 @@ export const PurchaseEntryPage: React.FC = () => {
     setPurchaseIdempotencyKey(createPurchaseIdempotencyKey());
   };
 
+  const receiptReviewControl = ocrWarnings.length > 0 ? (
+    <label className="flex items-start gap-2 rounded-md border border-border-color bg-card p-3 text-xs text-text-muted">
+      <input
+        type="checkbox"
+        checked={receiptReviewAcknowledged}
+        onChange={event => setReceiptReviewAcknowledged(event.target.checked)}
+        className="mt-0.5"
+      />
+      <span>I reviewed the scanned values and warnings against the receipt image.</span>
+    </label>
+  ) : null;
+  const receiptProvenanceSummary = Object.entries(receiptFieldSources ?? {})
+    .map(([field, source]) => `${field}: ${source}`)
+    .join(', ');
+
   // ── Submit ──────────────────────────────────────────────────────
   const submit = async (asDraft: boolean) => {
     setError('');
     setSuccess('');
     let attempt = retryAttempt;
+    const postingBlockReason = receiptPostingBlockReason({
+      isDraft: asDraft,
+      duplicateCheckPending: duplicateInvoiceCheckPending,
+      warnings: ocrWarnings,
+      reviewAcknowledged: receiptReviewAcknowledged,
+    });
+    if (postingBlockReason) {
+      setError(postingBlockReason);
+      return;
+    }
     if (!attempt) {
       if (!selectedSupplier) { setError('Please select a supplier'); return; }
       if (lines.length === 0) { setError('Add at least one item'); return; }
@@ -729,10 +830,11 @@ export const PurchaseEntryPage: React.FC = () => {
           const parts: string[] = [];
           if (invoiceDate) parts.push(`Invoice Date: ${invoiceDate}`);
           if (scannedReceiptUrl) parts.push(`Receipt Image: ${scannedReceiptUrl}`);
+          if (receiptScanId && receiptProvenanceSummary) parts.push(`OCR provenance (scan ${receiptScanId}): ${receiptProvenanceSummary}`);
           return parts.length > 0 ? parts.join('\n') : null;
         })(),
       };
-      attempt = { idempotencyKey, form: currentFormSnapshot, args };
+      attempt = { idempotencyKey, form: { ...currentFormSnapshot, receiptReviewAcknowledged }, args };
       setRetryAttempt(attempt);
     }
 
@@ -779,6 +881,8 @@ export const PurchaseEntryPage: React.FC = () => {
         setInvoiceTotal('');
         setLines([]);
         setPendingOcrItems([]);
+        setReceiptScanId(null);
+        receiptScanIdRef.current = null;
         setOcrWarnings([]);
         setScannedReceiptUrl(null);
         scannedReceiptKeyRef.current = null;
@@ -844,7 +948,17 @@ export const PurchaseEntryPage: React.FC = () => {
           <ReceiptScanPanel
             suppliers={suppliers}
             onApply={applyReceiptScan}
-            onScanStart={() => { receiptScanGenerationRef.current += 1; }}
+            onScanStart={() => {
+              receiptScanGenerationRef.current += 1;
+              const nextScanId = globalThis.crypto?.randomUUID?.() ?? `scan_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+              receiptScanIdRef.current = nextScanId;
+              setReceiptScanId(nextScanId);
+              setPendingOcrItems([]);
+              setOcrWarnings([]);
+              setReceiptReviewAcknowledged(false);
+              setDuplicateInvoiceCheckPending(false);
+              setReceiptFieldSources({});
+            }}
             onImageUploaded={result => {
               const previousKey = scannedReceiptKeyRef.current;
               scannedReceiptKeyRef.current = result.key;
@@ -860,6 +974,12 @@ export const PurchaseEntryPage: React.FC = () => {
               setScannedReceiptKey(null);
             }}
           />
+          {receiptProvenanceSummary && (
+            <p className="text-xs text-text-muted" role="status">
+              Field sources: {receiptProvenanceSummary}. Source labels show where each value came from; they do not verify its accuracy.
+            </p>
+          )}
+          {receiptReviewControl}
 
           {/* Supplier */}
           <section className="card p-4" aria-labelledby="purchase-supplier-heading">
@@ -1070,9 +1190,14 @@ export const PurchaseEntryPage: React.FC = () => {
                       These OCR candidates were not found in inventory. Complete each item before adding it to this receipt.
                     </p>
                   </div>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                    {pendingOcrItems.length}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                      {pendingOcrItems.length}
+                    </span>
+                    <button type="button" onClick={() => setPendingOcrItems(clearPendingOcrCandidates)} className="text-sm font-medium text-primary hover:underline">
+                    Clear pending OCR items
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-3 space-y-2">
                   {pendingOcrItems.map((candidate, candidateIndex) => {
@@ -1132,14 +1257,24 @@ export const PurchaseEntryPage: React.FC = () => {
                           Add existing item
                         </button>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => { if (hasReviewedValues) openAddItemModal(candidate.name, undefined, candidate.unitPrice, candidate.quantity); }}
-                          disabled={!hasReviewedValues}
-                          className="shrink-0 text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          Complete item
-                        </button>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => void findExistingOcrItem(candidate, candidateIndex)}
+                            disabled={!hasReviewedValues}
+                            className="text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Find existing item
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { if (hasReviewedValues) openAddItemModal(candidate.name, undefined, candidate.unitPrice, candidate.quantity); }}
+                            disabled={!hasReviewedValues}
+                            className="text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Create new item
+                          </button>
+                        </div>
                       )}
                     </div>;
                   })}
@@ -1276,7 +1411,7 @@ export const PurchaseEntryPage: React.FC = () => {
               <button
                 title="Post purchase receipt to ledger"
                 onClick={() => submit(false)}
-                disabled={loading}
+                disabled={loading || duplicateInvoiceCheckPending || (ocrWarnings.length > 0 && !receiptReviewAcknowledged)}
                 className="button-primary flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
               >
                 <Send size={18} />
@@ -1340,7 +1475,7 @@ export const PurchaseEntryPage: React.FC = () => {
           aria-label="Post purchase receipt to ledger"
           title="Post purchase receipt to ledger"
           onClick={() => submit(false)}
-          disabled={loading}
+          disabled={loading || duplicateInvoiceCheckPending || (ocrWarnings.length > 0 && !receiptReviewAcknowledged)}
           className="button-primary flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
           style={{ width: 'auto' }}
         >

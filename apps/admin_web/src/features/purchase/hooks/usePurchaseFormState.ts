@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Item, PaymentMethod, PendingOcrItem, PurchaseFormSnapshot, ReceiptLine, Supplier } from '../types';
+import { candidatesForReceiptScan } from '../ocrReviewState';
 
 export function usePurchaseFormState() {
   // Supplier selection
@@ -25,6 +26,7 @@ export function usePurchaseFormState() {
 
   // OCR state
   const [pendingOcrItems, setPendingOcrItems] = useState<PendingOcrItem[]>([]);
+  const [receiptScanId, setReceiptScanId] = useState<string | null>(null);
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [scannedReceiptUrl, setScannedReceiptUrl] = useState<string | null>(null);
   const [scannedReceiptKey, setScannedReceiptKey] = useState<string | null>(null);
@@ -89,7 +91,10 @@ export function usePurchaseFormState() {
     if (typeof snapshot.itemSearch === 'string') setItemSearch(snapshot.itemSearch);
     if (typeof snapshot.quickQty === 'number') setQuickQty(snapshot.quickQty);
     if (typeof snapshot.quickCost === 'string') setQuickCost(snapshot.quickCost);
-    if (Array.isArray(snapshot.pendingOcrItems)) setPendingOcrItems(snapshot.pendingOcrItems);
+    if (snapshot.receiptScanId !== undefined) setReceiptScanId(snapshot.receiptScanId ?? null);
+    if (Array.isArray(snapshot.pendingOcrItems)) {
+      setPendingOcrItems(candidatesForReceiptScan(snapshot.pendingOcrItems, snapshot.receiptScanId ?? null));
+    }
     if (typeof snapshot.scannedReceiptUrl === 'string') setScannedReceiptUrl(snapshot.scannedReceiptUrl);
     if (typeof snapshot.scannedReceiptKey === 'string') setScannedReceiptKey(snapshot.scannedReceiptKey);
   };
@@ -107,6 +112,7 @@ export function usePurchaseFormState() {
     quickQty,
     quickCost,
     pendingOcrItems,
+    receiptScanId,
     scannedReceiptUrl,
     scannedReceiptKey,
   });
@@ -124,6 +130,7 @@ export function usePurchaseFormState() {
     setQuickQty(1);
     setQuickCost('');
     setPendingOcrItems([]);
+    setReceiptScanId(null);
     setOcrWarnings([]);
     setScannedReceiptUrl(null);
     setScannedReceiptKey(null);
@@ -158,6 +165,8 @@ export function usePurchaseFormState() {
     setShowItemDropdown,
     pendingOcrItems,
     setPendingOcrItems,
+    receiptScanId,
+    setReceiptScanId,
     ocrWarnings,
     setOcrWarnings,
     scannedReceiptUrl,

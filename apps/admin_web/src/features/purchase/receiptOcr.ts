@@ -17,6 +17,13 @@ export type ReceiptOcrItem = {
 };
 
 export type OcrExtractionMethod = 'vision' | 'tesseract' | 'filename';
+export type ReceiptFieldSource = 'vision' | 'tesseract' | 'filename';
+export type ReceiptOcrField = 'supplier' | 'invoiceNumber' | 'invoiceDate' | 'invoiceTotal' | 'items';
+export type ReceiptFieldConflict = {
+  filenameValue: string;
+  visionValue: string;
+  selectedSource: 'filename' | 'vision';
+};
 
 export type ReceiptOcrResult = {
   invoiceNumber: string | null;
@@ -31,6 +38,10 @@ export type ReceiptOcrResult = {
   confidence?: 'high' | 'medium' | 'low';
   warnings?: string[];
   extractionMethod?: OcrExtractionMethod;
+  reviewRequired?: boolean;
+  reviewReason?: string;
+  fieldSources?: Partial<Record<ReceiptOcrField, ReceiptFieldSource>>;
+  fieldConflicts?: Partial<Record<ReceiptOcrField, ReceiptFieldConflict>>;
 };
 
 export type CandidateSpan<T = string> = {
@@ -273,18 +284,23 @@ export function validateOcrResult(result: ReceiptOcrResult): ReceiptOcrResult {
   if (result.invoiceTotal != null) {
     const rawInvTotal = parseFloat(String(result.invoiceTotal).replace(/[^0-9.-]+/g, ''));
     if (!isNaN(rawInvTotal)) {
-      const subtotal = result.subtotal != null ? parseFloat(String(result.subtotal)) : calculatedLinesTotal;
+      const subtotal = extractedSubtotal != null && Number.isFinite(extractedSubtotal)
+        ? extractedSubtotal
+        : result.subtotal == null && allLineTotalsPresent
+          ? calculatedLinesTotal
+          : null;
       const discount = result.discount != null ? parseFloat(String(result.discount)) : 0;
       const vat = result.vat != null ? parseFloat(String(result.vat)) : 0;
 
-      const expectedInvoiceTotal = subtotal - discount + vat;
+      const expectedInvoiceTotal = subtotal == null ? null : subtotal - discount + vat;
 
-      if (result.items.length > 0 && Math.abs(expectedInvoiceTotal - rawInvTotal) > 5.0) {
-        result.warnings.push(`Extracted lines total (${subtotal.toFixed(2)}) - discount + tax differs from invoice total (${rawInvTotal.toFixed(2)}).`);
-      }
-      if (result.subtotal == null && discount === 0 && vat === 0
-          && allLineTotalsPresent && Math.abs(calculatedLinesTotal - rawInvTotal) > 0.05) {
-        result.warnings.push(`Sum of extracted line totals (${calculatedLinesTotal.toFixed(2)}) differs from invoice total (${rawInvTotal.toFixed(2)}).`);
+      if (expectedInvoiceTotal != null && Number.isFinite(expectedInvoiceTotal)
+          && result.items.length > 0 && Math.abs(expectedInvoiceTotal - rawInvTotal) > 5.0) {
+        const subtotalLabel = extractedSubtotal != null && Number.isFinite(extractedSubtotal)
+          ? `Extracted subtotal (${subtotal.toFixed(2)})`
+          : `Sum of extracted line totals (${calculatedLinesTotal.toFixed(2)})`;
+        const adjustmentLabel = discount !== 0 || vat !== 0 ? ' - discount + tax' : '';
+        result.warnings.push(`${subtotalLabel}${adjustmentLabel} differs from invoice total (${rawInvTotal.toFixed(2)}).`);
       }
     }
   }
@@ -318,7 +334,7 @@ export function parseReceiptFilename(
   // Pattern: [Invoice] [Date] [Supplier] [Amount]
   // Accepts hyphens (-), underscores (_), slashes (/), or spaces as separators
   const match = cleanName.match(
-    /^([a-zA-Z0-9]{2,10})[\s_-]+([0-9]{1,4}[/_.-][0-9]{1,2}[/_.-][0-9]{1,4})[\s_-]+([a-zA-Z\u0980-\u09FF\s]+?)[\s_-]+([0-9]+(?:\.[0-9]{1,2})?)(?:BDT|tk|taka)?$/i
+    /^([a-zA-Z0-9]{2,10})[\s_-]+([0-9]{1,4}[\s/_.-][0-9]{1,2}[\s/_.-][0-9]{1,4})[\s_-]+([a-zA-Z\u0980-\u09FF\s]+?)[\s_-]+([0-9]+(?:\.[0-9]{1,2})?)(?:BDT|tk|taka)?$/i
   );
 
   if (match) {
@@ -354,7 +370,7 @@ export function parseReceiptFilename(
   }
 
   // Extract date
-  const dateMatch = cleanName.match(/([0-9]{1,4}[/_.-][0-9]{1,2}[/_.-][0-9]{1,4})/);
+  const dateMatch = cleanName.match(/([0-9]{1,4}[\s/_.-][0-9]{1,2}[\s/_.-][0-9]{1,4})/);
   if (dateMatch) {
     invoiceDate = normalizeFilenameDate(dateMatch[1]);
   }
@@ -395,7 +411,7 @@ function resolveSupplierName(name: string, suppliers: ReceiptOcrSupplier[]): Rec
 }
 
 function normalizeFilenameDate(value: string): string {
-  const parts = value.split(/[/.\-_]/).map(Number);
+  const parts = value.split(/[\s/.\-_]+/).map(Number);
   if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return value;
   let year: number, month: number, day: number;
   if (parts[0] >= 1000) [year, month, day] = parts;
@@ -672,14 +688,14 @@ export async function scanReceiptImage(
       });
 
       if (!res.ok) {
-        const errorBody = await res.json().catch(() => null) as { error?: string; code?: string } | null;
+        const errorBody = await res.json().catch(() => null) as { error?: string; code?: string; noFallback?: boolean } | null;
         const providerUnavailable = errorBody?.code === 'PROVIDER_CREDITS_EXHAUSTED'
           || errorBody?.code === 'PROVIDER_NOT_CONFIGURED'
           || errorBody?.code === 'PROVIDER_CONFIGURATION_INVALID'
           || errorBody?.code === 'PROVIDER_AUTH_FAILED'
           || errorBody?.code === 'PROVIDER_INVALID_RESPONSE'
           || errorBody?.code === 'PROVIDER_REQUEST_REJECTED';
-        if (providerUnavailable || res.status === 501) {
+        if (providerUnavailable || res.status === 501 || errorBody?.noFallback || errorBody?.code === 'SECURITY_GUARD_BLOCKED') {
           throw new Error(`NO_FALLBACK: ${errorBody?.error || 'Vision extraction is unavailable. Contact an administrator.'}`);
         }
         if (res.status === 401 || res.status === 403) throw new Error('NO_FALLBACK: Unauthorized access to AI extraction');
@@ -698,12 +714,33 @@ export async function scanReceiptImage(
         const matchSupplier = fileMeta?.supplier
           ?? resolveSupplierName(aiResult.supplierName || '', suppliers)
           ?? { id: '', name: aiResult.supplierName || '' };
+        const visionInvoiceTotal = aiResult.invoiceTotal != null ? String(aiResult.invoiceTotal) : null;
+        const filenameInvoiceTotal = fileMeta?.invoiceTotal ?? null;
+        const filenameTotalNumber = filenameInvoiceTotal == null ? null : Number(filenameInvoiceTotal);
+        const visionTotalNumber = visionInvoiceTotal == null ? null : Number(visionInvoiceTotal);
+        const roundedFilenameTotalMatchesVision = filenameTotalNumber != null && visionTotalNumber != null
+          && Number.isInteger(filenameTotalNumber)
+          && Math.round(visionTotalNumber) === filenameTotalNumber;
+        const invoiceTotalConflict = filenameTotalNumber != null && visionTotalNumber != null
+          && Number.isFinite(filenameTotalNumber) && Number.isFinite(visionTotalNumber)
+          && Math.abs(filenameTotalNumber - visionTotalNumber) > 0.5
+          && !roundedFilenameTotalMatchesVision;
+        const totalConflictReason = invoiceTotalConflict
+          ? `Filename total (${filenameInvoiceTotal}) differs from vision-read total (${visionInvoiceTotal}); the form uses the vision-read value. Verify both against the receipt.`
+          : null;
+        const legacyServerArithmeticReason = /^Catalog extraction reconciliation mismatch: line sum \([^)]+\) differs materially from invoice total \([^)]+\)\.\s*/;
+        const serverReviewReason = typeof aiResult.reviewReason === 'string'
+          ? aiResult.reviewReason.replace(legacyServerArithmeticReason, '').trim()
+          : '';
+        const serverArithmeticOnlyReview = typeof aiResult.reviewReason === 'string'
+          && legacyServerArithmeticReason.test(aiResult.reviewReason)
+          && serverReviewReason.length === 0;
 
         if (onProgress) onProgress(100, 'Vision AI extraction complete');
 
         return validateOcrResult({
           invoiceNumber: fileMeta?.invoiceNumber ?? aiResult.invoiceNumber ?? null,
-          invoiceTotal: fileMeta?.invoiceTotal ?? (aiResult.invoiceTotal != null ? String(aiResult.invoiceTotal) : null),
+          invoiceTotal: visionInvoiceTotal ?? fileMeta?.invoiceTotal ?? null,
           invoiceDate: aiResult.invoiceDate ?? fileMeta?.invoiceDate ?? null,
           subtotal: aiResult.subtotal,
           discount: aiResult.discount,
@@ -711,6 +748,26 @@ export async function scanReceiptImage(
           supplier: matchSupplier.name ? matchSupplier : null,
           confidence: aiResult.confidence,
           extractionMethod: 'vision',
+          fieldSources: {
+            ...(fileMeta?.supplier ? { supplier: 'filename' as const } : aiResult.supplierName ? { supplier: 'vision' as const } : {}),
+            ...(fileMeta?.invoiceNumber ? { invoiceNumber: 'filename' as const } : aiResult.invoiceNumber ? { invoiceNumber: 'vision' as const } : {}),
+            ...(aiResult.invoiceDate ? { invoiceDate: 'vision' as const } : fileMeta?.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+            ...(aiResult.invoiceTotal != null ? { invoiceTotal: 'vision' as const } : fileMeta?.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
+            ...(Array.isArray(aiResult.items) && aiResult.items.length ? { items: 'vision' as const } : {}),
+          },
+          reviewRequired: Boolean((aiResult.reviewRequired && !serverArithmeticOnlyReview) || totalConflictReason),
+          reviewReason: [serverReviewReason, totalConflictReason]
+            .filter((reason): reason is string => typeof reason === 'string' && reason.length > 0)
+            .join(' ') || undefined,
+          ...(invoiceTotalConflict && filenameInvoiceTotal != null && visionInvoiceTotal != null ? {
+            fieldConflicts: {
+              invoiceTotal: {
+                filenameValue: filenameInvoiceTotal,
+                visionValue: visionInvoiceTotal,
+                selectedSource: 'vision' as const,
+              },
+            },
+          } : {}),
           items: (aiResult.items || []).map((it: any) => ({
             name: it.name,
             quantity: typeof it.quantity === 'number' ? it.quantity : undefined,
@@ -760,6 +817,13 @@ export async function scanReceiptImage(
       items: findItems(data.text),
       rawText: data.text,
       extractionMethod: 'tesseract',
+      fieldSources: {
+        ...(fileMeta?.supplier ? { supplier: 'filename' as const } : findSupplier(data.text, suppliers) ? { supplier: 'tesseract' as const } : {}),
+        ...(fileMeta?.invoiceNumber ? { invoiceNumber: 'filename' as const } : findInvoiceNumber(data.text) ? { invoiceNumber: 'tesseract' as const } : {}),
+        ...(fileMeta?.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+        ...(fileMeta?.invoiceTotal ? { invoiceTotal: 'filename' as const } : findTotal(data.text) ? { invoiceTotal: 'tesseract' as const } : {}),
+        ...(findItems(data.text).length ? { items: 'tesseract' as const } : {}),
+      },
     });
   } finally {
     await worker.terminate();

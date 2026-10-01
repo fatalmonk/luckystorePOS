@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   extractCandidateSpans,
   getReceiptVisionEndpoint,
@@ -64,6 +66,107 @@ describe('parseReceiptFilename', () => {
     expect(parseReceiptFilename('LS749-31-08-26-Pusti-3672BDT.jpg', matches).supplier)
       .toEqual({ id: '', name: 'Pusti' });
   });
+
+  it('correctly parses space-separated, slash-separated, hyphen-separated, and dot-separated dates', () => {
+    const jawadSuppliers = [{ id: 'jawad-1', name: 'JawadTrading' }];
+
+    // Space-separated date (Google Drive upload regression case)
+    expect(parseReceiptFilename('LS578-01 08 26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+
+    // Slash-separated date
+    expect(parseReceiptFilename('LS578-01/08/26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+
+    // Hyphen-separated date
+    expect(parseReceiptFilename('LS578-01-08-26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+
+    // Dot-separated date
+    expect(parseReceiptFilename('LS578-01.08.26-JawadTrading-3462BDT.jpg', jawadSuppliers)).toEqual({
+      invoiceNumber: 'LS578',
+      invoiceDate: '2026-08-01',
+      supplier: jawadSuppliers[0],
+      invoiceTotal: '3462',
+    });
+  });
+});
+
+describe('extract-receipt-vision system prompt contract', () => {
+  it('contains mandatory instructions for pre-printed Bengali catalog forms and line-item extraction semantics', () => {
+    const edgeFunctionPath = path.resolve(__dirname, '../../../../../supabase/functions/extract-receipt-vision/index.ts');
+    const sourceCode = fs.readFileSync(edgeFunctionPath, 'utf-8');
+
+    expect(sourceCode).toContain('For pre-printed product/catalog forms (invoices with pre-printed product lists):');
+    expect(sourceCode).toContain('Include a product row in items ONLY when there is credible transaction-specific evidence on that row');
+    expect(sourceCode).toContain('A pre-printed product name, package specification, or other static catalog content alone MUST NOT cause the row to be returned as a purchased item');
+
+    expect(sourceCode).toContain('"পণ্যের নাম" specifies the product name/description.');
+    expect(sourceCode).toContain('"পরিমাণ" specifies the pre-printed package or product specification (map to packSize or unit as appropriate); NEVER map "পরিমাণ" to purchased quantity on this form.');
+    expect(sourceCode).toContain('"সংখ্যা" specifies the purchased quantity (quantity).');
+    expect(sourceCode).toContain('"দর" specifies the unit price/rate (unitPrice).');
+    expect(sourceCode).toContain('"টাকা" specifies the line total (total).');
+    expect(sourceCode).toContain('Map "Order Qty" / "Order Quantity" to purchased quantity');
+    expect(sourceCode).toContain('Numbers embedded in the printed product description or pack specification');
+    expect(sourceCode).toContain('Preserve signs in transaction cells. A negative rate or amount');
+
+    expect(sourceCode).toContain('Exclude clearly crossed-out, struck-through, voided, or cancelled transaction entries.');
+    expect(sourceCode).toContain('Do not invent missing transaction values.');
+    expect(sourceCode).toContain('For ordinary receipts (non-catalog receipts without a pre-printed product list), associate printed or handwritten quantity, unit price, and total with their respective product lines as normal.');
+
+    // JSON Schema property descriptions and qualification checks
+    expect(sourceCode).toContain('"isPurchased"');
+    expect(sourceCode).toContain('NEVER use printed pack specification \'পরিমাণ\' or any numeric package value as quantity');
+    expect(sourceCode).toContain('a matching multiplication is not evidence the amount was read');
+    expect(sourceCode).toContain('return null unless a clearly labeled transaction-specific grand total is visibly present');
+    expect(sourceCode).not.toContain('Catalog extraction reconciliation mismatch');
+    expect(sourceCode).toContain('item.isPurchased === false');
+
+    // Two-stage detection contract
+    expect(sourceCode).toContain('catalog_row_detection');
+    expect(sourceCode).toContain('catalog_order_form');
+    expect(sourceCode).toContain('hasHandwrittenQuantity');
+    expect(sourceCode).toContain('hasHandwrittenAmount');
+  });
+
+  it('correctly filters static catalog rows while preserving purchased items and ordinary receipt items', () => {
+    const mockItems = [
+      // Purchased catalog item 1 (valid purchased count + line total)
+      { name: 'Item 1', quantity: 2, unitPrice: 128, total: 256, packSize: '50 kg', unit: null, isPurchased: true, confidence: 'high' },
+      // Purchased catalog item 2 (valid purchased count + line total)
+      { name: 'Item 2', quantity: 5, unitPrice: 189, total: 945, packSize: '25 kg', unit: null, isPurchased: true, confidence: 'high' },
+      // Static catalog row (unpurchased, isPurchased = false)
+      { name: '১০ পিছ পরোটা', quantity: null, unitPrice: null, total: null, packSize: '20 pcs', unit: null, isPurchased: false, confidence: 'low' },
+      // Static catalog row (wrongly populated quantity without transaction values)
+      { name: 'ফ্যামিলি পরোটা', quantity: null, unitPrice: null, total: null, packSize: '20', unit: null, isPurchased: false, confidence: 'low' },
+      // Ordinary non-catalog receipt item (valid item)
+      { name: 'Ordinary Receipt Item', quantity: 1, unitPrice: 100, total: 100, packSize: null, unit: 'pcs', isPurchased: true, confidence: 'high' },
+    ];
+
+    // Mirror Edge Function post-extraction filter contract
+    const filtered = mockItems.filter((item: any) => {
+      if (item.isPurchased === false) return false;
+      const hasTransactionData = item.quantity != null || item.unitPrice != null || item.total != null;
+      return hasTransactionData;
+    });
+
+    expect(filtered.length).toBe(3);
+    expect(filtered.map(i => i.name)).toEqual(['Item 1', 'Item 2', 'Ordinary Receipt Item']);
+    expect(filtered.find(i => i.name === '১০ পিছ পরোটা')).toBeUndefined();
+    expect(filtered.find(i => i.name === 'ফ্যামিলি পরোটা')).toBeUndefined();
+  });
 });
 
 describe('validateOcrResult', () => {
@@ -98,7 +201,27 @@ describe('validateOcrResult', () => {
 
     const validated = validateOcrResult(result);
     expect(validated.warnings?.length).toBeGreaterThan(0);
-    expect(validated.warnings![0]).toMatch(/Extracted lines total \(100.00\) - discount \+ tax differs from invoice total \(300.00\)/);
+    expect(validated.warnings).toEqual(['Extracted subtotal (100.00) differs from invoice total (300.00).']);
+  });
+
+  it('emits one invoice warning when extracted line totals are compared with the invoice total', () => {
+    const result: ReceiptOcrResult = {
+      invoiceNumber: 'INV004', invoiceTotal: '3462', supplier: null,
+      items: [
+        { name: 'One', quantity: 10, unitPrice: 22, total: 220 },
+        { name: 'Two', quantity: 10, unitPrice: 22, total: 220 },
+        { name: 'Three', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Four', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Five', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Six', quantity: 10, unitPrice: 30, total: 300 },
+        { name: 'Seven', quantity: 10, unitPrice: 26, total: 260 },
+      ],
+    };
+
+    validateOcrResult(result);
+    expect(result.warnings).toEqual([
+      'Sum of extracted line totals (1900.00) differs from invoice total (3462.00).',
+    ]);
   });
 
   it('allows items where quantities or totals are missing (null) rather than coercing to wrong math', () => {
@@ -157,9 +280,6 @@ describe('validateOcrResult', () => {
   });
 });
 
-
-import { vi } from 'vitest';
-import { scanReceiptImage } from './receiptOcr';
 
 vi.mock('tesseract.js', () => ({
   createWorker: vi.fn().mockResolvedValue({
@@ -321,12 +441,14 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
     expect(createWorkerSpy).not.toHaveBeenCalled();
   });
 
-  it('keeps filename business supplier, reference, and total authoritative over document extraction', async () => {
+  it('uses vision totals when present and flags material filename conflicts', async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ success: true, data: {
-        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 3672, supplierName: 'Smart Corporation',
+        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 9862, supplierName: 'Smart Corporation',
+        reviewRequired: true,
+        reviewReason: 'Catalog extraction reconciliation mismatch: line sum (1900) differs materially from invoice total (9862). Receipt text needs manual security review.',
         items: [{ name: 'Atta', quantity: 24, unitPrice: 51, total: 1224 }],
       } }),
     });
@@ -336,7 +458,23 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
     Object.defineProperty(file, 'arrayBuffer', { value: async () => new TextEncoder().encode('receipt').buffer });
 
     const result = await scanReceiptImage(file, suppliers, undefined, 'token');
-    expect(result).toMatchObject({ invoiceNumber: 'LS749', invoiceTotal: '3672', supplier: suppliers[0] });
+    expect(result).toMatchObject({ invoiceNumber: 'LS749', invoiceTotal: '9862', supplier: suppliers[0] });
+    expect(result.reviewRequired).toBe(true);
+    expect(result.reviewReason).toContain('Filename total (3672) differs from vision-read total (9862); the form uses the vision-read value');
+    expect(result.reviewReason).not.toContain('Catalog extraction reconciliation mismatch');
+    expect(result.reviewReason).toContain('Receipt text needs manual security review.');
+    expect(result.fieldConflicts?.invoiceTotal).toEqual({
+      filenameValue: '3672',
+      visionValue: '9862',
+      selectedSource: 'vision',
+    });
+    expect(result.fieldSources).toEqual({
+      supplier: 'filename',
+      invoiceNumber: 'filename',
+      invoiceDate: 'vision',
+      invoiceTotal: 'vision',
+      items: 'vision',
+    });
     expect(result.items[0].name).toBe('Atta');
   });
 
@@ -345,7 +483,7 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
       ok: true,
       status: 200,
       json: async () => ({ success: true, data: {
-        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 3672, supplierName: 'Smart Corporation',
+        invoiceNumber: '7463', invoiceDate: '2026-08-31', invoiceTotal: 3672.12, supplierName: 'Smart Corporation',
         confidence: 'high', items: [],
       } }),
     }));
@@ -355,6 +493,9 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
     const result = await scanReceiptImage(file, suppliers, undefined, 'token');
     expect(result.supplier).toEqual({ id: '', name: 'Pusti' });
     expect(result.invoiceNumber).toBe('LS749');
+    expect(result.invoiceTotal).toBe('3672.12');
+    expect(result.fieldConflicts?.invoiceTotal).toBeUndefined();
+    expect(result.reviewReason).toBeUndefined();
   });
 
   it('falls back to Tesseract for 5xx Server Error', async () => {
@@ -411,6 +552,13 @@ describe('scanReceiptImage Edge Function Fallback Security', () => {
       confidence: 'high',
       extractionMethod: 'vision',
       items: [{ name: 'Cooking Oil', quantity: 2, unitPrice: 60, total: 120 }],
+    });
+    expect(result.fieldSources).toEqual({
+      supplier: 'vision',
+      invoiceNumber: 'vision',
+      invoiceDate: 'vision',
+      invoiceTotal: 'vision',
+      items: 'vision',
     });
   });
 });

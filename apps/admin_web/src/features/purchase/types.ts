@@ -34,6 +34,7 @@ export type ReceiptLine = {
 };
 
 export type PendingOcrItem = ReceiptOcrResult['items'][number] & {
+  scanId: string;
   match?: Item;
   candidates?: Item[];
   selectedMatchId?: string;
@@ -76,6 +77,7 @@ export type PurchaseFormSnapshot = {
   quickQty: number;
   quickCost: string;
   pendingOcrItems: PendingOcrItem[];
+  receiptScanId?: string | null;
   scannedReceiptUrl?: string | null;
   scannedReceiptKey?: string | null;
 };
