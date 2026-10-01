@@ -9,11 +9,11 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
 }));
 
-vi.mock('../components/updated/Header', () => ({
+vi.mock('../../components/updated/Header', () => ({
   Header: () => <div data-testid="header" />,
 }));
 
-vi.mock('../components/BottomNav', () => ({
+vi.mock('../../components/BottomNav', () => ({
   BottomNav: () => <div data-testid="bottom-nav" />,
 }));
 
