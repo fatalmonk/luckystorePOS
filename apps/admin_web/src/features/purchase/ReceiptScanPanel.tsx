@@ -89,16 +89,9 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
         }
       }, accessToken);
 
-      // Merge: Keep filename invoice/supplier/total if present, overlay extracted items
+      // The OCR result already resolves filename/vision conflicts and records field sources.
       if (scanId === scanIdRef.current) {
-        setResult({
-          ...ocrResult,
-          invoiceNumber: fileMeta?.invoiceNumber || ocrResult.invoiceNumber,
-          invoiceDate: fileMeta?.invoiceDate || ocrResult.invoiceDate,
-          invoiceTotal: fileMeta?.invoiceTotal || ocrResult.invoiceTotal,
-          supplier: fileMeta?.supplier || ocrResult.supplier,
-          items: ocrResult.items || [],
-        });
+        setResult(ocrResult);
         if (uploadError) setError(`OCR succeeded, but image upload failed: ${uploadError}`);
       }
     } catch (error) {
@@ -225,12 +218,20 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
             if (e.key === 'Enter' && e.currentTarget.value.trim()) {
               e.preventDefault();
               const meta = parseReceiptFilename(e.currentTarget.value, suppliers);
+              onScanStart?.();
               setResult({
                 invoiceNumber: meta.invoiceNumber,
                 invoiceDate: meta.invoiceDate,
                 invoiceTotal: meta.invoiceTotal,
                 supplier: meta.supplier,
-                items: result?.items || [],
+                items: [],
+                extractionMethod: 'filename',
+                fieldSources: {
+                  ...(meta.supplier ? { supplier: 'filename' as const } : {}),
+                  ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
+                  ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+                  ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
+                },
               });
             }
           }}
@@ -239,13 +240,21 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
             if (val.length >= 8 && (val.includes('-') || val.includes('_'))) {
               const meta = parseReceiptFilename(val, suppliers);
               if (meta.invoiceNumber || meta.supplier || meta.invoiceTotal) {
-                setResult(prev => ({
-                  invoiceNumber: meta.invoiceNumber || prev?.invoiceNumber || null,
-                  invoiceDate: meta.invoiceDate || prev?.invoiceDate || null,
-                  invoiceTotal: meta.invoiceTotal || prev?.invoiceTotal || null,
-                  supplier: meta.supplier || prev?.supplier || null,
-                  items: prev?.items || [],
-                }));
+                onScanStart?.();
+                setResult({
+                  invoiceNumber: meta.invoiceNumber,
+                  invoiceDate: meta.invoiceDate,
+                  invoiceTotal: meta.invoiceTotal,
+                  supplier: meta.supplier,
+                  items: [],
+                  extractionMethod: 'filename',
+                  fieldSources: {
+                    ...(meta.supplier ? { supplier: 'filename' as const } : {}),
+                    ...(meta.invoiceNumber ? { invoiceNumber: 'filename' as const } : {}),
+                    ...(meta.invoiceDate ? { invoiceDate: 'filename' as const } : {}),
+                    ...(meta.invoiceTotal ? { invoiceTotal: 'filename' as const } : {}),
+                  },
+                });
               }
             }
           }}

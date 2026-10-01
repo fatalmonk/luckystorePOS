@@ -85,4 +85,33 @@ describe('ReceiptScanPanel OCR flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
     expect(onApply).toHaveBeenCalledWith(flaggedResult);
   });
+
+  it('applies the vision-selected total when the filename disagrees', async () => {
+    const selectedResult: ReceiptOcrResult = {
+      ...result,
+      invoiceTotal: '120',
+      fieldSources: { invoiceTotal: 'vision' },
+      fieldConflicts: { invoiceTotal: { filenameValue: '200', visionValue: '120', selectedSource: 'vision' } },
+    };
+    scanReceiptImageMock.mockResolvedValueOnce(selectedResult);
+    const onApply = vi.fn();
+    const { container } = render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} />);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+    fireEvent.change(fileInput!, { target: { files: [new File(['receipt'], 'INV42-25-09-2026-Test Supplier-200BDT.jpg', { type: 'image/jpeg' })] } });
+
+    expect(await screen.findByText(/৳ 120/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(selectedResult);
+  });
+
+  it('starts a scan identity for pasted filename metadata', () => {
+    const onApply = vi.fn();
+    const onScanStart = vi.fn();
+    render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} onScanStart={onScanStart} />);
+    const title = screen.getByPlaceholderText(/Or paste receipt title/);
+    fireEvent.change(title, { target: { value: 'INV42-25-09-2026-Test Supplier-200BDT' } });
+    expect(onScanStart).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ invoiceTotal: '200', extractionMethod: 'filename' }));
+  });
 });
