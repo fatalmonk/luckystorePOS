@@ -43,10 +43,10 @@ begin
     -- A caller that supplies a new image_version (the trusted publish gate)
     -- has already performed the version transition. Ordinary product edits
     -- get an automatic image-only version bump here.
-    if new.image_version = old.image_version then
-      new.image_version := old.image_version + 1;
-    end if;
+    new.image_version := old.image_version + 1;
     new.image_checksum := null;
+  else
+    new.image_version := old.image_version;
   end if;
 
   if new.image_url is null then

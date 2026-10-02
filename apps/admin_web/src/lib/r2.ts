@@ -19,9 +19,9 @@ async function issueUploadToken(key: string, itemId?: string | null): Promise<st
   return data.token as string;
 }
 
-async function issueDeleteToken(key: string): Promise<string> {
+async function issueDeleteToken(key: string, itemId: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke('issue-image-upload-ticket', {
-    body: { key, operation: 'delete' },
+    body: { key, itemId, operation: 'delete' },
   });
   if (error || !data?.token) throw new Error('Unable to authorize image deletion');
   return data.token as string;
@@ -58,11 +58,11 @@ export async function uploadToR2(file: File, key: string, itemId?: string | null
 /**
  * Delete image from R2 via Worker.
  */
-export async function deleteFromR2(key: string): Promise<void> {
+export async function deleteFromR2(key: string, itemId: string): Promise<void> {
   if (!R2_PUBLIC_URL) {
     throw new Error('VITE_R2_PUBLIC_URL not configured');
   }
-  const deleteToken = await issueDeleteToken(key);
+  const deleteToken = await issueDeleteToken(key, itemId);
 
   const response = await fetch(`${R2_PUBLIC_URL}/${key}`, {
     method: 'DELETE',
@@ -88,4 +88,22 @@ export function extractR2Key(url: string): string | null {
  */
 export function isR2Configured(): boolean {
   return !!R2_PUBLIC_URL;
+}
+
+export async function getProductImageSnapshot(itemId: string): Promise<{ imageKey: string | null; imageVersion: number }> {
+  const { data, error } = await supabase.from('items').select('image_key, image_version').eq('id', itemId).single();
+  if (error || !data) throw new Error('Unable to read current product image version');
+  return { imageKey: data.image_key, imageVersion: data.image_version };
+}
+
+export async function publishProductImage(input: {
+  itemId: string;
+  storeId: string;
+  sourceImageKey: string | null;
+  sourceImageVersion: number;
+  newImageUrl: string | null;
+}): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('publish-product-image', { body: input });
+  if (error) throw new Error(error.message || 'Unable to publish product image');
+  if (data?.code === 'IMAGE_VERSION_CONFLICT') throw new Error('Product image changed while upload was in progress. Refresh and try again.');
 }

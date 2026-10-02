@@ -1,48 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { deleteFromR2, extractR2Key } from '../lib/r2';
+import { getProductImageSnapshot, publishProductImage } from '../lib/r2';
 import { useNotify } from '@/components';
 import { uploadProcessedImage } from '../lib/images';
 import { useAuth } from '../lib/AuthContext';
 
 /**
- * Delete an image from R2 or Supabase Storage based on its URL.
- * Silently ignores 404s — the image may already be gone.
- */
-async function deleteProductImage(imageUrl: string | null): Promise<void> {
-  if (!imageUrl) return;
-
-  // Check if it's an R2 URL
-  const r2Key = extractR2Key(imageUrl);
-  if (r2Key) {
-    try {
-      await deleteFromR2(r2Key);
-    } catch (err) {
-      // Non-fatal — log but don't throw
-      console.warn('R2 delete failed (non-fatal):', err);
-    }
-    return;
-  }
-
-  // Otherwise try Supabase Storage — extract path from URL
-  // Supabase URLs look like: https://xxx.supabase.co/storage/v1/object/public/product-images/path
-  if (imageUrl.includes('supabase.co/storage')) {
-    const match = imageUrl.match(/\/storage\/v1\/object\/public\/([^/]+\/.+)$/);
-    if (match) {
-      const [bucket, ...pathParts] = match[1].split('/');
-      const path = pathParts.join('/');
-      try {
-        await supabase.storage.from(bucket).remove([path]);
-      } catch (err) {
-        console.warn('Supabase Storage delete failed (non-fatal):', err);
-      }
-    }
-  }
-}
-
-/**
  * Hook for uploading product images.
- * Automatically deletes the previous image from R2 when replaced.
+ * Publishes image changes through the server-side image-version CAS gate.
  */
 export function useImageUpload() {
   const queryClient = useQueryClient();
@@ -56,16 +21,14 @@ export function useImageUpload() {
       storeId,
       sku,
       barcode,
-      oldImageUrl,
     }: {
       file: File;
       itemId: string;
       storeId: string;
       sku?: string | null;
       barcode?: string | null;
-      oldImageUrl?: string | null;
     }) => {
-      // Upload processed webp to R2
+      const source = await getProductImageSnapshot(itemId);
       const publicUrl = await uploadProcessedImage({
         file,
         sku,
@@ -74,32 +37,7 @@ export function useImageUpload() {
         tenantId,
       });
 
-      // Update the product with the new image URL
-      const { error } = await supabase
-        .from('items')
-        .update({ image_url: publicUrl, updated_at: new Date().toISOString() })
-        .eq('id', itemId);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      // Determine previous image URL
-      let previousUrl = oldImageUrl;
-      if (previousUrl === undefined) {
-        const { data: currentItem } = await supabase
-          .from('items')
-          .select('image_url')
-          .eq('id', itemId)
-          .single();
-        previousUrl = currentItem?.image_url;
-      }
-
-      // Delete the old image from storage if path has changed (prevents self-deletion)
-      const getCleanPath = (url: string) => url.split('?')[0];
-      if (previousUrl && getCleanPath(previousUrl) !== getCleanPath(publicUrl)) {
-        await deleteProductImage(previousUrl);
-      }
+      await publishProductImage({ itemId, storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: publicUrl });
 
       return publicUrl;
     },
@@ -124,26 +62,8 @@ export function useRemoveImage() {
   return useMutation({
     mutationFn: async (vars: { itemId: string; storeId: string }) => {
       // Fetch current image_url before nulling
-      const { data: currentItem } = await supabase
-        .from('items')
-        .select('image_url')
-        .eq('id', vars.itemId)
-        .single();
-
-      // Update product to remove image URL
-      const { error } = await supabase
-        .from('items')
-        .update({ image_url: null, updated_at: new Date().toISOString() })
-        .eq('id', vars.itemId);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      // Delete the old image from storage (non-fatal if it fails)
-      if (currentItem?.image_url) {
-        await deleteProductImage(currentItem.image_url);
-      }
+      const source = await getProductImageSnapshot(vars.itemId);
+      await publishProductImage({ itemId: vars.itemId, storeId: vars.storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: null });
     },
     onSuccess: (_data, variables) => {
       notify('Image removed', 'info');

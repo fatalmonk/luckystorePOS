@@ -55,11 +55,16 @@ serve(async (req) => {
     const contentType = typeof body.contentType === 'string' ? body.contentType : 'image/webp'
     const maxBytes = typeof body.maxBytes === 'number' ? body.maxBytes : 10 * 1024 * 1024
     const operation = body.operation === 'delete' ? 'delete' : 'upload'
-    if (!/^[-\w./]{1,512}$/.test(key) || !/^image\/(jpeg|png|webp|gif|svg\+xml)$/.test(contentType) || maxBytes <= 0 || maxBytes > 10 * 1024 * 1024) {
+    if (!/^[-\w./]{1,512}$/.test(key) || !/^image\/(jpeg|png|webp|gif)$/.test(contentType) || maxBytes <= 0 || maxBytes > 10 * 1024 * 1024) {
       return json({ error: 'Invalid upload capability request' }, 400)
     }
 
-    if (itemId) {
+    if (operation === 'delete') {
+      if (!itemId) return json({ error: 'Item is required for image deletion' }, 400)
+      const { data: item, error } = await admin.from('items').select('id, tenant_id, image_key').eq('id', itemId).eq('tenant_id', user.tenant_id).maybeSingle()
+      if (error) throw error
+      if (!item || item.image_key !== key) return json({ error: 'Image deletion scope mismatch' }, 403)
+    } else if (itemId) {
       const { data: item, error } = await admin.from('items').select('id, tenant_id').eq('id', itemId).eq('tenant_id', user.tenant_id).maybeSingle()
       if (error) throw error
       if (!item || !key.startsWith(`products/${user.tenant_id}/`)) return json({ error: 'Product upload scope mismatch' }, 403)

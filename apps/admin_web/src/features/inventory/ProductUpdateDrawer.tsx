@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
-import { deleteFromR2, extractR2Key } from '../../lib/r2';
+import { getProductImageSnapshot, publishProductImage } from '../../lib/r2';
 import { uploadProcessedImage } from '../../lib/images';
 import { clsx } from 'clsx';
 import { useNotify } from '@/components';
@@ -215,6 +215,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
   const imageMutation = useMutation({
     mutationFn: async (file: File) => {
       if (!product) throw new Error('No product selected');
+      const source = await getProductImageSnapshot(product.id);
       // Process and upload new WebP image
       const publicUrl = await uploadProcessedImage({
         file,
@@ -224,22 +225,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         tenantId,
       });
 
-      // Persist the new image_url in the items table
-      await api.inventory.updateProduct(storeId, product.id, { image_url: publicUrl });
-
-      // Delete the old image if the key/path has changed
-      const getCleanPath = (url: string) => url.split('?')[0];
-      const oldUrl = product.image_url;
-      if (oldUrl && getCleanPath(oldUrl) !== getCleanPath(publicUrl)) {
-        const r2Key = extractR2Key(oldUrl);
-        if (r2Key) {
-          try {
-            await deleteFromR2(r2Key);
-          } catch (err) {
-            console.warn('Failed to delete old image from R2:', err);
-          }
-        }
-      }
+      await publishProductImage({ itemId: product.id, storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: publicUrl });
 
       return { image_url: publicUrl };
     },

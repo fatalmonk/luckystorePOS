@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { deleteFromR2, uploadToR2, isR2Configured } from './r2';
+import { uploadToR2, isR2Configured } from './r2';
 
 /**
  * Generates an optimized image URL for Cloudflare Worker / CDN.
@@ -272,11 +272,8 @@ async function uploadReceiptToSupabase(file: File, key: string): Promise<string>
 export async function deleteReceiptImage(key: string): Promise<void> {
   // R2 configuration belongs to the Vite-aware R2 client; do not read process.env in browser code.
   if (isR2Configured()) {
-    try {
-      await deleteFromR2(key);
-    } catch (err) {
-      console.warn('R2 delete failed, falling back to Supabase:', err);
-    }
+    // R2 receipt objects are immutable and require a server-side record-bound
+    // cleanup capability. Keep them until the retention cleanup job runs.
   }
 
   // Always try to delete from Supabase private bucket

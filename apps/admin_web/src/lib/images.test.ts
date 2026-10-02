@@ -32,20 +32,16 @@ describe('deleteReceiptImage', () => {
     mocks.remove.mockResolvedValue({ error: null });
   });
 
-  it('deletes an R2 receipt through the Vite-aware R2 client', async () => {
+  it('defers R2 receipt deletion to server-side retention cleanup', async () => {
     await deleteReceiptImage('tenant/receipt.webp');
 
-    expect(mocks.deleteFromR2).toHaveBeenCalledWith('tenant/receipt.webp');
+    expect(mocks.deleteFromR2).not.toHaveBeenCalled();
     expect(mocks.remove).toHaveBeenCalledWith(['tenant/receipt.webp']);
   });
 
-  it('still attempts Supabase cleanup when R2 deletion fails', async () => {
-    mocks.deleteFromR2.mockRejectedValueOnce(new Error('R2 unavailable'));
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
+  it('still attempts Supabase cleanup while R2 retention is enabled', async () => {
     await deleteReceiptImage('tenant/stale.webp');
 
     expect(mocks.remove).toHaveBeenCalledWith(['tenant/stale.webp']);
-    warn.mockRestore();
   });
 });

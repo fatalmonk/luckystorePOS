@@ -168,7 +168,6 @@ export default {
           'image/gif',
           'image/x-icon',
           'image/vnd.microsoft.icon',
-          'image/svg+xml',
         ];
         if (!allowedTypes.includes(file.type)) {
           return new Response(JSON.stringify({ error: 'Invalid file type' }), {
