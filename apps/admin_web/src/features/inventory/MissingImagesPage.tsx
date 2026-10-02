@@ -13,7 +13,7 @@ import { ErrorState } from '@/components';
 import { SkeletonBlock } from '@/components';
 
 export function MissingImagesPage() {
-  const { storeId } = useAuth();
+  const { storeId, tenantId } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [uploadingProductId, setUploadingProductId] = useState<string | null>(null);
@@ -56,6 +56,7 @@ export function MissingImagesPage() {
         sku: prod?.sku,
         barcode: prod?.barcode,
         itemId: productId,
+        tenantId,
       });
       
       // Update product with new image URL

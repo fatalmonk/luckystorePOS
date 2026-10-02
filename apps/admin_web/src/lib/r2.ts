@@ -7,17 +7,30 @@
  *
  * Env vars (admin_web):
  *   VITE_R2_PUBLIC_URL        — public Worker URL for reading/uploading images
- *   VITE_IMAGE_DELETE_SECRET  — secret token for authorised DELETE requests
- *                               (admin-only; acceptable to expose in admin bundle)
  */
+import { supabase } from './supabase';
 
 const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL || '';
-const DELETE_SECRET = import.meta.env.VITE_IMAGE_DELETE_SECRET || '';
+async function issueUploadToken(key: string, itemId?: string | null): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('issue-image-upload-ticket', {
+    body: { key, itemId: itemId ?? undefined, contentType: 'image/webp' },
+  });
+  if (error || !data?.token) throw new Error('Unable to authorize image upload');
+  return data.token as string;
+}
+
+async function issueDeleteToken(key: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('issue-image-upload-ticket', {
+    body: { key, operation: 'delete' },
+  });
+  if (error || !data?.token) throw new Error('Unable to authorize image deletion');
+  return data.token as string;
+}
 
 /**
  * Upload image to R2 via Worker. Returns the public URL.
  */
-export async function uploadToR2(file: File, key: string): Promise<string> {
+export async function uploadToR2(file: File, key: string, itemId?: string | null): Promise<string> {
   if (!R2_PUBLIC_URL) {
     throw new Error('VITE_R2_PUBLIC_URL not configured');
   }
@@ -25,10 +38,12 @@ export async function uploadToR2(file: File, key: string): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('key', key);
+  const uploadToken = await issueUploadToken(key, itemId);
 
   const response = await fetch(`${R2_PUBLIC_URL}/upload`, {
     method: 'POST',
     body: formData,
+    headers: { 'X-Upload-Token': uploadToken },
   });
 
   if (!response.ok) {
@@ -47,13 +62,11 @@ export async function deleteFromR2(key: string): Promise<void> {
   if (!R2_PUBLIC_URL) {
     throw new Error('VITE_R2_PUBLIC_URL not configured');
   }
-  if (!DELETE_SECRET) {
-    throw new Error('VITE_IMAGE_DELETE_SECRET not configured');
-  }
+  const deleteToken = await issueDeleteToken(key);
 
   const response = await fetch(`${R2_PUBLIC_URL}/${key}`, {
     method: 'DELETE',
-    headers: { 'X-Store-Id': DELETE_SECRET },
+    headers: { 'X-Delete-Token': deleteToken },
   });
 
   if (!response.ok && response.status !== 404) {

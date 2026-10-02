@@ -541,6 +541,7 @@ export const PurchaseEntryPage: React.FC = () => {
           sku: created.sku,
           barcode: created.barcode,
           itemId: created.id,
+          tenantId,
         });
         created = await api.products.findOrCreate(tenantId, {
           id: created.id,

@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { deleteFromR2, extractR2Key } from '../lib/r2';
 import { useNotify } from '@/components';
 import { uploadProcessedImage } from '../lib/images';
+import { useAuth } from '../lib/AuthContext';
 
 /**
  * Delete an image from R2 or Supabase Storage based on its URL.
@@ -46,6 +47,7 @@ async function deleteProductImage(imageUrl: string | null): Promise<void> {
 export function useImageUpload() {
   const queryClient = useQueryClient();
   const { notify } = useNotify();
+  const { tenantId } = useAuth();
 
   return useMutation({
     mutationFn: async ({
@@ -69,6 +71,7 @@ export function useImageUpload() {
         sku,
         barcode,
         itemId,
+        tenantId,
       });
 
       // Update the product with the new image URL

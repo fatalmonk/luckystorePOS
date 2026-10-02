@@ -1464,6 +1464,9 @@ export type Database = {
           description: string | null
           group_tag: string | null
           id: string
+          image_checksum: string | null
+          image_key: string | null
+          image_version: number
           image_url: string | null
           is_active: boolean | null
           mrp: number | null
@@ -1483,6 +1486,9 @@ export type Database = {
           description?: string | null
           group_tag?: string | null
           id?: string
+          image_checksum?: string | null
+          image_key?: string | null
+          image_version?: number
           image_url?: string | null
           is_active?: boolean | null
           mrp?: number | null
@@ -1502,6 +1508,9 @@ export type Database = {
           description?: string | null
           group_tag?: string | null
           id?: string
+          image_checksum?: string | null
+          image_key?: string | null
+          image_version?: number
           image_url?: string | null
           is_active?: boolean | null
           mrp?: number | null

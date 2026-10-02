@@ -221,6 +221,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         sku: product.sku,
         barcode: product.barcode,
         itemId: product.id,
+        tenantId,
       });
 
       // Persist the new image_url in the items table

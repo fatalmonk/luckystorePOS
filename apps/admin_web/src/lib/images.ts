@@ -104,7 +104,7 @@ export async function convertToWebP(
 
 /**
  * Converts an image file to WebP client-side, renames it based on SKU (or fallback),
- * and uploads it to Cloudflare R2 (falling back to Supabase Storage if R2 is not configured).
+ * and uploads it to Cloudflare R2 when configured (with Supabase fallback only when R2 is not configured).
  * Returns the final public URL with a cache-busting timestamp.
  */
 export async function uploadProcessedImage({
@@ -112,11 +112,13 @@ export async function uploadProcessedImage({
   sku,
   barcode,
   itemId,
+  tenantId,
 }: {
   file: File;
   sku?: string | null;
   barcode?: string | null;
   itemId?: string | null;
+  tenantId?: string | null;
 }): Promise<string> {
   // 1. Convert file to WebP blob
   let webpBlob: Blob;
@@ -130,7 +132,7 @@ export async function uploadProcessedImage({
   // 2. Generate filename based on SKU, fallback to barcode, itemId, or random UUID
   const identifier = (sku || barcode || itemId || crypto.randomUUID()).trim();
   const sanitizedIdentifier = identifier.toUpperCase().replace(/[^A-Z0-9-]/g, '_');
-  const fileName = `products/${sanitizedIdentifier}.webp`;
+  const fileName = `products/${tenantId || 'unscoped'}/${sanitizedIdentifier}.webp`;
 
   // 3. Create a File object from the blob
   const webpFile = new File([webpBlob], `${sanitizedIdentifier}.webp`, {
@@ -141,10 +143,10 @@ export async function uploadProcessedImage({
   let publicUrl: string;
   if (isR2Configured()) {
     try {
-      publicUrl = await uploadToR2(webpFile, fileName);
+      publicUrl = await uploadToR2(webpFile, fileName, itemId);
     } catch (err) {
-      console.warn('R2 upload failed, falling back to Supabase:', err);
-      publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
+      console.error('R2 upload failed:', err);
+      throw err;
     }
   } else {
     publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
@@ -191,8 +193,8 @@ export async function uploadCategoryImage({
     try {
       publicUrl = await uploadToR2(webpFile, fileName);
     } catch (err) {
-      console.warn('R2 upload failed, falling back to Supabase:', err);
-      publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
+      console.error('R2 upload failed:', err);
+      throw err;
     }
   } else {
     publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
@@ -227,8 +229,8 @@ export async function uploadReceiptImage({
     try {
       url = await uploadToR2(webpFile, key);
     } catch (err) {
-      console.warn('R2 upload failed for receipt, falling back to Supabase:', err);
-      url = await uploadReceiptToSupabase(webpFile, key);
+      console.error('R2 upload failed for receipt:', err);
+      throw err;
     }
   } else {
     url = await uploadReceiptToSupabase(webpFile, key);
