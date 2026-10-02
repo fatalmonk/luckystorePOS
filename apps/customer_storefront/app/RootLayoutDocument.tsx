@@ -272,7 +272,7 @@ export default function RootLayoutDocument({
             var loadGtag = function(){
               if (getAnalyticsChoice() !== 'granted') return;
               if (document.querySelector('script[data-lucky-gtag]')) return;
-              if (window.zaraz) {
+              if (window.zaraz || window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) {
                 // Cloudflare Zaraz is active at edge; skip direct gtag.js download
                 return;
               }
@@ -388,10 +388,29 @@ export default function RootLayoutDocument({
                   } catch (error) {}
                 }
               };
+              var loadGoogleTagManager = function () {
+                if (window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) return;
+                window.luckyGtmLoading = true;
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+                var script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-PH4QHV3N';
+                script.setAttribute('data-cfasync', 'false');
+                script.onload = function () {
+                  window.luckyGtmLoaded = true;
+                  window.luckyGtmLoading = false;
+                };
+                script.onerror = function () {
+                  window.luckyGtmLoading = false;
+                };
+                document.head.appendChild(script);
+              };
 
               accept.addEventListener('click', function () {
                 saveChoice('granted');
                 updateConsent('granted');
+                loadGoogleTagManager();
                 if (window.luckyLoadGoogleAnalytics) window.luckyLoadGoogleAnalytics();
                 hideBanner();
               });
@@ -405,6 +424,7 @@ export default function RootLayoutDocument({
               var savedChoice = readChoice();
               if (savedChoice) hideBanner();
               else showBanner();
+              if (savedChoice === 'granted') loadGoogleTagManager();
               if (savedChoice === 'denied') clearGoogleAnalyticsCookies();
             })();
           `}
