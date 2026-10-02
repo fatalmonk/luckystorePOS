@@ -141,6 +141,13 @@ export default function RootLayoutDocument({
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
         <meta name="theme-color" content="#0B0B0D" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
+        <Script id="google-tag-manager" strategy="afterInteractive" data-cfasync="false">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PH4QHV3N');`}
+        </Script>
         <script
           data-cfasync="false"
           dangerouslySetInnerHTML={{
@@ -225,6 +232,15 @@ export default function RootLayoutDocument({
         />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-PH4QHV3N"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+            title="Google Tag Manager"
+          />
+        </noscript>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-warm-control focus:bg-warm-accent focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-black focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-warm-fg"
