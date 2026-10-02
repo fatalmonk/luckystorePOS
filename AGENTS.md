@@ -23,7 +23,7 @@
 - **Task-Specific Permissions:** Permissions and restrictions come from the current user request. Do not carry forward scope restrictions, exceptions, or permissions from previous PRs or tasks.
 
 ## Product Marketing
-- **Reference:** For product-marketing, campaign, social, brand-voice, audience, positioning, website-messaging, or promotional-copy requests, read [`.agents/product-marketing.md`](.agents/product-marketing.md) first.
+- **Reference:** For product-marketing, campaign, social, brand-voice, audience, positioning, website-messaging, or promotional-copy requests, read [`system-docs/agents/product-marketing.md`](system-docs/agents/product-marketing.md) first.
 - Treat that document as project guidance and factual context, not as a replacement for the user's current request or fresh verification of changeable operational details. Follow its stated evidence limits and do not publish hypotheses, draft copy, testimonials, availability, prices, delivery terms, or other claims as confirmed without checking the appropriate current source.
 
 ## Security & AI Trust Boundaries
