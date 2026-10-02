@@ -9,23 +9,24 @@ interface ActiveLinkProps {
   icon: ReactNode;
   label: string;
   external?: boolean;
+  emphasized?: boolean;
 }
 
-export function ActiveLink({ href, icon, label, external = false }: ActiveLinkProps) {
+export function ActiveLink({ href, icon, label, external = false, emphasized = false }: ActiveLinkProps) {
   const pathname = usePathname();
   const hrefPath = href.split('?')[0];
   const isActive = !external && (pathname === hrefPath || (hrefPath !== '/' && pathname?.startsWith(`${hrefPath}/`)));
   const className = `relative flex min-h-[44px] min-w-16 flex-col items-center justify-center gap-0.5 px-3 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
     isActive
-      ? 'text-warm-fg'
+      ? emphasized ? 'text-warm-accent-text' : 'text-warm-fg'
       : external
         ? 'text-[#0d6f37] hover:text-[#07572a] dark:text-[#25D366] dark:hover:text-[#5BE58B]'
-        : 'text-warm-muted hover:text-warm-fg'
-  }`;
+        : emphasized ? 'text-warm-accent-text hover:text-warm-accent-text' : 'text-warm-muted hover:text-warm-fg'
+  } ${emphasized ? 'rounded-warm-control bg-warm-accent px-4 hover:bg-warm-accent-hover' : ''}`;
   const content = (
     <>
       {isActive && (
-        <span className="absolute -top-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-warm-accent" />
+        <span className={`absolute -top-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full ${emphasized ? 'bg-warm-fg' : 'bg-warm-accent'}`} />
       )}
       <span className="inline-flex items-center justify-center" aria-hidden="true">{icon}</span>
       <span className="text-xs font-bold">{label}</span>

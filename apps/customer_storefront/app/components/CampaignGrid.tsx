@@ -2,11 +2,13 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { MarketPanel } from './ui/MarketSurface';
 import { HeroDiscoveryRail } from './ui/HeroFloatingCard';
 import type { Product } from '../lib/types';
 import type { Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
+import { withLocale } from '../lib/i18n/config';
 
 interface CampaignGridProps {
   products: Product[];
@@ -61,6 +63,27 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
             />
           </div>
         </div>
+
+        <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <Link
+            href={withLocale('/category', locale)}
+            data-cro="hero-primary-cta"
+            className="inline-flex min-h-12 items-center justify-center rounded-warm-control bg-warm-accent px-5 text-sm font-black text-warm-accent-text shadow-warm-card transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          >
+            {dict.campaign.primaryCta}
+          </Link>
+          <Link
+            href={withLocale('/delivery', locale)}
+            data-cro="hero-delivery-eligibility"
+            className="inline-flex min-h-11 items-center text-sm font-extrabold text-warm-fg underline underline-offset-4 transition-colors hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          >
+            {dict.campaign.deliveryCta}
+          </Link>
+        </div>
+
+        <p className="w-full text-sm font-bold leading-6 text-warm-muted sm:text-base">
+          {dict.campaign.reassurance}
+        </p>
 
         <div className="w-full min-w-0">
           <HeroDiscoveryRail

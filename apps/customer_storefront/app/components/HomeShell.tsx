@@ -118,6 +118,8 @@ export function HomeShell({
               </dl>
             </section>
 
+            <HomeConfidence locale={locale} />
+
             <CategoryQuickGrid categories={categories} locale={locale} />
 
             <nav aria-label={dict.popularBazaar.label} className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold text-warm-muted scrollbar-hide">
@@ -172,8 +174,6 @@ export function HomeShell({
               ctaLabel={dict.reels.seeAll}
               locale={locale}
             />
-
-            <HomeConfidence locale={locale} />
 
             <div className="py-2 sm:py-4">
               <DealOfTheWeek products={inStock} locale={locale} />

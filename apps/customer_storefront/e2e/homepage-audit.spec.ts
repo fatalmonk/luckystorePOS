@@ -40,12 +40,12 @@ test.describe('Storefront homepage shell audit', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('heading', { name: 'Daily essentials from a store Chittagong knows.' }),
+      page.getByRole('heading', { name: 'Chawkbazar groceries delivered to your doorstep.' }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Daily Bazaar & Pantry Staples', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Shop by routine' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Serving Chittagong since 1947.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Serving Chattogram since 1947.' })).toBeVisible();
 
     const header = page.getByRole('banner');
     const viewportWidth = test.info().project.use.viewport?.width ?? 1280;
