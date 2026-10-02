@@ -21,7 +21,7 @@ export function ActiveLink({ href, icon, label, external = false, emphasized = f
       ? emphasized ? 'text-warm-accent-text' : 'text-warm-fg'
       : external
         ? 'text-[#0d6f37] hover:text-[#07572a] dark:text-[#25D366] dark:hover:text-[#5BE58B]'
-        : emphasized ? 'text-warm-fg hover:text-warm-accent-text' : 'text-warm-muted hover:text-warm-fg'
+        : emphasized ? 'text-warm-accent-text hover:text-warm-accent-text' : 'text-warm-muted hover:text-warm-fg'
   } ${emphasized ? 'rounded-warm-control bg-warm-accent px-4 hover:bg-warm-accent-hover' : ''}`;
   const content = (
     <>

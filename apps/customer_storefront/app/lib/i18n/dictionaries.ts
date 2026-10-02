@@ -5,7 +5,7 @@ export const dictionaries = {
   en: {
     language: 'বাংলা',
     header: {
-      promoText: 'Free doorstep delivery within 1 km of Chawkbazar on orders over ৳500',
+      promoText: `Free doorstep delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar on orders over ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}`,
       searchPlaceholder: 'Search for milk, rice, oil...',
       allCategories: 'All',
       recentSearches: 'Recent searches',
@@ -19,10 +19,10 @@ export const dictionaries = {
       spine: 'Everyday',
       headline: 'Chawkbazar groceries delivered to your doorstep.',
       subtitleShort: 'Shop everyday essentials from your local Chawkbazar store.',
-      subtitleLong: 'Shop rice, oil, tea, snacks, and household essentials from Lucky Store. We deliver within 1 km of Chawkbazar, so you can check your order before you pay.',
+      subtitleLong: `Shop rice, oil, tea, snacks, and household essentials from Lucky Store. We deliver within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, so you can check your order before you pay.`,
       primaryCta: 'Start your order',
       deliveryCta: 'Check delivery area',
-      reassurance: 'Within 1 km of Chawkbazar · Free delivery on ৳500+ · Pay after inspection',
+      reassurance: `Within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar · Free delivery on ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ · Pay after inspection`,
       basketAlt: 'A basket of everyday Lucky Store groceries',
       discoveryTitle: 'Quick picks from today',
       organicTitle: 'Search organic staples',
@@ -207,7 +207,7 @@ export const dictionaries = {
   bn: {
     language: 'English',
     header: {
-      promoText: 'চকবাজার থেকে ১ কিমির মধ্যে ৳৫০০+ অর্ডারে ফ্রি হোম ডেলিভারি',
+      promoText: `চকবাজার থেকে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমির মধ্যে ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString('bn-BD')}+ অর্ডারে ফ্রি হোম ডেলিভারি`,
       searchPlaceholder: 'চাল, ডাল, তেল বা দুধ খুঁজুন...',
       allCategories: 'সব ক্যাটাগরি',
       recentSearches: 'সাম্প্রতিক অনুসন্ধান',
@@ -221,10 +221,10 @@ export const dictionaries = {
       spine: 'প্রতিদিন',
       headline: 'চকবাজারের বাজার, এখন আপনার দরজায়।',
       subtitleShort: 'চকবাজারের স্থানীয় দোকান থেকে নিত্যপ্রয়োজনীয় বাজার করুন।',
-      subtitleLong: 'চাল, তেল, চা, নাস্তা ও ঘরের প্রয়োজনীয় পণ্য অর্ডার করুন। চকবাজার থেকে ১ কিলোমিটারের মধ্যে ডেলিভারি—পণ্য দেখে তারপর পেমেন্ট করুন।',
+      subtitleLong: `চাল, তেল, চা, নাস্তা ও ঘরের প্রয়োজনীয় পণ্য অর্ডার করুন। চকবাজার থেকে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিলোমিটারের মধ্যে ডেলিভারি—পণ্য দেখে তারপর পেমেন্ট করুন।`,
       primaryCta: 'অর্ডার শুরু করুন',
       deliveryCta: 'ডেলিভারি এলাকা দেখুন',
-      reassurance: 'চকবাজার থেকে ১ কিমির মধ্যে · ৳৫০০+ অর্ডারে ফ্রি · পণ্য দেখে পেমেন্ট',
+      reassurance: `চকবাজার থেকে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমির মধ্যে · ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString('bn-BD')}+ অর্ডারে ফ্রি · পণ্য দেখে পেমেন্ট`,
       basketAlt: 'লাকি স্টোরের নিত্যপ্রয়োজনীয় গ্রোসারির ঝুড়ি',
       discoveryTitle: 'আজকের সেরা পছন্দ',
       organicTitle: 'অর্গানিক নিত্যপণ্য',
