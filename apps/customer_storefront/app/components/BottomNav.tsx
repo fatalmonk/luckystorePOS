@@ -21,6 +21,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           href={withLocale('/category', currentLocale)}
           icon={<BrowseIcon size={22} />}
           label={dict.bottomNav.browse}
+          emphasized
         />
         <ActiveLink
           href="https://wa.me/8801731944544?text=Hello%20Lucky%20Store%2C%20I%20need%20help%20with%20my%20order."
