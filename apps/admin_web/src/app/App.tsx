@@ -11,6 +11,8 @@ import { InstallPrompt } from '@/components';
 import { AuthProvider } from '../lib/AuthContext';
 import { ResetPasswordPage } from './ResetPasswordPage';
 
+const LazyCanvaConnectionPage = React.lazy(() => import('../features/canva/CanvaConnectionPage').then(m => ({ default: m.CanvaConnectionPage })));
+
 const LazyDashboardPage = React.lazy(() => import('../features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
@@ -74,6 +76,7 @@ export function App() {
               <Routes>
                 <Route path="/oauth/consent" element={<OAuthConsentPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/canva-connect/callback" element={<AuthGuard><LazyRoute><LazyCanvaConnectionPage /></LazyRoute></AuthGuard>} />
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<LazyRoute><LazyDashboardPage /></LazyRoute>} />
@@ -93,6 +96,7 @@ export function App() {
                   
                   <Route path="finance" element={<LazyRoute><LazyFinanceDashboardPage /></LazyRoute>} />
                   <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
+                  <Route path="canva-connect" element={<LazyRoute><LazyCanvaConnectionPage /></LazyRoute>} />
                   <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
                   <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
                   <Route path="import/parties" element={<LazyRoute><LazyImportPartiesPage /></LazyRoute>} />
