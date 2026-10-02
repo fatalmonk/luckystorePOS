@@ -36,11 +36,20 @@ async function tokenFor({ key, operation = 'upload', expiresAt = Math.floor(Date
 }
 
 function makeEnv(writes = []) {
+  const consumed = new Set();
   return {
     ALLOWED_ORIGINS: 'http://localhost:3000',
     PUBLIC_BASE_URL: 'https://images.example',
     UPLOAD_SIGNING_SECRET: secret,
     INTERNAL_UPLOAD_SECRET: 'internal-secret',
+    TICKET_NONCES: {
+      idFromName: (name) => name,
+      get: (id) => ({ fetch: async () => {
+        if (consumed.has(id)) return new Response(null, { status: 409 });
+        consumed.add(id);
+        return new Response(null, { status: 204 });
+      } }),
+    },
     IMAGES: {
       put: async (key) => writes.push(key),
       get: async () => null,
@@ -86,6 +95,17 @@ test('rejects expired and wrong-operation capabilities', async () => {
 
   assert.equal(expiredResponse.status, 401);
   assert.equal(wrongOperationResponse.status, 401);
+});
+
+test('consumes a capability nonce and rejects replay', async () => {
+  const key = 'products/tenant-a/item.webp';
+  const token = await tokenFor({ key });
+  const env = makeEnv();
+  const first = await worker.fetch(requestWith({ key, token }), env);
+  const replay = await worker.fetch(requestWith({ key, token }), env);
+
+  assert.equal(first.status, 200);
+  assert.equal(replay.status, 401);
 });
 
 test('keeps internal upload separate from browser capabilities', async () => {

@@ -20,6 +20,23 @@ export interface Env {
   UPLOAD_SIGNING_SECRET: string;
   /** Separate server-to-server secret for trusted backend uploads. */
   INTERNAL_UPLOAD_SECRET: string;
+  TICKET_NONCES: DurableObjectNamespace;
+}
+
+export class UploadTicketNonce {
+  private readonly state: DurableObjectState;
+
+  constructor(state: DurableObjectState) {
+    this.state = state;
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.method !== 'POST' || await this.state.storage.get('consumed')) {
+      return new Response(null, { status: 409 });
+    }
+    await this.state.storage.put('consumed', true);
+    return new Response(null, { status: 204 });
+  }
 }
 
 // --- Rate limiter (in-memory, per-isolate) -----------------------------------
@@ -78,8 +95,12 @@ async function verifyUploadToken(token: string, env: Env): Promise<{ op?: string
     if (!encoded || !signature || !env.UPLOAD_SIGNING_SECRET) return null;
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.UPLOAD_SIGNING_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
     if (!await crypto.subtle.verify('HMAC', key, decodeBase64Url(signature), new TextEncoder().encode(encoded))) return null;
-    const payload = JSON.parse(new TextDecoder().decode(decodeBase64Url(encoded))) as { op?: string; key?: string; contentType?: string; maxBytes?: number; exp?: number };
+    const payload = JSON.parse(new TextDecoder().decode(decodeBase64Url(encoded))) as { op?: string; key?: string; contentType?: string; maxBytes?: number; exp?: number; nonce?: string };
     if (!payload.key || !payload.contentType || !payload.maxBytes || payload.maxBytes > 10 * 1024 * 1024 || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
+    if (!payload.nonce) return null;
+    const nonceId = env.TICKET_NONCES.idFromName(payload.nonce);
+    const nonceResponse = await env.TICKET_NONCES.get(nonceId).fetch('https://ticket-nonce/consume', { method: 'POST' });
+    if (!nonceResponse.ok) return null;
     return { op: payload.op, key: payload.key, contentType: payload.contentType, maxBytes: payload.maxBytes };
   } catch {
     return null;
