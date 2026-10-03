@@ -60,7 +60,7 @@ serve(async (req) => {
       p_source_image_version: sourceImageVersion,
       p_new_image_key: newImageKey,
       p_new_image_url: newImageUrl,
-      p_new_image_checksum: typeof body.newImageChecksum === 'string' ? body.newImageChecksum : null,
+      p_new_image_checksum: newImageUrl !== null && typeof body.newImageChecksum === 'string' ? body.newImageChecksum : null,
     })
     if (publishError) throw publishError
     if (!published) return json({ error: 'Image changed while upload was in progress', code: 'IMAGE_VERSION_CONFLICT' }, 409)
