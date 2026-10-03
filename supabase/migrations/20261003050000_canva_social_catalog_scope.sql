@@ -16,19 +16,29 @@ STABLE
 SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $function$
+  WITH search_term AS (
+    SELECT replace(
+      replace(
+        replace(coalesce(p_query, ''), E'\\', E'\\\\'),
+        '%', E'\\%'
+      ),
+      '_', E'\\_'
+    ) AS value
+  )
   SELECT i.id, i.name, i.price, i.image_url, i.sku
   FROM public.items AS i
   JOIN public.stock_levels AS sl ON sl.item_id = i.id AND sl.store_id = p_store_id
   JOIN public.stores AS s ON s.id = sl.store_id AND s.tenant_id = p_tenant_id
+  CROSS JOIN search_term AS q
   WHERE i.tenant_id = p_tenant_id
     AND i.is_active IS TRUE
     AND (
-      coalesce(p_query, '') = ''
-      OR i.name ILIKE '%' || p_query || '%'
-      OR i.brand ILIKE '%' || p_query || '%'
-      OR i.sku ILIKE '%' || p_query || '%'
-      OR i.short_code ILIKE '%' || p_query || '%'
-      OR i.barcode ILIKE '%' || p_query || '%'
+      q.value = ''
+      OR i.name ILIKE '%' || q.value || '%' ESCAPE E'\\'
+      OR i.brand ILIKE '%' || q.value || '%' ESCAPE E'\\'
+      OR i.sku ILIKE '%' || q.value || '%' ESCAPE E'\\'
+      OR i.short_code ILIKE '%' || q.value || '%' ESCAPE E'\\'
+      OR i.barcode ILIKE '%' || q.value || '%' ESCAPE E'\\'
     )
   ORDER BY i.name
   LIMIT greatest(1, least(coalesce(p_limit, 30), 30));

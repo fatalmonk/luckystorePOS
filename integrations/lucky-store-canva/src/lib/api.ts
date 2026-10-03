@@ -12,7 +12,15 @@ export async function canvaApiRequest<T>(
   } catch {
     throw new Error("BACKEND_HOST must be an HTTPS URL");
   }
-  if (baseUrl.protocol !== "https:" || baseUrl.username || baseUrl.password) {
+  if (
+    baseUrl.protocol !== "https:" ||
+    baseUrl.username ||
+    baseUrl.password ||
+    baseUrl.search ||
+    baseUrl.hash ||
+    baseUrl.href.includes("?") ||
+    baseUrl.href.includes("#")
+  ) {
     throw new Error("BACKEND_HOST must be an HTTPS URL without credentials");
   }
   const base = baseUrl.toString().replace(/\/+$/, "");

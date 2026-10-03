@@ -3,7 +3,15 @@ import { readFile } from "node:fs/promises";
 const apiUrl = new URL(
   process.env.CANVA_API_URL ?? "https://api.canva.com/rest/v1",
 );
-if (apiUrl.protocol !== "https:" || apiUrl.username || apiUrl.password) {
+if (
+  apiUrl.protocol !== "https:" ||
+  apiUrl.username ||
+  apiUrl.password ||
+  apiUrl.search ||
+  apiUrl.hash ||
+  apiUrl.href.includes("?") ||
+  apiUrl.href.includes("#")
+) {
   throw new Error("CANVA_API_URL must be an HTTPS URL without credentials");
 }
 const API = apiUrl.toString().replace(/\/+$/, "");
