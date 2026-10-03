@@ -102,8 +102,15 @@ export async function publishProductImage(input: {
   sourceImageKey: string | null;
   sourceImageVersion: number;
   newImageUrl: string | null;
+  newImageChecksum?: string | null;
 }): Promise<void> {
   const { data, error } = await supabase.functions.invoke('publish-product-image', { body: input });
-  if (error) throw new Error(error.message || 'Unable to publish product image');
+  if (error) {
+    const response = (error as { context?: Response }).context;
+    const details = response ? await response.clone().json().catch(() => null) as { code?: unknown } | null : null;
+    const code = details?.code;
+    if (code === 'IMAGE_VERSION_CONFLICT') throw new Error('Product image changed while upload was in progress. Refresh and try again.');
+    throw new Error(error.message || 'Unable to publish product image');
+  }
   if (data?.code === 'IMAGE_VERSION_CONFLICT') throw new Error('Product image changed while upload was in progress. Refresh and try again.');
 }

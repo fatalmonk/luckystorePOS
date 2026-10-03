@@ -120,6 +120,23 @@ export async function uploadProcessedImage({
   itemId?: string | null;
   tenantId?: string | null;
 }): Promise<string> {
+  const result = await uploadProcessedImageWithMetadata({ file, sku, barcode, itemId, tenantId });
+  return result.url;
+}
+
+export async function uploadProcessedImageWithMetadata({
+  file,
+  sku,
+  barcode,
+  itemId,
+  tenantId,
+}: {
+  file: File;
+  sku?: string | null;
+  barcode?: string | null;
+  itemId?: string | null;
+  tenantId?: string | null;
+}): Promise<{ url: string; checksum: string }> {
   // 1. Convert file to WebP blob
   let webpBlob: Blob;
   try {
@@ -132,7 +149,9 @@ export async function uploadProcessedImage({
   // 2. Generate filename based on SKU, fallback to barcode, itemId, or random UUID
   const identifier = (sku || barcode || itemId || crypto.randomUUID()).trim();
   const sanitizedIdentifier = identifier.toUpperCase().replace(/[^A-Z0-9-]/g, '_');
-  const fileName = `products/${tenantId || 'unscoped'}/${sanitizedIdentifier}.webp`;
+  // Product uploads must never share an object key: the database CAS protects
+  // the row, but it cannot undo an R2 overwrite performed before publication.
+  const fileName = `products/${tenantId || 'unscoped'}/${sanitizedIdentifier}-${crypto.randomUUID()}.webp`;
 
   // 3. Create a File object from the blob
   const webpFile = new File([webpBlob], `${sanitizedIdentifier}.webp`, {
@@ -149,11 +168,15 @@ export async function uploadProcessedImage({
       throw err;
     }
   } else {
-    publicUrl = await uploadToSupabaseFallback(webpFile, fileName);
+    // publish-product-image accepts only the R2 namespace. Fail before writing
+    // a fallback object that can never be attached to the product.
+    throw new Error('Product image storage is not configured');
   }
 
   // 5. Append cache-busting parameter
-  return `${publicUrl}?t=${Date.now()}`;
+  const digest = await crypto.subtle.digest('SHA-256', await webpBlob.arrayBuffer());
+  const checksum = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+  return { url: `${publicUrl}?t=${Date.now()}`, checksum };
 }
 
 /**

@@ -35,7 +35,12 @@ export class UploadTicketNonce {
       return new Response(null, { status: 409 });
     }
     await this.state.storage.put('consumed', true);
+    await this.state.storage.setAlarm(Date.now() + 10 * 60 * 1000);
     return new Response(null, { status: 204 });
+  }
+
+  async alarm(): Promise<void> {
+    await this.state.storage.deleteAll();
   }
 }
 

@@ -6,7 +6,14 @@ function required(name: string): string {
   if (!value) throw new Error('CANVA_CONFIGURATION')
   return value
 }
-const admin = createClient(required('SUPABASE_URL'), required('SUPABASE_SERVICE_ROLE_KEY'), {
+function requiredHttps(name: string): string {
+  const value = required(name)
+  try {
+    if (new URL(value).protocol !== 'https:') throw new Error()
+  } catch { throw new Error('CANVA_CONFIGURATION') }
+  return value
+}
+const admin = createClient(requiredHttps('SUPABASE_URL'), required('SUPABASE_SERVICE_ROLE_KEY'), {
   auth: { persistSession: false, autoRefreshToken: false },
 })
 const repo: Repository = {
@@ -36,7 +43,7 @@ const repo: Repository = {
 }
 const origin = required('ADMIN_APP_ORIGIN')
 const redirectUri = required('CANVA_OAUTH_REDIRECT_URI')
-if (new URL(redirectUri).origin !== origin || new URL(redirectUri).pathname !== '/canva-connect/callback') {
+if (new URL(origin).protocol !== 'https:' || new URL(redirectUri).protocol !== 'https:' || new URL(redirectUri).origin !== origin || new URL(redirectUri).pathname !== '/canva-connect/callback') {
   throw new Error('CANVA_CONFIGURATION')
 }
 // The Connect client ID must come from the portal; the supplied AAH... app ID

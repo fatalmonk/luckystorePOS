@@ -35,7 +35,7 @@ serve(async (req) => {
     if (!user || !allowedRoles.has(String(user.role))) return json({ error: 'Image publish not authorized' }, 403)
 
     const body = await req.json() as {
-      itemId?: unknown; storeId?: unknown; sourceImageKey?: unknown; sourceImageVersion?: unknown; newImageUrl?: unknown
+      itemId?: unknown; storeId?: unknown; sourceImageKey?: unknown; sourceImageVersion?: unknown; newImageUrl?: unknown; newImageChecksum?: unknown
     }
     const itemId = typeof body.itemId === 'string' ? body.itemId : ''
     const storeId = typeof body.storeId === 'string' ? body.storeId : ''
@@ -60,7 +60,7 @@ serve(async (req) => {
       p_source_image_version: sourceImageVersion,
       p_new_image_key: newImageKey,
       p_new_image_url: newImageUrl,
-      p_new_image_checksum: null,
+      p_new_image_checksum: typeof body.newImageChecksum === 'string' ? body.newImageChecksum : null,
     })
     if (publishError) throw publishError
     if (!published) return json({ error: 'Image changed while upload was in progress', code: 'IMAGE_VERSION_CONFLICT' }, 409)

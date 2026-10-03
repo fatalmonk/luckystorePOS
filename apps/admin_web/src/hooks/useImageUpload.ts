@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { getProductImageSnapshot, publishProductImage } from '../lib/r2';
+import { deleteFromR2, getProductImageSnapshot, isR2Configured, publishProductImage } from '../lib/r2';
 import { useNotify } from '@/components';
-import { uploadProcessedImage } from '../lib/images';
+import { uploadProcessedImageWithMetadata } from '../lib/images';
 import { useAuth } from '../lib/AuthContext';
 
 /**
@@ -29,7 +29,7 @@ export function useImageUpload() {
       barcode?: string | null;
     }) => {
       const source = await getProductImageSnapshot(itemId);
-      const publicUrl = await uploadProcessedImage({
+      const uploaded = await uploadProcessedImageWithMetadata({
         file,
         sku,
         barcode,
@@ -37,9 +37,9 @@ export function useImageUpload() {
         tenantId,
       });
 
-      await publishProductImage({ itemId, storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: publicUrl });
+      await publishProductImage({ itemId, storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: uploaded.url, newImageChecksum: uploaded.checksum });
 
-      return publicUrl;
+      return uploaded.url;
     },
     onSuccess: (_data, variables) => {
       notify('Image uploaded successfully', 'success');
@@ -64,6 +64,10 @@ export function useRemoveImage() {
       // Fetch current image_url before nulling
       const source = await getProductImageSnapshot(vars.itemId);
       await publishProductImage({ itemId: vars.itemId, storeId: vars.storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: null });
+      if (source.imageKey && isR2Configured()) {
+        try { await deleteFromR2(source.imageKey, vars.itemId); }
+        catch (error) { console.error('Unable to remove superseded R2 image:', error); }
+      }
     },
     onSuccess: (_data, variables) => {
       notify('Image removed', 'info');

@@ -4,7 +4,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const allowedRoles = new Set(['owner', 'manager', 'admin', 'stock'])
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('ADMIN_APP_ORIGIN') ?? 'https://admin.luckystore1947.com',
-  'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
   'Content-Type': 'application/json',
 }
 
@@ -36,7 +37,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const signingSecret = Deno.env.get('R2_UPLOAD_SIGNING_SECRET')
+    const signingSecret = Deno.env.get('UPLOAD_SIGNING_SECRET')
     if (!supabaseUrl || !serviceRoleKey || !signingSecret) return json({ error: 'Upload signing is not configured' }, 500)
 
     const admin = createClient(supabaseUrl, serviceRoleKey)
@@ -61,7 +62,7 @@ serve(async (req) => {
 
     if (operation === 'delete') {
       if (!itemId) return json({ error: 'Item is required for image deletion' }, 400)
-      const { data: item, error } = await admin.from('items').select('id, tenant_id, image_key').eq('id', itemId).eq('tenant_id', user.tenant_id).maybeSingle()
+      const { data: item, error } = await admin.from('items').select('id, tenant_id, store_id, image_key').eq('id', itemId).eq('tenant_id', user.tenant_id).eq('store_id', user.store_id).maybeSingle()
       if (error) throw error
       if (!item || item.image_key !== key) return json({ error: 'Image deletion scope mismatch' }, 403)
     } else if (itemId) {
