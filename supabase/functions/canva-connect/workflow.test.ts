@@ -24,7 +24,7 @@ function fixture(run: Partial<Run> = {}, fetcher?: typeof fetch) {
   const service = new WorkflowService(repo, oauth, new WorkflowProvider(fetcher));
   return { service, calls, saved: () => saved };
 }
-Deno.test('image sources reject private hosts, credentials, redirects through foreign hosts and encoded paths', () => {
+Deno.test('image sources reject private hosts, credentials, foreign hosts and encoded paths', () => {
   for (const value of ['http://images.luckystore1947.com/products/a', 'https://127.0.0.1/products/a',
     'https://user:password@images.luckystore1947.com/products/a', 'https://images.luckystore1947.com.evil.test/products/a',
     'https://images.luckystore1947.com/products/%2e%2e/a']) assertEquals(validSource(value), false);

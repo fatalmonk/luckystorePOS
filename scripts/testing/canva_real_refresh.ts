@@ -8,7 +8,7 @@ const {data:rows,error}=await db.from('canva_connections').select('id,user_id,te
 if(error||rows?.length!==1)throw new Error('EXPECTED_ONE_READY_TEST_CONNECTION');
 const c=rows[0];const actor:Actor={id:c.user_id,tenant_id:c.tenant_id,store_id:c.store_id,role:'manager'};
 const repo:Repository={authenticate:()=>Promise.resolve(null),connection:()=>Promise.resolve(null),transition:async(action,a,data)=>{const r=await db.rpc('canva_connection_transition',{p_action:action,p_user_id:a.id,p_tenant_id:a.tenant_id,p_store_id:a.store_id,p_data:data});if(r.error)throw new Error('STORAGE_FAILED');return r.data;}};
-const before=await db.from('canva_connection_credentials').select('encrypted_access_token,encrypted_refresh_token').eq('connection_id',c.id).single();
+const before=await db.from('canva_connection_credentials').select('encrypted_access_token,encrypted_refresh_token,key_version').eq('connection_id',c.id).single();
 if(before.error)throw new Error('CREDENTIALS_MISSING');
 const expired=await db.from('canva_connection_credentials').update({token_expires_at:new Date(Date.now()-1000).toISOString()}).eq('connection_id',c.id);
 if(expired.error)throw new Error('TEST_EXPIRY_FAILED');
@@ -17,6 +17,12 @@ const cipher=new TokenCipher(JSON.parse(env('CANVA_TOKEN_KEYS')),env('CANVA_TOKE
 const service=new CanvaService(repo,provider,cipher,env('CANVA_CONNECT_CLIENT_ID'),env('CANVA_OAUTH_REDIRECT_URI'));
 const token=await service.getValidCanvaAccessToken(actor,c.id);
 const identity=await provider.identity(token);
-const after=await db.from('canva_connection_credentials').select('encrypted_access_token,encrypted_refresh_token,token_expires_at,refresh_id').eq('connection_id',c.id).single();
+const after=await db.from('canva_connection_credentials').select('encrypted_access_token,encrypted_refresh_token,key_version,token_expires_at,refresh_id').eq('connection_id',c.id).single();
 if(after.error)throw new Error('ROTATION_MISSING');
-console.log(JSON.stringify({liveRefresh:true,identityUsable:!!identity.user_id,accessRotated:before.data.encrypted_access_token!==after.data.encrypted_access_token,refreshRotated:before.data.encrypted_refresh_token!==after.data.encrypted_refresh_token,claimReleased:after.data.refresh_id===null,expiryRestored:new Date(after.data.token_expires_at).getTime()>Date.now()}));
+const beforeAccess=await cipher.decrypt(before.data.encrypted_access_token,before.data.key_version,`access:${c.id}`);
+const beforeRefresh=await cipher.decrypt(before.data.encrypted_refresh_token,before.data.key_version,`refresh:${c.id}`);
+const afterAccess=await cipher.decrypt(after.data.encrypted_access_token,after.data.key_version,`access:${c.id}`);
+const afterRefresh=await cipher.decrypt(after.data.encrypted_refresh_token,after.data.key_version,`refresh:${c.id}`);
+const checks={liveRefresh:true,identityUsable:!!identity.user_id,accessRotated:beforeAccess!==afterAccess,refreshRotated:beforeRefresh!==afterRefresh,claimReleased:after.data.refresh_id===null,expiryRestored:new Date(after.data.token_expires_at).getTime()>Date.now()};
+if(Object.values(checks).some(value => !value)) throw new Error(`REFRESH_CHECK_FAILED:${JSON.stringify(checks)}`);
+console.log(JSON.stringify(checks));

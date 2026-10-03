@@ -94,10 +94,17 @@ const workflowRepo: WorkflowRepository = {
 const workflow = new WorkflowService(workflowRepo, service, new WorkflowProvider())
 Deno.serve(createHandler(repo, service, origin, async (req, actor, path) => {
   if (req.method === 'GET' && path === '/products') {
+    const query = new URL(req.url).searchParams;
+    const search = query.get('q')?.trim() ?? '';
+    const limit = Math.min(Math.max(Number(query.get('limit') ?? 100) || 100, 1), 100);
+    const offset = Math.max(Number(query.get('offset') ?? 0) || 0, 0);
     const r = await admin.from('stock_levels').select('items!inner(id,name,price,image_url,tenant_id,is_active)')
-      .eq('store_id', actor.store_id).eq('items.tenant_id', actor.tenant_id).limit(500)
+      .eq('store_id', actor.store_id).eq('items.tenant_id', actor.tenant_id).eq('items.is_active', true)
+      .ilike('items.name', `%${search.replace(/[%_]/g, c => `\\${c}`)}%`)
+      .range(offset, offset + limit)
     if (r.error) throw new SafeError('CANVA_STORAGE_FAILED', 503)
-    return { products: r.data.map(row => row.items).filter(Boolean) }
+    const products = r.data.map(row => row.items).filter(Boolean);
+    return { products: products.slice(0, limit), has_more: products.length > limit, next_offset: offset + limit };
   }
   if (req.method === 'GET' && path === '/templates') return { templates: await workflowRepo.templates(actor) }
   if (req.method === 'GET' && path === '/designs') return { runs: await workflowRepo.list(actor) }

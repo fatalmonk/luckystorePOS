@@ -25,17 +25,18 @@ export function CanvaDesignPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
+  const [productQuery, setProductQuery] = useState('');
   async function load() {
-    const [p,t,r] = await Promise.all([request('/products'), request('/templates'), request('/designs')]);
+    const [p,t,r] = await Promise.all([request(`/products?q=${encodeURIComponent(productQuery)}&limit=100`), request('/templates'), request('/designs')]);
     setProducts(p.products); setTemplates(t.templates); setRuns(r.runs);
   }
   useEffect(() => {
     let active = true;
-    void Promise.all([request('/products'), request('/templates'), request('/designs')]).then(([p,t,r]) => {
+    void Promise.all([request(`/products?q=${encodeURIComponent(productQuery)}&limit=100`), request('/templates'), request('/designs')]).then(([p,t,r]) => {
       if (active) { setProducts(p.products); setTemplates(t.templates); setRuns(r.runs); }
     }).catch(() => { if (active) setError('Unable to load Canva design workspace.'); });
     return () => { active = false; };
-  }, []);
+  }, [productQuery]);
   async function perform(action: () => Promise<unknown>) {
     setBusy(true); setError('');
     try { await action(); await load(); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to process design.'); }
@@ -57,6 +58,7 @@ export function CanvaDesignPage() {
     <a href="/canva-connect">Manage Canva connection</a>
     <p>Select products in slot order. Names, prices and images come from your store catalog.</p>
     {error && <p role="alert">{error}</p>}
+    <label>Search products <input value={productQuery} onChange={e => setProductQuery(e.target.value)} placeholder="Search catalog" /></label>
     <label>Approved template <select disabled={busy} value={template} onChange={e => {
       setTemplate(e.target.value); setSelected([]); setRequestId(crypto.randomUUID());
     }}><option value="">Choose a template</option>{templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
@@ -68,12 +70,14 @@ export function CanvaDesignPage() {
     <button disabled={busy || !template || selected.filter(Boolean).length !== requiredCount || new Set(selected).size !== requiredCount}
       onClick={() => void perform(async () => { await request('/designs', {
         request_id: requestId, template_id: template, item_ids: selected,
-      }); })}>Create design</button>
+      }); setRequestId(crypto.randomUUID()); })}>Create design</button>
     <p>Continue processing resumes saved jobs. Designs stop when ready; nothing is exported or published.</p>
     {runs.map(r => <section key={r.id} data-testid={`run-${r.id}`} className="border p-3">
-      <p>{r.status}{r.error_code ? ` — ${r.error_code}` : ''}</p>
-      <p>{r.assets?.filter(a => a.asset_id).length ?? 0} of {r.products?.length ?? 0} images uploaded</p>
-      {r.design_id && <p>Saved Canva design: {r.design_id}</p>}
+      <div role="status" aria-live="polite" aria-atomic="true">
+        <p>{r.status}{r.error_code ? ` — ${r.error_code}` : ''}</p>
+        <p>{r.assets?.filter(a => a.asset_id).length ?? 0} of {r.products?.length ?? 0} images uploaded</p>
+        {r.design_id && <p>Saved Canva design: {r.design_id}</p>}
+      </div>
       {!['design_ready','failed'].includes(r.status) && <button disabled={busy}
         onClick={() => void perform(() => processRun(r.id))}>Continue processing</button>}
     </section>)}

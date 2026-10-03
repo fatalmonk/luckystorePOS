@@ -82,7 +82,7 @@ begin
    jsonb_build_object('type',case when fname='image' then 'image' else 'text' end))
    from generate_series(1,jsonb_array_length(r.products)) sidx cross join unnest(array['image','name','price']) fname))
  then raise exception 'CANVA_TEMPLATE_DATASET_MISMATCH'; end if;
- if exists(select 1 from jsonb_array_elements(r.products) p where not exists(
+ if p_action='claim' and exists(select 1 from jsonb_array_elements(r.products) p where not exists(
   select 1 from public.items i join public.stock_levels sl on sl.item_id=i.id
   where i.id=(p->>'id')::uuid and i.tenant_id=p_tenant_id and sl.store_id=p_store_id
    and i.image_version=(p->>'image_version')::bigint
