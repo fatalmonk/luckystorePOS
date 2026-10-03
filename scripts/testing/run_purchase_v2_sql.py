@@ -49,14 +49,16 @@ END $$;
 production_snapshot = (ROOT / "supabase/migrations/20261003060559_repair_record_purchase_v2_store_scoped_stock_and_cost.sql").read_text()
 forward_repair = (ROOT / "supabase/migrations/20261003134316_restrict_record_purchase_v2_to_admin_manager_and_persist_draft_items.sql").read_text()
 precision_repair = (ROOT / "supabase/migrations/20261003160749_reconcile_purchase_rpc_ledger_precision.sql").read_text()
+inventory_account_migration = (ROOT / "supabase/migrations/20261003173000_provision_inventory_ledger_account_for_new_stores.sql").read_text()
+opening_cost_repair = (ROOT / "supabase/migrations/20261003180000_reject_unscoped_purchase_inventory_cost.sql").read_text()
 proof = (ROOT / "supabase/tests/purchase_v2_live_ledger_test.sql").read_text()
 proof = re.sub(r"^\s*BEGIN;\s*", "", proof, count=1, flags=re.M | re.I)
 proof = re.sub(r"\s*ROLLBACK;\s*$", "", proof, count=1, flags=re.M | re.I)
-sql = f"BEGIN;\nSET LOCAL application_name = 'codex-disposable-{REF}';\n{guard}{production_snapshot}\n{forward_repair}\n{precision_repair}\n{proof}\nROLLBACK;\n"
+sql = f"BEGIN;\nSET LOCAL application_name = 'codex-disposable-{REF}';\n{guard}{production_snapshot}\n{forward_repair}\n{precision_repair}\n{inventory_account_migration}\n{opening_cost_repair}\n{proof}\nROLLBACK;\n"
 
 result = subprocess.run(command, input=sql, text=True, capture_output=True, env=environment)
 for line in (result.stdout + result.stderr).splitlines():
-    if any(marker in line for marker in ("[PASS]", "[FAIL]", "ERROR:", "ROLLBACK", "DISPOSABLE_PROJECT")):
+    if any(marker in line.lower() for marker in ("[pass]", "[fail]", "error:", "rollback", "disposable_project")):
         print(line)
 print(f"Guarded purchase proof exit: {result.returncode}; transaction is rollback-only")
 sys.exit(result.returncode)

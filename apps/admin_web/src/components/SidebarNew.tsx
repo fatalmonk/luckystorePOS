@@ -105,7 +105,7 @@ function useNavGroups(canManagePurchases: boolean): NavGroup[] {
         { icon: Languages, label: t('nav.translations'), path: '/translations' },
       ]
     }
-  ], [t]);
+  ], [t, canManagePurchases]);
 }
 
 export const SidebarNew: React.FC<SidebarNewProps> = ({ 
