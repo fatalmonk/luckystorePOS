@@ -162,7 +162,7 @@ BEGIN
     GET STACKED DIAGNOSTICS v_cost_error = MESSAGE_TEXT;
   END;
   IF v_cost_error NOT LIKE '%Store-scoped inventory cost missing%'
-    OR (SELECT qty FROM public.stock_levels WHERE store_id = v_store AND item_id = v_unpriced_item) <> 4
+    OR (SELECT qty FROM public.stock_levels WHERE store_id = v_store AND item_id = v_unpriced_item) IS DISTINCT FROM 4
     OR EXISTS (SELECT 1 FROM public.stock_movements
                WHERE store_id = v_store AND item_id = v_unpriced_item) THEN
     RAISE EXCEPTION '[FAIL] missing local stock cost did not fail closed atomically: %', v_cost_error;
