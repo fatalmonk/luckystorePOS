@@ -102,7 +102,6 @@ function InventoryListTableRowComponent({
       storeId,
       sku: item.sku,
       barcode: item.barcode,
-      oldImageUrl: item.image_url,
     });
   };
 

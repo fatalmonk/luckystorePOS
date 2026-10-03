@@ -10,7 +10,7 @@ import {
   ChevronLeft, ChevronRight, GitBranch, LayoutDashboard, ShoppingCart, 
   Package, Warehouse, PlusCircle, Wallet, Users, PhoneCall, Settings, 
   LogOut, Monitor, Receipt, Bell, BarChart3, ShoppingBag, TrendingDown,
-  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send, Languages,
+  Database, Banknote, ChevronDown, ChevronUp, ShieldCheck, Send, Languages, Palette,
   type LucideIcon
 } from 'lucide-react';
 
@@ -99,6 +99,7 @@ function useNavGroups(): NavGroup[] {
       icon: Settings,
       items: [
         { icon: Settings, label: t('nav.settings', 'Settings'), path: '/settings' },
+        { icon: Palette, label: t('nav.canva', 'Canva connection'), path: '/canva-connect' },
         { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
         { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
         { icon: Languages, label: t('nav.translations'), path: '/translations' },

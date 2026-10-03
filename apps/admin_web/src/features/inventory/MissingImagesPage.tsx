@@ -11,9 +11,10 @@ import { uploadProcessedImage } from '../../lib/images';
 import type { InventoryItem } from '@/types/inventory';
 import { ErrorState } from '@/components';
 import { SkeletonBlock } from '@/components';
+import { getProductImageSnapshot, publishProductImage } from '../../lib/r2';
 
 export function MissingImagesPage() {
-  const { storeId } = useAuth();
+  const { storeId, tenantId } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [uploadingProductId, setUploadingProductId] = useState<string | null>(null);
@@ -51,15 +52,16 @@ export function MissingImagesPage() {
   const uploadMutation = useMutation({
     mutationFn: async ({ productId, file }: { productId: string; file: File }) => {
       const prod = productsMissingImages.find(p => p.id === productId);
+      const source = await getProductImageSnapshot(productId);
       const url = await uploadProcessedImage({
         file,
         sku: prod?.sku,
         barcode: prod?.barcode,
         itemId: productId,
+        tenantId,
       });
       
-      // Update product with new image URL
-      await api.inventory.updateProduct(storeId!, productId, { image_url: url });
+      await publishProductImage({ itemId: productId, storeId: storeId!, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: url });
       
       return { productId, url };
     },

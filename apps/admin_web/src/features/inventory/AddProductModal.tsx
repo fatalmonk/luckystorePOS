@@ -109,6 +109,7 @@ export function ProductAddModal({ isOpen, categories, onClose }: ProductAddModal
             sku,
             barcode,
             itemId: null,
+            tenantId,
           });
         } finally {
           setUploading(false);
