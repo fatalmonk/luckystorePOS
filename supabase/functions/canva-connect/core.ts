@@ -1,6 +1,6 @@
 // Server-only protocol code. No provider credentials cross the HTTP boundary.
 export const SCOPES = [
-  'profile:read', 'asset:write', 'design:content:read', 'design:content:write',
+  'profile:read', 'asset:read', 'asset:write', 'design:content:read', 'design:content:write',
   'design:meta:read', 'brandtemplate:meta:read', 'brandtemplate:content:read',
 ] as const;
 export type Actor = { id: string; tenant_id: string; store_id: string; role: string };
@@ -297,11 +297,12 @@ export class CanvaService {
   }
 }
 
-export function createHandler(repo: Repository, service: CanvaService, origin: string) {
+export function createHandler(repo: Repository, service: CanvaService, origin: string,
+  workflow?: (req: Request, actor: Actor, path: string) => Promise<unknown>) {
   return async (req: Request): Promise<Response> => {
     const headers = {
       'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
-      'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS', 'Content-Type': 'application/json',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Content-Type': 'application/json',
       'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'Vary': 'Origin',
     };
     const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers });
@@ -315,6 +316,7 @@ export function createHandler(repo: Repository, service: CanvaService, origin: s
       if (!actor.tenant_id || !actor.store_id || !['owner','manager','admin'].includes(actor.role)) throw new SafeError('CANVA_SCOPE_DENIED', 403);
       const url = new URL(req.url);
       const path = url.pathname.replace(/^.*\/canva-connect/, '');
+      if (workflow && (path === '/templates' || path === '/products' || path.startsWith('/designs'))) return json(await workflow(req, actor, path));
       if (req.method === 'GET' && path === '/oauth/start') return json(await service.start(actor));
       if (req.method === 'GET' && path === '/oauth/callback') return json(await service.callback(actor, url.searchParams));
       if (req.method === 'DELETE' && path === '/oauth') return json(await service.disconnect(actor));
