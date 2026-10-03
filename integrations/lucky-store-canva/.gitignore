@@ -3,7 +3,7 @@
 .idea
 .ssl
 *.log*
-**/*/db.json
+**/db.json
 dist
 node_modules
 .swc

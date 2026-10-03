@@ -1,6 +1,12 @@
 import { readFile } from "node:fs/promises";
 
-const API = process.env.CANVA_API_URL ?? "https://api.canva.com/rest/v1";
+const apiUrl = new URL(
+  process.env.CANVA_API_URL ?? "https://api.canva.com/rest/v1",
+);
+if (apiUrl.protocol !== "https:" || apiUrl.username || apiUrl.password) {
+  throw new Error("CANVA_API_URL must be an HTTPS URL without credentials");
+}
+const API = apiUrl.toString().replace(/\/+$/, "");
 const timeoutMs = Number(process.env.CANVA_JOB_TIMEOUT_MS ?? 120_000);
 type JobResponse = {
   job?: {
@@ -11,6 +17,7 @@ type JobResponse = {
       asset?: { id?: string };
       urls?: string[];
     };
+    asset?: { id?: string };
     urls?: string[];
   };
 };
@@ -36,7 +43,10 @@ async function json<T>(
 async function poll(token: string, path: string) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    const result = await json<JobResponse>(token, path);
+    const remainingMs = timeoutMs - (Date.now() - started);
+    const result = await json<JobResponse>(token, path, {
+      signal: AbortSignal.timeout(remainingMs),
+    });
     const job = result.job;
     if (!job) throw new Error("Canva response did not include a job");
     if (job.status === "success" || job.status === "completed") return job;
@@ -73,7 +83,7 @@ export async function uploadAsset(
   if (!id) throw new Error("Canva asset upload did not return a job id");
   const assetId = (
     await poll(token, `/asset-uploads/${encodeURIComponent(id)}`)
-  ).result?.asset?.id;
+  ).asset?.id;
   if (!assetId)
     throw new Error("Canva asset upload did not return an asset id");
   return assetId;

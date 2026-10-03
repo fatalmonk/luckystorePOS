@@ -2,11 +2,13 @@ import "@canva/app-ui-kit/styles.css";
 import { AppI18nProvider } from "@canva/app-i18n-kit";
 import { AppUiProvider } from "@canva/app-ui-kit";
 import type { DesignEditorIntent } from "@canva/intents/design";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { App } from "./app";
 
+let root: Root | undefined;
+
 async function render() {
-  const root = createRoot(document.getElementById("root") as Element);
+  root ??= createRoot(document.getElementById("root") as Element);
 
   root.render(
     <AppI18nProvider>

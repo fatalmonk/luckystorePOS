@@ -26,7 +26,7 @@ export default {
   }),
   transform: {
     ".+\\.(css)$": "jest-css-modules-transform",
-    "^.+\\.tsx?$": [
+    "^.+\\.[mc]?tsx?$": [
       "@swc/jest",
       {
         jsc: {

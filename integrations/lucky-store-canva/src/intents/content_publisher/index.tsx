@@ -1,6 +1,7 @@
 /* eslint-disable formatjs/no-literal-string-in-jsx */
 import {
   Button,
+  FormField,
   MultilineInput,
   Rows,
   Text,
@@ -14,7 +15,7 @@ import type {
   RenderSettingsUiRequest,
 } from "@canva/intents/content";
 import { createRoot } from "react-dom/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { requestOpenExternalUrl } from "@canva/platform";
 import { canvaApiRequest } from "src/lib/api";
 
@@ -28,6 +29,13 @@ function SettingsUi({ request }: { request: RenderSettingsUiRequest }) {
   const [caption, setCaption] = useState(initial.caption ?? "");
   const [link, setLink] = useState(initial.link ?? "");
 
+  useEffect(() => {
+    void request.updatePublishSettings({
+      publishRef: JSON.stringify({ caption, link }),
+      validityState: getValidityState(caption, link),
+    });
+  }, []);
+
   return (
     <AppUiProvider>
       <Rows spacing="2u">
@@ -35,39 +43,62 @@ function SettingsUi({ request }: { request: RenderSettingsUiRequest }) {
           Choose a live Lucky Store product in the app panel, then add your
           Facebook caption.
         </Text>
-        <Text>Caption</Text>
-        <MultilineInput
+        <FormField
+          label="Caption"
           value={caption}
-          maxLength={5000}
-          onChange={(value) => {
-            setCaption(value);
-            void request.updatePublishSettings({
-              publishRef: JSON.stringify({ caption: value, link }),
-              validityState: value.trim()
-                ? "valid"
-                : "invalid_missing_required_fields",
-            });
-          }}
-          placeholder="Write a concise Lucky Store caption"
+          control={(props) => (
+            <MultilineInput
+              {...props}
+              maxLength={5000}
+              onChange={(value) => {
+                setCaption(value);
+                void request.updatePublishSettings({
+                  publishRef: JSON.stringify({ caption: value, link }),
+                  validityState: getValidityState(value, link),
+                });
+              }}
+              placeholder="Write a concise Lucky Store caption"
+            />
+          )}
         />
-        <Text>Storefront link (optional)</Text>
-        <TextInput
-          type="url"
+        <FormField
+          label="Storefront link"
+          labelMarker="optional"
           value={link}
-          onChange={(value) => {
-            setLink(value);
-            void request.updatePublishSettings({
-              publishRef: JSON.stringify({ caption, link: value }),
-              validityState: caption.trim()
-                ? "valid"
-                : "invalid_missing_required_fields",
-            });
-          }}
-          placeholder="https://luckystore1947.com"
+          control={(props) => (
+            <TextInput
+              {...props}
+              type="url"
+              onChange={(value) => {
+                setLink(value);
+                void request.updatePublishSettings({
+                  publishRef: JSON.stringify({ caption, link: value }),
+                  validityState: getValidityState(caption, value),
+                });
+              }}
+              placeholder="https://luckystore1947.com"
+            />
+          )}
         />
       </Rows>
     </AppUiProvider>
   );
+}
+
+function getValidityState(caption: string, link: string) {
+  const trimmedLink = link.trim();
+  let validLink = !trimmedLink;
+  if (trimmedLink) {
+    try {
+      const url = new URL(trimmedLink);
+      validLink = url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      validLink = false;
+    }
+  }
+  return caption.trim() && validLink
+    ? "valid"
+    : "invalid_missing_required_fields";
 }
 
 function PreviewUi({ request }: { request: RenderPreviewUiRequest }) {
@@ -146,7 +177,7 @@ const contentPublisher: ContentPublisherIntent = {
         method: "POST",
         body: JSON.stringify({
           caption: settings.caption,
-          link: settings.link,
+          link: settings.link?.trim() || undefined,
           mediaUrl: file.url,
           platform: "facebook",
         }),

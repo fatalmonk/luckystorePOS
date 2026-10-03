@@ -16,8 +16,7 @@
     "test:watch": "jest --watchAll",
     "test:update": "npm run test -- -u",
     "generate:posts": "tsx ./scripts/generate-posts.ts",
-    "generate:weekly": "tsx ./scripts/generate-weekly-posts.ts",
-    "postinstall": "tsx ./scripts/copy_env.ts"
+    "generate:weekly": "tsx ./scripts/generate-weekly-posts.ts"
   },
   "dependencies": {
     "@canva/app-hooks": "^0.0.0-beta.4",

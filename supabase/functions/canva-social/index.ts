@@ -38,6 +38,8 @@ async function verifyCanvaToken(token: string): Promise<CanvaClaims> {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers })
 
+  let markPendingAuditFailed: (() => Promise<void>) | undefined
+  let facebookPublished = false
   try {
     const authorization = req.headers.get('Authorization')
     if (!authorization?.startsWith('Bearer ')) return json({ error: 'Canva bearer token required' }, 401)
@@ -64,12 +66,11 @@ serve(async (req) => {
 
     if (req.method === 'GET') {
       const query = new URL(req.url).searchParams.get('query') ?? ''
-      const { data, error } = await admin.rpc('search_items_pos', {
+      const { data, error } = await admin.rpc('canva_search_items', {
+        p_tenant_id: identity.tenant_id,
         p_store_id: identity.store_id,
         p_query: query,
-        p_category_id: null,
         p_limit: 30,
-        p_offset: 0,
       })
       if (error) throw error
       const products = ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
@@ -147,6 +148,13 @@ serve(async (req) => {
       status: 'pending',
     }).select('id').single()
     if (auditError || !audit) throw auditError ?? new Error('Unable to create audit record')
+    markPendingAuditFailed = async () => {
+      const { error: statusError } = await admin.from('social_posts')
+        .update({ status: 'failed', error_message: 'Facebook publish request failed' })
+        .eq('id', audit.id)
+        .eq('status', 'pending')
+      if (statusError) console.error('Unable to mark failed Facebook publish audit row', statusError)
+    }
 
     const form = new FormData()
     form.append('source', new Blob([bytes], { type: media.headers.get('content-type') ?? 'image/jpeg' }), 'lucky-store.jpg')
@@ -159,13 +167,35 @@ serve(async (req) => {
     const result = await facebook.json() as { id?: string; post_id?: string; error?: { message?: string } }
     const postId = result.post_id ?? result.id
     if (!facebook.ok || !postId) {
-      await admin.from('social_posts').update({ status: 'failed', error_message: result.error?.message ?? 'Facebook did not return a post id' }).eq('id', audit.id)
-      return json({ error: result.error?.message ?? 'Facebook publish failed' }, 502)
+      const { error: statusError } = await admin.from('social_posts')
+        .update({ status: 'failed', error_message: result.error?.message ?? 'Facebook did not return a post id' })
+        .eq('id', audit.id)
+      if (statusError) throw statusError
+      markPendingAuditFailed = undefined
+      return json({ error: 'Facebook publish failed' }, 502)
     }
-    await admin.from('social_posts').update({ status: 'published', post_id: postId }).eq('id', audit.id)
+    facebookPublished = true
+    const { error: publishStatusError } = await admin.from('social_posts')
+      .update({ status: 'published', post_id: postId })
+      .eq('id', audit.id)
+    if (publishStatusError) {
+      console.error('Facebook post published but audit status update failed', publishStatusError)
+      return json({ error: 'Facebook post was published but could not be recorded. Do not retry; contact an administrator.' }, 503)
+    }
+    markPendingAuditFailed = undefined
     return json({ postId, externalUrl: `https://www.facebook.com/${postId}` })
   } catch (error) {
     console.error('canva-social error', error)
-    return json({ error: error instanceof Error ? error.message : 'Internal error' }, 500)
+    if (markPendingAuditFailed && !facebookPublished) {
+      try {
+        await markPendingAuditFailed()
+      } catch (statusError) {
+        console.error('Unable to mark failed Facebook publish audit row', statusError)
+      }
+    }
+    if (facebookPublished) {
+      return json({ error: 'Facebook post was published but could not be recorded. Do not retry; contact an administrator.' }, 503)
+    }
+    return json({ error: 'Internal server error' }, 500)
   }
 })

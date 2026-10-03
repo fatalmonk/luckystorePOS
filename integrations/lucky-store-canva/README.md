@@ -24,11 +24,13 @@ This is a starting point for your app using your chosen template. The complete d
 - Node.js `v24`
 - npm `v11`
 
-**Note:** To make sure you're running the correct version of Node.js, we recommend using a version manager, such as [nvm](https://github.com/nvm-sh/nvm#intro). The [.nvmrc](/.nvmrc) file in the root directory of this repo will ensure the correct version is used once you run `nvm install`.
+**Note:** To make sure you're running the correct version of Node.js, we recommend using a version manager, such as [nvm](https://github.com/nvm-sh/nvm#intro). The [.nvmrc](./.nvmrc) file in this app's directory pins the version when you run `nvm install` from `integrations/lucky-store-canva`.
 
 ## Quick start
 
 ```bash
+cd integrations/lucky-store-canva
+nvm install
 npm install
 ```
 
@@ -44,7 +46,7 @@ npm start
 
 The server becomes available at <http://localhost:8080>.
 
-The app's source code is in the `src/app.tsx` file.
+The app entry point is `src/index.tsx`; the Design Editor UI is in `src/intents/design_editor/app.tsx`.
 
 ### Step 2: Preview the app
 
@@ -115,53 +117,9 @@ To enable HMR:
 
 If you're using AI coding tools, such as Cursor or Claude Code, you can connect to the Canva Dev MCP Server to supercharge your development workflow. See this [setup guide](https://www.canva.dev/docs/apps/mcp-server/) to get started.
 
-## Running an app's backend
+## Backend configuration
 
-Some templates provide an example backend. This backend is defined in the template's `backend/server.ts` file, automatically starts when the `npm start` command is run, and becomes available at <http://localhost:3001>.
-
-To run templates that have a backend:
-
-1. Navigate to the [Your apps](https://www.canva.com/developers/apps) page.
-1. Select the app you want to run the example with.
-1. Copy your environment variables from **Security** -> **Credentials** -> **.env file**.
-1. Paste the contents into the starter kit's `.env` file.
-
-   For example:
-
-   ```bash
-   CANVA_APP_ID=AABBccddeeff
-   CANVA_APP_ORIGIN=https://app-aabbccddeeff.canva-apps.com
-   CANVA_BACKEND_PORT=3001
-   CANVA_FRONTEND_PORT=8080
-   CANVA_BACKEND_HOST=http://localhost:3001
-   CANVA_HMR_ENABLED=TRUE
-   ```
-
-1. Start the app:
-
-   ```bash
-   npm start
-   ```
-
-The ID of the app must be explicitly defined because it's required to [send and verify HTTP requests](https://www.canva.dev/docs/apps/verifying-http-requests/). If you don't set up the ID in the `.env` file, an error will be thrown when attempting to run the example.
-
-## Customizing the backend host
-
-If your app has a backend, the URL of the server likely depends on whether it's a development or production build. For example, during development, the backend is probably running on a localhost URL, but once the app's in production, the backend needs to be exposed to the internet.
-
-To more easily customize the URL of the server:
-
-1. Open the `.env` file in the text editor of your choice.
-2. Set the `CANVA_BACKEND_HOST` environment variable to the URL of the server.
-3. When sending a request, use `BACKEND_HOST` as the base URL:
-
-   ```ts
-   const response = await fetch(`${BACKEND_HOST}/custom-route`);
-   ```
-
-   **Note:** `BACKEND_HOST` is a global constant that contains the value of the `CANVA_BACKEND_HOST` environment variable. The variable is made available to the app via webpack and does not need to be imported.
-
-4. Before bundling the app for production, update `CANVA_BACKEND_HOST` to point to the production backend.
+This app uses the Supabase Edge Function at `supabase/functions/canva-social`; it does not include a local Express backend. Set `CANVA_BACKEND_HOST` to the HTTPS Supabase project URL (for example, `https://<project-ref>.supabase.co`). The app appends `/functions/v1/canva-social` to that host. Use the same HTTPS URL for local previews and published builds.
 
 ## Configure ngrok (optional)
 

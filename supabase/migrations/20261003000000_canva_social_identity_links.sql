@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS public.canva_social_identity_links (
 CREATE INDEX IF NOT EXISTS idx_canva_social_links_user
   ON public.canva_social_identity_links(user_id);
 
+DROP TRIGGER IF EXISTS trg_canva_social_identity_links_updated_at
+  ON public.canva_social_identity_links;
+CREATE TRIGGER trg_canva_social_identity_links_updated_at
+  BEFORE UPDATE ON public.canva_social_identity_links
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at_timestamp();
+
 ALTER TABLE public.canva_social_identity_links ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.canva_social_identity_links FROM PUBLIC, anon, authenticated;

@@ -1,6 +1,6 @@
 import { useFeatureSupport } from "@canva/app-hooks";
-import { upload } from "@canva/asset";
-import { Button, Rows, Text, TextInput } from "@canva/app-ui-kit";
+import { upload, type ImageMimeType } from "@canva/asset";
+import { Button, FormField, Rows, Text, TextInput } from "@canva/app-ui-kit";
 import { addElementAtCursor, addElementAtPoint } from "@canva/design";
 import { requestOpenExternalUrl } from "@canva/platform";
 import { useEffect, useState } from "react";
@@ -65,7 +65,9 @@ export const App = () => {
     try {
       await addElement({
         type: "text",
-        children: [`${selectedProduct.name}\nBDT ${selectedProduct.price.toFixed(2)}`],
+        children: [
+          `${selectedProduct.name}\nBDT ${selectedProduct.price.toFixed(2)}`,
+        ],
       });
       setUploadStatus(`Inserted ${selectedProduct.name} into the design.`);
     } catch (insertError) {
@@ -88,10 +90,20 @@ export const App = () => {
     setUploading(true);
     setUploadStatus(null);
     try {
+      const imageUrl = new URL(selectedProduct.image_url);
+      const mimeTypeByExtension: Record<string, ImageMimeType> = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+      };
+      const extension = imageUrl.pathname.match(/\.[^.]+$/)?.[0].toLowerCase();
+      const mimeType = extension ? mimeTypeByExtension[extension] : undefined;
+      if (!mimeType) throw new Error("Unsupported product image format.");
       const image = await upload({
         type: "image",
         name: `Lucky Store - ${selectedProduct.name}`,
-        mimeType: "image/jpeg",
+        mimeType,
         url: selectedProduct.image_url,
         thumbnailUrl: selectedProduct.image_url,
         aiDisclosure: "none",
@@ -132,13 +144,22 @@ export const App = () => {
     <div className={styles.scrollContainer}>
       <Rows spacing="2u">
         <Text>Live Lucky Store products</Text>
-        <Text>Search products</Text>
-        <TextInput
+        <FormField
+          label="Search products"
           value={query}
-          onChange={setQuery}
-          placeholder="Search by name or SKU"
+          control={(props) => (
+            <TextInput
+              {...props}
+              onChange={setQuery}
+              placeholder="Search by name or SKU"
+            />
+          )}
         />
-        {error && <Text>{error}</Text>}
+        {error && (
+          <div role="alert" aria-live="assertive">
+            {error}
+          </div>
+        )}
         {products.map((product) => (
           <Button
             key={product.id}
@@ -162,7 +183,11 @@ export const App = () => {
                 ? "Uploading product image…"
                 : "Upload product image to Canva"}
             </Button>
-            {uploadStatus && <Text>{uploadStatus}</Text>}
+            {uploadStatus && (
+              <div role="status" aria-live="polite">
+                {uploadStatus}
+              </div>
+            )}
           </>
         )}
         <Button

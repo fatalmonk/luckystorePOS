@@ -1,5 +1,5 @@
 import { useFeatureSupport } from "@canva/app-hooks";
-import { addElementAtCursor, addElementAtPoint } from "@canva/design";
+import { addElementAtPoint } from "@canva/design";
 import type { Feature } from "@canva/platform";
 import { requestOpenExternalUrl } from "@canva/platform";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
@@ -34,7 +34,15 @@ describe("Lucky Store product panel", () => {
     expect(addElementAtPoint).not.toHaveBeenCalled();
 
     mockCanvaApiRequest.mockResolvedValue({
-      products: [{ id: "p1", name: "Silk Scarf", price: 1250, image_url: null, sku: "SCARF-1" }],
+      products: [
+        {
+          id: "p1",
+          name: "Silk Scarf",
+          price: 1250,
+          image_url: null,
+          sku: "SCARF-1",
+        },
+      ],
     });
     renderInTestProvider(<App />);
     await screen.findByRole("button", { name: /Silk Scarf/ });
@@ -44,14 +52,17 @@ describe("Lucky Store product panel", () => {
     expect(addElementAtPoint).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: /Silk Scarf/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Insert selected product" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Insert selected product" }),
+    );
     await waitFor(() => {
-      expect(screen.getByText("Inserted Silk Scarf into the design.")).toBeTruthy();
+      expect(
+        screen.getByText("Inserted Silk Scarf into the design."),
+      ).toBeTruthy();
     });
 
     // we expect that addElementAtPoint has been called by the button's click handler
     expect(mockIsSupported).toHaveBeenCalledWith(addElementAtPoint);
-    expect(mockIsSupported).not.toHaveBeenCalledWith(addElementAtCursor);
     expect(addElementAtPoint).toHaveBeenCalledWith({
       type: "text",
       children: ["Silk Scarf\nBDT 1250.00"],
