@@ -2,7 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { CanvaService, CanvaProvider, TokenCipher, type Actor, type Repository } from '../../supabase/functions/canva-connect/core.ts';
 const env=(k:string)=>Deno.env.get(k)!;
-if(new URL(env('SUPABASE_URL')).hostname!=='grxxenvdhfwzafzyykgo.supabase.co')throw new Error('DISPOSABLE_REQUIRED');
+const supabaseUrl=new URL(env('SUPABASE_URL'));
+if(supabaseUrl.origin!=='https://grxxenvdhfwzafzyykgo.supabase.co' || supabaseUrl.pathname!=='/' || supabaseUrl.search || supabaseUrl.hash)throw new Error('DISPOSABLE_REQUIRED');
 const db=createClient(env('SUPABASE_URL'),env('SUPABASE_SERVICE_ROLE_KEY'),{auth:{persistSession:false}});
 const {data:rows,error}=await db.from('canva_connections').select('id,user_id,tenant_id,store_id,status').eq('status','connected_ready');
 if(error||rows?.length!==1)throw new Error('EXPECTED_ONE_READY_TEST_CONNECTION');

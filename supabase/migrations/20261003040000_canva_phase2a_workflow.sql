@@ -46,7 +46,7 @@ begin
   select * into r from public.canva_design_runs where user_id=p_user_id and request_id=(p_data->>'request_id')::uuid;
   if found then
    if r.template_id<>(p_data->>'template_id')::uuid or
-    (select jsonb_agg(x->>'id' order by ord) from jsonb_array_elements(r.products) with ordinality q(x,ord))<>p_data->'item_ids'
+    (select jsonb_agg(x->>'id' order by ord) from jsonb_array_elements(r.products) with ordinality q(x,ord))<>(select jsonb_agg((value::uuid)::text order by ord) from jsonb_array_elements_text(p_data->'item_ids') with ordinality q(value,ord))
    then raise exception 'CANVA_REQUEST_CONFLICT'; end if;
    return to_jsonb(r)-'lease_id';
   end if;

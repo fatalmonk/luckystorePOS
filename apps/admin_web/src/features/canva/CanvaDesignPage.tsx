@@ -26,6 +26,7 @@ export function CanvaDesignPage() {
   const [error, setError] = useState('');
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const [productQuery, setProductQuery] = useState('');
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
   async function load() {
     const [p,t,r] = await Promise.all([request(`/products?q=${encodeURIComponent(productQuery)}&limit=100`), request('/templates'), request('/designs')]);
     setProducts(p.products); setTemplates(t.templates); setRuns(r.runs);
@@ -60,12 +61,17 @@ export function CanvaDesignPage() {
     {error && <p role="alert">{error}</p>}
     <label>Search products <input value={productQuery} onChange={e => setProductQuery(e.target.value)} placeholder="Search catalog" /></label>
     <label>Approved template <select disabled={busy} value={template} onChange={e => {
-      setTemplate(e.target.value); setSelected([]); setRequestId(crypto.randomUUID());
+      setTemplate(e.target.value); setSelected([]); setSelectedProducts([]); setRequestId(crypto.randomUUID());
     }}><option value="">Choose a template</option>{templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
     {Array.from({ length: requiredCount }, (_, i) => <label key={i} className="block">Product {i + 1} <select
       disabled={busy} value={selected[i] ?? ''} onChange={e => {
-        const next = [...selected]; next[i] = e.target.value; setSelected(next); setRequestId(crypto.randomUUID());
-      }}><option value="">Choose a product</option>{products.filter(p => p.image_url && p.price !== null)
+        const next = [...selected]; next[i] = e.target.value; setSelected(next);
+        const product = products.find(p => p.id === e.target.value);
+        if (product) setSelectedProducts(previous => [...previous.filter(p => p.id !== product.id), product]);
+        setRequestId(crypto.randomUUID());
+      }}><option value="">Choose a product</option>{[...selectedProducts, ...products]
+        .filter((p, index, all) => all.findIndex(item => item.id === p.id) === index)
+        .filter(p => p.image_url && p.price !== null)
         .map(p => <option key={p.id} value={p.id}>{p.name} — ৳{p.price}</option>)}</select></label>)}
     <button disabled={busy || !template || selected.filter(Boolean).length !== requiredCount || new Set(selected).size !== requiredCount}
       onClick={() => void perform(async () => { await request('/designs', {

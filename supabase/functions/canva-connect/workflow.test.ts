@@ -68,7 +68,7 @@ Deno.test('untrusted product URLs cannot reach provider', async () => {
 Deno.test('start excludes client names, prices, URLs and scope', async () => {
   const f = fixture();
   const id = '11111111-1111-4111-8111-111111111111';
-  await f.service.start(actor, { request_id: id, template_id: id, item_ids: [id], price: 1, tenant_id: 'foreign' });
+  await f.service.start(actor, { request_id: id, template_id: id, item_ids: [id], name: 'client name', image_url: 'https://evil.test/image', price: 1, tenant_id: 'foreign' });
   assertEquals(f.saved(), { request_id: id, template_id: id, item_ids: [id] });
   await assertRejects(() => f.service.start(actor, { item_ids: [] }), SafeError);
 });
