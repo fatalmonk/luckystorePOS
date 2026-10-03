@@ -85,7 +85,7 @@ export function SocialPostPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ text, link: url || undefined }),
+        body: JSON.stringify({ message: text, link: url || undefined }),
       });
 
       if (!res.ok) {
