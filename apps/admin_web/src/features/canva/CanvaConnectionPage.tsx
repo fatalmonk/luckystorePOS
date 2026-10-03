@@ -17,7 +17,7 @@ async function request(path: string, method = 'GET'): Promise<Record<string, unk
     method, headers: { Authorization: `Bearer ${data.session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_ANON_KEY },
     cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer',
   });
-  if (!response.ok) throw new Error(response.status === 403 && (await response.clone().json().catch(() => ({}))).code === 'CANVA_SCOPE_DENIED' ?
+  if (!response.ok) throw new Error(response.status === 403 ?
     'An owner, manager or admin account assigned to a store is required.' :
     'Unable to complete the Canva connection. Connect again to retry.');
   return response.json();
@@ -81,7 +81,8 @@ export function CanvaConnectionPage() {
   return (
     <main className="p-6 space-y-4">
       <h1>Canva connection</h1>
-      <p role="status" aria-live="polite">{busy ? 'Checking Canva connection…' : connection ? labels[connection.status] ?? 'Connection unavailable' : 'Canva is not connected'}</p>
+      <a href="/canva-designs">Create a product design</a>
+      <p>{busy ? 'Checking Canva connection…' : connection ? labels[connection.status] ?? 'Connection unavailable' : 'Canva is not connected'}</p>
       {connection?.canvaTeamId && <p>Canva team: {connection.canvaTeamId}</p>}
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}

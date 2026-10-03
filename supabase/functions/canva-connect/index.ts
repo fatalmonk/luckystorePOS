@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { Actor, CanvaProvider, CanvaService, Connection, createHandler, Repository, TokenCipher, Transition } from './core.ts'
+import { Run, WorkflowProvider, WorkflowRepository, WorkflowService } from './workflow.ts'
+import { SafeError } from './core.ts'
 
 function required(name: string): string {
   const value = Deno.env.get(name)
@@ -60,4 +62,55 @@ function tokenKeys(): Record<string, string> {
 }
 const cipher = new TokenCipher(tokenKeys(), required('CANVA_TOKEN_KEY_VERSION'))
 const service = new CanvaService(repo, provider, cipher, clientId, redirectUri)
-Deno.serve(createHandler(repo, service, origin))
+const workflowRepo: WorkflowRepository = {
+  async transition(action, actor, data) {
+    const r = await admin.rpc('canva_run_transition', {
+      p_action: action, p_user_id: actor.id, p_tenant_id: actor.tenant_id,
+      p_store_id: actor.store_id, p_data: data,
+    })
+    if (r.error || !r.data) {
+      const codes = ['CANVA_SCOPE_DENIED','CANVA_TEMPLATE_DENIED','CANVA_PRODUCTS_DENIED',
+        'CANVA_RUN_DENIED','CANVA_REQUEST_CONFLICT','CANVA_TEMPLATE_DATASET_MISMATCH',
+        'CANVA_REAUTHORIZATION_REQUIRED','CANVA_FLOW_SUPERSEDED','CANVA_PRODUCTS_INVALID','CANVA_SOURCE_CHANGED']
+      const code = codes.find(code => r.error?.message === code)
+      throw new SafeError(code ?? 'CANVA_STORAGE_FAILED', code ? 409 : 503)
+    }
+    return r.data
+  },
+  async list(actor) {
+    const r = await admin.from('canva_design_runs').select('id,connection_id,template_id,products,assets,status,autofill_job_id,design_id,error_code,created_at')
+      .eq('user_id', actor.id).eq('tenant_id', actor.tenant_id).eq('store_id', actor.store_id)
+      .order('created_at', { ascending: false }).limit(20)
+    if (r.error) throw new SafeError('CANVA_STORAGE_FAILED', 503)
+    return r.data as Run[]
+  },
+  async templates(actor) {
+    const r = await admin.from('canva_approved_templates').select('id,name,expected_dataset_schema,expected_width,expected_height,expected_page_count')
+      .eq('tenant_id', actor.tenant_id).eq('store_id', actor.store_id).eq('enabled', true)
+    if (r.error) throw new SafeError('CANVA_STORAGE_FAILED', 503)
+    return r.data
+  },
+}
+const workflow = new WorkflowService(workflowRepo, service, new WorkflowProvider())
+Deno.serve(createHandler(repo, service, origin, async (req, actor, path) => {
+  if (req.method === 'GET' && path === '/products') {
+    const r = await admin.from('stock_levels').select('items!inner(id,name,price,image_url,tenant_id,is_active)')
+      .eq('store_id', actor.store_id).eq('items.tenant_id', actor.tenant_id).limit(500)
+    if (r.error) throw new SafeError('CANVA_STORAGE_FAILED', 503)
+    return { products: r.data.map(row => row.items).filter(Boolean) }
+  }
+  if (req.method === 'GET' && path === '/templates') return { templates: await workflowRepo.templates(actor) }
+  if (req.method === 'GET' && path === '/designs') return { runs: await workflowRepo.list(actor) }
+  if (req.method === 'POST' && path === '/designs') {
+    if (!req.headers.get('content-type')?.startsWith('application/json')) throw new SafeError('CANVA_INPUT_INVALID')
+    const body = await req.text()
+    if (body.length > 4096) throw new SafeError('CANVA_INPUT_INVALID')
+    let input
+    try { input = JSON.parse(body) } catch { throw new SafeError('CANVA_INPUT_INVALID') }
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new SafeError('CANVA_INPUT_INVALID')
+    return { run: await workflow.start(actor, input) }
+  }
+  const match = /^\/designs\/([0-9a-f-]{36})\/advance$/i.exec(path)
+  if (req.method === 'POST' && match) return { run: await workflow.advance(actor, match[1]) }
+  throw new SafeError('METHOD_OR_ROUTE_NOT_ALLOWED', 405)
+}))

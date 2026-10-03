@@ -11,6 +11,7 @@ import { InstallPrompt } from '@/components';
 import { AuthProvider } from '../lib/AuthContext';
 import { ResetPasswordPage } from './ResetPasswordPage';
 
+const LazyCanvaDesignPage = React.lazy(() => import('../features/canva/CanvaDesignPage').then(m => ({ default: m.CanvaDesignPage })));
 const LazyCanvaConnectionPage = React.lazy(() => import('../features/canva/CanvaConnectionPage').then(m => ({ default: m.CanvaConnectionPage })));
 
 const LazyDashboardPage = React.lazy(() => import('../features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -96,6 +97,7 @@ export function App() {
                   
                   <Route path="finance" element={<LazyRoute><LazyFinanceDashboardPage /></LazyRoute>} />
                   <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
+                  <Route path="canva-designs" element={<LazyRoute><LazyCanvaDesignPage /></LazyRoute>} />
                   <Route path="canva-connect" element={<LazyRoute><LazyCanvaConnectionPage /></LazyRoute>} />
                   <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
                   <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
