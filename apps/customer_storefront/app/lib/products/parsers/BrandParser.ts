@@ -27,7 +27,7 @@ export class RuleBasedBrandParser implements BrandParser {
       // Household & Paper
       'Bashundhara', 'Dekko', 'RFL',
       // Snacks & Confectionery
-      'Bisk', 'Olympic', 'Haque', 'Bombay', 'Bellame', 'Aril',
+      'Bisk', 'Olympic', 'Haque', 'Bombay', 'BelleAme', 'Bellame', 'Aril',
     ];
 
     const defaultAliases: Record<string, Brand> = {
@@ -54,6 +54,7 @@ export class RuleBasedBrandParser implements BrandParser {
       ama: 'Ama',
       fortune: 'Fortune',
       rupchanda: 'Rupchanda',
+      belleame: 'BelleAme',
       bellame: 'Bellame',
       aril: 'Aril',
       buldak: 'Samyang',
