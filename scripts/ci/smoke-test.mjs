@@ -104,10 +104,11 @@ async function run() {
         const res = await request(`${baseUrl}/api/products`);
         if (res.statusCode !== 200) throw new Error(`Expected 200, got ${res.statusCode} body: ${res.body.slice(0, 100)}`);
         const data = JSON.parse(res.body);
-        if (!Array.isArray(data) && !Array.isArray(data?.items)) {
+        if (!Array.isArray(data) && !Array.isArray(data?.items) && !Array.isArray(data?.products)) {
           throw new Error(`Expected product array, got: ${typeof data}`);
         }
-        return `Supabase query successful (received data)`;
+        const count = Array.isArray(data) ? data.length : (data?.products?.length || data?.items?.length || 0);
+        return `Supabase query successful (${count} products returned)`;
       }
     },
     {

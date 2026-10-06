@@ -87,14 +87,9 @@ jobs:
           fi
 
       - name: Assemble Standalone Deployment Package
-        working-directory: apps/customer_storefront
         run: |
-          mkdir -p .next/standalone/apps/customer_storefront/.next/static
-          mkdir -p .next/standalone/apps/customer_storefront/public
-          cp -r .next/static/* .next/standalone/apps/customer_storefront/.next/static/
-          cp -r public/* .next/standalone/apps/customer_storefront/public/ 2>/dev/null || true
-          echo "${{ github.sha }}" > .next/standalone/build_sha.txt
-          cd .next/standalone && zip -qr "$GITHUB_WORKSPACE/storefront-release.zip" .
+          node scripts/deploy/package-standalone.mjs storefront-release.zip
+          echo "${{ github.sha }}" > apps/customer_storefront/.next/standalone/build_sha.txt
 
       - name: Upload Immutable Release Artifact
         uses: actions/upload-artifact@v4
