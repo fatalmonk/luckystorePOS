@@ -148,12 +148,12 @@ serve(async (req) => {
       status: 'pending',
     }).select('id').single()
     if (auditError || !audit) throw auditError ?? new Error('Unable to create audit record')
-    markPendingAuditFailed = async () => {
+    markPendingAuditFailed = async (message = 'Facebook publish request encountered an unknown error') => {
       const { error: statusError } = await admin.from('social_posts')
-        .update({ status: 'failed', error_message: 'Facebook publish request failed' })
+        .update({ status: 'pending', error_message: message })
         .eq('id', audit.id)
         .eq('status', 'pending')
-      if (statusError) console.error('Unable to mark failed Facebook publish audit row', statusError)
+      if (statusError) console.error('Unable to update ambiguous Facebook publish audit row', statusError)
     }
 
     const form = new FormData()
@@ -188,13 +188,21 @@ serve(async (req) => {
     console.error('canva-social error', error)
     if (markPendingAuditFailed && !facebookPublished) {
       try {
-        await markPendingAuditFailed()
+        const isTimeout = (error as { name?: string })?.name === 'TimeoutError' || (error as { name?: string })?.name === 'AbortError'
+        const msg = isTimeout
+          ? 'Facebook request timed out. Status remains pending to prevent duplicate posting.'
+          : 'Network or server error communicating with Facebook. Status remains pending to prevent duplicate posting.'
+        await markPendingAuditFailed(msg)
       } catch (statusError) {
-        console.error('Unable to mark failed Facebook publish audit row', statusError)
+        console.error('Unable to update ambiguous Facebook publish audit row', statusError)
       }
     }
     if (facebookPublished) {
       return json({ error: 'Facebook post was published but could not be recorded. Do not retry; contact an administrator.' }, 503)
+    }
+    const isTimeout = (error as { name?: string })?.name === 'TimeoutError' || (error as { name?: string })?.name === 'AbortError'
+    if (isTimeout) {
+      return json({ error: 'Facebook publish request timed out. Do not retry immediately; check Facebook to verify whether the post was published.' }, 504)
     }
     return json({ error: 'Internal server error' }, 500)
   }

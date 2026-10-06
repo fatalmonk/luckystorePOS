@@ -25,13 +25,14 @@ export async function canvaApiRequest<T>(
   }
   const base = baseUrl.toString().replace(/\/+$/, "");
   const token = await auth.getCanvaUserToken();
+  const headers = new Headers(init.headers);
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  headers.set("Authorization", `Bearer ${token}`);
   const response = await fetch(`${base}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...init.headers,
-    },
+    headers,
   });
   if (!response.ok)
     throw new Error(
