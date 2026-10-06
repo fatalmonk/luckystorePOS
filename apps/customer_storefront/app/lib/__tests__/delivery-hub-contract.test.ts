@@ -40,7 +40,7 @@ vi.mock('../../lib/supabase/middleware', () => ({
 describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   describe('Page Metadata & Canonical Hygiene', () => {
     it('provides optimized title within SERP display length (<= 60 chars)', () => {
-      const title = String(metadata.title);
+      const title = typeof metadata.title === 'string' ? metadata.title : (metadata.title as any)?.absolute;
       expect(title).toBe('Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store');
       expect(title.length).toBeLessThanOrEqual(60);
       expect(title.length).toBeGreaterThanOrEqual(40);

@@ -33,10 +33,14 @@ jobs:
       production_domain: ${{ steps.set-target.outputs.production_domain }}
     steps:
       - id: set-target
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PROMOTE_TO_INPUT: ${{ inputs.promote_to }}
+          HOSTINGER_CUTOVER_DONE: ${{ vars.HOSTINGER_CUTOVER_DONE }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            PROMOTE_TO="${{ inputs.promote_to }}"
-          elif [ "${{ vars.HOSTINGER_CUTOVER_DONE }}" = "true" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            PROMOTE_TO="$PROMOTE_TO_INPUT"
+          elif [ "$HOSTINGER_CUTOVER_DONE" = "true" ]; then
             PROMOTE_TO="production"
           else
             PROMOTE_TO="staging"

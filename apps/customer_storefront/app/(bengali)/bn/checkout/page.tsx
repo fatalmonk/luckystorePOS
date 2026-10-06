@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import CheckoutPage from '../../../(english)/checkout/page';
 
 export const metadata: Metadata = {
-  title: 'চেকআউট | Lucky Store',
+  title: { absolute: 'চেকআউট | Lucky Store' },
   description: 'লাকি স্টোর অনলাইন চেকআউট — ডেলিভারি ঠিকানা দিন এবং অর্ডার সম্পন্ন করুন।',
   robots: {
     index: false,

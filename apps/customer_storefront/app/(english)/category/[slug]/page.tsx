@@ -84,7 +84,7 @@ export async function generateMetadata({
   const titleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const customMeta = canonicalSlug ? MONEY_PAGE_METADATA[canonicalSlug] : undefined;
   const title = customMeta?.title || `${titleName} in Chittagong | Lucky Store`;
-  const description = customMeta?.description || `Shop ${titleName} online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.`;
+  const description = customMeta?.description || `Shop ${titleName} online at Lucky Store in Chattogram. Browse current prices and order for local delivery with Cash on Delivery and doorstep inspection.`;
 
   const canonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}`;
   const bnCanonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}`;

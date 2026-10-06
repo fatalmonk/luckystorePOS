@@ -5,7 +5,7 @@ import { BottomNav } from '../../components/BottomNav';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Read the Terms of Service for using Lucky Store POS and online storefront.',
+  description: 'Read the Terms of Service governing purchases, delivery policies, payments, and customer accounts on the Lucky Store online storefront in Chattogram.',
   robots: {
     index: true,
     follow: true,

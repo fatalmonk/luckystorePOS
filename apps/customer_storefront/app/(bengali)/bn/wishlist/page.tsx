@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import WishlistPage from '../../../(english)/wishlist/page';
 
 export const metadata: Metadata = {
-  title: 'পছন্দের তালিকা | Lucky Store',
+  title: { absolute: 'পছন্দের তালিকা | Lucky Store' },
   description: 'আপনার সংরক্ষিত ও পছন্দের পণ্যের তালিকা।',
   robots: {
     index: false,

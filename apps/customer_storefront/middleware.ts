@@ -136,10 +136,10 @@ export async function middleware(request: NextRequest) {
       return notFoundResponse();
     }
 
-    const isLegacyPrefixSlug = /^--[0-9a-f]{8}$/i.test(decodedProductSlug);
+    const isLegacyPrefixSlug = /^--+[0-9a-f]{8}$/i.test(decodedProductSlug);
     if (isBareUuid(decodedProductSlug) || isLegacyPrefixSlug) {
       const identifier = isLegacyPrefixSlug
-        ? decodedProductSlug.slice(2).toLowerCase()
+        ? decodedProductSlug.replace(/^-+/, '').toLowerCase()
         : decodedProductSlug.toLowerCase();
       const product = await resolveProductForCanonicalRedirect(identifier);
       if (product) {
