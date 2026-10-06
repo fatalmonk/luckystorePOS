@@ -10,7 +10,15 @@ import shutil
 if not shutil.which(command[0]):command[0]='/opt/homebrew/opt/postgresql@17/bin/psql'
 check=subprocess.run(command+['-At','-c',"select to_regclass('public.canva_design_runs') is not null;"],env=config['environment'],capture_output=True,text=True)
 if check.returncode:raise SystemExit('DISPOSABLE_SCHEMA_CHECK_FAILED')
-migration='' if check.stdout.strip()=='t' else (ROOT/'supabase/migrations/20261003040000_canva_phase2a_workflow.sql').read_text()
+source=(ROOT/'supabase/migrations/20261003040000_canva_phase2a_workflow.sql').read_text()
+if check.stdout.strip()=='t':
+ # Existing tables do not prove the transition function matches this migration.
+ # Reinstall its function and grants in the rollback transaction before testing.
+ marker='create function public.canva_run_transition'
+ start=source.lower().index(marker)
+ migration=source[start:].replace(marker,'create or replace function public.canva_run_transition',1)
+else:
+ migration=source
 proof=(ROOT/'supabase/tests/canva_phase2a_workflow_test.sql').read_text()
 sql="BEGIN; SET LOCAL application_name='codex-disposable-grxxenvdhfwzafzyykgo';"+config['guard']+migration+proof+'ROLLBACK;'
 r=subprocess.run(command,input=sql,env=config['environment'],capture_output=True,text=True)
