@@ -36,7 +36,7 @@ interface NavGroup {
   items: NavItem[];
 }
 
-function useNavGroups(): NavGroup[] {
+function useNavGroups(canManagePurchases: boolean): NavGroup[] {
   const { t } = useTranslation();
   return useMemo(() => [
     {
@@ -61,10 +61,10 @@ function useNavGroups(): NavGroup[] {
           { label: t('nav.stockHistory', 'Stock History'), path: '/inventory/history' },
           { label: t('nav.missingImages', 'Missing Images'), path: '/inventory/missing-images' },
         ] },
-        { icon: PlusCircle, label: t('nav.purchase', 'Purchase'), path: '/purchase', children: [
+        ...(canManagePurchases ? [{ icon: PlusCircle, label: t('nav.purchase', 'Purchase'), path: '/purchase', children: [
           { label: t('nav.newEntry', 'New Entry'), path: '/purchase' },
           { label: t('nav.purchaseHistory', 'Purchase History'), path: '/purchase/history' },
-        ] },
+        ] }] : []),
         { icon: TrendingDown, label: t('nav.competitorPrices', 'Competitor Prices'), path: '/competitor-prices' },
       ]
     },
@@ -105,7 +105,7 @@ function useNavGroups(): NavGroup[] {
         { icon: Languages, label: t('nav.translations'), path: '/translations' },
       ]
     }
-  ], [t]);
+  ], [t, canManagePurchases]);
 }
 
 export const SidebarNew: React.FC<SidebarNewProps> = ({ 
@@ -116,9 +116,10 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
   onClose 
 }) => {
   const { signOut, user } = useAuth();
+  const canManagePurchases = user?.role === 'admin' || user?.role === 'manager';
   const userName = user?.name?.trim() || 'User';
   const userInitial = userName.charAt(0).toUpperCase();
-  const navGroups = useNavGroups();
+  const navGroups = useNavGroups(canManagePurchases);
   const location = useLocation();
   const { t } = useTranslation();
   const sidebarRef = useRef<HTMLElement>(null);
