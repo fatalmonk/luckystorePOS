@@ -12,7 +12,7 @@ custom_domain = true
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "lucky-store-images"
-preview_bucket_name = "lucky-store-images"
+preview_bucket_name = "lucky-store-images-preview"
 
 [[durable_objects.bindings]]
 name = "TICKET_NONCES"
@@ -26,6 +26,18 @@ new_sqlite_classes = ["UploadTicketNonce"]
 ALLOWED_ORIGINS = "https://luckystore1947.com,https://lucky-store-bd.vercel.app,https://admin.luckystore1947.com,https://lucky-store-pos-six.vercel.app,http://localhost:3000,http://localhost:5173"
 PUBLIC_BASE_URL = "https://images.luckystore1947.com"
 # UPLOAD_SIGNING_SECRET and INTERNAL_UPLOAD_SECRET must be encrypted secrets.
+
+[previews.vars]
+ALLOWED_ORIGINS = "https://luckystore1947.com,https://lucky-store-bd.vercel.app,https://admin.luckystore1947.com,https://lucky-store-pos-six.vercel.app,http://localhost:3000,http://localhost:5173"
+PUBLIC_BASE_URL = ""
+
+[[previews.r2_buckets]]
+binding = "IMAGES"
+bucket_name = "lucky-store-images-preview"
+
+[[previews.durable_objects.bindings]]
+name = "TICKET_NONCES"
+class_name = "UploadTicketNonce"
 
 # Rate limiting: 30 uploads/min per IP, 600 reads/min per IP
 [limits]
