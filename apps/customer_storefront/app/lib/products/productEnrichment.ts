@@ -386,17 +386,17 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     },
   },
 
-  // 4. Bellame Chocolate Digestive Biscuits 135g
+  // 4. BelleAme Chocolate Digestive 135 g
   '4d20b020': {
     slugPrefix: '4d20b020',
-    exactName: 'Bellame Chocolate Digestive Biscuits 135g',
-    brand: 'Bellame',
+    exactName: 'BelleAme Chocolate Digestive 135 g',
+    brand: 'BelleAme',
     netQuantity: '135g',
     category: 'Biscuits & Cookies',
     summary:
-      'Bellame Chocolate Digestive Biscuits in a sealed 135g flow wrap. Wheat digestive biscuits topped with chocolate coating. Available for local delivery from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.',
+      'BelleAme Chocolate Digestive biscuits in a sealed 135g flow wrap. Wheat digestive biscuits topped with chocolate coating. Available for local delivery from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.',
     specifications: [
-      { label: 'Brand', value: 'Bellame', evidenceRefs: ['PACK_FRONT'] },
+      { label: 'Brand', value: 'BelleAme', evidenceRefs: ['PACK_FRONT'] },
       { label: 'Net Weight', value: '135g', evidenceRefs: ['PACK_FRONT'] },
       { label: 'Product Type', value: 'Chocolate Digestive Biscuit', evidenceRefs: ['PACK_FRONT'] },
       { label: 'Packaging Type', value: 'Flow wrap', evidenceRefs: ['PACK_FRONT'] },
@@ -420,22 +420,22 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       PACK_FRONT: {
         source: 'PACKAGING',
-        evidenceRef: 'Bellame 135g packaging label: Chocolate Digestive Biscuits, 135g net',
-        sourceTitle: 'Bellame 135g Front Wrap',
+        evidenceRef: 'BelleAme 135g packaging label: Chocolate Digestive Biscuits, 135g net',
+        sourceTitle: 'BelleAme 135g Front Wrap',
         skuScope: '4d20b020-5c62-4c2f-b461-755d5b780829',
         verifiedAt: '2026-09-16',
       },
       PACK_BACK: {
         source: 'PACKAGING',
-        evidenceRef: 'Bellame 135g back label: Manufactured in Bangladesh',
-        sourceTitle: 'Bellame 135g Back Wrap',
+        evidenceRef: 'BelleAme 135g back label: Manufactured in Bangladesh',
+        sourceTitle: 'BelleAme 135g Back Wrap',
         skuScope: '4d20b020-5c62-4c2f-b461-755d5b780829',
         verifiedAt: '2026-09-16',
       },
       PACK_STORAGE: {
         source: 'PACKAGING',
-        evidenceRef: 'Bellame 135g storage text: Store in a cool, dry place',
-        sourceTitle: 'Bellame 135g Storage Guidance',
+        evidenceRef: 'BelleAme 135g storage text: Store in a cool, dry place',
+        sourceTitle: 'BelleAme 135g Storage Guidance',
         skuScope: '4d20b020-5c62-4c2f-b461-755d5b780829',
         verifiedAt: '2026-09-16',
       },
