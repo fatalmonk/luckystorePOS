@@ -1,8 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luckystore1947.com';
+const ALLOWED_HOSTS = new Set([
+  'www.luckystore1947.com',
+  'luckystore1947.com',
+  'next.luckystore1947.com',
+  'localhost:3000',
+  '127.0.0.1:3000',
+]);
+
+function getBaseUrl(req: NextRequest): string {
+  const forwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host');
+  if (forwardedHost && ALLOWED_HOSTS.has(forwardedHost)) {
+    return `https://${forwardedHost}`;
+  }
+  return process.env.SITE_URL || 'https://www.luckystore1947.com';
+}
 
 /**
  * Agentic Commerce Protocol (ACP) Discovery Document
@@ -15,7 +29,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luckystore1947.com
  * - Include transports as a non-empty array of supported transport types
  * - Include capabilities.services as a non-empty array of offered services
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const BASE_URL = getBaseUrl(req);
   const acpDiscovery = {
     protocol: {
       name: 'acp',

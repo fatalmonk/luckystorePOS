@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-10-07T00:00:00Z",
+  "zone": "luckystore1947.com",
+  "nameservers": [
+    "carter.ns.cloudflare.com",
+    "kayleigh.ns.cloudflare.com"
+  ],
+  "records": [
+    {
+      "type": "A",
+      "name": "@",
+      "content": "216.198.79.65",
+      "proxied": false,
+      "ttl": 300,
+      "comment": "Vercel Apex origin 1"
+    },
+    {
+      "type": "A",
+      "name": "@",
+      "content": "64.29.17.65",
+      "proxied": false,
+      "ttl": 300,
+      "comment": "Vercel Apex origin 2"
+    },
+    {
+      "type": "CNAME",
+      "name": "www",
+      "content": "cname.vercel-dns.com",
+      "proxied": false,
+      "ttl": 300,
+      "comment": "Vercel www CNAME target"
+    },
+    {
+      "type": "CNAME",
+      "name": "images",
+      "content": "images-worker.luckystore1947.workers.dev",
+      "proxied": true,
+      "ttl": 1,
+      "comment": "Cloudflare Image Worker"
+    },
+    {
+      "type": "CNAME",
+      "name": "agent",
+      "content": "agent-worker.luckystore1947.workers.dev",
+      "proxied": true,
+      "ttl": 1,
+      "comment": "Cloudflare Agent Worker"
+    }
+  ]
+}

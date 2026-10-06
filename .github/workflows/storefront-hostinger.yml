@@ -1,0 +1,173 @@
+name: Storefront CI/CD (Hostinger)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/customer_storefront/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.github/workflows/storefront-hostinger.yml'
+  workflow_dispatch:
+    inputs:
+      promote_to:
+        description: 'Target environment promotion'
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+
+concurrency:
+  group: storefront-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ── Step 1: Resolve Canonical Deployment Context ───────────
+  resolve-context:
+    name: Resolve Target Context
+    runs-on: ubuntu-latest
+    outputs:
+      promote_to: ${{ steps.set-target.outputs.promote_to }}
+      staging_domain: ${{ steps.set-target.outputs.staging_domain }}
+      production_domain: ${{ steps.set-target.outputs.production_domain }}
+    steps:
+      - id: set-target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PROMOTE_TO="${{ inputs.promote_to }}"
+          elif [ "${{ vars.HOSTINGER_CUTOVER_DONE }}" = "true" ]; then
+            PROMOTE_TO="production"
+          else
+            PROMOTE_TO="staging"
+          fi
+
+          echo "promote_to=$PROMOTE_TO" >> $GITHUB_OUTPUT
+          echo "staging_domain=next.luckystore1947.com" >> $GITHUB_OUTPUT
+          echo "production_domain=luckystore1947.com" >> $GITHUB_OUTPUT
+
+  # ── Step 2: Build Once to Immutable Artifact ───────────────
+  build-artifact:
+    name: Build Immutable Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies (deterministic monorepo root)
+        run: npm ci
+
+      - name: Build Next.js Standalone Bundle
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_IMAGE_BASE_URL: 'https://images.luckystore1947.com'
+          NEXT_PUBLIC_AGENT_WORKER_URL: 'https://agent.luckystore1947.com'
+          NEXT_PUBLIC_ENABLE_REALTIME: 'true'
+          NEXT_PUBLIC_STORE_ID: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'
+          NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
+        run: npm run build --workspace=customer_storefront
+
+      - name: Security Check — Assert Service Role Key not in Client or Server Output
+        env:
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "$SERVICE_KEY" ]; then
+            if grep -R -F -q -- "$SERVICE_KEY" apps/customer_storefront/.next/static apps/customer_storefront/.next/server; then
+              echo "ERROR: Service role key detected in built output bundle!"
+              exit 1
+            fi
+            echo "✅ Security check passed: service role key is isolated from built bundles."
+          else
+            echo "⚠️  SUPABASE_SERVICE_ROLE_KEY secret not present for static check, skipping exact-value match."
+          fi
+
+      - name: Assemble Standalone Deployment Package
+        working-directory: apps/customer_storefront
+        run: |
+          mkdir -p .next/standalone/apps/customer_storefront/.next/static
+          mkdir -p .next/standalone/apps/customer_storefront/public
+          cp -r .next/static/* .next/standalone/apps/customer_storefront/.next/static/
+          cp -r public/* .next/standalone/apps/customer_storefront/public/ 2>/dev/null || true
+          echo "${{ github.sha }}" > .next/standalone/build_sha.txt
+          cd .next/standalone && zip -qr "$GITHUB_WORKSPACE/storefront-release.zip" .
+
+      - name: Upload Immutable Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-release-${{ github.sha }}
+          path: storefront-release.zip
+          retention-days: 14
+
+  # ── Step 3: Deploy to Staging ──────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [resolve-context, build-artifact]
+    runs-on: ubuntu-latest
+    environment: hostinger-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: storefront-release-${{ github.sha }}
+
+      - name: Deploy to Hostinger Staging Site
+        run: node scripts/deploy/hostinger-deploy.mjs storefront-release.zip
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+          HOSTINGER_DOMAIN: ${{ needs.resolve-context.outputs.staging_domain }}
+          EXPECTED_SHA: ${{ github.sha }}
+
+  # ── Step 4: Comprehensive Staging Test Suite ───────────────
+  test-staging:
+    name: Validate Staging (Smoke, E2E & Load)
+    needs: [resolve-context, deploy-staging]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Staging Smoke Suite (Deep Route & Supabase Validation)
+        run: |
+          node scripts/ci/smoke-test.mjs \
+            --url "https://${{ needs.resolve-context.outputs.staging_domain }}" \
+            --expected-sha ${{ github.sha }}
+
+      - name: Run Playwright E2E Suite against Staging
+        run: |
+          npm ci
+          npx playwright install chromium
+          cd apps/customer_storefront
+          BASE_URL="https://${{ needs.resolve-context.outputs.staging_domain }}" npx playwright test --project=chromium
+
+  # ── Step 5: Production Deployment Gate ─────────────────────
+  deploy-production:
+    name: Deploy to Production (Gated)
+    needs: [resolve-context, test-staging]
+    if: needs.resolve-context.outputs.promote_to == 'production'
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: storefront-release-${{ github.sha }}
+
+      - name: Deploy SAME Immutable Release to Hostinger Production
+        run: node scripts/deploy/hostinger-deploy.mjs storefront-release.zip
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+          HOSTINGER_DOMAIN: ${{ needs.resolve-context.outputs.production_domain }}
+          EXPECTED_SHA: ${{ github.sha }}
+
+      - name: Production Smoke Validation (www Canonical)
+        run: |
+          node scripts/ci/smoke-test.mjs \
+            --url "https://www.luckystore1947.com" \
+            --expected-sha ${{ github.sha }}

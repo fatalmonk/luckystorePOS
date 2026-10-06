@@ -220,6 +220,7 @@ dist_public/
 
 # Documentation
 docs/
+!docs/decisions/
 
 # Neon sync artifacts (contain data, not just schema)
 _plans/neon_data.sql
@@ -255,6 +256,8 @@ lucky-store-brand-guidelines/**/*.jpg
 lucky-store-brand-guidelines/**/*.jpeg
 lucky-store-brand-guidelines/**/*.webp
 lucky-store-brand-guidelines/**/*.html
+# Keep the small, canonical production logo exports reviewable with the brand kit.
+!lucky-store-brand-guidelines/assets/logo/approved/*.png
 
 # Local Canva logo exports — keep outside repository history
 lucky-store-brand-guidelines/assets/logo/canva-svg/
