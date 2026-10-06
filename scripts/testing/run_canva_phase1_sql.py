@@ -29,6 +29,14 @@ environment.update(PGPASSWORD=unquote(target.password or ''), PGSSLMODE='require
 command = ['psql', '-X', '-h', target.hostname, '-p', str(target.port or 5432),
            '-U', unquote(target.username or ''), '-d', target.path.lstrip('/'),
            '-v', 'ON_ERROR_STOP=1']
+
+def query_scalar(query):
+    result = subprocess.run(command + ['-At', '-c', query], text=True,
+                            capture_output=True, env=environment)
+    if result.returncode:
+        sys.exit('BLOCKED: disposable schema preflight failed')
+    return result.stdout.strip()
+
 guard = """
 do $$ begin
   if not (session_user = 'postgres.grxxenvdhfwzafzyykgo' or
@@ -47,10 +55,58 @@ items as (insert into public.items(tenant_id,name,image_url)
   union all select id,'backfill empty',null from tenant returning id,image_url)
 insert into image_backfill_fixture select id,image_url from items;
 """
-for filename in ['20261003010000_add_product_image_metadata.sql',
-                 '20261003020000_harden_product_image_cas.sql',
-                 '20261003030000_canva_connect_phase1.sql']:
-    sql += (ROOT / 'supabase/migrations' / filename).read_text() + '\n'
+image_v1 = (ROOT / 'supabase/migrations/20261003010000_add_product_image_metadata.sql').read_text()
+image_v2 = (ROOT / 'supabase/migrations/20261003020000_harden_product_image_cas.sql').read_text()
+constraint_exists = query_scalar("""
+select exists (
+  select 1 from pg_constraint
+  where conrelid = 'public.items'::regclass
+    and conname = 'items_image_version_nonnegative'
+)
+""") == 't'
+if constraint_exists:
+    image_v1 = image_v1.replace(
+        '  alter column image_version set not null,\n  add constraint items_image_version_nonnegative check (image_version >= 0);',
+        '  alter column image_version set not null;'
+    )
+sql += image_v1 + '\n' + image_v2 + '\n'
+
+canva_v1 = (ROOT / 'supabase/migrations/20261003030000_canva_connect_phase1.sql').read_text()
+canva_tables = query_scalar("""
+select count(*) from unnest(array[
+  to_regclass('public.canva_connections'),
+  to_regclass('public.canva_connection_credentials'),
+  to_regclass('public.canva_oauth_states'),
+  to_regclass('public.canva_approved_templates'),
+  to_regclass('public.canva_product_designs')
+]) as objects(name) where name is not null
+""")
+if canva_tables == '0':
+    sql += canva_v1 + '\n'
+elif canva_tables == '5':
+    # A previous rollback proof left the schema installed outside migration
+    # history. Reapply only the two Phase 1 functions in this transaction;
+    # CREATE TABLE would fail and silently skipping functions can test stale code.
+    function_sql = []
+    for function_name in ['canva_validate_scope', 'canva_connection_transition']:
+        match = re.search(
+            rf'create function public\.{function_name}\b.*?as\s+(\$\w*\$|\$\$).*?\1;',
+            canva_v1, flags=re.I | re.S
+        )
+        if not match:
+            sys.exit(f'BLOCKED: could not extract {function_name} from Phase 1 migration')
+        definition = match.group(0).replace(
+            f'create function public.{function_name}',
+            f'create or replace function public.{function_name}', 1
+        )
+        function_sql.append(definition)
+    sql += '\n'.join(function_sql) + """
+REVOKE ALL ON FUNCTION public.canva_connection_transition(text,uuid,uuid,uuid,jsonb) FROM public,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.canva_connection_transition(text,uuid,uuid,uuid,jsonb) TO service_role;
+REVOKE ALL ON FUNCTION public.canva_validate_scope() FROM public,anon,authenticated;
+"""
+else:
+    sys.exit('BLOCKED: partial Canva Phase 1 schema; use a clean disposable database')
 sql += """
 do $$ begin
   if exists (select 1 from image_backfill_fixture f join public.items i using(id)

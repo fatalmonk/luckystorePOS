@@ -5,7 +5,7 @@
     "build": "npx @canva/cli apps build",
     "format": "prettier '**/*.{css,ts,tsx}' --no-config --write",
     "format:check": "prettier '**/*.{css,ts,tsx}' --no-config --check",
-    "format:file": "prettier $1 --no-config --write",
+    "format:file": "prettier --no-config --write",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:check": "npm run lint && npm run lint:types",

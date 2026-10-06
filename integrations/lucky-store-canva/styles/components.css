@@ -6,10 +6,13 @@
   padding-top: var(--ui-kit-space-200);
   padding-right: var(--ui-kit-space-200);
   padding-bottom: var(--ui-kit-space-200);
+}
 
-  /* for firefox */
-  scrollbar-width: thin;
-  scrollbar-color: var(--ui-kit-color-content-placeholder-fg) transparent;
+@supports not selector(::-webkit-scrollbar) {
+  .scrollContainer {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ui-kit-color-content-placeholder-fg) transparent;
+  }
 }
 
 .scrollContainer::-webkit-scrollbar {

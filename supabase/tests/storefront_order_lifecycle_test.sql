@@ -1,5 +1,19 @@
 BEGIN;
 
+DO $$
+BEGIN
+  IF NOT (
+    session_user = 'postgres.grxxenvdhfwzafzyykgo'
+    OR (
+      session_user = 'postgres'
+      AND current_setting('application_name') = 'codex-disposable-grxxenvdhfwzafzyykgo'
+    )
+  ) THEN
+    RAISE EXCEPTION 'order lifecycle tests may run only against the authorized disposable project';
+  END IF;
+END
+$$;
+
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET LOCAL search_path = public, extensions, pg_temp;
 
