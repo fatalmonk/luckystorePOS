@@ -1,417 +1,148 @@
-# Lucky Store 1947 — Social Media & Marketing Kit
-> **Handoff Date:** June 2026
-> **Prepared for:** Social Media Marketing Team
-> **Brand System:** Storefront palette — Deep Night & Saffron
-> **Files Location:** `lucky-store-brand-guidelines/`
-
----
-
-## 📦 What's Inside This Kit
-
-| Folder | Contents | For |
-|--------|----------|-----|
-| `assets/logo/svg/` | Primary wordmark, mark-only, inverse logos | Web, print, apps, signage |
-| `assets/logo/canva-svg/` | Canva-ready logo exports and instructions | Social and marketing |
-| `fonts/` | Geist font files | Brand materials |
-| `storefront-color-palette.svg` | Approved storefront palette swatches | Design reference |
-| `lucky_store_storefront_brand_kit.md` | Storefront-specific brand system | Reference |
-
----
-
-## 🎨 Logo System — v2.0 (Approved Direction)
-
-### ⭐ Primary Logo — Bold Stacked Wordmark (Panel 1)
-
-> **This is the official primary logo.** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#0B0B0D`). The `O` in STORE is replaced by a solid Saffron circle (`#F0C444`). Founding year `1947` set beneath in Geist Mono muted text (`#525252`).
-> **Why it works:** Maximum legibility at any size. Zero decorative noise. Conveys neighborhood trust and premium clarity in a single glance.
-
-### Files
-
-| File | Use Case | Spec |
-|------|----------|------|
-| `assets/logo/svg/logo-main.svg` | Main Latin wordmark | Primary logo |
-| `assets/logo/svg/logo-bangla.svg` | Bengali wordmark | Bengali materials |
-| `assets/logo/svg/logo-white.svg` | White wordmark | Dark backgrounds |
-| `assets/logo/svg/favicon-new.svg` | Store icon | Browser and app icon |
-| `assets/logo/canva-svg/` | Editable Canva logo exports | Social and marketing |
-
-### Clear Space Rule
-> Maintain clear space = cap height of the `L` on all four sides. Never crowd the wordmark.
-
-```
-        ←—— L ——→
-      ┌──────────┐
-   ↑  │  LUCKY   │  ↑
-   L  │  STORE   │  L
-   ↓  └──────────┘  ↓
-        ←—— L ——→
-```
-
-### Minimum Sizes
-
-| Use | Min Width |
-|-----|-----------|
-| Website header | 120px |
-| Instagram avatar | 400×400px (rendered at 150×150) |
-| App icon | 48dp (Android) / 60pt (iOS) |
-| Receipt header | 15mm |
-| Delivery bag | 20mm |
-| Flyer | 30mm |
-
-### Logo Color Rules
-
-| Element | Light BG | Dark / Saffron BG |
-|---------|----------|-----------------|
-| Wordmark `LUCKY STORE` | `#0B0B0D` Deep Night | `#FFFFFF` White |
-| Saffron Dot | `#F0C444` | `#F0C444` |
-| Year `1947` (mono) | `#525252` Muted text | `#FFFFFF` White |
-
-### ❌ Never Do
-- Stretch, rotate, or warp the wordmark
-- Replace the Saffron dot with any other color
-- Use Inter, Roboto, Arial, or any non-Geist typeface in brand materials
-- Add drop shadows, outlines, or glows not in the approved files
-- Place on busy photos without a clear background safe zone
-- Recreate from memory — always use approved SVG files
-
----
-
-## 🎨 Color Palette (v2.1 — Deep Night & Saffron)
-
-Use these exact hex values in all design tools.
-
-| Name | Hex | Role | Usage |
-|------|-----|------|-------|
-| Warm Bone | `#FDFBF7` | Canvas / Background | Main body background; feels like premium paper |
-| White Surface | `#FFFFFF` | Primary Surface | Clean product cards and UI panels |
-| **Saffron** | **`#F0C444`** | **Primary Accent** | **CTAs, badges, active states, brand dot** |
-| Saffron Hover / Dark | `#E0B434` | Accent Interaction | Hover and pressed states |
-| Yellow Muted | `#FFF8E1` | Accent Background | Soft yellow tints, tags, chip backgrounds |
-| Accent Text | `#0B0B0D` | Text on Saffron | Primary foreground on accent surfaces |
-| Deep Night | `#0B0B0D` | Text Primary | Headlines, body, high-contrast containers |
-| Muted Text | `#525252` | Text Secondary | Supporting text, secondary actions, metadata |
-| Warm Border | `#E8E4DC` | Structural Border | Thin dividers, outer bezel lines |
-| Image Well | `#F7F1E8` | Image Background | Product image wells |
-| Image Well Border | `#E8E0D4` | Image Border | Borders around image wells |
-| Error Red | `#E34234` | Danger | Out-of-stock, system alerts |
-| Success Green | `#16A34A` | Success | Confirmed, in-stock, delivery states |
-
-> Use the storefront tokens above as the source of truth. Older materials may contain retired yellow and charcoal values; replace them with `#F0C444` and `#0B0B0D`.
-
----
-
-## ✍️ Typography
-
-All brand communications use **Geist** (sans-serif) and **Geist Mono** (monospace) exclusively.
-
-| Role | Font | Weight | Size | Tracking | Line-Height |
-|------|------|--------|------|----------|-------------|
-| Display / Hero | Geist | 800 | `clamp(3rem, 8vw, 6rem)` | `-0.03em` | `0.95` |
-| Section Heading (H1) | Geist | 700 | `clamp(2rem, 5vw, 3.5rem)` | `-0.02em` | `1.1` |
-| Card Title (H2) | Geist | 600 | `1.25rem` | `-0.01em` | `1.3` |
-| Body Copy | Geist | 400 | `1rem` | `0` | `1.6` |
-| Price / Code | Geist Mono | 500 | `1.125rem` | `+0.02em` | `1.2` |
-| Tags / Badges | Geist | 500 | `0.75rem` | `+0.05em` | `1.4` |
-| Bengali Fallback | Noto Sans Bengali | 400–700 | Matching | `0` | `1.6` |
-
-> **Banned:** Inter, Roboto, Arial, Open Sans, Helvetica — do NOT use in any brand asset.
-
----
-
-## 🖼️ Iconography
-
-| Attribute | Spec |
-|-----------|------|
-| Style | Ultra-lightweight line icons — minimal stroke weight |
-| Library | `@phosphor-icons/web` (Light variant) or equivalent thin-line set |
-| Core Set | Shopping bag, egg carton, jar, loaf, delivery bag, grocery basket, storefront |
-| Color | Deep Night `#0B0B0D` on light BG; White `#FFFFFF` on dark BG |
-| Avoid | Thick-stroked Lucide, FontAwesome solid fill, Material Icons filled |
-
----
-
-## 📐 Social Media Templates
-
-### Instagram Feed Post (1:1 or 4:5)
-
-**Layout:**
-```
-┌─────────────────────────┐
-│  [Warm lifestyle photo   │
-│   on bone/cream surface] │
-│                          │
-│  ──────────────────────  │
-│  "ভোরের তাজা সবজি"        │
-│  "Morning-fresh produce" │
-│                          │
-│  💰 ৳25/kg    🛵 Same Day │
-│                          │
-│  ┌───────────────────┐   │
-│  │  Order Now  ↗     │   │  ← Saffron pill (`#F0C444`)
-│  └───────────────────┘   │
-│       luckystore1947.com   │
-└─────────────────────────┘
-```
-
-**Specs:**
-- Canvas: `1080×1350px` (4:5) or `1080×1080px` (1:1)
-- Photo area: Top 65%, warm natural light
-- Background: Warm Bone `#FDFBF7`
-- Price CTA pill: Saffron `#F0C444`, text Deep Night `#0B0B0D`
-- Font: **Geist Bold** (English), **Noto Sans Bengali Bold** (Bangla)
+# Lucky Store 1947 — Brand & Social Marketing Kit
+
+> Reviewed 2026-10-06 against the live customer storefront and its source assets.
+> Treat this folder as handoff guidance. The storefront and current owner-approved
+> campaign details remain the source of truth.
+
+## Brand system
+
+Lucky Store's current storefront uses a warm, practical neighborhood-grocery
+look: Warm Bone surfaces, Saffron actions, Deep Night text, rounded product
+surfaces, and simple line icons. Keep compositions calm and product-led. Use
+the website's approved composite logo artwork; do not reconstruct its letters
+or replace the friendly grocery-bag mark.
+
+## Approved logo files
+
+These copies are synchronized from the active customer storefront:
+
+| Use | File in this kit | Current storefront source |
+|-----|------------------|--------------------------|
+| English logo, light background | assets/logo/approved/logo-main.png | apps/customer_storefront/public/logo-main.png |
+| English logo, dark background | assets/logo/approved/logo-main-inverse.png | apps/customer_storefront/public/logo-main-inverse.png |
+| Bengali logo, light background | assets/logo/approved/logo-bangla.svg | apps/customer_storefront/public/logo-bangla.svg |
+| Bengali logo, dark background | assets/logo/approved/logo-bangla-inverse.svg | apps/customer_storefront/public/logo-bangla-inverse.svg |
+| Favicon | assets/logo/approved/favicon.svg | apps/customer_storefront/public/favicon.svg |
+
+The English artwork is a composite wordmark, grocery-bag mark, and 1947 lockup.
+Keep it intact: preserve proportions and clear space, do not crop, redraw,
+ungroup, replace the O with a dot, or move the year. The files in
+assets/logo/svg and assets/logo/canva-svg are historical exports; do not use
+them as approved artwork unless they are checked against the files above.
+
+There are no tested minimum-size measurements in this kit. Scale the complete
+logo proportionally and check that the wordmark, mark, and year stay legible.
+
+## Storefront colors
+
+Use the light and dark values from
+apps/customer_storefront/app/tokens.css:
+
+| Role | Light theme | Dark theme |
+|------|-------------|------------|
+| Page background | Warm Bone #FDFBF7 | #0F0F0F |
+| Surface | White #FFFFFF | #121212 |
+| Main text | Deep Night #0B0B0D | #F5F0EB |
+| Supporting text | Muted #525252 | #B0A89E |
+| Main accent | Saffron #F0C444 | Saffron #F0C444 |
+| Accent text | Deep Night #0B0B0D | Deep Night #0B0B0D |
+| Accent hover | #E0B434 | #D4A820 |
+| Soft accent surface | #FFF8E1 | #2A2418 |
+| Border | #E8E4DC | rgba(245, 240, 235, 0.12) |
+
+Use red and green only for their semantic states, not as replacement brand
+colors. The storefront palette reference at storefront-color-palette.svg shows
+the core light-theme colors.
+
+## Typography and icons
+
+The live storefront loads Bricolage Grotesque for display, Manrope for
+interface and body text, Geist Mono for numeric and code-like details, and
+Noto Sans Bengali for Bengali text. See
+apps/customer_storefront/app/RootLayoutDocument.tsx and
+apps/customer_storefront/app/tokens.css.
+
+The bundled fonts/ directory is not a complete current storefront font
+package: it contains Geist sans files, not Bricolage Grotesque, Manrope,
+Geist Mono, or Noto Sans Bengali. Do not treat it as proof that Geist is the
+primary storefront font or redistribute fonts outside their license terms.
+
+For Canva, use these faces if available. Do not substitute Plus Jakarta Sans,
+Outfit, or Space Mono as though they were the live storefront fonts. If an
+exact face is unavailable, use a Canva-rendered export of the approved logo
+and keep other text simple; do not retype the logo.
+
+The site uses Phosphor web icons with component-specific weights. Prefer
+simple, consistent line icons and avoid mixing unrelated filled icon styles.
+
+## Claims and copy
+
+The live homepage displayed these service points when this kit was reviewed:
+delivery within 1 km of Chawkbazar, free delivery on orders of ৳500+, and
+payment after doorstep inspection through Cash on Delivery or bKash. It also
+states that Lucky Store has served Chattogram since 1947. Verify all prices,
+availability, delivery terms, hours, and promotions on the current storefront
+before each campaign; these details can change.
+
+Use placeholders for any unverified detail:
+
+- Product: [exact current storefront listing]
+- Price and availability: [check the current listing]
+- Offer, dates, exclusions, and terms: [confirm with the owner and storefront]
+- Delivery wording: [use the current delivery page]
+- Customer quote: [use only with documented permission and exact source]
+
+Do not publish invented testimonials, customer names or locations, farmer or
+supplier claims, same-day promises, price examples, limited-stock statements,
+or discount terms as facts. The older Rafiq/Dhanmondi testimonial and the
+older same-day/farmer copy have been removed from this guide.
+
+### Safe copy starters
+
+Restock:
+“Today's pick: [product name], [current price]. Check availability and order
+from Lucky Store.”
 
-### Instagram Story (9:16)
+Delivery:
+“Lucky Store delivers within 1 km of Chawkbazar. Free delivery on ৳500+
+orders. Please confirm current terms on the delivery page.”
 
-**Layout:**
-```
-┌────────────────┐
-│ 🍅 Fresh Tomatoes│  ← Top badge, Geist bold white
-│    ৳45/kg      │
-│                │
-│  [Full bleed   │
-│   warm photo]  │
-│                │
-│  ┌──────────┐  │
-│  │  Order ↗ │  │  ← Saffron pill (`#F0C444`), bottom
-│  └──────────┘  │
-└────────────────┘
-```
+Promotion:
+“[Verified offer] on [eligible products], [start date]–[end date].
+[Conditions and exclusions]. Check the current listing before ordering.”
 
-**Specs:**
-- Canvas: `1080×1920px`
-- Full-bleed photo with warm tones
-- Badge: Geist Bold, white, `rgba(11, 11, 13, 0.5)` backdrop
-- CTA pill: `#F0C444`, text `#0B0B0D`, `border-radius: 9999px`
+These are drafts. Confirm each bracketed field and current service details
+before publishing.
 
-### Facebook Cover (16:9)
+## Social formats and photography
 
-- Canvas: `820×312px`
-- Left third: Wordmark + tagline on Warm Bone `#FDFBF7`
-- Right two-thirds: Seasonal hero photo (warm, natural light)
-- Overlay gradient: left-to-right `#FDFBF7` → transparent
-- Update seasonally per campaign calendar
+Common starting canvases: Instagram feed 1080 × 1350 or 1080 × 1080;
+stories/status 1080 × 1920; Facebook cover 820 × 312. Check each platform's
+current safe areas before export.
 
-### WhatsApp Status (9:16)
+Use warm, natural, tactile product photography with uncluttered backgrounds.
+Keep the palette restrained, leave space for editable copy, and add final text
+in Canva rather than baking it into generated imagery. Show the actual product
+and packaging; do not combine unrelated brand marks or invent product labels.
 
-- Same template as Instagram Story
-- Frequency: 2–3/day (morning, noon, evening)
-- Content: Daily arrivals, restocks, behind-the-scenes
-- CTA: "Reply to order" or "Tap link in bio"
+The former ice-cream campaign images are archived at
+social-media-post/archive/unapproved-ice-cream-campaign.png and
+social-media-post/archive/unapproved-ice-cream-campaign-alternate.png. They
+are not approved templates because their palette, logo treatment, offer copy,
+and generated package text do not match this system. The other social images
+are working drafts; verify product details, claims, and logo use before
+publishing.
 
----
+## Seasonal planning
 
-## 📝 Caption Library (Copy-Paste Ready)
+The calendar and seasonal ideas in this folder are prompts for planning, not
+confirmed campaign dates or offers. Check local dates and current product
+availability each year before scheduling.
 
-### Restock Alert
-
-> **Bangla-first, code-switched:**
-```
-🥬 এই সপ্তাহের তাজা —
-
-পালং শাক • ৳২৫/আটি
-বরবটি • ৳৩৫/কেজি
-লাল শাক • ৳২০/আটি
+## Contact and listing references
 
-সরাসরি আমাদের কৃষকের ঘর থেকে।
-Straight from our farmers.
-
-অর্ডার করতে রিপ্লাই করুন 💬
-Reply to order by 11 AM for same-day delivery 🛵
-
-#LuckyStoreBD #FreshChattogram #SameDayDelivery #LocalProduce
-```
-
-### Weekend Promo
-
-```
-🎉 ফ্রি ডেলিভারি উইকেন্ড!
-
-৳৫০০+ অর্ডারে ডেলিভারি ফ্রি।
-Free delivery on ৳500+ orders.
-
-Friday – Sunday
-Auto-applied. No code needed.
-
-অর্ডার করুন: luckystore1947.com
-Questions? WhatsApp us 💬
-```
-
-### Behind the Scenes
-
-```
-🌅 ভোর ৫টা।
-
-মার্কেটে পৌঁছে গেছি — আপনার সবজি বাছাই করতে।
-We're at the market by 5 AM picking your produce.
-
-এই তাজা, এই সত্যিকারের — শুধু আপনার জন্য।
-This fresh, this real — just for you.
-
-📍 Emdad Park, Chattogram
-🛵 Same-day delivery
-```
-
-### Customer Testimonial
-
-```
-⭐ "ভাই, আমি প্রথম অর্ডার করেছিলাম সন্দেহ নিয়ে।
-এখন আর মার্কেটে যাই না।"
-
-— Rafiq, Dhanmondi
-
-His first order was skeptical.
-Now he hasn't been to the market in months.
-
-Join him: luckystore1947.com
-```
-
----
-
-## 📸 Photography Direction
-
-**Aesthetic: Warm Neighborhood Grocery — Clean & Tactile**
-
-### Do's
-- Shoot in natural golden-hour or soft studio light on bone/cream surfaces
-- Use warm wood, linen, kraft paper, terracotta as props and textures
-- Show real produce: natural imperfections, soil on roots, dew on leaves
-- Capture tactile moments: flour dust, cracked eggs, steam over bread
-- Mix close-up macro shots with wider warm-kitchen compositions
-- Keep backgrounds consistent with Warm Bone `#FDFBF7` tones
-
-### Don'ts
-- Cold fluorescent lighting or clinical white seamless backgrounds
-- Over-styled or overly Pinterest-perfect aesthetics
-- Plastic packaging as the hero element
-- Heavy post-processing filters that shift away from warm tones
-
-### Filters/Vibe
-- Warmth boost: +5 to +10
-- Lift shadows slightly for a soft, tactile feel
-- Saturation: Natural — slight boost on yellows and warm oranges
-- Preferred: Authentic, community-oriented, not corporate
-
----
-
-## 📅 Seasonal Campaign Calendar
-
-| Occasion | Month | Hero Product | Hashtag Push |
-|----------|-------|--------------|--------------|
-| Ramadan | Mar–Apr | Dates, iftar bundles | `#RamadanSpecial` |
-| Eid-ul-Fitr | Shawwal | Meat, sweets, dry fruit | `#EidWithLucky` |
-| Pohela Boishakh | Apr 14 | Hilsha, panta bhat, mango | `#BoishakhFresh` |
-| Summer Fruits | May–Jul | Mango, litchi, jackfruit | `#SummerMango` |
-| Monsoon | Jun–Aug | Rain gear, ginger, turmeric | `#RainOrShine` |
-| Durga Puja | Sep–Oct | Festive pantry packs | `#PujaThali` |
-| Winter Veggies | Nov–Jan | Cauliflower, carrots, spinach | `#WinterHarvest` |
-| Year-End | Dec | Loyalty thank-you, recap | `#YearWithLucky` |
-
-> **Action:** Schedule 2-week content sprints ahead of each occasion.
-
----
-
-## 📱 WhatsApp Broadcast Best Practices
-
-### Timing
-- **Best:** 9:00–10:00 AM (morning restock), 2:00–3:00 PM (lunch), 6:00–7:00 PM (evening)
-- **Never:** After 9:00 PM, before 7:00 AM
-
-### Frequency
-- Daily broadcasts: **1–2 max** (over-sending = blocks + unsubscribes)
-- WhatsApp Status: **2–3/day** (easier to ignore if not interested)
-
-### Format
-```
-[Emoji hook] [Bold headline in Bangla]
-
-[Short body — 2–3 lines, mixed language]
-
-[Price or CTA]
-
-[Delivery info]
-
-[Hashtags — max 5]
-```
-
-### CTA Types
-| Goal | Copy |
-|------|------|
-| Direct order | "Reply with quantity" |
-| Browse | "See all: luckystore1947.com" |
-| Urgency | "Only 12 left — reply now" |
-| Feedback | "Reply YES if you want this weekly" |
-
----
-
-## 🚀 Launch Checklist for Social Team
-
-Before going live:
-
-- [ ] Logo pack downloaded and organized (SVG + PNG)
-- [ ] Saffron `#F0C444` + Deep Night `#0B0B0D` + Warm Bone `#FDFBF7` added to your design tool
-- [ ] **Geist** + **Geist Mono** + Noto Sans Bengali fonts installed
-- [ ] Canva/Figma templates created (feed, story, flyer)
-- [ ] Instagram Business account connected to `hello@luckystore1947.com`
-- [ ] Facebook page linked to Instagram
-- [ ] WhatsApp Business profile completed (catalog, hours, address)
-- [ ] 7 days of content scheduled in buffer
-- [ ] Bio link set to `luckystore1947.com`
-- [ ] First post published with proper hashtags
-
----
-
-## 📞 Questions?
-
-## 📍 Google Business Profile
-
-> Mandatory for local SEO, Google Maps presence, "near me" search, and customer reviews. Keep NAP (Name/Address/Phone) consistent across all platforms — Google penalizes mismatches.
-
-**Canonical Place ID (CID):** `0x30ad279098e1891f:0x9274c6c949a94b80`
-**Feature ID:** `g/11n9w6zw_l`
-
-### URLs
-
-| Use | URL |
-|-----|-----|
-| **Canonical Maps listing** | `https://www.google.com/maps/place/Lucky+Store/@22.3550277,91.8363056,17z` |
-| **Short URL (mobile, social bio)** | `https://maps.app.goo.gl/tfiRABoc1WsKEt619` |
-| **Write a review** | `https://g.page/r/CYBLqUnJxnSSEBM/review` |
-| **Directions** | `https://www.google.com/maps?q=Lucky+Store,+Emdad+Park,+665+Percival+Hill+Rd,+Chattogram+4203&ftid=0x30ad279098e1891f:0x9274c6c949a94b80` |
-
-### NAP (must match across all listings)
-
-  - **Name:** Lucky Store
-  - **Address:** Emdad Park, 665 Percival Hill Rd, Chattogram 4203, Bangladesh
-  - **Phone:** +880 1731-944544
-  - **Area label:** Chawkbazar, Chittagong (বাংলা: চকবাজার, চট্টগ্রাম)
-  - **Hours:** _(set in GBP dashboard — confirm with Mac)_
-  - **Category:** Grocery store / Supermarket (primary), plus secondary: Convenience store, Fruit & vegetable store
-
-### How to share
-
-  - In **Instagram/TikTok bio**: use the short URL (mobile-friendly)
-  - In **Facebook page "About"**: use the full Maps URL
-  - In **print materials / flyers**: use the short URL or a QR code (the existing `scripts/tools/price_tags/price_tags_qr.html` can generate a QR)
-  - In **email signatures**: "Find us on Google Maps → [short URL]"
-
-### Review solicitation
-
-  - Send the review URL via WhatsApp 1-2 days after a successful delivery
-  - **Never** offer discounts for reviews (violates Google policy)
-  - **Never** write fake reviews — brand pillar is wholesale honesty
-  - Negative reviews: respond within 24h, public reply + move to DM/WhatsApp for resolution
-
----
-
-## 📞 Quick Contact
-
-| Topic | Contact |
-|-------|---------|
-| Logo usage / asset requests | hello@luckystore1947.com |
-| Campaign ideas | Mac (WhatsApp) |
-| Technical / website issues | dev@luckystore1947.com |
-| Urgent approvals | WhatsApp group "Lucky Store Marketing" |
-
----
-
-*These materials are proprietary to Lucky Store 1947. Share only with authorized team members.*
+The storefront currently displays hello@luckystore1947.com and
++880 1731 944544. Use the contact page as the current public reference.
+Business Profile identifiers, hours, addresses, social handles, and internal
+team contacts elsewhere in this folder have not been revalidated in this
+review; confirm them against the live source before use.

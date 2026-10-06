@@ -1,150 +1,92 @@
-# Canva Usage Guide — Lucky Store 1947 Logo (v2.0)
-> For Social Media Marketing Team
-> Updated: June 2026
-> Brand System: v2.0 — Premium Sans-Serif Yellow-Locked
+# Canva Logo Guide — Lucky Store 1947
 
----
+> Reviewed 2026-10-06 against the live customer storefront.
+> Source of truth: the current storefront logo files and the parent brand README.
 
-## Logo Concept (v2.0)
+## Use the approved artwork
 
-The Lucky Store logo is a **bold, stacked, all-caps wordmark:**
+The live English logo is a composite image: LUCKY STORE wordmark, smiling
+grocery-bag mark, and 1947 on one baseline. Do not rebuild or ungroup it, type
+a substitute wordmark, replace the O with a dot, remove the bag, or move the
+year.
 
-```
-LUCKY
-ST●RE
- 1947
-```
+Use these exact files from the brand kit:
 
-- `LUCKY` on the first line, `ST●RE` on the second (the O is replaced by a solid **Saffron #F0C444** circle)
-- `1947` in small monospace below
-- **No bag, no leaf, no icon** — the wordmark IS the logo
-- All text in geometric sans-serif weight 800
+| Theme/language | File |
+|----------------|------|
+| English, light background | ../approved/logo-main.png |
+| English, dark background | ../approved/logo-main-inverse.png |
+| Bengali, light background | ../approved/logo-bangla.svg |
+| Bengali, dark background | ../approved/logo-bangla-inverse.svg |
 
----
+For Canva, upload the approved English PNG and place it as one locked image.
+Keep its proportions, do not crop any part, and leave clear space around the
+complete artwork. Use the Bengali SVG artwork intact. Preview the exported
+design at its intended size before publishing.
 
-## Uploading to Canva
+The files beside this guide (LS-LOGO-eng.svg, LOGO-plain.svg,
+Lucky Store - Est. 1947-bangla.svg, and LSLOGO-bangl.svg) are historical
+exports, not verified against the live logo. Do not use them for new work
+until they are checked and promoted into the approved folder.
 
-### Method 1: SVG (Recommended)
+## Storefront type
 
-1. Go to **Uploads** → **Upload files**
-2. Drag `lucky-store-canva.svg`
-3. It appears in your Uploads panel
-4. Drag onto canvas
-5. **Right-click → Ungroup** to access layers:
-   - `line-lucky` — "LUCKY" wordmark text
-   - `line-store` — "ST  RE" wordmark text
-   - `dot-o` — Saffron `#F0C444` circle (the O)
-   - `year` — "1947" monospace text
+The current website loads Bricolage Grotesque for display, Manrope for
+interface and body copy, Geist Mono for numeric details, and Noto Sans Bengali.
+Choose these exact faces in Canva when available. If one is unavailable, use
+a plain readable Canva face for editable supporting copy only. Never retype,
+ungroup, or approximate the logo lettering. Do not label Plus Jakarta Sans,
+Outfit, or Space Mono as official brand fonts.
 
-### Method 2: PNG (Easiest)
+The bundled fonts/ folder contains Geist sans files only; it is not a complete
+copy of the live storefront font stack. Do not use those files to infer that
+Geist is the primary sans-serif or redistribute any font outside its license.
 
-1. Upload any PNG from `logo/pngs/`
-2. Drag onto canvas
-3. Use as-is — no font worries
-4. **Lock** the layer (so it doesn't move while you edit)
+## Color swatches
 
----
+Light theme:
 
-## Font Fix in Canva
+| Name | Hex | Use |
+|------|-----|-----|
+| Warm Bone | #FDFBF7 | Page/canvas background |
+| White Surface | #FFFFFF | Product and content surfaces |
+| Saffron | #F0C444 | Brand accent and primary actions |
+| Deep Night | #0B0B0D | Main text and text on Saffron |
+| Muted Text | #525252 | Supporting text |
+| Warm Border | #E8E4DC | Dividers and borders |
+| Soft Saffron | #FFF8E1 | Soft accent surface |
+| Saffron Hover | #E0B434 | Light-theme pressed/hover state |
 
-The SVG uses generic `sans-serif`. Canva will render with its default. Fix:
+Dark theme:
 
-1. Click the "LUCKY" text layer
-2. Change font to **"Plus Jakarta Sans ExtraBold"** or **"Outfit ExtraBold"** (closest Geist match)
-3. Do the same for "ST  RE"
-4. For "1947", use **"Space Mono"** or **"IBM Plex Mono"**
-5. Set letter-spacing to `-3` for wordmark, `+8` for year
+| Name | Hex | Use |
+|------|-----|-----|
+| Page background | #0F0F0F | Main dark canvas |
+| Surface | #121212 | Content surfaces |
+| Main text | #F5F0EB | Main text |
+| Supporting text | #B0A89E | Secondary text |
+| Border | rgba(245, 240, 235, 0.12) | Dividers and borders |
+| Soft Saffron | #2A2418 | Soft accent surface |
+| Saffron Hover | #D4A820 | Dark-theme pressed/hover state |
 
-### Closest Canva Font Matches
+These values are synchronized with
+apps/customer_storefront/app/tokens.css. Recheck the source when tokens change.
 
-| Brand Font | Canva Alternative |
-|------------|-------------------|
-| Geist 800 | Plus Jakarta Sans ExtraBold, Outfit ExtraBold |
-| Geist 700 | Plus Jakarta Sans Bold, Outfit Bold |
-| Geist 600 | Plus Jakarta Sans SemiBold |
-| Geist 400 | Plus Jakarta Sans Regular, Outfit Regular |
-| Geist Mono 500 | Space Mono, IBM Plex Mono Medium |
+## Canvas starting sizes
 
-> ⚠️ **BANNED fonts:** Inter, Roboto, Arial, Open Sans, Helvetica. Never use these.
+- Instagram feed: 1080 × 1350 or 1080 × 1080
+- Instagram story / WhatsApp status: 1080 × 1920
+- Facebook cover: 820 × 312
 
----
+Check the current platform safe areas before final export. Keep campaign text
+editable in Canva and leave clear space around the logo.
 
-## Using the Logo in Templates
+## Publishing checks
 
-### Social Media Posts
-
-| Canvas Size | Logo Placement | Logo Size |
-|-------------|----------------|-----------|
-| Instagram Feed (1080×1350) | Top-left corner | 80–100px wide |
-| Instagram Story (1080×1920) | Top-left or top-center | 60–80px wide |
-| Facebook Cover (820×312) | Left-third | 100–120px wide |
-| Facebook Post (1200×1200) | Top-left or bottom-right | 100px wide |
-| WhatsApp Status (1080×1920) | Top-center | 60–80px wide |
-
----
-
-## Brand Color Swatches for Canva
-
-Add these to your **Document Colors**:
-
-| Name | Hex | Usage |
-|------|-----|-------|
-| **Saffron** | `#F0C444` | CTAs, brand dot, badges, active states |
-| Saffron Hover | `#E0B434` | Button hover in the light theme |
-| Saffron Dark | `#D4A820` | Button hover in the dark theme |
-| Yellow Muted | `#FFF8E1` | Soft background tints |
-| Accent Text | `#0B0B0D` | Text on Saffron |
-| Warm Bone | `#FDFBF7` | Main background (feels like paper) |
-| Deep Night | `#0B0B0D` | Headlines, wordmark, primary text |
-| Muted Text | `#525252` | Subtitles and metadata |
-| Warm Border | `#E8E4DC` | Divider lines |
-| Image Well | `#F7F1E8` | Product image backgrounds |
-| Image Well Border | `#E8E0D4` | Image well borders |
-| Success Green | `#16A34A` | In-stock, confirmed |
-| Error Red | `#E34234` | Sold out, alerts |
-
-> Use the storefront palette above as the source of truth. Replace older yellow and charcoal values with Saffron `#F0C444` and Deep Night `#0B0B0D`.
-
----
-
-## Common Issues & Fixes
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| Logo looks blurry | Canvas too small | Start at 1080px minimum, export at 2x |
-| Font doesn't match | Canva lacks Geist | Use Plus Jakarta Sans ExtraBold |
-| Saffron dot misaligned | Ungrouped wrong | Position circle manually over the O gap |
-| Wrong yellow shade | Used a retired palette color | Use only Saffron `#F0C444` |
-| Text has serif | Used wrong font | Switch to geometric sans-serif immediately |
-
----
-
-## File Locations
-
-| File | Path |
-|------|------|
-| Canva SVG | `assets/logo/canva-svg/lucky-store-canva.svg` |
-| Primary SVG | `assets/logo/svg/lucky-store-primary.svg` |
-| Inverse SVG | `assets/logo/svg/lucky-store-inverse.svg` |
-| On-Yellow SVG | `assets/logo/svg/lucky-store-on-yellow.svg` |
-| On-Dark SVG | `assets/logo/svg/lucky-store-on-dark.svg` |
-| Mark SVG | `assets/logo/svg/lucky-store-mark.svg` |
-| This guide | `assets/logo/canva-svg/README.md` |
-
----
-
-## Quick Export Checklist
-
-Before downloading from Canva:
-
-- [ ] Logo is locked in position
-- [ ] Colors match storefront swatches (#F0C444, #0B0B0D, #FDFBF7)
-- [ ] Font is Plus Jakarta Sans ExtraBold (or Outfit ExtraBold)
-- [ ] No filters applied to logo
-- [ ] Canvas size matches target platform
-- [ ] Export as PNG (for web/social) or PDF (for print)
-- [ ] No retired yellow or charcoal colors remain
-
----
-
-*Questions? Ping Mac on WhatsApp or hello@luckystore1947.com*
+- Logo file comes from the approved folder and matches the target background.
+- Logo is locked, proportional, uncropped, and not reconstructed.
+- Product name, price, availability, promotion dates, exclusions, and delivery
+  wording have been checked against the live storefront and owner-approved terms.
+- No invented testimonials, sourcing claims, urgency, same-day promises, or
+  package text is presented as fact.
+- Export is inspected at its intended size for legibility and clipping.

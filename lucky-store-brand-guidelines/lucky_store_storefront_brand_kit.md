@@ -1,44 +1,53 @@
-# Lucky Store 1947 — Storefront Brand Identity System
+# Lucky Store 1947 — Storefront Brand Reference
 
-This document details the active storefront brand identity system for **Lucky Store 1947**, as currently implemented in the customer storefront application.
+> Reviewed 2026-10-06 against [the live storefront](https://www.luckystore1947.com/)
+> and its checked-in implementation.
 
-This system is characterized by a **Warm-Minimalist / Tactile Storefront** design language, combining modern editorial layout rules with physical shopkeeper cues.
+This document records the live customer storefront's identity. For the
+complete brand and social handoff, see lucky_store_brand_kit.md and README.md.
 
----
+## Active logo assets
 
-## Brand Strategy & Design System
+The English logo component selects logo-main.png for the light theme and
+logo-main-inverse.png for the dark theme. The Bengali interface selects
+logo-bangla.svg or logo-bangla-inverse.svg. The website's English logo is a
+composite wordmark, smiling grocery-bag mark, and 1947 lockup; it is not a
+text-only stacked logo with a saffron dot replacing the O.
 
-*   **Primary Logo:** Bold, stacked, all-caps `LUCKY STORE` wordmark in Geist Black (`#0B0B0D`) — the `O` in STORE is replaced by a solid Saffron circle (`#F0C444`). Year `1947` set beneath in Geist Mono muted text `#525252`. **This is the one and only approved primary logo — as shown in Panel 1 of the brand kit.**
-*   **Card Architecture:** The custom **“Double-Bezel”** component pattern. Every primary content card is nested in a dual-enclosure system to provide haptic depth.
-*   **Navigation:** The **“Fluid Island”** navbar—a floating glass pill detached from the viewport edges.
+The synchronized handoff copies are in assets/logo/approved/. Source files:
+../apps/customer_storefront/app/components/ui/Logo.tsx and
+../apps/customer_storefront/public/.
 
----
+## Color tokens
 
-## Visual Presentation
+Source: ../apps/customer_storefront/app/tokens.css.
 
-> **Panel 1 = Primary Logo** — Bold stacked `LUCKY STORE` wordmark with Saffron `#F0C444` dot-O and `1947` in Geist Mono.
+| Token | Light theme | Dark theme |
+|-------|-------------|------------|
+| Page background | #FDFBF7 | #0F0F0F |
+| Surface | #FFFFFF | #121212 |
+| Main text | #0B0B0D | #F5F0EB |
+| Supporting text | #525252 | #B0A89E |
+| Accent | #F0C444 | #F0C444 |
+| Accent text | #0B0B0D | #0B0B0D |
+| Accent hover | #E0B434 | #D4A820 |
+| Accent muted | #FFF8E1 | #2A2418 |
+| Border | #E8E4DC | rgba(245, 240, 235, 0.12) |
 
-![Lucky Store 1947 Sans-Serif Brand Kit (v2.0 — Primary)](./lucky_store_sans_brandkit_1782395179572.png)
+## Type and icon tokens
 
----
+RootLayoutDocument.tsx loads Bricolage Grotesque, Manrope, Geist Mono, and
+Noto Sans Bengali. tokens.css assigns Bricolage Grotesque to display, Manrope
+to interface/body, and Geist Mono to numeric details. Do not document Geist
+as the primary sans-serif.
 
-## Technical Specifications
+Phosphor web icons are used in the application with weights selected by
+component. There is no single global icon weight requirement.
 
-### 1. Color Palette (As Implemented)
-*   **Bone** (`#FDFBF7`): Main body background; soft, organic light surface that feels like premium paper.
-*   **Saffron** (`#F0C444`): Primary brand action color, used on high-priority interactive states (buttons, active category pills, brand dot).
-*   **Deep Night** (`#0B0B0D`): Primary text, headings, and high-contrast containers.
-*   **Muted Text** (`#525252`): Supporting text, secondary actions, and minor details.
-*   **Warm Border** (`#E8E4DC`): Thin, clean dividers and outer bezel lines.
+## Components versus brand rules
 
-### 2. Double-Bezel Architecture
-*   **Outer Bezel Wrapper:** `border: 1px solid #E8E4DC`, `padding: 6px`, `border-radius: 20px`, `background: #FFFFFF`.
-*   **Inner Core Container:** `border-radius: 14px`, `box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8)`, `padding: 16px`.
-
-### 3. Typography
-*   **Primary Sans-Serif:** **Geist**; used for highly legible interface labels, navigation, and body copy.
-*   **Primary Monospace:** **Geist Mono**; used for prices, weights, years, badges, and numeric data.
-
-### 4. Iconography
-*   **Style:** Clean, lightweight vector lines (utilizing `@phosphor-icons/web` in bold weight).
-*   **Core Icons:** Shopping bag, egg, jar, cookie, delivery truck.
+Rounded surfaces, compact pill controls, side navigation, product cards, and
+the hero layout are current interface patterns. Treat these as storefront
+implementation details; adapt them only when a campaign or print application
+benefits from them. Do not describe every card as a mandatory “Double-Bezel”
+or the navigation as a universal “Fluid Island” brand element.

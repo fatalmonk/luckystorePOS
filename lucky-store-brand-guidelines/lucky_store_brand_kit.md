@@ -1,58 +1,86 @@
-# Lucky Store 1947 — Brand Identity System (Yellow-Locked)
+# Lucky Store 1947 — Brand Identity System
 
-This document presents the definitive visual identity system for **Lucky Store 1947**, a premium neighborhood grocery institution.
+> Updated 2026-10-06 after comparison with the live storefront and its source files.
+> Current visual reference: [luckystore1947.com](https://www.luckystore1947.com/).
 
-The design system is purely **Sans-Serif**, conveying approachability, clarity, and modern trust as a friendly neighborhood institution. All Serif elements are banned.
+## Brand idea
 
-> **PRIMARY LOGO:** The bold, stacked, all-caps wordmark `LUCKY STORE` — Deep Night `#0B0B0D` letterforms with the `O` in STORE replaced by a solid Saffron `#f0c444` circle dot — and the year `1947` set in Geist Mono below. This is the one and only approved primary logo. All other variations are secondary or inverse-only.
+A familiar neighborhood grocery made easy to shop: practical, welcoming, and
+clear. The storefront expresses this through warm light surfaces, Saffron
+actions, dark readable text, real product photography, and compact interface
+details. Keep the identity friendly and useful rather than ornate or luxury-coded.
 
----
+## Logo
 
-## Brand Strategy & Design System
+The active English primary logo is a single composite artwork: the LUCKY STORE
+wordmark, a smiling grocery-bag mark, and 1947 on the same baseline. Use the
+approved image as supplied. Do not replace the O with a saffron circle, stack
+the wordmark, move the year below it, remove the bag mark, or rebuild the
+lettering with live text.
 
-*   **Primary Logo (Panel 1):** Bold, stacked, all-caps wordmark `LUCKY STORE` in Geist Black (`#0B0B0D`). The `O` in `STORE` is a solid Saffron circle (`#F0C444`). Below the wordmark, the founding year `1947` in Geist Mono muted text (`#525252`). — **This is the only approved primary logo.**
-*   **Aesthetic Vibe:** Warm-minimalist, clean, tactile, and highly structural.
-*   **Design Anchors:** Double-bezel cards (6px padding) and floating fluid-island navigation.
+- Light background: assets/logo/approved/logo-main.png
+- Dark background: assets/logo/approved/logo-main-inverse.png
+- Bengali, light: assets/logo/approved/logo-bangla.svg
+- Bengali, dark: assets/logo/approved/logo-bangla-inverse.svg
+- Favicon: assets/logo/approved/favicon.svg
 
----
+The approved copies are synchronized from
+../apps/customer_storefront/public/. Keep each complete mark proportional,
+uncropped, and clear of nearby text. The live implementation is in
+../apps/customer_storefront/app/components/ui/Logo.tsx.
 
-## Visual Presentation
+## Color system
 
-![Lucky Store 1947 Sans-Serif Brand Kit](./lucky_store_sans_brandkit_1782395179572.png)
+These values reflect the current storefront tokens in
+../apps/customer_storefront/app/tokens.css.
 
----
+| Role | Light theme | Dark theme |
+|------|-------------|------------|
+| Page background | #FDFBF7 | #0F0F0F |
+| Surface | #FFFFFF | #121212 |
+| Main text | #0B0B0D | #F5F0EB |
+| Supporting text | #525252 | #B0A89E |
+| Brand accent | #F0C444 | #F0C444 |
+| Text on accent | #0B0B0D | #0B0B0D |
+| Accent hover | #E0B434 | #D4A820 |
+| Soft accent surface | #FFF8E1 | #2A2418 |
+| Border | #E8E4DC | rgba(245, 240, 235, 0.12) |
 
-## Brand Specifications
+Keep Saffron as the recognizable accent. Red and green are semantic interface
+states, not alternate brand palettes. storefront-color-palette.svg documents
+the core light-theme swatches.
 
-### 1. Color Palette (Saffron/Deep Night)
+## Typography
 
-| Role | Token | Hex | Usage |
-| :--- | :--- | :--- | :--- |
-| Canvas / Background | `var(--color-paper)` | `#FDFBF7` | Warm bone white — softer than pure white |
-| Primary Surface | `var(--color-surface)` | `#FFFFFF` | Clean, tactile product cards |
-| Text Primary | `var(--color-foreground)` | `#0B0B0D` | Deep Night for readability |
-| Text Secondary | `var(--color-muted)` | `#525252` | Muted text for metadata and secondary info |
-| **Saffron** | `var(--color-accent)` | **#F0C444** | **Primary accent — CTAs, badges, highlights** |
-| Yellow Light | `var(--color-accent-muted)` | `#FFF8E1` | Soft yellow background tints, tags, highlights |
-| Accent Hover / Dark | `var(--color-accent-dark)` | `#E0B434` | Saffron hover and pressed state |
-| Structural Borders | `var(--color-border)` | `#E8E4DC` | Warm grey dividers — never cold `#E5E7EB` |
-| Error / Alert | `var(--color-danger)` | `#E34234` | Red for out-of-stock and system alerts |
-| Success | `var(--color-success)` | `#16A34A` | Green for success checkmarks and delivery states |
+The customer storefront loads:
 
-### 2. Typography
+- Display: Bricolage Grotesque
+- Interface and body: Manrope
+- Prices and numeric details: Geist Mono
+- Bengali: Noto Sans Bengali
 
-*   **Display / Hero:** **Geist** | Weight: `800` | Size: `clamp(3rem, 8vw, 6rem)` | Tracking: `-0.03em` | Line-Height: `0.95`
-*   **H1 Section:** **Geist** | Weight: `700` | Size: `clamp(2rem, 5vw, 3.5rem)` | Tracking: `-0.02em` | Line-Height: `1.1`
-*   **H2 Card Title:** **Geist** | Weight: `600` | Size: `1.25rem` | Tracking: `-0.01em` | Line-Height: `1.3`
-*   **Body:** **Geist** | Weight: `400` | Size: `1rem` | Tracking: `0` | Line-Height: `1.6`
-*   **Mono / Price:** **Geist Mono** | Weight: `500` | Size: `1.125rem` | Tracking: `0.02em` | Line-Height: `1.2`
-*   **Micro / Tags:** **Geist** | Weight: `500` | Size: `0.75rem` | Tracking: `0.05em` | Line-Height: `1.4`
-*   **Bengali Fallback:** **Noto Sans Bengali** | Weight: `400-700` | Size: Matching | Tracking: `0` | Line-Height: `1.6`
+The font loading is declared in
+../apps/customer_storefront/app/RootLayoutDocument.tsx, with role tokens in
+../apps/customer_storefront/app/tokens.css. Do not describe Geist as the
+storefront's primary sans-serif. In Canva, use the exact faces when available;
+never retype or alter the composite logo.
 
----
+## Storefront expression
 
-## Technical Implementations
+The website uses warm rounded surfaces, compact pill-shaped controls, clear
+hierarchy, and simple Phosphor icons with component-specific weights. These
+are implementation references, not mandatory recipes for every print or social
+layout. Keep campaign art simple, legible, and within the light or dark
+palette.
 
-1.  **Tailwind Class Mapping:** All elements in the storefront codebase have been refactored to use Tailwind classes (`bg-warm-bg`, `text-warm-fg`, `text-warm-muted`, `border-warm-border`, `bg-warm-accent`, `font-body`, `font-mono`) to automatically inherit these design rules.
-2.  **Double-Bezel Layout:** Cards use outer `#E8E4DC` bezels with concentric internal padding to emphasize structured craftsmanship.
-3.  **Contrast Standards:** Text on Saffron backgrounds uses Deep Night `#0B0B0D` as configured by `--color-accent-text`.
+## Source and asset status
+
+The approved assets under assets/logo/approved are copied from the current
+storefront. Compare them with the source files after a storefront logo update.
+Files under assets/logo/svg and assets/logo/canva-svg are retained historical
+exports and are not approved for new work unless visually checked against the
+current composite logo.
+
+There is no brand-board image in this folder. Use the live website and the
+approved logo files as visual references; do not rely on the previously broken
+image link.
