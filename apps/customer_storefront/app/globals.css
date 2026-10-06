@@ -1168,3 +1168,10 @@ html.theme-transitioning .glass {
 [data-theme="dark"] [class*="border-white/"] {
   border-color: rgba(255, 255, 255, 0.08);
 }
+
+/* Skips off-screen layout/style calculations until scrolled into view */
+.shelf-container-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 420px;
+}
+

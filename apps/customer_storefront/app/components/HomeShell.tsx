@@ -165,41 +165,50 @@ export function HomeShell({
               ctaLabel={dict.reels.seeAll}
               locale={locale}
             />
-            <ProductGridSection
-              id="daily-essentials"
-              title={dict.reels.pantryTitle}
-              subtitle={dict.reels.pantrySubtitle}
-              products={pantryProducts.slice(0, 15)}
-              ctaHref={withLocale('/category/cooking-essentials', locale)}
-              ctaLabel={dict.reels.seeAll}
-              locale={locale}
-            />
+            <div className="shelf-container-deferred">
+              <ProductGridSection
+                id="daily-essentials"
+                title={dict.reels.pantryTitle}
+                subtitle={dict.reels.pantrySubtitle}
+                products={pantryProducts.slice(0, 15)}
+                ctaHref={withLocale('/category/cooking-essentials', locale)}
+                ctaLabel={dict.reels.seeAll}
+                locale={locale}
+              />
+            </div>
 
-            <div className="py-2 sm:py-4">
+            <div className="shelf-container-deferred py-2 sm:py-4">
               <DealOfTheWeek products={inStock} locale={locale} />
             </div>
 
-            <ProductGridSection
-              id="snacks-drinks"
-              title={dict.reels.snacksTitle}
-              subtitle={dict.reels.snacksSubtitle}
-              products={snacksProducts.slice(0, 15)}
-              ctaHref={withLocale('/category/snacks', locale)}
-              ctaLabel={dict.reels.seeAll}
-              locale={locale}
-            />
-            <ProductGridSection
-              id="home-personal-care"
-              title={dict.reels.careTitle}
-              subtitle={dict.reels.careSubtitle}
-              products={personalCareProducts.slice(0, 15)}
-              ctaHref={withLocale('/category/personal-care', locale)}
-              ctaLabel={dict.reels.seeAll}
-              locale={locale}
-            />
+            <div className="shelf-container-deferred">
+              <ProductGridSection
+                id="snacks-drinks"
+                title={dict.reels.snacksTitle}
+                subtitle={dict.reels.snacksSubtitle}
+                products={snacksProducts.slice(0, 15)}
+                ctaHref={withLocale('/category/snacks', locale)}
+                ctaLabel={dict.reels.seeAll}
+                locale={locale}
+              />
+            </div>
+
+            <div className="shelf-container-deferred">
+              <ProductGridSection
+                id="home-personal-care"
+                title={dict.reels.careTitle}
+                subtitle={dict.reels.careSubtitle}
+                products={personalCareProducts.slice(0, 15)}
+                ctaHref={withLocale('/category/personal-care', locale)}
+                ctaLabel={dict.reels.seeAll}
+                locale={locale}
+              />
+            </div>
           </div>
 
-          <HeritageParallax locale={locale} />
+          <div className="shelf-container-deferred">
+            <HeritageParallax locale={locale} />
+          </div>
         </div>
       </main>
       <Footer locale={locale} />
