@@ -1,5 +1,7 @@
 -- P1 Security Hardening: Consolidate and strictly tenant-isolate expenses, items, and stock_levels policies.
 
+SET LOCAL lock_timeout = '5s';
+
 -- 1. expenses ---------------------------------------------------------------
 DO $$
 DECLARE pol record;
@@ -127,7 +129,10 @@ CREATE POLICY stock_levels_write_authorized ON public.stock_levels
       JOIN public.stores s ON s.id = stock_levels.store_id
       WHERE u.auth_id = (SELECT auth.uid())
         AND u.tenant_id = s.tenant_id
-        AND u.role = ANY (ARRAY['admin'::text, 'manager'::text, 'stock'::text])
+        AND (
+          u.role = 'admin'
+          OR (u.role = ANY (ARRAY['manager'::text, 'stock'::text]) AND u.store_id = stock_levels.store_id)
+        )
     )
   )
   WITH CHECK (
@@ -136,6 +141,9 @@ CREATE POLICY stock_levels_write_authorized ON public.stock_levels
       JOIN public.stores s ON s.id = stock_levels.store_id
       WHERE u.auth_id = (SELECT auth.uid())
         AND u.tenant_id = s.tenant_id
-        AND u.role = ANY (ARRAY['admin'::text, 'manager'::text, 'stock'::text])
+        AND (
+          u.role = 'admin'
+          OR (u.role = ANY (ARRAY['manager'::text, 'stock'::text]) AND u.store_id = stock_levels.store_id)
+        )
     )
   );

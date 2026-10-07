@@ -188,12 +188,12 @@ export class SupabaseProductAdapter implements ProductDataPort {
       return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
     }
 
-    // Fallback: RPC scan
+    // Fallback: RPC scan (up to max page limit)
     const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
       p_store_id: this.storeId,
       p_query: '',
       p_category_id: null,
-      p_limit: 100,
+      p_limit: 1000,
       p_offset: 0,
     });
 

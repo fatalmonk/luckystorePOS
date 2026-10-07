@@ -2,6 +2,8 @@
 -- 1. Eliminate duplicate indexes on high-write tables.
 -- 2. Enforce immutable search_path on remaining SECURITY DEFINER functions.
 
+SET LOCAL lock_timeout = '5s';
+
 -- 1. Drop redundant duplicate indexes (preserving primary keys & unique constraints)
 DROP INDEX IF EXISTS public.idx_stock_levels_store_item;
 DROP INDEX IF EXISTS public.idx_sale_items_item_id;
@@ -11,8 +13,9 @@ DROP INDEX IF EXISTS public.idx_categories_name;
 DROP INDEX IF EXISTS public.idx_lpq_sale_id;
 DROP INDEX IF EXISTS public.idx_users_auth_id_unique;
 DROP INDEX IF EXISTS public.idx_daily_sales_store_date;
-DROP INDEX IF EXISTS public.idx_idempotency_keys_tenant_key_prepared;
-DROP INDEX IF EXISTS public.idx_idempotency_keys_tenant_pkey_prepared;
+
+-- Drop redundant unique constraint (idempotency_keys_pkey already enforces (tenant_id, idempotency_key))
+ALTER TABLE IF EXISTS public.idempotency_keys DROP CONSTRAINT IF EXISTS idempotency_keys_tenant_key_unique;
 
 -- 2. Secure search_path on SECURITY DEFINER functions
 DO $$

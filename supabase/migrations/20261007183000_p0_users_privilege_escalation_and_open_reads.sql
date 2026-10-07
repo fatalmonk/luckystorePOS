@@ -6,6 +6,8 @@
 -- Deferred (needs live verification + app change): products/categories true-policies,
 -- anon search_items_pos/search_products (storefront checkout uses search_items_pos as anon).
 
+SET LOCAL lock_timeout = '5s';
+
 -- Helper: avoids RLS recursion on users. SECURITY DEFINER, fixed search_path, no anon access.
 CREATE OR REPLACE FUNCTION public.is_tenant_admin(p_tenant_id uuid)
 RETURNS boolean

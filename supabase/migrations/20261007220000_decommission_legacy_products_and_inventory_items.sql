@@ -1,6 +1,8 @@
 -- Decommission legacy redundant catalog tables: public.products and public.inventory_items.
 -- Canonical catalog single source of truth is public.items.
 
+SET LOCAL lock_timeout = '5s';
+
 -- 1. Create archive schema for historical safety
 CREATE SCHEMA IF NOT EXISTS archive;
 
@@ -12,6 +14,7 @@ BEGIN
       SELECT * FROM public.products;
 
     -- Reconcile any missing items from products into items before dropping
+    -- Match strictly on SKU and barcode identifiers so distinct products with same name are preserved.
     INSERT INTO public.items (
       tenant_id,
       name,
@@ -40,11 +43,10 @@ BEGIN
       SELECT 1 FROM public.items i
       WHERE (p.sku IS NOT NULL AND i.sku = p.sku)
          OR (p.barcode IS NOT NULL AND i.barcode = p.barcode)
-         OR i.name = p.name
     )
     ON CONFLICT DO NOTHING;
 
-    DROP TABLE public.products CASCADE;
+    DROP TABLE public.products RESTRICT;
   END IF;
 END $$;
 
@@ -57,6 +59,6 @@ BEGIN
         SELECT * FROM public.inventory_items;
     END IF;
 
-    DROP TABLE public.inventory_items CASCADE;
+    DROP TABLE public.inventory_items RESTRICT;
   END IF;
 END $$;

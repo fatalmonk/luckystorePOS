@@ -1,8 +1,22 @@
 -- P0 follow-up: tenant isolation for categories and products.
 -- PostgreSQL ORs permissive policies, so any `USING (true)` policy defeats tenant policies.
 
+SET LOCAL lock_timeout = '5s';
+
 -- categories ---------------------------------------------------------------
 DROP POLICY IF EXISTS categories_select_authenticated ON public.categories;
+DROP POLICY IF EXISTS categories_select_anon ON public.categories;
+
+-- Enable RLS on categories
+ALTER TABLE IF EXISTS public.categories ENABLE ROW LEVEL SECURITY;
+
+-- Anonymous reads on categories must be scoped to active rows within the default storefront tenant
+CREATE POLICY categories_select_anon ON public.categories
+  FOR SELECT TO anon
+  USING (
+    active = true
+    AND (tenant_id = '00000000-0000-0000-0000-000000000001'::uuid OR tenant_id IS NULL)
+  );
 
 -- Legacy rows with NULL tenant_id stay visible/editable only inside their own store.
 DROP POLICY IF EXISTS categories_select_tenant_isolated ON public.categories;
@@ -68,6 +82,8 @@ DECLARE pol record;
 BEGIN
   IF to_regclass('public.products') IS NULL THEN RETURN; END IF;
 
+  EXECUTE 'ALTER TABLE IF EXISTS public.products ENABLE ROW LEVEL SECURITY';
+
   FOR pol IN
     SELECT policyname FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'products' AND cmd = 'SELECT'
@@ -79,7 +95,7 @@ BEGIN
 
   EXECUTE 'DROP POLICY IF EXISTS products_select_anon_active ON public.products';
   EXECUTE 'CREATE POLICY products_select_anon_active ON public.products
-           FOR SELECT TO anon USING (is_active = true)';
+           FOR SELECT TO anon USING (is_active = true AND (tenant_id = ''00000000-0000-0000-0000-000000000001''::uuid OR tenant_id IS NULL))';
 
   EXECUTE 'DROP POLICY IF EXISTS products_select_tenant ON public.products';
   EXECUTE 'CREATE POLICY products_select_tenant ON public.products

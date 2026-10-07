@@ -42,6 +42,7 @@ BEGIN
         i.barcode,
         i.short_code,
         i.name,
+        i.description,
         i.brand,
         COALESCE(i.mrp, i.price) AS mrp,
         i.price,
@@ -132,7 +133,7 @@ END $$;
 -- 4. Revoke anonymous column-level SELECT on internal cost & stock metrics
 REVOKE SELECT ON public.items FROM anon, PUBLIC;
 GRANT SELECT (
-  id, tenant_id, name, sku, barcode, short_code, brand, price, mrp, group_tag, image_url, category_id, is_active, created_at, updated_at
+  id, tenant_id, name, description, sku, barcode, short_code, brand, price, mrp, group_tag, image_url, category_id, is_active, created_at, updated_at
 ) ON public.items TO anon;
 
 DO $$
@@ -140,7 +141,7 @@ BEGIN
   IF to_regclass('public.products') IS NOT NULL THEN
     EXECUTE 'REVOKE SELECT ON public.products FROM anon, PUBLIC';
     EXECUTE 'GRANT SELECT (
-      id, tenant_id, name, sku, barcode, short_code, brand, price, mrp, group_tag, image_url, category_id, is_active, created_at, updated_at
+      id, tenant_id, name, description, sku, barcode, short_code, brand, price, mrp, group_tag, image_url, category_id, is_active, created_at, updated_at
     ) ON public.products TO anon';
   END IF;
 END $$;

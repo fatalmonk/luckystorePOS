@@ -1,10 +1,15 @@
 -- Consolidate duplicate suppliers table into canonical public.parties table.
 -- Unified party model supports customers, suppliers, and dual entities.
 
+SET LOCAL lock_timeout = '5s';
+
 -- 1. Create archive schema for backup safety
 CREATE SCHEMA IF NOT EXISTS archive;
 
--- 2. Archive and reconcile suppliers into parties
+-- 2. Create supporting lookup index on parties for fast deduplication lookup
+CREATE INDEX IF NOT EXISTS idx_parties_tenant_name ON public.parties (tenant_id, name);
+
+-- 3. Archive and reconcile suppliers into parties
 DO $$
 BEGIN
   IF to_regclass('public.suppliers') IS NOT NULL THEN
@@ -24,12 +29,12 @@ BEGIN
       FROM public.suppliers s
       WHERE NOT EXISTS (
         SELECT 1 FROM public.parties p
-        WHERE p.id = s.id OR (p.name = s.name AND p.tenant_id = s.tenant_id)
+        WHERE p.id = s.id OR (p.tenant_id = s.tenant_id AND p.name = s.name)
       )
       ON CONFLICT (id) DO NOTHING;
     END IF;
 
-    -- Update purchase_orders foreign key to point to canonical parties table
+    -- Update purchase_orders foreign key to point to canonical parties table (NOT VALID + VALIDATE)
     IF to_regclass('public.purchase_orders') IS NOT NULL THEN
       ALTER TABLE public.purchase_orders
         DROP CONSTRAINT IF EXISTS purchase_orders_supplier_id_fkey;
@@ -37,9 +42,14 @@ BEGIN
       ALTER TABLE public.purchase_orders
         ADD CONSTRAINT purchase_orders_supplier_id_fkey
         FOREIGN KEY (supplier_id) REFERENCES public.parties(id)
-        ON DELETE SET NULL;
+        ON DELETE SET NULL
+        NOT VALID;
+
+      ALTER TABLE public.purchase_orders
+        VALIDATE CONSTRAINT purchase_orders_supplier_id_fkey;
     END IF;
 
-    DROP TABLE public.suppliers CASCADE;
+    -- Safe drop using RESTRICT after all documented dependents have been re-targeted
+    DROP TABLE public.suppliers RESTRICT;
   END IF;
 END $$;
