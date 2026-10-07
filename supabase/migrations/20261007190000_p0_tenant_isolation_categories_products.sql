@@ -93,16 +93,6 @@ BEGIN
     EXECUTE format('DROP POLICY %I ON public.products', pol.policyname);
   END LOOP;
 
-  EXECUTE 'DROP POLICY IF EXISTS products_select_anon_active ON public.products';
-  EXECUTE 'CREATE POLICY products_select_anon_active ON public.products
-           FOR SELECT TO anon USING (is_active = true AND (tenant_id = ''00000000-0000-0000-0000-000000000001''::uuid OR tenant_id IS NULL))';
-
-  EXECUTE 'DROP POLICY IF EXISTS products_select_tenant ON public.products';
-  EXECUTE 'CREATE POLICY products_select_tenant ON public.products
-           FOR SELECT TO authenticated USING (
-             EXISTS (SELECT 1 FROM public.users u
-                     WHERE u.auth_id = (SELECT auth.uid()) AND u.tenant_id = products.tenant_id))';
-
-  -- Internal commercial columns are never needed by anonymous callers.
-  EXECUTE 'REVOKE SELECT (cost, stock_qty, reorder_point) ON public.products FROM anon';
+  -- Revoke anonymous access completely on legacy products table
+  EXECUTE 'REVOKE ALL ON public.products FROM anon, PUBLIC';
 END $$;

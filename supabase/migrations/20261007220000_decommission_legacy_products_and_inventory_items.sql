@@ -13,39 +13,6 @@ BEGIN
     CREATE TABLE IF NOT EXISTS archive.products_backup_20261007 AS
       SELECT * FROM public.products;
 
-    -- Reconcile any missing items from products into items before dropping
-    -- Match strictly on SKU and barcode identifiers so distinct products with same name are preserved.
-    INSERT INTO public.items (
-      tenant_id,
-      name,
-      sku,
-      barcode,
-      price,
-      cost,
-      category_id,
-      image_url,
-      is_active,
-      created_at
-    )
-    SELECT
-      COALESCE(p.tenant_id, '00000000-0000-0000-0000-000000000001'::uuid),
-      p.name,
-      p.sku,
-      p.barcode,
-      COALESCE(p.price, 0),
-      COALESCE(p.cost, 0),
-      p.category_id,
-      p.image_url,
-      COALESCE(p.is_active, true),
-      COALESCE(p.created_at, now())
-    FROM public.products p
-    WHERE NOT EXISTS (
-      SELECT 1 FROM public.items i
-      WHERE (p.sku IS NOT NULL AND i.sku = p.sku)
-         OR (p.barcode IS NOT NULL AND i.barcode = p.barcode)
-    )
-    ON CONFLICT DO NOTHING;
-
     DROP TABLE public.products RESTRICT;
   END IF;
 END $$;

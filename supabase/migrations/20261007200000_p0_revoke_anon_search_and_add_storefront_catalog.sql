@@ -139,10 +139,7 @@ GRANT SELECT (
 DO $$
 BEGIN
   IF to_regclass('public.products') IS NOT NULL THEN
-    EXECUTE 'REVOKE SELECT ON public.products FROM anon, PUBLIC';
-    EXECUTE 'GRANT SELECT (
-      id, tenant_id, name, description, sku, barcode, short_code, brand, price, mrp, group_tag, image_url, category_id, is_active, created_at, updated_at
-    ) ON public.products TO anon';
+    EXECUTE 'REVOKE ALL ON public.products FROM anon, PUBLIC';
   END IF;
 END $$;
 
