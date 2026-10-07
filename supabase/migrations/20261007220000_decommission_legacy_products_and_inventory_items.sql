@@ -22,9 +22,11 @@ BEGIN
         SET item_id = i.id
         FROM public.products p
         JOIN public.items i ON (
-          (p.sku IS NOT NULL AND i.sku = p.sku) OR
-          (p.barcode IS NOT NULL AND i.barcode = p.barcode) OR
-          (p.id = i.id)
+          (p.id = i.id) OR
+          (p.tenant_id IS NOT NULL AND i.tenant_id = p.tenant_id AND (
+            (p.sku IS NOT NULL AND i.sku = p.sku) OR
+            (p.barcode IS NOT NULL AND i.barcode = p.barcode)
+          ))
         )
         WHERE ooi.item_id = p.id;
       EXCEPTION WHEN OTHERS THEN
@@ -38,9 +40,11 @@ BEGIN
         SET product_id = i.id
         FROM public.products p
         JOIN public.items i ON (
-          (p.sku IS NOT NULL AND i.sku = p.sku) OR
-          (p.barcode IS NOT NULL AND i.barcode = p.barcode) OR
-          (p.id = i.id)
+          (p.id = i.id) OR
+          (p.tenant_id IS NOT NULL AND i.tenant_id = p.tenant_id AND (
+            (p.sku IS NOT NULL AND i.sku = p.sku) OR
+            (p.barcode IS NOT NULL AND i.barcode = p.barcode)
+          ))
         )
         WHERE ia.product_id = p.id;
       EXCEPTION WHEN OTHERS THEN
@@ -119,9 +123,11 @@ BEGIN
         SET product_id = i.id
         FROM public.inventory_items ii
         JOIN public.items i ON (
-          (ii.sku IS NOT NULL AND i.sku = ii.sku) OR
-          (ii.barcode IS NOT NULL AND i.barcode = ii.barcode) OR
-          (ii.id = i.id)
+          (ii.id = i.id) OR
+          (ii.tenant_id IS NOT NULL AND i.tenant_id = ii.tenant_id AND (
+            (ii.sku IS NOT NULL AND i.sku = ii.sku) OR
+            (ii.barcode IS NOT NULL AND i.barcode = ii.barcode)
+          ))
         )
         WHERE im.product_id = ii.id;
       EXCEPTION WHEN OTHERS THEN
@@ -135,9 +141,11 @@ BEGIN
         SET product_id = i.id
         FROM public.inventory_items ii
         JOIN public.items i ON (
-          (ii.sku IS NOT NULL AND i.sku = ii.sku) OR
-          (ii.barcode IS NOT NULL AND i.barcode = ii.barcode) OR
-          (ii.id = i.id)
+          (ii.id = i.id) OR
+          (ii.tenant_id IS NOT NULL AND i.tenant_id = ii.tenant_id AND (
+            (ii.sku IS NOT NULL AND i.sku = ii.sku) OR
+            (ii.barcode IS NOT NULL AND i.barcode = ii.barcode)
+          ))
         )
         WHERE ir.product_id = ii.id;
       EXCEPTION WHEN OTHERS THEN
