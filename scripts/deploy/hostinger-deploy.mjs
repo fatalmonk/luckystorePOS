@@ -42,9 +42,19 @@ console.log(`📦 Archive: ${archivePath} (${(size / 1024 / 1024).toFixed(2)} MB
 console.log(`🌐 Target Domain: ${domain}`);
 console.log(`======================================================`);
 
+const apiBaseUrl = (process.env.HOSTINGER_API_BASE_URL || 'https://developers.hostinger.com').replace(/\/+$/, '');
+
 function apiRequest(method, endpoint, body = null, headers = {}) {
   return new Promise((resolve, reject) => {
-    const url = new URL(endpoint.startsWith('http') ? endpoint : `https://api.hostinger.com${endpoint}`);
+    let cleanPath = endpoint;
+    if (!cleanPath.startsWith('http')) {
+      if (!cleanPath.startsWith('/api/')) {
+        cleanPath = `/api${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+      }
+      cleanPath = `${apiBaseUrl}${cleanPath}`;
+    }
+
+    const url = new URL(cleanPath);
     const req = https.request(url, {
       method,
       headers: {
@@ -139,9 +149,9 @@ async function run() {
 
     // 1. Generate TUS upload credentials
     console.log('1. Requesting upload URL from Hostinger API...');
-    let uploadRes = await apiRequest('POST', `/hosting/v1/accounts/${username}/websites/${domain}/files/upload-url`);
+    let uploadRes = await apiRequest('POST', '/hosting/v1/files/upload-urls', { username, domain });
     if (uploadRes.status !== 200) {
-      uploadRes = await apiRequest('POST', `/hosting/v1/websites/${domain}/files/upload-url`);
+      uploadRes = await apiRequest('POST', `/hosting/v1/accounts/${username}/websites/${domain}/files/upload-url`, { username, domain });
     }
 
     if (uploadRes.status !== 200) {
