@@ -28,8 +28,8 @@ const mockCartItem: CartItem = {
 };
 
 describe('Phase 4C: Bengali Catalog Data & Routing Contract Tests', () => {
-  describe('Sitemap Qualification & Translation Gate', () => {
-    it('validates product sitemap eligibility correctly', () => {
+  describe('Product Sitemap Base Eligibility Contract', () => {
+    it('validates product sitemap eligibility correctly based on active status, title, and price', () => {
       expect(
         isProductSitemapEligible({
           id: 'test-uuid-1',

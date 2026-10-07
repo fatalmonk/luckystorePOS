@@ -6,7 +6,8 @@ const ROOT_DIR = process.cwd();
 const STANDALONE_DIR = path.join(ROOT_DIR, 'apps/customer_storefront/.next/standalone');
 const STATIC_DIR = path.join(ROOT_DIR, 'apps/customer_storefront/.next/static');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'apps/customer_storefront/public');
-const OUTPUT_ZIP = process.argv[2] || path.join(ROOT_DIR, 'storefront-release.zip');
+const rawOutputZip = process.argv[2] || 'storefront-release.zip';
+const OUTPUT_ZIP = path.isAbsolute(rawOutputZip) ? rawOutputZip : path.resolve(ROOT_DIR, rawOutputZip);
 
 console.log('📦 Preparing Hostinger standalone package...');
 
