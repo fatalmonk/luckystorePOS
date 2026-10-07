@@ -15,10 +15,47 @@ BEGIN
     CREATE TABLE IF NOT EXISTS archive.products_backup_20261007 AS
       SELECT * FROM public.products;
 
+    -- Remap legacy online_order_items.item_id and inventory_adjustments.product_id to items.id
+    IF to_regclass('public.online_order_items') IS NOT NULL AND to_regclass('public.items') IS NOT NULL THEN
+      BEGIN
+        UPDATE public.online_order_items ooi
+        SET item_id = i.id
+        FROM public.products p
+        JOIN public.items i ON (
+          (p.sku IS NOT NULL AND i.sku = p.sku) OR
+          (p.barcode IS NOT NULL AND i.barcode = p.barcode) OR
+          (p.id = i.id)
+        )
+        WHERE ooi.item_id = p.id;
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END;
+    END IF;
+
+    IF to_regclass('public.inventory_adjustments') IS NOT NULL AND to_regclass('public.items') IS NOT NULL THEN
+      BEGIN
+        UPDATE public.inventory_adjustments ia
+        SET product_id = i.id
+        FROM public.products p
+        JOIN public.items i ON (
+          (p.sku IS NOT NULL AND i.sku = p.sku) OR
+          (p.barcode IS NOT NULL AND i.barcode = p.barcode) OR
+          (p.id = i.id)
+        )
+        WHERE ia.product_id = p.id;
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END;
+    END IF;
+
     -- Re-target or remove foreign key constraints referencing public.products
     IF to_regclass('public.inventory_adjustments') IS NOT NULL THEN
       ALTER TABLE public.inventory_adjustments
         DROP CONSTRAINT IF EXISTS inventory_adjustments_product_id_fkey;
+
+      -- Allow column to be nullable so ON DELETE SET NULL succeeds
+      ALTER TABLE public.inventory_adjustments
+        ALTER COLUMN product_id DROP NOT NULL;
 
       IF to_regclass('public.items') IS NOT NULL THEN
         ALTER TABLE public.inventory_adjustments
@@ -32,6 +69,10 @@ BEGIN
     IF to_regclass('public.online_order_items') IS NOT NULL THEN
       ALTER TABLE public.online_order_items
         DROP CONSTRAINT IF EXISTS online_order_items_item_id_fkey;
+
+      -- Allow column to be nullable so ON DELETE SET NULL succeeds
+      ALTER TABLE public.online_order_items
+        ALTER COLUMN item_id DROP NOT NULL;
 
       IF to_regclass('public.items') IS NOT NULL THEN
         ALTER TABLE public.online_order_items
@@ -71,10 +112,47 @@ BEGIN
         SELECT * FROM public.inventory_items;
     END IF;
 
+    -- Remap legacy movements and reconciliations to items.id
+    IF to_regclass('public.inventory_movements') IS NOT NULL AND to_regclass('public.items') IS NOT NULL THEN
+      BEGIN
+        UPDATE public.inventory_movements im
+        SET product_id = i.id
+        FROM public.inventory_items ii
+        JOIN public.items i ON (
+          (ii.sku IS NOT NULL AND i.sku = ii.sku) OR
+          (ii.barcode IS NOT NULL AND i.barcode = ii.barcode) OR
+          (ii.id = i.id)
+        )
+        WHERE im.product_id = ii.id;
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END;
+    END IF;
+
+    IF to_regclass('public.inventory_reconciliations') IS NOT NULL AND to_regclass('public.items') IS NOT NULL THEN
+      BEGIN
+        UPDATE public.inventory_reconciliations ir
+        SET product_id = i.id
+        FROM public.inventory_items ii
+        JOIN public.items i ON (
+          (ii.sku IS NOT NULL AND i.sku = ii.sku) OR
+          (ii.barcode IS NOT NULL AND i.barcode = ii.barcode) OR
+          (ii.id = i.id)
+        )
+        WHERE ir.product_id = ii.id;
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END;
+    END IF;
+
     -- Re-target or remove foreign key constraints referencing public.inventory_items
     IF to_regclass('public.inventory_movements') IS NOT NULL THEN
       ALTER TABLE public.inventory_movements
         DROP CONSTRAINT IF EXISTS inventory_movements_product_id_fkey;
+
+      -- Allow column to be nullable so ON DELETE SET NULL succeeds
+      ALTER TABLE public.inventory_movements
+        ALTER COLUMN product_id DROP NOT NULL;
 
       IF to_regclass('public.items') IS NOT NULL THEN
         ALTER TABLE public.inventory_movements
@@ -88,6 +166,10 @@ BEGIN
     IF to_regclass('public.inventory_reconciliations') IS NOT NULL THEN
       ALTER TABLE public.inventory_reconciliations
         DROP CONSTRAINT IF EXISTS inventory_reconciliations_product_id_fkey;
+
+      -- Allow column to be nullable so ON DELETE SET NULL succeeds
+      ALTER TABLE public.inventory_reconciliations
+        ALTER COLUMN product_id DROP NOT NULL;
 
       IF to_regclass('public.items') IS NOT NULL THEN
         ALTER TABLE public.inventory_reconciliations

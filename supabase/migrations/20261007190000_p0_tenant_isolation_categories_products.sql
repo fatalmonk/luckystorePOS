@@ -93,6 +93,15 @@ BEGIN
     EXECUTE format('DROP POLICY %I ON public.products', pol.policyname);
   END LOOP;
 
-  -- Revoke anonymous access completely on legacy products table
+  -- Revoke anonymous access completely on legacy products table (both table-level and column-level)
   EXECUTE 'REVOKE ALL ON public.products FROM anon, PUBLIC';
+
+  FOR pol IN
+    SELECT DISTINCT column_name
+    FROM information_schema.column_privileges
+    WHERE table_schema = 'public' AND table_name = 'products'
+      AND grantee IN ('anon', 'public')
+  LOOP
+    EXECUTE format('REVOKE ALL (%I) ON public.products FROM anon, PUBLIC', pol.column_name);
+  END LOOP;
 END $$;
