@@ -27,7 +27,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -40,11 +40,13 @@ export default defineConfig({
       use: { ...devices['Pixel 5'] },
     },
   ],
-  webServer: {
-    command: process.env.CI
-      ? 'node .next/standalone/apps/customer_storefront/server.js'
-      : 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: process.env.CI
+          ? 'node -e "const fs=require(\'fs\'), cp=require(\'child_process\'); const standalone=\'.next/standalone/apps/customer_storefront/server.js\'; if(fs.existsSync(standalone)){ cp.execSync(\'node \' + standalone, {stdio:\'inherit\'}); } else if(fs.existsSync(\'.next\')){ cp.execSync(\'npx next start -p 3000\', {stdio:\'inherit\'}); } else { cp.execSync(\'npm run dev\', {stdio:\'inherit\'}); }"'
+          : 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+      },
 });
