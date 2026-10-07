@@ -3,6 +3,16 @@ import sitemap, { isProductSitemapEligible } from '../sitemap';
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({
+            data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
+            error: null,
+          }),
+        }),
+      }),
+    }),
     rpc: vi.fn().mockResolvedValue({
       data: [
         {
