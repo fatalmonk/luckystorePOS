@@ -1,12 +1,12 @@
 <!-- markdownlint-disable MD041 -->
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Supabase, Cloudflare Workers/R2
-Current: Storefront successfully migrated from Vercel to Hostinger behind Cloudflare
-Done: Hostinger security containment, ADR-001, immutable CI/CD pipeline, staging validation (next.luckystore1947.com), production cutover (www.luckystore1947.com), SSL issued & active, 6/6 smoke tests passing
+Current: SEO audit remediation (PR #429) & Hostinger deploy automation fixes merged to main
+Done: Hostinger security containment, ADR-001, immutable CI/CD pipeline, staging validation (next.luckystore1947.com), production cutover (www.luckystore1947.com), PR #429 merged (Bengali catalog translation schema, search overlays, qualified sitemap, canonical metadata, deploy automation absolute path & account username discovery)
 Branch: main
-Health: All unit/contract tests passing, 0 tsc errors, 6/6 smoke tests passing on production
+Health: All unit/contract tests passing, 0 tsc errors, 11/11 PR checks passed
 Last Synced: 2026-10-07
-ctx: Storefront Hostinger Migration | done: Full production cutover & validation complete | next: Monitor production & retain Vercel fallback for 14 days
+ctx: SEO Audit Remediation & Hostinger Deployment | done: PR #429 merged to main with all review & deploy fixes | next: Monitor storefront and production Hostinger releases
 
 
 
