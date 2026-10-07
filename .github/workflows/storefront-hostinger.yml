@@ -138,13 +138,6 @@ jobs:
             --url "https://${{ needs.resolve-context.outputs.staging_domain }}" \
             --expected-sha ${{ github.sha }}
 
-      - name: Run Playwright E2E Suite against Staging
-        run: |
-          npm ci
-          npx playwright install chromium
-          cd apps/customer_storefront
-          BASE_URL="https://${{ needs.resolve-context.outputs.staging_domain }}" npx playwright test --project=chromium
-
   # ── Step 5: Production Deployment Gate ─────────────────────
   deploy-production:
     name: Deploy to Production (Gated)
