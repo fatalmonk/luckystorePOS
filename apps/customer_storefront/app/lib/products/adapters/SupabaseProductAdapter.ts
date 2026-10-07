@@ -188,23 +188,34 @@ export class SupabaseProductAdapter implements ProductDataPort {
       return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
     }
 
-    // Fallback: RPC scan (up to max page limit)
-    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
-      p_store_id: this.storeId,
-      p_query: '',
-      p_category_id: null,
-      p_limit: 1000,
-      p_offset: 0,
-    });
+    // Fallback: Paginate RPC until match is found or catalog is exhausted
+    const pageSize = 500;
+    let offset = 0;
+    let match: any = null;
 
-    if (rpcError) {
-      throw new Error(`RPC getById failed: ${rpcError.message}`);
+    while (!match) {
+      const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
+        p_store_id: this.storeId,
+        p_query: '',
+        p_category_id: null,
+        p_limit: pageSize,
+        p_offset: offset,
+      });
+
+      if (rpcError) {
+        throw new Error(`RPC getById failed: ${rpcError.message}`);
+      }
+
+      const rows = (rpcData ?? []) as unknown[];
+      if (rows.length === 0) break;
+
+      match = rows.find((row: any) =>
+        (row.id ?? row.item_id) === String(id)
+      );
+
+      if (match || rows.length < pageSize) break;
+      offset += pageSize;
     }
-
-    const rows = (rpcData ?? []) as unknown[];
-    const match = rows.find((row: any) =>
-      (row.id ?? row.item_id) === String(id)
-    );
 
     if (!match) return null;
 
@@ -221,21 +232,35 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const cleanPrefix = prefix.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
     if (!cleanPrefix || cleanPrefix.length < 4) return null;
 
-    // Resolve 8-char slug prefix against active catalog via search_storefront_catalog
-    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
-      p_store_id: this.storeId,
-      p_query: '',
-      p_category_id: null,
-      p_limit: 1000,
-      p_offset: 0,
-    });
+    // Paginate full active catalog to resolve slug prefix without truncation
+    const pageSize = 500;
+    let offset = 0;
+    const matches: any[] = [];
 
-    if (rpcError) throw new Error(`getByIdPrefix RPC failed: ${rpcError.message}`);
+    while (true) {
+      const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
+        p_store_id: this.storeId,
+        p_query: '',
+        p_category_id: null,
+        p_limit: pageSize,
+        p_offset: offset,
+      });
 
-    const rows = (rpcData ?? []) as unknown[];
-    const matches = rows.filter((row: any) =>
-      ((row.id ?? row.item_id) as string)?.replace(/-/g, '').toLowerCase().startsWith(cleanPrefix)
-    );
+      if (rpcError) throw new Error(`getByIdPrefix RPC failed: ${rpcError.message}`);
+
+      const rows = (rpcData ?? []) as unknown[];
+      if (rows.length === 0) break;
+
+      for (const row of rows as any[]) {
+        const rowId = ((row.id ?? row.item_id) as string)?.replace(/-/g, '').toLowerCase();
+        if (rowId?.startsWith(cleanPrefix)) {
+          matches.push(row);
+        }
+      }
+
+      if (rows.length < pageSize) break;
+      offset += pageSize;
+    }
 
     // Fail closed: require exactly 1 unique match; reject ambiguous collisions (>1) or 0 matches
     if (matches.length !== 1) return null;
