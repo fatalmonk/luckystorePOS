@@ -118,13 +118,34 @@ function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize) {
   });
 }
 
+async function resolveAccountUsername(targetDomain) {
+  try {
+    const res = await apiRequest('GET', '/hosting/v1/websites');
+    if (res.status === 200 && Array.isArray(res.body?.data)) {
+      const match = res.body.data.find(w => w.domain === targetDomain || w.domain === targetDomain.replace(/^next\./, ''));
+      if (match?.username) return match.username;
+      if (res.body.data[0]?.username) return res.body.data[0].username;
+    }
+  } catch (err) {
+    console.warn('Could not auto-resolve username from API:', err.message);
+  }
+  return process.env.HOSTINGER_USERNAME || 'u859872680';
+}
+
 async function run() {
   try {
+    const username = await resolveAccountUsername(domain);
+    console.log(`Resolved Hostinger account username: ${username}`);
+
     // 1. Generate TUS upload credentials
     console.log('1. Requesting upload URL from Hostinger API...');
-    const uploadRes = await apiRequest('POST', `/hosting/v1/websites/${domain}/files/upload-url`);
+    let uploadRes = await apiRequest('POST', `/hosting/v1/accounts/${username}/websites/${domain}/files/upload-url`);
     if (uploadRes.status !== 200) {
-      throw new Error(`Failed to generate upload URL: ${JSON.stringify(uploadRes.body)}`);
+      uploadRes = await apiRequest('POST', `/hosting/v1/websites/${domain}/files/upload-url`);
+    }
+
+    if (uploadRes.status !== 200) {
+      throw new Error(`Failed to generate upload URL (status ${uploadRes.status}): ${JSON.stringify(uploadRes.body)}`);
     }
 
     const { url: tusUrl, auth_key: authKey, rest_auth_key: restAuth } = uploadRes.body;
@@ -137,7 +158,7 @@ async function run() {
 
     // 3. Start Node.js build process
     console.log('3. Triggering Node.js archive build pipeline...');
-    const buildRes = await apiRequest('POST', `/hosting/nodejs/v1/websites/${domain}/builds`, {
+    const buildPayload = {
       app_type: 'other',
       node_version: 22,
       root_directory: '.',
@@ -149,10 +170,15 @@ async function run() {
       source_options: {
         archive_path: 'app.zip'
       }
-    });
+    };
+
+    let buildRes = await apiRequest('POST', `/hosting/v1/accounts/${username}/websites/${domain}/nodejs/builds`, buildPayload);
+    if (buildRes.status !== 200 && buildRes.status !== 201) {
+      buildRes = await apiRequest('POST', `/hosting/nodejs/v1/websites/${domain}/builds`, buildPayload);
+    }
 
     if (buildRes.status !== 200 && buildRes.status !== 201) {
-      throw new Error(`Failed to trigger Node.js build: ${JSON.stringify(buildRes.body)}`);
+      throw new Error(`Failed to trigger Node.js build (status ${buildRes.status}): ${JSON.stringify(buildRes.body)}`);
     }
 
     const uuid = buildRes.body.uuid;
@@ -165,7 +191,10 @@ async function run() {
     while (state === 'running' || state === 'pending') {
       await new Promise(r => setTimeout(r, 4000));
       attempts++;
-      const pollRes = await apiRequest('GET', `/hosting/nodejs/v1/websites/${domain}/builds/${uuid}`);
+      let pollRes = await apiRequest('GET', `/hosting/v1/accounts/${username}/websites/${domain}/nodejs/builds/${uuid}`);
+      if (pollRes.status !== 200) {
+        pollRes = await apiRequest('GET', `/hosting/nodejs/v1/websites/${domain}/builds/${uuid}`);
+      }
       state = pollRes.body?.state;
       console.log(`   [${attempts * 4}s] Build state: ${state}`);
 
@@ -173,7 +202,10 @@ async function run() {
         console.log('🎉 Deployment succeeded! Application restarted and ready.');
         process.exit(0);
       } else if (state === 'failed') {
-        const logRes = await apiRequest('GET', `/hosting/nodejs/v1/websites/${domain}/builds/${uuid}/logs`);
+        let logRes = await apiRequest('GET', `/hosting/v1/accounts/${username}/websites/${domain}/nodejs/builds/${uuid}/logs`);
+        if (logRes.status !== 200) {
+          logRes = await apiRequest('GET', `/hosting/nodejs/v1/websites/${domain}/builds/${uuid}/logs`);
+        }
         console.error('❌ Build failed with logs:');
         console.error(logRes.body?.logs || 'No logs available');
         process.exit(1);
