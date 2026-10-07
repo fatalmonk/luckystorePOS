@@ -71,7 +71,7 @@ function createMockSupabase(overrides?: {
       return mockQueryBuilder;
     }),
     rpc: vi.fn((rpcName: string) => {
-      if (rpcName === 'search_items_pos') {
+      if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
         return Promise.resolve({
           data: overrides?.rpcRows ?? [],
           error: overrides?.rpcError ?? null,

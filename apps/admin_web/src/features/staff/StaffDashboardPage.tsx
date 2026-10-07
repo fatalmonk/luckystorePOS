@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Users, Key, Shield, Loader2, CheckCircle2, 
-  TrendingUp, DollarSign, ShoppingBag, Calendar
+  TrendingUp, DollarSign, ShoppingBag, Calendar, UserPlus
 } from 'lucide-react';
 import { staff } from '../../lib/api/domains/staff';
 import { useAuth } from '../../lib/AuthContext';
@@ -13,7 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '../../lib/format';
 
 export const StaffDashboardPage: React.FC = () => {
-  const { storeId } = useAuth();
+  const { storeId, user } = useAuth();
+  const currentUserRole = user?.role;
   const { notify } = useNotify();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -23,6 +24,16 @@ export const StaffDashboardPage: React.FC = () => {
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pinValue, setPinValue] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
+
+  // Add Staff State
+  const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
+  const [newStaff, setNewStaff] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    role: 'cashier',
+  });
+  const [addStaffError, setAddStaffError] = useState<string | null>(null);
 
   // 1) Fetch Store Users
   const { data: staffList = [], isLoading: loadingStaff } = useQuery({
@@ -50,6 +61,23 @@ export const StaffDashboardPage: React.FC = () => {
     },
     onError: (err: any) => {
       notify(err.message || 'Failed to update PIN', 'error');
+    },
+  });
+
+  // 4) Add Staff Mutation
+  const createStaffMutation = useMutation({
+    mutationFn: (params: { email: string; password: string; fullName: string; role: string }) =>
+      staff.create({ ...params, storeId }),
+    onSuccess: () => {
+      notify('Staff account created successfully', 'success');
+      setIsAddStaffModalOpen(false);
+      setNewStaff({ email: '', password: '', fullName: '', role: 'cashier' });
+      setAddStaffError(null);
+      queryClient.invalidateQueries({ queryKey: ['staff', storeId] });
+    },
+    onError: (err: any) => {
+      setAddStaffError(err.message || 'Failed to create staff account');
+      notify(err.message || 'Failed to create staff account', 'error');
     },
   });
 
@@ -82,6 +110,24 @@ export const StaffDashboardPage: React.FC = () => {
     }
   };
 
+  const onAddStaffSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddStaffError(null);
+    if (!newStaff.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newStaff.email)) {
+      setAddStaffError('Please enter a valid email address');
+      return;
+    }
+    if (!newStaff.password || newStaff.password.length < 12) {
+      setAddStaffError('Password must be at least 12 characters');
+      return;
+    }
+    if (!newStaff.fullName.trim()) {
+      setAddStaffError('Please enter the staff member full name');
+      return;
+    }
+    createStaffMutation.mutate(newStaff);
+  };
+
   // Aggregated KPIs
   const totalSalesToday = performanceList.reduce((sum, p) => sum + p.totalSales, 0);
   const totalRevenueToday = performanceList.reduce((sum, p) => sum + p.totalRevenue, 0);
@@ -94,6 +140,18 @@ export const StaffDashboardPage: React.FC = () => {
           <h1 className="text-xl font-display font-black text-warm-fg tracking-tight">{t('nav.manageStaff')}</h1>
           <p className="text-xs text-warm-muted">Monitor cashier performance and secure system access credentials</p>
         </div>
+        {currentUserRole === 'admin' && (
+          <button
+            onClick={() => {
+              setAddStaffError(null);
+              setIsAddStaffModalOpen(true);
+            }}
+            className="flex items-center gap-2 py-2 px-4 bg-warm-accent hover:bg-warm-accent-light text-white font-bold text-xs rounded-xl shadow-level-1 transition"
+          >
+            <UserPlus size={15} />
+            Add Staff Member
+          </button>
+        )}
       </div>
 
       {/* KPI Section */}
@@ -266,6 +324,105 @@ export const StaffDashboardPage: React.FC = () => {
                 <>
                   Save PIN
                 </>
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Add Staff Modal */}
+      <Modal
+        isOpen={isAddStaffModalOpen}
+        onClose={() => setIsAddStaffModalOpen(false)}
+        title="Add New Staff Member"
+        className="max-w-md"
+      >
+        <form onSubmit={onAddStaffSubmit} className="space-y-4">
+          {addStaffError && (
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl text-xs text-red-600 font-semibold">
+              {addStaffError}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-bold text-warm-muted uppercase tracking-wider mb-1">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={newStaff.fullName}
+              onChange={(e) => setNewStaff({ ...newStaff, fullName: e.target.value })}
+              placeholder="e.g. John Doe"
+              className="w-full bg-white dark:bg-zinc-900 border border-warm-border-warm px-3 py-2 rounded-xl text-xs text-warm-fg focus:ring-1 focus:ring-warm-accent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-warm-muted uppercase tracking-wider mb-1">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              required
+              value={newStaff.email}
+              onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
+              placeholder="e.g. staff@luckystore1947.com"
+              className="w-full bg-white dark:bg-zinc-900 border border-warm-border-warm px-3 py-2 rounded-xl text-xs text-warm-fg focus:ring-1 focus:ring-warm-accent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-warm-muted uppercase tracking-wider mb-1">
+              Temporary Password * (Min 12 Characters)
+            </label>
+            <input
+              type="password"
+              required
+              minLength={12}
+              value={newStaff.password}
+              onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })}
+              placeholder="••••••••••••"
+              className="w-full bg-white dark:bg-zinc-900 border border-warm-border-warm px-3 py-2 rounded-xl text-xs text-warm-fg focus:ring-1 focus:ring-warm-accent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-warm-muted uppercase tracking-wider mb-1">
+              Assigned Role *
+            </label>
+            <select
+              value={newStaff.role}
+              onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
+              className="w-full bg-white dark:bg-zinc-900 border border-warm-border-warm px-3 py-2 rounded-xl text-xs text-warm-fg focus:ring-1 focus:ring-warm-accent"
+            >
+              <option value="cashier">Cashier</option>
+              <option value="manager">Manager</option>
+              <option value="stock">Stock Staff</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-warm-border-warm">
+            <button
+              type="button"
+              onClick={() => setIsAddStaffModalOpen(false)}
+              className="py-2.5 px-4 bg-warm-bg hover:bg-warm-border-warm text-warm-fg border border-warm-border-warm font-semibold text-xs rounded-xl transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={createStaffMutation.isPending}
+              className="py-2.5 px-5 bg-warm-accent hover:bg-warm-accent-light text-white font-semibold text-xs rounded-xl shadow-level-2 transition disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {createStaffMutation.isPending ? (
+                <>
+                  <Loader2 className="animate-spin" size={14} />
+                  Creating...
+                </>
+              ) : (
+                'Create Staff Member'
               )}
             </button>
           </div>

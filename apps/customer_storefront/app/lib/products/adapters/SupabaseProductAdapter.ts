@@ -165,7 +165,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
       // pages retain the same stock state used by the homepage cards.
       let resolvedStock = stockData?.qty ?? null;
       if (stockError || resolvedStock === null) {
-        const { data: projectedRows } = await this.supabase.rpc('search_items_pos', {
+        const { data: projectedRows } = await this.supabase.rpc('search_storefront_catalog', {
           p_store_id: this.storeId,
           p_query: '',
           p_category_id: null,
@@ -189,7 +189,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
     }
 
     // Fallback: RPC scan
-    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_items_pos', {
+    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
       p_store_id: this.storeId,
       p_query: '',
       p_category_id: null,
@@ -221,8 +221,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const cleanPrefix = prefix.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
     if (!cleanPrefix || cleanPrefix.length < 4) return null;
 
-    // Resolve 8-char slug prefix against active catalog via search_items_pos
-    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_items_pos', {
+    // Resolve 8-char slug prefix against active catalog via search_storefront_catalog
+    const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
       p_store_id: this.storeId,
       p_query: '',
       p_category_id: null,

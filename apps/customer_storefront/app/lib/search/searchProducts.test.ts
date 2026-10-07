@@ -68,9 +68,9 @@ describe('searchStorefrontProducts', () => {
         return {};
       }),
       rpc: vi.fn((rpcName: string, params: any) => {
-        if (rpcName === 'search_items_pos') {
+        if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
           if (params.p_query === 'দুধ') {
-            // English POS search returns nothing for Bengali script
+            // English search returns nothing for Bengali script
             return Promise.resolve({ data: [], error: null });
           }
           // Full catalog query to resolve missing translated item IDs
@@ -241,7 +241,7 @@ describe('searchStorefrontProducts', () => {
         return {};
       }),
       rpc: vi.fn((rpcName: string, params: any) => {
-        if (rpcName === 'search_items_pos') {
+        if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
           if (params.p_query === 'দুধ') {
             return Promise.resolve({ data: [], error: null });
           }

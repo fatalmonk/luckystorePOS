@@ -73,7 +73,7 @@ export async function searchStorefrontProducts({
     }
   }
 
-  // 2. Fetch primary POS search items
+  // 2. Fetch primary storefront search items
   let targetCategoryIds: (string | null)[] = [categoryId];
   if (categoryIds && categoryIds.length > 0) {
     targetCategoryIds = categoryIds;
@@ -82,7 +82,7 @@ export async function searchStorefrontProducts({
   const rawRowsMap = new Map<string, any>();
 
   for (const catId of targetCategoryIds) {
-    const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_items_pos', {
+    const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_storefront_catalog', {
       p_store_id: storeId,
       p_query: cleanQuery,
       p_category_id: catId,
@@ -91,7 +91,7 @@ export async function searchStorefrontProducts({
     });
 
     if (posError) {
-      console.error('search_items_pos failed:', posError);
+      console.error('search_storefront_catalog failed:', posError);
       throw new Error('Search service temporarily unavailable');
     }
 
@@ -103,7 +103,7 @@ export async function searchStorefrontProducts({
     }
   }
 
-  // 3. Merge items matched via Bengali translations that weren't in POS RPC results, querying and paginating requested categories
+  // 3. Merge items matched via Bengali translations that weren't in catalog RPC results, querying and paginating requested categories
   if (translationMatchedItemIds.length > 0) {
     const missingIds = translationMatchedItemIds.filter((id) => !rawRowsMap.has(id));
     if (missingIds.length > 0) {
@@ -114,7 +114,7 @@ export async function searchStorefrontProducts({
           let catOffset = 0;
           const PAGE_SIZE = 1000;
           while (missingSet.size > 0) {
-            const { data: catItems, error: catError } = await (supabaseClient as any).rpc('search_items_pos', {
+            const { data: catItems, error: catError } = await (supabaseClient as any).rpc('search_storefront_catalog', {
               p_store_id: storeId,
               p_query: '',
               p_category_id: catId,

@@ -1,11 +1,11 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Supabase, Cloudflare Workers/R2
-Current: Hostinger automated CI/CD pipeline live & verified (Run #37623518758 completed 100%)
-Done: Staging deploy (next.luckystore1947.com), production deploy (luckystore1947.com / www.luckystore1947.com), immutable release packaging, security audits & smoke suites passing, PRs #429-#433 merged
+Current: Supabase database security audit, schema consolidation, order reconciliation, and admin staff creation UI complete
+Done: 8 forward migrations, 5 SQL test suites passing, admin_web staff creation UI + create-staff-user edge function wired, 336 storefront vitest passing, admin_web build passing
 Branch: main
-Health: All pipeline stages green, 0 tsc errors, 100% smoke suite pass rate on staging and production
+Health: 0 tsc errors, 54 storefront vitest files passing, 5/5 DB regression suites passing, admin_web build passing
 Last Synced: 2026-10-07
-ctx: Hostinger Production Cutover Complete | done: Automated release pipeline verified live | next: Normal feature workflows
+ctx: Database Remediation & Staff Provisioning Complete | done: 8 migrations + UI integration verified | next: Ready for production cutover
 
 
 

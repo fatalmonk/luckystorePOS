@@ -64,5 +64,26 @@ export const staff = {
       revenuePerDay: Number(row.revenue_per_day),
     }));
   },
+
+  create: async (params: {
+    email: string;
+    password: string;
+    fullName: string;
+    role: string;
+    storeId?: string;
+  }): Promise<StaffMember> => {
+    const { data, error } = await supabase.functions.invoke('create-staff-user', {
+      body: {
+        email: params.email,
+        password: params.password,
+        full_name: params.fullName,
+        role: params.role,
+        store_id: params.storeId,
+      },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    return data.user;
+  },
 };
 export default staff;
