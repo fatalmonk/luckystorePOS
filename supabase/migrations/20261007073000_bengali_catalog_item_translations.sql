@@ -53,18 +53,28 @@ ALTER TABLE public.item_translations ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON public.item_translations TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.item_translations TO authenticated;
 
+-- Helper function to verify active store items across tenant boundary without exposing items RLS directly
+CREATE OR REPLACE FUNCTION public.is_active_store_item(p_item_id uuid, p_tenant_id uuid)
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.items i
+    WHERE i.id = p_item_id
+      AND i.tenant_id = p_tenant_id
+      AND i.is_active = true
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.is_active_store_item(uuid, uuid) TO anon, authenticated;
+
 -- Public read access: ONLY published translations for active store items
 DROP POLICY IF EXISTS "item_translations_public_published" ON public.item_translations;
 CREATE POLICY "item_translations_public_published"
   ON public.item_translations FOR SELECT TO anon
   USING (
     review_status = 'published'
-    AND EXISTS (
-      SELECT 1 FROM public.items i
-      WHERE i.id = item_translations.item_id
-        AND i.tenant_id = item_translations.tenant_id
-        AND i.is_active = true
-    )
+    AND public.is_active_store_item(item_id, tenant_id)
   );
 
 -- Staff read access: All items within tenant

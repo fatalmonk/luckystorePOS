@@ -3,20 +3,37 @@ import sitemap, { isProductSitemapEligible } from '../sitemap';
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              range: vi.fn().mockResolvedValue({
-                data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
-                error: null,
-              }),
+    from: vi.fn((table: string) => {
+      if (table !== 'item_translations') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          range: vi.fn().mockResolvedValue({ data: [], error: null }),
+        };
+      }
+      return {
+        select: vi.fn(() => {
+          const filters: Record<string, string> = {};
+          const queryBuilder = {
+            eq: vi.fn((col: string, val: string) => {
+              filters[col] = val;
+              return queryBuilder;
             }),
-          }),
-          }),
+            order: vi.fn(() => queryBuilder),
+            range: vi.fn(async () => {
+              if (filters.locale === 'bn' && filters.review_status === 'published') {
+                return {
+                  data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
+                  error: null,
+                };
+              }
+              return { data: [], error: null };
+            }),
+          };
+          return queryBuilder;
         }),
-      }),
+      };
     }),
     rpc: vi.fn().mockResolvedValue({
       data: [

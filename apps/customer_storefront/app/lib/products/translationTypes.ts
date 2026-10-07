@@ -15,22 +15,4 @@ export interface ItemTranslationRecord {
   updated_at: string;
 }
 
-export interface LocalizedProductResult {
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    compare_price?: number;
-    stock: number;
-    unit?: string;
-    image_url?: string;
-    category?: string;
-    brand?: string;
-    origin?: string;
-    is_active?: boolean;
-  };
-  sourceName: string;
-  isTranslated: boolean;
-  published: boolean;
-}
+
