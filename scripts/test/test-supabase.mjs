@@ -9,7 +9,7 @@ async function test() {
   console.log('Categories:', cats?.length, err1);
 
   const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
-  const { data: prods, error: err2 } = await supabase.rpc('search_items_pos', {
+  const { data: prods, error: err2 } = await supabase.rpc('search_storefront_catalog', {
     p_store_id: STORE_ID,
     p_query: '',
     p_category_id: null,

@@ -95,20 +95,20 @@ async function runPreflight() {
   }
   console.log('✓ item_translations table accessible');
 
-  // 3. search_items_pos RPC
-  const { data: searchData, error: searchErr } = await client.rpc('search_items_pos', {
+  // 3. search_storefront_catalog RPC (Storefront public search contract)
+  const { data: searchData, error: searchErr } = await client.rpc('search_storefront_catalog', {
     p_store_id: STORE_ID,
     p_query: '',
     p_category_id: null,
     p_limit: 10,
     p_offset: 0,
   });
-  if (searchErr) throw new Error(`search_items_pos RPC check failed: ${searchErr.message}`);
+  if (searchErr) throw new Error(`search_storefront_catalog RPC check failed: ${searchErr.message}`);
   const items = searchData ?? [];
   if (items.length === 0 || !items.some((item) => Number(item.qty_on_hand) > 0)) {
-    throw new Error(`search_items_pos returned no sellable stock for store ${STORE_ID}. Check stock_levels association.`);
+    throw new Error(`search_storefront_catalog returned no sellable stock for store ${STORE_ID}. Check stock_levels association.`);
   }
-  console.log(`✓ search_items_pos RPC verified (${items.length} items returned for store)`);
+  console.log(`✓ search_storefront_catalog RPC verified (${items.length} items returned for store)`);
 
   // 4. Probe the order RPC with an invalid store so existence is tested without
   // inserting an order or touching stock/idempotency state. The wrapper checks
