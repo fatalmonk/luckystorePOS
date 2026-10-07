@@ -50,6 +50,9 @@ export interface Product {
   origin?: string;
   sku?: string;
   barcode?: string;
+  bengaliName?: string;
+  bengaliDescription?: string;
+  searchTerms?: string[];
 }
 
 // Search criteria value object

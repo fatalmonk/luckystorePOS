@@ -156,20 +156,40 @@ async function getProducts(): Promise<{ id: string; name: string; updatedAt: str
 
 async function getPublishedBengaliItemIds(): Promise<Set<string>> {
   try {
-    const { data, error } = await (supabase as any)
-      .from('item_translations')
-      .select('item_id')
-      .eq('locale', 'bn')
-      .eq('review_status', 'published');
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    const itemIds = new Set<string>();
 
-    if (error) {
-      if (!isMissingItemTranslationsTableError(error)) {
-        console.error('Error querying published item translations for sitemap:', error);
+    while (true) {
+      const { data, error } = await (supabase as any)
+        .from('item_translations')
+        .select('item_id')
+        .eq('locale', 'bn')
+        .eq('review_status', 'published')
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (error) {
+        if (!isMissingItemTranslationsTableError(error)) {
+          console.error('Error querying published item translations for sitemap:', error);
+        }
+        break;
       }
-      return new Set<string>();
+
+      const rows = data || [];
+      for (const row of rows) {
+        if (row.item_id) {
+          itemIds.add(String(row.item_id));
+        }
+      }
+
+      if (rows.length < PAGE_SIZE) {
+        break;
+      }
+
+      offset += PAGE_SIZE;
     }
 
-    return new Set<string>((data || []).map((row: any) => String(row.item_id)));
+    return itemIds;
   } catch (error) {
     console.error('Unexpected error fetching published translations for sitemap:', error);
     return new Set<string>();

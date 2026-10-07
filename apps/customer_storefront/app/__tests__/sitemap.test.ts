@@ -6,9 +6,11 @@ vi.mock('../lib/supabase', () => ({
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({
-            data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
-            error: null,
+          eq: vi.fn().mockReturnValue({
+            range: vi.fn().mockResolvedValue({
+              data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
+              error: null,
+            }),
           }),
         }),
       }),
@@ -21,6 +23,13 @@ vi.mock('../lib/supabase', () => ({
           price: 90,
           is_active: true,
           updated_at: '2026-09-20T10:00:00Z',
+        },
+        {
+          id: '7ddf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
+          name: 'Untranslated Active Item',
+          price: 150,
+          is_active: true,
+          updated_at: '2026-09-20T11:00:00Z',
         },
         {
           id: '5bcf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
@@ -145,5 +154,14 @@ describe('sitemap', () => {
     expect(productEn?.alternates?.languages?.['en-BD']).toBe(`https://www.luckystore1947.com/product/${expectedProductSlug}`);
     expect(productBn?.alternates?.languages?.['en-BD']).toBe(`https://www.luckystore1947.com/product/${expectedProductSlug}`);
     expect(productBn?.alternates?.languages?.['bn-BD']).toBe(`https://www.luckystore1947.com/bn/product/${expectedProductSlug}`);
+
+    // Untranslated eligible product: exists in EN, absent in /bn/product/..., no bn-BD alternate
+    const untranslatedSlug = 'untranslated-active-item--7ddf0fb2';
+    expect(urls).toContain(`https://www.luckystore1947.com/product/${untranslatedSlug}`);
+    expect(urls).not.toContain(`https://www.luckystore1947.com/bn/product/${untranslatedSlug}`);
+    const untranslatedEn = entries.find((e) => e.url === `https://www.luckystore1947.com/product/${untranslatedSlug}`);
+    expect(untranslatedEn?.lastModified).toBe('2026-09-20T11:00:00Z');
+    expect(untranslatedEn?.alternates?.languages?.['en-BD']).toBe(`https://www.luckystore1947.com/product/${untranslatedSlug}`);
+    expect(untranslatedEn?.alternates?.languages?.['bn-BD']).toBeUndefined();
   });
 });
