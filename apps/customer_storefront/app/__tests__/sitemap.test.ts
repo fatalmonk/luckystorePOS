@@ -7,9 +7,11 @@ vi.mock('../lib/supabase', () => ({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            range: vi.fn().mockResolvedValue({
-              data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
-              error: null,
+            order: vi.fn().mockReturnValue({
+              range: vi.fn().mockResolvedValue({
+                data: [{ item_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd' }],
+                error: null,
+              }),
             }),
           }),
         }),

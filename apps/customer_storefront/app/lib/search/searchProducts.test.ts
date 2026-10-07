@@ -140,4 +140,124 @@ describe('searchStorefrontProducts', () => {
     expect(products[0].badge).toBe('On Sale');
     expect(products[0].stock).toBe(5);
   });
+
+  it('propagates RPC search failures so callers can distinguish an outage from zero matches', async () => {
+    const mockSupabase: any = {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        or: vi.fn().mockResolvedValue({ data: [], error: null }),
+      })),
+      rpc: vi.fn(() => Promise.resolve({ data: null, error: { message: 'Database connection failed' } })),
+    };
+
+    await expect(
+      searchStorefrontProducts({
+        query: 'milk',
+        supabaseClient: mockSupabase,
+      })
+    ).rejects.toThrow('RPC search failed: Database connection failed');
+  });
+
+  it('sanitizes PostgREST control characters to prevent filter injection', async () => {
+    let capturedOrFilter = '';
+    const mockSupabase: any = {
+      from: vi.fn((table: string) => {
+        if (table === 'item_translations') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            or: vi.fn().mockImplementation((filterStr: string) => {
+              capturedOrFilter = filterStr;
+              return Promise.resolve({ data: [], error: null });
+            }),
+            in: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
+    };
+
+    await searchStorefrontProducts({
+      query: 'milk,*(bad_injection):"test"',
+      supabaseClient: mockSupabase,
+    });
+
+    expect(capturedOrFilter).toBe('name.ilike.%milk bad_injection test%,description.ilike.%milk bad_injection test%,search_terms.cs.{milk bad_injection test}');
+  });
+
+  it('filters supplemental translated items to requested category IDs', async () => {
+    const mockTranslations = [
+      {
+        item_id: 'item-dairy-1',
+        name: 'খাঁটি দুধ',
+        description: 'দুধ',
+        search_terms: ['dudh'],
+      },
+      {
+        item_id: 'item-bakery-1',
+        name: 'দুধের পাউরুটি',
+        description: 'রুটি',
+        search_terms: ['dudh ruti'],
+      },
+    ];
+
+    const mockCatalogItems = [
+      {
+        item_id: 'item-dairy-1',
+        name: 'Pure Milk',
+        price: 90,
+        category: 'dairy-and-eggs',
+        category_id: 'cat-dairy',
+      },
+      {
+        item_id: 'item-bakery-1',
+        name: 'Milk Bread',
+        price: 50,
+        category: 'bakery-and-snacks',
+        category_id: 'cat-bakery',
+      },
+    ];
+
+    const mockSupabase: any = {
+      from: vi.fn((table: string) => {
+        if (table === 'item_translations') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            or: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
+            in: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn((rpcName: string, params: any) => {
+        if (rpcName === 'search_items_pos') {
+          if (params.p_query === 'দুধ') {
+            return Promise.resolve({ data: [], error: null });
+          }
+          return Promise.resolve({ data: mockCatalogItems, error: null });
+        }
+        return Promise.resolve({ data: [], error: null });
+      }),
+    };
+
+    const { products } = await searchStorefrontProducts({
+      query: 'দুধ',
+      categoryId: 'cat-dairy',
+      supabaseClient: mockSupabase,
+    });
+
+    expect(products.length).toBe(1);
+    expect(products[0].id).toBe('item-dairy-1');
+  });
 });

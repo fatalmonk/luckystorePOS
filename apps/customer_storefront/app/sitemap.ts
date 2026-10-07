@@ -166,6 +166,7 @@ async function getPublishedBengaliItemIds(): Promise<Set<string>> {
         .select('item_id')
         .eq('locale', 'bn')
         .eq('review_status', 'published')
+        .order('item_id', { ascending: true })
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (error) {

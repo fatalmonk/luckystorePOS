@@ -28,6 +28,11 @@ export interface SearchProductsResponse {
 
 const DEFAULT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
+function sanitizePostgrestSearchTerm(input: string): string {
+  // Strip PostgREST syntax characters and wildcards to prevent filter injection
+  return input.replace(/[(),.*%\\":{}'"[\]]/g, ' ').trim().replace(/\s+/g, ' ');
+}
+
 export async function searchStorefrontProducts({
   query = '',
   storeId = DEFAULT_STORE_ID,
@@ -40,18 +45,19 @@ export async function searchStorefrontProducts({
 }: SearchOptions): Promise<SearchProductsResponse> {
   const actualOffset = offset !== undefined ? offset : (page ?? 0) * limit;
   const cleanQuery = query.trim().toLowerCase();
+  const safeQuery = sanitizePostgrestSearchTerm(cleanQuery);
 
   let translationMatchedItemIds: string[] = [];
 
-  // 1. If searching with a text query, match published Bengali translations before pagination
-  if (cleanQuery.length > 0) {
+  // 1. If searching with a text query, match published Bengali translations before pagination using sanitized predicate
+  if (safeQuery.length > 0) {
     try {
       const { data: transMatches, error: transError } = await (supabaseClient as any)
         .from('item_translations')
         .select('item_id')
         .eq('locale', 'bn')
         .eq('review_status', 'published')
-        .or(`name.ilike.%${cleanQuery}%,description.ilike.%${cleanQuery}%,search_terms.cs.{${cleanQuery}}`);
+        .or(`name.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,search_terms.cs.{${safeQuery}}`);
 
       if (transError) {
         if (!isMissingItemTranslationsTableError(transError)) {
@@ -86,7 +92,7 @@ export async function searchStorefrontProducts({
 
     if (posError) {
       console.error('search_items_pos failed:', posError);
-      continue;
+      throw new Error(`RPC search failed: ${posError.message || posError}`);
     }
 
     for (const item of (posItems || [])) {
@@ -97,7 +103,7 @@ export async function searchStorefrontProducts({
     }
   }
 
-  // 3. Merge items matched via Bengali translations that weren't in POS RPC results
+  // 3. Merge items matched via Bengali translations that weren't in POS RPC results, respecting category constraints
   if (translationMatchedItemIds.length > 0) {
     const missingIds = translationMatchedItemIds.filter((id) => !rawRowsMap.has(id));
     if (missingIds.length > 0) {
@@ -105,18 +111,35 @@ export async function searchStorefrontProducts({
         const { data: allCatalogItems, error: catalogError } = await (supabaseClient as any).rpc('search_items_pos', {
           p_store_id: storeId,
           p_query: '',
-          p_category_id: categoryId,
+          p_category_id: null,
           p_limit: 1000,
           p_offset: 0,
         });
 
         if (!catalogError && allCatalogItems) {
           const missingSet = new Set(missingIds);
+          const requestedCategorySet = new Set<string>();
+          if (categoryId) requestedCategorySet.add(categoryId);
+          if (categoryIds && categoryIds.length > 0) {
+            for (const cat of categoryIds) {
+              if (cat) requestedCategorySet.add(cat);
+            }
+          }
+
           for (const item of allCatalogItems) {
             const id = String(item.item_id ?? item.id ?? '').trim();
-            if (missingSet.has(id) && !rawRowsMap.has(id)) {
-              rawRowsMap.set(id, item);
+            if (!missingSet.has(id) || rawRowsMap.has(id)) {
+              continue;
             }
+
+            if (requestedCategorySet.size > 0) {
+              const itemCat = String(item.category_id ?? item.category ?? '').trim();
+              if (!itemCat || !requestedCategorySet.has(itemCat)) {
+                continue;
+              }
+            }
+
+            rawRowsMap.set(id, item);
           }
         }
       } catch (err) {
