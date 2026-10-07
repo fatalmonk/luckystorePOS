@@ -156,7 +156,7 @@ describe('searchStorefrontProducts', () => {
         query: 'milk',
         supabaseClient: mockSupabase,
       })
-    ).rejects.toThrow('RPC search failed: Database connection failed');
+    ).rejects.toThrow('Search service temporarily unavailable');
   });
 
   it('sanitizes PostgREST control characters to prevent filter injection', async () => {
@@ -244,6 +244,12 @@ describe('searchStorefrontProducts', () => {
         if (rpcName === 'search_items_pos') {
           if (params.p_query === 'দুধ') {
             return Promise.resolve({ data: [], error: null });
+          }
+          if (params.p_category_id) {
+            return Promise.resolve({
+              data: mockCatalogItems.filter((i) => i.category_id === params.p_category_id || i.category === params.p_category_id),
+              error: null,
+            });
           }
           return Promise.resolve({ data: mockCatalogItems, error: null });
         }

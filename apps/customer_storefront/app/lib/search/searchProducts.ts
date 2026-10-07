@@ -92,7 +92,7 @@ export async function searchStorefrontProducts({
 
     if (posError) {
       console.error('search_items_pos failed:', posError);
-      throw new Error(`RPC search failed: ${posError.message || posError}`);
+      throw new Error('Search service temporarily unavailable');
     }
 
     for (const item of (posItems || [])) {
@@ -103,43 +103,50 @@ export async function searchStorefrontProducts({
     }
   }
 
-  // 3. Merge items matched via Bengali translations that weren't in POS RPC results, respecting category constraints
+  // 3. Merge items matched via Bengali translations that weren't in POS RPC results, querying and paginating requested categories
   if (translationMatchedItemIds.length > 0) {
     const missingIds = translationMatchedItemIds.filter((id) => !rawRowsMap.has(id));
     if (missingIds.length > 0) {
+      const missingSet = new Set(missingIds);
       try {
-        const { data: allCatalogItems, error: catalogError } = await (supabaseClient as any).rpc('search_items_pos', {
-          p_store_id: storeId,
-          p_query: '',
-          p_category_id: null,
-          p_limit: 1000,
-          p_offset: 0,
-        });
+        for (const catId of targetCategoryIds) {
+          if (missingSet.size === 0) break;
+          let catOffset = 0;
+          const PAGE_SIZE = 1000;
+          while (missingSet.size > 0) {
+            const { data: catItems, error: catError } = await (supabaseClient as any).rpc('search_items_pos', {
+              p_store_id: storeId,
+              p_query: '',
+              p_category_id: catId,
+              p_limit: PAGE_SIZE,
+              p_offset: catOffset,
+            });
 
-        if (!catalogError && allCatalogItems) {
-          const missingSet = new Set(missingIds);
-          const requestedCategorySet = new Set<string>();
-          if (categoryId) requestedCategorySet.add(categoryId);
-          if (categoryIds && categoryIds.length > 0) {
-            for (const cat of categoryIds) {
-              if (cat) requestedCategorySet.add(cat);
-            }
-          }
-
-          for (const item of allCatalogItems) {
-            const id = String(item.item_id ?? item.id ?? '').trim();
-            if (!missingSet.has(id) || rawRowsMap.has(id)) {
-              continue;
+            if (catError || !catItems || catItems.length === 0) {
+              if (catError) {
+                console.error('Failed to resolve category items for translations:', catError);
+              }
+              break;
             }
 
-            if (requestedCategorySet.size > 0) {
-              const itemCat = String(item.category_id ?? item.category ?? '').trim();
-              if (!itemCat || !requestedCategorySet.has(itemCat)) {
-                continue;
+            for (const item of catItems) {
+              const id = String(item.item_id ?? item.id ?? '').trim();
+              if (missingSet.has(id)) {
+                if (catId) {
+                  const itemCat = String(item.category_id ?? item.category ?? '').trim();
+                  if (itemCat && itemCat !== catId) {
+                    continue;
+                  }
+                }
+                if (!rawRowsMap.has(id)) {
+                  rawRowsMap.set(id, item);
+                }
+                missingSet.delete(id);
               }
             }
 
-            rawRowsMap.set(id, item);
+            if (catItems.length < PAGE_SIZE) break;
+            catOffset += PAGE_SIZE;
           }
         }
       } catch (err) {
