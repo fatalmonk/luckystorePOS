@@ -11,9 +11,11 @@ const OUTPUT_ZIP = path.isAbsolute(rawOutputZip) ? rawOutputZip : path.resolve(R
 
 console.log('📦 Preparing Hostinger standalone package...');
 
-// 1. Copy static and public to standalone destination
+// 1. Copy static and public to standalone destinations (both app-scoped and root)
 const destStatic = path.join(STANDALONE_DIR, 'apps/customer_storefront/.next/static');
 const destPublic = path.join(STANDALONE_DIR, 'apps/customer_storefront/public');
+const rootDestStatic = path.join(STANDALONE_DIR, '.next/static');
+const rootDestPublic = path.join(STANDALONE_DIR, 'public');
 
 fs.mkdirSync(destStatic, { recursive: true });
 fs.cpSync(STATIC_DIR, destStatic, { recursive: true });
@@ -21,16 +23,30 @@ fs.cpSync(STATIC_DIR, destStatic, { recursive: true });
 fs.mkdirSync(destPublic, { recursive: true });
 fs.cpSync(PUBLIC_DIR, destPublic, { recursive: true });
 
-// 2. Read customer_storefront dependencies
+fs.mkdirSync(rootDestStatic, { recursive: true });
+fs.cpSync(STATIC_DIR, rootDestStatic, { recursive: true });
+
+fs.mkdirSync(rootDestPublic, { recursive: true });
+fs.cpSync(PUBLIC_DIR, rootDestPublic, { recursive: true });
+
+// 2. Create root server.js entrypoint forwarder
+fs.writeFileSync(
+  path.join(STANDALONE_DIR, 'server.js'),
+  `require('./apps/customer_storefront/server.js');\n`
+);
+
+// 3. Read customer_storefront dependencies
 const appPkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'apps/customer_storefront/package.json'), 'utf8'));
 
-// 3. Create root package.json for standalone
+// 4. Create root package.json for standalone
 const rootPkg = {
   name: 'luckystore-storefront-standalone',
   version: '1.0.0',
   private: true,
+  main: 'server.js',
   scripts: {
-    build: 'node -e "console.log(\'Release package verified\')"'
+    build: 'node -e "console.log(\'Release package verified\')"',
+    start: 'node server.js'
   },
   dependencies: {
     ...appPkg.dependencies,
