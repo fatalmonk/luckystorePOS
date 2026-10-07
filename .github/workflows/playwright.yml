@@ -18,7 +18,12 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run storefront Playwright tests
-      run: npm run build --workspace=customer_storefront && cd apps/customer_storefront && npx playwright test --config playwright.config.ts --project=chromium
+      run: |
+        npm run build --workspace=customer_storefront
+        cd apps/customer_storefront
+        cp -r public .next/standalone/apps/customer_storefront/public
+        cp -r .next/static .next/standalone/apps/customer_storefront/.next/static
+        npx playwright test --config playwright.config.ts --project=chromium
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
