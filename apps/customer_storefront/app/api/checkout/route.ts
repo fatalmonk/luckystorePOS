@@ -42,8 +42,8 @@ interface CheckoutItem {
 async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: number; name: string }>> {
   const priceMap = new Map<string, { price: number; name: string }>();
 
-  // Use the existing search_items_pos RPC (granted to anon) with empty query to get all items
-  const { data, error } = await supabase.rpc('search_items_pos', {
+  // Use the search_storefront_catalog RPC (granted to anon) with empty query to get catalog items
+  const { data, error } = await supabase.rpc('search_storefront_catalog', {
     p_store_id: STORE_ID,
     p_query: '',
     p_category_id: null,

@@ -129,7 +129,7 @@ export function isProductSitemapEligible(item: {
 // Dynamic product pages: enforces strict sitemap eligibility contract
 async function getProducts(): Promise<{ id: string; name: string; updatedAt: string | null }[]> {
   try {
-    const { data, error } = await supabase.rpc('search_items_pos', {
+    const { data, error } = await supabase.rpc('search_storefront_catalog', {
       p_store_id: STORE_ID,
       p_query: '',
       p_category_id: null,
