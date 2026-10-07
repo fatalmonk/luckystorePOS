@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   const canonicalUrl = 'https://www.luckystore1947.com/category';
   const title = 'Browse Products | Lucky Store Chittagong';
-  const description = 'Browse all products at Lucky Store — fresh groceries, household items, and more. Search by category, price, and availability. Same-day delivery in Chittagong.';
+  const description = 'Browse all groceries and daily essentials at Lucky Store. Shop by category, price, and stock for local delivery with Cash on Delivery in Chattogram.';
   const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
 
   return {

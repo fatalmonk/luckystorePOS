@@ -7,7 +7,7 @@ import { toProductSlug } from '../../lib/products/slugify';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার | Lucky Store',
+  title: { absolute: 'চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার | Lucky Store' },
   description: 'চট্টগ্রামে Lucky Store থেকে দৈনন্দিন বাজারের পণ্য অনলাইনে অর্ডার করুন। চকবাজার থেকে ১ কিমির মধ্যে ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি ও ক্যাশ অন ডেলিভারি।',
   alternates: {
     canonical: 'https://www.luckystore1947.com/bn',

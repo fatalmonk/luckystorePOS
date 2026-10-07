@@ -381,12 +381,22 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
     it('resolves empty-name product prefixes with uuid range filters, not LIKE', async () => {
       const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(
-          JSON.stringify([{ id: '029b62d8-1111-2222-3333-444455556666', name: 'Radhuni Holud Gura 100gm' }]),
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+        const url = new URL(String(input));
+        const idFilters = url.searchParams.getAll('id');
+        const hasValidRange =
+          idFilters.includes('gte.029b62d8-0000-0000-0000-000000000000') &&
+          idFilters.includes('lt.029b62d9-0000-0000-0000-000000000000');
+
+        return new Response(
+          JSON.stringify(
+            hasValidRange
+              ? [{ id: '029b62d8-1111-2222-3333-444455556666', name: 'Radhuni Holud Gura 100gm' }]
+              : [],
+          ),
           { status: 200, headers: { 'Content-Type': 'application/json' } },
-        ),
-      );
+        );
+      });
 
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
@@ -402,11 +412,22 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
           'https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8',
         );
 
-        const requested = new URL(String(fetchSpy.mock.calls[0]?.[0]));
-        const idFilters = requested.searchParams.getAll('id');
-        expect(idFilters).toContain('gte.029b62d8-0000-0000-0000-000000000000');
-        expect(idFilters).toContain('lt.029b62d9-0000-0000-0000-000000000000');
-        expect(idFilters.some((value) => value.startsWith('like.'))).toBe(false);
+        const resTriple = await middleware(
+          new NextRequest('https://www.luckystore1947.com/bn/product/---029b62d8'),
+        );
+        expect(resTriple.status).toBe(308);
+        expect(resTriple.headers.get('location')).toBe(
+          'https://www.luckystore1947.com/bn/product/radhuni-holud-gura-100gm--029b62d8',
+        );
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        for (const call of fetchSpy.mock.calls) {
+          const requested = new URL(String(call[0]));
+          const idFilters = requested.searchParams.getAll('id');
+          expect(idFilters).toContain('gte.029b62d8-0000-0000-0000-000000000000');
+          expect(idFilters).toContain('lt.029b62d9-0000-0000-0000-000000000000');
+          expect(idFilters.some((value) => value.startsWith('like.'))).toBe(false);
+        }
       } finally {
         fetchSpy.mockRestore();
         if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -434,7 +455,9 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
         for (const pathname of [
           '/product/--deadbeef',
+          '/product/---deadbeef',
           '/bn/product/--deadbeef',
+          '/bn/product/---deadbeef',
           '/product/deadbeef-0000-4000-8000-000000000000',
           '/bn/product/deadbeef-0000-4000-8000-000000000000',
         ]) {
@@ -608,7 +631,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       expect(meta.title).toBe('Personal Care in Chittagong');
       expect(meta.description).toBe(
-        'Shop Personal Care online at Lucky Store Chittagong. Browse current prices and order for local delivery with Cash on Delivery.',
+        'Shop Personal Care online at Lucky Store in Chattogram. Browse current prices and order for local delivery with Cash on Delivery and doorstep inspection.',
       );
       expect(meta.description).not.toContain('fast');
       expect(meta.description).not.toContain('Quality items');
@@ -632,6 +655,24 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       expect(res.status).toBe(308);
       expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/tea-and-coffee');
+    });
+
+    it('permanently redirects skin-care alias to /category/personal-care in middleware with HTTP 308', async () => {
+      const { middleware } = await import('../../../middleware');
+      const req = new NextRequest('https://www.luckystore1947.com/category/skin-care');
+      const res = await middleware(req);
+
+      expect(res.status).toBe(308);
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/personal-care');
+    });
+
+    it('permanently redirects chips-and-pretzels alias to /category/snacks in middleware with HTTP 308', async () => {
+      const { middleware } = await import('../../../middleware');
+      const req = new NextRequest('https://www.luckystore1947.com/category/chips-and-pretzels');
+      const res = await middleware(req);
+
+      expect(res.status).toBe(308);
+      expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/snacks');
     });
 
     it('preserves clean parent canonical and adds noindex,follow on filtered category queries', async () => {

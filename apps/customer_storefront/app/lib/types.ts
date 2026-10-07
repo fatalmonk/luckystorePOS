@@ -142,6 +142,9 @@ export function normalizeCategorySlug(str: string): string {
 const CATEGORY_SLUG_ALIASES: Record<string, string> = {
   'tea-coffee': 'tea-and-coffee',
   'rice-and-grains': 'rice-and-grain',
+  'skin-care': 'personal-care',
+  'chips-and-pretzels': 'snacks',
+  'chips-pretzels': 'snacks',
 };
 
 /**

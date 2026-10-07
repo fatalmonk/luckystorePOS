@@ -5,7 +5,7 @@ import { BottomNav } from '../../components/BottomNav';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Learn how Lucky Store collects, uses, stores, and protects your personal and business data.',
+  description: 'Learn how Lucky Store collects, uses, stores, and protects personal, business, transaction, and device data across our point-of-sale applications and services.',
   robots: {
     index: true,
     follow: true,

@@ -14,7 +14,7 @@ import {
 } from '../../lib/deliveryData';
 
 export const metadata: Metadata = {
-  title: 'Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store',
+  title: { absolute: 'Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store' },
   description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection. View timings & areas.`,
   alternates: {
     canonical: DELIVERY_POLICY.canonicalUrl,

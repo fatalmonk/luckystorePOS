@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import CartPage from '../../../(english)/cart/page';
 
 export const metadata: Metadata = {
-  title: 'আপনার ব্যাগ | Lucky Store',
+  title: { absolute: 'আপনার ব্যাগ | Lucky Store' },
   description: 'লাকি স্টোর অনলাইন ব্যাগ — নির্বাচিত মুদি ও নিত্যপ্রয়োজনীয় পণ্যের তালিকা।',
   robots: {
     index: false,
