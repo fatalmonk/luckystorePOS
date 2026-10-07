@@ -25,6 +25,8 @@ import {
   type CategoryRow,
 } from './types';
 
+import { searchStorefrontProducts } from '../../search/searchProducts';
+
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 /**
@@ -105,83 +107,32 @@ export class SupabaseProductAdapter implements ProductDataPort {
     const limit = criteria.limit ?? 60;
     const offset = (criteria.page ?? 0) * limit;
 
-    // Build category IDs array for RPC
-    let categoryIdsForRpc: string | null = null;
-    if (criteria.categoryId) {
-      categoryIdsForRpc = criteria.categoryId;
-    } else if (criteria.categoryIds && criteria.categoryIds.length > 0) {
-      // For multiple category IDs, we'll need to make multiple calls
-      // and merge results (same as current implementation)
-      return this.searchMultipleCategories(criteria);
-    }
-
-    const { data, error } = await this.supabase.rpc('search_items_pos', {
-      p_store_id: this.storeId,
-      p_query: criteria.query ?? '',
-      p_category_id: categoryIdsForRpc,
-      p_limit: limit + 1, // +1 to detect hasMore
-      p_offset: offset,
+    const { products: searchResults, hasMore } = await searchStorefrontProducts({
+      query: criteria.query,
+      storeId: this.storeId,
+      categoryId: criteria.categoryId,
+      categoryIds: criteria.categoryIds,
+      limit,
+      offset,
+      supabaseClient: this.supabase,
     });
 
-    if (error) {
-      throw new Error(`RPC search failed: ${error.message}`);
-    }
-
     // Fetch categories for emoji resolution
     const categories = await this.getCategories();
-    const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
+    const categoryEmojiMap = new Map(categories.map((c) => [c.id, c.emoji]));
 
-    const rows = (data ?? []) as unknown[];
-    const hasMore = rows.length > limit;
-    const products: Product[] = [];
-    for (const row of rows) {
-      if (products.length === limit) break;
-      const validated = tryValidateProductRow(row);
-      if (!validated) continue;
-      products.push(mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap));
-    }
+    const products: Product[] = searchResults.map((p) => {
+      const categoryEmoji = categoryEmojiMap.get(p.categoryId ?? '') ?? categoryEmojiMap.get(p.category);
+      const emoji = this.emojiResolver.resolve(p.category, categoryEmoji);
+      const dbBrand = p.brand ? (this.brandParser.parse(p.brand) ?? p.brand) : undefined;
+      const brand = dbBrand ?? this.brandParser.parse(p.name);
 
-    return { products, hasMore };
-  }
-
-  private async searchMultipleCategories(
-    criteria: ProductSearchCriteria
-  ): Promise<PaginatedProducts> {
-    const limit = criteria.limit ?? 60;
-    const categoryIds = criteria.categoryIds ?? [];
-
-    // Fetch from all categories in parallel
-    const results = await Promise.all(
-      categoryIds.map(async (catId) => {
-        const { data, error } = await this.supabase.rpc('search_items_pos', {
-          p_store_id: this.storeId,
-          p_query: criteria.query ?? '',
-          p_category_id: catId,
-          p_limit: limit + 1,
-          p_offset: (criteria.page ?? 0) * limit,
-        });
-
-        if (error) throw error;
-        return (data ?? []) as unknown[];
-      })
-    );
-
-    // Merge and sort
-    const merged = results.flat();
-    merged.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
-
-    // Fetch categories for emoji resolution
-    const categories = await this.getCategories();
-    const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
-
-    const hasMore = merged.length > limit;
-    const products: Product[] = [];
-    for (const row of merged) {
-      if (products.length === limit) break;
-      const validated = tryValidateProductRow(row);
-      if (!validated) continue;
-      products.push(mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap));
-    }
+      return {
+        ...p,
+        emoji,
+        brand,
+      };
+    });
 
     return { products, hasMore };
   }

@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase';
 import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
 import { getCanonicalCategorySlug } from './lib/types';
+import { isMissingItemTranslationsTableError } from './lib/translationErrors';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -153,10 +154,54 @@ async function getProducts(): Promise<{ id: string; name: string; updatedAt: str
   }
 }
 
+async function getPublishedBengaliItemIds(): Promise<Set<string>> {
+  try {
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    const itemIds = new Set<string>();
+
+    while (true) {
+      const { data, error } = await (supabase as any)
+        .from('item_translations')
+        .select('item_id')
+        .eq('locale', 'bn')
+        .eq('review_status', 'published')
+        .order('item_id', { ascending: true })
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (error) {
+        if (!isMissingItemTranslationsTableError(error)) {
+          console.error('Error querying published item translations for sitemap:', error);
+        }
+        break;
+      }
+
+      const rows = data || [];
+      for (const row of rows) {
+        if (row.item_id) {
+          itemIds.add(String(row.item_id));
+        }
+      }
+
+      if (rows.length < PAGE_SIZE) {
+        break;
+      }
+
+      offset += PAGE_SIZE;
+    }
+
+    return itemIds;
+  } catch (error) {
+    console.error('Unexpected error fetching published translations for sitemap:', error);
+    return new Set<string>();
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [categories, products] = await Promise.all([
+  const [categories, products, publishedBnItemIds] = await Promise.all([
     getCategories(),
     getProducts(),
+    getPublishedBengaliItemIds(),
   ]);
 
   const productUpdatedAts = products
@@ -279,33 +324,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const lastMod = product.updatedAt
       ? { lastModified: new Date(product.updatedAt).toISOString().split('.')[0] + 'Z' }
       : {};
-    
+
+    const hasPublishedBn = publishedBnItemIds.has(product.id);
+
     productEntries.push({
       url,
       ...lastMod,
       changeFrequency: 'daily',
       priority: 0.8,
       alternates: {
-        languages: {
-          'en-BD': url,
-          'bn-BD': bnUrl,
-          'x-default': url,
-        },
+        languages: hasPublishedBn
+          ? {
+              'en-BD': url,
+              'bn-BD': bnUrl,
+              'x-default': url,
+            }
+          : {
+              'en-BD': url,
+              'x-default': url,
+            },
       },
     });
-    productEntries.push({
-      url: bnUrl,
-      ...lastMod,
-      changeFrequency: 'daily',
-      priority: 0.8,
-      alternates: {
-        languages: {
-          'en-BD': url,
-          'bn-BD': bnUrl,
-          'x-default': url,
+
+    if (hasPublishedBn) {
+      productEntries.push({
+        url: bnUrl,
+        ...lastMod,
+        changeFrequency: 'daily',
+        priority: 0.8,
+        alternates: {
+          languages: {
+            'en-BD': url,
+            'bn-BD': bnUrl,
+            'x-default': url,
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   return [

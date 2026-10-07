@@ -128,18 +128,30 @@ export function toAnalyticsItem(
   };
 }
 
+function getAnalyticsLocale(explicitLocale?: 'en' | 'bn'): 'en' | 'bn' {
+  if (explicitLocale) return explicitLocale;
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/bn')) {
+    return 'bn';
+  }
+  return 'en';
+}
+
 export function trackViewItemList(
   products: Product[],
   listId: string,
   listName: string,
+  options: { locale?: 'en' | 'bn' } = {},
 ): boolean {
   if (!products.length) return false;
+  const locale = getAnalyticsLocale(options.locale);
   const items = products.map((product, index) =>
     toAnalyticsItem(product, { index, listId, listName }),
   );
   return sendEcommerceEvent('Product List Viewed', {
+    locale,
     products: items.map(toZarazEcommerceProduct),
   }, 'view_item_list', {
+    locale,
     item_list_id: listId,
     item_list_name: listName,
     items,
@@ -148,66 +160,93 @@ export function trackViewItemList(
 
 export function trackSelectItem(
   product: Product,
-  options: { index?: number; listId?: string; listName?: string } = {},
+  options: { index?: number; listId?: string; listName?: string; locale?: 'en' | 'bn' } = {},
 ): boolean {
+  const locale = getAnalyticsLocale(options.locale);
   const item = toAnalyticsItem(product, options);
   return sendEcommerceEvent('Product Clicked', {
+    locale,
     ...toZarazEcommerceProduct(item),
   }, 'select_item', {
+    locale,
     item_list_id: options.listId,
     item_list_name: options.listName,
     items: [item],
   });
 }
 
-export function trackViewItem(product: Product): boolean {
+export function trackViewItem(product: Product, options: { locale?: 'en' | 'bn' } = {}): boolean {
+  const locale = getAnalyticsLocale(options.locale);
   const item = toAnalyticsItem(product);
   return sendEcommerceEvent('Product Viewed', {
+    locale,
     ...toZarazEcommerceProduct(item),
     currency: CURRENCY,
     value: Number(product.price),
   }, 'view_item', {
+    locale,
     currency: CURRENCY,
     value: Number(product.price),
     items: [item],
   });
 }
 
-export function trackAddToCart(product: Product, quantity = 1): boolean {
+export function trackAddToCart(
+  product: Product,
+  quantity = 1,
+  options: { locale?: 'en' | 'bn' } = {},
+): boolean {
+  const locale = getAnalyticsLocale(options.locale);
   const item = toAnalyticsItem(product, { quantity });
   return sendEcommerceEvent('Product Added', {
+    locale,
     ...toZarazEcommerceProduct(item),
     currency: CURRENCY,
     value: Number(product.price) * quantity,
   }, 'add_to_cart', {
+    locale,
     currency: CURRENCY,
     value: Number(product.price) * quantity,
     items: [item],
   });
 }
 
-export function trackViewCart(items: CartItem[], value: number): boolean {
+export function trackViewCart(
+  items: CartItem[],
+  value: number,
+  options: { locale?: 'en' | 'bn' } = {},
+): boolean {
   if (!items.length) return false;
+  const locale = getAnalyticsLocale(options.locale);
   const analyticsItems = items.map((item) => toAnalyticsItem(item));
   return sendEcommerceEvent('Cart Viewed', {
+    locale,
     currency: CURRENCY,
     value,
     products: analyticsItems.map(toZarazEcommerceProduct),
   }, 'view_cart', {
+    locale,
     currency: CURRENCY,
     value,
     items: analyticsItems,
   });
 }
 
-export function trackBeginCheckout(items: CartItem[], value: number): boolean {
+export function trackBeginCheckout(
+  items: CartItem[],
+  value: number,
+  options: { locale?: 'en' | 'bn' } = {},
+): boolean {
   if (!items.length) return false;
+  const locale = getAnalyticsLocale(options.locale);
   const analyticsItems = items.map((item) => toAnalyticsItem(item));
   return sendEcommerceEvent('Checkout Started', {
+    locale,
     currency: CURRENCY,
     value,
     products: analyticsItems.map(toZarazEcommerceProduct),
   }, 'begin_checkout', {
+    locale,
     currency: CURRENCY,
     value,
     items: analyticsItems,
@@ -218,15 +257,19 @@ export function trackAddShippingInfo(
   items: CartItem[],
   value: number,
   shippingTier: string,
+  options: { locale?: 'en' | 'bn' } = {},
 ): boolean {
   if (!items.length) return false;
+  const locale = getAnalyticsLocale(options.locale);
   const analyticsItems = items.map((item) => toAnalyticsItem(item));
   return sendEcommerceEvent('Shipping Info Entered', {
+    locale,
     currency: CURRENCY,
     value,
     shipping_tier: shippingTier,
     products: analyticsItems.map(toZarazEcommerceProduct),
   }, 'add_shipping_info', {
+    locale,
     currency: CURRENCY,
     value,
     shipping_tier: shippingTier,
@@ -238,15 +281,19 @@ export function trackAddPaymentInfo(
   items: CartItem[],
   value: number,
   paymentType: 'cod' | 'bkash',
+  options: { locale?: 'en' | 'bn' } = {},
 ): boolean {
   if (!items.length) return false;
+  const locale = getAnalyticsLocale(options.locale);
   const analyticsItems = items.map((item) => toAnalyticsItem(item));
   return sendEcommerceEvent('Payment Info Entered', {
+    locale,
     currency: CURRENCY,
     value,
     payment_type: paymentType,
     products: analyticsItems.map(toZarazEcommerceProduct),
   }, 'add_payment_info', {
+    locale,
     currency: CURRENCY,
     value,
     payment_type: paymentType,
@@ -259,6 +306,7 @@ export function trackPurchase(input: {
   items: CartItem[];
   value: number;
   shipping: number;
+  locale?: 'en' | 'bn';
 }): boolean {
   if (!input.transactionId || !input.items.length || typeof window === 'undefined') return false;
 
@@ -269,14 +317,17 @@ export function trackPurchase(input: {
     // Continue without storage-based deduplication when storage is unavailable.
   }
 
+  const locale = getAnalyticsLocale(input.locale);
   const analyticsItems = input.items.map((item) => toAnalyticsItem(item));
   const sent = sendEcommerceEvent('Order Completed', {
+    locale,
     order_id: input.transactionId,
     currency: CURRENCY,
     total: input.value,
     shipping: input.shipping,
     products: analyticsItems.map(toZarazEcommerceProduct),
   }, 'purchase', {
+    locale,
     transaction_id: input.transactionId,
     currency: CURRENCY,
     value: input.value,

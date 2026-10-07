@@ -17,7 +17,7 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
 
   const { data: translation, error } = await (supabase as any)
     .from('item_translations')
-    .select('name, description')
+    .select('name, description, origin')
     .eq('item_id', product.id)
     .eq('locale', 'bn')
     .eq('review_status', 'published')
@@ -47,6 +47,7 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
       ...product,
       name: translation?.name || product.name,
       description: translation?.description || product.description,
+      origin: translation?.origin || product.origin,
     },
   };
 });
@@ -60,7 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
   const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
-  const imageUrl = localized.product.image_url || 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
+  const imageUrl = localized.product.image_url || '/lucky-store-social-share-v2.png';
   const title = `${localized.product.name} – ${formatBdt(localized.product.price)}`;
 
   return {
