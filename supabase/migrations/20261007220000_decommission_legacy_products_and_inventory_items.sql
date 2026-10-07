@@ -62,12 +62,55 @@ END $$;
 
 -- 3. Archive & drop public.inventory_items if present
 DO $$
+DECLARE
+  fk record;
 BEGIN
   IF to_regclass('public.inventory_items') IS NOT NULL THEN
     IF EXISTS (SELECT 1 FROM public.inventory_items LIMIT 1) THEN
       CREATE TABLE IF NOT EXISTS archive.inventory_items_backup_20261007 AS
         SELECT * FROM public.inventory_items;
     END IF;
+
+    -- Re-target or remove foreign key constraints referencing public.inventory_items
+    IF to_regclass('public.inventory_movements') IS NOT NULL THEN
+      ALTER TABLE public.inventory_movements
+        DROP CONSTRAINT IF EXISTS inventory_movements_product_id_fkey;
+
+      IF to_regclass('public.items') IS NOT NULL THEN
+        ALTER TABLE public.inventory_movements
+          ADD CONSTRAINT inventory_movements_product_id_fkey
+          FOREIGN KEY (product_id) REFERENCES public.items(id)
+          ON DELETE SET NULL
+          NOT VALID;
+      END IF;
+    END IF;
+
+    IF to_regclass('public.inventory_reconciliations') IS NOT NULL THEN
+      ALTER TABLE public.inventory_reconciliations
+        DROP CONSTRAINT IF EXISTS inventory_reconciliations_product_id_fkey;
+
+      IF to_regclass('public.items') IS NOT NULL THEN
+        ALTER TABLE public.inventory_reconciliations
+          ADD CONSTRAINT inventory_reconciliations_product_id_fkey
+          FOREIGN KEY (product_id) REFERENCES public.items(id)
+          ON DELETE SET NULL
+          NOT VALID;
+      END IF;
+    END IF;
+
+    -- Drop any remaining foreign keys referencing public.inventory_items
+    FOR fk IN
+      SELECT tc.table_schema, tc.table_name, tc.constraint_name
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.constraint_column_usage ccu
+        ON ccu.constraint_name = tc.constraint_name
+        AND ccu.table_schema = tc.table_schema
+      WHERE tc.constraint_type = 'FOREIGN KEY'
+        AND ccu.table_schema = 'public'
+        AND ccu.table_name = 'inventory_items'
+    LOOP
+      EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT IF EXISTS %I', fk.table_schema, fk.table_name, fk.constraint_name);
+    END LOOP;
 
     DROP TABLE public.inventory_items RESTRICT;
   END IF;
