@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS public.item_translations (
   CONSTRAINT item_translations_item_locale_unique UNIQUE (item_id, locale)
 );
 
+ALTER TABLE public.item_translations ADD COLUMN IF NOT EXISTS origin text;
+ALTER TABLE public.item_translations ADD COLUMN IF NOT EXISTS last_verified_at timestamptz;
+
 -- Indexes for tenant querying, storefront status filtering, and GIN token search
 CREATE INDEX IF NOT EXISTS item_translations_tenant_status_idx
   ON public.item_translations (tenant_id, review_status);
@@ -51,6 +54,7 @@ GRANT SELECT ON public.item_translations TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.item_translations TO authenticated;
 
 -- Public read access: ONLY published translations for active store items
+DROP POLICY IF EXISTS "item_translations_public_published" ON public.item_translations;
 CREATE POLICY "item_translations_public_published"
   ON public.item_translations FOR SELECT TO anon
   USING (
@@ -64,6 +68,7 @@ CREATE POLICY "item_translations_public_published"
   );
 
 -- Staff read access: All items within tenant
+DROP POLICY IF EXISTS "item_translations_staff_select" ON public.item_translations;
 CREATE POLICY "item_translations_staff_select"
   ON public.item_translations FOR SELECT TO authenticated
   USING (
@@ -75,6 +80,7 @@ CREATE POLICY "item_translations_staff_select"
   );
 
 -- Admin & Manager mutate access
+DROP POLICY IF EXISTS "item_translations_admin_manager_insert" ON public.item_translations;
 CREATE POLICY "item_translations_admin_manager_insert"
   ON public.item_translations FOR INSERT TO authenticated
   WITH CHECK (
@@ -91,6 +97,7 @@ CREATE POLICY "item_translations_admin_manager_insert"
     )
   );
 
+DROP POLICY IF EXISTS "item_translations_admin_manager_update" ON public.item_translations;
 CREATE POLICY "item_translations_admin_manager_update"
   ON public.item_translations FOR UPDATE TO authenticated
   USING (
@@ -115,6 +122,7 @@ CREATE POLICY "item_translations_admin_manager_update"
     )
   );
 
+DROP POLICY IF EXISTS "item_translations_admin_manager_delete" ON public.item_translations;
 CREATE POLICY "item_translations_admin_manager_delete"
   ON public.item_translations FOR DELETE TO authenticated
   USING (
