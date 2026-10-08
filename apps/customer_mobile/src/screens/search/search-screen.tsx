@@ -104,6 +104,8 @@ export function SearchScreen() {
   const [error, setError] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
   const requestVersionRef = useRef(0);
+  const paginationVersionRef = useRef(0);
+  const inFlightPaginationRef = useRef(false);
 
   const text = copy[locale];
   const popularSearches = locale === 'bn' ? POPULAR_SEARCHES_BN : POPULAR_SEARCHES_EN;
@@ -128,9 +130,12 @@ export function SearchScreen() {
 
   const refresh = useCallback(async () => {
     if (!activeQuery) return;
-    setRefreshing(true);
-    setError(null);
     const version = ++requestVersionRef.current;
+    paginationVersionRef.current = version;
+    inFlightPaginationRef.current = false;
+    setRefreshing(true);
+    setLoadingMore(false);
+    setError(null);
     try {
       const page = await fetchCatalog({
         locale,
@@ -161,10 +166,13 @@ export function SearchScreen() {
 
     let active = true;
     const version = ++requestVersionRef.current;
+    paginationVersionRef.current = version;
+    inFlightPaginationRef.current = false;
     const controller = new AbortController();
 
     void (async () => {
       setLoading(true);
+      setLoadingMore(false);
       setError(null);
       try {
         const page = await fetchCatalog(
@@ -201,9 +209,11 @@ export function SearchScreen() {
   }, [activeQuery, inStockOnly, locale, sort]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || loading || loadingMore || refreshing || !activeQuery) return;
+    if (!hasMore || loading || loadingMore || refreshing || !activeQuery || inFlightPaginationRef.current) return;
+    inFlightPaginationRef.current = true;
     setLoadingMore(true);
     const version = requestVersionRef.current;
+    const pageVersion = ++paginationVersionRef.current;
     try {
       const page = await fetchCatalog({
         locale,
@@ -213,14 +223,19 @@ export function SearchScreen() {
         limit: 30,
         offset: products.length,
       });
-      if (requestVersionRef.current !== version) return;
+      if (requestVersionRef.current !== version || paginationVersionRef.current !== pageVersion) return;
       setProducts((prev) => [...prev, ...page.items]);
       setTotal(page.total);
       setHasMore(page.hasMore);
     } catch {
       // non-fatal pagination error
     } finally {
-      setLoadingMore(false);
+      if (paginationVersionRef.current === pageVersion) {
+        inFlightPaginationRef.current = false;
+        if (requestVersionRef.current === version) {
+          setLoadingMore(false);
+        }
+      }
     }
   }, [activeQuery, hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, sort]);
 

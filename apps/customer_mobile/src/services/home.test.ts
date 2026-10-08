@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { HomeDtoSchema } from './home';
+import { HomeDtoSchema, resolveApiBaseUrl } from './home';
 
 const base = {
   locale: 'en',
@@ -51,4 +51,22 @@ test('normalizes empty or whitespace category to General', () => {
     }],
   });
   assert.equal(parsed2.sections[0].products[0].category, 'General');
+});
+
+test('resolveApiBaseUrl validates HTTPS and development hostnames', () => {
+  // Production enforces HTTPS strictly
+  assert.equal(resolveApiBaseUrl('https://api.luckystore1947.com', false), 'https://api.luckystore1947.com');
+  assert.throws(() => resolveApiBaseUrl('http://api.luckystore1947.com', false), /must use HTTPS in production/);
+  assert.throws(() => resolveApiBaseUrl('http://192.168.1.5:3000', false), /must use HTTPS in production/);
+
+  // Development allows localhost, RFC1918, and .local over HTTP
+  assert.equal(resolveApiBaseUrl('http://localhost:3000', true), 'http://localhost:3000');
+  assert.equal(resolveApiBaseUrl('http://127.0.0.1:3000', true), 'http://127.0.0.1:3000');
+  assert.equal(resolveApiBaseUrl('http://192.168.1.10:3000', true), 'http://192.168.1.10:3000');
+  assert.equal(resolveApiBaseUrl('http://10.0.1.25:3000', true), 'http://10.0.1.25:3000');
+  assert.equal(resolveApiBaseUrl('http://macbook.local:3000', true), 'http://macbook.local:3000');
+
+  // Development rejects public DNS domains with 10./192.168. prefix over HTTP
+  assert.throws(() => resolveApiBaseUrl('http://10.example.com', true), /must use HTTPS or a valid local development host/);
+  assert.throws(() => resolveApiBaseUrl('http://192.168.example.com', true), /must use HTTPS or a valid local development host/);
 });

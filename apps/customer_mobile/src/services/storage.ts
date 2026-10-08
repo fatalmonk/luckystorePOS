@@ -36,9 +36,13 @@ export async function getItem(key: string): Promise<string | null> {
   try {
     const legacy = await SecureStore.getItemAsync(key);
     if (legacy !== null) {
-      // Migrate to AsyncStorage silently
-      await AsyncStorage.setItem(key, legacy).catch(() => {});
-      await SecureStore.deleteItemAsync(key).catch(() => {});
+      // Migrate to AsyncStorage: delete SecureStore only after successful write
+      try {
+        await AsyncStorage.setItem(key, legacy);
+        await SecureStore.deleteItemAsync(key).catch(() => {});
+      } catch (err) {
+        console.warn(`[storage] Migration to AsyncStorage failed for "${key}":`, err);
+      }
       return legacy;
     }
   } catch {

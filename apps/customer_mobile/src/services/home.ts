@@ -37,18 +37,32 @@ export const HomeDtoSchema = z.object({
 export type HomeProduct = z.infer<typeof HomeProductSchema>;
 export type HomeDto = z.infer<typeof HomeDtoSchema>;
 
-export function resolveApiBaseUrl(value = process.env.EXPO_PUBLIC_API_URL ?? 'https://www.luckystore1947.com') {
+export function resolveApiBaseUrl(
+  value = process.env.EXPO_PUBLIC_API_URL ?? 'https://www.luckystore1947.com',
+  isDev: boolean = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production',
+) {
   const url = new URL(value);
-  const isLocalDevHost =
-    url.hostname === 'localhost' ||
-    url.hostname === '127.0.0.1' ||
-    url.hostname.startsWith('192.168.') ||
-    url.hostname.startsWith('10.') ||
-    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(url.hostname) ||
-    url.hostname.endsWith('.local');
 
-  if (url.protocol !== 'https:' && !isLocalDevHost) {
-    throw new Error('EXPO_PUBLIC_API_URL must use HTTPS');
+  if (!isDev) {
+    if (url.protocol !== 'https:') {
+      throw new Error('EXPO_PUBLIC_API_URL must use HTTPS in production');
+    }
+    return url.toString().replace(/\/$/, '');
+  }
+
+  // Development environment: validate loopback, RFC1918 private IPv4, or mDNS .local
+  const hostname = url.hostname;
+  const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isRfc1918 =
+    /^10\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/.test(hostname) ||
+    /^192\.168\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/.test(hostname);
+  const isMdnsLocal = /^[a-zA-Z0-9-]+\.local$/.test(hostname);
+
+  const isAllowedDevHttp = isLoopback || isRfc1918 || isMdnsLocal;
+
+  if (url.protocol !== 'https:' && !isAllowedDevHttp) {
+    throw new Error('EXPO_PUBLIC_API_URL must use HTTPS or a valid local development host');
   }
   return url.toString().replace(/\/$/, '');
 }

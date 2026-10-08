@@ -97,10 +97,14 @@ export function ShopScreen() {
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
 
   const requestVersionRef = useRef(0);
+  const paginationVersionRef = useRef(0);
+  const inFlightPaginationRef = useRef(false);
   const text = copy[locale];
 
   const refresh = useCallback(async () => {
     const version = ++requestVersionRef.current;
+    paginationVersionRef.current = version;
+    inFlightPaginationRef.current = false;
     setRefreshing(true);
     setLoadingMore(false);
     setError(null);
@@ -133,6 +137,8 @@ export function ShopScreen() {
   useEffect(() => {
     let active = true;
     const version = ++requestVersionRef.current;
+    paginationVersionRef.current = version;
+    inFlightPaginationRef.current = false;
     const controller = new AbortController();
 
     void (async () => {
@@ -176,9 +182,11 @@ export function ShopScreen() {
   }, [locale, selectedCategory, searchQuery, sort, inStockOnly]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || loading || loadingMore || refreshing) return;
+    if (!hasMore || loading || loadingMore || refreshing || inFlightPaginationRef.current) return;
+    inFlightPaginationRef.current = true;
     setLoadingMore(true);
     const version = requestVersionRef.current;
+    const pageVersion = ++paginationVersionRef.current;
     try {
       const page = await fetchCatalog({
         locale,
@@ -189,14 +197,19 @@ export function ShopScreen() {
         limit: 30,
         offset: products.length,
       });
-      if (requestVersionRef.current !== version) return;
+      if (requestVersionRef.current !== version || paginationVersionRef.current !== pageVersion) return;
       setProducts((prev) => [...prev, ...page.items]);
       setTotal(page.total);
       setHasMore(page.hasMore);
     } catch {
       // non-fatal pagination error
     } finally {
-      setLoadingMore(false);
+      if (paginationVersionRef.current === pageVersion) {
+        inFlightPaginationRef.current = false;
+        if (requestVersionRef.current === version) {
+          setLoadingMore(false);
+        }
+      }
     }
   }, [hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, searchQuery, selectedCategory, sort]);
 
