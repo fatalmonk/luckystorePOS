@@ -25,6 +25,7 @@ import { Locale } from '../../services/home';
 import { saveGuestOrderToken } from '../../services/storage';
 import { useAuth } from '../../state/auth-context';
 import { useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -117,6 +118,7 @@ const copy = {
 export function CheckoutScreen() {
   const router = useRouter();
   const { token, isHydrated } = useAuth();
+  const { onScroll } = useTabBarScroll();
   const { items, subtotal, deliveryFee, total, clearCart, syncPrices } = useCart();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
@@ -236,6 +238,8 @@ export function CheckoutScreen() {
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         {/* Header Bar */}
@@ -401,7 +405,7 @@ export function CheckoutScreen() {
 
             {/* Next Step Button */}
             <Pressable
-              style={styles.primaryButton}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedScale]}
               onPress={handleStep1Submit}
               accessibilityRole="button"
             >
@@ -544,7 +548,7 @@ export function CheckoutScreen() {
             {/* Action Buttons */}
             <View style={styles.actionsRow}>
               <Pressable
-                style={styles.backButton}
+                style={({ pressed }) => [styles.backButton, pressed && !isPlacing && styles.pressedScale]}
                 onPress={() => setStep(1)}
                 accessibilityRole="button"
                 disabled={isPlacing}
@@ -553,7 +557,12 @@ export function CheckoutScreen() {
               </Pressable>
 
               <Pressable
-                style={[styles.primaryButton, styles.confirmButton, (isPlacing || !isHydrated) ? styles.buttonDisabled : null]}
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  styles.confirmButton,
+                  (isPlacing || !isHydrated) ? styles.buttonDisabled : null,
+                  pressed && !(isPlacing || !isHydrated) && styles.pressedScale,
+                ]}
                 onPress={handlePlaceOrder}
                 disabled={isPlacing || !isHydrated}
                 accessibilityRole="button"
@@ -584,7 +593,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 120,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
   },
   headerBar: {
     flexDirection: 'row',
@@ -857,6 +869,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   priceBreakdown: {
     gap: 6,
@@ -875,6 +888,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   freeDeliveryText: {
     color: colors.green,
@@ -895,6 +909,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   paymentOptionCard: {
     borderWidth: 1,

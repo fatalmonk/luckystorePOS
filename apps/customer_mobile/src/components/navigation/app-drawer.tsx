@@ -2,13 +2,13 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import {
   Animated,
-  Dimensions,
   Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,16 +17,15 @@ import { useAuth } from '../../state/auth-context';
 import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const DRAWER_WIDTH = Math.min(SCREEN_WIDTH * 0.88, 380);
-
 export function AppDrawer() {
+  const { width } = useWindowDimensions();
+  const drawerWidth = Math.min(width * 0.88, 380);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, isLoggedIn, logout } = useAuth();
   const { isDrawerOpen, closeDrawer } = useTabBarScroll();
 
-  const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const translateX = useRef(new Animated.Value(-drawerWidth)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -47,7 +46,7 @@ export function AppDrawer() {
     } else {
       Animated.parallel([
         Animated.spring(translateX, {
-          toValue: -DRAWER_WIDTH,
+          toValue: -drawerWidth,
           tension: 80,
           friction: 12,
           useNativeDriver: true,
@@ -59,7 +58,7 @@ export function AppDrawer() {
         }),
       ]).start();
     }
-  }, [isDrawerOpen, translateX, backdropOpacity]);
+  }, [isDrawerOpen, drawerWidth, translateX, backdropOpacity]);
 
   if (!isDrawerOpen) return null;
 
@@ -93,7 +92,7 @@ export function AppDrawer() {
           style={[
             styles.drawerPanel,
             {
-              width: DRAWER_WIDTH,
+              width: drawerWidth,
               paddingTop: Math.max(16, insets.top),
               paddingBottom: Math.max(20, insets.bottom + 12),
               transform: [{ translateX }],

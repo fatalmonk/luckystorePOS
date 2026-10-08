@@ -1,11 +1,16 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 export function PrivacyScreen() {
+  const { onScroll } = useTabBarScroll();
+
   return (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.scrollContent}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
@@ -55,7 +60,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
     gap: 14,
   },
   header: {

@@ -21,6 +21,7 @@ import {
 } from '../../services/orders';
 import { getGuestOrderToken } from '../../services/storage';
 import { useAuth } from '../../state/auth-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -94,6 +95,7 @@ interface OrderDetailScreenProps {
 export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScreenProps) {
   const router = useRouter();
   const { token: authToken } = useAuth();
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
 
@@ -194,6 +196,8 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.scrollContent}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -230,7 +234,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
 
         <View style={styles.orderBadge}>
           <Text style={styles.orderBadgeLabel}>{t.orderNumber}:</Text>
-          <Text style={styles.orderBadgeNumber}>#{order.orderNumber}</Text>
+          <Text selectable style={styles.orderBadgeNumber}>#{order.orderNumber}</Text>
         </View>
       </View>
 
@@ -302,7 +306,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t.phone}:</Text>
-            <Text style={styles.detailValue}>{order.customerPhone}</Text>
+            <Text selectable style={styles.detailValue}>{order.customerPhone}</Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t.address}:</Text>
@@ -381,7 +385,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
       {/* Action Buttons */}
       <View style={styles.actionsCol}>
         <Pressable
-          style={styles.whatsappButton}
+          style={({ pressed }) => [styles.whatsappButton, pressed && styles.pressedScale]}
           onPress={handleOpenWhatsApp}
           accessibilityRole="button"
         >
@@ -389,7 +393,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
         </Pressable>
 
         <Pressable
-          style={styles.secondaryButton}
+          style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedScale]}
           onPress={() => router.replace('/(tabs)/(home)' as any)}
           accessibilityRole="button"
         >
@@ -407,7 +411,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
   },
   centerContainer: {
     flex: 1,
@@ -488,6 +495,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   card: {
     backgroundColor: colors.surface,
@@ -616,6 +624,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   priceBreakdown: {
     gap: 6,
@@ -634,6 +643,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   freeText: {
     color: colors.green,
@@ -654,6 +664,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   paymentBox: {
     backgroundColor: colors.paper,

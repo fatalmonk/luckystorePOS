@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { Locale } from '../../services/home';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -66,6 +67,7 @@ const copy = {
 } as const;
 
 export function DeliveryScreen() {
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
 
@@ -73,6 +75,8 @@ export function DeliveryScreen() {
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.scrollContent}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
     >
       {/* Header Bar */}
@@ -92,7 +96,7 @@ export function DeliveryScreen() {
       {/* Store Hub */}
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.cardTitle}>{t.hubTitle}</Text>
-        <Text style={styles.hubAddress}>{t.hubAddress}</Text>
+        <Text selectable style={styles.hubAddress}>{t.hubAddress}</Text>
         <Text style={styles.cardBody}>{t.hubDesc}</Text>
       </View>
 
@@ -138,7 +142,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
     gap: 14,
   },
   headerBar: {

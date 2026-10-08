@@ -20,6 +20,7 @@ import {
 } from '../../services/catalog';
 import { Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -86,6 +87,7 @@ export function SearchScreen() {
   const initialQuery = Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q || '';
 
   const { add } = useCart();
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [activeQuery, setActiveQuery] = useState(initialQuery);
@@ -252,10 +254,11 @@ export function SearchScreen() {
             accessibilityRole="button"
             accessibilityLabel={`${text.add} ${item.name}`}
             onPress={() => handleAddToCart(item)}
-            style={[
+            style={({ pressed }) => [
               styles.addButton,
               isOutOfStock && styles.addButtonDisabled,
               isAdded && styles.addButtonSuccess,
+              pressed && !isOutOfStock && styles.pressedScale,
             ]}
           >
             <Text style={[styles.addButtonText, isAdded && styles.addButtonTextSuccess]}>
@@ -484,6 +487,9 @@ export function SearchScreen() {
         columnWrapperStyle={products.length > 0 ? styles.columnWrapper : undefined}
         contentContainerStyle={styles.listContent}
         contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         ListHeaderComponent={renderHeader}
         renderItem={renderProductItem}
         ListEmptyComponent={renderEmpty}
@@ -507,7 +513,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: 110,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
   },
   columnWrapper: {
     paddingHorizontal: 16,
@@ -843,11 +852,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: colors.green,
+    fontVariant: ['tabular-nums'],
   },
   originalPriceText: {
     fontSize: 12,
     color: colors.muted,
     textDecorationLine: 'line-through',
+    fontVariant: ['tabular-nums'],
   },
   addButton: {
     backgroundColor: colors.ink,

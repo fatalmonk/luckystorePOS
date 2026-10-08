@@ -104,6 +104,8 @@ export function AccountScreen() {
       style={styles.screen}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
     >
       {/* Header Bar */}
       <View style={styles.headerBar}>
@@ -338,7 +340,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
   },
   headerBar: {
     flexDirection: 'row',

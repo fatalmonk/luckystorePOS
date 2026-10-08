@@ -11,6 +11,7 @@ import {
 
 import { Locale } from '../../services/home';
 import { CartItem, useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -54,6 +55,7 @@ const copy = {
 
 export function CartScreen() {
   const router = useRouter();
+  const { onScroll } = useTabBarScroll();
   const {
     items,
     totalItems,
@@ -256,8 +258,10 @@ export function CartScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
         contentInsetAdjustmentBehavior="automatic"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         ListHeaderComponent={renderHeader}
         renderItem={renderCartItem}
         ListFooterComponent={renderFooter}
@@ -388,11 +392,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: colors.green,
+    fontVariant: ['tabular-nums'],
   },
   itemOriginalPrice: {
     fontSize: 11,
     color: colors.muted,
     textDecorationLine: 'line-through',
+    fontVariant: ['tabular-nums'],
   },
   removeButton: {
     marginTop: 6,
@@ -416,8 +422,8 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   stepperButton: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -431,11 +437,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: colors.ink,
+    fontVariant: ['tabular-nums'],
   },
   lineTotal: {
     fontSize: 15,
     fontWeight: '800',
     color: colors.ink,
+    fontVariant: ['tabular-nums'],
   },
   footerBox: {
     paddingHorizontal: 16,
@@ -468,6 +476,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.ink,
+    fontVariant: ['tabular-nums'],
   },
   freeDeliveryText: {
     color: colors.green,
@@ -492,6 +501,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     color: colors.green,
+    fontVariant: ['tabular-nums'],
   },
   codNote: {
     fontSize: 11,
@@ -502,10 +512,14 @@ const styles = StyleSheet.create({
   checkoutButton: {
     backgroundColor: colors.ink,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
+    opacity: 0.9,
   },
   checkoutButtonText: {
     color: colors.accent,

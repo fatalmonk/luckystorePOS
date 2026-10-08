@@ -169,7 +169,11 @@ export function LoginScreen() {
           </View>
 
           <Pressable
-            style={[styles.primaryButton, loading ? styles.buttonDisabled : null]}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              loading ? styles.buttonDisabled : null,
+              pressed && !loading && styles.pressedScale,
+            ]}
             onPress={handleLogin}
             disabled={loading}
             accessibilityRole="button"
@@ -196,7 +200,7 @@ export function LoginScreen() {
         </View>
 
         <Pressable
-          style={styles.guestButton}
+          style={({ pressed }) => [styles.guestButton, pressed && styles.pressedScale]}
           onPress={() => router.replace('/(tabs)/(home)' as any)}
           accessibilityRole="button"
         >
@@ -215,8 +219,12 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingTop: 10,
+    paddingBottom: 110,
     justifyContent: 'center',
     minHeight: '100%',
+  },
+  pressedScale: {
+    transform: [{ scale: 0.98 }],
   },
   headerBar: {
     flexDirection: 'row',

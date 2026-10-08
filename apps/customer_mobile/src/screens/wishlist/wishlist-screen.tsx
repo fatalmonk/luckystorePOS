@@ -11,6 +11,7 @@ import {
 
 import { Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { useWishlist } from '../../state/wishlist-context';
 import { colors } from '../../theme';
 
@@ -43,6 +44,7 @@ export function WishlistScreen() {
   const router = useRouter();
   const { wishlist, toggleWishlist } = useWishlist();
   const { add } = useCart();
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
   const t = copy[locale];
@@ -89,13 +91,15 @@ export function WishlistScreen() {
         data={wishlist}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         ListEmptyComponent={
           <View style={styles.emptyCard}>
             <Text style={styles.emptyEmoji}>❤️</Text>
             <Text style={styles.emptyTitle} accessibilityRole="header">{t.emptyTitle}</Text>
             <Text style={styles.emptySubtitle}>{t.emptySubtitle}</Text>
             <Pressable
-              style={styles.primaryButton}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedScale]}
               onPress={() => router.replace('/(tabs)/(shop)' as any)}
               accessibilityRole="button"
             >
@@ -151,10 +155,11 @@ export function WishlistScreen() {
                 <View style={styles.actionsRow}>
                   <Pressable
                     disabled={isOutOfStock}
-                    style={[
+                    style={({ pressed }) => [
                       styles.cartButton,
                       isOutOfStock ? styles.cartButtonDisabled : null,
                       isAdded ? styles.cartButtonAdded : null,
+                      pressed && !isOutOfStock && styles.pressedScale,
                     ]}
                     onPress={() => handleAddToCart(item)}
                     accessibilityRole="button"
@@ -177,7 +182,7 @@ export function WishlistScreen() {
                   </Pressable>
 
                   <Pressable
-                    style={styles.removeButton}
+                    style={({ pressed }) => [styles.removeButton, pressed && styles.pressedScale]}
                     onPress={() => toggleWishlist(item)}
                     accessibilityRole="button"
                   >
@@ -200,8 +205,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
     gap: 12,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
   },
   headerBar: {
     flexDirection: 'row',
@@ -312,6 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   itemUnit: {
     fontSize: 11,

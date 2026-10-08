@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: 110,
   },
   columnWrapper: {
     paddingHorizontal: 16,
@@ -755,11 +755,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: colors.green,
+    fontVariant: ['tabular-nums'],
   },
   originalPriceText: {
     fontSize: 12,
     color: colors.muted,
     textDecorationLine: 'line-through',
+    fontVariant: ['tabular-nums'],
   },
   addButton: {
     backgroundColor: colors.ink,

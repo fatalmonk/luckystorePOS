@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { Locale } from '../../services/home';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -45,6 +46,7 @@ const copy = {
 } as const;
 
 export function SettingsScreen() {
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const [orderNotifs, setOrderNotifs] = useState(true);
   const [promoNotifs, setPromoNotifs] = useState(false);
@@ -54,6 +56,8 @@ export function SettingsScreen() {
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.scrollContent}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.screenTitle} accessibilityRole="header">{t.title}</Text>
@@ -127,9 +131,9 @@ export function SettingsScreen() {
         <Text style={styles.sectionHeader} accessibilityRole="header">{t.aboutSection}</Text>
         <View style={styles.card}>
           <Text style={styles.storeName}>{t.storeName}</Text>
-          <Text style={styles.storeAddress}>{t.storeAddress}</Text>
+          <Text selectable style={styles.storeAddress}>{t.storeAddress}</Text>
           <View style={styles.divider} />
-          <Text style={styles.versionText}>{t.appVersion}</Text>
+          <Text selectable style={styles.versionText}>{t.appVersion}</Text>
         </View>
       </View>
     </ScrollView>
@@ -143,7 +147,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
     gap: 20,
   },
   screenTitle: {

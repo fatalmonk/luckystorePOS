@@ -227,7 +227,11 @@ export function SignupScreen() {
               </View>
 
               <Pressable
-                style={[styles.primaryButton, loading ? styles.buttonDisabled : null]}
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  loading ? styles.buttonDisabled : null,
+                  pressed && !loading && styles.pressedScale,
+                ]}
                 onPress={handleSignup}
                 disabled={loading}
                 accessibilityRole="button"
@@ -267,8 +271,12 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingTop: 10,
+    paddingBottom: 110,
     justifyContent: 'center',
     minHeight: '100%',
+  },
+  pressedScale: {
+    transform: [{ scale: 0.98 }],
   },
   headerBar: {
     flexDirection: 'row',

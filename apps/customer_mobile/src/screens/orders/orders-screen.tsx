@@ -13,6 +13,7 @@ import {
 import { Locale, resolveApiBaseUrl } from '../../services/home';
 import { MobileOrderDto } from '../../services/orders';
 import { useAuth } from '../../state/auth-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -49,6 +50,7 @@ const copy = {
 export function OrdersScreen() {
   const router = useRouter();
   const { token, isLoggedIn } = useAuth();
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
 
@@ -159,6 +161,8 @@ export function OrdersScreen() {
         data={orders}
         keyExtractor={(item) => item.id || item.orderNumber}
         contentContainerStyle={styles.listContent}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -172,7 +176,7 @@ export function OrdersScreen() {
             <Text style={styles.emptyTitle}>{t.emptyTitle}</Text>
             <Text style={styles.emptySubtitle}>{t.emptySubtitle}</Text>
             <Pressable
-              style={styles.primaryButton}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.pressedScale]}
               onPress={() => router.replace('/(tabs)/(shop)' as any)}
               accessibilityRole="button"
             >
@@ -182,7 +186,7 @@ export function OrdersScreen() {
         }
         renderItem={({ item }) => (
           <Pressable
-            style={styles.orderCard}
+            style={({ pressed }) => [styles.orderCard, pressed && styles.pressedScale]}
             onPress={() =>
               router.push({
                 pathname: '/order/[number]' as any,
@@ -193,7 +197,7 @@ export function OrdersScreen() {
           >
             <View style={styles.orderCardHeader}>
               <View>
-                <Text style={styles.orderNumberText}>
+                <Text selectable style={styles.orderNumberText}>
                   {t.orderNumber}
                   {item.orderNumber}
                 </Text>
@@ -235,8 +239,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
     gap: 12,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.98 }],
   },
   headerBar: {
     flexDirection: 'row',
@@ -354,6 +361,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
   orderDateText: {
     fontSize: 11,
@@ -399,5 +407,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     color: colors.deepNight,
+    fontVariant: ['tabular-nums'],
   },
 });

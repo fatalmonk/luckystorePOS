@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { Locale } from '../../services/home';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -47,6 +48,7 @@ const copy = {
 } as const;
 
 export function HelpScreen() {
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
 
@@ -62,6 +64,8 @@ export function HelpScreen() {
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.scrollContent}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
     >
       {/* Header Bar */}
@@ -84,7 +88,7 @@ export function HelpScreen() {
         <Text accessibilityRole="header" style={styles.cardTitle}>{t.whatsappSection}</Text>
         <Text style={styles.cardBody}>{t.whatsappDesc}</Text>
         <Pressable
-          style={styles.whatsappButton}
+          style={({ pressed }) => [styles.whatsappButton, pressed && styles.pressedScale]}
           onPress={handleOpenWhatsApp}
           accessibilityRole="button"
         >
@@ -97,7 +101,7 @@ export function HelpScreen() {
         <Text accessibilityRole="header" style={styles.cardTitle}>{t.phoneSection}</Text>
         <Text style={styles.cardBody}>{t.phoneDesc}</Text>
         <Pressable
-          style={styles.phoneButton}
+          style={({ pressed }) => [styles.phoneButton, pressed && styles.pressedScale]}
           onPress={handleCall}
           accessibilityRole="button"
         >
@@ -109,9 +113,9 @@ export function HelpScreen() {
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.cardTitle}>{t.locationSection}</Text>
         <Text style={styles.storeName}>{t.storeLocation}</Text>
-        <Text style={styles.cardBody}>{t.storeAddress}</Text>
+        <Text selectable style={styles.cardBody}>{t.storeAddress}</Text>
         <Text style={styles.storeHours}>⏰ {t.storeHours}</Text>
-        <Text style={styles.emailText}>✉️ {t.emailAddress}</Text>
+        <Text selectable style={styles.emailText}>✉️ {t.emailAddress}</Text>
       </View>
     </ScrollView>
   );
@@ -124,8 +128,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 110,
     gap: 14,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
   },
   headerBar: {
     flexDirection: 'row',

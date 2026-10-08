@@ -12,12 +12,10 @@ import {
   View,
 } from 'react-native';
 
-import {
-  fetchProductDetail,
-  ProductDetailItem,
-} from '../../services/product';
+import { fetchProductDetail, ProductDetailItem } from '../../services/product';
 import { Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -69,6 +67,7 @@ export function ProductDetailScreen() {
   const productId = Array.isArray(searchParams.id) ? searchParams.id[0] : searchParams.id;
 
   const { add } = useCart();
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const [product, setProduct] = useState<ProductDetailItem | null>(null);
   const [related, setRelated] = useState<ProductDetailItem[]>([]);
@@ -200,6 +199,9 @@ export function ProductDetailScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -214,7 +216,7 @@ export function ProductDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel={text.back}
             onPress={() => router.back()}
-            style={styles.navButton}
+            style={({ pressed }) => [styles.navButton, pressed && styles.pressedScale]}
           >
             <Text style={styles.navButtonText}>← {text.back}</Text>
           </Pressable>
@@ -223,7 +225,7 @@ export function ProductDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel={locale === 'en' ? 'Switch to Bengali' : 'Switch to English'}
             onPress={() => setLocale((prev) => (prev === 'en' ? 'bn' : 'en'))}
-            style={styles.localeButton}
+            style={({ pressed }) => [styles.localeButton, pressed && styles.pressedScale]}
           >
             <Text style={styles.localeText}>{locale === 'en' ? 'বাংলা' : 'English'}</Text>
           </Pressable>
@@ -306,7 +308,11 @@ export function ProductDetailScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Decrease quantity"
                 accessibilityHint={`Current quantity is ${quantity}`}
-                style={[styles.stepperButton, (quantity <= 1 || isOutOfStock) && styles.stepperButtonDisabled]}
+                style={({ pressed }) => [
+                  styles.stepperButton,
+                  (quantity <= 1 || isOutOfStock) && styles.stepperButtonDisabled,
+                  pressed && !(quantity <= 1 || isOutOfStock) && styles.pressedScale,
+                ]}
               >
                 <Text style={styles.stepperButtonText}>−</Text>
               </Pressable>
@@ -323,7 +329,11 @@ export function ProductDetailScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Increase quantity"
                 accessibilityHint={`Current quantity is ${quantity}`}
-                style={[styles.stepperButton, (quantity >= product.stock || isOutOfStock) && styles.stepperButtonDisabled]}
+                style={({ pressed }) => [
+                  styles.stepperButton,
+                  (quantity >= product.stock || isOutOfStock) && styles.stepperButtonDisabled,
+                  pressed && !(quantity >= product.stock || isOutOfStock) && styles.pressedScale,
+                ]}
               >
                 <Text style={styles.stepperButtonText}>+</Text>
               </Pressable>
@@ -334,10 +344,11 @@ export function ProductDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel={`${text.addToCart} ${product.name}`}
               onPress={handleAddToCart}
-              style={[
+              style={({ pressed }) => [
                 styles.mainAddButton,
                 isOutOfStock && styles.mainAddButtonDisabled,
                 isAdded && styles.mainAddButtonSuccess,
+                pressed && !isOutOfStock && styles.pressedScale,
               ]}
             >
               <Text style={[styles.mainAddButtonText, isAdded && styles.mainAddButtonTextSuccess]}>
@@ -376,7 +387,7 @@ export function ProductDetailScreen() {
                 </Text>
               )}
               {product.sku && (
-                <Text style={styles.metaText}>
+                <Text selectable style={styles.metaText}>
                   <Text style={styles.metaLabel}>{text.sku} </Text>
                   {product.sku}
                 </Text>
@@ -402,6 +413,7 @@ export function ProductDetailScreen() {
                   <View style={styles.relatedCard}>
                     <Pressable
                       onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.id } })}
+                      style={({ pressed }) => pressed && styles.pressedScale}
                     >
                       <View style={styles.relatedImageContainer}>
                         {item.imageUrl ? (
@@ -421,7 +433,11 @@ export function ProductDetailScreen() {
                     <Pressable
                       disabled={outOfStock}
                       onPress={() => handleAddRelated(item)}
-                      style={[styles.relatedAddButton, itemAdded && styles.relatedAddButtonSuccess]}
+                      style={({ pressed }) => [
+                        styles.relatedAddButton,
+                        itemAdded && styles.relatedAddButtonSuccess,
+                        pressed && !outOfStock && styles.pressedScale,
+                      ]}
                     >
                       <Text style={[styles.relatedAddText, itemAdded && styles.relatedAddTextSuccess]}>
                         {itemAdded ? text.added : text.add}
@@ -444,7 +460,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
   },
   scrollContent: {
-    paddingBottom: 50,
+    paddingBottom: 110,
+  },
+  pressedScale: {
+    transform: [{ scale: 0.96 }],
   },
   topBar: {
     flexDirection: 'row',
@@ -571,6 +590,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '800',
     color: colors.green,
+    fontVariant: ['tabular-nums'],
   },
   discountRow: {
     flexDirection: 'row',
@@ -581,6 +601,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.muted,
     textDecorationLine: 'line-through',
+    fontVariant: ['tabular-nums'],
   },
   saveBadge: {
     backgroundColor: '#FEF3C7',
@@ -630,6 +651,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.ink,
+    fontVariant: ['tabular-nums'],
   },
   mainAddButton: {
     flex: 1,
@@ -758,6 +780,7 @@ const styles = StyleSheet.create({
     color: colors.green,
     marginTop: 4,
     marginBottom: 8,
+    fontVariant: ['tabular-nums'],
   },
   relatedAddButton: {
     backgroundColor: colors.ink,
