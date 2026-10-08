@@ -68,7 +68,7 @@ function mapProductDto(product: Product, locale: MobileLocale = 'en'): MobileCat
     stock: product.stock,
     ...(imageUrl ? { imageUrl } : {}),
     ...(product.badge ? { badge: product.badge } : {}),
-    category: product.category,
+    category: product.category?.trim() || 'General',
     ...(product.categoryId || product.category_id ? { categoryId: product.categoryId ?? product.category_id } : {}),
     ...(description ? { description } : {}),
   };

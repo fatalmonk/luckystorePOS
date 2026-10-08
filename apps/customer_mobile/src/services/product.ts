@@ -11,7 +11,7 @@ export const ProductDetailItemSchema = z.object({
   stock: z.number().int().nonnegative(),
   imageUrl: z.string().url().optional(),
   badge: z.string().optional(),
-  category: z.string().min(1),
+  category: z.string().transform((val) => val.trim() || 'General'),
   categoryId: z.string().optional(),
   description: z.string().default(''),
   nutrition: z.string().optional(),

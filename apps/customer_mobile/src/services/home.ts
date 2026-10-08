@@ -12,7 +12,7 @@ export const HomeProductSchema = z.object({
   stock: z.number().int().nonnegative(),
   imageUrl: z.string().url().optional(),
   badge: z.string().optional(),
-  category: z.string().min(1),
+  category: z.string().transform((val) => val.trim() || 'General'),
 }).strip();
 
 export const HomeCategorySchema = z.object({

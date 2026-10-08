@@ -33,7 +33,7 @@ function productDto(product: Product) {
     stock: product.stock,
     ...(imageUrl ? { imageUrl } : {}),
     ...(product.badge ? { badge: product.badge } : {}),
-    category: product.category,
+    category: product.category?.trim() || 'General',
   };
 }
 
