@@ -37,7 +37,7 @@ const sizes = {
   sm: {
     paddingVertical: spacing.xs + 2,
     paddingHorizontal: spacing.sm + 4,
-    minHeight: 36,
+    minHeight: 44,
   },
   md: {
     paddingVertical: spacing.sm + 2,

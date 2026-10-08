@@ -23,6 +23,8 @@ const copy = {
     orderUpdatesDesc: 'Receive notifications about order confirmation and delivery',
     promoUpdates: 'Special Offers & Deals',
     promoUpdatesDesc: 'Get alerts for daily grocery flash sales',
+    notificationsNotice: 'Live dispatch updates are sent via WhatsApp and SMS to your order phone number. Native in-app push notifications are coming in an upcoming release.',
+    upcomingBadge: 'Coming Soon',
     aboutSection: 'About Lucky Store',
     storeName: 'Lucky Store — Emdad Park',
     storeAddress: '665 Percival Hill Rd, Chittagong 4203',
@@ -38,6 +40,8 @@ const copy = {
     orderUpdatesDesc: 'অর্ডার নেওয়া এবং ডেলিভারির নোটিফিকেশন পান',
     promoUpdates: 'অফার ও ডিসকাউন্ট',
     promoUpdatesDesc: 'দৈনন্দিন নিত্যপ্রয়োজনীয় পণ্যের স্পেশাল অফার অ্যালার্ট',
+    notificationsNotice: 'অর্ডারের লাইভ তথ্য আপনার নম্বরে হোয়াটসঅ্যাপ এবং এসএমএস-এর মাধ্যমে পাঠানো হয়। ইন-অ্যাপ পুশ নোটিফিকেশন পরবর্তী আপডেটে আসবে।',
+    upcomingBadge: 'শীঘ্রই আসছে',
     aboutSection: 'লাকি স্টোর সম্পর্কে',
     storeName: 'লাকি স্টোর — এমদাদ পার্ক',
     storeAddress: '৬৬৫ পারসিভাল হিল রোড, চট্টগ্রাম ৪২০৩',
@@ -93,14 +97,19 @@ export function SettingsScreen() {
       {/* Notification Preferences */}
       <View style={styles.section}>
         <Text style={styles.sectionHeader} accessibilityRole="header">{t.notificationsSection}</Text>
-        <View style={styles.card}>
+        <Text style={styles.noticeText}>{t.notificationsNotice}</Text>
+        <View style={[styles.card, styles.disabledCard]}>
           <View style={styles.switchRow}>
             <View style={styles.switchTextCol}>
-              <Text style={styles.rowLabel}>{t.orderUpdates}</Text>
+              <View style={styles.labelWithBadge}>
+                <Text style={styles.rowLabel}>{t.orderUpdates}</Text>
+                <View style={styles.badge}><Text style={styles.badgeText}>{t.upcomingBadge}</Text></View>
+              </View>
               <Text style={styles.rowSublabel}>{t.orderUpdatesDesc}</Text>
             </View>
             <Switch
               value={orderNotifs}
+              disabled
               onValueChange={setOrderNotifs}
               accessibilityLabel={t.orderUpdates}
               trackColor={{ false: colors.line, true: colors.accent }}
@@ -112,11 +121,15 @@ export function SettingsScreen() {
 
           <View style={styles.switchRow}>
             <View style={styles.switchTextCol}>
-              <Text style={styles.rowLabel}>{t.promoUpdates}</Text>
+              <View style={styles.labelWithBadge}>
+                <Text style={styles.rowLabel}>{t.promoUpdates}</Text>
+                <View style={styles.badge}><Text style={styles.badgeText}>{t.upcomingBadge}</Text></View>
+              </View>
               <Text style={styles.rowSublabel}>{t.promoUpdatesDesc}</Text>
             </View>
             <Switch
               value={promoNotifs}
+              disabled
               onValueChange={setPromoNotifs}
               accessibilityLabel={t.promoUpdates}
               trackColor={{ false: colors.line, true: colors.accent }}
@@ -224,5 +237,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.muted,
     fontWeight: '600',
+  },
+  noticeText: {
+    fontSize: 12,
+    color: colors.muted,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  disabledCard: {
+    opacity: 0.75,
+  },
+  labelWithBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  badge: {
+    backgroundColor: colors.line,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.muted,
   },
 });

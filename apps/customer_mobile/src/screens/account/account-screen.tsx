@@ -81,8 +81,6 @@ const copy = {
   },
 } as const;
 
-import { getGuestOrderToken } from '../../services/storage';
-
 export function AccountScreen() {
   const router = useRouter();
   const { user, isLoggedIn, logout } = useAuth();

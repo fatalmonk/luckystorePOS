@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -97,10 +97,13 @@ export function SearchScreen() {
 
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
+  const requestVersionRef = useRef(0);
 
   const text = copy[locale];
   const popularSearches = locale === 'bn' ? POPULAR_SEARCHES_BN : POPULAR_SEARCHES_EN;
@@ -113,6 +116,7 @@ export function SearchScreen() {
       if (!clean) {
         setProducts([]);
         setTotal(0);
+        setHasMore(false);
         return;
       }
       if (!recentSearches.includes(clean)) {
@@ -126,20 +130,27 @@ export function SearchScreen() {
     if (!activeQuery) return;
     setRefreshing(true);
     setError(null);
+    const version = ++requestVersionRef.current;
     try {
       const page = await fetchCatalog({
         locale,
         q: activeQuery,
         sort,
         inStockOnly,
-        limit: 60,
+        limit: 30,
+        offset: 0,
       });
+      if (requestVersionRef.current !== version) return;
       setProducts(page.items);
       setTotal(page.total);
+      setHasMore(page.hasMore);
     } catch (cause) {
+      if (requestVersionRef.current !== version) return;
       setError(cause instanceof Error ? cause.message : 'Search failed');
     } finally {
-      setRefreshing(false);
+      if (requestVersionRef.current === version) {
+        setRefreshing(false);
+      }
     }
   }, [activeQuery, inStockOnly, locale, sort]);
 
@@ -148,33 +159,72 @@ export function SearchScreen() {
       return;
     }
 
+    let active = true;
+    const version = ++requestVersionRef.current;
     const controller = new AbortController();
-    setLoading(true);
-    void fetchCatalog(
-      {
+
+    void (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const page = await fetchCatalog(
+          {
+            locale,
+            q: activeQuery,
+            sort,
+            inStockOnly,
+            limit: 30,
+            offset: 0,
+          },
+          controller.signal,
+        );
+        if (!active || requestVersionRef.current !== version) return;
+        setProducts(page.items);
+        setTotal(page.total);
+        setHasMore(page.hasMore);
+        setError(null);
+      } catch (cause) {
+        if (!active || (cause instanceof Error && cause.name === 'AbortError')) return;
+        if (requestVersionRef.current !== version) return;
+        setError(cause instanceof Error ? cause.message : 'Search failed');
+      } finally {
+        if (active && requestVersionRef.current === version) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [activeQuery, inStockOnly, locale, sort]);
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loading || loadingMore || refreshing || !activeQuery) return;
+    setLoadingMore(true);
+    const version = requestVersionRef.current;
+    try {
+      const page = await fetchCatalog({
         locale,
         q: activeQuery,
         sort,
         inStockOnly,
-        limit: 60,
-      },
-      controller.signal,
-    )
-      .then((page) => {
-        setProducts(page.items);
-        setTotal(page.total);
-        setError(null);
-      })
-      .catch((cause) => {
-        if (cause instanceof Error && cause.name === 'AbortError') return;
-        setError(cause instanceof Error ? cause.message : 'Search failed');
-      })
-      .finally(() => {
-        setLoading(false);
+        limit: 30,
+        offset: products.length,
       });
-
-    return () => controller.abort();
-  }, [activeQuery, inStockOnly, locale, sort]);
+      if (requestVersionRef.current !== version) return;
+      setProducts((prev) => [...prev, ...page.items]);
+      setTotal(page.total);
+      setHasMore(page.hasMore);
+    } catch {
+      // non-fatal pagination error
+    } finally {
+      if (requestVersionRef.current === version) {
+        setLoadingMore(false);
+      }
+    }
+  }, [activeQuery, hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, sort]);
 
   const handleAddToCart = useCallback(
     (product: CatalogProduct) => {
@@ -493,6 +543,15 @@ export function SearchScreen() {
         ListHeaderComponent={renderHeader}
         renderItem={renderProductItem}
         ListEmptyComponent={renderEmpty}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={colors.green} />
+            </View>
+          ) : null
+        }
         refreshControl={
           activeQuery ? (
             <RefreshControl
@@ -914,5 +973,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 20,
+  },
+  footerLoader: {
+    paddingVertical: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

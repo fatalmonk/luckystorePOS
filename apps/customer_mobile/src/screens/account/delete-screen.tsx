@@ -81,9 +81,9 @@ export function DeleteAccountScreen() {
 
       {requested ? (
         <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.successCard}>
-          <Text accessibilityRole="header" style={styles.successTitle}>✓ Deletion Request Submitted</Text>
+          <Text accessibilityRole="header" style={styles.successTitle}>✉️ Email Draft Opened</Text>
           <Text style={styles.successBody}>
-            Your request has been recorded. Our team will review and process your deletion within 30 days. You will receive confirmation via email.
+            A pre-filled deletion request was opened in your email client. Please send the message to support@luckystore1947.com so our team can verify and process your account deletion within 30 days.
           </Text>
           <Pressable
             style={styles.primaryButton}

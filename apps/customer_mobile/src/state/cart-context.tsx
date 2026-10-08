@@ -3,9 +3,14 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+
+import { CART_ITEMS_KEY, getSecureItem, setSecureItem } from '../services/storage';
+import { calculateCartTotals, FREE_DELIVERY_THRESHOLD } from './cart-calc';
 
 export interface CartItem {
   id: string;
@@ -16,7 +21,7 @@ export interface CartItem {
   qty: number;
   imageUrl?: string;
   emoji?: string;
-  stock: number;
+  stock?: number;
 }
 
 export interface CartContextState {
@@ -36,20 +41,44 @@ export interface CartContextState {
 
 const CartContext = createContext<CartContextState | null>(null);
 
-export const FREE_DELIVERY_THRESHOLD = 500;
-export const STANDARD_DELIVERY_FEE = 40;
-
-export function calculateCartTotals(items: { price: number; qty: number }[]) {
-  const totalItems = items.reduce((acc, item) => acc + item.qty, 0);
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const deliveryFee = items.length === 0 ? 0 : subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : STANDARD_DELIVERY_FEE;
-  const total = items.length === 0 ? 0 : subtotal + deliveryFee;
-  const amountToFreeDelivery = Math.max(0, FREE_DELIVERY_THRESHOLD - subtotal);
-  return { totalItems, subtotal, deliveryFee, total, amountToFreeDelivery };
-}
+export {
+  calculateCartTotals,
+  FREE_DELIVERY_THRESHOLD,
+  STANDARD_DELIVERY_FEE,
+} from './cart-calc';
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const isHydratedRef = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const raw = await getSecureItem(CART_ITEMS_KEY);
+        if (active && raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setItems(parsed);
+          }
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (active) {
+          isHydratedRef.current = true;
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    void setSecureItem(CART_ITEMS_KEY, JSON.stringify(items));
+  }, [items]);
 
   const add = useCallback((productId: string, itemDetails?: Partial<CartItem>, quantity = 1) => {
     setItems((current) => {

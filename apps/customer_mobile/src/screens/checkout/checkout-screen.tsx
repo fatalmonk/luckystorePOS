@@ -186,7 +186,11 @@ export function CheckoutScreen() {
       const orderNumber = result.order.order_number;
       const trackingToken = result.order.trackingToken || '';
       if (trackingToken) {
-        saveGuestOrderToken(orderNumber, trackingToken).catch(() => {});
+        try {
+          await saveGuestOrderToken(orderNumber, trackingToken);
+        } catch {
+          // In-memory fallback handled by storage service
+        }
       }
       setIsPlacing(false);
       router.replace({

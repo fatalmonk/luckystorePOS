@@ -24,7 +24,7 @@ const copy = {
     body: 'Rice, oil, tea, snacks and daily essentials from the neighbourhood store families already know.',
     start: 'Start your order', delivery: 'Within 1 km · Free delivery ৳500+ · Pay after inspection',
     categories: 'Shop by routine', retry: 'Try again', loading: 'Loading today’s groceries…', seeAll: 'See all', add: 'Add', added: 'Added',
-    unavailable: 'The live catalogue is temporarily unavailable. We will not show placeholder stock as orderable.',
+    unavailable: 'We couldn’t load the latest products right now. Please check your connection and try again.',
     footerTitle: 'Lucky Store · Est. 1947', footerBody: 'Everyday groceries delivered with care across Chattogram.',
     allCategories: 'All',
   },
@@ -33,7 +33,7 @@ const copy = {
     body: 'পরিচিত পাড়ার দোকান থেকে চাল, তেল, চা, নাস্তা ও দৈনন্দিন প্রয়োজনীয় পণ্য।',
     start: 'অর্ডার শুরু করুন', delivery: '১ কিমির মধ্যে · ৳৫০০+ ফ্রি ডেলিভারি · দেখে তারপর পেমেন্ট',
     categories: 'প্রয়োজন অনুযায়ী কিনুন', retry: 'আবার চেষ্টা করুন', loading: 'আজকের নিত্যপণ্য লোড হচ্ছে…', seeAll: 'সব দেখুন', add: 'যোগ করুন', added: 'যোগ হয়েছে',
-    unavailable: 'লাইভ পণ্যের তালিকা এখন পাওয়া যাচ্ছে না। অস্থায়ী পণ্য অর্ডারযোগ্য হিসেবে দেখানো হবে না।',
+    unavailable: 'এই মুহূর্তে পণ্য লোড করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।',
     footerTitle: 'লাকি স্টোর · ১৯৪৭ থেকে', footerBody: 'চট্টগ্রামজুড়ে যত্নের সঙ্গে দৈনন্দিন নিত্যপণ্য পৌঁছে দিচ্ছি।',
     allCategories: 'সকল',
   },
@@ -49,7 +49,9 @@ export function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
   const activeLocaleRef = useRef(locale);
-  activeLocaleRef.current = locale;
+  useEffect(() => {
+    activeLocaleRef.current = locale;
+  }, [locale]);
   const text = copy[locale];
 
   const refresh = useCallback(async () => {
@@ -189,7 +191,6 @@ export function HomeScreen() {
         </View>
         {error || home?.degraded ? <View accessibilityRole="alert" style={styles.errorCard}>
           <Text style={styles.errorTitle}>{text.unavailable}</Text>
-          {error ? <Text style={styles.errorDetail}>{error}</Text> : null}
           <Pressable onPress={() => void refresh()} style={styles.retryButton}><Text style={styles.retryText}>{text.retry}</Text></Pressable>
         </View> : null}
         {home?.categories.length ? <View style={styles.block}>

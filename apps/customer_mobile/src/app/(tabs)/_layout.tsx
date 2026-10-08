@@ -2,7 +2,6 @@ import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
 
 import { FloatingGlassTabBar } from '../../components/navigation/floating-glass-tab-bar';
-import { colors } from '../../theme';
 
 export default function TabsLayout() {
   return (

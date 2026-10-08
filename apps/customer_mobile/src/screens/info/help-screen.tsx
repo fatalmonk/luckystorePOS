@@ -28,6 +28,7 @@ const copy = {
     storeLocation: 'Lucky Store — Emdad Park',
     storeAddress: '665 Percival Hill Rd, Chittagong 4203',
     storeHours: 'Every day: 8:00 AM – 10:00 PM',
+    openError: 'Could not launch the app directly. You can call or WhatsApp us manually at +8801731944544 or email support@luckystore1947.com.',
   },
   bn: {
     title: 'সাহায্য ও যোগাযোগ',
@@ -44,20 +45,28 @@ const copy = {
     storeLocation: 'লাকি স্টোর — এমদাদ পার্ক',
     storeAddress: '৬৬৫ পারসিভাল হিল রোড, চট্টগ্রাম ৪২০৩',
     storeHours: 'প্রতিদিন: সকাল ৮টা – রাত ১০টা',
+    openError: 'সরাসরি অ্যাপ খুলতে সমস্যা হচ্ছে। আপনি সরাসরি +8801731944544 নম্বরে কল বা হোয়াটসঅ্যাপ করতে পারেন অথবা support@luckystore1947.com এ ইমেইল করতে পারেন।',
   },
 } as const;
 
 export function HelpScreen() {
   const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
+  const [actionError, setActionError] = useState<string | null>(null);
   const t = copy[locale];
 
   const handleOpenWhatsApp = () => {
-    Linking.openURL('https://wa.me/8801731944544').catch(() => {});
+    setActionError(null);
+    Linking.openURL('https://wa.me/8801731944544').catch(() => {
+      setActionError(t.openError);
+    });
   };
 
   const handleCall = () => {
-    Linking.openURL('tel:+8801731944544').catch(() => {});
+    setActionError(null);
+    Linking.openURL('tel:+8801731944544').catch(() => {
+      setActionError(t.openError);
+    });
   };
 
   return (
@@ -82,6 +91,14 @@ export function HelpScreen() {
         </Pressable>
       </View>
       <Text style={styles.subtitle}>{t.subtitle}</Text>
+
+      {actionError ? (
+        <View accessibilityRole="alert" style={styles.errorBanner}>
+          <Text selectable style={styles.errorText}>
+            {actionError}
+          </Text>
+        </View>
+      ) : null}
 
       {/* WhatsApp Support */}
       <View style={styles.card}>
@@ -224,5 +241,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.deepNight,
     marginTop: 2,
+  },
+  errorBanner: {
+    backgroundColor: '#FDE8E8',
+    borderColor: colors.danger,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
   },
 });

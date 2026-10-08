@@ -1,11 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  calculateCartTotals,
-  FREE_DELIVERY_THRESHOLD,
-  STANDARD_DELIVERY_FEE,
-} from './cart-context';
+import { calculateCartTotals } from './cart-calc';
 
 describe('cart calculations and delivery policy', () => {
 

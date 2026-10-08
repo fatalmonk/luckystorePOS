@@ -2,6 +2,8 @@ import * as SecureStore from 'expo-secure-store';
 
 export const GUEST_TOKENS_KEY = 'lucky_guest_order_tokens';
 export const AUTH_SESSION_KEY = 'lucky_auth_session';
+export const CART_ITEMS_KEY = 'lucky_cart_items';
+export const WISHLIST_ITEMS_KEY = 'lucky_wishlist_items';
 
 const memoryFallback: Record<string, string> = {};
 

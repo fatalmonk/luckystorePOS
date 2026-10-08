@@ -30,6 +30,8 @@ const copy = {
     itemsCount: (count: number) => `${count} item${count === 1 ? '' : 's'}`,
     total: 'Total',
     viewDetails: 'View Details →',
+    loadError: 'Unable to load orders. Please check your connection and try again.',
+    retry: 'Try Again',
   },
   bn: {
     title: 'পূর্বের অর্ডারসমূহ',
@@ -44,6 +46,8 @@ const copy = {
     itemsCount: (count: number) => `${count}টি পণ্য`,
     total: 'সর্বমোট',
     viewDetails: 'বিস্তারিত দেখুন →',
+    loadError: 'অর্ডার লোড করা যায়নি। অনুগ্রহ করে সংযোগ চেক করে আবার চেষ্টা করুন।',
+    retry: 'আবার চেষ্টা করুন',
   },
 } as const;
 
@@ -57,6 +61,7 @@ export function OrdersScreen() {
   const [orders, setOrders] = useState<MobileOrderDto[]>([]);
   const [loading, setLoading] = useState(isLoggedIn);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!token) {
@@ -74,43 +79,61 @@ export function OrdersScreen() {
       const data = await res.json();
       if (res.ok && data.ok) {
         setOrders(data.orders || []);
+        setError(null);
+      } else {
+        setError(data.message || t.loadError);
       }
     } catch {
-      // Ignored on background refresh
+      setError(t.loadError);
     } finally {
       setRefreshing(false);
     }
-  }, [token]);
+  }, [token, t.loadError]);
 
   useEffect(() => {
     if (!isLoggedIn || !token) {
       return;
     }
+    let active = true;
     const controller = new AbortController();
     const baseUrl = resolveApiBaseUrl();
-    fetch(`${baseUrl}/api/mobile/v1/orders`, {
-      signal: controller.signal,
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.ok && data.orders) {
-          setOrders(data.orders);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        setLoading(false);
-      });
 
-    return () => controller.abort();
-  }, [isLoggedIn, token]);
+    void (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${baseUrl}/api/mobile/v1/orders`, {
+          signal: controller.signal,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!active) return;
+        if (res.ok && data.ok && data.orders) {
+          setOrders(data.orders);
+          setError(null);
+        } else {
+          setError(data.message || t.loadError);
+        }
+      } catch (err: any) {
+        if (!active || err.name === 'AbortError') return;
+        setError(t.loadError);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [isLoggedIn, token, t.loadError]);
 
   const handleRefresh = () => {
-    setRefreshing(true);
     fetchOrders();
   };
 
@@ -141,6 +164,25 @@ export function OrdersScreen() {
     );
   }
 
+  if (error && orders.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <View style={styles.guestCard}>
+          <Text style={styles.guestEmoji}>⚠️</Text>
+          <Text style={styles.guestTitle}>{t.title}</Text>
+          <Text style={styles.guestSubtitle}>{error}</Text>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={fetchOrders}
+            accessibilityRole="button"
+          >
+            <Text style={styles.primaryButtonText}>{t.retry}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.screen}>
       {/* Header Bar */}
@@ -156,6 +198,12 @@ export function OrdersScreen() {
           </Text>
         </Pressable>
       </View>
+
+      {error && orders.length > 0 ? (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorBannerText}>⚠️ {error}</Text>
+        </View>
+      ) : null}
 
       <FlatList
         data={orders}
@@ -408,5 +456,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.deepNight,
     fontVariant: ['tabular-nums'],
+  },
+  errorBanner: {
+    backgroundColor: '#FEE2E2',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    padding: 10,
+    borderRadius: 8,
+  },
+  errorBannerText: {
+    color: '#991B1B',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

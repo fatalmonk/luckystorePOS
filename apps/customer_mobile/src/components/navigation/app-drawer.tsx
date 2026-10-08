@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   Modal,
   Platform,
@@ -25,11 +26,49 @@ export function AppDrawer() {
   const { user, isLoggedIn, logout } = useAuth();
   const { isDrawerOpen, closeDrawer } = useTabBarScroll();
 
-  const translateX = useRef(new Animated.Value(-drawerWidth)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const [translateX] = useState(() => new Animated.Value(-drawerWidth));
+  const [backdropOpacity] = useState(() => new Animated.Value(0));
+  const [prevIsDrawerOpen, setPrevIsDrawerOpen] = useState(isDrawerOpen);
+  const [isMounted, setIsMounted] = useState(isDrawerOpen);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  if (isDrawerOpen !== prevIsDrawerOpen) {
+    setPrevIsDrawerOpen(isDrawerOpen);
+    if (isDrawerOpen) {
+      setIsMounted(true);
+    } else if (reduceMotion) {
+      setIsMounted(false);
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (active) setReduceMotion(enabled);
+      })
+      .catch(() => {});
+
+    const subscription = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      (enabled) => {
+        if (active) setReduceMotion(enabled);
+      },
+    );
+
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (isDrawerOpen) {
+      if (reduceMotion) {
+        translateX.setValue(0);
+        backdropOpacity.setValue(1);
+        return;
+      }
       Animated.parallel([
         Animated.spring(translateX, {
           toValue: 0,
@@ -44,6 +83,11 @@ export function AppDrawer() {
         }),
       ]).start();
     } else {
+      if (reduceMotion) {
+        translateX.setValue(-drawerWidth);
+        backdropOpacity.setValue(0);
+        return;
+      }
       Animated.parallel([
         Animated.spring(translateX, {
           toValue: -drawerWidth,
@@ -56,11 +100,15 @@ export function AppDrawer() {
           duration: 200,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start(({ finished }) => {
+        if (finished) {
+          setIsMounted(false);
+        }
+      });
     }
-  }, [isDrawerOpen, drawerWidth, translateX, backdropOpacity]);
+  }, [isDrawerOpen, drawerWidth, translateX, backdropOpacity, reduceMotion]);
 
-  if (!isDrawerOpen) return null;
+  if (!isMounted) return null;
 
   const handleNavigate = (path: string, params?: Record<string, any>) => {
     closeDrawer();
@@ -76,7 +124,7 @@ export function AppDrawer() {
   return (
     <Modal
       transparent
-      visible={isDrawerOpen}
+      visible={isMounted}
       animationType="none"
       onRequestClose={closeDrawer}
       statusBarTranslucent

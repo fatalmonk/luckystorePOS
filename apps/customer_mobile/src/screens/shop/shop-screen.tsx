@@ -129,43 +129,47 @@ export function ShopScreen() {
   }, [locale, selectedCategory, searchQuery, sort, inStockOnly]);
 
   useEffect(() => {
+    let active = true;
     const version = ++requestVersionRef.current;
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
 
-    void fetchCatalog(
-      {
-        locale,
-        category: selectedCategory === 'all' ? undefined : selectedCategory,
-        q: searchQuery.trim() || undefined,
-        sort,
-        inStockOnly,
-        limit: 30,
-        offset: 0,
-      },
-      controller.signal,
-    )
-      .then((page) => {
-        if (requestVersionRef.current !== version) return;
+    void (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const page = await fetchCatalog(
+          {
+            locale,
+            category: selectedCategory === 'all' ? undefined : selectedCategory,
+            q: searchQuery.trim() || undefined,
+            sort,
+            inStockOnly,
+            limit: 30,
+            offset: 0,
+          },
+          controller.signal,
+        );
+        if (!active || requestVersionRef.current !== version) return;
         setCategories(page.categories);
         setProducts(page.items);
         setTotal(page.total);
         setHasMore(page.hasMore);
         setError(null);
-      })
-      .catch((cause) => {
-        if (cause instanceof Error && cause.name === 'AbortError') return;
+      } catch (cause) {
+        if (!active || (cause instanceof Error && cause.name === 'AbortError')) return;
         if (requestVersionRef.current !== version) return;
         setError(cause instanceof Error ? cause.message : 'Failed to load catalog');
-      })
-      .finally(() => {
-        if (requestVersionRef.current === version) {
+      } finally {
+        if (active && requestVersionRef.current === version) {
           setLoading(false);
         }
-      });
+      }
+    })();
 
-    return () => controller.abort();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [locale, selectedCategory, searchQuery, sort, inStockOnly]);
 
   const loadMore = useCallback(async () => {

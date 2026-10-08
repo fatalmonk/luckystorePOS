@@ -115,7 +115,8 @@ export function CartScreen() {
               accessibilityRole="button"
               onPress={() => updateQty(item.id, -1)}
               style={styles.stepperButton}
-              accessibilityLabel="Decrease quantity"
+              accessibilityLabel={`Decrease quantity of ${item.name}`}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.stepperButtonText}>−</Text>
             </Pressable>
@@ -124,7 +125,8 @@ export function CartScreen() {
               accessibilityRole="button"
               onPress={() => updateQty(item.id, 1)}
               style={styles.stepperButton}
-              accessibilityLabel="Increase quantity"
+              accessibilityLabel={`Increase quantity of ${item.name}`}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.stepperButtonText}>+</Text>
             </Pressable>
@@ -422,8 +424,8 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   stepperButton: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -3,11 +3,14 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
 import { CatalogProduct } from '../services/catalog';
+import { getSecureItem, setSecureItem, WISHLIST_ITEMS_KEY } from '../services/storage';
 
 export interface WishlistContextState {
   wishlist: CatalogProduct[];
@@ -21,6 +24,36 @@ const WishlistContext = createContext<WishlistContextState | null>(null);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<CatalogProduct[]>([]);
+  const isHydratedRef = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const raw = await getSecureItem(WISHLIST_ITEMS_KEY);
+        if (active && raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setWishlist(parsed);
+          }
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (active) {
+          isHydratedRef.current = true;
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    void setSecureItem(WISHLIST_ITEMS_KEY, JSON.stringify(wishlist));
+  }, [wishlist]);
 
   const wishlistIds = useMemo(() => new Set(wishlist.map((i) => i.id)), [wishlist]);
 

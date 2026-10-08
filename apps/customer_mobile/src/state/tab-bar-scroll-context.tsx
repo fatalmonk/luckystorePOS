@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -28,21 +29,41 @@ export interface TabBarScrollContextState {
 const TabBarScrollContext = createContext<TabBarScrollContextState | null>(null);
 
 export function TabBarScrollProvider({ children }: { children: ReactNode }) {
-  const tabBarTranslateY = useRef(new Animated.Value(0)).current;
+  const [tabBarTranslateY] = useState(() => new Animated.Value(0));
   const lastScrollY = useRef(0);
   const isVisibleRef = useRef(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const pathname = usePathname();
 
-  let pathname = '';
-  try {
-    pathname = usePathname();
-  } catch {
-    // graceful fallback if rendered outside Expo Router context
-  }
+  useEffect(() => {
+    let active = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (active) setReduceMotion(enabled);
+      })
+      .catch(() => {});
+
+    const subscription = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      (enabled) => {
+        if (active) setReduceMotion(enabled);
+      },
+    );
+
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
+  }, []);
 
   const showTabBar = useCallback(() => {
     if (!isVisibleRef.current) {
       isVisibleRef.current = true;
+      if (reduceMotion) {
+        tabBarTranslateY.setValue(0);
+        return;
+      }
       Animated.spring(tabBarTranslateY, {
         toValue: 0,
         tension: 75,
@@ -50,9 +71,10 @@ export function TabBarScrollProvider({ children }: { children: ReactNode }) {
         useNativeDriver: true,
       }).start();
     }
-  }, [tabBarTranslateY]);
+  }, [reduceMotion, tabBarTranslateY]);
 
   const hideTabBar = useCallback(() => {
+    if (reduceMotion) return;
     if (isVisibleRef.current) {
       isVisibleRef.current = false;
       Animated.spring(tabBarTranslateY, {
@@ -62,7 +84,7 @@ export function TabBarScrollProvider({ children }: { children: ReactNode }) {
         useNativeDriver: true,
       }).start();
     }
-  }, [tabBarTranslateY]);
+  }, [reduceMotion, tabBarTranslateY]);
 
   useEffect(() => {
     // Restore tab bar visibility and reset scroll baseline on route change
