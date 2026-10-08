@@ -102,6 +102,7 @@ export function ShopScreen() {
   const refresh = useCallback(async () => {
     const version = ++requestVersionRef.current;
     setRefreshing(true);
+    setLoadingMore(false);
     setError(null);
     try {
       const page = await fetchCatalog({
@@ -118,6 +119,7 @@ export function ShopScreen() {
       setProducts(page.items);
       setTotal(page.total);
       setHasMore(page.hasMore);
+      setLoading(false);
     } catch (cause) {
       if (requestVersionRef.current !== version) return;
       setError(cause instanceof Error ? cause.message : 'Failed to load catalog');
@@ -135,6 +137,7 @@ export function ShopScreen() {
 
     void (async () => {
       setLoading(true);
+      setLoadingMore(false);
       setError(null);
       try {
         const page = await fetchCatalog(
@@ -193,9 +196,7 @@ export function ShopScreen() {
     } catch {
       // non-fatal pagination error
     } finally {
-      if (requestVersionRef.current === version) {
-        setLoadingMore(false);
-      }
+      setLoadingMore(false);
     }
   }, [hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, searchQuery, selectedCategory, sort]);
 

@@ -92,21 +92,23 @@ export async function getMobileProductDetail(
 
   if (locale === 'bn' && !product.bengaliName) {
     try {
-      const { data: trans } = await (supabase as any)
+      const { data: trans, error: transErr } = await (supabase as any)
         .from('item_translations')
         .select('name, description')
         .eq('item_id', product.id)
         .eq('locale', 'bn')
         .eq('review_status', 'published')
         .maybeSingle();
-      if (trans) {
+      if (transErr) {
+        console.error(`[mobile/product] Failed to fetch translation for ${product.id}:`, transErr);
+      } else if (trans) {
         product.bengaliName = trans.name;
         if (trans.description) {
           product.bengaliDescription = trans.description;
         }
       }
-    } catch {
-      // translation fallback
+    } catch (err) {
+      console.error(`[mobile/product] Translation lookup threw for ${product.id}:`, err);
     }
   }
 

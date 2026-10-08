@@ -64,4 +64,26 @@ describe('product detail schema validation', () => {
     assert.equal(parsed.product.id, 'p1');
     assert.equal(parsed.related.length, 1);
   });
+
+  it('normalizes blank or whitespace category to General', () => {
+    const parsedBlank = ProductDetailItemSchema.parse({
+      id: 'p1',
+      name: 'Item',
+      price: 10,
+      unit: 'pc',
+      stock: 1,
+      category: '',
+    });
+    assert.equal(parsedBlank.category, 'General');
+
+    const parsedWhitespace = ProductDetailItemSchema.parse({
+      id: 'p2',
+      name: 'Item 2',
+      price: 10,
+      unit: 'pc',
+      stock: 1,
+      category: '   ',
+    });
+    assert.equal(parsedWhitespace.category, 'General');
+  });
 });

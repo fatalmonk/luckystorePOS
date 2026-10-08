@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { resolveApiBaseUrl, Locale } from './home';
+import { CategoryNameSchema } from './schema-utils';
 
 export const CatalogProductSchema = z.object({
   id: z.string().min(1),
@@ -11,7 +12,7 @@ export const CatalogProductSchema = z.object({
   stock: z.number().int().nonnegative(),
   imageUrl: z.string().url().optional(),
   badge: z.string().optional(),
-  category: z.string().transform((val) => val.trim() || 'General'),
+  category: CategoryNameSchema,
   categoryId: z.string().optional(),
   description: z.string().optional(),
 }).strip();

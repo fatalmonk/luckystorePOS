@@ -10,7 +10,7 @@ import {
 } from 'react';
 
 import { CatalogProduct } from '../services/catalog';
-import { getSecureItem, setSecureItem, WISHLIST_ITEMS_KEY } from '../services/storage';
+import { getItem, setItem, WISHLIST_ITEMS_KEY } from '../services/storage';
 
 export interface WishlistContextState {
   wishlist: CatalogProduct[];
@@ -25,16 +25,29 @@ const WishlistContext = createContext<WishlistContextState | null>(null);
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<CatalogProduct[]>([]);
   const isHydratedRef = useRef(false);
+  const hasUserMutatedRef = useRef(false);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const raw = await getSecureItem(WISHLIST_ITEMS_KEY);
+        const raw = await getItem(WISHLIST_ITEMS_KEY);
         if (active && raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            setWishlist(parsed);
+            setWishlist((current) => {
+              if (!hasUserMutatedRef.current) {
+                return parsed;
+              }
+              const map = new Map<string, CatalogProduct>();
+              for (const item of parsed) {
+                map.set(item.id, item);
+              }
+              for (const item of current) {
+                map.set(item.id, item);
+              }
+              return Array.from(map.values());
+            });
           }
         }
       } catch {
@@ -52,12 +65,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isHydratedRef.current) return;
-    void setSecureItem(WISHLIST_ITEMS_KEY, JSON.stringify(wishlist));
+    void setItem(WISHLIST_ITEMS_KEY, JSON.stringify(wishlist));
   }, [wishlist]);
 
   const wishlistIds = useMemo(() => new Set(wishlist.map((i) => i.id)), [wishlist]);
 
   const toggleWishlist = useCallback((product: CatalogProduct) => {
+    hasUserMutatedRef.current = true;
     setWishlist((current) => {
       const exists = current.some((i) => i.id === product.id);
       if (exists) {
@@ -73,6 +87,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   );
 
   const clearWishlist = useCallback(() => {
+    hasUserMutatedRef.current = true;
     setWishlist([]);
   }, []);
 

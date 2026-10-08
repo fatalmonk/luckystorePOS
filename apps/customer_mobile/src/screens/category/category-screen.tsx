@@ -103,6 +103,7 @@ export function CategoryDetailScreen() {
   const refresh = useCallback(async () => {
     const version = ++requestVersionRef.current;
     setRefreshing(true);
+    setLoadingMore(false);
     setError(null);
     try {
       const page = await fetchCatalog({
@@ -122,6 +123,7 @@ export function CategoryDetailScreen() {
       if (page.category) {
         setCategoryInfo(page.category);
       }
+      setLoading(false);
     } catch (cause) {
       if (requestVersionRef.current !== version) return;
       setError(cause instanceof Error ? cause.message : 'Failed to load category');
@@ -139,6 +141,7 @@ export function CategoryDetailScreen() {
 
     void (async () => {
       setLoading(true);
+      setLoadingMore(false);
       setError(null);
       try {
         const page = await fetchCatalog(
@@ -200,9 +203,7 @@ export function CategoryDetailScreen() {
     } catch {
       // non-fatal pagination error
     } finally {
-      if (requestVersionRef.current === version) {
-        setLoadingMore(false);
-      }
+      setLoadingMore(false);
     }
   }, [categorySlug, hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, searchQuery, sort]);
 

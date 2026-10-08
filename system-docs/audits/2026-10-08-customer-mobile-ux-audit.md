@@ -233,3 +233,54 @@ In the successful Home capture, the hero occupies roughly two-fifths of the visi
 - **Positive:** the logo, cream background, deep green hero, and yellow action create a coherent identity. The primary hero action is clear, menu rows have readable titles, and the drawer exposes orders/help without deep navigation.
 
 Prioritize the newly confirmed false badges alongside F01/F04's misleading feedback. Reproduce the header-overlap variant and inspect scrolling under the floating bar before changing navigation geometry. These screenshots do not resolve the outstanding keyboard, safe-area, VoiceOver, native dark-mode, or gesture checks.
+
+## Fix verification — commit 81f1143c
+
+The user supplied a completion log for implementation commit `ee0c2fef` and documentation commit `81f1143c`. Both commits are present locally. The working tree was clean before this verification. This review made no application changes and did not push, deploy, or verify remote branch state.
+
+**Fresh checks:** mobile `npm run lint` passes; `npm run typecheck` passes; `npm run test` passes all 23 tests in six suites. Commands were run through RTK in customer_mobile. The pasted claim of 365 storefront tests was not independently rerun here. Passing mobile tests do not exercise provider hydration, storage failures, or interactive pagination.
+
+| Original findings | Current assessment |
+|---|---|
+| F01, F05, F06, F08, F12, F14, F15, F16 | Source changes address the reported issue. Native interaction remains unverified. |
+| F02 | Persistence added, but hydration and storage-failure handling remain incomplete. |
+| F04 | Toggles are disabled and marked Coming Soon; new WhatsApp/SMS delivery promises require operational evidence. |
+| F07 | Normal-path save/navigation race addressed by awaiting storage, but failure recovery still fails. |
+| F13 | Pagination added; changing query/filter during pagination can leave loadingMore stuck. |
+| F03, F09, F10, F11, F17 | Remain open; this completion log does not establish resolution. |
+
+### [P1] Storage fallback cannot be read when native reads succeed with no value
+
+[storage.ts:10](/Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_mobile/src/services/storage.ts:10) catches failed writes into memoryFallback. However, [getSecureItem:18](/Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_mobile/src/services/storage.ts:18) consults that fallback only if the native read throws. A readable native store can return null or an older value after a failed write, bypassing the newer memory value.
+
+**Verification:** transpiled the actual storage.ts in memory and ran it in a Node VM with mocked SecureStore: writes reject, reads resolve null. After setSecureItem, getSecureItem failed to recover the dummy value. After awaited saveGuestOrderToken, getGuestOrderToken also failed to recover the dummy tracking token. No native storage or real credentials were used or changed.
+
+**Impact:** F02's persistence is not guaranteed and F07 can still navigate to guest order details without usable tracking credentials. Native restart behavior remains untested. **Recommendation:** make fallback read/write precedence coherent, distinguish durable saves from memory-only saves, and retain guest confirmation access if durable storage fails. Add failure-path tests for the storage adapter.
+
+### [P1] Hydration can overwrite a newly edited basket or wishlist
+
+[CartProvider:54](/Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_mobile/src/state/cart-context.tsx:54) and [WishlistProvider:29](/Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_mobile/src/state/wishlist-context.tsx:29) read asynchronously while immediately rendering interactive children. A customer can add/remove items before the read completes; the later setItems(parsed)/setWishlist(parsed) then replaces those edits with the old snapshot. Hydration readiness exists only in refs, so screens cannot distinguish a real empty basket from an initial loading state.
+
+**Evidence level:** deterministic source ordering; not reproduced on a device. **Recommendation:** expose hydration readiness and gate edits or merge queued edits deliberately; validate stored item shapes rather than checking Array.isArray alone. Test delayed hydration with an intervening add/remove action before closing F02.
+
+### [P2] Changing search filters mid-pagination can permanently block continuation
+
+[Search loadMore:203](/Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_mobile/src/screens/search/search-screen.tsx:203) sets loadingMore=true. Its finally block clears that flag only if its request version still matches. A query, sort, stock filter, or locale change increments the version in the first-page effect, without resetting loadingMore. The old pagination request then skips cleanup; future loadMore calls return immediately because loadingMore remains true.
+
+**Evidence level:** source-derived state transition; no interactive reproduction. **Recommendation:** reset pagination state when starting a new result generation and ensure stale requests cannot clear a newer generation's pending state. Test query/filter changes while a later page is unresolved before closing F13.
+
+The notification text now says live updates are sent through WhatsApp and SMS and that native push will arrive in an upcoming release. Neither the local disabled switches nor the pasted completion log verifies these service/roadmap claims. Confirm them against actual operations or use neutral availability copy before declaring F04 fully resolved.
+
+The most useful next work is to finish F02/F07's storage and hydration behavior, fix F13's stale-request cleanup, and then address the five still-open original findings. Preserve the existing successful source fixes. Native visual/accessibility checks remain required.
+
+## Live localhost inspection
+
+Opened the user-provided http://localhost:8081/ in the Codex in-app browser and inspected Home, the drawer, Settings, and the empty Cart. This was browser-only inspection, not native simulator testing. A temporary narrow viewport was requested, but the rendered page reported 485×1052 CSS pixels rather than the requested 393×852; therefore this pass is not exact iPhone 15 Pro viewport proof. The override was reset afterward and Home was left open.
+
+- Home successfully loaded categories and products; the previous catalogue outage was not present in this visit. This confirms that the current browser session can load the catalogue, not long-term API reliability.
+- F15 visually confirmed addressed: the drawer and Menu show no invented 9+ badge.
+- F17 remains visible: introductory hero and repeated category navigation precede products. The product strip permits partially visible next cards; horizontal continuation alone is not a clipping defect.
+- Drawer shortcut labels remain visibly truncated, including Dairy & E… and Tea & Cof…. The accessible labels provide the complete category names, which is an improvement over the visible text alone.
+- Settings visibly shows disabled Coming Soon switches and the WhatsApp/SMS promise identified above. It also repeats Settings in the stack header and content heading. No preferences were changed.
+- Empty Cart, its Start Shopping action, and floating navigation rendered without an obvious overlap in the inspected state. This does not verify a populated cart's final controls or native safe areas.
+- The older top-navigation/header overlap was not reproduced on current Home. Native keyboard, large text, dark appearance, gestures, persistence, and pagination races were not tested in this visit. No customer data, purchases, or account actions were submitted.

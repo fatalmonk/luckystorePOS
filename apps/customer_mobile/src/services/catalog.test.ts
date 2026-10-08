@@ -56,4 +56,36 @@ describe('catalog schema validation', () => {
     assert.equal(parsed.total, 1);
     assert.equal(parsed.hasMore, false);
   });
+
+  it('normalizes blank or whitespace category to General while preserving trimmed names', () => {
+    const emptyCat = CatalogProductSchema.parse({
+      id: 'p1',
+      name: 'Item',
+      price: 10,
+      unit: 'pc',
+      stock: 1,
+      category: '',
+    });
+    assert.equal(emptyCat.category, 'General');
+
+    const whitespaceCat = CatalogProductSchema.parse({
+      id: 'p2',
+      name: 'Item 2',
+      price: 10,
+      unit: 'pc',
+      stock: 1,
+      category: '   ',
+    });
+    assert.equal(whitespaceCat.category, 'General');
+
+    const regularCat = CatalogProductSchema.parse({
+      id: 'p3',
+      name: 'Item 3',
+      price: 10,
+      unit: 'pc',
+      stock: 1,
+      category: '  Rice  ',
+    });
+    assert.equal(regularCat.category, 'Rice');
+  });
 });

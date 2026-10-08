@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -57,16 +57,23 @@ export function OrdersScreen() {
   const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
+  const tRef = useRef(t);
+
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   const [orders, setOrders] = useState<MobileOrderDto[]>([]);
   const [loading, setLoading] = useState(isLoggedIn);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
 
   const fetchOrders = useCallback(async () => {
-    if (!token) {
+    if (!token || inFlightRef.current) {
       return;
     }
+    inFlightRef.current = true;
     setRefreshing(true);
     try {
       const baseUrl = resolveApiBaseUrl();
@@ -81,14 +88,15 @@ export function OrdersScreen() {
         setOrders(data.orders || []);
         setError(null);
       } else {
-        setError(data.message || t.loadError);
+        setError(data.message || tRef.current.loadError);
       }
     } catch {
-      setError(t.loadError);
+      setError(tRef.current.loadError);
     } finally {
+      inFlightRef.current = false;
       setRefreshing(false);
     }
-  }, [token, t.loadError]);
+  }, [token]);
 
   useEffect(() => {
     if (!isLoggedIn || !token) {
@@ -115,11 +123,11 @@ export function OrdersScreen() {
           setOrders(data.orders);
           setError(null);
         } else {
-          setError(data.message || t.loadError);
+          setError(data.message || tRef.current.loadError);
         }
       } catch (err: any) {
         if (!active || err.name === 'AbortError') return;
-        setError(t.loadError);
+        setError(tRef.current.loadError);
       } finally {
         if (active) {
           setLoading(false);
@@ -131,7 +139,7 @@ export function OrdersScreen() {
       active = false;
       controller.abort();
     };
-  }, [isLoggedIn, token, t.loadError]);
+  }, [isLoggedIn, token]);
 
   const handleRefresh = () => {
     fetchOrders();
@@ -167,16 +175,22 @@ export function OrdersScreen() {
   if (error && orders.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <View style={styles.guestCard}>
+        <View style={styles.guestCard} accessibilityRole="alert" accessibilityLiveRegion="polite">
           <Text style={styles.guestEmoji}>⚠️</Text>
           <Text style={styles.guestTitle}>{t.title}</Text>
           <Text style={styles.guestSubtitle}>{error}</Text>
           <Pressable
-            style={styles.primaryButton}
+            style={[styles.primaryButton, (refreshing || loading) && styles.primaryButtonDisabled]}
+            disabled={refreshing || loading}
             onPress={fetchOrders}
             accessibilityRole="button"
+            accessibilityState={{ disabled: refreshing || loading, busy: refreshing || loading }}
           >
-            <Text style={styles.primaryButtonText}>{t.retry}</Text>
+            {refreshing ? (
+              <ActivityIndicator size="small" color={colors.ink} />
+            ) : (
+              <Text style={styles.primaryButtonText}>{t.retry}</Text>
+            )}
           </Pressable>
         </View>
       </View>
@@ -187,7 +201,7 @@ export function OrdersScreen() {
     <View style={styles.screen}>
       {/* Header Bar */}
       <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>{t.title}</Text>
+        <Text style={styles.screenTitle} accessibilityRole="header">{t.title}</Text>
         <Pressable
           style={styles.langPill}
           onPress={() => setLocale((prev) => (prev === 'en' ? 'bn' : 'en'))}
@@ -200,7 +214,7 @@ export function OrdersScreen() {
       </View>
 
       {error && orders.length > 0 ? (
-        <View style={styles.errorBanner}>
+        <View style={styles.errorBanner} accessibilityRole="alert" accessibilityLiveRegion="polite">
           <Text style={styles.errorBannerText}>⚠️ {error}</Text>
         </View>
       ) : null}
@@ -386,6 +400,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   primaryButtonText: {
     fontSize: 14,

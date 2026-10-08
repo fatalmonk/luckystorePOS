@@ -52,8 +52,6 @@ const copy = {
 export function SettingsScreen() {
   const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
-  const [orderNotifs, setOrderNotifs] = useState(true);
-  const [promoNotifs, setPromoNotifs] = useState(false);
   const t = copy[locale];
 
   return (
@@ -98,7 +96,7 @@ export function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionHeader} accessibilityRole="header">{t.notificationsSection}</Text>
         <Text style={styles.noticeText}>{t.notificationsNotice}</Text>
-        <View style={[styles.card, styles.disabledCard]}>
+        <View style={styles.card}>
           <View style={styles.switchRow}>
             <View style={styles.switchTextCol}>
               <View style={styles.labelWithBadge}>
@@ -108,10 +106,9 @@ export function SettingsScreen() {
               <Text style={styles.rowSublabel}>{t.orderUpdatesDesc}</Text>
             </View>
             <Switch
-              value={orderNotifs}
+              value={false}
               disabled
-              onValueChange={setOrderNotifs}
-              accessibilityLabel={t.orderUpdates}
+              accessibilityLabel={`${t.orderUpdates} (${t.upcomingBadge})`}
               trackColor={{ false: colors.line, true: colors.accent }}
               thumbColor={colors.surface}
             />
@@ -128,10 +125,9 @@ export function SettingsScreen() {
               <Text style={styles.rowSublabel}>{t.promoUpdatesDesc}</Text>
             </View>
             <Switch
-              value={promoNotifs}
+              value={false}
               disabled
-              onValueChange={setPromoNotifs}
-              accessibilityLabel={t.promoUpdates}
+              accessibilityLabel={`${t.promoUpdates} (${t.upcomingBadge})`}
               trackColor={{ false: colors.line, true: colors.accent }}
               thumbColor={colors.surface}
             />
@@ -244,9 +240,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 8,
   },
-  disabledCard: {
-    opacity: 0.75,
-  },
   labelWithBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -261,6 +254,6 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: colors.muted,
+    color: colors.deepNight,
   },
 });

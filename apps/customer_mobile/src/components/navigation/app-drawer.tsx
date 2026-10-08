@@ -85,7 +85,15 @@ export function AppDrawer() {
     } else {
       if (reduceMotion) {
         translateX.setValue(-drawerWidth);
-        backdropOpacity.setValue(0);
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }).start(({ finished }) => {
+          if (finished) {
+            setIsMounted(false);
+          }
+        });
         return;
       }
       Animated.parallel([

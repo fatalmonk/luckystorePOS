@@ -384,13 +384,15 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
 
       {/* Action Buttons */}
       <View style={styles.actionsCol}>
-        <Pressable
-          style={({ pressed }) => [styles.whatsappButton, pressed && styles.pressedScale]}
-          onPress={handleOpenWhatsApp}
-          accessibilityRole="button"
-        >
-          <Text style={styles.whatsappButtonText}>{t.whatsappButton}</Text>
-        </Pressable>
+        {!isCancelled && (
+          <Pressable
+            style={({ pressed }) => [styles.whatsappButton, pressed && styles.pressedScale]}
+            onPress={handleOpenWhatsApp}
+            accessibilityRole="button"
+          >
+            <Text style={styles.whatsappButtonText}>{t.whatsappButton}</Text>
+          </Pressable>
+        )}
 
         <Pressable
           style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedScale]}

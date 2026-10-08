@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CategoryNameSchema } from './schema-utils';
 
 export type Locale = 'en' | 'bn';
 
@@ -12,7 +13,7 @@ export const HomeProductSchema = z.object({
   stock: z.number().int().nonnegative(),
   imageUrl: z.string().url().optional(),
   badge: z.string().optional(),
-  category: z.string().transform((val) => val.trim() || 'General'),
+  category: CategoryNameSchema,
 }).strip();
 
 export const HomeCategorySchema = z.object({
@@ -38,7 +39,15 @@ export type HomeDto = z.infer<typeof HomeDtoSchema>;
 
 export function resolveApiBaseUrl(value = process.env.EXPO_PUBLIC_API_URL ?? 'https://www.luckystore1947.com') {
   const url = new URL(value);
-  if (url.protocol !== 'https:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+  const isLocalDevHost =
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.hostname.startsWith('192.168.') ||
+    url.hostname.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(url.hostname) ||
+    url.hostname.endsWith('.local');
+
+  if (url.protocol !== 'https:' && !isLocalDevHost) {
     throw new Error('EXPO_PUBLIC_API_URL must use HTTPS');
   }
   return url.toString().replace(/\/$/, '');

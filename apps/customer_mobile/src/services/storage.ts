@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
 export const GUEST_TOKENS_KEY = 'lucky_guest_order_tokens';
@@ -7,28 +8,83 @@ export const WISHLIST_ITEMS_KEY = 'lucky_wishlist_items';
 
 const memoryFallback: Record<string, string> = {};
 
+/**
+ * General key-value storage for non-sensitive data (cart items, wishlist, preferences).
+ * Uses AsyncStorage to support arbitrary JSON payloads without iOS Keychain 2048-byte limits.
+ */
+export async function setItem(key: string, value: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(key, value);
+  } catch (err) {
+    memoryFallback[key] = value;
+    console.error(`[storage] Failed to setItem for key "${key}":`, err);
+  }
+}
+
+export async function getItem(key: string): Promise<string | null> {
+  try {
+    const value = await AsyncStorage.getItem(key);
+    if (value !== null) return value;
+  } catch (err) {
+    console.warn(`[storage] AsyncStorage.getItem failed for "${key}":`, err);
+  }
+
+  // Check memory fallback
+  if (memoryFallback[key]) return memoryFallback[key];
+
+  // Migration fallback: check legacy SecureStore in case user had saved data
+  try {
+    const legacy = await SecureStore.getItemAsync(key);
+    if (legacy !== null) {
+      // Migrate to AsyncStorage silently
+      await AsyncStorage.setItem(key, legacy).catch(() => {});
+      await SecureStore.deleteItemAsync(key).catch(() => {});
+      return legacy;
+    }
+  } catch {
+    // Ignore legacy read errors
+  }
+
+  return null;
+}
+
+export async function removeItem(key: string): Promise<void> {
+  delete memoryFallback[key];
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (err) {
+    console.warn(`[storage] AsyncStorage.removeItem failed for "${key}":`, err);
+  }
+}
+
+/**
+ * Secure key-value storage for sensitive credentials (auth tokens, guest order tokens).
+ */
 export async function setSecureItem(key: string, value: string): Promise<void> {
   try {
     await SecureStore.setItemAsync(key, value);
-  } catch {
+  } catch (err) {
     memoryFallback[key] = value;
+    console.error(`[storage] SecureStore write failed for key "${key}":`, err);
   }
 }
 
 export async function getSecureItem(key: string): Promise<string | null> {
   try {
-    return await SecureStore.getItemAsync(key);
-  } catch {
-    return memoryFallback[key] || null;
+    const item = await SecureStore.getItemAsync(key);
+    if (item !== null) return item;
+  } catch (err) {
+    console.warn(`[storage] SecureStore read failed for key "${key}":`, err);
   }
+  return memoryFallback[key] || null;
 }
 
 export async function removeSecureItem(key: string): Promise<void> {
   delete memoryFallback[key];
   try {
     await SecureStore.deleteItemAsync(key);
-  } catch {
-    // Already removed from memoryFallback
+  } catch (err) {
+    console.warn(`[storage] SecureStore delete failed for key "${key}":`, err);
   }
 }
 

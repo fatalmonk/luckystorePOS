@@ -38,6 +38,8 @@ const copy = {
     sku: 'SKU:',
     add: 'Add',
     added: 'Added',
+    increaseQty: 'Increase quantity',
+    decreaseQty: 'Decrease quantity',
   },
   bn: {
     back: 'ফিরে যান',
@@ -58,6 +60,8 @@ const copy = {
     sku: 'এসকেইউ:',
     add: 'যোগ করুন',
     added: 'যোগ হয়েছে',
+    increaseQty: 'পরিমাণ বাড়ান',
+    decreaseQty: 'পরিমাণ কমান',
   },
 } as const;
 
@@ -287,8 +291,8 @@ export function ProductDetailScreen() {
               accessibilityRole="adjustable"
               accessibilityValue={{ min: 1, max: product.stock, now: quantity, text: `${quantity} ${product.unit}` }}
               accessibilityActions={[
-                { name: 'increment', label: 'Increase quantity' },
-                { name: 'decrement', label: 'Decrease quantity' },
+                { name: 'increment', label: text.increaseQty },
+                { name: 'decrement', label: text.decreaseQty },
               ]}
               onAccessibilityAction={(event) => {
                 if (event.nativeEvent.actionName === 'increment') {
@@ -306,7 +310,7 @@ export function ProductDetailScreen() {
                 disabled={quantity <= 1 || isOutOfStock}
                 onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                 accessibilityRole="button"
-                accessibilityLabel="Decrease quantity"
+                accessibilityLabel={text.decreaseQty}
                 accessibilityHint={`Current quantity is ${quantity}`}
                 style={({ pressed }) => [
                   styles.stepperButton,
@@ -327,7 +331,7 @@ export function ProductDetailScreen() {
                 disabled={quantity >= product.stock || isOutOfStock}
                 onPress={() => setQuantity((q) => Math.min(product.stock, q + 1))}
                 accessibilityRole="button"
-                accessibilityLabel="Increase quantity"
+                accessibilityLabel={text.increaseQty}
                 accessibilityHint={`Current quantity is ${quantity}`}
                 style={({ pressed }) => [
                   styles.stepperButton,

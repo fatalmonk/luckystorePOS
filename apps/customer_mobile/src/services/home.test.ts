@@ -30,3 +30,25 @@ test('represents an outage without orderable fallback products', () => {
   assert.equal(parsed.degraded, true);
   assert.deepEqual(parsed.sections, []);
 });
+
+test('normalizes empty or whitespace category to General', () => {
+  const parsed1 = HomeDtoSchema.parse({
+    ...base,
+    sections: [{
+      id: 's1',
+      title: 'Section 1',
+      products: [{ id: 'p1', name: 'Item', price: 50, unit: 'pc', stock: 2, category: '' }],
+    }],
+  });
+  assert.equal(parsed1.sections[0].products[0].category, 'General');
+
+  const parsed2 = HomeDtoSchema.parse({
+    ...base,
+    sections: [{
+      id: 's1',
+      title: 'Section 1',
+      products: [{ id: 'p1', name: 'Item', price: 50, unit: 'pc', stock: 2, category: '   ' }],
+    }],
+  });
+  assert.equal(parsed2.sections[0].products[0].category, 'General');
+});

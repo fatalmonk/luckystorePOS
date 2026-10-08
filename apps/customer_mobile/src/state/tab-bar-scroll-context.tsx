@@ -74,9 +74,12 @@ export function TabBarScrollProvider({ children }: { children: ReactNode }) {
   }, [reduceMotion, tabBarTranslateY]);
 
   const hideTabBar = useCallback(() => {
-    if (reduceMotion) return;
     if (isVisibleRef.current) {
       isVisibleRef.current = false;
+      if (reduceMotion) {
+        tabBarTranslateY.setValue(120);
+        return;
+      }
       Animated.spring(tabBarTranslateY, {
         toValue: 120,
         tension: 75,

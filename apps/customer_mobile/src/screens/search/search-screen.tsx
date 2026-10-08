@@ -220,9 +220,7 @@ export function SearchScreen() {
     } catch {
       // non-fatal pagination error
     } finally {
-      if (requestVersionRef.current === version) {
-        setLoadingMore(false);
-      }
+      setLoadingMore(false);
     }
   }, [activeQuery, hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, sort]);
 

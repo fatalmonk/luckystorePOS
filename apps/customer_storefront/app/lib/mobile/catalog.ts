@@ -54,10 +54,16 @@ export interface MobileCatalogPage {
   };
 }
 
-function mapProductDto(product: Product, locale: MobileLocale = 'en'): MobileCatalogProduct {
+function mapProductDto(
+  product: Product,
+  locale: MobileLocale = 'en',
+  categoryMap?: Map<string, string>,
+): MobileCatalogProduct {
   const imageUrl = product.imageUrl ?? product.image_url;
   const name = (locale === 'bn' && product.bengaliName) ? product.bengaliName : product.name;
   const description = (locale === 'bn' && product.bengaliDescription) ? product.bengaliDescription : product.description;
+  const catId = product.categoryId || product.category_id;
+  const resolvedCategory = product.category?.trim() || (catId && categoryMap?.get(catId)) || 'General';
   return {
     id: product.id,
     name,
@@ -68,8 +74,8 @@ function mapProductDto(product: Product, locale: MobileLocale = 'en'): MobileCat
     stock: product.stock,
     ...(imageUrl ? { imageUrl } : {}),
     ...(product.badge ? { badge: product.badge } : {}),
-    category: product.category?.trim() || 'General',
-    ...(product.categoryId || product.category_id ? { categoryId: product.categoryId ?? product.category_id } : {}),
+    category: resolvedCategory,
+    ...(catId ? { categoryId: catId } : {}),
     ...(description ? { description } : {}),
   };
 }
@@ -158,10 +164,15 @@ export function toMobileCatalog(
     }
   }
 
+  const categoryNameById = new Map<string, string>();
+  for (const cat of rawCategories ?? []) {
+    categoryNameById.set(cat.id, cat.name);
+  }
+
   return {
     locale,
     categories,
-    items: paginated.map((p) => mapProductDto(p, locale)),
+    items: paginated.map((p) => mapProductDto(p, locale, categoryNameById)),
     total,
     hasMore,
     ...(activeCategory ? { category: activeCategory } : {}),

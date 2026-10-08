@@ -12,9 +12,12 @@ const fallbackIds = new Set(FALLBACK_PRODUCTS.map((product) => product.id));
 
 function formatImageUrl(raw?: string | null): string | undefined {
   if (!raw) return undefined;
-  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  if (raw.startsWith('https://')) return raw;
+  if (raw.startsWith('http://')) {
+    return raw.replace(/^http:\/\//, 'https://');
+  }
   if (raw.startsWith('/')) {
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.luckystore1947.com';
+    const origin = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.luckystore1947.com').replace(/^http:\/\//, 'https://');
     return `${origin.replace(/\/$/, '')}${raw}`;
   }
   return undefined;

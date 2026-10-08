@@ -159,7 +159,7 @@ export function HomeScreen() {
           >
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="All Categories"
+              accessibilityLabel={text.allCategories}
               onPress={() => router.push('/(tabs)/(shop)')}
               style={[styles.categoryPill, styles.categoryPillActive]}
             >
@@ -240,9 +240,9 @@ function ProductCard({ product, added, addLabel, addedLabel, onOpen, onAdd }: { 
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper }, loading: { color: colors.muted, fontSize: 15 }, content: { paddingBottom: TAB_BAR_BOTTOM_CLEARANCE },
-  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, backgroundColor: colors.paper },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8, backgroundColor: colors.paper, gap: 6 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
   headerLogo: { marginLeft: 2 },
   headerIconButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1 },
   headerCartButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1, position: 'relative' },

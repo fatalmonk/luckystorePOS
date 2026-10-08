@@ -144,7 +144,7 @@ export function CartScreen() {
         {/* Header Title & Language Toggle */}
         <View style={styles.topRow}>
           <View>
-            <Text style={styles.screenTitle}>{text.title}</Text>
+            <Text accessibilityRole="header" style={styles.screenTitle}>{text.title}</Text>
             <Text style={styles.itemsCount}>{text.itemsCount(totalItems)}</Text>
           </View>
 
@@ -220,7 +220,7 @@ export function CartScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/checkout' as any)}
-          style={styles.checkoutButton}
+          style={({ pressed }) => [styles.checkoutButton, pressed && styles.pressedScale]}
         >
           <Text style={styles.checkoutButtonText}>
             {text.checkout} (৳{total})
@@ -228,7 +228,11 @@ export function CartScreen() {
         </Pressable>
 
         {/* Clear Cart Option */}
-        <Pressable accessibilityRole="button" onPress={clearCart} style={styles.clearCartButton}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={clearCart}
+          style={({ pressed }) => [styles.clearCartButton, pressed && styles.pressedScale]}
+        >
           <Text style={styles.clearCartText}>{text.clearCart}</Text>
         </Pressable>
       </View>
@@ -246,7 +250,7 @@ export function CartScreen() {
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/(tabs)/(shop)')}
-            style={styles.startShoppingButton}
+            style={({ pressed }) => [styles.startShoppingButton, pressed && styles.pressedScale]}
           >
             <Text style={styles.startShoppingText}>{text.startShopping}</Text>
           </Pressable>

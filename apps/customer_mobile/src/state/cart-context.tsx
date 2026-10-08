@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 
-import { CART_ITEMS_KEY, getSecureItem, setSecureItem } from '../services/storage';
+import { CART_ITEMS_KEY, getItem, setItem } from '../services/storage';
 import { calculateCartTotals, FREE_DELIVERY_THRESHOLD } from './cart-calc';
 
 export interface CartItem {
@@ -50,16 +50,33 @@ export {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const isHydratedRef = useRef(false);
+  const hasUserMutatedRef = useRef(false);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const raw = await getSecureItem(CART_ITEMS_KEY);
+        const raw = await getItem(CART_ITEMS_KEY);
         if (active && raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            setItems(parsed);
+            setItems((current) => {
+              if (!hasUserMutatedRef.current) {
+                return parsed;
+              }
+              // Merge stored items with startup user mutations
+              const currentMap = new Map(current.map((item) => [item.id, item]));
+              const merged = [...parsed];
+              for (const [id, item] of currentMap.entries()) {
+                const idx = merged.findIndex((m) => m.id === id);
+                if (idx >= 0) {
+                  merged[idx] = item;
+                } else {
+                  merged.push(item);
+                }
+              }
+              return merged;
+            });
           }
         }
       } catch {
@@ -77,10 +94,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isHydratedRef.current) return;
-    void setSecureItem(CART_ITEMS_KEY, JSON.stringify(items));
+    void setItem(CART_ITEMS_KEY, JSON.stringify(items));
   }, [items]);
 
   const add = useCallback((productId: string, itemDetails?: Partial<CartItem>, quantity = 1) => {
+    hasUserMutatedRef.current = true;
     setItems((current) => {
       const existingIndex = current.findIndex((item) => item.id === productId);
       const availableStock = typeof itemDetails?.stock === 'number' ? itemDetails.stock : 99;
@@ -124,6 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateQty = useCallback((productId: string, delta: number) => {
+    hasUserMutatedRef.current = true;
     setItems((current) => {
       return current
         .map((item) => {
@@ -139,10 +158,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeItem = useCallback((productId: string) => {
+    hasUserMutatedRef.current = true;
     setItems((current) => current.filter((item) => item.id !== productId));
   }, []);
 
   const syncPrices = useCallback((updatedItems: { id: string; price: number; name?: string }[]) => {
+    hasUserMutatedRef.current = true;
     const priceMap = new Map(updatedItems.map((i) => [i.id, i]));
     setItems((current) =>
       current.map((item) => {
@@ -158,6 +179,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearCart = useCallback(() => {
+    hasUserMutatedRef.current = true;
     setItems([]);
   }, []);
 
