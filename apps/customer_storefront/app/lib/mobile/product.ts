@@ -1,0 +1,111 @@
+import { getCachedProductBySlug } from '../products/getCachedProduct';
+import { getCachedCrossSellProducts, prepareCrossSell } from '../products/getCachedCrossSell';
+import { getEnrichedProductData } from '../products/productEnrichment';
+import { createProductRepository, createProductId } from '../products/index';
+import type { Product } from '../products/types';
+import { supabase } from '../supabase';
+
+export type MobileLocale = 'en' | 'bn';
+
+export interface MobileProductDetailDto {
+  id: string;
+  name: string;
+  emoji: string;
+  price: number;
+  originalPrice?: number;
+  unit: string;
+  stock: number;
+  imageUrl?: string;
+  badge?: string;
+  category: string;
+  categoryId?: string;
+  description: string;
+  nutrition?: string;
+  brand?: string;
+  sku?: string;
+  bengaliName?: string;
+  bengaliDescription?: string;
+}
+
+export interface MobileProductResponse {
+  locale: MobileLocale;
+  product: MobileProductDetailDto;
+  related: MobileProductDetailDto[];
+}
+
+export function toMobileProductDto(
+  product: Product,
+  locale: MobileLocale,
+  enrichment?: any,
+): MobileProductDetailDto {
+  const imageUrl = product.imageUrl ?? product.image_url;
+  const effectiveName = locale === 'bn' && product.bengaliName
+    ? product.bengaliName
+    : (enrichment?.exactName || product.name);
+
+  const effectiveDescription = locale === 'bn' && product.bengaliDescription
+    ? product.bengaliDescription
+    : (enrichment?.summary || product.description || '');
+
+  return {
+    id: product.id,
+    name: effectiveName,
+    emoji: product.emoji || '🛒',
+    price: product.price,
+    ...(product.originalPrice !== undefined ? { originalPrice: product.originalPrice } : {}),
+    unit: product.unit || 'pc',
+    stock: product.stock,
+    ...(imageUrl ? { imageUrl } : {}),
+    ...(product.badge ? { badge: product.badge } : {}),
+    category: product.category,
+    ...(product.categoryId || product.category_id ? { categoryId: product.categoryId ?? product.category_id } : {}),
+    description: effectiveDescription,
+    ...(product.nutrition ? { nutrition: product.nutrition } : {}),
+    ...(product.brand ? { brand: product.brand } : {}),
+    ...(product.sku ? { sku: product.sku } : {}),
+    ...(product.bengaliName ? { bengaliName: product.bengaliName } : {}),
+    ...(product.bengaliDescription ? { bengaliDescription: product.bengaliDescription } : {}),
+  };
+}
+
+export async function getMobileProductDetail(
+  idOrSlug: string,
+  locale: MobileLocale = 'en',
+): Promise<MobileProductResponse | null> {
+  const { repo } = createProductRepository(supabase);
+  let product: Product | null = null;
+
+  try {
+    product = await repo.getById(createProductId(idOrSlug));
+  } catch {
+    // If not direct UUID, fallback to slug lookup
+  }
+
+  if (!product) {
+    product = await getCachedProductBySlug(idOrSlug);
+  }
+
+  if (!product) return null;
+
+  const enrichment = getEnrichedProductData(product.id) || getEnrichedProductData(idOrSlug);
+  const mainProductDto = toMobileProductDto(product, locale, enrichment);
+
+  let relatedDtos: MobileProductDetailDto[] = [];
+  try {
+    const rawCrossSell = await getCachedCrossSellProducts(
+      product.category,
+      product.categoryId || product.category_id,
+      product.id,
+    );
+    const crossSell = prepareCrossSell(rawCrossSell);
+    relatedDtos = crossSell.slice(0, 8).map((p) => toMobileProductDto(p, locale));
+  } catch (err) {
+    console.error('Failed to load cross sell for mobile product:', err);
+  }
+
+  return {
+    locale,
+    product: mainProductDto,
+    related: relatedDtos,
+  };
+}
