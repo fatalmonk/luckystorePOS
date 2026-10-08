@@ -83,4 +83,64 @@ describe('mobile catalog adapter', () => {
     expect(page.items.length).toBe(1);
     expect(page.items[0].name).toBe('Black Tea 400g');
   });
+
+  it('filters by category group slug and label-derived variants', () => {
+    const biscuitCategories: Category[] = [
+      { id: 'c4', slug: 'biscuits-and-cookies', name: 'Biscuits & Cookies', emoji: '🍪' },
+    ];
+    const biscuitProducts: Product[] = [
+      {
+        id: createProductId('b1'),
+        name: 'Digestive Biscuits 200g',
+        emoji: '🍪',
+        price: 90,
+        unit: 'pack',
+        category: 'biscuits',
+        stock: 10,
+        description: 'Crispy wholewheat biscuits',
+      },
+      {
+        id: createProductId('b2'),
+        name: 'Chocolate Chip Cookies 150g',
+        emoji: '🍪',
+        price: 120,
+        unit: 'pack',
+        category: 'cookies',
+        stock: 5,
+        description: 'Rich chocolate chip cookies',
+      },
+      {
+        id: createProductId('b3'),
+        name: 'Butter Biscuits Group Pack',
+        emoji: '🍪',
+        price: 150,
+        unit: 'box',
+        category: 'biscuits-and-cookies',
+        stock: 8,
+        description: 'Assorted butter biscuits',
+      },
+      {
+        id: createProductId('b4'),
+        name: 'Soybean Oil 1L',
+        emoji: '🛢️',
+        price: 190,
+        unit: 'bottle',
+        category: 'oil-and-ghee',
+        stock: 20,
+        description: 'Pure soybean cooking oil',
+      },
+    ];
+
+    // Query by canonical group slug
+    const pageFromSlug = toMobileCatalog(biscuitCategories, biscuitProducts, {
+      category: 'biscuits-and-cookies',
+    });
+    expect(pageFromSlug.items.map((p) => p.id)).toEqual(['b1', 'b2', 'b3']);
+
+    // Query by label-derived variant
+    const pageFromLabel = toMobileCatalog(biscuitCategories, biscuitProducts, {
+      category: 'Biscuits & Cookies',
+    });
+    expect(pageFromLabel.items.map((p) => p.id)).toEqual(['b1', 'b2', 'b3']);
+  });
 });
