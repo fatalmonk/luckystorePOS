@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import {
   Animated,
   Platform,
@@ -28,7 +29,11 @@ export function FloatingGlassTabBar({ state, navigation }: FloatingGlassTabBarPr
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { totalItems } = useCart();
-  const { tabBarTranslateY } = useTabBarScroll();
+  const { tabBarTranslateY, showTabBar } = useTabBarScroll();
+
+  useEffect(() => {
+    showTabBar();
+  }, [state.index, showTabBar]);
 
   const currentRouteName = state.routes[state.index]?.name;
 
@@ -120,7 +125,7 @@ export function FloatingGlassTabBar({ state, navigation }: FloatingGlassTabBarPr
           <Text style={styles.tabLabel}>Saved</Text>
         </Pressable>
 
-        {/* 5. Account / Menu with Badge */}
+        {/* 5. Account / Menu */}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Account and Menu"
@@ -136,9 +141,6 @@ export function FloatingGlassTabBar({ state, navigation }: FloatingGlassTabBarPr
             <Text style={[styles.tabIcon, currentRouteName === '(account)' && styles.tabIconActive]}>
               👤
             </Text>
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>9+</Text>
-            </View>
           </View>
           <Text style={[styles.tabLabel, currentRouteName === '(account)' && styles.tabLabelActive]}>
             Menu
@@ -291,24 +293,5 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -10,
-    backgroundColor: '#E34234',
-    borderRadius: 9,
-    minWidth: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 1,
-    borderColor: '#0B0B0D',
-  },
-  notificationBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '900',
   },
 });

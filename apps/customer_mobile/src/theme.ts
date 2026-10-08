@@ -71,3 +71,6 @@ export const motion = {
   base: 250,
   slow: 400,
 } as const;
+
+export const TAB_BAR_BOTTOM_CLEARANCE = 120;
+

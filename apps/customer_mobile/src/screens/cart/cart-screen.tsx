@@ -12,7 +12,7 @@ import {
 import { Locale } from '../../services/home';
 import { CartItem, useCart } from '../../state/cart-context';
 import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
-import { colors } from '../../theme';
+import { colors, TAB_BAR_BOTTOM_CLEARANCE } from '../../theme';
 
 const copy = {
   en: {
@@ -258,7 +258,7 @@ export function CartScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
+        contentContainerStyle={styles.listContent}
         contentInsetAdjustmentBehavior="automatic"
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: TAB_BAR_BOTTOM_CLEARANCE,
   },
   headerBox: {
     paddingHorizontal: 16,

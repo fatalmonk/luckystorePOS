@@ -12,7 +12,7 @@ import {
 import { Logo } from '../../components/ui';
 import { Locale } from '../../services/home';
 import { useAuth } from '../../state/auth-context';
-import { colors, shadows } from '../../theme';
+import { colors, shadows, TAB_BAR_BOTTOM_CLEARANCE } from '../../theme';
 
 const copy = {
   en: {
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 110,
+    paddingBottom: TAB_BAR_BOTTOM_CLEARANCE,
   },
   headerBar: {
     flexDirection: 'row',

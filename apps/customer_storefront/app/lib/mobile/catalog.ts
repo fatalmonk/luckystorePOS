@@ -128,7 +128,11 @@ export function toMobileCatalog(
   if (categorySlug) {
     const group = getCategoryGroup(categorySlug);
     const targetSlugs = group
-      ? new Set(group.subCategories.map(normalizeCategorySlug))
+      ? new Set([
+          ...group.subCategories.map(normalizeCategorySlug),
+          normalizeCategorySlug(group.slug),
+          categorySlug,
+        ])
       : new Set([categorySlug]);
 
     filtered = filtered.filter((p) => {

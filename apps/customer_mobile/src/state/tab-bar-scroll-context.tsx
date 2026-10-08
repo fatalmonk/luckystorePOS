@@ -1,8 +1,10 @@
+import { usePathname } from 'expo-router';
 import {
   createContext,
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -31,6 +33,13 @@ export function TabBarScrollProvider({ children }: { children: ReactNode }) {
   const isVisibleRef = useRef(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  let pathname = '';
+  try {
+    pathname = usePathname();
+  } catch {
+    // graceful fallback if rendered outside Expo Router context
+  }
+
   const showTabBar = useCallback(() => {
     if (!isVisibleRef.current) {
       isVisibleRef.current = true;
@@ -54,6 +63,12 @@ export function TabBarScrollProvider({ children }: { children: ReactNode }) {
       }).start();
     }
   }, [tabBarTranslateY]);
+
+  useEffect(() => {
+    // Restore tab bar visibility and reset scroll baseline on route change
+    showTabBar();
+    lastScrollY.current = 0;
+  }, [pathname, showTabBar]);
 
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {

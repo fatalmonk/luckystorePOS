@@ -16,7 +16,7 @@ import { Logo } from '../../components/ui';
 import { fetchHome, HomeDto, HomeProduct, Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
 import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
-import { colors, shadows } from '../../theme';
+import { colors, shadows, TAB_BAR_BOTTOM_CLEARANCE } from '../../theme';
 
 const copy = {
   en: {
@@ -238,7 +238,7 @@ function ProductCard({ product, added, addLabel, addedLabel, onOpen, onAdd }: { 
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper }, loading: { color: colors.muted, fontSize: 15 }, content: { paddingBottom: 110 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper }, loading: { color: colors.muted, fontSize: 15 }, content: { paddingBottom: TAB_BAR_BOTTOM_CLEARANCE },
   headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, backgroundColor: colors.paper },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },

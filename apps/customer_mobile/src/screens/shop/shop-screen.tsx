@@ -22,7 +22,7 @@ import {
 import { Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
 import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
-import { colors } from '../../theme';
+import { colors, TAB_BAR_BOTTOM_CLEARANCE } from '../../theme';
 
 const copy = {
   en: {
@@ -445,7 +445,7 @@ export function ShopScreen() {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={products.length > 0 ? styles.columnWrapper : undefined}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 110 }]}
+        contentContainerStyle={styles.listContent}
         contentInsetAdjustmentBehavior="automatic"
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: TAB_BAR_BOTTOM_CLEARANCE,
   },
   columnWrapper: {
     paddingHorizontal: 16,

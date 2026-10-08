@@ -80,11 +80,23 @@ export function AppDrawer() {
       animationType="none"
       onRequestClose={closeDrawer}
       statusBarTranslucent
+      accessibilityViewIsModal
     >
-      <View style={styles.container}>
+      <View
+        style={styles.container}
+        accessibilityViewIsModal={true}
+        aria-modal={true}
+        {...({ role: 'dialog' } as any)}
+        accessibilityLabel="Navigation menu"
+      >
         {/* Backdrop Scrim */}
         <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={closeDrawer} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close navigation menu overlay"
+            style={StyleSheet.absoluteFill}
+            onPress={closeDrawer}
+          />
         </Animated.View>
 
         {/* Drawer Panel */}
@@ -104,9 +116,6 @@ export function AppDrawer() {
             <View style={styles.headerProfile}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarEmoji}>🛍️</Text>
-                <View style={styles.avatarBadge}>
-                  <Text style={styles.avatarBadgeText}>9+</Text>
-                </View>
               </View>
               <View style={styles.profileTextContainer}>
                 <Text numberOfLines={1} style={styles.profileTitle}>
@@ -141,6 +150,8 @@ export function AppDrawer() {
                 contentContainerStyle={styles.shortcutsRow}
               >
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Category Snacks"
                   onPress={() => handleNavigate('/category/[slug]', { slug: 'snacks' })}
                   style={styles.shortcutCard}
                 >
@@ -153,19 +164,23 @@ export function AppDrawer() {
                 </Pressable>
 
                 <Pressable
-                  onPress={() => handleNavigate('/category/[slug]', { slug: 'dairy' })}
+                  accessibilityRole="button"
+                  accessibilityLabel="Category Dairy and Eggs"
+                  onPress={() => handleNavigate('/category/[slug]', { slug: 'dairy-and-eggs' })}
                   style={styles.shortcutCard}
                 >
                   <View style={[styles.shortcutIconFrame, { backgroundColor: '#F0C444' }]}>
                     <Text style={styles.shortcutEmoji}>🥛</Text>
                   </View>
                   <Text numberOfLines={1} style={styles.shortcutLabel}>
-                    Dairy
+                    Dairy & Eggs
                   </Text>
                 </Pressable>
 
                 <Pressable
-                  onPress={() => handleNavigate('/category/[slug]', { slug: 'tea-coffee' })}
+                  accessibilityRole="button"
+                  accessibilityLabel="Category Tea and Coffee"
+                  onPress={() => handleNavigate('/category/[slug]', { slug: 'tea-and-coffee' })}
                   style={styles.shortcutCard}
                 >
                   <View style={[styles.shortcutIconFrame, { backgroundColor: '#1A4D2E' }]}>
@@ -177,6 +192,8 @@ export function AppDrawer() {
                 </Pressable>
 
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Category Baby Care"
                   onPress={() => handleNavigate('/category/[slug]', { slug: 'baby-care' })}
                   style={styles.shortcutCard}
                 >
@@ -189,14 +206,16 @@ export function AppDrawer() {
                 </Pressable>
 
                 <Pressable
-                  onPress={() => handleNavigate('/category/[slug]', { slug: 'pantry' })}
+                  accessibilityRole="button"
+                  accessibilityLabel="Category Cooking Essentials"
+                  onPress={() => handleNavigate('/category/[slug]', { slug: 'cooking-essentials' })}
                   style={styles.shortcutCard}
                 >
                   <View style={[styles.shortcutIconFrame, { backgroundColor: '#8B5CF6' }]}>
                     <Text style={styles.shortcutEmoji}>🌾</Text>
                   </View>
                   <Text numberOfLines={1} style={styles.shortcutLabel}>
-                    Pantry
+                    Cooking Essentials
                   </Text>
                 </Pressable>
               </ScrollView>
@@ -205,6 +224,8 @@ export function AppDrawer() {
             {/* Section: Main Menu Action List (Image 1 style) */}
             <View style={styles.actionList}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="My Orders, Track active and past grocery orders"
                 onPress={() => handleNavigate('/orders')}
                 style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               >
@@ -216,6 +237,8 @@ export function AppDrawer() {
               </Pressable>
 
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Saved Wishlist, Frequently purchased favorites"
                 onPress={() => handleNavigate('/wishlist')}
                 style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               >
@@ -227,6 +250,8 @@ export function AppDrawer() {
               </Pressable>
 
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Delivery Coverage, 1 km radius and free shipping rules"
                 onPress={() => handleNavigate('/delivery')}
                 style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               >
@@ -238,6 +263,8 @@ export function AppDrawer() {
               </Pressable>
 
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Help and Support, Chat on WhatsApp with store manager"
                 onPress={() => handleNavigate('/help')}
                 style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               >
@@ -249,6 +276,8 @@ export function AppDrawer() {
               </Pressable>
 
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Settings and Privacy, Language, notifications and policies"
                 onPress={() => handleNavigate('/settings')}
                 style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               >
@@ -264,6 +293,8 @@ export function AppDrawer() {
             <View style={styles.footerAuth}>
               {isLoggedIn ? (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign Out"
                   onPress={() => {
                     closeDrawer();
                     logout();
@@ -274,6 +305,8 @@ export function AppDrawer() {
                 </Pressable>
               ) : (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign In or Register"
                   onPress={() => handleNavigate('/login')}
                   style={styles.authButtonPrimary}
                 >
@@ -344,25 +377,6 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 22,
-  },
-  avatarBadge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: '#E34234',
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-    borderWidth: 1.5,
-    borderColor: '#161619',
-  },
-  avatarBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 8,
-    fontWeight: '900',
   },
   profileTextContainer: {
     flex: 1,
