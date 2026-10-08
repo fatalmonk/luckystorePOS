@@ -1,26 +1,15 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
 
+import { FloatingGlassTabBar } from '../../components/navigation/floating-glass-tab-bar';
 import { colors } from '../../theme';
 
 export default function TabsLayout() {
   return (
     <Tabs
+      tabBar={(props) => <FloatingGlassTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.green,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.line,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 6,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '700',
-        },
       }}
     >
       <Tabs.Screen

@@ -1,8 +1,10 @@
 import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { AppDrawer } from '../components/navigation/app-drawer';
 import { AuthProvider } from '../state/auth-context';
 import { CartProvider } from '../state/cart-context';
+import { TabBarScrollProvider } from '../state/tab-bar-scroll-context';
 import { WishlistProvider } from '../state/wishlist-context';
 import { colors } from '../theme';
 
@@ -16,8 +18,10 @@ export default function RootLayout() {
     <AuthProvider>
       <WishlistProvider>
         <CartProvider>
-          <ThemeProvider value={luckyTheme}>
-            <StatusBar style="dark" />
+          <TabBarScrollProvider>
+            <ThemeProvider value={luckyTheme}>
+              <StatusBar style="dark" />
+              <AppDrawer />
             <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -38,7 +42,8 @@ export default function RootLayout() {
               <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
               <Stack.Screen name="category/[slug]" options={{ title: 'Category' }} />
             </Stack>
-          </ThemeProvider>
+            </ThemeProvider>
+          </TabBarScrollProvider>
         </CartProvider>
       </WishlistProvider>
     </AuthProvider>

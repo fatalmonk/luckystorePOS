@@ -21,6 +21,7 @@ import {
 } from '../../services/catalog';
 import { Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -78,6 +79,7 @@ const SORT_OPTIONS: { id: CatalogSort; enLabel: string; bnLabel: string }[] = [
 export function ShopScreen() {
   const router = useRouter();
   const { add } = useCart();
+  const { onScroll } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -443,8 +445,10 @@ export function ShopScreen() {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={products.length > 0 ? styles.columnWrapper : undefined}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 110 }]}
         contentInsetAdjustmentBehavior="automatic"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         ListHeaderComponent={renderHeader}
         renderItem={renderProductItem}
         ListEmptyComponent={renderEmpty}

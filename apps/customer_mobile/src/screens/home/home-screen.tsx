@@ -15,6 +15,7 @@ import {
 import { Logo } from '../../components/ui';
 import { fetchHome, HomeDto, HomeProduct, Locale } from '../../services/home';
 import { useCart } from '../../state/cart-context';
+import { useTabBarScroll } from '../../state/tab-bar-scroll-context';
 import { colors, shadows } from '../../theme';
 
 const copy = {
@@ -41,6 +42,7 @@ const copy = {
 export function HomeScreen() {
   const router = useRouter();
   const { add, totalItems } = useCart();
+  const { onScroll, openDrawer } = useTabBarScroll();
   const [locale, setLocale] = useState<Locale>('en');
   const [home, setHome] = useState<HomeDto | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +93,8 @@ export function HomeScreen() {
       keyExtractor={(section) => section.id}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={styles.content}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor={colors.green} />}
       ListHeaderComponent={<>
         {/* Unified Storefront Header */}
@@ -99,7 +103,7 @@ export function HomeScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Open menu"
-              onPress={() => router.push('/(tabs)/(shop)')}
+              onPress={openDrawer}
               style={styles.headerIconButton}
             >
               <Text style={styles.menuIcon}>☰</Text>
@@ -234,7 +238,7 @@ function ProductCard({ product, added, addLabel, addedLabel, onOpen, onAdd }: { 
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper }, loading: { color: colors.muted, fontSize: 15 }, content: { paddingBottom: 40 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper }, loading: { color: colors.muted, fontSize: 15 }, content: { paddingBottom: 110 },
   headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, backgroundColor: colors.paper },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
