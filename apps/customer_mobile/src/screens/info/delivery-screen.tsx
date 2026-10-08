@@ -77,7 +77,7 @@ export function DeliveryScreen() {
     >
       {/* Header Bar */}
       <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>{t.title}</Text>
+        <Text accessibilityRole="header" style={styles.screenTitle}>{t.title}</Text>
         <Pressable
           style={styles.langPill}
           onPress={() => setLocale((prev) => (prev === 'en' ? 'bn' : 'en'))}
@@ -91,28 +91,28 @@ export function DeliveryScreen() {
 
       {/* Store Hub */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.hubTitle}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.hubTitle}</Text>
         <Text style={styles.hubAddress}>{t.hubAddress}</Text>
         <Text style={styles.cardBody}>{t.hubDesc}</Text>
       </View>
 
       {/* Slots */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.timingTitle}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.timingTitle}</Text>
         <Text style={styles.slotItem}>{t.morningSlot}</Text>
         <Text style={styles.slotItem}>{t.eveningSlot}</Text>
       </View>
 
       {/* Charges */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.feeTitle}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.feeTitle}</Text>
         <Text style={[styles.feeItem, styles.freeFee]}>{t.freeDelivery}</Text>
         <Text style={styles.feeItem}>{t.standardDelivery}</Text>
       </View>
 
       {/* Neighborhoods */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.coverageTitle}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.coverageTitle}</Text>
         <View style={styles.neighborhoodGrid}>
           {t.coverageList.map((item, idx) => (
             <View key={idx} style={styles.neighborhoodPill}>
@@ -124,7 +124,7 @@ export function DeliveryScreen() {
 
       {/* Doorstep Inspection */}
       <View style={[styles.card, styles.inspectionCard]}>
-        <Text style={styles.inspectionTitle}>{t.inspectionTitle}</Text>
+        <Text accessibilityRole="header" style={styles.inspectionTitle}>{t.inspectionTitle}</Text>
         <Text style={styles.inspectionBody}>{t.inspectionDesc}</Text>
       </View>
     </ScrollView>

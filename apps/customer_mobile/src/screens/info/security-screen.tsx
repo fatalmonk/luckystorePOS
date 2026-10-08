@@ -10,7 +10,7 @@ export function SecurityScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.icon}>🔒</Text>
-        <Text style={styles.title}>Security Policy</Text>
+        <Text accessibilityRole="header" style={styles.title}>Security Policy</Text>
         <Text style={styles.subtitle}>
           How we protect your store orders and customer privacy.
         </Text>
@@ -18,28 +18,28 @@ export function SecurityScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🛡️ Encrypted Communications</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🛡️ Encrypted Communications</Text>
         <Text style={styles.bodyText}>
           All data transmitted between this application and our servers is secured using industry-standard TLS encryption.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🔑 Multi-Tenant Isolation</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🔑 Multi-Tenant Isolation</Text>
         <Text style={styles.bodyText}>
           Customer data and order records are partitioned strictly with multi-tenant row-level access controls to prevent data leakage.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>💳 Secure Transactions</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>💳 Secure Transactions</Text>
         <Text style={styles.bodyText}>
           Payments are handled via secure Cash on Delivery or authorized mobile financial services. Sensitive financial authorization keys are never stored on client devices.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🚨 Vulnerability Disclosure</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🚨 Vulnerability Disclosure</Text>
         <Text style={styles.bodyText}>
           If you discover a potential security concern, please contact our security team at security@luckystore1947.com for responsible review.
         </Text>

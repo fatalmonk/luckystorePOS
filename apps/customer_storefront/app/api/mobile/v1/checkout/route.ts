@@ -11,6 +11,11 @@ const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+  if (CHECKOUT_RATE_LIMIT.size > 2000) {
+    for (const [key, val] of CHECKOUT_RATE_LIMIT) {
+      if (now > val.reset) CHECKOUT_RATE_LIMIT.delete(key);
+    }
+  }
   const record = CHECKOUT_RATE_LIMIT.get(ip);
   if (!record || now > record.reset) {
     CHECKOUT_RATE_LIMIT.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW_MS });
@@ -160,6 +165,10 @@ export async function POST(req: NextRequest) {
       },
     }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 400 });
+    console.error('Mobile checkout error:', e);
+    return NextResponse.json(
+      { ok: false, error: 'Checkout request could not be processed. Please try again.' },
+      { status: 400 }
+    );
   }
 }

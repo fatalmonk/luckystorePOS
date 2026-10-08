@@ -148,12 +148,12 @@ export function SignupScreen() {
         {/* Card Form */}
         <View style={styles.card}>
           <Logo size="lg" style={styles.brandLogo} />
-          <Text style={styles.title}>{t.title}</Text>
+          <Text style={styles.title} accessibilityRole="header">{t.title}</Text>
           <Text style={styles.subtitle}>{t.subtitle}</Text>
 
           {emailConfirmMessage ? (
-            <View style={styles.successBox}>
-              <Text style={styles.successTitle}>{t.emailConfirmTitle}</Text>
+            <View style={styles.successBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
+              <Text style={styles.successTitle} accessibilityRole="header">{t.emailConfirmTitle}</Text>
               <Text style={styles.successBody}>{emailConfirmMessage}</Text>
               <Pressable
                 style={styles.primaryButton}
@@ -166,7 +166,7 @@ export function SignupScreen() {
           ) : (
             <>
               {errorMessage ? (
-                <View style={styles.errorBox}>
+                <View style={styles.errorBox} accessibilityRole="alert" accessibilityLiveRegion="assertive">
                   <Text style={styles.errorText}>❌ {errorMessage}</Text>
                 </View>
               ) : null}
@@ -177,6 +177,7 @@ export function SignupScreen() {
                   style={styles.input}
                   placeholder={t.namePlaceholder}
                   placeholderTextColor={colors.muted}
+                  accessibilityLabel={t.nameLabel}
                   value={name}
                   onChangeText={setName}
                   autoCapitalize="words"
@@ -189,6 +190,7 @@ export function SignupScreen() {
                   style={styles.input}
                   placeholder={t.phonePlaceholder}
                   placeholderTextColor={colors.muted}
+                  accessibilityLabel={t.phoneLabel}
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
@@ -201,6 +203,7 @@ export function SignupScreen() {
                   style={styles.input}
                   placeholder={t.emailPlaceholder}
                   placeholderTextColor={colors.muted}
+                  accessibilityLabel={t.emailLabel}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -215,6 +218,7 @@ export function SignupScreen() {
                   style={styles.input}
                   placeholder={t.passwordPlaceholder}
                   placeholderTextColor={colors.muted}
+                  accessibilityLabel={t.passwordLabel}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry

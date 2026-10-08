@@ -101,7 +101,7 @@ export function CartScreen() {
             ) : null}
           </View>
 
-          <Pressable onPress={() => removeItem(item.id)} style={styles.removeButton}>
+          <Pressable accessibilityRole="button" onPress={() => removeItem(item.id)} style={styles.removeButton}>
             <Text style={styles.removeText}>{text.remove}</Text>
           </Pressable>
         </View>
@@ -110,6 +110,7 @@ export function CartScreen() {
         <View style={styles.itemActions}>
           <View style={styles.stepper}>
             <Pressable
+              accessibilityRole="button"
               onPress={() => updateQty(item.id, -1)}
               style={styles.stepperButton}
               accessibilityLabel="Decrease quantity"
@@ -118,6 +119,7 @@ export function CartScreen() {
             </Pressable>
             <Text style={styles.quantityText}>{item.qty}</Text>
             <Pressable
+              accessibilityRole="button"
               onPress={() => updateQty(item.id, 1)}
               style={styles.stepperButton}
               accessibilityLabel="Increase quantity"
@@ -222,7 +224,7 @@ export function CartScreen() {
         </Pressable>
 
         {/* Clear Cart Option */}
-        <Pressable onPress={clearCart} style={styles.clearCartButton}>
+        <Pressable accessibilityRole="button" onPress={clearCart} style={styles.clearCartButton}>
           <Text style={styles.clearCartText}>{text.clearCart}</Text>
         </Pressable>
       </View>
@@ -238,6 +240,7 @@ export function CartScreen() {
           <Text style={styles.emptyTitle}>{text.emptyTitle}</Text>
           <Text style={styles.emptyBody}>{text.emptyBody}</Text>
           <Pressable
+            accessibilityRole="button"
             onPress={() => router.push('/(tabs)/(shop)')}
             style={styles.startShoppingButton}
           >

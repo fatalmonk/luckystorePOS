@@ -18,6 +18,7 @@ export function DeleteAccountScreen() {
   const [requested, setRequested] = useState(false);
 
   const handleRequestDeletion = () => {
+    handleContactSupport();
     setRequested(true);
   };
 
@@ -40,14 +41,14 @@ export function DeleteAccountScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.icon}>🗑️</Text>
-        <Text style={styles.title}>Account & Data Deletion</Text>
+        <Text accessibilityRole="header" style={styles.title}>Account & Data Deletion</Text>
         <Text style={styles.subtitle}>
           Request permanent deletion of your personal data and Lucky Store account.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📂 What Data Will Be Deleted</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>📂 What Data Will Be Deleted</Text>
         <Text style={styles.bodyText}>• Your profile name, phone number, and email.</Text>
         <Text style={styles.bodyText}>• Saved delivery addresses and contact information.</Text>
         <Text style={styles.bodyText}>• Authentication and login sessions.</Text>
@@ -57,7 +58,7 @@ export function DeleteAccountScreen() {
       </View>
 
       {requested ? (
-        <View style={styles.successCard}>
+        <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.successCard}>
           <Text style={styles.successTitle}>✓ Deletion Request Submitted</Text>
           <Text style={styles.successBody}>
             Your request has been recorded. Our team will review and process your deletion within 30 days. You will receive confirmation via email.

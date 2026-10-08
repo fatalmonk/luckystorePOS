@@ -10,8 +10,19 @@ const sectionCopy = {
 
 const fallbackIds = new Set(FALLBACK_PRODUCTS.map((product) => product.id));
 
+function formatImageUrl(raw?: string | null): string | undefined {
+  if (!raw) return undefined;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  if (raw.startsWith('/')) {
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.luckystore1947.com';
+    return `${origin.replace(/\/$/, '')}${raw}`;
+  }
+  return undefined;
+}
+
 function productDto(product: Product) {
-  const imageUrl = product.imageUrl ?? product.image_url;
+  const rawImage = product.imageUrl ?? product.image_url;
+  const imageUrl = formatImageUrl(rawImage);
   return {
     id: product.id,
     name: product.name,

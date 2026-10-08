@@ -54,11 +54,13 @@ export interface MobileCatalogPage {
   };
 }
 
-function mapProductDto(product: Product): MobileCatalogProduct {
+function mapProductDto(product: Product, locale: MobileLocale = 'en'): MobileCatalogProduct {
   const imageUrl = product.imageUrl ?? product.image_url;
+  const name = (locale === 'bn' && product.bengaliName) ? product.bengaliName : product.name;
+  const description = (locale === 'bn' && product.bengaliDescription) ? product.bengaliDescription : product.description;
   return {
     id: product.id,
-    name: product.name,
+    name,
     emoji: product.emoji || '🛒',
     price: product.price,
     ...(product.originalPrice !== undefined ? { originalPrice: product.originalPrice } : {}),
@@ -68,7 +70,7 @@ function mapProductDto(product: Product): MobileCatalogProduct {
     ...(product.badge ? { badge: product.badge } : {}),
     category: product.category,
     ...(product.categoryId || product.category_id ? { categoryId: product.categoryId ?? product.category_id } : {}),
-    ...(product.description ? { description: product.description } : {}),
+    ...(description ? { description } : {}),
   };
 }
 
@@ -155,7 +157,7 @@ export function toMobileCatalog(
   return {
     locale,
     categories,
-    items: paginated.map(mapProductDto),
+    items: paginated.map((p) => mapProductDto(p, locale)),
     total,
     hasMore,
     ...(activeCategory ? { category: activeCategory } : {}),
@@ -165,6 +167,6 @@ export function toMobileCatalog(
 export async function getMobileCatalog(query: MobileCatalogQuery = {}): Promise<MobileCatalogPage> {
   const rawCategories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const { products: allProducts } = await repo.search({ query: query.q?.trim() || undefined });
+  const { products: allProducts } = await repo.search({ query: query.q?.trim() || undefined, limit: 1000 });
   return toMobileCatalog(rawCategories, allProducts, query);
 }

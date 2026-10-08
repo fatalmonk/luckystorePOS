@@ -118,6 +118,8 @@ export function ProductDetailScreen() {
 
   const handleAddToCart = useCallback(() => {
     if (!product || product.stock <= 0) return;
+    const qtyToAdd = Math.min(quantity, product.stock);
+    if (qtyToAdd <= 0) return;
     add(
       product.id,
       {
@@ -129,7 +131,7 @@ export function ProductDetailScreen() {
         emoji: product.emoji,
         stock: product.stock,
       },
-      quantity,
+      qtyToAdd,
     );
     setIsAdded(true);
     setTimeout(() => {
@@ -230,7 +232,12 @@ export function ProductDetailScreen() {
         {/* Hero Product Image */}
         <View style={styles.imageCard}>
           {product.imageUrl ? (
-            <Image source={{ uri: product.imageUrl }} style={styles.heroImage} contentFit="contain" />
+            <Image
+              source={{ uri: product.imageUrl }}
+              style={styles.heroImage}
+              contentFit="contain"
+              accessibilityLabel={product.name}
+            />
           ) : (
             <View style={styles.placeholderContainer}>
               <Text style={styles.placeholderEmoji}>{product.emoji || '🛒'}</Text>
@@ -253,7 +260,7 @@ export function ProductDetailScreen() {
           </View>
 
           {/* Product Title */}
-          <Text style={styles.productTitle}>{product.name}</Text>
+          <Text style={styles.productTitle} accessibilityRole="header">{product.name}</Text>
           <Text style={styles.unitText}>{product.unit}</Text>
 
           {/* Price Box */}
@@ -277,6 +284,8 @@ export function ProductDetailScreen() {
               <Pressable
                 disabled={quantity <= 1 || isOutOfStock}
                 onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                accessibilityRole="button"
+                accessibilityLabel="Decrease quantity"
                 style={[styles.stepperButton, (quantity <= 1 || isOutOfStock) && styles.stepperButtonDisabled]}
               >
                 <Text style={styles.stepperButtonText}>−</Text>
@@ -285,6 +294,8 @@ export function ProductDetailScreen() {
               <Pressable
                 disabled={quantity >= product.stock || isOutOfStock}
                 onPress={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                accessibilityRole="button"
+                accessibilityLabel="Increase quantity"
                 style={[styles.stepperButton, (quantity >= product.stock || isOutOfStock) && styles.stepperButtonDisabled]}
               >
                 <Text style={styles.stepperButtonText}>+</Text>
@@ -323,7 +334,7 @@ export function ProductDetailScreen() {
           {/* Description block */}
           {product.description ? (
             <View style={styles.descriptionBlock}>
-              <Text style={styles.descriptionHeading}>{text.description}</Text>
+              <Text style={styles.descriptionHeading} accessibilityRole="header">{text.description}</Text>
               <Text style={styles.descriptionBody}>{product.description}</Text>
             </View>
           ) : null}
@@ -350,7 +361,7 @@ export function ProductDetailScreen() {
         {/* Related Products Carousel */}
         {related.length > 0 && (
           <View style={styles.relatedSection}>
-            <Text style={styles.relatedTitle}>{text.related}</Text>
+            <Text style={styles.relatedTitle} accessibilityRole="header">{text.related}</Text>
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -367,7 +378,12 @@ export function ProductDetailScreen() {
                     >
                       <View style={styles.relatedImageContainer}>
                         {item.imageUrl ? (
-                          <Image source={{ uri: item.imageUrl }} style={styles.relatedImage} contentFit="cover" />
+                          <Image
+                            source={{ uri: item.imageUrl }}
+                            style={styles.relatedImage}
+                            contentFit="cover"
+                            accessibilityLabel={item.name}
+                          />
                         ) : (
                           <Text style={styles.relatedEmoji}>{item.emoji || '🛒'}</Text>
                         )}

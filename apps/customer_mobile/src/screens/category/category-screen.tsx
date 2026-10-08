@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -90,14 +90,18 @@ export function CategoryDetailScreen() {
   const [categories, setCategories] = useState<CatalogCategory[]>([]);
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
 
+  const requestVersionRef = useRef(0);
   const text = copy[locale];
 
   const refresh = useCallback(async () => {
+    const version = ++requestVersionRef.current;
     setRefreshing(true);
     setError(null);
     try {
@@ -107,23 +111,33 @@ export function CategoryDetailScreen() {
         q: searchQuery.trim() || undefined,
         sort,
         inStockOnly,
-        limit: 60,
+        limit: 30,
+        offset: 0,
       });
+      if (requestVersionRef.current !== version) return;
       setCategories(page.categories);
       setProducts(page.items);
       setTotal(page.total);
+      setHasMore(page.hasMore);
       if (page.category) {
         setCategoryInfo(page.category);
       }
     } catch (cause) {
+      if (requestVersionRef.current !== version) return;
       setError(cause instanceof Error ? cause.message : 'Failed to load category');
     } finally {
-      setRefreshing(false);
+      if (requestVersionRef.current === version) {
+        setRefreshing(false);
+      }
     }
   }, [categorySlug, inStockOnly, locale, searchQuery, sort]);
 
   useEffect(() => {
+    const version = ++requestVersionRef.current;
     const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+
     void fetchCatalog(
       {
         locale,
@@ -131,14 +145,17 @@ export function CategoryDetailScreen() {
         q: searchQuery.trim() || undefined,
         sort,
         inStockOnly,
-        limit: 60,
+        limit: 30,
+        offset: 0,
       },
       controller.signal,
     )
       .then((page) => {
+        if (requestVersionRef.current !== version) return;
         setCategories(page.categories);
         setProducts(page.items);
         setTotal(page.total);
+        setHasMore(page.hasMore);
         if (page.category) {
           setCategoryInfo(page.category);
         }
@@ -146,14 +163,44 @@ export function CategoryDetailScreen() {
       })
       .catch((cause) => {
         if (cause instanceof Error && cause.name === 'AbortError') return;
+        if (requestVersionRef.current !== version) return;
         setError(cause instanceof Error ? cause.message : 'Failed to load category');
       })
       .finally(() => {
-        setLoading(false);
+        if (requestVersionRef.current === version) {
+          setLoading(false);
+        }
       });
 
     return () => controller.abort();
   }, [categorySlug, inStockOnly, locale, searchQuery, sort]);
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loading || loadingMore || refreshing) return;
+    setLoadingMore(true);
+    const version = requestVersionRef.current;
+    try {
+      const page = await fetchCatalog({
+        locale,
+        category: categorySlug,
+        q: searchQuery.trim() || undefined,
+        sort,
+        inStockOnly,
+        limit: 30,
+        offset: products.length,
+      });
+      if (requestVersionRef.current !== version) return;
+      setProducts((prev) => [...prev, ...page.items]);
+      setTotal(page.total);
+      setHasMore(page.hasMore);
+    } catch {
+      // non-fatal pagination error
+    } finally {
+      if (requestVersionRef.current === version) {
+        setLoadingMore(false);
+      }
+    }
+  }, [categorySlug, hasMore, inStockOnly, loading, loadingMore, locale, products.length, refreshing, searchQuery, sort]);
 
   const onRefresh = useCallback(() => {
     void refresh();
@@ -223,7 +270,7 @@ export function CategoryDetailScreen() {
 
         {/* Category Hero Title Banner */}
         <View style={styles.heroBanner}>
-          <Text style={styles.categoryTitle}>{currentTitle}</Text>
+          <Text style={styles.categoryTitle} accessibilityRole="header">{currentTitle}</Text>
         </View>
 
         {/* In-category Search Bar */}
@@ -255,6 +302,8 @@ export function CategoryDetailScreen() {
                 <Pressable
                   key={option.id}
                   onPress={() => setSort(option.id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isActive }}
                   style={[styles.sortChip, isActive && styles.sortChipActive]}
                 >
                   <Text style={[styles.sortChipText, isActive && styles.sortChipTextActive]}>
@@ -386,7 +435,15 @@ export function CategoryDetailScreen() {
         <Text style={styles.emptyEmoji}>📦</Text>
         <Text style={styles.emptyTitle}>{text.noProducts}</Text>
         <Text style={styles.emptyBody}>{text.noProductsBody}</Text>
-        <Pressable onPress={() => setSearchQuery('')} style={styles.clearFiltersButton}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            setSearchQuery('');
+            setInStockOnly(false);
+            setSort('best');
+          }}
+          style={styles.clearFiltersButton}
+        >
           <Text style={styles.clearFiltersButtonText}>{text.clearFilters}</Text>
         </Pressable>
       </View>
@@ -406,6 +463,15 @@ export function CategoryDetailScreen() {
         ListHeaderComponent={renderHeader}
         renderItem={renderProductItem}
         ListEmptyComponent={renderEmpty}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={colors.accent} />
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -419,6 +485,11 @@ export function CategoryDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.paper,

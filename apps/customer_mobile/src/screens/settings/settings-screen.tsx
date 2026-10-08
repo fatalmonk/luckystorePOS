@@ -56,11 +56,11 @@ export function SettingsScreen() {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.screenTitle}>{t.title}</Text>
+      <Text style={styles.screenTitle} accessibilityRole="header">{t.title}</Text>
 
       {/* Language Selection */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>{t.languageSection}</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t.languageSection}</Text>
         <View style={styles.card}>
           <Pressable
             style={[styles.row, locale === 'en' ? styles.activeRow : null]}
@@ -88,7 +88,7 @@ export function SettingsScreen() {
 
       {/* Notification Preferences */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>{t.notificationsSection}</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t.notificationsSection}</Text>
         <View style={styles.card}>
           <View style={styles.switchRow}>
             <View style={styles.switchTextCol}>
@@ -98,6 +98,7 @@ export function SettingsScreen() {
             <Switch
               value={orderNotifs}
               onValueChange={setOrderNotifs}
+              accessibilityLabel={t.orderUpdates}
               trackColor={{ false: colors.line, true: colors.accent }}
               thumbColor={colors.surface}
             />
@@ -113,6 +114,7 @@ export function SettingsScreen() {
             <Switch
               value={promoNotifs}
               onValueChange={setPromoNotifs}
+              accessibilityLabel={t.promoUpdates}
               trackColor={{ false: colors.line, true: colors.accent }}
               thumbColor={colors.surface}
             />
@@ -122,7 +124,7 @@ export function SettingsScreen() {
 
       {/* Store & App Info */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>{t.aboutSection}</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t.aboutSection}</Text>
         <View style={styles.card}>
           <Text style={styles.storeName}>{t.storeName}</Text>
           <Text style={styles.storeAddress}>{t.storeAddress}</Text>

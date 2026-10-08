@@ -147,6 +147,7 @@ export function SearchScreen() {
     }
 
     const controller = new AbortController();
+    setLoading(true);
     void fetchCatalog(
       {
         locale,
@@ -396,6 +397,8 @@ export function SearchScreen() {
                 return (
                   <Pressable
                     key={option.id}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isActive }}
                     onPress={() => setSort(option.id)}
                     style={[styles.sortChip, isActive && styles.sortChipActive]}
                   >

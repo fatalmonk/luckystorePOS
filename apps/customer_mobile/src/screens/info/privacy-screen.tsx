@@ -10,7 +10,7 @@ export function PrivacyScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.icon}>🔒</Text>
-        <Text style={styles.title}>Privacy Policy</Text>
+        <Text accessibilityRole="header" style={styles.title}>Privacy Policy</Text>
         <Text style={styles.subtitle}>
           How Lucky Store collects, uses, and safeguards customer data.
         </Text>
@@ -18,28 +18,28 @@ export function PrivacyScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>📋 Information We Collect</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>📋 Information We Collect</Text>
         <Text style={styles.bodyText}>
           We collect your name, phone number, and delivery address to fulfill grocery orders. If you register an account, your email and authentication credentials are encrypted securely.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🚚 How We Use Your Data</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🚚 How We Use Your Data</Text>
         <Text style={styles.bodyText}>
           Your details are strictly used for delivery dispatching, order confirmation (via SMS or WhatsApp), doorstep customer service, and preventing fraudulent transactions.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🛡️ Data Security & Protection</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🛡️ Data Security & Protection</Text>
         <Text style={styles.bodyText}>
           All communications use TLS/HTTPS encryption. We do not sell, rent, or trade customer information with external marketing companies.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🗑️ Your Data Rights</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🗑️ Your Data Rights</Text>
         <Text style={styles.bodyText}>
           You have the right to inspect, update, or permanently delete your account and order history at any time through our Data Deletion request flow.
         </Text>

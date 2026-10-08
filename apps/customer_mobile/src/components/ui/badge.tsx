@@ -21,7 +21,7 @@ const badgeStyles = {
   },
   danger: {
     bg: '#FEE2E2',
-    text: colors.danger,
+    text: '#991B1B',
     border: 'transparent',
   },
   neutral: {

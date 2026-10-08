@@ -68,17 +68,21 @@ export function toMobileProductDto(
   };
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function getMobileProductDetail(
   idOrSlug: string,
   locale: MobileLocale = 'en',
 ): Promise<MobileProductResponse | null> {
-  const { repo } = createProductRepository(supabase);
   let product: Product | null = null;
 
-  try {
-    product = await repo.getById(createProductId(idOrSlug));
-  } catch {
-    // If not direct UUID, fallback to slug lookup
+  if (UUID_PATTERN.test(idOrSlug)) {
+    const { repo } = createProductRepository(supabase);
+    try {
+      product = await repo.getById(createProductId(idOrSlug));
+    } catch {
+      // fallback if UUID lookup fails
+    }
   }
 
   if (!product) {
@@ -86,6 +90,26 @@ export async function getMobileProductDetail(
   }
 
   if (!product) return null;
+
+  if (locale === 'bn' && !product.bengaliName) {
+    try {
+      const { data: trans } = await (supabase as any)
+        .from('item_translations')
+        .select('name, description')
+        .eq('item_id', product.id)
+        .eq('locale', 'bn')
+        .eq('review_status', 'published')
+        .maybeSingle();
+      if (trans) {
+        product.bengaliName = trans.name;
+        if (trans.description) {
+          product.bengaliDescription = trans.description;
+        }
+      }
+    } catch {
+      // translation fallback
+    }
+  }
 
   const enrichment = getEnrichedProductData(product.id) || getEnrichedProductData(idOrSlug);
   const mainProductDto = toMobileProductDto(product, locale, enrichment);

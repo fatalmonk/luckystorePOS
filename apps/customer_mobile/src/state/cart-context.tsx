@@ -36,8 +36,17 @@ export interface CartContextState {
 
 const CartContext = createContext<CartContextState | null>(null);
 
-const FREE_DELIVERY_THRESHOLD = 500;
-const STANDARD_DELIVERY_FEE = 40;
+export const FREE_DELIVERY_THRESHOLD = 500;
+export const STANDARD_DELIVERY_FEE = 40;
+
+export function calculateCartTotals(items: { price: number; qty: number }[]) {
+  const totalItems = items.reduce((acc, item) => acc + item.qty, 0);
+  const subtotal = items.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const deliveryFee = items.length === 0 ? 0 : subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : STANDARD_DELIVERY_FEE;
+  const total = items.length === 0 ? 0 : subtotal + deliveryFee;
+  const amountToFreeDelivery = Math.max(0, FREE_DELIVERY_THRESHOLD - subtotal);
+  return { totalItems, subtotal, deliveryFee, total, amountToFreeDelivery };
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -45,6 +54,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const add = useCallback((productId: string, itemDetails?: Partial<CartItem>, quantity = 1) => {
     setItems((current) => {
       const existingIndex = current.findIndex((item) => item.id === productId);
+      if (itemDetails && typeof itemDetails.stock === 'number' && itemDetails.stock <= 0) {
+        return current;
+      }
+
       if (existingIndex > -1) {
         const next = [...current];
         const existing = next[existingIndex];
@@ -74,9 +87,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return current
         .map((item) => {
           if (item.id !== productId) return item;
+          if (typeof item.stock === 'number' && item.stock <= 0) return null;
           const newQty = item.qty + delta;
           if (newQty <= 0) return null;
-          const maxStock = item.stock > 0 ? item.stock : 99;
+          const maxStock = typeof item.stock === 'number' && item.stock > 0 ? item.stock : 99;
           return { ...item, qty: Math.min(maxStock, newQty) };
         })
         .filter((item): item is CartItem => item !== null);
@@ -106,27 +120,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }, []);
 
-  const totalItems = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.qty, 0);
-  }, [items]);
-
-  const subtotal = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.price * item.qty, 0);
-  }, [items]);
-
-  const deliveryFee = useMemo(() => {
-    if (items.length === 0) return 0;
-    return subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : STANDARD_DELIVERY_FEE;
-  }, [items.length, subtotal]);
-
-  const total = useMemo(() => {
-    if (items.length === 0) return 0;
-    return subtotal + deliveryFee;
-  }, [items.length, subtotal, deliveryFee]);
-
-  const amountToFreeDelivery = useMemo(() => {
-    return Math.max(0, FREE_DELIVERY_THRESHOLD - subtotal);
-  }, [subtotal]);
+  const { totalItems, subtotal, deliveryFee, total, amountToFreeDelivery } = useMemo(
+    () => calculateCartTotals(items),
+    [items],
+  );
 
   const value = useMemo(
     () => ({

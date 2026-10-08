@@ -17,9 +17,9 @@ describe('mobile auth service', () => {
   });
 
   it('validates minimum password requirement', () => {
-    assert.strictEqual(validatePassword('123456').valid, true);
+    assert.strictEqual(validatePassword('12345678').valid, true);
     assert.strictEqual(validatePassword('strong-pass-123').valid, true);
-    assert.strictEqual(validatePassword('12345').valid, false);
+    assert.strictEqual(validatePassword('1234567').valid, false);
     assert.strictEqual(validatePassword('').valid, false);
   });
 

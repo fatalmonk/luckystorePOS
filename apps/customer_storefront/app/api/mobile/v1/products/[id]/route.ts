@@ -18,7 +18,7 @@ export async function GET(
     return NextResponse.json({ error: 'Product ID or slug required' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
   }
 
-  const result = await getMobileProductDetail(decodeURIComponent(id), locale as MobileLocale);
+  const result = await getMobileProductDetail(id, locale as MobileLocale);
   if (!result) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
   }

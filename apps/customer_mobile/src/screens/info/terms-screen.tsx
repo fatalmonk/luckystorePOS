@@ -10,7 +10,7 @@ export function TermsScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.icon}>📜</Text>
-        <Text style={styles.title}>Terms of Service</Text>
+        <Text accessibilityRole="header" style={styles.title}>Terms of Service</Text>
         <Text style={styles.subtitle}>
           Terms governing purchases, deliveries, and store interactions.
         </Text>
@@ -18,28 +18,28 @@ export function TermsScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🛒 Ordering & Acceptance</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🛒 Ordering & Acceptance</Text>
         <Text style={styles.bodyText}>
           Orders placed via the app are subject to physical store stock confirmation and pricing validation at time of fulfillment.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>💵 Pricing & Payment</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>💵 Pricing & Payment</Text>
         <Text style={styles.bodyText}>
           All prices are displayed in Bangladeshi Taka (৳ BDT). Payment methods include Cash on Delivery and bKash. We do not store sensitive bank card credentials.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🚚 Delivery & Doorstep Inspection</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🚚 Delivery & Doorstep Inspection</Text>
         <Text style={styles.bodyText}>
           Delivery slots are approximate within Chattogram city zones. Customers are encouraged to inspect goods upon delivery before making payment.
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🔄 Returns & Refunds</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>🔄 Returns & Refunds</Text>
         <Text style={styles.bodyText}>
           Perishable items may be rejected at the doorstep if damaged or unsatisfactory. Non-perishable items with defects can be returned within 24 hours with the order receipt.
         </Text>

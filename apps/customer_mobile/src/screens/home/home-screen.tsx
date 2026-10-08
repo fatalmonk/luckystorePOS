@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { Logo } from '../../components/ui';
@@ -35,14 +35,28 @@ export function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
+  const activeLocaleRef = useRef(locale);
+  activeLocaleRef.current = locale;
   const text = copy[locale];
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
     setError(null);
-    try { setHome(await fetchHome(locale)); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Home is unavailable'); }
-    finally { setRefreshing(false); }
+    const targetLocale = locale;
+    try {
+      const data = await fetchHome(targetLocale);
+      if (activeLocaleRef.current === targetLocale) {
+        setHome(data);
+      }
+    } catch (cause) {
+      if (activeLocaleRef.current === targetLocale) {
+        setError(cause instanceof Error ? cause.message : 'Home is unavailable');
+      }
+    } finally {
+      if (activeLocaleRef.current === targetLocale) {
+        setRefreshing(false);
+      }
+    }
   }, [locale]);
 
   useEffect(() => {

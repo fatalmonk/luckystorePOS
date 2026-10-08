@@ -46,6 +46,7 @@ export function WishlistScreen() {
   const t = copy[locale];
 
   const handleAddToCart = (product: any) => {
+    if (typeof product.stock === 'number' && product.stock <= 0) return;
     add(
       product.id,
       {

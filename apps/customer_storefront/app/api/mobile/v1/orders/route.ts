@@ -16,6 +16,10 @@ function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('Order service is unavailable');
+  const parsed = new URL(url);
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Supabase URL must use HTTPS');
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -47,16 +51,31 @@ function mapOrderRow(row: any) {
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const serviceClient = getServiceClient();
+    let user = null;
+    const authHeader = req.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const bearerToken = authHeader.slice(7).trim();
+      if (bearerToken) {
+        const { data: userData, error: userError } = await serviceClient.auth.getUser(bearerToken);
+        if (!userError && userData?.user) {
+          user = userData.user;
+        }
+      }
+    }
+
+    if (!user) {
+      const supabase = await createServerClient();
+      const { data } = await supabase.auth.getUser();
+      user = data?.user ?? null;
+    }
+
     const orderNumber = req.nextUrl.searchParams.get('num')?.trim();
     const token = req.headers.get('x-order-tracking-token') ?? '';
 
     if (!user && (!orderNumber || !TOKEN_PATTERN.test(token))) {
       return privateJson({ ok: false, error: 'Unauthorized' }, 401);
     }
-
-    const serviceClient = getServiceClient();
 
     if (orderNumber) {
       let order = null;

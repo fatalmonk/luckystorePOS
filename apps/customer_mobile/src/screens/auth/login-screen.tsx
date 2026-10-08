@@ -117,11 +117,11 @@ export function LoginScreen() {
         {/* Card Form */}
         <View style={styles.card}>
           <Logo size="lg" style={styles.brandLogo} />
-          <Text style={styles.title}>{t.title}</Text>
+          <Text style={styles.title} accessibilityRole="header">{t.title}</Text>
           <Text style={styles.subtitle}>{t.subtitle}</Text>
 
           {errorMessage ? (
-            <View style={styles.errorBox}>
+            <View style={styles.errorBox} accessibilityRole="alert" accessibilityLiveRegion="assertive">
               <Text style={styles.errorText}>❌ {errorMessage}</Text>
             </View>
           ) : null}
@@ -132,6 +132,7 @@ export function LoginScreen() {
               style={styles.input}
               placeholder={t.emailPlaceholder}
               placeholderTextColor={colors.muted}
+              accessibilityLabel={t.emailLabel}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -147,6 +148,7 @@ export function LoginScreen() {
                 style={styles.passwordInput}
                 placeholder={t.passwordPlaceholder}
                 placeholderTextColor={colors.muted}
+                accessibilityLabel={t.passwordLabel}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -155,6 +157,8 @@ export function LoginScreen() {
               <Pressable
                 style={styles.showHideButton}
                 onPress={() => setShowPassword((prev) => !prev)}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? t.hide : t.show}
                 hitSlop={8}
               >
                 <Text style={styles.showHideText}>

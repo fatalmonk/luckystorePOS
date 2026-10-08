@@ -19,6 +19,7 @@ import {
   MobileOrderDto,
   TIMELINE_STEPS,
 } from '../../services/orders';
+import { useAuth } from '../../state/auth-context';
 import { colors } from '../../theme';
 
 const copy = {
@@ -91,6 +92,7 @@ interface OrderDetailScreenProps {
 
 export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScreenProps) {
   const router = useRouter();
+  const { token: authToken } = useAuth();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
 
@@ -106,21 +108,21 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
     setRefreshing(true);
     setErrorMessage(null);
     try {
-      const data = await fetchOrder(orderNumber, trackingToken);
+      const data = await fetchOrder(orderNumber, trackingToken, undefined, authToken || undefined);
       setOrder(data);
     } catch (err: any) {
       setErrorMessage(err.message || 'Unable to load order details');
     } finally {
       setRefreshing(false);
     }
-  }, [orderNumber, trackingToken]);
+  }, [orderNumber, trackingToken, authToken]);
 
   useEffect(() => {
     if (!orderNumber) {
       return;
     }
     const controller = new AbortController();
-    fetchOrder(orderNumber, trackingToken, controller.signal)
+    fetchOrder(orderNumber, trackingToken, controller.signal, authToken || undefined)
       .then((data) => {
         setOrder(data);
       })
@@ -134,7 +136,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
       });
 
     return () => controller.abort();
-  }, [orderNumber, trackingToken]);
+  }, [orderNumber, trackingToken, authToken]);
 
   const handleOpenWhatsApp = () => {
     if (!order) return;
@@ -193,7 +195,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
     >
       {/* Header Language Bar */}
       <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>{t.title}</Text>
+        <Text accessibilityRole="header" style={styles.screenTitle}>{t.title}</Text>
         <Pressable
           style={styles.langPill}
           onPress={() => setLocale((prev) => (prev === 'en' ? 'bn' : 'en'))}
@@ -205,10 +207,16 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
         </Pressable>
       </View>
 
-      {/* Success Hero Card */}
+      {/* Hero Card */}
       <View style={styles.heroCard}>
-        <Text style={styles.heroTitle}>{t.orderPlacedTitle}</Text>
-        <Text style={styles.heroSubtitle}>{t.orderPlacedSubtitle}</Text>
+        <Text accessibilityRole="header" style={styles.heroTitle}>
+          {isCancelled ? (locale === 'bn' ? 'অর্ডারটি বাতিল হয়েছে' : 'Order Cancelled') : t.orderPlacedTitle}
+        </Text>
+        <Text style={styles.heroSubtitle}>
+          {isCancelled
+            ? (locale === 'bn' ? 'এই অর্ডারটি প্রক্রিয়া করা হয়নি বা বাতিল করা হয়েছে।' : 'This order has been cancelled and will not be delivered.')
+            : t.orderPlacedSubtitle}
+        </Text>
 
         <View style={styles.orderBadge}>
           <Text style={styles.orderBadgeLabel}>{t.orderNumber}:</Text>
@@ -218,7 +226,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
 
       {/* Timeline Section */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>
+        <Text accessibilityRole="header" style={styles.cardTitle}>
           {isCancelled ? `⚠️ ${t.cancelledTitle}` : `🚚 ${t.timelineTitle}`}
         </Text>
 

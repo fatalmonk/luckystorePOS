@@ -231,7 +231,7 @@ export function CheckoutScreen() {
         {/* Header Bar */}
         <View style={styles.headerBar}>
           <View>
-            <Text style={styles.screenTitle}>{t.checkoutTitle}</Text>
+            <Text style={styles.screenTitle} accessibilityRole="header">{t.checkoutTitle}</Text>
             <Text style={styles.stepSubtitle}>
               {step === 1 ? t.step1Title : t.step2Title}
             </Text>
@@ -256,7 +256,7 @@ export function CheckoutScreen() {
 
         {/* Price Mismatch Banner */}
         {priceMismatchWarning ? (
-          <View style={styles.warningBanner}>
+          <View style={styles.warningBanner} accessibilityRole="alert" accessibilityLiveRegion="polite">
             <Text style={styles.warningBannerTitle}>⚠️ {t.priceMismatchTitle}</Text>
             <Text style={styles.warningBannerBody}>{priceMismatchWarning}</Text>
           </View>
@@ -264,7 +264,7 @@ export function CheckoutScreen() {
 
         {/* Error Banner */}
         {errorMessage ? (
-          <View style={styles.errorBanner}>
+          <View style={styles.errorBanner} accessibilityRole="alert" accessibilityLiveRegion="polite">
             <Text style={styles.errorBannerTitle}>❌ Error</Text>
             <Text style={styles.errorBannerBody}>{errorMessage}</Text>
           </View>
@@ -280,6 +280,7 @@ export function CheckoutScreen() {
                 style={[styles.textInput, formErrors.name ? styles.inputErrorBorder : null]}
                 placeholder={t.fullNamePlaceholder}
                 placeholderTextColor={colors.muted}
+                accessibilityLabel={t.fullName}
                 value={formData.name}
                 onChangeText={(val) => handleFieldChange('name', val)}
                 maxLength={100}
@@ -298,6 +299,7 @@ export function CheckoutScreen() {
                 style={[styles.textInput, formErrors.phone ? styles.inputErrorBorder : null]}
                 placeholder={t.mobilePlaceholder}
                 placeholderTextColor={colors.muted}
+                accessibilityLabel={t.mobileNumber}
                 value={formData.phone}
                 onChangeText={(val) => handleFieldChange('phone', val)}
                 keyboardType="phone-pad"
@@ -318,6 +320,7 @@ export function CheckoutScreen() {
                 style={[styles.textArea, formErrors.address ? styles.inputErrorBorder : null]}
                 placeholder={t.addressPlaceholder}
                 placeholderTextColor={colors.muted}
+                accessibilityLabel={t.address}
                 value={formData.address}
                 onChangeText={(val) => handleFieldChange('address', val)}
                 multiline
@@ -379,6 +382,7 @@ export function CheckoutScreen() {
                 style={styles.textInput}
                 placeholder={t.notesPlaceholder}
                 placeholderTextColor={colors.muted}
+                accessibilityLabel={t.notes}
                 value={formData.notes}
                 onChangeText={(val) => handleFieldChange('notes', val)}
                 maxLength={200}

@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       refreshToken: data.session?.refresh_token || undefined,
     });
   } catch (err: any) {
-    return privateJson({ ok: false, error: err.message || 'Signup failed' }, 500);
+    console.error('Mobile signup error:', err);
+    return privateJson({ ok: false, error: 'Signup failed. Please try again.' }, 500);
   }
 }

@@ -42,8 +42,8 @@ export function validateEmail(email: string): boolean {
 }
 
 export function validatePassword(password: string): { valid: boolean; error?: string } {
-  if (!password || password.length < 6) {
-    return { valid: false, error: 'Password must be at least 6 characters' };
+  if (!password || password.length < 8) {
+    return { valid: false, error: 'Password must be at least 8 characters' };
   }
   return { valid: true };
 }

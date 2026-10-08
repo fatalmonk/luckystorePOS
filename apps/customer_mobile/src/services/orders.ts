@@ -123,7 +123,8 @@ export function buildWhatsAppOrderMessage(order: MobileOrderDto): string {
 export async function fetchOrder(
   orderNumber: string,
   trackingToken?: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  accessToken?: string
 ): Promise<MobileOrderDto | null> {
   const baseUrl = resolveApiBaseUrl();
   const url = `${baseUrl}/api/mobile/v1/orders?num=${encodeURIComponent(orderNumber)}`;
@@ -132,6 +133,9 @@ export async function fetchOrder(
   };
   if (trackingToken) {
     headers['x-order-tracking-token'] = trackingToken;
+  }
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
   const response = await fetch(url, { method: 'GET', headers, signal });

@@ -66,7 +66,7 @@ export function HelpScreen() {
     >
       {/* Header Bar */}
       <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>{t.title}</Text>
+        <Text accessibilityRole="header" style={styles.screenTitle}>{t.title}</Text>
         <Pressable
           style={styles.langPill}
           onPress={() => setLocale((prev) => (prev === 'en' ? 'bn' : 'en'))}
@@ -81,7 +81,7 @@ export function HelpScreen() {
 
       {/* WhatsApp Support */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.whatsappSection}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.whatsappSection}</Text>
         <Text style={styles.cardBody}>{t.whatsappDesc}</Text>
         <Pressable
           style={styles.whatsappButton}
@@ -94,7 +94,7 @@ export function HelpScreen() {
 
       {/* Phone Support */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.phoneSection}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.phoneSection}</Text>
         <Text style={styles.cardBody}>{t.phoneDesc}</Text>
         <Pressable
           style={styles.phoneButton}
@@ -107,7 +107,7 @@ export function HelpScreen() {
 
       {/* Store Location */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t.locationSection}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t.locationSection}</Text>
         <Text style={styles.storeName}>{t.storeLocation}</Text>
         <Text style={styles.cardBody}>{t.storeAddress}</Text>
         <Text style={styles.storeHours}>⏰ {t.storeHours}</Text>

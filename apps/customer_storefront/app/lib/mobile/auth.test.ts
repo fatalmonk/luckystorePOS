@@ -11,9 +11,9 @@ describe('mobile auth lib', () => {
   });
 
   it('validates password length correctly', () => {
-    expect(validatePassword('123456').valid).toBe(true);
+    expect(validatePassword('12345678').valid).toBe(true);
     expect(validatePassword('secure-password').valid).toBe(true);
-    expect(validatePassword('12345').valid).toBe(false);
+    expect(validatePassword('1234567').valid).toBe(false);
     expect(validatePassword('').valid).toBe(false);
   });
 
