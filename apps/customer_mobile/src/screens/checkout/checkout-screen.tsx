@@ -16,11 +16,14 @@ import {
 import {
   CheckoutFormData,
   CheckoutFormErrors,
+  generateOrderNumber,
   generateUUID,
   submitCheckout,
   validateCheckoutForm,
 } from '../../services/checkout';
 import { Locale } from '../../services/home';
+import { saveGuestOrderToken } from '../../services/storage';
+import { useAuth } from '../../state/auth-context';
 import { useCart } from '../../state/cart-context';
 import { colors } from '../../theme';
 
@@ -113,6 +116,7 @@ const copy = {
 
 export function CheckoutScreen() {
   const router = useRouter();
+  const { token } = useAuth();
   const { items, subtotal, deliveryFee, total, clearCart, syncPrices } = useCart();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
@@ -135,6 +139,7 @@ export function CheckoutScreen() {
   const [formErrors, setFormErrors] = useState<CheckoutFormErrors>({});
 
   const idempotencyKeyRef = useRef<string>(generateUUID());
+  const orderNumberRef = useRef<string>(generateOrderNumber());
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleFieldChange = (field: keyof CheckoutFormData, value: string) => {
@@ -170,12 +175,17 @@ export function CheckoutScreen() {
       deliveryFee,
       total,
       idempotencyKey: idempotencyKeyRef.current,
+      orderNumber: orderNumberRef.current,
+      authToken: token,
     });
 
     if (result.success) {
       clearCart();
       const orderNumber = result.order.order_number;
       const trackingToken = result.order.trackingToken || '';
+      if (trackingToken) {
+        saveGuestOrderToken(orderNumber, trackingToken).catch(() => {});
+      }
       setIsPlacing(false);
       router.replace({
         pathname: '/order/[number]' as any,

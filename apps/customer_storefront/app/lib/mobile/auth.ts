@@ -11,9 +11,28 @@ export function validateEmail(email: string): boolean {
   return re.test(email.trim());
 }
 
+const TRIVIAL_PASSWORDS = new Set([
+  '12345678',
+  '123456789',
+  'password',
+  'password1',
+  'password123',
+  'admin123',
+  'qwerty123',
+  '11111111',
+  '87654321',
+  'luckystore123',
+]);
+
 export function validatePassword(password: string): { valid: boolean; error?: string } {
   if (!password || password.length < 8) {
     return { valid: false, error: 'Password must be at least 8 characters' };
+  }
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return { valid: false, error: 'Password must contain both letters and numbers' };
+  }
+  if (TRIVIAL_PASSWORDS.has(password.toLowerCase())) {
+    return { valid: false, error: 'Password is too common or easily guessed' };
   }
   return { valid: true };
 }

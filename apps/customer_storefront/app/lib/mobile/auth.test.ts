@@ -10,10 +10,13 @@ describe('mobile auth lib', () => {
     expect(validateEmail('')).toBe(false);
   });
 
-  it('validates password length correctly', () => {
-    expect(validatePassword('12345678').valid).toBe(true);
-    expect(validatePassword('secure-password').valid).toBe(true);
-    expect(validatePassword('1234567').valid).toBe(false);
+  it('validates password length and composition correctly', () => {
+    expect(validatePassword('StrongPass123').valid).toBe(true);
+    expect(validatePassword('luckyUser42').valid).toBe(true);
+    expect(validatePassword('12345678').valid).toBe(false); // no letters, trivial
+    expect(validatePassword('allletterspass').valid).toBe(false); // no numbers
+    expect(validatePassword('pass123').valid).toBe(false); // < 8 chars
+    expect(validatePassword('password123').valid).toBe(false); // trivial
     expect(validatePassword('').valid).toBe(false);
   });
 

@@ -23,6 +23,7 @@ const copy = {
     startShopping: 'Explore Catalog',
     addToCart: 'Add to Cart',
     addedToCart: '✓ Added',
+    outOfStock: 'Out of Stock',
     remove: 'Remove',
   },
   bn: {
@@ -33,6 +34,7 @@ const copy = {
     startShopping: 'পণ্য দেখুন',
     addToCart: 'কার্টে যোগ করুন',
     addedToCart: '✓ যোগ হয়েছে',
+    outOfStock: 'স্টক শেষ',
     remove: 'মুছুন',
   },
 } as const;
@@ -68,7 +70,7 @@ export function WishlistScreen() {
       {/* Header Bar */}
       <View style={styles.headerBar}>
         <View>
-          <Text style={styles.screenTitle}>{t.title}</Text>
+          <Text style={styles.screenTitle} accessibilityRole="header">{t.title}</Text>
           <Text style={styles.subtitle}>{t.itemsCount(wishlist.length)}</Text>
         </View>
 
@@ -90,7 +92,7 @@ export function WishlistScreen() {
         ListEmptyComponent={
           <View style={styles.emptyCard}>
             <Text style={styles.emptyEmoji}>❤️</Text>
-            <Text style={styles.emptyTitle}>{t.emptyTitle}</Text>
+            <Text style={styles.emptyTitle} accessibilityRole="header">{t.emptyTitle}</Text>
             <Text style={styles.emptySubtitle}>{t.emptySubtitle}</Text>
             <Pressable
               style={styles.primaryButton}
@@ -103,6 +105,7 @@ export function WishlistScreen() {
         }
         renderItem={({ item }) => {
           const isAdded = addedIds.has(item.id);
+          const isOutOfStock = typeof item.stock === 'number' && item.stock <= 0;
 
           return (
             <View style={styles.itemCard}>
@@ -120,9 +123,10 @@ export function WishlistScreen() {
                     source={{ uri: item.imageUrl }}
                     style={styles.itemImage}
                     contentFit="contain"
+                    accessibilityLabel={item.name}
                   />
                 ) : (
-                  <Text style={styles.itemEmoji}>{item.emoji || '🛒'}</Text>
+                  <Text style={styles.itemEmoji} accessibilityLabel={item.name}>{item.emoji || '🛒'}</Text>
                 )}
               </Pressable>
 
@@ -146,17 +150,25 @@ export function WishlistScreen() {
 
                 <View style={styles.actionsRow}>
                   <Pressable
-                    style={[styles.cartButton, isAdded ? styles.cartButtonAdded : null]}
+                    disabled={isOutOfStock}
+                    style={[
+                      styles.cartButton,
+                      isOutOfStock ? styles.cartButtonDisabled : null,
+                      isAdded ? styles.cartButtonAdded : null,
+                    ]}
                     onPress={() => handleAddToCart(item)}
                     accessibilityRole="button"
+                    accessibilityState={{ disabled: isOutOfStock }}
+                    accessibilityLabel={isOutOfStock ? `${item.name} ${t.outOfStock}` : `${t.addToCart} ${item.name}`}
                   >
                     <Text
                       style={[
                         styles.cartButtonText,
+                        isOutOfStock ? styles.cartButtonTextDisabled : null,
                         isAdded ? styles.cartButtonTextAdded : null,
                       ]}
                     >
-                      {isAdded ? t.addedToCart : t.addToCart}
+                      {isOutOfStock ? t.outOfStock : isAdded ? t.addedToCart : t.addToCart}
                     </Text>
                   </Pressable>
 
@@ -317,10 +329,17 @@ const styles = StyleSheet.create({
   cartButtonAdded: {
     backgroundColor: colors.greenSoft,
   },
+  cartButtonDisabled: {
+    backgroundColor: colors.line,
+    opacity: 0.6,
+  },
   cartButtonText: {
     fontSize: 12,
     fontWeight: '800',
     color: colors.deepNight,
+  },
+  cartButtonTextDisabled: {
+    color: colors.muted,
   },
   cartButtonTextAdded: {
     color: colors.green,

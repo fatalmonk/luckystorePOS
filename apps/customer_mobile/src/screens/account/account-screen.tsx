@@ -81,6 +81,8 @@ const copy = {
   },
 } as const;
 
+import { getGuestOrderToken } from '../../services/storage';
+
 export function AccountScreen() {
   const router = useRouter();
   const { user, isLoggedIn, logout } = useAuth();
@@ -88,12 +90,13 @@ export function AccountScreen() {
   const [orderQuery, setOrderQuery] = useState('');
   const t = copy[locale];
 
-  const handleTrackGuestOrder = () => {
-    const clean = orderQuery.trim();
+  const handleTrackGuestOrder = async () => {
+    const clean = orderQuery.trim().toUpperCase();
     if (!clean) return;
+    const storedToken = await getGuestOrderToken(clean);
     router.push({
       pathname: '/order/[number]' as any,
-      params: { number: clean },
+      params: { number: clean, ...(storedToken ? { token: storedToken } : {}) },
     });
   };
 
@@ -105,7 +108,7 @@ export function AccountScreen() {
     >
       {/* Header Bar */}
       <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>{t.title}</Text>
+        <Text style={styles.screenTitle} accessibilityRole="header">{t.title}</Text>
         <Pressable
           style={styles.langPill}
           onPress={() => setLocale((prev) => (prev === 'en' ? 'bn' : 'en'))}
@@ -180,7 +183,7 @@ export function AccountScreen() {
 
       {/* Menu & Navigation Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>{t.menuSection}</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t.menuSection}</Text>
 
         <View style={styles.menuCard}>
           <Pressable
@@ -255,7 +258,7 @@ export function AccountScreen() {
 
       {/* Legal & Privacy Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>{t.legalSection}</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t.legalSection}</Text>
 
         <View style={styles.menuCard}>
           <Pressable

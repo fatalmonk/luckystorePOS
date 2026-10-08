@@ -17,9 +17,12 @@ describe('mobile auth service', () => {
   });
 
   it('validates minimum password requirement', () => {
-    assert.strictEqual(validatePassword('12345678').valid, true);
-    assert.strictEqual(validatePassword('strong-pass-123').valid, true);
-    assert.strictEqual(validatePassword('1234567').valid, false);
+    assert.strictEqual(validatePassword('StrongPass123').valid, true);
+    assert.strictEqual(validatePassword('luckyUser42').valid, true);
+    assert.strictEqual(validatePassword('12345678').valid, false); // no letters, trivial
+    assert.strictEqual(validatePassword('allletterspass').valid, false); // no numbers
+    assert.strictEqual(validatePassword('pass123').valid, false); // < 8 chars
+    assert.strictEqual(validatePassword('password123').valid, false); // trivial
     assert.strictEqual(validatePassword('').valid, false);
   });
 

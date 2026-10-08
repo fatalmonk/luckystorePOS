@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createOrder } from '../../../../lib/orders';
 import { supabase } from '../../../../lib/supabase';
 import { createClient as createServerClient } from '../../../../lib/supabase/server';
@@ -7,15 +8,40 @@ import { calculateOrderTotals, generateOrderNumber } from '../../../../lib/mobil
 const CHECKOUT_RATE_LIMIT = new Map<string, { count: number; reset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 10;
+const MAX_RATE_LIMIT_ENTRIES = 5000;
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
-function checkRateLimit(ip: string): boolean {
+function evictExpiredRateLimits() {
   const now = Date.now();
-  if (CHECKOUT_RATE_LIMIT.size > 2000) {
-    for (const [key, val] of CHECKOUT_RATE_LIMIT) {
-      if (now > val.reset) CHECKOUT_RATE_LIMIT.delete(key);
+  for (const [key, val] of CHECKOUT_RATE_LIMIT) {
+    if (now > val.reset) CHECKOUT_RATE_LIMIT.delete(key);
+  }
+}
+
+function getClientIp(req: NextRequest): string {
+  const cfIp = req.headers.get('cf-connecting-ip');
+  if (cfIp) return cfIp.trim();
+
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded.split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0) {
+      return parts[parts.length - 1];
     }
   }
+
+  return 'unknown';
+}
+
+function checkRateLimit(ip: string): boolean {
+  evictExpiredRateLimits();
+  if (CHECKOUT_RATE_LIMIT.size >= MAX_RATE_LIMIT_ENTRIES && !CHECKOUT_RATE_LIMIT.has(ip)) {
+    return false;
+  }
+  const now = Date.now();
   const record = CHECKOUT_RATE_LIMIT.get(ip);
   if (!record || now > record.reset) {
     CHECKOUT_RATE_LIMIT.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW_MS });
@@ -36,22 +62,32 @@ interface CheckoutItem {
 
 async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: number; name: string }>> {
   const priceMap = new Map<string, { price: number; name: string }>();
+  const needed = new Set(itemIds);
+  const pageSize = 500;
+  let offset = 0;
 
-  const { data, error } = await supabase.rpc('search_storefront_catalog', {
-    p_store_id: STORE_ID,
-    p_query: '',
-    p_category_id: null,
-    p_limit: 1000,
-    p_offset: 0,
-  });
+  while (needed.size > priceMap.size) {
+    const { data, error } = await supabase.rpc('search_storefront_catalog', {
+      p_store_id: STORE_ID,
+      p_query: '',
+      p_category_id: null,
+      p_limit: pageSize,
+      p_offset: offset,
+    });
 
-  if (error) throw new Error(`Failed to verify prices: ${error.message}`);
+    if (error) throw new Error(`Failed to verify prices: ${error.message}`);
+    const rows = (data ?? []) as any[];
+    if (rows.length === 0) break;
 
-  for (const item of (data ?? []) as any[]) {
-    const id = item.id ?? item.item_id;
-    if (itemIds.includes(id)) {
-      priceMap.set(id, { price: Number(item.price), name: item.name });
+    for (const item of rows) {
+      const id = item.id ?? item.item_id;
+      if (needed.has(id)) {
+        priceMap.set(id, { price: Number(item.price), name: item.name });
+      }
     }
+
+    if (rows.length < pageSize) break;
+    offset += pageSize;
   }
 
   return priceMap;
@@ -78,8 +114,7 @@ function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price:
 }
 
 export async function POST(req: NextRequest) {
-  const forwarded = req.headers.get('x-forwarded-for');
-  const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+  const ip = getClientIp(req);
 
   if (!checkRateLimit(ip)) {
     return NextResponse.json({ ok: false, error: 'Too many requests' }, { status: 429 });
@@ -123,15 +158,41 @@ export async function POST(req: NextRequest) {
       ? body.orderNumber.trim()
       : generateOrderNumber();
 
-    const requestClient = await createServerClient();
-    const { error: authError } = await requestClient.auth.getUser();
-    if (
-      authError &&
-      authError.name !== 'AuthSessionMissingError' &&
-      !authError.message?.includes('Auth session missing') &&
-      !authError.message?.includes('session')
-    ) {
-      return NextResponse.json({ ok: false, error: 'Unable to verify your account. Please try again.' }, { status: 503 });
+    const authHeader = req.headers.get('authorization');
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+
+    let requestClient;
+    if (bearerToken) {
+      requestClient = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${bearerToken}`,
+            },
+          },
+          auth: { persistSession: false },
+        }
+      );
+      const { error: userError } = await requestClient.auth.getUser(bearerToken);
+      if (userError) {
+        return NextResponse.json(
+          { ok: false, error: 'Invalid or expired session. Please sign in again.' },
+          { status: 401 }
+        );
+      }
+    } else {
+      requestClient = await createServerClient();
+      const { error: authError } = await requestClient.auth.getUser();
+      if (
+        authError &&
+        authError.name !== 'AuthSessionMissingError' &&
+        !authError.message?.includes('Auth session missing') &&
+        !authError.message?.includes('session')
+      ) {
+        return NextResponse.json({ ok: false, error: 'Unable to verify your account. Please try again.' }, { status: 503 });
+      }
     }
 
     const cleanPhone = typeof body.customerPhone === 'string' ? body.customerPhone.replace(/[\s-]/g, '') : '';

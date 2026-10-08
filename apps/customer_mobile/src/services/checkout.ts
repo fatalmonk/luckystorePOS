@@ -116,6 +116,13 @@ export function generateUUID(): string {
   throw new Error('A secure cryptographic random source is required to generate UUID');
 }
 
+export function generateOrderNumber(): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const randomSuffix = generateUUID().slice(0, 8).toUpperCase();
+  return `LSO-${dateStr}-${randomSuffix}`;
+}
+
 export interface SubmitCheckoutParams {
   formData: CheckoutFormData;
   cart: CartItem[];
@@ -124,6 +131,7 @@ export interface SubmitCheckoutParams {
   total: number;
   idempotencyKey?: string;
   orderNumber?: string;
+  authToken?: string | null;
 }
 
 export type SubmitCheckoutResult =
@@ -137,6 +145,7 @@ export async function submitCheckout(
 ): Promise<SubmitCheckoutResult> {
   const { formData, cart, subtotal, deliveryFee, total } = params;
   const idempotencyKey = params.idempotencyKey || generateUUID();
+  const orderNumber = params.orderNumber || generateOrderNumber();
   const cleanPhone = formData.phone.replace(/[\s-]/g, '');
 
   const notesParts: string[] = [];
@@ -147,7 +156,7 @@ export async function submitCheckout(
   const combinedNotes = notesParts.join(' — ') || undefined;
 
   const payload = {
-    orderNumber: params.orderNumber,
+    orderNumber,
     idempotencyKey,
     customerName: formData.name.trim(),
     customerPhone: cleanPhone,
@@ -171,13 +180,18 @@ export async function submitCheckout(
   const url = `${baseUrl}/api/mobile/v1/checkout`;
 
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (params.authToken) {
+      headers['Authorization'] = `Bearer ${params.authToken}`;
+    }
+
     const response = await fetch(url, {
       method: 'POST',
       signal,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 

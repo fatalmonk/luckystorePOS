@@ -3,6 +3,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -14,6 +15,12 @@ import {
   SignupParams,
   User,
 } from '../services/auth';
+import {
+  AUTH_SESSION_KEY,
+  getSecureItem,
+  removeSecureItem,
+  setSecureItem,
+} from '../services/storage';
 
 export interface AuthContextState {
   user: User | null;
@@ -30,10 +37,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const raw = await getSecureItem(AUTH_SESSION_KEY);
+        if (raw && active) {
+          const parsed = JSON.parse(raw);
+          if (parsed.user) setUser(parsed.user);
+          if (parsed.token) setToken(parsed.token);
+        }
+      } catch {
+        // ignore malformed stored session
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const login = useCallback(async (params: LoginParams) => {
     const result = await loginUser(params);
     setUser(result.user);
-    if (result.token) setToken(result.token);
+    if (result.token) {
+      setToken(result.token);
+      await setSecureItem(
+        AUTH_SESSION_KEY,
+        JSON.stringify({ user: result.user, token: result.token })
+      );
+    }
   }, []);
 
   const signup = useCallback(async (params: SignupParams) => {
@@ -41,6 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (result.token && result.user) {
       setUser(result.user);
       setToken(result.token);
+      await setSecureItem(
+        AUTH_SESSION_KEY,
+        JSON.stringify({ user: result.user, token: result.token })
+      );
     }
     return { requiresEmailConfirmation: result.requiresEmailConfirmation };
   }, []);
@@ -48,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    void removeSecureItem(AUTH_SESSION_KEY);
   }, []);
 
   const value = useMemo(

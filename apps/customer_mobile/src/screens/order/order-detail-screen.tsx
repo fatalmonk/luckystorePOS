@@ -284,7 +284,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
 
       {/* Delivery Details Card */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📍 {t.deliveryDetails}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>📍 {t.deliveryDetails}</Text>
         <View style={styles.detailsTable}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t.recipient}:</Text>
@@ -319,7 +319,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
 
       {/* Items Summary Card */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📦 {t.itemsTitle} ({order.items.length})</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>📦 {t.itemsTitle} ({order.items.length})</Text>
         <View style={styles.itemsList}>
           {order.items.map((item, idx) => (
             <View key={item.id || idx} style={styles.itemRow}>
@@ -357,7 +357,7 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
 
       {/* Payment Method Card */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>💳 {t.paymentMethod}</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>💳 {t.paymentMethod}</Text>
         <View style={styles.paymentBox}>
           <Text style={styles.paymentMethodName}>
             {order.paymentMethod === 'bkash' ? `📱 ${t.bkash}` : `💵 ${t.cod}`}

@@ -16,13 +16,10 @@ export function DeleteAccountScreen() {
   const router = useRouter();
   const { user, isLoggedIn, logout } = useAuth();
   const [requested, setRequested] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleRequestDeletion = () => {
-    handleContactSupport();
-    setRequested(true);
-  };
-
-  const handleContactSupport = () => {
+  const handleRequestDeletion = async () => {
+    setErrorMessage(null);
     const email = 'support@luckystore1947.com';
     const subject = encodeURIComponent(`Account Deletion Request - ${user?.email || 'Customer'}`);
     const body = encodeURIComponent(
@@ -30,7 +27,26 @@ export function DeleteAccountScreen() {
         user?.email || ''
       }\nCustomer Name: ${user?.name || ''}`
     );
-    Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`).catch(() => {});
+    const url = `mailto:${email}?subject=${subject}&body=${body}`;
+
+    try {
+      await Linking.openURL(url);
+      setRequested(true);
+    } catch {
+      setErrorMessage('Could not open your email client. Please send your deletion request to support@luckystore1947.com directly.');
+    }
+  };
+
+  const handleContactSupport = async () => {
+    setErrorMessage(null);
+    const email = 'support@luckystore1947.com';
+    const subject = encodeURIComponent(`Lucky Store Support - ${user?.email || 'Customer'}`);
+    const url = `mailto:${email}?subject=${subject}`;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setErrorMessage('Could not open your email client. Please email support@luckystore1947.com directly.');
+    }
   };
 
   return (
@@ -57,9 +73,15 @@ export function DeleteAccountScreen() {
         </Text>
       </View>
 
+      {errorMessage ? (
+        <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.errorBox}>
+          <Text style={styles.errorText}>❌ {errorMessage}</Text>
+        </View>
+      ) : null}
+
       {requested ? (
         <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.successCard}>
-          <Text style={styles.successTitle}>✓ Deletion Request Submitted</Text>
+          <Text accessibilityRole="header" style={styles.successTitle}>✓ Deletion Request Submitted</Text>
           <Text style={styles.successBody}>
             Your request has been recorded. Our team will review and process your deletion within 30 days. You will receive confirmation via email.
           </Text>
@@ -76,7 +98,7 @@ export function DeleteAccountScreen() {
         </View>
       ) : (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>⚠️ Confirm Deletion</Text>
+          <Text accessibilityRole="header" style={styles.cardTitle}>⚠️ Confirm Deletion</Text>
           <Text style={styles.bodyText}>
             {isLoggedIn && user
               ? `You are currently signed in as ${user.name} (${user.email}).`
@@ -205,6 +227,19 @@ const styles = StyleSheet.create({
   successBody: {
     fontSize: 13,
     color: colors.deepNight,
+    lineHeight: 18,
+  },
+  errorBox: {
+    backgroundColor: '#FDE8E8',
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: 12,
+    padding: 14,
+  },
+  errorText: {
+    fontSize: 13,
+    color: colors.danger,
+    fontWeight: '700',
     lineHeight: 18,
   },
   primaryButton: {

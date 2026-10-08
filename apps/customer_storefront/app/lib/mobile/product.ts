@@ -81,11 +81,9 @@ export async function getMobileProductDetail(
     try {
       product = await repo.getById(createProductId(idOrSlug));
     } catch {
-      // fallback if UUID lookup fails
+      return null;
     }
-  }
-
-  if (!product) {
+  } else {
     product = await getCachedProductBySlug(idOrSlug);
   }
 

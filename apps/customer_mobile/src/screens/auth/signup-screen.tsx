@@ -30,7 +30,7 @@ const copy = {
     emailLabel: 'Email Address *',
     emailPlaceholder: 'you@example.com',
     passwordLabel: 'Password *',
-    passwordPlaceholder: 'At least 6 characters',
+    passwordPlaceholder: 'At least 8 characters (letters & numbers)',
     signupButton: 'Create Account',
     signingUp: 'Creating account…',
     hasAccount: 'Already have an account?',
@@ -51,7 +51,7 @@ const copy = {
     emailLabel: 'ইমেইল ঠিকানা *',
     emailPlaceholder: 'you@example.com',
     passwordLabel: 'পাসওয়ার্ড *',
-    passwordPlaceholder: 'কমপক্ষে ৬ অক্ষর',
+    passwordPlaceholder: 'কমপক্ষে ৮ অক্ষর (অক্ষর ও সংখ্যা)',
     signupButton: 'অ্যাকাউন্ট তৈরি করুন',
     signingUp: 'অ্যাকাউন্ট তৈরি হচ্ছে…',
     hasAccount: 'আগে থেকেই অ্যাকাউন্ট আছে?',
@@ -96,7 +96,7 @@ export function SignupScreen() {
     }
     const passwordCheck = validatePassword(password);
     if (!passwordCheck.valid) {
-      setErrorMessage(passwordCheck.error || 'Password must be at least 6 characters');
+      setErrorMessage(passwordCheck.error || 'Password must be at least 8 characters');
       return;
     }
 

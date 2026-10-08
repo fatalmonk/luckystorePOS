@@ -280,22 +280,34 @@ export function ProductDetailScreen() {
 
           {/* Quantity Controls & Add to Cart */}
           <View style={styles.actionRow}>
-            <View style={styles.stepper}>
+            <View
+              style={styles.stepper}
+              accessibilityRole="adjustable"
+              accessibilityValue={{ min: 1, max: product.stock, now: quantity, text: `${quantity} ${product.unit}` }}
+            >
               <Pressable
                 disabled={quantity <= 1 || isOutOfStock}
                 onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                 accessibilityRole="button"
                 accessibilityLabel="Decrease quantity"
+                accessibilityHint={`Current quantity is ${quantity}`}
                 style={[styles.stepperButton, (quantity <= 1 || isOutOfStock) && styles.stepperButtonDisabled]}
               >
                 <Text style={styles.stepperButtonText}>−</Text>
               </Pressable>
-              <Text style={styles.quantityText}>{quantity}</Text>
+              <Text
+                style={styles.quantityText}
+                accessibilityLabel={`Quantity ${quantity}`}
+                accessibilityLiveRegion="polite"
+              >
+                {quantity}
+              </Text>
               <Pressable
                 disabled={quantity >= product.stock || isOutOfStock}
                 onPress={() => setQuantity((q) => Math.min(product.stock, q + 1))}
                 accessibilityRole="button"
                 accessibilityLabel="Increase quantity"
+                accessibilityHint={`Current quantity is ${quantity}`}
                 style={[styles.stepperButton, (quantity >= product.stock || isOutOfStock) && styles.stepperButtonDisabled]}
               >
                 <Text style={styles.stepperButtonText}>+</Text>

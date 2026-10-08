@@ -319,6 +319,7 @@ export function CategoryDetailScreen() {
             <Switch
               value={inStockOnly}
               onValueChange={setInStockOnly}
+              accessibilityLabel={text.inStockOnly}
               trackColor={{ false: colors.line, true: colors.greenSoft }}
               thumbColor={inStockOnly ? colors.green : '#f4f3f4'}
             />
@@ -366,7 +367,13 @@ export function CategoryDetailScreen() {
           >
             <View style={styles.imageContainer}>
               {item.imageUrl ? (
-                <Image source={{ uri: item.imageUrl }} style={styles.productImage} contentFit="cover" />
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.productImage}
+                  contentFit="cover"
+                  accessibilityLabel={item.name}
+                  alt={item.name}
+                />
               ) : (
                 <View style={styles.placeholderImage}>
                   <Text style={styles.placeholderEmoji}>{item.emoji || '🛒'}</Text>

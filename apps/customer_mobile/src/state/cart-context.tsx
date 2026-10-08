@@ -54,17 +54,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const add = useCallback((productId: string, itemDetails?: Partial<CartItem>, quantity = 1) => {
     setItems((current) => {
       const existingIndex = current.findIndex((item) => item.id === productId);
-      if (itemDetails && typeof itemDetails.stock === 'number' && itemDetails.stock <= 0) {
+      const availableStock = typeof itemDetails?.stock === 'number' ? itemDetails.stock : 99;
+
+      if (availableStock <= 0) {
         return current;
       }
 
       if (existingIndex > -1) {
         const next = [...current];
         const existing = next[existingIndex];
-        const maxStock = existing.stock > 0 ? existing.stock : (itemDetails?.stock ?? 99);
+        const maxStock = typeof existing.stock === 'number' && existing.stock > 0
+          ? existing.stock
+          : availableStock;
+        if (maxStock <= 0) {
+          return current;
+        }
         const newQty = Math.min(maxStock, existing.qty + quantity);
-        next[existingIndex] = { ...existing, qty: newQty };
+        next[existingIndex] = { ...existing, qty: newQty, stock: maxStock };
         return next;
+      }
+
+      const initialQty = Math.min(availableStock, Math.max(1, quantity));
+      if (initialQty <= 0) {
+        return current;
       }
 
       const newItem: CartItem = {
@@ -73,10 +85,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         price: itemDetails?.price || 0,
         originalPrice: itemDetails?.originalPrice,
         unit: itemDetails?.unit || 'pc',
-        qty: Math.max(1, quantity),
+        qty: initialQty,
         imageUrl: itemDetails?.imageUrl,
         emoji: itemDetails?.emoji || '🛒',
-        stock: itemDetails?.stock ?? 99,
+        stock: availableStock,
       };
       return [...current, newItem];
     });

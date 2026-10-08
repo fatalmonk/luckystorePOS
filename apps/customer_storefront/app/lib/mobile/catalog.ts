@@ -167,6 +167,20 @@ export function toMobileCatalog(
 export async function getMobileCatalog(query: MobileCatalogQuery = {}): Promise<MobileCatalogPage> {
   const rawCategories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const { products: allProducts } = await repo.search({ query: query.q?.trim() || undefined, limit: 1000 });
+  const allProducts: Product[] = [];
+  const pageSize = 500;
+  let page = 0;
+
+  while (true) {
+    const { products, hasMore } = await repo.search({
+      query: query.q?.trim() || undefined,
+      limit: pageSize,
+      page,
+    });
+    allProducts.push(...products);
+    if (!hasMore || products.length < pageSize) break;
+    page++;
+  }
+
   return toMobileCatalog(rawCategories, allProducts, query);
 }
