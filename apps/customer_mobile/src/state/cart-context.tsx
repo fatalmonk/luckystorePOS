@@ -63,9 +63,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existingIndex > -1) {
         const next = [...current];
         const existing = next[existingIndex];
-        const maxStock = typeof existing.stock === 'number' && existing.stock > 0
-          ? existing.stock
-          : availableStock;
+        const maxStock = typeof itemDetails?.stock === 'number'
+          ? itemDetails.stock
+          : (typeof existing.stock === 'number' && existing.stock > 0 ? existing.stock : availableStock);
         if (maxStock <= 0) {
           return current;
         }

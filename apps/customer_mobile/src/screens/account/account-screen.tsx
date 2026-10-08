@@ -93,10 +93,9 @@ export function AccountScreen() {
   const handleTrackGuestOrder = async () => {
     const clean = orderQuery.trim().toUpperCase();
     if (!clean) return;
-    const storedToken = await getGuestOrderToken(clean);
     router.push({
       pathname: '/order/[number]' as any,
-      params: { number: clean, ...(storedToken ? { token: storedToken } : {}) },
+      params: { number: clean },
     });
   };
 

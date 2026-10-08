@@ -80,7 +80,8 @@ export async function getMobileProductDetail(
     const { repo } = createProductRepository(supabase);
     try {
       product = await repo.getById(createProductId(idOrSlug));
-    } catch {
+    } catch (err) {
+      console.error(`[mobile/product] Failed to fetch product by id ${idOrSlug}:`, err);
       return null;
     }
   } else {

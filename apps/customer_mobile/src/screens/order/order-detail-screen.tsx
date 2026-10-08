@@ -19,6 +19,7 @@ import {
   MobileOrderDto,
   TIMELINE_STEPS,
 } from '../../services/orders';
+import { getGuestOrderToken } from '../../services/storage';
 import { useAuth } from '../../state/auth-context';
 import { colors } from '../../theme';
 
@@ -108,7 +109,9 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
     setRefreshing(true);
     setErrorMessage(null);
     try {
-      const data = await fetchOrder(orderNumber, trackingToken, undefined, authToken || undefined);
+      const storedToken = await getGuestOrderToken(orderNumber);
+      const effectiveToken = trackingToken || storedToken || undefined;
+      const data = await fetchOrder(orderNumber, effectiveToken, undefined, authToken || undefined);
       setOrder(data);
     } catch (err: any) {
       setErrorMessage(err.message || 'Unable to load order details');
@@ -122,20 +125,27 @@ export function OrderDetailScreen({ orderNumber, trackingToken }: OrderDetailScr
       return;
     }
     const controller = new AbortController();
-    fetchOrder(orderNumber, trackingToken, controller.signal, authToken || undefined)
-      .then((data) => {
-        setOrder(data);
-      })
-      .catch((err) => {
-        if (err.name !== 'AbortError') {
+    let active = true;
+
+    (async () => {
+      try {
+        const storedToken = await getGuestOrderToken(orderNumber);
+        const effectiveToken = trackingToken || storedToken || undefined;
+        const data = await fetchOrder(orderNumber, effectiveToken, controller.signal, authToken || undefined);
+        if (active) setOrder(data);
+      } catch (err: any) {
+        if (active && err.name !== 'AbortError') {
           setErrorMessage(err.message || 'Unable to load order details');
         }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
 
-    return () => controller.abort();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [orderNumber, trackingToken, authToken]);
 
   const handleOpenWhatsApp = () => {

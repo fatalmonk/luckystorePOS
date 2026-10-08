@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -26,6 +27,7 @@ export interface AuthContextState {
   user: User | null;
   token: string | null;
   isLoggedIn: boolean;
+  isHydrated: boolean;
   login: (params: LoginParams) => Promise<void>;
   signup: (params: SignupParams) => Promise<{ requiresEmailConfirmation?: boolean }>;
   logout: () => void;
@@ -36,19 +38,26 @@ const AuthContext = createContext<AuthContextState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const authOpGeneration = useRef(0);
 
   useEffect(() => {
     let active = true;
+    const currentGen = authOpGeneration.current;
     void (async () => {
       try {
         const raw = await getSecureItem(AUTH_SESSION_KEY);
-        if (raw && active) {
+        if (raw && active && authOpGeneration.current === currentGen) {
           const parsed = JSON.parse(raw);
           if (parsed.user) setUser(parsed.user);
           if (parsed.token) setToken(parsed.token);
         }
       } catch {
         // ignore malformed stored session
+      } finally {
+        if (active && authOpGeneration.current === currentGen) {
+          setIsHydrated(true);
+        }
       }
     })();
     return () => {
@@ -57,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (params: LoginParams) => {
+    authOpGeneration.current++;
     const result = await loginUser(params);
     setUser(result.user);
     if (result.token) {
@@ -69,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signup = useCallback(async (params: SignupParams) => {
+    authOpGeneration.current++;
     const result = await signupUser(params);
     if (result.token && result.user) {
       setUser(result.user);
@@ -82,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    authOpGeneration.current++;
     setUser(null);
     setToken(null);
     void removeSecureItem(AUTH_SESSION_KEY);
@@ -92,11 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isLoggedIn: Boolean(user),
+      isHydrated,
       login,
       signup,
       logout,
     }),
-    [user, token, login, signup, logout]
+    [user, token, isHydrated, login, signup, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

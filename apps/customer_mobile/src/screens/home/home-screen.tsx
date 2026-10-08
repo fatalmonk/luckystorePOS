@@ -1,7 +1,16 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { Logo } from '../../components/ui';
 import { fetchHome, HomeDto, HomeProduct, Locale } from '../../services/home';
@@ -16,6 +25,7 @@ const copy = {
     categories: 'Shop by routine', retry: 'Try again', loading: 'Loading today’s groceries…', seeAll: 'See all', add: 'Add', added: 'Added',
     unavailable: 'The live catalogue is temporarily unavailable. We will not show placeholder stock as orderable.',
     footerTitle: 'Lucky Store · Est. 1947', footerBody: 'Everyday groceries delivered with care across Chattogram.',
+    allCategories: 'All',
   },
   bn: {
     eyebrow: 'চকবাজার · ১৯৪৭ থেকে', hero: 'নিত্যপণ্য পৌঁছে যাবে আপনার দরজায়।',
@@ -24,12 +34,13 @@ const copy = {
     categories: 'প্রয়োজন অনুযায়ী কিনুন', retry: 'আবার চেষ্টা করুন', loading: 'আজকের নিত্যপণ্য লোড হচ্ছে…', seeAll: 'সব দেখুন', add: 'যোগ করুন', added: 'যোগ হয়েছে',
     unavailable: 'লাইভ পণ্যের তালিকা এখন পাওয়া যাচ্ছে না। অস্থায়ী পণ্য অর্ডারযোগ্য হিসেবে দেখানো হবে না।',
     footerTitle: 'লাকি স্টোর · ১৯৪৭ থেকে', footerBody: 'চট্টগ্রামজুড়ে যত্নের সঙ্গে দৈনন্দিন নিত্যপণ্য পৌঁছে দিচ্ছি।',
+    allCategories: 'সকল',
   },
 } as const;
 
 export function HomeScreen() {
   const router = useRouter();
-  const { add } = useCart();
+  const { add, totalItems } = useCart();
   const [locale, setLocale] = useState<Locale>('en');
   const [home, setHome] = useState<HomeDto | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,14 +93,87 @@ export function HomeScreen() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor={colors.green} />}
       ListHeaderComponent={<>
-        <View style={styles.localeRow}>
-          <Logo size="md" />
-          <Pressable accessibilityRole="button" accessibilityLabel={locale === 'en' ? 'Switch to Bengali' : 'Switch to English'} onPress={() => {
-            setHome(null); setError(null); setLocale((value) => value === 'en' ? 'bn' : 'en');
-          }} style={styles.localeButton}>
-            <Text style={styles.localeText}>{locale === 'en' ? 'বাংলা' : 'English'}</Text>
-          </Pressable>
+        {/* Unified Storefront Header */}
+        <View style={styles.headerBar}>
+          <View style={styles.headerLeft}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open menu"
+              onPress={() => router.push('/(tabs)/(shop)')}
+              style={styles.headerIconButton}
+            >
+              <Text style={styles.menuIcon}>☰</Text>
+            </Pressable>
+            <Logo size="sm" style={styles.headerLogo} />
+          </View>
+          <View style={styles.headerRight}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Search"
+              onPress={() => router.push('/search')}
+              style={styles.headerIconButton}
+            >
+              <Text style={styles.searchIcon}>🔍</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={locale === 'en' ? 'Switch to Bengali' : 'Switch to English'}
+              onPress={() => {
+                setHome(null);
+                setError(null);
+                setLocale((value) => (value === 'en' ? 'bn' : 'en'));
+              }}
+              style={styles.localeButton}
+            >
+              <Text style={styles.localeText}>{locale === 'en' ? 'বাংলা' : 'English'}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Cart with ${totalItems} items`}
+              onPress={() => router.push('/(tabs)/(cart)')}
+              style={styles.headerCartButton}
+            >
+              <Text style={styles.cartIcon}>🛒</Text>
+              {totalItems > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
         </View>
+
+        {/* Category Pills Strip */}
+        {home?.categories && home.categories.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryPillsContainer}
+            style={styles.categoryPillsStrip}
+          >
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="All Categories"
+              onPress={() => router.push('/(tabs)/(shop)')}
+              style={[styles.categoryPill, styles.categoryPillActive]}
+            >
+              <Text style={[styles.categoryPillText, styles.categoryPillTextActive]}>
+                {text.allCategories}
+              </Text>
+            </Pressable>
+            {home.categories.map((cat) => (
+              <Pressable
+                key={cat.id}
+                accessibilityRole="button"
+                accessibilityLabel={cat.name}
+                onPress={() => router.push({ pathname: '/category/[slug]', params: { slug: cat.slug } })}
+                style={styles.categoryPill}
+              >
+                <Text style={styles.categoryPillText}>{cat.name}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
         <View accessibilityRole="summary" style={styles.hero}>
           <Text style={styles.eyebrow}>{text.eyebrow}</Text>
           <Text accessibilityRole="header" style={styles.heroTitle}>{text.hero}</Text>
@@ -151,7 +235,25 @@ function ProductCard({ product, added, addLabel, addedLabel, onOpen, onAdd }: { 
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper }, loading: { color: colors.muted, fontSize: 15 }, content: { paddingBottom: 40 },
-  localeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 12, paddingBottom: 6 }, localeButton: { borderColor: colors.line, borderWidth: 1, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: colors.surface }, localeText: { color: colors.ink, fontSize: 14, fontWeight: '700' },
+  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, backgroundColor: colors.paper },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerLogo: { marginLeft: 2 },
+  headerIconButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1 },
+  headerCartButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1, position: 'relative' },
+  menuIcon: { fontSize: 20, color: colors.ink, fontWeight: '900' },
+  searchIcon: { fontSize: 16 },
+  cartIcon: { fontSize: 18 },
+  cartBadge: { position: 'absolute', top: -4, right: -4, backgroundColor: colors.ink, borderRadius: 10, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  cartBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
+  localeButton: { borderColor: colors.line, borderWidth: 1, borderRadius: 18, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.surface },
+  localeText: { color: colors.ink, fontSize: 13, fontWeight: '700' },
+  categoryPillsStrip: { paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.line, backgroundColor: colors.paper },
+  categoryPillsContainer: { paddingHorizontal: 16, gap: 8, flexDirection: 'row', alignItems: 'center' },
+  categoryPill: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 14, backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1 },
+  categoryPillActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  categoryPillText: { color: colors.ink, fontSize: 13, fontWeight: '700' },
+  categoryPillTextActive: { color: '#FFFFFF' },
   hero: { margin: 16, borderRadius: 28, backgroundColor: colors.green, padding: 24, gap: 12, ...shadows.card }, eyebrow: { color: '#DDECE3', fontSize: 12, fontWeight: '800', letterSpacing: 1.3 }, heroTitle: { color: '#FFFFFF', fontSize: 32, lineHeight: 37, fontWeight: '900' }, heroBody: { color: '#EDF6F0', fontSize: 16, lineHeight: 24 }, startButton: { minHeight: 46, borderRadius: 16, backgroundColor: colors.accent, paddingHorizontal: 20, paddingVertical: 12, alignSelf: 'flex-start', justifyContent: 'center' }, startButtonText: { color: colors.ink, fontSize: 15, fontWeight: '900' }, delivery: { color: '#DDECE3', fontSize: 12, lineHeight: 18, fontWeight: '600' },
   errorCard: { marginHorizontal: 16, marginBottom: 12, borderRadius: 18, padding: 16, backgroundColor: '#F9E8E3', gap: 8 }, errorTitle: { color: colors.danger, fontWeight: '800', lineHeight: 21 }, errorDetail: { color: colors.muted, fontSize: 12 }, retryButton: { alignSelf: 'flex-start', borderRadius: 16, backgroundColor: colors.surface, paddingHorizontal: 14, paddingVertical: 8 }, retryText: { color: colors.ink, fontWeight: '700' },
   block: { marginTop: 20 }, sectionHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18 }, sectionTitle: { color: colors.ink, fontSize: 22, lineHeight: 28, fontWeight: '900', paddingHorizontal: 18, marginBottom: 12 }, flushTitle: { paddingHorizontal: 0 }, seeAll: { color: colors.green, fontWeight: '800', paddingBottom: 12 }, horizontalContent: { gap: 12, paddingHorizontal: 18 },

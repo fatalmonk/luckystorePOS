@@ -60,13 +60,48 @@ interface CheckoutItem {
   unit?: string;
 }
 
+const ITEM_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: number; name: string }>> {
   const priceMap = new Map<string, { price: number; name: string }>();
+  if (itemIds.length === 0) return priceMap;
+
+  // Validate format and bound number of items to prevent abuse
+  if (itemIds.length > 50) {
+    throw new Error('Too many items in cart (maximum 50 items allowed)');
+  }
+  for (const id of itemIds) {
+    if (!ITEM_UUID_PATTERN.test(id)) {
+      throw new Error(`Invalid item ID format: ${id}`);
+    }
+  }
+
+  // 1. Direct ID-filtered query: resolves in a single round-trip without full-catalog scans
+  try {
+    const { data: dbItems, error: dbError } = await (supabase as any)
+      .from('items')
+      .select('id, name, price')
+      .in('id', itemIds);
+
+    if (!dbError && Array.isArray(dbItems) && dbItems.length > 0) {
+      for (const item of dbItems) {
+        priceMap.set(item.id, { price: Number(item.price), name: item.name });
+      }
+      return priceMap;
+    }
+  } catch {
+    // Fall back to bounded RPC pagination if items table is unavailable
+  }
+
+  // 2. Bounded RPC pagination (max 3 pages / 1500 rows)
   const needed = new Set(itemIds);
   const pageSize = 500;
+  const maxPages = 3;
   let offset = 0;
+  let pagesRead = 0;
 
-  while (needed.size > priceMap.size) {
+  while (needed.size > priceMap.size && pagesRead < maxPages) {
+    pagesRead++;
     const { data, error } = await supabase.rpc('search_storefront_catalog', {
       p_store_id: STORE_ID,
       p_query: '',

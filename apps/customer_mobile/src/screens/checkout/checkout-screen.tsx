@@ -116,7 +116,7 @@ const copy = {
 
 export function CheckoutScreen() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, isHydrated } = useAuth();
   const { items, subtotal, deliveryFee, total, clearCart, syncPrices } = useCart();
   const [locale, setLocale] = useState<Locale>('en');
   const t = copy[locale];
@@ -163,7 +163,7 @@ export function CheckoutScreen() {
   };
 
   const handlePlaceOrder = async () => {
-    if (items.length === 0) return;
+    if (items.length === 0 || !isHydrated) return;
     setIsPlacing(true);
     setErrorMessage(null);
     setPriceMismatchWarning(null);
@@ -189,7 +189,7 @@ export function CheckoutScreen() {
       setIsPlacing(false);
       router.replace({
         pathname: '/order/[number]' as any,
-        params: { number: orderNumber, token: trackingToken },
+        params: { number: orderNumber },
       });
       return;
     }
@@ -553,9 +553,9 @@ export function CheckoutScreen() {
               </Pressable>
 
               <Pressable
-                style={[styles.primaryButton, styles.confirmButton, isPlacing ? styles.buttonDisabled : null]}
+                style={[styles.primaryButton, styles.confirmButton, (isPlacing || !isHydrated) ? styles.buttonDisabled : null]}
                 onPress={handlePlaceOrder}
-                disabled={isPlacing}
+                disabled={isPlacing || !isHydrated}
                 accessibilityRole="button"
               >
                 {isPlacing ? (

@@ -159,7 +159,11 @@ export function WishlistScreen() {
                     onPress={() => handleAddToCart(item)}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: isOutOfStock }}
-                    accessibilityLabel={isOutOfStock ? `${item.name} ${t.outOfStock}` : `${t.addToCart} ${item.name}`}
+                    accessibilityLabel={
+                      isOutOfStock
+                        ? `${item.name} ${t.outOfStock}`
+                        : `${isAdded ? t.addedToCart : t.addToCart} ${item.name}`
+                    }
                   >
                     <Text
                       style={[

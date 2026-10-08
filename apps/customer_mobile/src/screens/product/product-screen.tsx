@@ -284,6 +284,21 @@ export function ProductDetailScreen() {
               style={styles.stepper}
               accessibilityRole="adjustable"
               accessibilityValue={{ min: 1, max: product.stock, now: quantity, text: `${quantity} ${product.unit}` }}
+              accessibilityActions={[
+                { name: 'increment', label: 'Increase quantity' },
+                { name: 'decrement', label: 'Decrease quantity' },
+              ]}
+              onAccessibilityAction={(event) => {
+                if (event.nativeEvent.actionName === 'increment') {
+                  if (quantity < product.stock && !isOutOfStock) {
+                    setQuantity((q) => Math.min(product.stock, q + 1));
+                  }
+                } else if (event.nativeEvent.actionName === 'decrement') {
+                  if (quantity > 1 && !isOutOfStock) {
+                    setQuantity((q) => Math.max(1, q - 1));
+                  }
+                }
+              }}
             >
               <Pressable
                 disabled={quantity <= 1 || isOutOfStock}
