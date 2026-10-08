@@ -515,6 +515,10 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(getCanonicalCategorySlug('snacks')).toBe('snacks');
       expect(getCanonicalCategorySlug('rice-and-grain')).toBe('rice-and-grain');
       expect(getCanonicalCategorySlug('Rice & Grains')).toBe('rice-and-grain');
+      expect(getCanonicalCategorySlug('dairy')).toBe('dairy-and-eggs');
+      expect(getCanonicalCategorySlug('Dairy')).toBe('dairy-and-eggs');
+      expect(getCanonicalCategorySlug('pantry')).toBe('cooking-essentials');
+      expect(getCanonicalCategorySlug('Pantry')).toBe('cooking-essentials');
     });
   });
 

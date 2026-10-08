@@ -1,11 +1,9 @@
 [Project]
-Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Supabase, Cloudflare Workers/R2
-Current: Supabase production database hardening (8 migrations) & create-staff-user Edge Function deployed live
-Done: 8 forward migrations applied live to production (hvmyxyccfnkrbxqbhlnm), create-staff-user deployed, admin_web staff creation UI wired, 336 storefront vitest passing, admin_web build passing
-Branch: codex/database-security-remediation-and-staff-provisioning
-Health: 0 tsc errors, 54 storefront vitest files passing, 5/5 DB regression suites passing, admin_web build passing
-Last Synced: 2026-10-07
-ctx: Production Database & Edge Function Cutover Complete | done: 8 live migrations + Edge Function deployed | next: Merge PR #434 & deploy web surfaces
-
-
+Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
+Current: Resolved customer mobile audit findings (F01–F08, F12–F16)
+Done: Floating liquid glass island bar, full-screen App Drawer, fixed all 17 eslint compiler errors/warnings, cart & wishlist persistence, truthful deletion/notification states, 44pt cart steppers, error retry handling in orders/help/home, search pagination past 60 items, reduce-motion preference support
+Branch: codex/customer-mobile-app
+Health: 0 expo lint errors/warnings, 0 tsc errors across workspaces, 63 storefront vitest files (365 tests) pass, 26 customer_mobile tests pass
+Last Synced: 2026-10-08
+ctx: Customer mobile audit & cubic review resolved | done: all review violations fixed & threads resolved | next: merge PR 435
 

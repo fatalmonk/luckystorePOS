@@ -190,20 +190,35 @@ export async function searchStorefrontProducts({
   if (items.length > 0) {
     try {
       const itemIds = items.map((i) => String(i.id));
-      const { data: translations, error: transError } = await (supabaseClient as any)
-        .from('item_translations')
-        .select('item_id, name, description, search_terms')
-        .in('item_id', itemIds)
-        .eq('locale', 'bn')
-        .eq('review_status', 'published');
+      const BATCH_SIZE = 100;
+      const allTranslations: any[] = [];
+      let batchError: any = null;
 
-      if (transError) {
-        if (!isMissingItemTranslationsTableError(transError)) {
-          console.error('Failed to query item translations for search overlay:', transError);
+      for (let i = 0; i < itemIds.length; i += BATCH_SIZE) {
+        const chunk = itemIds.slice(i, i + BATCH_SIZE);
+        const { data: translations, error: transError } = await (supabaseClient as any)
+          .from('item_translations')
+          .select('item_id, name, description, search_terms')
+          .in('item_id', chunk)
+          .eq('locale', 'bn')
+          .eq('review_status', 'published');
+
+        if (transError) {
+          batchError = transError;
+          break;
         }
-      } else if (translations && translations.length > 0) {
+        if (translations) {
+          allTranslations.push(...translations);
+        }
+      }
+
+      if (batchError) {
+        if (!isMissingItemTranslationsTableError(batchError)) {
+          console.error('Failed to query item translations for search overlay:', batchError);
+        }
+      } else if (allTranslations.length > 0) {
         const translationMap = new Map<string, any>();
-        for (const t of translations) {
+        for (const t of allTranslations) {
           translationMap.set(String(t.item_id), t);
         }
 
