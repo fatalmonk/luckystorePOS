@@ -1,37 +1,11 @@
 import { createProductRepository, RuleBasedBrandParser } from './index';
 import { supabase } from '../supabase';
-import { getCategoryGroup, normalizeCategorySlug } from '../types';
+import { getCategoryGroup, normalizeCategorySlug, BENGALI_CATEGORY_NAMES } from '../types';
 import type { Product } from '../types';
 import type { CategoryItem } from '../../components/HomeShell';
 import type { Locale } from '../i18n/config';
 
-export const BENGALI_CATEGORY_NAMES: Record<string, string> = {
-  'cooking-essentials': 'রান্নার প্রয়োজনীয় পণ্য',
-  'breakfast': 'সকালের নাস্তা',
-  'snacks': 'নাস্তা ও পানীয়',
-  'household': 'ঘরের টুকিটাকি',
-  'cleaning-supplies': 'পরিচ্ছন্নতার সামগ্রী',
-  'personal-care': 'ব্যক্তিগত যত্ন',
-  'rice-and-grain': 'চাল ও শস্য',
-  'oil-and-ghee': 'তেল ও ঘি',
-  'tea-and-coffee': 'চা ও কফি',
-  'tea-&-coffee': 'চা ও কফি',
-  'dairy-and-eggs': 'দুধ ও ডিম',
-  'biscuits-and-cookies': 'বিস্কুট ও কুকিজ',
-  'baby-care': 'শিশুর যত্ন',
-  'electronics': 'ইলেকট্রনিক্স',
-  'condiments': 'সস ও আচার',
-  'baking-needs': 'বেকিং উপকরণ',
-  'energy-boosters': 'এনার্জি ড্রিংকস',
-  'noodles': 'নুডলস',
-  'air-freshner': 'এয়ার ফ্রেশনার',
-  'pest-control': 'পোকামাকড় নিয়ন্ত্রণ',
-  'spices': 'মসলা',
-  'chocolates-and-candies': 'চকলেট ও ক্যান্ডি',
-  'ice-cream': 'আইসক্রিম',
-  'cold-beverages': 'পানীয়',
-  'cereals': 'সিরিয়াল',
-};
+export { BENGALI_CATEGORY_NAMES };
 
 /** Filter in-stock products whose category matches or belongs to subcategories of any of the given group slugs. */
 function filterByGroups(products: Product[], groupSlugs: string[]): Product[] {
@@ -158,7 +132,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
 
   try {
     const [prodRes, nestleRes, catRes] = await Promise.all([
-      repo.search({ limit: 250 }),
+      repo.search({ limit: 500 }),
       repo.search({ query: 'nestle', limit: 20 }),
       repo.getCategories(),
     ]);

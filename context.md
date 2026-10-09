@@ -1,9 +1,9 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Resolved customer mobile audit findings (F01–F08, F12–F16)
-Done: Floating liquid glass island bar, full-screen App Drawer, fixed all 17 eslint compiler errors/warnings, cart & wishlist persistence, truthful deletion/notification states, 44pt cart steppers, error retry handling in orders/help/home, search pagination past 60 items, reduce-motion preference support
-Branch: codex/customer-mobile-app
-Health: 0 expo lint errors/warnings, 0 tsc errors across workspaces, 63 storefront vitest files (365 tests) pass, 26 customer_mobile tests pass
-Last Synced: 2026-10-08
-ctx: Customer mobile audit & cubic review resolved | done: all review violations fixed & threads resolved | next: merge PR 435
+Current: Storefront category rail navigation & translation co-location
+Done: Configured Turborepo 2 + npm workspaces, pruned dead code & unused packages, deduplicated header category rail, co-located Bengali category taxonomy, capped search query limit to 500
+Branch: main
+Health: 0 tsc errors, 63 storefront vitest test files (365 tests) pass, all admin & mobile tests pass
+Last Synced: 2026-10-10
+ctx: Category rail refactor & Bengali taxonomy co-location | done: deduplicated rail, capped limit to 500, co-located BENGALI_CATEGORY_NAMES | next: push / release
 
