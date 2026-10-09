@@ -7,6 +7,7 @@
 5. Ensure CI passes
 
 ## PR Requirements
-- Build passes (`npm run build`)
-- No TypeScript errors
-- Static export works (`dist/index.html` exists)
+- TypeScript validation passes (`npm run typecheck --workspace=apps/customer_storefront`)
+- Unit tests pass (`npx vitest run --root apps/customer_storefront`)
+- Production build succeeds (`npm run build --workspace=apps/customer_storefront`)
+
