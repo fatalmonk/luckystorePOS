@@ -23,7 +23,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "tsc --noEmit && turbo run typecheck",
     "scrape": "node apps/scraper/scrape-shwapno.js",
     "import-competitor": "node scripts/ops/import-competitor-data.js",
     "remove-duplicates": "node scripts/ops/remove-duplicate-items.js",

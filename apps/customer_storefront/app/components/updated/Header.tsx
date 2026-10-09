@@ -115,13 +115,12 @@ export function Header({ className = '', locale }: HeaderProps) {
   useEffect(() => {
     if (localizedPathname.startsWith('/category/')) {
       const slug = localizedPathname.replace('/category/', '').split('/')[0];
-      if (slug && CATEGORY_RAIL_ITEMS.some((g) => g.slug === slug)) {
+      if (slug) {
         setSelectedCategory(slug);
         return;
       }
-    } else {
-      setSelectedCategory('all');
     }
+    setSelectedCategory('all');
   }, [localizedPathname]);
 
   // Close suggestions when clicking outside or pressing Escape
