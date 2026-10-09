@@ -21,6 +21,9 @@
     "prebuild": "node scripts/copy-tesseract-assets.mjs",
     "predev": "node scripts/copy-tesseract-assets.mjs",
     "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -42,11 +45,9 @@
     "react-dom": "^19.2.5",
     "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.73.1",
-    "react-hotkeys-hook": "^5.3.2",
     "react-i18next": "^17.0.8",
     "react-is": "^19.0.0",
     "react-router-dom": "^7.18.2",
-    "react-swipeable": "^7.0.2",
     "recharts": "^3.8.1",
     "tesseract.js": "^7.0.0",
     "zod": "^3.25.76"

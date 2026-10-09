@@ -57,6 +57,7 @@ coverage/
 .parcel-cache/
 .turbo/
 .next/
+.expo/
 .nuxt/
 .svelte-kit/
 

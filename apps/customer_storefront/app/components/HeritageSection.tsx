@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { withLocale, type Locale } from '../../lib/i18n/config';
-import { getDictionary } from '../../lib/i18n/dictionaries';
+import { withLocale, type Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
-export function HeritageParallax({ locale = 'en' }: { locale?: Locale }) {
+export function HeritageSection({ locale = 'en' }: { locale?: Locale }) {
   const dict = getDictionary(locale);
 
   return (

@@ -9,13 +9,49 @@ import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
 import { SearchSuggestions } from './SearchSuggestions';
 import { Logo } from '../ui/Logo';
-import { CATEGORY_GROUPS } from '../../lib/types';
+import { CATEGORY_RAIL_ITEMS, BENGALI_CATEGORY_NAMES } from '../../lib/types';
 import { useTheme } from '../providers/ThemeProvider';
 import { getCategoryIcon } from '../icons/CategoryIcons';
 import { getLocaleFromPathname, stripLocalePrefix, withLocale, type Locale } from '../../lib/i18n/config';
 import { getDictionary } from '../../lib/i18n/dictionaries';
 import { LanguageSwitcher } from '../LanguageSwitcher';
-import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
+
+interface CategoryRailItemsProps {
+  currentLocale: Locale;
+  selectedCategory: string;
+  activeCatalogTheme: string | null;
+  itemClassName: string;
+}
+
+function CategoryRailItems({
+  currentLocale,
+  selectedCategory,
+  activeCatalogTheme,
+  itemClassName,
+}: CategoryRailItemsProps) {
+  return (
+    <>
+      {CATEGORY_RAIL_ITEMS.map((item) => {
+        const isActive = !activeCatalogTheme && selectedCategory === item.slug;
+        const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[item.slug] || item.label) : item.label;
+        return (
+          <Link
+            key={item.slug}
+            href={withLocale(`/category/${item.slug}`, currentLocale)}
+            aria-current={isActive ? 'page' : undefined}
+            className={`${itemClassName} ${
+              isActive
+                ? 'bg-warm-fg text-warm-bg'
+                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+            }`}
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
 
 
 
@@ -79,13 +115,12 @@ export function Header({ className = '', locale }: HeaderProps) {
   useEffect(() => {
     if (localizedPathname.startsWith('/category/')) {
       const slug = localizedPathname.replace('/category/', '').split('/')[0];
-      if (slug && CATEGORY_GROUPS.some((g) => g.slug === slug)) {
+      if (slug) {
         setSelectedCategory(slug);
         return;
       }
-    } else {
-      setSelectedCategory('all');
     }
+    setSelectedCategory('all');
   }, [localizedPathname]);
 
   // Close suggestions when clicking outside or pressing Escape
@@ -381,24 +416,12 @@ export function Header({ className = '', locale }: HeaderProps) {
             >
               {dict.header.allCategories}
             </Link>
-            {CATEGORY_GROUPS.map((group) => {
-              const isActive = !activeCatalogTheme && selectedCategory === group.slug;
-              const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[group.slug] || group.label) : group.label;
-              return (
-                <Link
-                  key={group.slug}
-                  href={withLocale(`/category/${group.slug}`, currentLocale)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                    isActive
-                      ? 'bg-warm-fg text-warm-bg'
-                      : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
+            <CategoryRailItems
+              currentLocale={currentLocale}
+              selectedCategory={selectedCategory}
+              activeCatalogTheme={activeCatalogTheme}
+              itemClassName="flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            />
           </nav>
         </div>
       )}
@@ -421,24 +444,12 @@ export function Header({ className = '', locale }: HeaderProps) {
             >
               {dict.header.allCategories}
             </Link>
-            {CATEGORY_GROUPS.map((group) => {
-              const isActive = !activeCatalogTheme && selectedCategory === group.slug;
-              const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[group.slug] || group.label) : group.label;
-              return (
-                <Link
-                  key={group.slug}
-                  href={withLocale(`/category/${group.slug}`, currentLocale)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                    isActive
-                      ? 'bg-warm-fg text-warm-bg'
-                      : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
+            <CategoryRailItems
+              currentLocale={currentLocale}
+              selectedCategory={selectedCategory}
+              activeCatalogTheme={activeCatalogTheme}
+              itemClassName="inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            />
           </nav>
 
           <button

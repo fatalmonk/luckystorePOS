@@ -9,7 +9,7 @@ import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { HomeConfidence } from './HomeConfidence';
 import { ProductGridSection } from './ProductGridSection';
-import { HeritageParallax } from './parallax/HeritageParallax';
+import { HeritageSection } from './HeritageSection';
 import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
@@ -207,7 +207,7 @@ export function HomeShell({
           </div>
 
           <div className="shelf-container-deferred">
-            <HeritageParallax locale={locale} />
+            <HeritageSection locale={locale} />
           </div>
         </div>
       </main>

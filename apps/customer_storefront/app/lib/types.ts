@@ -129,6 +129,101 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
   },
 ];
 
+export interface CategoryRailItem {
+  slug: string;
+  label: string;
+}
+
+/**
+ * Categories displayed in the Header horizontal category rail.
+ * Sub-categories are shown for parent groups (Snacks, Cooking Essentials, Breakfast, Personal Care)
+ * and parent categories are shown for groups without sub-categories (Electronics, Tea & Coffee, etc.).
+ */
+export const CATEGORY_RAIL_ITEMS: CategoryRailItem[] = [
+  // Snacks sub-categories
+  { slug: 'ice-cream', label: 'Ice-Cream' },
+  { slug: 'cold-beverages', label: 'Cold Beverages' },
+  { slug: 'chocolates-and-candies', label: 'Chocolates & Candies' },
+  { slug: 'chips-pretzels', label: 'Chips & Pretzels' },
+
+  // Cooking Essentials sub-categories
+  { slug: 'rice-and-grain', label: 'Rice & Grain' },
+  { slug: 'oil-and-ghee', label: 'Oil & Ghee' },
+  { slug: 'spices', label: 'Spices' },
+  { slug: 'salt-and-sugar', label: 'Salt & Sugar' },
+  { slug: 'premium-ingredients', label: 'Premium Ingredients' },
+
+  // Breakfast sub-categories
+  { slug: 'dairy-and-eggs', label: 'Dairy & Eggs' },
+  { slug: 'cereals', label: 'Cereals' },
+  { slug: 'jam-spreads', label: 'Jam & Spreads' },
+  { slug: 'soup', label: 'Soup' },
+
+  // Personal Care sub-categories
+  { slug: 'skin', label: 'Skin Care' },
+  { slug: 'hair', label: 'Hair' },
+  { slug: 'facial', label: 'Facial' },
+  { slug: 'oral-care', label: 'Oral Care' },
+  { slug: 'fragrance', label: 'Fragrance' },
+  { slug: 'grooming', label: 'Grooming' },
+
+  // Categories without sub-categories
+  { slug: 'biscuits-and-cookies', label: 'Biscuits & Cookies' },
+  { slug: 'tea-and-coffee', label: 'Tea & Coffee' },
+  { slug: 'noodles', label: 'Noodles' },
+  { slug: 'baking-needs', label: 'Baking Needs' },
+  { slug: 'condiments', label: 'Condiments' },
+  { slug: 'energy-boosters', label: 'Energy Boosters' },
+  { slug: 'baby-care', label: 'Baby Care' },
+  { slug: 'cleaning-supplies', label: 'Cleaning Supplies' },
+  { slug: 'pest-control', label: 'Pest Control' },
+  { slug: 'air-freshner', label: 'Air Freshener' },
+  { slug: 'electronics', label: 'Electronics' },
+];
+
+export const BENGALI_CATEGORY_NAMES: Record<string, string> = {
+  'cooking-essentials': 'রান্নার প্রয়োজনীয় পণ্য',
+  'breakfast': 'সকালের নাস্তা',
+  'snacks': 'নাস্তা ও পানীয়',
+  'household': 'ঘরের টুকিটাকি',
+  'cleaning-supplies': 'পরিচ্ছন্নতার সামগ্রী',
+  'personal-care': 'ব্যক্তিগত যত্ন',
+  'rice-and-grain': 'চাল ও শস্য',
+  'oil-and-ghee': 'তেল ও ঘি',
+  'tea-and-coffee': 'চা ও কফি',
+  'tea-&-coffee': 'চা ও কফি',
+  'dairy-and-eggs': 'দুধ ও ডিম',
+  'biscuits-and-cookies': 'বিস্কুট ও কুকিজ',
+  'baby-care': 'শিশুর যত্ন',
+  'electronics': 'ইলেকট্রনিক্স',
+  'condiments': 'সস ও আচার',
+  'baking-needs': 'বেকিং উপকরণ',
+  'energy-boosters': 'এনার্জি ড্রিংকস',
+  'noodles': 'নুডলস',
+  'air-freshner': 'এয়ার ফ্রেশনার',
+  'pest-control': 'পোকামাকড় নিয়ন্ত্রণ',
+  'spices': 'মসলা',
+  'chocolates-and-candies': 'চকলেট ও ক্যান্ডি',
+  'ice-cream': 'আইসক্রিম',
+  'cold-beverages': 'পানীয়',
+  'cereals': 'সিরিয়াল',
+  'chips-pretzels': 'চিপস ও স্ন্যাক্স',
+  'chips-and-pretzels': 'চিপস ও স্ন্যাক্স',
+  'salt-and-sugar': 'লবণ ও চিনি',
+  'salt-&-sugar': 'লবণ ও চিনি',
+  'premium-ingredients': 'প্রিমিয়াম উপাদান',
+  'jam-spreads': 'জ্যাম ও স্প্রেড',
+  'jam-and-spreads': 'জ্যাম ও স্প্রেড',
+  'soup': 'সুপ',
+  'skin': 'ত্বকের যত্ন',
+  'skin-care': 'ত্বকের যত্ন',
+  'hair': 'চুলের যত্ন',
+  'facial': 'ফেসিয়াল',
+  'oral-care': 'মুখের যত্ন',
+  'grooming': 'গ্রুমিং',
+  'fragrance': 'সুগন্ধি',
+};
+
 /** Helper to normalize raw category strings (e.g. "Rice & Grain" -> "rice-and-grain") */
 export function normalizeCategorySlug(str: string): string {
   if (!str) return '';
@@ -146,7 +241,6 @@ const CATEGORY_SLUG_ALIASES: Record<string, string> = {
   'rice-and-grains': 'rice-and-grain',
   'skin-care': 'personal-care',
   'chips-and-pretzels': 'snacks',
-  'chips-pretzels': 'snacks',
 };
 
 /**
