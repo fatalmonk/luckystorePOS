@@ -78,11 +78,11 @@ export default async function BrandPage({
     ? brand.searchQueries
     : [brand.searchQuery];
 
-  const categories = await getCachedCategories();
   const rawProductsMap = new Map<string, any>();
 
-  await Promise.all(
-    searchTerms.map(async (term) => {
+  const [categories] = await Promise.all([
+    getCachedCategories(),
+    ...searchTerms.map(async (term) => {
       let page = 0;
       let hasMore = true;
       const maxPages = 10;
@@ -100,8 +100,8 @@ export default async function BrandPage({
         hasMore = pageResult.hasMore;
         page++;
       }
-    })
-  );
+    }),
+  ]);
 
   const allProducts = Array.from(rawProductsMap.values());
   const matchedProducts = allProducts.filter((p) => isProductOfBrand(p, brand));
