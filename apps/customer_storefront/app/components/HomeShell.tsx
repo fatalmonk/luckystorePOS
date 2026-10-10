@@ -7,7 +7,6 @@ import { BottomNav } from './BottomNav';
 import { FaqJsonLd } from './seo/FaqJsonLd';
 import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
-import { HomeConfidence } from './HomeConfidence';
 import { HomeTrustStrip } from './HomeTrustStrip';
 import { HomeTeaBanner } from './HomePromoBanners';
 import { ProductGridSection } from './ProductGridSection';
@@ -92,8 +91,6 @@ export function HomeShell({
 
             <HomeTrustStrip locale={locale} />
             <HomeTeaBanner locale={locale} />
-
-            <HomeConfidence locale={locale} />
 
             <CategoryQuickGrid categories={categories} locale={locale} />
 
