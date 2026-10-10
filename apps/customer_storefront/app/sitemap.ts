@@ -136,28 +136,42 @@ export function isProductSitemapEligible(item: {
 // Dynamic product pages: enforces strict sitemap eligibility contract
 async function getProducts(): Promise<{ id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[]> {
   try {
-    const { data, error } = await supabase.rpc('search_storefront_catalog', {
-      p_store_id: STORE_ID,
-      p_query: '',
-      p_category_id: null,
-      p_limit: 5000,
-      p_offset: 0,
-    });
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    const allProducts: { id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[] = [];
 
-    if (error) throw error;
+    while (true) {
+      const { data, error } = await supabase.rpc('search_storefront_catalog', {
+        p_store_id: STORE_ID,
+        p_query: '',
+        p_category_id: null,
+        p_limit: PAGE_SIZE,
+        p_offset: offset,
+      });
 
-    const rows = Array.isArray(data) ? data : [];
+      if (error) throw error;
 
-    return rows
-      .filter(isProductSitemapEligible)
-      .map((i: any) => ({
-        id: String(i.id ?? i.item_id).trim(),
-        name: i.name.trim(),
-        brand: String(i.brand || '').trim(),
-        category: String(i.category || '').trim(),
-        categoryId: String(i.category_id || '').trim(),
-        updatedAt: i.updated_at || i.created_at || null,
-      }));
+      const rows = Array.isArray(data) ? data : [];
+      if (rows.length === 0) break;
+
+      for (const i of rows) {
+        if (isProductSitemapEligible(i)) {
+          allProducts.push({
+            id: String(i.id ?? i.item_id).trim(),
+            name: i.name.trim(),
+            brand: String(i.brand || '').trim(),
+            category: String(i.category || '').trim(),
+            categoryId: String(i.category_id || '').trim(),
+            updatedAt: i.updated_at || i.created_at || null,
+          });
+        }
+      }
+
+      if (rows.length < PAGE_SIZE) break;
+      offset += PAGE_SIZE;
+    }
+
+    return allProducts;
   } catch (error) {
     console.error('Error fetching products for sitemap:', error);
     return [];

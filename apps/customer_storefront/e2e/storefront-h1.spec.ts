@@ -62,4 +62,20 @@ test.describe('Storefront H1 contract', () => {
     await expect(h1).toBeVisible();
     await expect(h1).toHaveText('কাছাকাছি ফরচুন কুকিজ খুঁজছেন?');
   });
+
+  test('English brand page has exactly one semantic H1', async ({ page }) => {
+    await page.goto('/brand/aarong-dairy');
+    const h1 = page.locator('h1');
+    await expect(h1).toHaveCount(1);
+    await expect(h1).toBeVisible();
+    await expect(h1).toHaveText('Aarong Dairy');
+  });
+
+  test('Bengali brand page has exactly one semantic H1', async ({ page }) => {
+    await page.goto('/bn/brand/aarong-dairy');
+    const h1 = page.locator('h1');
+    await expect(h1).toHaveCount(1);
+    await expect(h1).toBeVisible();
+    await expect(h1).toHaveText('আড়ং ডেইরি');
+  });
 });

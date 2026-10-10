@@ -24,8 +24,7 @@ The digital storefront (www.luckystore1947.com) operates as a high-speed, locali
 - **Telephone / WhatsApp:** +880 1731-944544
 - **Email:** hello@luckystore1947.com
 - **Operating Hours:**
-  - Monday – Saturday: 08:00 – 22:00
-  - Sunday: 09:00 – 21:00
+  - Monday – Sunday: 09:00 – 00:30
 - **Currency Accepted:** Bangladeshi Taka (BDT, ৳)
 - **Payment Methods:** Cash on Delivery (COD) and bKash at doorstep
 - **Primary Locales:** English (`en-BD`) and Bengali (`bn-BD`)

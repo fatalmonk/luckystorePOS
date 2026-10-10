@@ -218,4 +218,45 @@ describe('sitemap', () => {
     expect(untranslatedEn?.alternates?.languages?.['en-BD']).toBe(`https://www.luckystore1947.com/product/${untranslatedSlug}`);
     expect(untranslatedEn?.alternates?.languages?.['bn-BD']).toBeUndefined();
   });
+
+  it('paginates across multiple pages when the product catalog exceeds 1000 items', async () => {
+    const { supabase } = await import('../lib/supabase');
+    const page1 = Array.from({ length: 1000 }, (_, i) => ({
+      id: `11111111-0000-0000-0000-${String(i).padStart(12, '0')}`,
+      name: `Product ${i}`,
+      category: 'Dairy & Eggs',
+      category_id: 'cat-1',
+      brand: 'Fresh',
+      price: 50,
+      is_active: true,
+      updated_at: '2026-09-20T10:00:00Z',
+    }));
+    const page2 = [
+      {
+        id: '22222222-0000-0000-0000-000000000001',
+        name: 'Product 1001',
+        category: 'Dairy & Eggs',
+        category_id: 'cat-1',
+        brand: 'Fresh',
+        price: 50,
+        is_active: true,
+        updated_at: '2026-09-20T10:00:00Z',
+      },
+    ];
+
+    (supabase.rpc as any).mockImplementation(async (fn: string, args: any) => {
+      if (fn === 'search_storefront_catalog') {
+        if (args?.p_offset === 0) return { data: page1, error: null };
+        if (args?.p_offset === 1000) return { data: page2, error: null };
+        return { data: [], error: null };
+      }
+      return { data: [], error: null };
+    });
+
+    const entries = await sitemap();
+    const urls = entries.map((e) => e.url);
+
+    expect(urls).toContain('https://www.luckystore1947.com/product/product-0--11111111');
+    expect(urls).toContain('https://www.luckystore1947.com/product/product-1001--22222222');
+  });
 });

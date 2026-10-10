@@ -135,6 +135,9 @@ export function BrandShell({
             sort="best"
             searchParams={searchParams}
             locale={locale}
+            headingLevel="h2"
+            brandName={displayName}
+            brandSlug={brand.slug}
           />
         </div>
         <Footer locale={locale} />
