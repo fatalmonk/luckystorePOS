@@ -71,18 +71,18 @@ export function PopularBrandsSection({ locale = 'en' }: PopularBrandsSectionProp
                     </span>
                   )}
                 </div>
-                <span className="inline-block rounded-full bg-warm-image-well px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-warm-muted group-hover:text-warm-fg transition-colors truncate max-w-full">
+                <span className="inline-block rounded-full bg-warm-image-well px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wider text-warm-muted group-hover:text-warm-fg transition-colors truncate max-w-full">
                   {badgeText}
                 </span>
                 <h3 className="mt-1.5 text-sm sm:text-base font-black text-warm-fg group-hover:text-warm-accent transition-colors">
                   {primaryName}
                 </h3>
-                <p className="text-[11px] font-semibold text-warm-muted truncate">
+                <p className="text-xs font-semibold text-warm-muted truncate">
                   {secondaryName}
                 </p>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-warm-border/50 flex items-center justify-between text-[11px] font-extrabold text-warm-muted group-hover:text-warm-fg transition-colors">
+              <div className="mt-3 pt-2 border-t border-warm-border/50 flex items-center justify-between text-xs font-extrabold text-warm-muted group-hover:text-warm-fg transition-colors">
                 <span>{isBn ? 'পণ্য দেখুন' : 'Explore'}</span>
                 <span className="text-warm-accent font-black transition-transform group-hover:translate-x-1" aria-hidden="true">
                   →

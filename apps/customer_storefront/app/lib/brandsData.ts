@@ -194,7 +194,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Dove',
     bengaliName: 'ডাভ',
     searchQuery: 'Dove',
-    aliases: ['Dove', 'ডাভ', 'Unilever', 'Dove Beauty Bar'],
+    aliases: ['Dove', 'ডাভ', 'Dove Beauty Bar'],
     logoUrl: '/images/brands/unilever.webp',
     titleEn: 'Dove Beauty Bars, Shampoos & Care in Chattogram | Lucky Store',
     titleBn: 'ডাভ বিউটি বার, শ্যাম্পু ও প্রসাধন চট্টগ্রাম | লাকি স্টোর',
@@ -211,7 +211,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Lux',
     bengaliName: 'লাক্স',
     searchQuery: 'Lux',
-    aliases: ['Lux', 'লাক্স', 'Unilever', 'Lux Soap'],
+    aliases: ['Lux', 'লাক্স', 'Lux Soap'],
     logoUrl: '/images/brands/unilever.webp',
     titleEn: 'Lux Fragrant Beauty Soap in Chattogram | Lucky Store',
     titleBn: 'লাক্স সুগন্ধি সাবান চট্টগ্রাম | লাকি স্টোর',
@@ -228,7 +228,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Sunsilk',
     bengaliName: 'সানসিল্ক',
     searchQuery: 'Sunsilk',
-    aliases: ['Sunsilk', 'সানসিল্ক', 'Unilever'],
+    aliases: ['Sunsilk', 'সানসিল্ক'],
     logoUrl: '/images/brands/unilever.webp',
     titleEn: 'Sunsilk Shampoos & Hair Conditioners in Chattogram | Lucky Store',
     titleBn: 'সানসিল্ক শ্যাম্পু ও হেয়ার কেয়ার চট্টগ্রাম | লাকি স্টোর',
@@ -469,11 +469,12 @@ export function getBrandByName(brandName?: string): BrandDefinition | undefined 
   });
   if (exact) return exact;
 
-  // 2. Token match (e.g. "Ispahani Tea Ltd" contains "Ispahani")
-  const words = targetNorm.split(/[\s,./\-_&]+/);
+  // 2. Contiguous token sequence / word-boundary match (e.g. "Ispahani Tea Ltd" contains "Ispahani", "New Zealand Dairy Ltd" contains "New Zealand Dairy")
   const tokenMatch = POPULAR_BRANDS.find((b) => {
     const brandNameNorm = normalize(b.name);
-    return words.includes(brandNameNorm);
+    const escaped = brandNameNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i');
+    return regex.test(targetNorm);
   });
   if (tokenMatch) return tokenMatch;
 

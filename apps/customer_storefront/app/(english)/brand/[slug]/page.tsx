@@ -78,25 +78,30 @@ export default async function BrandPage({
     ? brand.searchQueries
     : [brand.searchQuery];
 
-  const [categories, ...queryResults] = await Promise.all([
-    getCachedCategories(),
-    ...searchTerms.map((term) =>
-      repo.search({
-        query: term,
-        limit: 1000,
-        page: 0,
-      })
-    ),
-  ]);
-
+  const categories = await getCachedCategories();
   const rawProductsMap = new Map<string, any>();
-  for (const res of queryResults) {
-    for (const p of res.products) {
-      if (!rawProductsMap.has(p.id)) {
-        rawProductsMap.set(p.id, p);
+
+  await Promise.all(
+    searchTerms.map(async (term) => {
+      let page = 0;
+      let hasMore = true;
+      const maxPages = 10;
+      while (hasMore && page < maxPages) {
+        const pageResult = await repo.search({
+          query: term,
+          limit: 1000,
+          page,
+        });
+        for (const p of pageResult.products) {
+          if (!rawProductsMap.has(p.id)) {
+            rawProductsMap.set(p.id, p);
+          }
+        }
+        hasMore = pageResult.hasMore;
+        page++;
       }
-    }
-  }
+    })
+  );
 
   const allProducts = Array.from(rawProductsMap.values());
   const matchedProducts = allProducts.filter((p) => isProductOfBrand(p, brand));

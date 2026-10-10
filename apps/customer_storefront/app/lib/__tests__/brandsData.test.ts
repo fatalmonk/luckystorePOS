@@ -29,6 +29,16 @@ describe('Brand Hub & Link Resolution Contract', () => {
 
     const fromSpiceSupplier = getBrandByName('Radhuni Spices & Foods');
     expect(fromSpiceSupplier?.slug).toBe('radhuni');
+
+    const fromNZSupplier = getBrandByName('New Zealand Dairy Ltd');
+    expect(fromNZSupplier?.slug).toBe('new-zealand-dairy');
+  });
+
+  it('leaves ambiguous corporate parent brand names unresolved', () => {
+    // Unilever is not an alias on Dove/Lux/Sunsilk to avoid misattribution
+    const unilever = getBrandByName('Unilever');
+    expect(unilever).toBeUndefined();
+    expect(getBrandHref('Unilever', 'en')).toBe('/brand');
   });
 
   it('generates correct brand href for English and Bengali locales', () => {
