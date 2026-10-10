@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Resized and optimized social preview assets to exact 1200x630 (twitter-image.png, opengraph-image.png, lucky-store-social-share-v2.png, lucky-store-social-share.jpg)
-Done: Scaled master social card to 1200x630, compressed via sharp libimagequant palette (302KB, -77%), generated 1200x630 JPEG fallback (174KB), optimized square card 1024x1024 (406KB), 380/380 vitest pass
+Current: Addressed PR review issues for dark mode hero contrast, trust strip 404, and localized payment anchor
+Done: Added text-[#0b2517] to campaign-hero-title, routed trust strip about card to /contact#about, added payment-heading section to bn/delivery/page.tsx, pushed commit ecdafc73 to PR #440, 380/380 vitest pass
 Branch: codex/redesign-homepage
-Health: 380 vitest tests pass, exact 1200x630 dimensions verified via sips, zero visual degradation
+Health: 380 vitest tests pass, 0 typecheck errors, PR #440 updated on GitHub
 Last Synced: 2026-10-11
-ctx: Social preview asset optimization | done: twitter-image.png, opengraph-image.png, lucky-store-social-share-v2.png, lucky-store-social-share.jpg, opengraph-image-square.png | next: Ready for user instructions
+ctx: PR #440 Review fixes | done: CampaignGrid dark mode contrast, HomeTrustStrip /contact#about 404 fix, bn/delivery payment anchor | next: Ready for user instructions
