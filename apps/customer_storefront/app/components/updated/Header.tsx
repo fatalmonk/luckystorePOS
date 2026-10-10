@@ -404,7 +404,7 @@ export function Header({ className = '', locale }: HeaderProps) {
       {/* Mobile category/filter strip — replaced by compact category rail */}
       {!isDistractionFreePage && (
         <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 lg:hidden">
-          <nav className="flex flex-nowrap items-center overflow-x-auto h-[44px] gap-1.5 scrollbar-hide py-0.5 scroll-fade-x" aria-label="Categories">
+          <nav className="flex flex-nowrap items-center overflow-x-auto h-[44px] gap-1.5 px-4 scrollbar-hide py-0.5 scroll-fade-x" aria-label="Categories">
             <Link
               href={withLocale('/category', currentLocale)}
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}

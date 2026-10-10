@@ -124,6 +124,7 @@ export interface AccordionTriggerProps extends HTMLAttributes<HTMLButtonElement>
 export function AccordionTrigger({
   children,
   className = '',
+  onClick,
   ...props
 }: AccordionTriggerProps) {
   const accordion = useContext(AccordionContext);
@@ -140,7 +141,10 @@ export function AccordionTrigger({
         id={item.triggerId}
         aria-expanded={item.isOpen}
         aria-controls={item.panelId}
-        onClick={() => accordion.toggle(item.value)}
+        onClick={(e) => {
+          accordion.toggle(item.value);
+          onClick?.(e);
+        }}
         className={`flex w-full items-center justify-between gap-4 p-5 text-left font-bold text-warm-fg transition-colors hover:bg-warm-image-well/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${className}`.trim()}
         {...props}
       >

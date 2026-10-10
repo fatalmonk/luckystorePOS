@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Implemented shadcn signup-04 two-column layout in customer_storefront
-Done: Created Accordion.tsx, Badge.tsx, Select.tsx, refactored DeliveryFaqAccordion, ContactForm, AppDrawer, CartSheet, Toast, Breadcrumbs, and upgraded signup/page.tsx to signup-04 layout with Deep Night (#0B0B0D) & Saffron (#f0c444) branding
+Current: Addressed PR review comments across customer_storefront UI components
+Done: Fixed Toast live-region, Header mobile rail gutter padding, Breadcrumbs asChild & WCAG role=link, AccordionTrigger onClick composition, Select variant styling, evaluated secret scanner archive rule
 Branch: codex/redesign-homepage
 Health: 380 vitest tests pass (66 files), 0 typecheck errors
 Last Synced: 2026-10-11
-ctx: signup-04 layout | done: signup/page.tsx updated & tests passing | next: Ready for next task
+ctx: PR review fixes | done: 5 valid issues fixed & tested; 1 issue resolved with reason | next: Commit or await review approval

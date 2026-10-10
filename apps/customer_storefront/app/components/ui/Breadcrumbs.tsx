@@ -39,9 +39,7 @@ export function BreadcrumbItem({ className = '', ...props }: ComponentPropsWitho
   );
 }
 
-export interface BreadcrumbLinkProps extends ComponentPropsWithoutRef<typeof Link> {
-  asChild?: boolean;
-}
+export type BreadcrumbLinkProps = ComponentPropsWithoutRef<typeof Link>;
 
 export function BreadcrumbLink({ className = '', href, ...props }: BreadcrumbLinkProps) {
   return (
@@ -56,8 +54,6 @@ export function BreadcrumbLink({ className = '', href, ...props }: BreadcrumbLin
 export function BreadcrumbPage({ className = '', ...props }: ComponentPropsWithoutRef<'span'>) {
   return (
     <span
-      role="link"
-      aria-disabled="true"
       aria-current="page"
       className={`line-clamp-1 font-bold text-warm-fg ${className}`.trim()}
       {...props}

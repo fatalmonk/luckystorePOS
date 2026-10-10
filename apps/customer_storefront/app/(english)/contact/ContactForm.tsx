@@ -168,9 +168,10 @@ export function ContactForm() {
             <Select
               id="topic"
               label="Select Topic"
+              variant="form"
               value={formData.topic}
               onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-              className="bg-warm-bg border-warm-border/80 focus:border-warm-accent focus:bg-white"
+              className="focus:border-warm-accent"
             >
               <option value="">- Select -</option>
               <option value="order_status">Order Status &amp; Tracking</option>
