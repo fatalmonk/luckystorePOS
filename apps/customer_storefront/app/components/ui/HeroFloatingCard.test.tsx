@@ -43,7 +43,7 @@ describe('HeroDiscoveryRail', () => {
       '/category/cleaning-supplies',
     );
 
-    const rail = screen.getByLabelText('Quick picks from today products');
+    const rail = screen.getByLabelText('A few essentials to get you started products');
     expect(within(rail).getByRole('link', { name: /Miniket Rice/ })).toHaveAttribute(
       'href',
       '/product/miniket-rice--rice1',

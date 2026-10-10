@@ -7,7 +7,7 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Chawkbazar groceries delivered to your doorstep.',
+      name: 'A well-stocked home starts here.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
@@ -22,7 +22,6 @@ test.describe('Storefront campaign hero audit', () => {
       ['Rice', '/category?q=rice'],
       ['Snacks', '/category/snacks'],
       ['Cleaning', '/category/cleaning-supplies'],
-      ['Start your order', '/category'],
     ] as const;
 
     for (const [name, href] of destinations) {
@@ -33,6 +32,13 @@ test.describe('Storefront campaign hero audit', () => {
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
     }
+
+    const primaryCta = hero.locator('[data-cro="hero-primary-cta"]');
+    await expect(primaryCta).toHaveText('Shop groceries');
+    await expect(primaryCta).toHaveAttribute('href', '/category');
+    const primaryBox = await primaryCta.boundingBox();
+    expect(primaryBox?.width).toBeGreaterThanOrEqual(44);
+    expect(primaryBox?.height).toBeGreaterThanOrEqual(44);
 
     const layout = await hero.evaluate((element) => ({
       pageScrollWidth: document.documentElement.scrollWidth,
@@ -84,7 +90,7 @@ test.describe('Storefront campaign hero audit', () => {
     await page.goto('/');
 
     const title = page.getByRole('heading', {
-      name: 'Chawkbazar groceries delivered to your doorstep.',
+      name: 'A well-stocked home starts here.',
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');

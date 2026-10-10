@@ -8,6 +8,8 @@ import { FaqJsonLd } from './seo/FaqJsonLd';
 import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { HomeConfidence } from './HomeConfidence';
+import { HomeTrustStrip } from './HomeTrustStrip';
+import { HomeTeaBanner } from './HomePromoBanners';
 import { ProductGridSection } from './ProductGridSection';
 import { PopularBrandsSection } from './PopularBrandsSection';
 import { HeritageSection } from './HeritageSection';
@@ -88,36 +90,8 @@ export function HomeShell({
           <div className="space-y-4 sm:space-y-5">
             <CampaignGrid products={campaignProducts} locale={locale} />
 
-            <section aria-label={locale === 'bn' ? 'কেন লাকি স্টোরে কেনাকাটা করবেন' : 'Why shop with Lucky Store'} className="home-trust-strip">
-              <dl className="grid grid-cols-3 divide-x divide-warm-border">
-                <div className="home-trust-fact group relative transition-colors hover:bg-warm-image-well/40">
-                  <dt className="transition-colors group-hover:text-warm-accent">
-                    <Link
-                      href={withLocale('/delivery', locale)}
-                      className="text-inherit after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-sm"
-                    >
-                      {dict.trustStrip.freeDeliveryTitle}
-                    </Link>
-                  </dt>
-                  <dd>{dict.trustStrip.freeDeliveryDesc}</dd>
-                </div>
-                <div className="home-trust-fact">
-                  <dt>{dict.trustStrip.establishedTitle}</dt>
-                  <dd>{dict.trustStrip.establishedDesc}</dd>
-                </div>
-                <div className="home-trust-fact group relative transition-colors hover:bg-warm-image-well/40">
-                  <dt className="transition-colors group-hover:text-warm-accent">
-                    <Link
-                      href={withLocale('/delivery#payment-heading', locale)}
-                      className="text-inherit after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-sm"
-                    >
-                      {dict.trustStrip.codTitle}
-                    </Link>
-                  </dt>
-                  <dd>{dict.trustStrip.codDesc}</dd>
-                </div>
-              </dl>
-            </section>
+            <HomeTrustStrip locale={locale} />
+            <HomeTeaBanner locale={locale} />
 
             <HomeConfidence locale={locale} />
 
