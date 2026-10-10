@@ -31,7 +31,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
       icon: ShieldCheck,
       title: bn ? '১৯৪৭ সাল থেকে আস্থার সঙ্গী' : 'Trusted since 1947',
       detail: bn ? 'আপনার পাড়ার বাজারের দোকান' : 'Your neighbourhood grocer',
-      href: '/about',
+      href: '/contact#about',
     },
   ];
 
@@ -45,7 +45,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
             </span>
             <div>
               <dt className="text-sm font-extrabold text-warm-fg">
-                <Link href={withLocale(href, locale)} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent">
+                <Link href={href.startsWith('/contact') ? href : withLocale(href, locale)} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent">
                   {title}
                 </Link>
               </dt>

@@ -58,7 +58,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
                 <span aria-hidden="true">·</span>
                 Lucky Store
               </p>
-              <h1 id="campaign-hero-title" className="campaign-display text-balance text-[2rem] font-black leading-[1.03] tracking-tight sm:text-[2.5rem] lg:text-[3.25rem]">
+              <h1 id="campaign-hero-title" className="campaign-display text-[#0b2517] text-balance text-[2rem] font-black leading-[1.03] tracking-tight sm:text-[2.5rem] lg:text-[3.25rem]">
                 {dict.campaign.headline}
               </h1>
               <p className="mt-5 max-w-lg text-sm leading-6 sm:text-base sm:leading-7">

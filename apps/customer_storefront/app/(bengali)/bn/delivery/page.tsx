@@ -70,7 +70,11 @@ export default function BengaliDeliveryPage() {
         </section>
         <section className="mt-12 rounded-2xl border border-warm-border bg-warm-surface p-6" aria-labelledby="hours-heading">
           <h2 id="hours-heading" className="text-2xl font-black">অর্ডার ও ডেলিভারি সময়</h2>
-          <p className="mt-3 leading-8 text-warm-muted">প্রতিদিন সকাল {DELIVERY_POLICY.deliveryHours.start} থেকে রাত {DELIVERY_POLICY.deliveryHours.end} পর্যন্ত অর্ডার নেওয়া হয়। ডেলিভারি পার্টনার আসার পর প্যাকেট, ওজন, সিল ও মেয়াদ দেখে পেমেন্ট করুন।</p>
+          <p className="mt-3 leading-8 text-warm-muted">প্রতিদিন সকাল {DELIVERY_POLICY.deliveryHours.start} থেকে রাত {DELIVERY_POLICY.deliveryHours.end} পর্যন্ত অর্ডার নেওয়া হয়।</p>
+        </section>
+        <section className="mt-12 rounded-2xl border border-warm-border bg-warm-surface p-6" aria-labelledby="payment-heading">
+          <h2 id="payment-heading" className="text-2xl font-black">পেমেন্ট ও পণ্য পরীক্ষা পদ্ধতি</h2>
+          <p className="mt-3 leading-8 text-warm-muted">ক্যাশ অন ডেলিভারি (COD) ও bKash-এ পেমেন্ট সুবিধা রয়েছে। ডেলিভারি পার্টনারের কাছ থেকে প্যাকেট, ওজন, সিল ও মেয়াদ নিজে দেখে নিশ্চিত হয়ে তারপর নিশ্চিন্তে পেমেন্ট করুন।</p>
         </section>
         <Link href="/bn/category/rice-and-grain" className="mt-8 inline-flex min-h-12 items-center rounded-full bg-warm-accent px-6 font-bold text-black">কেনাকাটা শুরু করুন</Link>
       </main>
