@@ -4,10 +4,10 @@ import { Footer } from './updated/Footer';
 import { CampaignGrid } from './CampaignGrid';
 import { DealOfTheWeek } from './DealOfTheWeek';
 import { BottomNav } from './BottomNav';
-import { FaqJsonLd } from './seo/FaqJsonLd';
 import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
-import { HomeConfidence } from './HomeConfidence';
+import { HomeTrustStrip } from './HomeTrustStrip';
+import { HomeTeaBanner } from './HomePromoBanners';
 import { ProductGridSection } from './ProductGridSection';
 import { PopularBrandsSection } from './PopularBrandsSection';
 import { HeritageSection } from './HeritageSection';
@@ -80,46 +80,15 @@ export function HomeShell({
 
   return (
     <>
-      <FaqJsonLd items={dict.confidence.faqs} />
       <Header locale={locale} />
       <CartStorageNotice />
       <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
         <div className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pb-20 sm:pt-7 lg:pb-24">
-          <div className="space-y-4 sm:space-y-5">
+          <div className="flex flex-col gap-4 sm:gap-5">
             <CampaignGrid products={campaignProducts} locale={locale} />
 
-            <section aria-label={locale === 'bn' ? 'কেন লাকি স্টোরে কেনাকাটা করবেন' : 'Why shop with Lucky Store'} className="home-trust-strip">
-              <dl className="grid grid-cols-3 divide-x divide-warm-border">
-                <div className="home-trust-fact group relative transition-colors hover:bg-warm-image-well/40">
-                  <dt className="transition-colors group-hover:text-warm-accent">
-                    <Link
-                      href={withLocale('/delivery', locale)}
-                      className="text-inherit after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-sm"
-                    >
-                      {dict.trustStrip.freeDeliveryTitle}
-                    </Link>
-                  </dt>
-                  <dd>{dict.trustStrip.freeDeliveryDesc}</dd>
-                </div>
-                <div className="home-trust-fact">
-                  <dt>{dict.trustStrip.establishedTitle}</dt>
-                  <dd>{dict.trustStrip.establishedDesc}</dd>
-                </div>
-                <div className="home-trust-fact group relative transition-colors hover:bg-warm-image-well/40">
-                  <dt className="transition-colors group-hover:text-warm-accent">
-                    <Link
-                      href={withLocale('/delivery#payment-heading', locale)}
-                      className="text-inherit after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-sm"
-                    >
-                      {dict.trustStrip.codTitle}
-                    </Link>
-                  </dt>
-                  <dd>{dict.trustStrip.codDesc}</dd>
-                </div>
-              </dl>
-            </section>
-
-            <HomeConfidence locale={locale} />
+            <HomeTrustStrip locale={locale} />
+            <HomeTeaBanner locale={locale} />
 
             <CategoryQuickGrid categories={categories} locale={locale} />
 
@@ -127,31 +96,31 @@ export function HomeShell({
               <span className="shrink-0 font-bold text-warm-fg">{dict.popularBazaar.label}</span>
               <Link
                 href={withLocale('/category/rice-and-grain', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.rice}
               </Link>
               <Link
                 href={withLocale('/category/oil-and-ghee', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.oil}
               </Link>
               <Link
                 href={withLocale('/category/cooking-essentials', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.cooking}
               </Link>
               <Link
                 href={withLocale('/category/tea-and-coffee', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.tea}
               </Link>
               <Link
                 href={withLocale('/fortune-cookies-near-me', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg hover:border-warm-accent hover:text-warm-accent-text hover:bg-warm-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.fortuneCookies}
               </Link>

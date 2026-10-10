@@ -17,6 +17,7 @@ const SELF = resolve(__dirname, 'secret_scan.js');
 const IGNORE_DIRS = new Set([
   '.git',
   '.agents',
+  '.agents_archive',
   '.worktrees',
   'node_modules',
   'build',

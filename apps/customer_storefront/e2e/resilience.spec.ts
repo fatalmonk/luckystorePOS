@@ -9,10 +9,10 @@ test('the homepage remains useful while product images are slow', async ({ page 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   await expect(
-    page.getByRole('heading', { name: 'Chawkbazar groceries delivered to your doorstep.' }),
+    page.getByRole('heading', { name: 'A well-stocked home starts here.' }),
   ).toBeVisible();
   await expect(
-    page.locator('.campaign-hero').getByRole('link', { name: 'Start your order' }),
+    page.locator('[data-cro="hero-primary-cta"]'),
   ).toBeVisible();
   await expect(page.locator('[data-testid="product-image-loading"]').first()).toBeVisible();
 });

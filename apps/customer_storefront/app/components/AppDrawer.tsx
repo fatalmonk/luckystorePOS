@@ -98,13 +98,17 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label={dict.appDrawer.navigationMenu}
+        aria-labelledby="app-drawer-title"
         aria-hidden={!open}
         inert={!open}
         className={`fixed left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] bg-warm-surface border-r border-warm-border flex flex-col shadow-2xl transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : '-translate-x-full pointer-events-none'
         }`}
       >
+        <h2 id="app-drawer-title" className="sr-only">
+          {dict.appDrawer.navigationMenu}
+        </h2>
+
         {/* Header */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-warm-border px-4">
           <Logo href={withLocale('/', effectiveLocale)} locale={effectiveLocale} onClick={onClose} className="[&_img]:!h-11 [&_img]:w-auto" />
@@ -112,7 +116,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-muted transition-colors hover:bg-warm-border hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex size-11 items-center justify-center rounded-full text-warm-muted transition-colors hover:bg-warm-border hover:text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-label={dict.appDrawer.closeMenu}
           >
             <X weight="bold" size={20} aria-hidden="true" />
@@ -121,7 +125,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
 
         {/* Top Links */}
         <nav className="px-3 py-3 border-b border-warm-border" aria-label={effectiveLocale === 'bn' ? 'প্রধান নেভিগেশন' : 'Main navigation'}>
-          <ul className="space-y-0.5">
+          <ul className="flex flex-col gap-0.5">
             {topLinks.map(({ href, label, icon: Icon }) => (
               <li key={href}>
                 <Link
@@ -140,7 +144,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
         {/* Categories */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
           <p className="px-3 mb-2 text-xs font-black text-warm-dim uppercase tracking-widest">{dict.appDrawer.categories}</p>
-          <ul className="space-y-0.5">
+          <ul className="flex flex-col gap-0.5">
             {CATEGORY_GROUPS.map((group) => (
               <li key={group.slug}>
                 <Link
@@ -161,8 +165,8 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-warm-border shrink-0 space-y-3">
-          <div className="space-y-1.5">
+        <div className="px-4 py-4 border-t border-warm-border shrink-0 flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
             <Link
               href={withLocale('/delivery', effectiveLocale)}
               onClick={onClose}

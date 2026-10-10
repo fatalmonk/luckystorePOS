@@ -73,14 +73,14 @@ describe('CampaignGrid', () => {
 
     const title = screen.getByRole('heading', {
       level: 1,
-      name: 'Chawkbazar groceries delivered to your doorstep.',
+      name: 'A well-stocked home starts here.',
     });
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 
     expect(within(hero!).getByRole('search', { name: 'Search groceries' })).toBeInTheDocument();
     expect(within(hero!).getByRole('searchbox')).toHaveAttribute('name', 'q');
-    expect(within(hero!).getByLabelText('A basket of everyday Lucky Store groceries')).toBeInTheDocument();
+    expect(within(hero!).getByLabelText('A tote of everyday Lucky Store groceries')).toBeInTheDocument();
     expect(within(hero!).getByRole('link', { name: 'Rice' })).toHaveAttribute('href', '/category?q=rice');
     expect(within(hero!).getByText('Search organic staples')).toBeInTheDocument();
     expect(within(hero!).queryByText('Healthy Living')).not.toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('CampaignGrid', () => {
     expect(within(hero!).queryByText(/Top Choice/i)).not.toBeInTheDocument();
 
     expect(within(hero!).queryByText('Stocked daily')).not.toBeInTheDocument();
-    expect(within(hero!).getByRole('link', { name: 'Start your order' })).toHaveAttribute(
+    expect(within(hero!.querySelector('.campaign-feature')!).getByRole('link', { name: 'Shop groceries' })).toHaveAttribute(
       'href',
       '/category',
     );
@@ -113,7 +113,7 @@ describe('CampaignGrid', () => {
     const hero = screen
       .getByRole('heading', {
         level: 1,
-        name: 'Chawkbazar groceries delivered to your doorstep.',
+        name: 'A well-stocked home starts here.',
       })
       .closest('section')!;
 

@@ -40,7 +40,7 @@ test.describe('Storefront homepage shell audit', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('heading', { name: 'Chawkbazar groceries delivered to your doorstep.' }),
+      page.getByRole('heading', { name: 'A well-stocked home starts here.' }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Daily Bazaar & Pantry Staples', exact: true })).toBeVisible();
@@ -76,8 +76,8 @@ test.describe('Storefront homepage shell audit', () => {
 
     const trust = page.getByRole('region', { name: 'Why shop with Lucky Store' });
     await expect(trust.getByText(/Free Delivery/i)).toBeVisible();
-    await expect(trust.getByText(/Established 1947/i)).toBeVisible();
-    await expect(trust.getByText(/Cash on Delivery/i)).toBeVisible();
+    await expect(trust.getByText(/Trusted since 1947/i)).toBeVisible();
+    await expect(trust.getByText(/Pay after inspection/i)).toBeVisible();
     await expect(trust.getByText(/10k\+|Local Reviews/i)).toHaveCount(0);
 
     const footer = page.getByRole('contentinfo');

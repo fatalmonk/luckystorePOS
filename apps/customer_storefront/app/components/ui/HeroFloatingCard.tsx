@@ -15,12 +15,14 @@ export interface HeroDiscoveryRailProps {
   products: Product[];
   title?: string;
   locale?: Locale;
+  children?: React.ReactNode;
 }
 
 export function HeroDiscoveryRail({
   products,
   title,
   locale = 'en',
+  children,
 }: HeroDiscoveryRailProps) {
   const dict = getDictionary(locale);
   const discoveryTitle = title ?? dict.campaign.discoveryTitle;
@@ -62,11 +64,12 @@ export function HeroDiscoveryRail({
         ))}
       </div>
 
+      {children}
 
       {picks.length > 0 ? (
         <section aria-labelledby="hero-discovery-title" className="min-w-0">
           <div className="mb-2 flex items-end justify-between gap-3">
-            <h2 id="hero-discovery-title" className="text-sm font-black text-warm-fg">
+            <h2 id="hero-discovery-title" className="text-lg font-black tracking-tight text-warm-fg sm:text-xl">
               {discoveryTitle}
             </h2>
             <Link

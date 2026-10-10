@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Harvested & uploaded authentic FMCG packshots to Cloudflare R2 for all 80 brand products
-Done: Ingested 80 missing brand products into Supabase items & stock_levels, mapped image_urls to Cloudflare R2, harvested authentic packshot images from retail CDNs, converted to WebP (600x600), uploaded all 80 WebP images to R2 (lucky-store-images), verified 80/80 return HTTP 200 via images.luckystore1947.com
-Branch: main
-Health: 0 tsc errors, 66 storefront vitest test files (380 tests) pass, 80/80 packshots live on R2 CDN
-Last Synced: 2026-10-10
-ctx: Brand packshot ingestion & R2 sync | done: 80 brand products fully imaged & live | next: Ready for next task
+Current: Addressed PR review comments across customer_storefront UI components
+Done: Fixed Toast live-region, Header mobile rail gutter padding, Breadcrumbs asChild & WCAG role=link, AccordionTrigger onClick composition, Select variant styling, evaluated secret scanner archive rule
+Branch: codex/redesign-homepage
+Health: 380 vitest tests pass (66 files), 0 typecheck errors
+Last Synced: 2026-10-11
+ctx: PR review fixes | done: 5 valid issues fixed & tested; 1 issue resolved with reason | next: Commit or await review approval

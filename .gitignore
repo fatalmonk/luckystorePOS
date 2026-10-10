@@ -157,6 +157,7 @@ temp/
 # -----------------------------------------------------------------------------
 .cursor/
 .agents/
+.agents_archive/
 .impeccable/
 .claude/
 .continue/

@@ -61,6 +61,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
+      aria-labelledby="cart-sheet-title"
       className="
         fixed inset-0 m-0 p-0
         w-full max-w-full h-full max-h-full
@@ -96,12 +97,12 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3">
-          <h3 className="text-lg font-extrabold tracking-tight">
+          <h2 id="cart-sheet-title" className="text-lg font-extrabold tracking-tight">
             Cart <span className="text-warm-muted font-semibold text-sm ml-1">({totalItems})</span>
-          </h3>
+          </h2>
           <button
             onClick={onClose}
-            className="w-11 h-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm"
+            className="size-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-label="Close cart"
           >
             <X weight="bold" size={18} aria-hidden="true" />

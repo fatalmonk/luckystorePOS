@@ -14,7 +14,7 @@ test.describe('Storefront visual audit evidence', () => {
 
     await page.goto('/');
     await page
-      .getByRole('heading', { name: 'Chawkbazar groceries delivered to your doorstep.' })
+      .getByRole('heading', { name: 'A well-stocked home starts here.' })
       .waitFor();
     await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const footerLogo = page
@@ -124,7 +124,7 @@ test.describe('Storefront visual audit evidence', () => {
 
     await page.goto('/');
     await page
-      .getByRole('heading', { name: 'Chawkbazar groceries delivered to your doorstep.' })
+      .getByRole('heading', { name: 'A well-stocked home starts here.' })
       .waitFor();
     await page.waitForTimeout(1000);
 
