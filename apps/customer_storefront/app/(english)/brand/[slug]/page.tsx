@@ -78,11 +78,10 @@ export default async function BrandPage({
     ? brand.searchQueries
     : [brand.searchQuery];
 
-  const rawProductsMap = new Map<string, any>();
-
-  const [categories] = await Promise.all([
+  const [categories, ...perTermResults] = await Promise.all([
     getCachedCategories(),
     ...searchTerms.map(async (term) => {
+      const termProducts: any[] = [];
       let page = 0;
       let hasMore = true;
       const maxPages = 10;
@@ -92,16 +91,22 @@ export default async function BrandPage({
           limit: 1000,
           page,
         });
-        for (const p of pageResult.products) {
-          if (!rawProductsMap.has(p.id)) {
-            rawProductsMap.set(p.id, p);
-          }
-        }
+        termProducts.push(...pageResult.products);
         hasMore = pageResult.hasMore;
         page++;
       }
+      return termProducts;
     }),
   ]);
+
+  const rawProductsMap = new Map<string, any>();
+  for (const termProducts of perTermResults) {
+    for (const p of termProducts) {
+      if (!rawProductsMap.has(p.id)) {
+        rawProductsMap.set(p.id, p);
+      }
+    }
+  }
 
   const allProducts = Array.from(rawProductsMap.values());
   const matchedProducts = allProducts.filter((p) => isProductOfBrand(p, brand));

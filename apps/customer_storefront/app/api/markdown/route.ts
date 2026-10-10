@@ -533,24 +533,30 @@ export async function GET(req: NextRequest) {
           ? brand.searchQueries
           : [brand.searchQuery];
 
-        const rawProductsMap = new Map<string, any>();
-        await Promise.all(
+        const perTermResults = await Promise.all(
           searchTerms.map(async (term) => {
+            const termProducts: any[] = [];
             let page = 0;
             let hasMore = true;
             const maxPages = 10;
             while (hasMore && page < maxPages) {
               const pageResult = await repo.search({ query: term, limit: 1000, page });
-              for (const p of pageResult.products) {
-                if (!rawProductsMap.has(p.id)) {
-                  rawProductsMap.set(p.id, p);
-                }
-              }
+              termProducts.push(...pageResult.products);
               hasMore = pageResult.hasMore;
               page++;
             }
+            return termProducts;
           })
         );
+
+        const rawProductsMap = new Map<string, any>();
+        for (const termProducts of perTermResults) {
+          for (const p of termProducts) {
+            if (!rawProductsMap.has(p.id)) {
+              rawProductsMap.set(p.id, p);
+            }
+          }
+        }
 
         const matched = Array.from(rawProductsMap.values()).filter((p) => isProductOfBrand(p, brand));
         if (isBn) {
