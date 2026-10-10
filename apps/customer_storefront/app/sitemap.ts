@@ -4,6 +4,7 @@ import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
 import { getCanonicalCategorySlug } from './lib/types';
 import { isMissingItemTranslationsTableError } from './lib/translationErrors';
+import { POPULAR_BRANDS } from './lib/brandsData';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -20,6 +21,12 @@ const dynamicIndexRoutes = [
   {
     enPath: '/category',
     bnPath: '/bn/category',
+    priority: 0.8,
+    changefreq: 'daily',
+  },
+  {
+    enPath: '/brand',
+    bnPath: '/bn/brand',
     priority: 0.8,
     changefreq: 'daily',
   },
@@ -292,6 +299,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const bnUrl = `${BASE_URL}/bn/category/${cat.slug}`;
     categoryEntries.push({
       url,
+      ...(newestMod ? { lastModified: newestMod } : {}),
       changeFrequency: 'daily',
       priority: 0.9,
       alternates: {
@@ -304,8 +312,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     categoryEntries.push({
       url: bnUrl,
+      ...(newestMod ? { lastModified: newestMod } : {}),
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+  }
+
+  const brandEntries: MetadataRoute.Sitemap = [];
+  for (const brand of POPULAR_BRANDS) {
+    const url = `${BASE_URL}/brand/${brand.slug}`;
+    const bnUrl = `${BASE_URL}/bn/brand/${brand.slug}`;
+    brandEntries.push({
+      url,
+      ...(newestMod ? { lastModified: newestMod } : {}),
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+    brandEntries.push({
+      url: bnUrl,
+      ...(newestMod ? { lastModified: newestMod } : {}),
+      changeFrequency: 'daily',
+      priority: 0.8,
       alternates: {
         languages: {
           'en-BD': url,
@@ -367,6 +408,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...dynamicIndexEntries,
     ...staticEntries,
     ...categoryEntries,
+    ...brandEntries,
     ...productEntries,
   ];
 }

@@ -167,7 +167,18 @@ export default function RootLayoutDocument({
               image: 'https://www.luckystore1947.com/lucky-store-social-share-v2.png',
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
+              foundingDate: '1947',
+              priceRange: '৳৳',
               currenciesAccepted: 'BDT',
+              knowsAbout: [
+                'Grocery delivery in Chattogram',
+                'Chawkbazar daily bazaar essentials',
+                'Pantry staples and spices',
+                'Edible oil and pure ghee',
+                'Ispahani and packaged tea blends',
+                'Aarong dairy and milk',
+                'Fortune cookies',
+              ],
               hasMap: 'https://maps.google.com/?cid=1342606622879549324',
               areaServed: {
                 '@type': 'GeoCircle',

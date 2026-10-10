@@ -116,6 +116,28 @@ describe('sitemap', () => {
     expect(catRootBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category');
     expect(catRootBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category');
 
+    // Dynamic Index: Brand Root pair
+    expect(urls).toContain('https://www.luckystore1947.com/brand');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/brand');
+
+    const brandRootEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/brand');
+    const brandRootBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/brand');
+
+    expect(brandRootEn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand');
+    expect(brandRootEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand');
+    expect(brandRootBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand');
+    expect(brandRootBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand');
+
+    // Brand Hub Pages (EN & BN + alternates)
+    expect(urls).toContain('https://www.luckystore1947.com/brand/radhuni');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/brand/radhuni');
+    const radhuniEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/brand/radhuni');
+    const radhuniBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/brand/radhuni');
+    expect(radhuniEn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand/radhuni');
+    expect(radhuniEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand/radhuni');
+    expect(radhuniBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand/radhuni');
+    expect(radhuniBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand/radhuni');
+
     // Static Pages: verified pairs exist with reciprocal alternates
     expect(urls).toContain('https://www.luckystore1947.com/delivery');
     expect(urls).toContain('https://www.luckystore1947.com/bn/delivery');
@@ -156,8 +178,10 @@ describe('sitemap', () => {
     const categoryBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/category/dairy-and-eggs');
     expect(categoryEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category/dairy-and-eggs');
     expect(categoryEn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category/dairy-and-eggs');
+    expect(categoryEn?.lastModified).toBe('2026-09-20T11:00:00Z');
     expect(categoryBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category/dairy-and-eggs');
     expect(categoryBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category/dairy-and-eggs');
+    expect(categoryBn?.lastModified).toBe('2026-09-20T11:00:00Z');
 
     // Product (EN & BN + lastModified + eligibility + alternates)
     const expectedProductSlug = 'fresh-milk-1l--4acf0fb2';

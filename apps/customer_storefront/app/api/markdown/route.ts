@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
 import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { POPULAR_BRANDS, getBrandBySlug } from '../../lib/brandsData';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,6 +62,7 @@ function mdProduct(p: any): string {
 const SITE_MAP = [
   { path: '/', label: 'Home', desc: 'Online groceries, deals, and categories' },
   { path: '/category', label: 'All Categories', desc: 'Browse all product categories' },
+  { path: '/brand', label: 'Popular Brands', desc: 'Browse products by trusted brand' },
   { path: '/category/oil-and-ghee', label: 'Oil & Ghee', desc: 'Cooking oil, mustard oil, and pure ghee' },
   { path: '/category/rice-and-grain', label: 'Rice & Grains', desc: 'Aromatic rice, basmati, and atta' },
   { path: '/category/dairy-and-eggs', label: 'Dairy & Eggs', desc: 'Fresh milk, eggs, butter, and cheese' },
@@ -506,6 +508,28 @@ export async function GET(req: NextRequest) {
       markdown += '\n';
       for (const group of CATEGORY_GROUPS) {
         markdown += `- **${group.label}** — [Browse](${BASE_URL}/category/${group.slug})\n`;
+      }
+    } else if (path === '/brand' || path === '/bn/brand') {
+      markdown = mdHeader('Popular Brands at Lucky Store', `${POPULAR_BRANDS.length} brands`);
+      markdown += 'Browse genuine products from Bangladesh’s most trusted grocery and FMCG brands:\n\n';
+      for (const b of POPULAR_BRANDS) {
+        markdown += `- **[${b.name}](${BASE_URL}/brand/${b.slug})** (${b.badgeEn}) — ${b.summaryEn}\n`;
+      }
+    } else if (path.startsWith('/brand/') || path.startsWith('/bn/brand/')) {
+      const slug = path.replace('/brand/', '').replace('/bn/brand/', '').trim();
+      const brand = getBrandBySlug(slug);
+      if (brand) {
+        const { products } = await repo.search({ query: brand.searchQuery, limit: 30 });
+        markdown = mdHeader(`${brand.name} (${brand.bengaliName})`, brand.titleEn);
+        markdown += `> ${brand.descEn}\n\n`;
+        markdown += `### 🏷️ Brand Overview\n\n${brand.summaryEn}\n\n`;
+        markdown += `### 📦 Products by ${brand.name} (${products.length} found)\n\n`;
+        for (const p of products) {
+          markdown += mdProduct(p);
+        }
+      } else {
+        markdown = mdHeader('Brand Not Found');
+        markdown += `No brand found for slug: ${slug}\n\n[Browse all brands](${BASE_URL}/brand)\n`;
       }
 
     // ----- Static page handlers -----

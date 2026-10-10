@@ -1,0 +1,106 @@
+# Lucky Store — Full Context & Catalog Documentation
+
+> Comprehensive reference for AI agents, generative engines, and search crawlers.
+> Storefront: https://www.luckystore1947.com
+
+---
+
+## 1. Overview & Heritage
+
+Lucky Store is an authentic neighborhood grocery store established in 1947, located in Chawkbazar, Chattogram, Bangladesh. For over seven decades, it has served local families with daily bazaar essentials, pantry staples, fresh dairy, edible oils, tea, snacks, and household supplies.
+
+The digital storefront (www.luckystore1947.com) operates as a high-speed, localized e-commerce experience offering direct doorstep delivery within a verified 1 km radius of the physical store.
+
+---
+
+## 2. Store Facts & Entity Identifiers
+
+- **Entity Name:** Lucky Store
+- **Alternate Names:** Lucky Store 1947, Lucky Store Chattogram, লাকি স্টোর
+- **Founded:** 1947
+- **Store Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203, Bangladesh
+- **Geo Coordinates:** Latitude 22.35500093723366, Longitude 91.83628930715629
+- **Google Maps CID:** 1342606622879549324
+- **Telephone / WhatsApp:** +880 1731-944544
+- **Email:** hello@luckystore1947.com
+- **Operating Hours:**
+  - Monday – Saturday: 08:00 – 22:00
+  - Sunday: 09:00 – 21:00
+- **Currency Accepted:** Bangladeshi Taka (BDT, ৳)
+- **Payment Methods:** Cash on Delivery (COD), bKash at doorstep, Nagad, Visa / Mastercard
+- **Primary Locales:** English (`en-BD`) and Bengali (`bn-BD`)
+
+---
+
+## 3. Delivery & Inspection Policy
+
+Lucky Store enforces a strict customer-protection delivery policy centered on transparency and confidence:
+
+- **Delivery Area:** Strictly within a 1 km radius around the Chawkbazar hub in Chattogram.
+- **Coverage Landmarks:** Chawkbazar Circle, Percival Hill Road, Emdad Park, Parade Ground, Chittagong College area, Mohsin College area, Subash Dutta Lane, Katalganj (near Chawkbazar side).
+- **Delivery Fee:**
+  - Free delivery on all orders of ৳500 or more.
+  - Standard ৳40 delivery fee on orders below ৳500.
+- **Delivery Speed:** Same-day delivery, typically delivered within 60 to 90 minutes during operating hours.
+- **100% Doorstep Inspection Guarantee:** Customers inspect seals, expiration dates, and package integrity before handing over payment. If any item is unsatisfactory, the customer may reject it immediately at the door with zero cancellation fee.
+
+---
+
+## 4. Product Taxonomy & Money Pages
+
+### Rice & Grains
+- **URL:** https://www.luckystore1947.com/category/rice-and-grain
+- **Key Offerings:** Miniket Rice, Chinigura Aromatic Rice, Nazirshail, Premium Atta, Maida, Suji.
+- **Summary:** Everyday Bengali cooking staples at fair bazaar rates.
+
+### Oil & Ghee
+- **URL:** https://www.luckystore1947.com/category/oil-and-ghee
+- **Key Offerings:** Pure Soybean Oil (Rupchanda, Teer, Fresh), Mustard Oil (Radhuni, Teer), Pure Cow Milk Ghee (Aarong, Pran).
+
+### Tea & Coffee
+- **URL:** https://www.luckystore1947.com/category/tea-and-coffee
+- **Key Offerings:** Ispahani Mirzapore Tea, Taaza Tea, Finlay, Nescafe Classic, Gold Coffee.
+
+### Dairy & Eggs
+- **URL:** https://www.luckystore1947.com/category/dairy-and-eggs
+- **Key Offerings:** Aarong Liquid Milk, Pasteurized Milk, Farm Fresh Eggs, Butter, Cheese.
+
+### Biscuits, Cookies & Snacks
+- **URL:** https://www.luckystore1947.com/category/biscuits-and-cookies
+- **URL:** https://www.luckystore1947.com/category/snacks
+- **Key Offerings:** Dry snacks, Chanachur, Toast Biscuits, Chips, and specialized Fortune Cookies.
+- **Fortune Cookies Landing:** https://www.luckystore1947.com/fortune-cookies-near-me
+
+### Personal Care & Cleaning Supplies
+- **URL:** https://www.luckystore1947.com/category/personal-care
+- **URL:** https://www.luckystore1947.com/category/cleaning-supplies
+- **Key Offerings:** Soaps, shampoos, oral care, laundry detergents, floor cleaners, dishwashing soaps.
+
+---
+
+## 5. Frequently Asked Questions (FAQ)
+
+### Where does Lucky Store deliver?
+Lucky Store delivers groceries exclusively within a 1 km radius of its store in Chawkbazar, Chattogram, Bangladesh.
+
+### How much is the delivery charge?
+Delivery is free for orders over ৳500. For orders under ৳500, the delivery charge is ৳40.
+
+### Can I inspect items before paying?
+Yes. Lucky Store offers a 100% doorstep inspection policy. Customers are encouraged to inspect products, packaging, and expiry dates before paying the delivery agent.
+
+### What payment methods are supported?
+Customers can pay using Cash on Delivery (COD) or mobile financial services (bKash, Nagad) after verifying their items at the doorstep.
+
+### How old is Lucky Store?
+Lucky Store was established in 1947 and has served Chattogram neighborhood families for more than 75 years.
+
+---
+
+## 6. AI Agent Protocols & Content Negotiation
+
+- **Markdown Negotiation:** Requests with `Accept: text/markdown` or user-agents matching `GPTBot`, `PerplexityBot`, `ClaudeBot`, `Applebot-Extended`, or `cohere-ai` are automatically rendered with clean Markdown (`text/markdown; charset=utf-8`) and token estimates (`x-markdown-tokens`).
+- **Sitemap:** https://www.luckystore1947.com/sitemap.xml
+- **API Catalog:** https://www.luckystore1947.com/.well-known/api-catalog
+- **Auth Protocol:** https://www.luckystore1947.com/auth.md
+- **MCP Server Card:** https://www.luckystore1947.com/.well-known/mcp/server-card.json

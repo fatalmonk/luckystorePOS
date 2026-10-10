@@ -19,12 +19,14 @@ Lucky Store is a neighborhood grocery store serving Chattogram families since 19
 - [Oil and ghee](https://www.luckystore1947.com/category/oil-and-ghee)
 - [Tea and coffee](https://www.luckystore1947.com/category/tea-and-coffee)
 - [Fortune Cookies near me](https://www.luckystore1947.com/fortune-cookies-near-me)
+- [Popular brands](https://www.luckystore1947.com/brand)
 - [Snacks](https://www.luckystore1947.com/category/snacks)
 - [Cleaning supplies](https://www.luckystore1947.com/category/cleaning-supplies)
 - [Personal care](https://www.luckystore1947.com/category/personal-care)
 
 ## AI and agent resources
 
+- [Full documentation](https://www.luckystore1947.com/llms-full.txt): Comprehensive store context, full category taxonomy, and delivery policies.
 - [auth.md](https://www.luckystore1947.com/auth.md): Agent authentication and user-controlled account access information.
 - [API catalog](https://www.luckystore1947.com/.well-known/api-catalog): Public API discovery metadata.
 - [Sitemap](https://www.luckystore1947.com/sitemap.xml): Crawlable public routes and product URLs.
