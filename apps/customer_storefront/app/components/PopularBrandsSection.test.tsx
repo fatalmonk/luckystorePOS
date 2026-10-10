@@ -15,6 +15,9 @@ describe('PopularBrandsSection', () => {
 
     const brandLink = screen.getByRole('link', { name: /Radhuni/i });
     expect(brandLink).toHaveAttribute('href', '/brand/radhuni');
+
+    const reel = screen.getByRole('region', { name: /Shop Popular Brands brands/i });
+    expect(reel).toHaveClass('grid-reel');
   });
 
   it('renders Bengali popular brands section with localized content and links', () => {
@@ -28,5 +31,8 @@ describe('PopularBrandsSection', () => {
 
     const brandLink = screen.getByRole('link', { name: /রাঁধুনী/i });
     expect(brandLink).toHaveAttribute('href', '/bn/brand/radhuni');
+
+    const reel = screen.getByRole('region', { name: /জনপ্রিয় ব্র্যান্ডসমূহ brands/i });
+    expect(reel).toHaveClass('grid-reel');
   });
 });
