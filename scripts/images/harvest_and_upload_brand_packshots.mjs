@@ -116,7 +116,7 @@ async function searchChaldal(query) {
     while ((m = regex.exec(html)) !== null) {
       const slug = m[1];
       const raw = decodeURIComponent(m[2]);
-      if (!seen.has(slug)) {
+      if (!seen.has(slug) && raw.startsWith('https://')) {
         seen.add(slug);
         items.push({
           name: slug.replace(/-/g, ' '),
@@ -133,6 +133,69 @@ async function searchChaldal(query) {
   }
 }
 
+// Score a candidate against a target product
+function scoreCandidate(product, candidate) {
+  const pClean = cleanText(product.name);
+  const pBrand = cleanText(product.brand);
+  const pSizes = extractSizeTokens(product.name);
+
+  // Exclude brand, pure numbers, and size/quantity tokens from keywords
+  const pWords = pClean
+    .split(' ')
+    .filter(w => {
+      if (w.length <= 2 || w === pBrand) return false;
+      if (/^\d+$/.test(w)) return false;
+      if (/^\d+(?:l|ltr|litre|liter|ml|kg|g|gm|pcs|pack|s)$/.test(w)) return false;
+      return true;
+    });
+
+  const cClean = cleanText(candidate.name);
+  const cSizes = extractSizeTokens(candidate.name);
+
+  // 1. Brand match
+  const brandAliases = [pBrand];
+  if (pBrand === 'abul khair') brandAliases.push('marks', 'seylon', 'ceylon');
+  if (pBrand === 'arla') brandAliases.push('dano');
+  if (pBrand === 'new zealand dairy') brandAliases.push('diploma', 'red cow');
+  if (pBrand === 'nestle') brandAliases.push('maggi', 'nescafe', 'kitkat', 'nido');
+
+  const matchesBrand = brandAliases.some(b => cClean.includes(b));
+  if (!matchesBrand) {
+    return { score: -100, matchesBrand: false, matchedKeywordsCount: 0 };
+  }
+
+  let score = 15;
+
+  // 2. Keyword match (must match non-size product-name terms)
+  let matchedKeywordsCount = 0;
+  for (const w of pWords) {
+    if (cClean.includes(w)) {
+      matchedKeywordsCount++;
+      score += 4;
+    }
+  }
+
+  // Require at least one non-size product-name keyword match
+  if (pWords.length > 0 && matchedKeywordsCount === 0) {
+    return { score: -100, matchesBrand: true, matchedKeywordsCount: 0 };
+  }
+
+  // 3. Size match
+  let sizeMatch = false;
+  let sizeConflict = false;
+  if (pSizes.size > 0 && cSizes.size > 0) {
+    for (const ps of pSizes) {
+      if (cSizes.has(ps)) sizeMatch = true;
+      else sizeConflict = true;
+    }
+  }
+
+  if (sizeMatch) score += 10;
+  if (sizeConflict && !sizeMatch) score -= 15; // Penalty for conflicting pack size
+
+  return { score, matchesBrand: true, matchedKeywordsCount };
+}
+
 async function main() {
   const productsPath = resolve(process.cwd(), 'data/inventory/brands_missing_products_import.json');
   const products = JSON.parse(readFileSync(productsPath, 'utf-8'));
@@ -145,33 +208,37 @@ async function main() {
     const cWb = XLSX.readFile(chaldalExcelPath);
     const cRows = XLSX.utils.sheet_to_json(cWb.Sheets[cWb.SheetNames[0]]);
     for (const r of cRows) {
-      if (r['Image URL'] && r.Name) {
+      const url = r['Image URL'];
+      if (url && typeof url === 'string' && url.startsWith('https://') && r.Name) {
         candidates.push({
           name: r.Name,
           slug: cleanText(r.Name).replace(/\s+/g, '-'),
-          rawUrl: r['Image URL'],
+          rawUrl: url,
           source: 'chaldal-excel',
         });
       }
     }
-    console.log(`Added ${cRows.length} candidates from chaldal-products.xlsx`);
+    console.log(`Added ${candidates.length} candidates from chaldal-products.xlsx`);
   }
 
   const shwapnoExcelPath = resolve(process.cwd(), 'apps/scraper/shwapno-products.xlsx');
   if (existsSync(shwapnoExcelPath)) {
     const sWb = XLSX.readFile(shwapnoExcelPath);
     const sRows = XLSX.utils.sheet_to_json(sWb.Sheets[sWb.SheetNames[0]]);
+    let shwapnoCount = 0;
     for (const r of sRows) {
-      if (r['Image URL'] && r.Name) {
+      const url = r['Image URL'];
+      if (url && typeof url === 'string' && url.startsWith('https://') && r.Name) {
         candidates.push({
           name: r.Name,
           slug: cleanText(r.Name).replace(/\s+/g, '-'),
-          rawUrl: r['Image URL'],
+          rawUrl: url,
           source: 'shwapno-excel',
         });
+        shwapnoCount++;
       }
     }
-    console.log(`Added ${sRows.length} candidates from shwapno-products.xlsx`);
+    console.log(`Added ${shwapnoCount} candidates from shwapno-products.xlsx`);
   }
 
   // 2. Fetch brand queries from Chaldal
@@ -197,62 +264,18 @@ async function main() {
 
   for (let i = 0; i < products.length; i++) {
     const p = products[i];
-    const pClean = cleanText(p.name);
-    const pBrand = cleanText(p.brand);
-    const pSizes = extractSizeTokens(p.name);
-    const pWords = pClean.split(' ').filter(w => w.length > 2 && w !== pBrand);
-
     let bestCand = null;
     let bestScore = -100;
 
     for (const cand of candidates) {
-      const cClean = cleanText(cand.name);
-      const cSizes = extractSizeTokens(cand.name);
-
-      let score = 0;
-
-      // Brand check
-      const brandAliases = [pBrand];
-      if (pBrand === 'abul khair') brandAliases.push('marks', 'seylon', 'ceylon');
-      if (pBrand === 'arla') brandAliases.push('dano');
-      if (pBrand === 'new zealand dairy') brandAliases.push('diploma', 'red cow');
-      if (pBrand === 'nestle') brandAliases.push('maggi', 'nescafe', 'kitkat', 'nido');
-
-      const matchesBrand = brandAliases.some(b => cClean.includes(b));
-      if (matchesBrand) {
-        score += 15;
-      } else {
-        // Without brand match, score penalty
-        score -= 20;
-      }
-
-      // Word match
-      for (const w of pWords) {
-        if (cClean.includes(w)) {
-          score += 4;
-        }
-      }
-
-      // Size match
-      let sizeMatch = false;
-      let sizeConflict = false;
-      if (pSizes.size > 0 && cSizes.size > 0) {
-        for (const ps of pSizes) {
-          if (cSizes.has(ps)) sizeMatch = true;
-          else sizeConflict = true;
-        }
-      }
-
-      if (sizeMatch) score += 10;
-      if (sizeConflict && !sizeMatch) score -= 15; // Different pack size!
-
-      if (score > bestScore) {
+      const { score, matchesBrand, matchedKeywordsCount } = scoreCandidate(p, cand);
+      if (matchesBrand && matchedKeywordsCount > 0 && score > bestScore) {
         bestScore = score;
         bestCand = { ...cand, score };
       }
     }
 
-    // Threshold check (must have at least brand + matching keywords, score >= 20)
+    // Threshold check (must have brand + matching non-size keywords, score >= 20)
     if (bestCand && bestScore >= 20) {
       results.push({
         product: p,
@@ -260,14 +283,25 @@ async function main() {
         score: bestScore,
       });
     } else {
-      // Fallback: targeted on-demand search for this specific product
-      console.log(`🔍 Fallback search for "${p.name}" (best score was ${bestScore})...`);
+      // Fallback: targeted on-demand search for this specific product with same validation
+      console.log(`🔍 Fallback search for "${p.name}" (best candidate score was ${bestScore})...`);
       const targeted = await searchChaldal(p.name);
-      if (targeted.length > 0) {
+      let bestTargeted = null;
+      let bestTargetedScore = -100;
+
+      for (const t of targeted) {
+        const { score, matchesBrand, matchedKeywordsCount } = scoreCandidate(p, t);
+        if (matchesBrand && matchedKeywordsCount > 0 && score >= 20 && score > bestTargetedScore) {
+          bestTargetedScore = score;
+          bestTargeted = { ...t, score };
+        }
+      }
+
+      if (bestTargeted) {
         results.push({
           product: p,
-          candidate: { ...targeted[0], score: 25 },
-          score: 25,
+          candidate: bestTargeted,
+          score: bestTargetedScore,
         });
         candidates.push(...targeted);
       } else {
@@ -304,6 +338,18 @@ async function main() {
     console.log(`  Source: ${candidate.rawUrl} (${candidate.name}) [Score: ${score}]`);
 
     try {
+      // Validate HTTPS protocol
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(candidate.rawUrl);
+      } catch (urlErr) {
+        throw new Error(`Invalid URL format: ${candidate.rawUrl}`);
+      }
+
+      if (parsedUrl.protocol !== 'https:') {
+        throw new Error(`Insecure image download blocked: protocol is "${parsedUrl.protocol}" for ${candidate.rawUrl}`);
+      }
+
       // Download
       const imgRes = await fetch(candidate.rawUrl, {
         headers: {
