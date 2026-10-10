@@ -241,7 +241,12 @@ export default async function BengaliCategorySlugPage({
   const products = rawProducts.map((product) => {
     const translation: any = translationMap.get(product.id);
     return translation
-      ? { ...product, name: translation.name?.trim() || product.name, description: translation.description?.trim() || product.description }
+      ? {
+          ...product,
+          originalName: product.name,
+          name: translation.name?.trim() || product.name,
+          description: translation.description?.trim() || product.description,
+        }
       : product;
   });
 

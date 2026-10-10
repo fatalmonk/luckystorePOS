@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
 import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { POPULAR_BRANDS, getBrandBySlug, isProductOfBrand } from '../../lib/brandsData';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,6 +62,7 @@ function mdProduct(p: any): string {
 const SITE_MAP = [
   { path: '/', label: 'Home', desc: 'Online groceries, deals, and categories' },
   { path: '/category', label: 'All Categories', desc: 'Browse all product categories' },
+  { path: '/brand', label: 'Popular Brands', desc: 'Browse products by trusted brand' },
   { path: '/category/oil-and-ghee', label: 'Oil & Ghee', desc: 'Cooking oil, mustard oil, and pure ghee' },
   { path: '/category/rice-and-grain', label: 'Rice & Grains', desc: 'Aromatic rice, basmati, and atta' },
   { path: '/category/dairy-and-eggs', label: 'Dairy & Eggs', desc: 'Fresh milk, eggs, butter, and cheese' },
@@ -97,8 +99,7 @@ function mdBusinessContext(): string {
   md += `### 🕐 Operating Hours\n\n`;
   md += `| Day | Hours |\n`;
   md += `| --- | --- |\n`;
-  md += `| Monday – Saturday | 08:00 – 22:00 |\n`;
-  md += `| Sunday | 09:00 – 21:00 |\n\n`;
+  md += `| Monday – Sunday | 09:00 – 00:30 |\n\n`;
 
   md += `### 💳 Payment Methods\n\n`;
   md += `Cash, bKash, Nagad, Card (Visa / Mastercard)\n\n`;
@@ -155,8 +156,7 @@ function mdContactPage(): string {
   md += `## Operating Hours\n\n`;
   md += `| Day | Hours |\n`;
   md += `| --- | --- |\n`;
-  md += `| Monday – Saturday | 08:00 – 22:00 |\n`;
-  md += `| Sunday | 09:00 – 21:00 |\n\n`;
+  md += `| Monday – Sunday | 09:00 – 00:30 |\n\n`;
 
   md += `## Send a Message\n\n`;
   md += `Visit [${BASE_URL}/contact](${BASE_URL}/contact) to use the contact form.\n`;
@@ -506,6 +506,69 @@ export async function GET(req: NextRequest) {
       markdown += '\n';
       for (const group of CATEGORY_GROUPS) {
         markdown += `- **${group.label}** — [Browse](${BASE_URL}/category/${group.slug})\n`;
+      }
+    } else if (path === '/brand' || path === '/bn/brand') {
+      const isBn = path === '/bn/brand';
+      if (isBn) {
+        markdown = mdHeader('জনপ্রিয় ব্র্যান্ডসমূহ চট্টগ্রাম | লাকি স্টোর', `${POPULAR_BRANDS.length} ব্র্যান্ড`);
+        markdown += 'লাকি স্টোরে সহজলভ্য আসল ও বিশ্বস্ত গ্রোসারি ব্র্যান্ডসমূহ:\n\n';
+        for (const b of POPULAR_BRANDS) {
+          markdown += `- **[${b.bengaliName}](${BASE_URL}/bn/brand/${b.slug})** (${b.badgeBn}) — ${b.summaryBn}\n`;
+        }
+      } else {
+        markdown = mdHeader('Popular Brands at Lucky Store', `${POPULAR_BRANDS.length} brands`);
+        markdown += 'Browse genuine products from Bangladesh’s most trusted grocery and FMCG brands:\n\n';
+        for (const b of POPULAR_BRANDS) {
+          markdown += `- **[${b.name}](${BASE_URL}/brand/${b.slug})** (${b.badgeEn}) — ${b.summaryEn}\n`;
+        }
+      }
+    } else if (path.startsWith('/bn/brand/') || path.startsWith('/brand/')) {
+      const isBn = path.startsWith('/bn/brand/');
+      const slug = isBn
+        ? path.replace('/bn/brand/', '').trim()
+        : path.replace('/brand/', '').trim();
+      const brand = getBrandBySlug(slug);
+      if (brand) {
+        const firstPageResult = await repo.search({ query: brand.searchQuery, limit: 1000, page: 0 });
+        const allProducts: any[] = [...firstPageResult.products];
+        let page = 1;
+        let hasMore = firstPageResult.hasMore;
+        const maxPages = 10;
+
+        while (hasMore && page < maxPages) {
+          const nextPage = await repo.search({
+            query: brand.searchQuery,
+            limit: 1000,
+            page,
+          });
+          allProducts.push(...nextPage.products);
+          hasMore = nextPage.hasMore;
+          page++;
+        }
+
+        const matched = allProducts.filter((p) => isProductOfBrand(p, brand));
+        if (isBn) {
+          markdown = mdHeader(`${brand.bengaliName} (${brand.name})`, brand.titleBn);
+          markdown += `> ${brand.descBn}\n\n`;
+          markdown += `### 🏷️ ব্র্যান্ড পরিচিতি\n\n${brand.summaryBn}\n\n`;
+          markdown += `### 📦 ${brand.bengaliName} এর পণ্য (${matched.length} টি পাওয়া গেছে)\n\n`;
+          for (const p of matched) {
+            markdown += mdProduct(p);
+          }
+        } else {
+          markdown = mdHeader(`${brand.name} (${brand.bengaliName})`, brand.titleEn);
+          markdown += `> ${brand.descEn}\n\n`;
+          markdown += `### 🏷️ Brand Overview\n\n${brand.summaryEn}\n\n`;
+          markdown += `### 📦 Products by ${brand.name} (${matched.length} found)\n\n`;
+          for (const p of matched) {
+            markdown += mdProduct(p);
+          }
+        }
+      } else {
+        markdown = mdHeader(isBn ? 'ব্র্যান্ড পাওয়া যায়নি' : 'Brand Not Found');
+        markdown += isBn
+          ? `কোন ব্র্যান্ড পাওয়া যায়নি: ${slug}\n\n[সকল ব্র্যান্ড দেখুন](${BASE_URL}/bn/brand)\n`
+          : `No brand found for slug: ${slug}\n\n[Browse all brands](${BASE_URL}/brand)\n`;
       }
 
     // ----- Static page handlers -----

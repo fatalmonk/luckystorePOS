@@ -69,6 +69,9 @@ interface CatalogLayoutProps {
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
   locale?: Locale;
+  headingLevel?: 'h1' | 'h2' | 'h3';
+  brandName?: string;
+  brandSlug?: string;
 }
 
 export function CatalogLayout({
@@ -81,6 +84,9 @@ export function CatalogLayout({
   sort,
   searchParams,
   locale,
+  headingLevel,
+  brandName,
+  brandSlug,
 }: CatalogLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -232,8 +238,12 @@ export function CatalogLayout({
   const modalRef = useRef<HTMLDivElement>(null);
   const PAGE_SIZE = 24;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const listId = `category:${categorySlug}`;
-  const listName = group?.label || parentGroup?.label || categorySlug;
+  const listId = brandSlug
+    ? `brand:${brandSlug}`
+    : brandName
+    ? `brand:${brandName.toLowerCase().replace(/\s+/g, '-')}`
+    : `category:${categorySlug}`;
+  const listName = brandName || group?.label || parentGroup?.label || categorySlug;
 
   useEffect(() => {
     trackViewItemList(filtered.slice(0, visibleCount), listId, listName);
@@ -305,30 +315,52 @@ export function CatalogLayout({
             <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
               {effectiveLocale === 'bn' ? 'হোম' : 'Home'}
             </Link>
-            <span>/</span>
-            <Link href={withLocale('/category', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-              {effectiveLocale === 'bn' ? 'ক্যাটাগরি' : 'Shop'}
-            </Link>
-            {categorySlug !== 'all' && (
+            {brandName ? (
               <>
                 <span>/</span>
-                <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">
-                  {effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[categorySlug] || categorySlug.replace(/-/g, ' ')) : categorySlug.replace(/-/g, ' ')}
+                <Link href={withLocale('/brand', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
+                  {effectiveLocale === 'bn' ? 'ব্র্যান্ডসমূহ' : 'Brands'}
+                </Link>
+                <span>/</span>
+                <span className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">
+                  {brandName}
                 </span>
+              </>
+            ) : (
+              <>
+                <span>/</span>
+                <Link href={withLocale('/category', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
+                  {effectiveLocale === 'bn' ? 'ক্যাটাগরি' : 'Shop'}
+                </Link>
+                {categorySlug !== 'all' && (
+                  <>
+                    <span>/</span>
+                    <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">
+                      {effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[categorySlug] || categorySlug.replace(/-/g, ' ')) : categorySlug.replace(/-/g, ' ')}
+                    </span>
+                  </>
+                )}
               </>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            {categorySlug !== 'all' ? (
-              <h2 className="text-lg font-black tracking-tight text-warm-fg">
-                {searchQuery ? `Search results for "${searchQuery}"` : group?.label || categorySlug.replace(/-/g, ' ')}
-              </h2>
-            ) : (
-              <h1 className="text-lg font-black tracking-tight text-warm-fg">
-                {searchQuery ? `Search results for "${searchQuery}"` : 'All Products'}
-              </h1>
-            )}
+            {(() => {
+              const TitleTag = headingLevel || (categorySlug !== 'all' ? 'h2' : 'h1');
+              const titleText = searchQuery
+                ? `Search results for "${searchQuery}"`
+                : brandName
+                ? (effectiveLocale === 'bn' ? `${brandName}-এর পণ্যসমূহ` : `${brandName} Products`)
+                : categorySlug !== 'all'
+                ? (group?.label || categorySlug.replace(/-/g, ' '))
+                : 'All Products';
+
+              return (
+                <TitleTag className="text-lg font-black tracking-tight text-warm-fg">
+                  {titleText}
+                </TitleTag>
+              );
+            })()}
             <span
               aria-live="polite"
               aria-atomic="true"

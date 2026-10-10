@@ -1,3 +1,30 @@
+# Explicit permissions for AI search crawlers
+User-agent: GPTBot
+User-agent: PerplexityBot
+User-agent: ClaudeBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: cohere-ai
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /order
+Disallow: /login
+Disallow: /signup
+Disallow: /bn/checkout
+Disallow: /bn/cart
+Disallow: /bn/profile
+Disallow: /bn/order
+Disallow: /bn/login
+Disallow: /bn/signup
+Disallow: /wishlist
+Disallow: /bn/wishlist
+Disallow: /search
+Disallow: /preview
+
 User-agent: *
 Allow: /
 Disallow: /api/
@@ -12,5 +39,11 @@ Disallow: /bn/checkout
 Disallow: /bn/cart
 Disallow: /bn/profile
 Disallow: /bn/order
+Disallow: /bn/login
+Disallow: /bn/signup
+Disallow: /wishlist
+Disallow: /bn/wishlist
+Disallow: /search
+Disallow: /preview
 
 Sitemap: https://www.luckystore1947.com/sitemap.xml

@@ -13,6 +13,10 @@ import type { Locale } from '../../lib/i18n/config';
 import { withLocale } from '../../lib/i18n/config';
 import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
+import { JsonLd } from '../../components/seo/JsonLd';
+import { toProductSlug } from '../../lib/products/slugify';
+
+const BASE_URL = 'https://www.luckystore1947.com';
 
 interface CategoryShellProps {
   categorySlug: string;
@@ -129,8 +133,48 @@ export function CategoryShell({
   const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || defaultBanner;
   const showFortuneCookiesIntentLink = categorySlug === 'biscuits-and-cookies';
 
+  const hasActiveFilters = Boolean(
+    searchParams?.price ||
+    searchParams?.availability ||
+    searchParams?.brand ||
+    searchParams?.theme ||
+    searchParams?.q ||
+    searchParams?.search
+  );
+
+  const itemListSchema = !isAllProducts && !hasActiveFilters && products.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: isBn ? prettyName : bannerConfig.title,
+        description: isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle,
+        numberOfItems: products.length,
+        itemListElement: products.slice(0, 30).map((p, index) => {
+          const productSlug = toProductSlug((p as any).originalName || p.name, p.id);
+          const productUrl = `${BASE_URL}${withLocale(`/product/${productSlug}`, locale)}`;
+          return {
+            '@type': 'ListItem',
+            position: index + 1,
+            item: {
+              '@type': 'Product',
+              name: p.name,
+              url: productUrl,
+              ...(p.image_url ? { image: p.image_url } : {}),
+              offers: {
+                '@type': 'Offer',
+                price: p.price,
+                priceCurrency: 'BDT',
+                availability: (p.stock ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              },
+            },
+          };
+        }),
+      }
+    : null;
+
   return (
     <>
+      {itemListSchema && <JsonLd data={itemListSchema} />}
       <Header />
       <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
         {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (

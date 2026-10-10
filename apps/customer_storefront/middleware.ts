@@ -213,8 +213,13 @@ export async function middleware(request: NextRequest) {
     (accept.includes('text/markdown') && !accept.includes('text/html')) ||
     (isKnownAiBot && !accept.includes('text/html'));
 
-  if (wantsMarkdown) {
-    const originalPath = request.nextUrl.pathname;
+  const originalPath = request.nextUrl.pathname;
+  const isStaticTextDoc =
+    originalPath === '/llms.txt' ||
+    originalPath === '/llms-full.txt' ||
+    originalPath.endsWith('.txt');
+
+  if (wantsMarkdown && !isStaticTextDoc) {
     const search = request.nextUrl.search;
 
     // Rewrite to the markdown API route with original path as query param
@@ -239,6 +244,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|api|robots\\.txt|sitemap|sitemap\\.xml|site\\.webmanifest|auth\\.md|.*\\.md$|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
+    '/((?!_next/static|_next/image|api|robots\\.txt|llms\\.txt|llms-full\\.txt|.*\\.txt$|sitemap|sitemap\\.xml|site\\.webmanifest|auth\\.md|.*\\.md$|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
   ],
 };

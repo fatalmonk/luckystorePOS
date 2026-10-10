@@ -4,6 +4,7 @@ import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
 import { getCanonicalCategorySlug } from './lib/types';
 import { isMissingItemTranslationsTableError } from './lib/translationErrors';
+import { POPULAR_BRANDS, isProductOfBrand } from './lib/brandsData';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -20,6 +21,12 @@ const dynamicIndexRoutes = [
   {
     enPath: '/category',
     bnPath: '/bn/category',
+    priority: 0.8,
+    changefreq: 'daily',
+  },
+  {
+    enPath: '/brand',
+    bnPath: '/bn/brand',
     priority: 0.8,
     changefreq: 'daily',
   },
@@ -80,17 +87,17 @@ const staticRoutes = [
 ] as const;
 
 // Dynamic category pages: shares the exact canonical slug normalization used by category routing
-async function getCategories(): Promise<{ slug: string }[]> {
+async function getCategories(): Promise<{ id?: string; slug: string; name?: string }[]> {
   try {
     const categories = await getCachedCategories();
     const seenSlugs = new Set<string>();
-    const result: { slug: string }[] = [];
+    const result: { id?: string; slug: string; name?: string }[] = [];
 
     for (const cat of categories) {
       const canonicalSlug = getCanonicalCategorySlug(cat.slug || cat.name);
       if (canonicalSlug && !seenSlugs.has(canonicalSlug)) {
         seenSlugs.add(canonicalSlug);
-        result.push({ slug: canonicalSlug });
+        result.push({ id: cat.id, slug: canonicalSlug, name: cat.name });
       }
     }
 
@@ -127,27 +134,49 @@ export function isProductSitemapEligible(item: {
 }
 
 // Dynamic product pages: enforces strict sitemap eligibility contract
-async function getProducts(): Promise<{ id: string; name: string; updatedAt: string | null }[]> {
+async function getProducts(): Promise<{ id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[]> {
   try {
-    const { data, error } = await supabase.rpc('search_storefront_catalog', {
-      p_store_id: STORE_ID,
-      p_query: '',
-      p_category_id: null,
-      p_limit: 5000,
-      p_offset: 0,
-    });
+    // Protocol limit: 50,000 URLs per sitemap file. With up to 2 URLs per product (EN & BN),
+    // cap at 24,000 products to strictly prevent crawlers rejecting an oversized single file.
+    const MAX_SITEMAP_PRODUCTS = 24_000;
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    const allProducts: { id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[] = [];
 
-    if (error) throw error;
+    while (allProducts.length < MAX_SITEMAP_PRODUCTS) {
+      const fetchLimit = Math.min(PAGE_SIZE, MAX_SITEMAP_PRODUCTS - allProducts.length);
+      const { data, error } = await supabase.rpc('search_storefront_catalog', {
+        p_store_id: STORE_ID,
+        p_query: '',
+        p_category_id: null,
+        p_limit: fetchLimit,
+        p_offset: offset,
+      });
 
-    const rows = Array.isArray(data) ? data : [];
+      if (error) throw error;
 
-    return rows
-      .filter(isProductSitemapEligible)
-      .map((i: any) => ({
-        id: String(i.id ?? i.item_id).trim(),
-        name: i.name.trim(),
-        updatedAt: i.updated_at || i.created_at || null,
-      }));
+      const rows = Array.isArray(data) ? data : [];
+      if (rows.length === 0) break;
+
+      for (const i of rows) {
+        if (isProductSitemapEligible(i)) {
+          allProducts.push({
+            id: String(i.id ?? i.item_id).trim(),
+            name: i.name.trim(),
+            brand: String(i.brand || '').trim(),
+            category: String(i.category || '').trim(),
+            categoryId: String(i.category_id || '').trim(),
+            updatedAt: i.updated_at || i.created_at || null,
+          });
+          if (allProducts.length >= MAX_SITEMAP_PRODUCTS) break;
+        }
+      }
+
+      if (rows.length < fetchLimit) break;
+      offset += fetchLimit;
+    }
+
+    return allProducts;
   } catch (error) {
     console.error('Error fetching products for sitemap:', error);
     return [];
@@ -290,8 +319,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const cat of categories) {
     const url = `${BASE_URL}/category/${cat.slug}`;
     const bnUrl = `${BASE_URL}/bn/category/${cat.slug}`;
+    const catProducts = products.filter(
+      (p) =>
+        (cat.id && p.categoryId && p.categoryId === cat.id) ||
+        (p.category && getCanonicalCategorySlug(p.category) === cat.slug) ||
+        (cat.name && p.category && p.category.toLowerCase() === cat.name.toLowerCase())
+    );
+    const catUpdatedAts = catProducts
+      .map((p) => p.updatedAt)
+      .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
+    const catLastMod = catUpdatedAts.length
+      ? new Date(catUpdatedAts.reduce((a, b) => (a > b ? a : b))).toISOString().split('.')[0] + 'Z'
+      : undefined;
+
     categoryEntries.push({
       url,
+      ...(catLastMod ? { lastModified: catLastMod } : {}),
       changeFrequency: 'daily',
       priority: 0.9,
       alternates: {
@@ -304,8 +347,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     categoryEntries.push({
       url: bnUrl,
+      ...(catLastMod ? { lastModified: catLastMod } : {}),
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+  }
+
+  const brandEntries: MetadataRoute.Sitemap = [];
+  for (const brand of POPULAR_BRANDS) {
+    const url = `${BASE_URL}/brand/${brand.slug}`;
+    const bnUrl = `${BASE_URL}/bn/brand/${brand.slug}`;
+    const brandProducts = products.filter((p) => isProductOfBrand(p, brand));
+    const brandUpdatedAts = brandProducts
+      .map((p) => p.updatedAt)
+      .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
+    const brandLastMod = brandUpdatedAts.length
+      ? new Date(brandUpdatedAts.reduce((a, b) => (a > b ? a : b))).toISOString().split('.')[0] + 'Z'
+      : undefined;
+
+    brandEntries.push({
+      url,
+      ...(brandLastMod ? { lastModified: brandLastMod } : {}),
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          'en-BD': url,
+          'bn-BD': bnUrl,
+          'x-default': url,
+        },
+      },
+    });
+    brandEntries.push({
+      url: bnUrl,
+      ...(brandLastMod ? { lastModified: brandLastMod } : {}),
+      changeFrequency: 'daily',
+      priority: 0.8,
       alternates: {
         languages: {
           'en-BD': url,
@@ -367,6 +451,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...dynamicIndexEntries,
     ...staticEntries,
     ...categoryEntries,
+    ...brandEntries,
     ...productEntries,
   ];
 }

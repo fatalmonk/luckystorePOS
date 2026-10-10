@@ -40,6 +40,9 @@ vi.mock('../lib/supabase', () => ({
         {
           id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
           name: 'Fresh Milk 1L',
+          category: 'Dairy & Eggs',
+          category_id: 'cat-1',
+          brand: 'Fresh',
           price: 90,
           is_active: true,
           updated_at: '2026-09-20T10:00:00Z',
@@ -47,6 +50,9 @@ vi.mock('../lib/supabase', () => ({
         {
           id: '7ddf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
           name: 'Untranslated Active Item',
+          category: 'Dairy & Eggs',
+          category_id: 'cat-1',
+          brand: 'Fresh',
           price: 150,
           is_active: true,
           updated_at: '2026-09-20T11:00:00Z',
@@ -116,6 +122,32 @@ describe('sitemap', () => {
     expect(catRootBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category');
     expect(catRootBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category');
 
+    // Dynamic Index: Brand Root pair
+    expect(urls).toContain('https://www.luckystore1947.com/brand');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/brand');
+
+    const brandRootEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/brand');
+    const brandRootBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/brand');
+
+    expect(brandRootEn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand');
+    expect(brandRootEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand');
+    expect(brandRootBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand');
+    expect(brandRootBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand');
+
+    // Brand Hub Pages (EN & BN + alternates)
+    expect(urls).toContain('https://www.luckystore1947.com/brand/radhuni');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/brand/radhuni');
+    const radhuniEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/brand/radhuni');
+    const radhuniBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/brand/radhuni');
+    expect(radhuniEn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand/radhuni');
+    expect(radhuniEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand/radhuni');
+    expect(radhuniBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand/radhuni');
+    expect(radhuniBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand/radhuni');
+    expect(radhuniEn?.lastModified).toBeUndefined();
+
+    const freshEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/brand/fresh');
+    expect(freshEn?.lastModified).toBe('2026-09-20T11:00:00Z');
+
     // Static Pages: verified pairs exist with reciprocal alternates
     expect(urls).toContain('https://www.luckystore1947.com/delivery');
     expect(urls).toContain('https://www.luckystore1947.com/bn/delivery');
@@ -156,8 +188,10 @@ describe('sitemap', () => {
     const categoryBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/category/dairy-and-eggs');
     expect(categoryEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category/dairy-and-eggs');
     expect(categoryEn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category/dairy-and-eggs');
+    expect(categoryEn?.lastModified).toBe('2026-09-20T11:00:00Z');
     expect(categoryBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/category/dairy-and-eggs');
     expect(categoryBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/category/dairy-and-eggs');
+    expect(categoryBn?.lastModified).toBe('2026-09-20T11:00:00Z');
 
     // Product (EN & BN + lastModified + eligibility + alternates)
     const expectedProductSlug = 'fresh-milk-1l--4acf0fb2';
@@ -183,5 +217,46 @@ describe('sitemap', () => {
     expect(untranslatedEn?.lastModified).toBe('2026-09-20T11:00:00Z');
     expect(untranslatedEn?.alternates?.languages?.['en-BD']).toBe(`https://www.luckystore1947.com/product/${untranslatedSlug}`);
     expect(untranslatedEn?.alternates?.languages?.['bn-BD']).toBeUndefined();
+  });
+
+  it('paginates across multiple pages when the product catalog exceeds 1000 items', async () => {
+    const { supabase } = await import('../lib/supabase');
+    const page1 = Array.from({ length: 1000 }, (_, i) => ({
+      id: `11111111-0000-0000-0000-${String(i).padStart(12, '0')}`,
+      name: `Product ${i}`,
+      category: 'Dairy & Eggs',
+      category_id: 'cat-1',
+      brand: 'Fresh',
+      price: 50,
+      is_active: true,
+      updated_at: '2026-09-20T10:00:00Z',
+    }));
+    const page2 = [
+      {
+        id: '22222222-0000-0000-0000-000000000001',
+        name: 'Product 1001',
+        category: 'Dairy & Eggs',
+        category_id: 'cat-1',
+        brand: 'Fresh',
+        price: 50,
+        is_active: true,
+        updated_at: '2026-09-20T10:00:00Z',
+      },
+    ];
+
+    (supabase.rpc as any).mockImplementation(async (fn: string, args: any) => {
+      if (fn === 'search_storefront_catalog') {
+        if (args?.p_offset === 0) return { data: page1, error: null };
+        if (args?.p_offset === 1000) return { data: page2, error: null };
+        return { data: [], error: null };
+      }
+      return { data: [], error: null };
+    });
+
+    const entries = await sitemap();
+    const urls = entries.map((e) => e.url);
+
+    expect(urls).toContain('https://www.luckystore1947.com/product/product-0--11111111');
+    expect(urls).toContain('https://www.luckystore1947.com/product/product-1001--22222222');
   });
 });
