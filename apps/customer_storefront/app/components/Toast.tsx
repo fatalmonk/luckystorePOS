@@ -1,20 +1,28 @@
-'use client'; // toast context provider with useState, useCallback, and auto-dismiss timers
+'use client';
 
-import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from 'react';
 
-interface ToastAction {
+export interface ToastAction {
   label: string;
   onClick: () => void;
 }
 
-interface Toast {
+export interface Toast {
   id: string;
   message: string;
   action?: ToastAction;
   duration?: number;
+  type?: 'default' | 'success' | 'error' | 'info';
 }
 
-interface ToastContextType {
+export interface ToastContextType {
   showToast: (message: string, action?: ToastAction, duration?: number) => void;
 }
 
@@ -35,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const showToast = useCallback((message: string, action?: ToastAction, duration = 2800) => {
+  const showToast = useCallback((message: string, action?: ToastAction, duration = 3200) => {
     const id = `toast-${++toastCounter}`;
     setToasts((prev) => [...prev, { id, message, action, duration }]);
 
@@ -46,34 +54,41 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 w-[90%] max-w-[380px] pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className="bg-warm-fg text-warm-bg px-4 py-3.5 rounded-[14px] text-sm font-semibold text-center shadow-lg animate-[toastIn_0.3s_var(--ease-out,ease)] pointer-events-auto flex items-center justify-between gap-3"
-            style={{
-              animation: 'toastIn 0.3s var(--ease-out, ease)',
-            }}
-          >
-            <span className="flex-1 text-left">{toast.message}</span>
-            {toast.action && (
-              <button
-                onClick={() => {
-                  toast.action!.onClick();
-                  dismiss(toast.id);
-                }}
-                className="text-warm-accent font-bold text-sm whitespace-nowrap hover:text-warm-accent-hover transition-colors"
-              >
-                {toast.action.label}
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+      <section
+        aria-label="Notifications"
+        className="pointer-events-none fixed bottom-20 left-1/2 z-[9999] flex w-[92%] max-w-[420px] -translate-x-1/2 flex-col gap-2 md:bottom-6 md:left-auto md:right-6 md:translate-x-0"
+      >
+        <div aria-live="polite" aria-atomic="true" className="flex flex-col gap-2">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              role="status"
+              className="pointer-events-auto flex items-center justify-between gap-3 rounded-2xl border border-warm-border bg-warm-fg px-4 py-3.5 text-sm font-semibold text-warm-bg shadow-xl transition-all duration-200"
+              style={{
+                animation: 'toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+            >
+              <span className="flex-1 text-left leading-snug">{toast.message}</span>
+              {toast.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.action!.onClick();
+                    dismiss(toast.id);
+                  }}
+                  className="shrink-0 whitespace-nowrap text-sm font-black text-warm-accent transition-colors hover:text-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                >
+                  {toast.action.label}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes toastIn {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(12px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}} />
     </ToastContext.Provider>

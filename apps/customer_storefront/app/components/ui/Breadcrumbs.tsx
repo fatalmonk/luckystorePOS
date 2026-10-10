@@ -1,24 +1,110 @@
 'use client';
 
-import React from 'react';
+import React, { type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import Link from 'next/link';
+import { CaretRight } from '@phosphor-icons/react';
 import { JsonLd } from '../seo/JsonLd';
 
 const SITE_URL = 'https://www.luckystore1947.com';
 
-export interface BreadcrumbItem {
+/* -------------------------------------------------------------------------- */
+/*                     shadcn Breadcrumb Primitives                           */
+/* -------------------------------------------------------------------------- */
+
+export function Breadcrumb({ className = '', ...props }: ComponentPropsWithoutRef<'nav'>) {
+  return (
+    <nav
+      aria-label="Breadcrumb"
+      className={`py-2.5 px-4 text-xs font-semibold text-warm-muted ${className}`.trim()}
+      {...props}
+    />
+  );
+}
+
+export function BreadcrumbList({ className = '', ...props }: ComponentPropsWithoutRef<'ol'>) {
+  return (
+    <ol
+      className={`flex flex-wrap items-center gap-1.5 break-words ${className}`.trim()}
+      {...props}
+    />
+  );
+}
+
+export function BreadcrumbItem({ className = '', ...props }: ComponentPropsWithoutRef<'li'>) {
+  return (
+    <li
+      className={`inline-flex items-center gap-1.5 ${className}`.trim()}
+      {...props}
+    />
+  );
+}
+
+export interface BreadcrumbLinkProps extends ComponentPropsWithoutRef<typeof Link> {
+  asChild?: boolean;
+}
+
+export function BreadcrumbLink({ className = '', href, ...props }: BreadcrumbLinkProps) {
+  return (
+    <Link
+      href={href}
+      className={`line-clamp-1 transition-colors hover:text-warm-fg ${className}`.trim()}
+      {...props}
+    />
+  );
+}
+
+export function BreadcrumbPage({ className = '', ...props }: ComponentPropsWithoutRef<'span'>) {
+  return (
+    <span
+      role="link"
+      aria-disabled="true"
+      aria-current="page"
+      className={`line-clamp-1 font-bold text-warm-fg ${className}`.trim()}
+      {...props}
+    />
+  );
+}
+
+export function BreadcrumbSeparator({
+  children,
+  className = '',
+  ...props
+}: ComponentPropsWithoutRef<'li'>) {
+  return (
+    <li
+      role="presentation"
+      aria-hidden="true"
+      className={`select-none text-warm-muted/50 ${className}`.trim()}
+      {...props}
+    >
+      {children ?? <CaretRight size={12} weight="bold" aria-hidden="true" />}
+    </li>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                    High-level Convenient Wrapper                           */
+/* -------------------------------------------------------------------------- */
+
+export interface BreadcrumbItemData {
   label: string;
   href: string;
 }
 
-interface BreadcrumbsProps {
-  items: BreadcrumbItem[];
+export interface BreadcrumbsProps {
+  items: BreadcrumbItemData[];
   homeHref?: string;
   homeLabel?: string;
+  className?: string;
 }
 
-export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: BreadcrumbsProps) {
-  const allItems: BreadcrumbItem[] = [{ label: homeLabel, href: homeHref }, ...items].map((item) => {
+export function Breadcrumbs({
+  items,
+  homeHref = '/',
+  homeLabel = 'Home',
+  className = '',
+}: BreadcrumbsProps) {
+  const allItems: BreadcrumbItemData[] = [{ label: homeLabel, href: homeHref }, ...items].map((item) => {
     const label = typeof item.label === 'string' ? item.label.trim() : '';
     if (label) return { ...item, label };
 
@@ -29,7 +115,7 @@ export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: Bread
     try {
       decodedSegment = decodeURIComponent(segment);
     } catch {
-      // Keep the readable URL segment when it contains malformed encoding.
+      // Keep readable segment on malformed encoding
     }
 
     const fallbackLabel = decodedSegment
@@ -44,7 +130,6 @@ export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: Bread
     return `${SITE_URL}${href === '/' ? '' : href}`;
   };
 
-  // Schema.org BreadcrumbList structured data
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -59,31 +144,29 @@ export function Breadcrumbs({ items, homeHref = '/', homeLabel = 'Home' }: Bread
   return (
     <>
       <JsonLd data={jsonLd} />
-      <nav aria-label="Breadcrumb" className="py-2.5 px-4 text-xs font-semibold text-warm-muted">
-        <ol className="flex items-center gap-1.5 flex-wrap">
+      <Breadcrumb className={className}>
+        <BreadcrumbList>
           {allItems.map((item, index) => {
             const isLast = index === allItems.length - 1;
 
             return (
-              <li key={item.href} className="flex items-center gap-1.5">
-                {index > 0 && <span className="text-warm-muted/50 select-none">/</span>}
-                {isLast ? (
-                  <span className="text-warm-fg font-bold line-clamp-1" aria-current="page">
-                    {item.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className="hover:text-warm-fg transition-colors line-clamp-1"
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </li>
+              <React.Fragment key={item.href}>
+                {index > 0 && <BreadcrumbSeparator />}
+                <BreadcrumbItem>
+                  {isLast ? (
+                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
             );
           })}
-        </ol>
-      </nav>
+        </BreadcrumbList>
+      </Breadcrumb>
     </>
   );
 }
+
+// Backwards-compatible type alias
+export type BreadcrumbItem = BreadcrumbItemData;

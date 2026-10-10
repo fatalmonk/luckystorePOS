@@ -112,7 +112,7 @@ describe('GridProductCard', () => {
 
     const wishlist = screen.getByRole('button', { name: 'Remove Test Rice from wishlist' });
     expect(wishlist).toHaveAttribute('aria-pressed', 'true');
-    expect(wishlist).toHaveClass('h-11', 'w-11', 'focus-visible:ring-warm-accent');
+    expect(wishlist).toHaveClass('size-11', 'focus-visible:ring-warm-accent');
   });
 
   it('keeps out-of-stock products disabled without adding fake notifications', () => {

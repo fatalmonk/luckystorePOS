@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { PaperPlaneTilt, CheckCircle, Warning } from '@phosphor-icons/react';
 import { GoogleMapEmbed } from './GoogleMapEmbed';
+import { Select } from '../../components/ui/Select';
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -164,24 +165,20 @@ export function ContactForm() {
             </div>
 
             {/* Topic Select */}
-            <div className="space-y-1">
-              <label htmlFor="topic" className="text-xs font-bold text-warm-fg">
-                Select Topic
-              </label>
-              <select
-                id="topic"
-                value={formData.topic}
-                onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-white outline-none text-xs font-semibold transition-all cursor-pointer"
-              >
-                <option value="">- Select -</option>
-                <option value="order_status">Order Status &amp; Tracking</option>
-                <option value="delivery">Same-Day Delivery Inquiry</option>
-                <option value="product_request">Product Request &amp; Stock</option>
-                <option value="wholesale">Wholesale / Bulk Orders</option>
-                <option value="general">General Support</option>
-              </select>
-            </div>
+            <Select
+              id="topic"
+              label="Select Topic"
+              value={formData.topic}
+              onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+              className="bg-warm-bg border-warm-border/80 focus:border-warm-accent focus:bg-white"
+            >
+              <option value="">- Select -</option>
+              <option value="order_status">Order Status &amp; Tracking</option>
+              <option value="delivery">Same-Day Delivery Inquiry</option>
+              <option value="product_request">Product Request &amp; Stock</option>
+              <option value="wholesale">Wholesale / Bulk Orders</option>
+              <option value="general">General Support</option>
+            </Select>
           </div>
 
           {/* Message Textarea */}

@@ -15,6 +15,7 @@ import { ProductImage } from './product/ProductImage';
 import { QtyNumber } from './ui/QtyNumber';
 import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
+import { Badge } from './ui/Badge';
 import { trackSelectItem } from '../lib/analytics';
 
 export interface GridProductCardProps {
@@ -61,11 +62,12 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
 
       <div className="pointer-events-none absolute left-2.5 right-2.5 top-2.5 z-20 flex items-start justify-between gap-2">
         {badgeLabel ? (
-          <span className={`max-w-[calc(100%-3.5rem)] truncate rounded-full px-2 py-0.5 font-display text-xs font-black uppercase tracking-wide ${
-            outOfStock ? 'product-badge-neutral' : stockLow ? 'product-badge-warning' : 'product-badge-sale'
-          }`}>
+          <Badge
+            variant={outOfStock ? 'neutral' : stockLow ? 'warning' : 'sale'}
+            className="max-w-[calc(100%-3.5rem)] truncate px-2 py-0.5 text-xs"
+          >
             {badgeLabel}
-          </span>
+          </Badge>
         ) : (
           <span />
         )}
@@ -80,7 +82,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
           disabled={isPending}
           aria-pressed={isWishlisted}
           aria-label={isWishlisted ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
-          className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-warm-control border border-warm-image-well-border bg-warm-image-well/90 text-lg shadow-warm-card-hover backdrop-blur-sm transition-colors hover:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-70"
+          className="pointer-events-auto flex size-11 shrink-0 items-center justify-center rounded-warm-control border border-warm-image-well-border bg-warm-image-well/90 text-lg shadow-warm-card-hover backdrop-blur-sm transition-colors hover:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-70"
         >
           <Heart
             size={18}
