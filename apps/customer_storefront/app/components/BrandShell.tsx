@@ -47,6 +47,7 @@ export function BrandShell({
     searchParams?.price ||
     searchParams?.availability ||
     searchParams?.category ||
+    searchParams?.brand ||
     searchParams?.sort
   );
 

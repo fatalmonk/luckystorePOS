@@ -78,7 +78,7 @@ export default async function BengaliBrandPage({
     getCachedCategories(),
     repo.search({
       query: brand.searchQuery,
-      limit: 100,
+      limit: 1000,
       page: 0,
     }),
   ]);
@@ -91,7 +91,7 @@ export default async function BengaliBrandPage({
   while (hasMore && page < maxPages) {
     const nextPage = await repo.search({
       query: brand.searchQuery,
-      limit: 100,
+      limit: 1000,
       page,
     });
     allProducts.push(...nextPage.products);

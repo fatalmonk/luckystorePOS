@@ -531,8 +531,24 @@ export async function GET(req: NextRequest) {
         : path.replace('/brand/', '').trim();
       const brand = getBrandBySlug(slug);
       if (brand) {
-        const { products } = await repo.search({ query: brand.searchQuery, limit: 100 });
-        const matched = (products as any[]).filter((p) => isProductOfBrand(p, brand));
+        const firstPageResult = await repo.search({ query: brand.searchQuery, limit: 1000, page: 0 });
+        const allProducts: any[] = [...firstPageResult.products];
+        let page = 1;
+        let hasMore = firstPageResult.hasMore;
+        const maxPages = 10;
+
+        while (hasMore && page < maxPages) {
+          const nextPage = await repo.search({
+            query: brand.searchQuery,
+            limit: 1000,
+            page,
+          });
+          allProducts.push(...nextPage.products);
+          hasMore = nextPage.hasMore;
+          page++;
+        }
+
+        const matched = allProducts.filter((p) => isProductOfBrand(p, brand));
         if (isBn) {
           markdown = mdHeader(`${brand.bengaliName} (${brand.name})`, brand.titleBn);
           markdown += `> ${brand.descBn}\n\n`;
