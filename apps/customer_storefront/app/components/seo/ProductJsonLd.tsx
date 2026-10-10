@@ -3,6 +3,7 @@ import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
 import { validateGtin } from '../../lib/products/gtin';
 import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { getBrandByName } from '../../lib/brandsData';
 import { JsonLd } from './JsonLd';
 
 interface ProductJsonLdProps {
@@ -56,6 +57,7 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
   const canonicalUrl = providedCanonicalUrl || `https://www.luckystore1947.com/product/${canonicalSlug}`;
   const effectiveName = name || product.name;
   const effectiveBrand = brand || product.brand;
+  const matchedBrand = getBrandByName(effectiveBrand);
   const gtinInfo = validateGtin(product.barcode);
   const effectiveSku = product.sku || product.id;
 
@@ -72,6 +74,9 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
           brand: {
             '@type': 'Brand',
             name: effectiveBrand,
+            ...(matchedBrand?.sameAs && matchedBrand.sameAs.length > 0
+              ? { sameAs: [...matchedBrand.sameAs] }
+              : {}),
           },
         }
       : {}),

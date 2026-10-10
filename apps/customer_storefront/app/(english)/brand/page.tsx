@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Header } from '../../components/updated/Header';
@@ -80,14 +81,29 @@ export default function BrandsDirectoryPage() {
                 href={`/brand/${b.slug}`}
                 className="group relative flex flex-col justify-between rounded-2xl border border-warm-border bg-warm-surface p-5 shadow-warm-sm transition-all hover:border-warm-accent hover:shadow-warm-md hover:-translate-y-0.5"
               >
-                <div className="space-y-2">
+                <div>
+                  <div className="relative mb-3 flex h-16 w-full items-center justify-center overflow-hidden rounded-warm-control border border-warm-border/60 bg-warm-image-well transition-colors group-hover:border-warm-accent/50">
+                    {b.logoUrl ? (
+                      <Image
+                        src={b.logoUrl}
+                        alt={`${b.name} logo`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-contain p-2.5 transition-transform duration-200 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="text-sm font-black uppercase tracking-wider text-warm-muted">
+                        {b.name.slice(0, 2)}
+                      </span>
+                    )}
+                  </div>
                   <span className="inline-block rounded-full bg-warm-bg px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-warm-muted group-hover:text-warm-fg">
                     {b.badgeEn}
                   </span>
-                  <h2 className="text-xl font-black text-warm-fg group-hover:text-warm-accent transition-colors">
+                  <h2 className="mt-2 text-xl font-black text-warm-fg group-hover:text-warm-accent transition-colors">
                     {b.name}
                   </h2>
-                  <p className="text-xs leading-relaxed text-warm-muted line-clamp-2">
+                  <p className="mt-1 text-xs leading-relaxed text-warm-muted line-clamp-2">
                     {b.summaryEn}
                   </p>
                 </div>

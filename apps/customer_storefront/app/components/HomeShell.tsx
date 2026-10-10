@@ -9,6 +9,7 @@ import { CartStorageNotice } from './CartStorageNotice';
 import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { HomeConfidence } from './HomeConfidence';
 import { ProductGridSection } from './ProductGridSection';
+import { PopularBrandsSection } from './PopularBrandsSection';
 import { HeritageSection } from './HeritageSection';
 import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
@@ -203,6 +204,10 @@ export function HomeShell({
                 ctaLabel={dict.reels.seeAll}
                 locale={locale}
               />
+            </div>
+
+            <div className="shelf-container-deferred">
+              <PopularBrandsSection locale={locale} />
             </div>
           </div>
 

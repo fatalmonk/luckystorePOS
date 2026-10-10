@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { toProductSlug } from '../../../lib/products/slugify';
 import { withLocale, type Locale } from '../../../lib/i18n/config';
 import { getCanonicalCategorySlug, normalizeCategorySlug } from '../../../lib/types';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Header } from '../../../components/updated/Header';
 import { BottomNav } from '../../../components/BottomNav';
 import { useToast } from '../../../components/Toast';
@@ -20,6 +20,7 @@ import { ProductCarousel } from '../../../components/product/ProductCarousel';
 import { ProductImage } from '../../../components/product/ProductImage';
 import { trackViewItem } from '../../../lib/analytics';
 import { DELIVERY_POLICY } from '../../../lib/deliveryData';
+import { getBrandHref } from '../../../lib/brandsData';
 
 interface ProductClientProps {
   product: Product;
@@ -77,12 +78,14 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
   const displayName = enrichment?.exactName || product.name;
   const overviewText = enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`;
+  const productBrand = enrichment?.brand || product.brand;
+  const brandHref = getBrandHref(productBrand, locale);
 
   // Specifications: derive catalog SKU dynamically, then append editorial or fallback specs
   const specifications = [
     ...(product.sku ? [{ label: 'Store SKU', value: product.sku }] : []),
     ...(enrichment?.specifications || [
-      ...(product.brand ? [{ label: 'Brand', value: product.brand }] : []),
+      ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
       ...(product.category ? [{ label: 'Category', value: product.category }] : []),
       ...(product.unit ? [{ label: 'Net Quantity', value: product.unit }] : []),
       { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
@@ -139,7 +142,17 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
                   </h1>
                   <p className="text-sm text-warm-muted">
                     {enrichment?.netQuantity || product.unit}
-                    {product.brand ? ` · ${product.brand}` : ''}
+                    {productBrand && (
+                      <>
+                        {' · '}
+                        <Link
+                          href={brandHref}
+                          className="font-medium text-warm-muted underline decoration-warm-border underline-offset-2 transition-colors hover:text-warm-fg hover:decoration-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-sm"
+                        >
+                          {productBrand}
+                        </Link>
+                      </>
+                    )}
                   </p>
                 </div>
                 <div aria-live="polite" aria-atomic="true" className="shrink-0">
@@ -246,22 +259,36 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
             <div className="overflow-hidden rounded-warm-panel border border-warm-border max-w-3xl">
               <table className="w-full text-left text-sm">
                 <tbody>
-                  {specifications.map((spec, idx) => (
-                    <tr
-                      key={spec.label}
-                      className={idx % 2 === 0 ? 'bg-warm-bg' : 'bg-warm-image-well/40'}
-                    >
-                      <th
-                        scope="row"
-                        className="py-3 px-4 font-semibold text-warm-fg w-1/3 border-b border-warm-border/60 text-xs sm:text-sm"
+                  {specifications.map((spec, idx) => {
+                    const isBrandRow =
+                      spec.label.toLowerCase() === 'brand' ||
+                      spec.label === 'ব্র্যান্ড';
+                    return (
+                      <tr
+                        key={spec.label}
+                        className={idx % 2 === 0 ? 'bg-warm-bg' : 'bg-warm-image-well/40'}
                       >
-                        {spec.label}
-                      </th>
-                      <td className="py-3 px-4 text-warm-muted border-b border-warm-border/60 text-xs sm:text-sm">
-                        {spec.value}
-                      </td>
-                    </tr>
-                  ))}
+                        <th
+                          scope="row"
+                          className="py-3 px-4 font-semibold text-warm-fg w-1/3 border-b border-warm-border/60 text-xs sm:text-sm"
+                        >
+                          {spec.label}
+                        </th>
+                        <td className="py-3 px-4 text-warm-muted border-b border-warm-border/60 text-xs sm:text-sm">
+                          {isBrandRow ? (
+                            <Link
+                              href={getBrandHref(spec.value, locale)}
+                              className="font-semibold text-warm-fg underline decoration-warm-border underline-offset-2 transition-colors hover:text-warm-accent hover:decoration-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-sm"
+                            >
+                              {spec.value}
+                            </Link>
+                          ) : (
+                            spec.value
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -411,7 +438,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
         </div>
       </div>
 
-      <BottomNav />
+      <BottomNav locale={locale} />
     </>
   );
 }

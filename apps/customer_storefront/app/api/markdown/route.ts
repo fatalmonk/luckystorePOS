@@ -529,24 +529,36 @@ export async function GET(req: NextRequest) {
         : path.replace('/brand/', '').trim();
       const brand = getBrandBySlug(slug);
       if (brand) {
-        const firstPageResult = await repo.search({ query: brand.searchQuery, limit: 1000, page: 0 });
-        const allProducts: any[] = [...firstPageResult.products];
-        let page = 1;
-        let hasMore = firstPageResult.hasMore;
-        const maxPages = 10;
+        const searchTerms = brand.searchQueries && brand.searchQueries.length > 0
+          ? brand.searchQueries
+          : [brand.searchQuery];
 
-        while (hasMore && page < maxPages) {
-          const nextPage = await repo.search({
-            query: brand.searchQuery,
-            limit: 1000,
-            page,
-          });
-          allProducts.push(...nextPage.products);
-          hasMore = nextPage.hasMore;
-          page++;
+        const perTermResults = await Promise.all(
+          searchTerms.map(async (term) => {
+            const termProducts: any[] = [];
+            let page = 0;
+            let hasMore = true;
+            const maxPages = 10;
+            while (hasMore && page < maxPages) {
+              const pageResult = await repo.search({ query: term, limit: 1000, page });
+              termProducts.push(...pageResult.products);
+              hasMore = pageResult.hasMore;
+              page++;
+            }
+            return termProducts;
+          })
+        );
+
+        const rawProductsMap = new Map<string, any>();
+        for (const termProducts of perTermResults) {
+          for (const p of termProducts) {
+            if (!rawProductsMap.has(p.id)) {
+              rawProductsMap.set(p.id, p);
+            }
+          }
         }
 
-        const matched = allProducts.filter((p) => isProductOfBrand(p, brand));
+        const matched = Array.from(rawProductsMap.values()).filter((p) => isProductOfBrand(p, brand));
         if (isBn) {
           markdown = mdHeader(`${brand.bengaliName} (${brand.name})`, brand.titleBn);
           markdown += `> ${brand.descBn}\n\n`;
