@@ -136,16 +136,20 @@ export function isProductSitemapEligible(item: {
 // Dynamic product pages: enforces strict sitemap eligibility contract
 async function getProducts(): Promise<{ id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[]> {
   try {
+    // Protocol limit: 50,000 URLs per sitemap file. With up to 2 URLs per product (EN & BN),
+    // cap at 24,000 products to strictly prevent crawlers rejecting an oversized single file.
+    const MAX_SITEMAP_PRODUCTS = 24_000;
     const PAGE_SIZE = 1000;
     let offset = 0;
     const allProducts: { id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[] = [];
 
-    while (true) {
+    while (allProducts.length < MAX_SITEMAP_PRODUCTS) {
+      const fetchLimit = Math.min(PAGE_SIZE, MAX_SITEMAP_PRODUCTS - allProducts.length);
       const { data, error } = await supabase.rpc('search_storefront_catalog', {
         p_store_id: STORE_ID,
         p_query: '',
         p_category_id: null,
-        p_limit: PAGE_SIZE,
+        p_limit: fetchLimit,
         p_offset: offset,
       });
 
@@ -164,11 +168,12 @@ async function getProducts(): Promise<{ id: string; name: string; brand: string;
             categoryId: String(i.category_id || '').trim(),
             updatedAt: i.updated_at || i.created_at || null,
           });
+          if (allProducts.length >= MAX_SITEMAP_PRODUCTS) break;
         }
       }
 
-      if (rows.length < PAGE_SIZE) break;
-      offset += PAGE_SIZE;
+      if (rows.length < fetchLimit) break;
+      offset += fetchLimit;
     }
 
     return allProducts;

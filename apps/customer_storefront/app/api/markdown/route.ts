@@ -99,8 +99,7 @@ function mdBusinessContext(): string {
   md += `### 🕐 Operating Hours\n\n`;
   md += `| Day | Hours |\n`;
   md += `| --- | --- |\n`;
-  md += `| Monday – Saturday | 08:00 – 22:00 |\n`;
-  md += `| Sunday | 09:00 – 21:00 |\n\n`;
+  md += `| Monday – Sunday | 09:00 – 00:30 |\n\n`;
 
   md += `### 💳 Payment Methods\n\n`;
   md += `Cash, bKash, Nagad, Card (Visa / Mastercard)\n\n`;
@@ -157,8 +156,7 @@ function mdContactPage(): string {
   md += `## Operating Hours\n\n`;
   md += `| Day | Hours |\n`;
   md += `| --- | --- |\n`;
-  md += `| Monday – Saturday | 08:00 – 22:00 |\n`;
-  md += `| Sunday | 09:00 – 21:00 |\n\n`;
+  md += `| Monday – Sunday | 09:00 – 00:30 |\n\n`;
 
   md += `## Send a Message\n\n`;
   md += `Visit [${BASE_URL}/contact](${BASE_URL}/contact) to use the contact form.\n`;

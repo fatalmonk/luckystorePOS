@@ -64,18 +64,18 @@ test.describe('Storefront H1 contract', () => {
   });
 
   test('English brand page has exactly one semantic H1', async ({ page }) => {
-    await page.goto('/brand/radhuni');
+    await page.goto('/brand/aarong');
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).toHaveText('Radhuni');
+    await expect(h1).toHaveText('Aarong');
   });
 
   test('Bengali brand page has exactly one semantic H1', async ({ page }) => {
-    await page.goto('/bn/brand/radhuni');
+    await page.goto('/bn/brand/aarong');
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).toHaveText('রাঁধুনী');
+    await expect(h1).toHaveText('আড়ং');
   });
 });
