@@ -126,4 +126,17 @@ describe('ProductJsonLd Identifier & GTIN Correctness Contract', () => {
     expect(jsonLd.sku).toBe('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
     expect(jsonLd.mpn).toBeUndefined();
   });
+
+  it('includes sameAs official entity URLs in Brand schema for known brands', () => {
+    const product = createBaseProduct({ brand: 'Nestle' });
+    const { container } = render(<ProductJsonLd product={product} />);
+    const jsonLd = extractJsonLd(container);
+
+    expect(jsonLd.brand).toBeDefined();
+    expect(jsonLd.brand['@type']).toBe('Brand');
+    expect(jsonLd.brand.name).toBe('Nestle');
+    expect(jsonLd.brand.sameAs).toBeDefined();
+    expect(Array.isArray(jsonLd.brand.sameAs)).toBe(true);
+    expect(jsonLd.brand.sameAs).toContain('https://www.nestle.com.bd');
+  });
 });

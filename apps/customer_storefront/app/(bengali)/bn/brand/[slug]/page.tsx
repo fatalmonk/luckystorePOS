@@ -74,31 +74,31 @@ export default async function BengaliBrandPage({
   }
 
   const { repo } = createProductRepository(supabase);
-  const [categories, firstPageResult] = await Promise.all([
+  const searchTerms = brand.searchQueries && brand.searchQueries.length > 0
+    ? brand.searchQueries
+    : [brand.searchQuery];
+
+  const [categories, ...queryResults] = await Promise.all([
     getCachedCategories(),
-    repo.search({
-      query: brand.searchQuery,
-      limit: 1000,
-      page: 0,
-    }),
+    ...searchTerms.map((term) =>
+      repo.search({
+        query: term,
+        limit: 1000,
+        page: 0,
+      })
+    ),
   ]);
 
-  const allProducts: any[] = [...firstPageResult.products];
-  let page = 1;
-  let hasMore = firstPageResult.hasMore;
-  const maxPages = 10;
-
-  while (hasMore && page < maxPages) {
-    const nextPage = await repo.search({
-      query: brand.searchQuery,
-      limit: 1000,
-      page,
-    });
-    allProducts.push(...nextPage.products);
-    hasMore = nextPage.hasMore;
-    page++;
+  const rawProductsMap = new Map<string, any>();
+  for (const res of queryResults) {
+    for (const p of res.products) {
+      if (!rawProductsMap.has(p.id)) {
+        rawProductsMap.set(p.id, p);
+      }
+    }
   }
 
+  const allProducts = Array.from(rawProductsMap.values());
   const matchedProducts = allProducts.filter((p) => isProductOfBrand(p, brand));
 
   // Overlay published Bengali translations

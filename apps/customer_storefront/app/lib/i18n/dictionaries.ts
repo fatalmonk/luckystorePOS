@@ -101,6 +101,8 @@ export const dictionaries = {
       snacksSubtitle: 'Crisp teatime biscuits, afternoon cold sips, and sweet bites.',
       careTitle: 'Home & Personal Care',
       careSubtitle: 'Gentle soaps, clean living essentials, and daily comforts for the home.',
+      brandsTitle: 'Shop Popular Brands',
+      brandsSubtitle: 'Authentic products from Bangladesh’s most trusted household FMCG brands.',
       seeAll: 'See all',
     },
     deal: {
@@ -303,6 +305,8 @@ export const dictionaries = {
       snacksSubtitle: 'বিকালের চা-বিস্কুট, কোল্ড ড্রিংকস ও মুখরোচক খাবার।',
       careTitle: 'ব্যক্তিগত ও ঘরোয়া যত্ন',
       careSubtitle: 'সাবান, শ্যাম্পু ও ঘরোয়া পরিচ্ছন্নতার প্রয়োজনীয় জিনিস।',
+      brandsTitle: 'জনপ্রিয় ব্র্যান্ডসমূহ',
+      brandsSubtitle: 'বাংলাদেশের সেরা ও বিশ্বস্ত ব্র্যান্ডের আসল পণ্যসমূহ।',
       seeAll: 'সব দেখুন',
     },
     deal: {
