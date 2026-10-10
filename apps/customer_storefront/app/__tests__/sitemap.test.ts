@@ -40,6 +40,9 @@ vi.mock('../lib/supabase', () => ({
         {
           id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
           name: 'Fresh Milk 1L',
+          category: 'Dairy & Eggs',
+          category_id: 'cat-1',
+          brand: 'Fresh',
           price: 90,
           is_active: true,
           updated_at: '2026-09-20T10:00:00Z',
@@ -47,6 +50,9 @@ vi.mock('../lib/supabase', () => ({
         {
           id: '7ddf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
           name: 'Untranslated Active Item',
+          category: 'Dairy & Eggs',
+          category_id: 'cat-1',
+          brand: 'Fresh',
           price: 150,
           is_active: true,
           updated_at: '2026-09-20T11:00:00Z',
@@ -137,6 +143,10 @@ describe('sitemap', () => {
     expect(radhuniEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand/radhuni');
     expect(radhuniBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/brand/radhuni');
     expect(radhuniBn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/brand/radhuni');
+    expect(radhuniEn?.lastModified).toBeUndefined();
+
+    const freshEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/brand/fresh');
+    expect(freshEn?.lastModified).toBe('2026-09-20T11:00:00Z');
 
     // Static Pages: verified pairs exist with reciprocal alternates
     expect(urls).toContain('https://www.luckystore1947.com/delivery');

@@ -168,7 +168,6 @@ export default function RootLayoutDocument({
               telephone: '+880 1731-944544',
               email: 'hello@luckystore1947.com',
               foundingDate: '1947',
-              priceRange: '৳৳',
               currenciesAccepted: 'BDT',
               knowsAbout: [
                 'Grocery delivery in Chattogram',

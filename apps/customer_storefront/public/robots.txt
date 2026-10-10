@@ -23,7 +23,7 @@ Disallow: /bn/signup
 Disallow: /wishlist
 Disallow: /bn/wishlist
 Disallow: /search
-Disallow: /preview/
+Disallow: /preview
 
 User-agent: *
 Allow: /
@@ -44,6 +44,6 @@ Disallow: /bn/signup
 Disallow: /wishlist
 Disallow: /bn/wishlist
 Disallow: /search
-Disallow: /preview/
+Disallow: /preview
 
 Sitemap: https://www.luckystore1947.com/sitemap.xml

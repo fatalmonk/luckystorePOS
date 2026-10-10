@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { BrandShell } from '../../../components/BrandShell';
 import { createProductRepository } from '../../../lib/products/index';
 import { getCachedCategories } from '../../../lib/products/getCachedCategories';
-import { getBrandBySlug } from '../../../lib/brandsData';
+import { getBrandBySlug, isProductOfBrand } from '../../../lib/brandsData';
 import { supabase } from '../../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -74,25 +74,37 @@ export default async function BrandPage({
   }
 
   const { repo } = createProductRepository(supabase);
-  const [categories, searchResult] = await Promise.all([
+  const [categories, firstPageResult] = await Promise.all([
     getCachedCategories(),
     repo.search({
       query: brand.searchQuery,
-      limit: 200,
+      limit: 100,
+      page: 0,
     }),
   ]);
 
-  const normBrand = brand.name.toLowerCase();
-  const matchedProducts = (searchResult.products as any[]).filter((p) => {
-    const pBrand = (p.brand || '').toLowerCase();
-    const pName = (p.name || '').toLowerCase();
-    return pBrand === normBrand || pName.includes(normBrand);
-  });
+  const allProducts: any[] = [...firstPageResult.products];
+  let page = 1;
+  let hasMore = firstPageResult.hasMore;
+  const maxPages = 10;
+
+  while (hasMore && page < maxPages) {
+    const nextPage = await repo.search({
+      query: brand.searchQuery,
+      limit: 100,
+      page,
+    });
+    allProducts.push(...nextPage.products);
+    hasMore = nextPage.hasMore;
+    page++;
+  }
+
+  const matchedProducts = allProducts.filter((p) => isProductOfBrand(p, brand));
 
   return (
     <BrandShell
       brand={brand}
-      products={matchedProducts.length > 0 ? matchedProducts : (searchResult.products as any[])}
+      products={matchedProducts}
       categories={categories as any}
       locale="en"
       searchParams={resolvedSearch}

@@ -4,7 +4,7 @@ import { getCachedCategories } from './lib/products/getCachedCategories';
 import { toProductSlug } from './lib/products/slugify';
 import { getCanonicalCategorySlug } from './lib/types';
 import { isMissingItemTranslationsTableError } from './lib/translationErrors';
-import { POPULAR_BRANDS } from './lib/brandsData';
+import { POPULAR_BRANDS, isProductOfBrand } from './lib/brandsData';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -87,17 +87,17 @@ const staticRoutes = [
 ] as const;
 
 // Dynamic category pages: shares the exact canonical slug normalization used by category routing
-async function getCategories(): Promise<{ slug: string }[]> {
+async function getCategories(): Promise<{ id?: string; slug: string; name?: string }[]> {
   try {
     const categories = await getCachedCategories();
     const seenSlugs = new Set<string>();
-    const result: { slug: string }[] = [];
+    const result: { id?: string; slug: string; name?: string }[] = [];
 
     for (const cat of categories) {
       const canonicalSlug = getCanonicalCategorySlug(cat.slug || cat.name);
       if (canonicalSlug && !seenSlugs.has(canonicalSlug)) {
         seenSlugs.add(canonicalSlug);
-        result.push({ slug: canonicalSlug });
+        result.push({ id: cat.id, slug: canonicalSlug, name: cat.name });
       }
     }
 
@@ -134,7 +134,7 @@ export function isProductSitemapEligible(item: {
 }
 
 // Dynamic product pages: enforces strict sitemap eligibility contract
-async function getProducts(): Promise<{ id: string; name: string; updatedAt: string | null }[]> {
+async function getProducts(): Promise<{ id: string; name: string; brand: string; category: string; categoryId: string; updatedAt: string | null }[]> {
   try {
     const { data, error } = await supabase.rpc('search_storefront_catalog', {
       p_store_id: STORE_ID,
@@ -153,6 +153,9 @@ async function getProducts(): Promise<{ id: string; name: string; updatedAt: str
       .map((i: any) => ({
         id: String(i.id ?? i.item_id).trim(),
         name: i.name.trim(),
+        brand: String(i.brand || '').trim(),
+        category: String(i.category || '').trim(),
+        categoryId: String(i.category_id || '').trim(),
         updatedAt: i.updated_at || i.created_at || null,
       }));
   } catch (error) {
@@ -297,9 +300,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const cat of categories) {
     const url = `${BASE_URL}/category/${cat.slug}`;
     const bnUrl = `${BASE_URL}/bn/category/${cat.slug}`;
+    const catProducts = products.filter(
+      (p) =>
+        (cat.id && p.categoryId && p.categoryId === cat.id) ||
+        (p.category && getCanonicalCategorySlug(p.category) === cat.slug) ||
+        (cat.name && p.category && p.category.toLowerCase() === cat.name.toLowerCase())
+    );
+    const catUpdatedAts = catProducts
+      .map((p) => p.updatedAt)
+      .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
+    const catLastMod = catUpdatedAts.length
+      ? new Date(catUpdatedAts.reduce((a, b) => (a > b ? a : b))).toISOString().split('.')[0] + 'Z'
+      : undefined;
+
     categoryEntries.push({
       url,
-      ...(newestMod ? { lastModified: newestMod } : {}),
+      ...(catLastMod ? { lastModified: catLastMod } : {}),
       changeFrequency: 'daily',
       priority: 0.9,
       alternates: {
@@ -312,7 +328,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     categoryEntries.push({
       url: bnUrl,
-      ...(newestMod ? { lastModified: newestMod } : {}),
+      ...(catLastMod ? { lastModified: catLastMod } : {}),
       changeFrequency: 'daily',
       priority: 0.9,
       alternates: {
@@ -329,9 +345,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const brand of POPULAR_BRANDS) {
     const url = `${BASE_URL}/brand/${brand.slug}`;
     const bnUrl = `${BASE_URL}/bn/brand/${brand.slug}`;
+    const brandProducts = products.filter((p) => isProductOfBrand(p, brand));
+    const brandUpdatedAts = brandProducts
+      .map((p) => p.updatedAt)
+      .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
+    const brandLastMod = brandUpdatedAts.length
+      ? new Date(brandUpdatedAts.reduce((a, b) => (a > b ? a : b))).toISOString().split('.')[0] + 'Z'
+      : undefined;
+
     brandEntries.push({
       url,
-      ...(newestMod ? { lastModified: newestMod } : {}),
+      ...(brandLastMod ? { lastModified: brandLastMod } : {}),
       changeFrequency: 'daily',
       priority: 0.8,
       alternates: {
@@ -344,7 +368,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     brandEntries.push({
       url: bnUrl,
-      ...(newestMod ? { lastModified: newestMod } : {}),
+      ...(brandLastMod ? { lastModified: brandLastMod } : {}),
       changeFrequency: 'daily',
       priority: 0.8,
       alternates: {

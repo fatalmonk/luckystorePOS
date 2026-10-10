@@ -25,7 +25,7 @@ BEGIN
   FROM public.stores
   WHERE id = p_store_id;
 
-  IF v_store_tenant_id IS NULL THEN
+  IF v_store_tenant_id IS NULL OR v_is_public IS NOT TRUE THEN
     RETURN '[]'::jsonb;
   END IF;
 

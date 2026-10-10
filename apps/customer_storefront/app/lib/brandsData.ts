@@ -3,6 +3,7 @@ export interface BrandDefinition {
   name: string;
   bengaliName: string;
   searchQuery: string;
+  aliases?: readonly string[];
   titleEn: string;
   titleBn: string;
   descEn: string;
@@ -19,6 +20,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Radhuni',
     bengaliName: 'রাঁধুনী',
     searchQuery: 'Radhuni',
+    aliases: ['Radhuni', 'রাঁধুনী', 'Square', 'Radhuni Spices'],
     titleEn: 'Radhuni Spices & Cooking Ingredients in Chattogram | Lucky Store',
     titleBn: 'রাঁধুনী মসলা ও রান্নার সামগ্রী চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Buy authentic Radhuni spices, mustard oil & recipe mixes at Lucky Store in Chawkbazar, Chattogram. Same-day delivery with 100% doorstep inspection.',
@@ -33,6 +35,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Aarong',
     bengaliName: 'আড়ং',
     searchQuery: 'Aarong',
+    aliases: ['Aarong', 'Aarong Dairy', 'আড়ং', 'BRAC', 'Aarong Milk'],
     titleEn: 'Aarong Dairy, Milk & Pure Ghee in Chattogram | Lucky Store',
     titleBn: 'আড়ং ডেইরি, দুধ ও খাঁটি ঘি চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Shop fresh Aarong liquid milk, standardized milk, yogurt & pure cow milk ghee from Lucky Store in Chattogram. Fast doorstep grocery delivery.',
@@ -47,6 +50,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Rupchanda',
     bengaliName: 'রূপচাঁদা',
     searchQuery: 'Rupchanda',
+    aliases: ['Rupchanda', 'রূপচাঁদা', 'BEOL', 'Rupchanda Oil'],
     titleEn: 'Rupchanda Fortified Soybean Oil in Chattogram | Lucky Store',
     titleBn: 'রূপচাঁদা ফর্টিফাইড সয়াবিন তেল চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Check current Rupchanda 1L, 2L & 5L soybean oil prices in Chattogram. Order online from Lucky Store with Cash on Delivery and doorstep inspection.',
@@ -61,6 +65,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Teer',
     bengaliName: 'তীর',
     searchQuery: 'Teer',
+    aliases: ['Teer', 'তীর', 'City Group', 'Teer Oil', 'Teer Atta'],
     titleEn: 'Teer Soybean Oil, Atta & Essentials in Chattogram | Lucky Store',
     titleBn: 'তীর সয়াবিন তেল, আটা ও ময়দা চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Shop Teer fortified soybean oil, whole wheat atta, maida & suji in Chattogram at displayed bazaar prices from Lucky Store.',
@@ -75,6 +80,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Fresh',
     bengaliName: 'ফ্রেশ',
     searchQuery: 'Fresh',
+    aliases: ['Fresh', 'ফ্রেশ', 'Meghna', 'MGI'],
     titleEn: 'Fresh Sugar, Edible Oil & Pantry in Chattogram | Lucky Store',
     titleBn: 'ফ্রেশ চিনি, তেল ও নিত্যপণ্য চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Buy Fresh refined sugar, pure soybean oil, salt & pantry staples online from Lucky Store in Chawkbazar, Chattogram.',
@@ -89,6 +95,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Ispahani',
     bengaliName: 'ইস্পাহানি',
     searchQuery: 'Ispahani',
+    aliases: ['Ispahani', 'ইস্পাহানি', 'Ispahani Mirzapore', 'Mirzapore', 'Blender\'s Choice'],
     titleEn: 'Ispahani Mirzapore Tea & Blends in Chattogram | Lucky Store',
     titleBn: 'ইস্পাহানি মির্জাপুর চা চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Order fresh Ispahani Mirzapore Best Leaf, Black Tea & Blender\'s Choice from Lucky Store in Chattogram. Same-day local delivery.',
@@ -103,6 +110,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Polar',
     bengaliName: 'পোলার',
     searchQuery: 'Polar',
+    aliases: ['Polar', 'পোলার', 'Dhaka Ice Cream'],
     titleEn: 'Polar Ice Cream & Frozen Desserts in Chattogram | Lucky Store',
     titleBn: 'পোলার আইসক্রিম ও ফ্রোজেন ডেজার্ট চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Indulge in Polar ice cream tubs, cones, chocobars & kulfi delivered cold to your doorstep in Chawkbazar, Chattogram.',
@@ -131,6 +139,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Nestlé',
     bengaliName: 'নেসলে',
     searchQuery: 'Nestle',
+    aliases: ['Nestle', 'Nestlé', 'নেসলে', 'Nescafé', 'Nescafe', 'Maggi', 'KitKat', 'Nido', 'Milo', 'Koko Crunch', 'Coffee Mate', 'Cerelac'],
     titleEn: 'Nestlé, Maggi & Nescafé in Chattogram | Lucky Store',
     titleBn: 'নেসলে, ম্যাগি ও নেসক্যাফে চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Shop Maggi 2-Minute Noodles, Nescafé Classic Coffee, Nido Milk & KitKat from Lucky Store in Chattogram with Cash on Delivery.',
@@ -145,6 +154,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Pran',
     bengaliName: 'প্রাণ',
     searchQuery: 'Pran',
+    aliases: ['Pran', 'প্রাণ', 'Pran Foods', 'PRAN-RFL'],
     titleEn: 'Pran Spices, Snacks & Pantry Foods in Chattogram | Lucky Store',
     titleBn: 'প্রাণ মসলা, স্ন্যাক্স ও খাদ্যপণ্য চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Browse Pran spices, biscuits, toast, drinks & culinary staples online at Lucky Store in Chawkbazar, Chattogram.',
@@ -159,6 +169,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Dove',
     bengaliName: 'ডাভ',
     searchQuery: 'Dove',
+    aliases: ['Dove', 'ডাভ', 'Unilever', 'Dove Beauty Bar'],
     titleEn: 'Dove Beauty Bars, Shampoos & Care in Chattogram | Lucky Store',
     titleBn: 'ডাভ বিউটি বার, শ্যাম্পু ও প্রসাধন চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Shop genuine Dove moisturizing beauty bars, intense repair shampoos & conditioners in Chattogram from Lucky Store.',
@@ -173,6 +184,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Lux',
     bengaliName: 'লাক্স',
     searchQuery: 'Lux',
+    aliases: ['Lux', 'লাক্স', 'Unilever', 'Lux Soap'],
     titleEn: 'Lux Fragrant Beauty Soap in Chattogram | Lucky Store',
     titleBn: 'লাক্স সুগন্ধি সাবান চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Order Lux beauty soap bars & body washes with floral fragrances from Lucky Store in Chattogram. Same-day delivery.',
@@ -187,6 +199,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Sunsilk',
     bengaliName: 'সানসিল্ক',
     searchQuery: 'Sunsilk',
+    aliases: ['Sunsilk', 'সানসিল্ক', 'Unilever'],
     titleEn: 'Sunsilk Shampoos & Hair Conditioners in Chattogram | Lucky Store',
     titleBn: 'সানসিল্ক শ্যাম্পু ও হেয়ার কেয়ার চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Buy Sunsilk Black Shine, Thick & Long, and Hairfall Solution shampoos in Chattogram from Lucky Store.',
@@ -201,6 +214,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Dettol',
     bengaliName: 'ডেটল',
     searchQuery: 'Dettol',
+    aliases: ['Dettol', 'ডেটল', 'Reckitt', 'Reckitt Benckiser'],
     titleEn: 'Dettol Antiseptic, Soap & Hygiene in Chattogram | Lucky Store',
     titleBn: 'ডেটল অ্যান্টিসেপ্টিক ও সাবান চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Keep your home protected with Dettol antiseptic liquid, hand wash & soap bars from Lucky Store in Chattogram.',
@@ -215,6 +229,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Bashundhara',
     bengaliName: 'বসুন্ধরা',
     searchQuery: 'Bashundhara',
+    aliases: ['Bashundhara', 'বসুন্ধরা', 'Bashundhara Tissue'],
     titleEn: 'Bashundhara Tissue & Household Paper in Chattogram | Lucky Store',
     titleBn: 'বসুন্ধরা টিস্যু ও পেপার পণ্য চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Order Bashundhara facial tissue, toilet tissue, kitchen towels & napkins from Lucky Store in Chattogram.',
@@ -229,6 +244,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Olympic',
     bengaliName: 'অলিম্পিক',
     searchQuery: 'Olympic',
+    aliases: ['Olympic', 'অলিম্পিক', 'Olympic Biscuits', 'Olympic Industries'],
     titleEn: 'Olympic Biscuits, Cookies & Bakery in Chattogram | Lucky Store',
     titleBn: 'অলিম্পিক বিস্কুট ও ড্রাই কেক চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Shop Olympic Energy Plus, Nutty, Tip & dry cake snacks online from Lucky Store in Chawkbazar, Chattogram.',
@@ -243,6 +259,7 @@ export const POPULAR_BRANDS: readonly BrandDefinition[] = [
     name: 'Fortune',
     bengaliName: 'ফরচুন',
     searchQuery: 'Fortune',
+    aliases: ['Fortune', 'ফরচুন', 'Adani Wilmar', 'Fortune Oil'],
     titleEn: 'Fortune Foods & Specialty Products in Chattogram | Lucky Store',
     titleBn: 'ফরচুন ফুডস ও স্পেশাল পণ্য চট্টগ্রাম | লাকি স্টোর',
     descEn: 'Order Fortune culinary products and Fortune Cookies from Lucky Store in Chawkbazar, Chattogram.',
@@ -261,4 +278,26 @@ export function getBrandBySlug(slug: string): BrandDefinition | undefined {
 
 export function getAllBrandSlugs(): string[] {
   return POPULAR_BRANDS.map((b) => b.slug);
+}
+
+export function isProductOfBrand(
+  product: { brand?: string; name?: string },
+  brand: BrandDefinition
+): boolean {
+  const pBrand = typeof product.brand === 'string' ? product.brand.trim() : '';
+  if (!pBrand) return false;
+
+  const normalize = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+  const targetNorm = normalize(brand.name);
+  const pBrandNorm = normalize(pBrand);
+
+  if (pBrandNorm === targetNorm) return true;
+
+  if (brand.aliases && brand.aliases.some((alias) => normalize(alias) === pBrandNorm)) {
+    return true;
+  }
+
+  return false;
 }

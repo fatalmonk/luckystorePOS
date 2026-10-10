@@ -133,7 +133,16 @@ export function CategoryShell({
   const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || defaultBanner;
   const showFortuneCookiesIntentLink = categorySlug === 'biscuits-and-cookies';
 
-  const itemListSchema = !isAllProducts && products.length > 0
+  const hasActiveFilters = Boolean(
+    searchParams?.price ||
+    searchParams?.availability ||
+    searchParams?.brand ||
+    searchParams?.theme ||
+    searchParams?.q ||
+    searchParams?.search
+  );
+
+  const itemListSchema = !isAllProducts && !hasActiveFilters && products.length > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
@@ -141,7 +150,7 @@ export function CategoryShell({
         description: isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle,
         numberOfItems: products.length,
         itemListElement: products.slice(0, 30).map((p, index) => {
-          const productSlug = toProductSlug(p.name, p.id);
+          const productSlug = toProductSlug((p as any).originalName || p.name, p.id);
           const productUrl = `${BASE_URL}${withLocale(`/product/${productSlug}`, locale)}`;
           return {
             '@type': 'ListItem',

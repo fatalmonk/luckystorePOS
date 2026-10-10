@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
 import { DELIVERY_POLICY } from '../../lib/deliveryData';
-import { POPULAR_BRANDS, getBrandBySlug } from '../../lib/brandsData';
+import { POPULAR_BRANDS, getBrandBySlug, isProductOfBrand } from '../../lib/brandsData';
 
 export const dynamic = 'force-dynamic';
 
@@ -510,26 +510,51 @@ export async function GET(req: NextRequest) {
         markdown += `- **${group.label}** — [Browse](${BASE_URL}/category/${group.slug})\n`;
       }
     } else if (path === '/brand' || path === '/bn/brand') {
-      markdown = mdHeader('Popular Brands at Lucky Store', `${POPULAR_BRANDS.length} brands`);
-      markdown += 'Browse genuine products from Bangladesh’s most trusted grocery and FMCG brands:\n\n';
-      for (const b of POPULAR_BRANDS) {
-        markdown += `- **[${b.name}](${BASE_URL}/brand/${b.slug})** (${b.badgeEn}) — ${b.summaryEn}\n`;
-      }
-    } else if (path.startsWith('/brand/') || path.startsWith('/bn/brand/')) {
-      const slug = path.replace('/brand/', '').replace('/bn/brand/', '').trim();
-      const brand = getBrandBySlug(slug);
-      if (brand) {
-        const { products } = await repo.search({ query: brand.searchQuery, limit: 30 });
-        markdown = mdHeader(`${brand.name} (${brand.bengaliName})`, brand.titleEn);
-        markdown += `> ${brand.descEn}\n\n`;
-        markdown += `### 🏷️ Brand Overview\n\n${brand.summaryEn}\n\n`;
-        markdown += `### 📦 Products by ${brand.name} (${products.length} found)\n\n`;
-        for (const p of products) {
-          markdown += mdProduct(p);
+      const isBn = path === '/bn/brand';
+      if (isBn) {
+        markdown = mdHeader('জনপ্রিয় ব্র্যান্ডসমূহ চট্টগ্রাম | লাকি স্টোর', `${POPULAR_BRANDS.length} ব্র্যান্ড`);
+        markdown += 'লাকি স্টোরে সহজলভ্য আসল ও বিশ্বস্ত গ্রোসারি ব্র্যান্ডসমূহ:\n\n';
+        for (const b of POPULAR_BRANDS) {
+          markdown += `- **[${b.bengaliName}](${BASE_URL}/bn/brand/${b.slug})** (${b.badgeBn}) — ${b.summaryBn}\n`;
         }
       } else {
-        markdown = mdHeader('Brand Not Found');
-        markdown += `No brand found for slug: ${slug}\n\n[Browse all brands](${BASE_URL}/brand)\n`;
+        markdown = mdHeader('Popular Brands at Lucky Store', `${POPULAR_BRANDS.length} brands`);
+        markdown += 'Browse genuine products from Bangladesh’s most trusted grocery and FMCG brands:\n\n';
+        for (const b of POPULAR_BRANDS) {
+          markdown += `- **[${b.name}](${BASE_URL}/brand/${b.slug})** (${b.badgeEn}) — ${b.summaryEn}\n`;
+        }
+      }
+    } else if (path.startsWith('/bn/brand/') || path.startsWith('/brand/')) {
+      const isBn = path.startsWith('/bn/brand/');
+      const slug = isBn
+        ? path.replace('/bn/brand/', '').trim()
+        : path.replace('/brand/', '').trim();
+      const brand = getBrandBySlug(slug);
+      if (brand) {
+        const { products } = await repo.search({ query: brand.searchQuery, limit: 100 });
+        const matched = (products as any[]).filter((p) => isProductOfBrand(p, brand));
+        if (isBn) {
+          markdown = mdHeader(`${brand.bengaliName} (${brand.name})`, brand.titleBn);
+          markdown += `> ${brand.descBn}\n\n`;
+          markdown += `### 🏷️ ব্র্যান্ড পরিচিতি\n\n${brand.summaryBn}\n\n`;
+          markdown += `### 📦 ${brand.bengaliName} এর পণ্য (${matched.length} টি পাওয়া গেছে)\n\n`;
+          for (const p of matched) {
+            markdown += mdProduct(p);
+          }
+        } else {
+          markdown = mdHeader(`${brand.name} (${brand.bengaliName})`, brand.titleEn);
+          markdown += `> ${brand.descEn}\n\n`;
+          markdown += `### 🏷️ Brand Overview\n\n${brand.summaryEn}\n\n`;
+          markdown += `### 📦 Products by ${brand.name} (${matched.length} found)\n\n`;
+          for (const p of matched) {
+            markdown += mdProduct(p);
+          }
+        }
+      } else {
+        markdown = mdHeader(isBn ? 'ব্র্যান্ড পাওয়া যায়নি' : 'Brand Not Found');
+        markdown += isBn
+          ? `কোন ব্র্যান্ড পাওয়া যায়নি: ${slug}\n\n[সকল ব্র্যান্ড দেখুন](${BASE_URL}/bn/brand)\n`
+          : `No brand found for slug: ${slug}\n\n[Browse all brands](${BASE_URL}/brand)\n`;
       }
 
     // ----- Static page handlers -----

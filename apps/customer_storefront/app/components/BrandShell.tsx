@@ -43,7 +43,14 @@ export function BrandShell({
     description: isBn ? brand.descBn : brand.descEn,
   };
 
-  const itemListSchema = products.length > 0
+  const hasActiveFilters = Boolean(
+    searchParams?.price ||
+    searchParams?.availability ||
+    searchParams?.category ||
+    searchParams?.sort
+  );
+
+  const itemListSchema = !hasActiveFilters && products.length > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
@@ -51,7 +58,7 @@ export function BrandShell({
         description: isBn ? brand.descBn : brand.descEn,
         numberOfItems: products.length,
         itemListElement: products.slice(0, 30).map((p, index) => {
-          const productSlug = toProductSlug(p.name, p.id);
+          const productSlug = toProductSlug((p as any).originalName || p.name, p.id);
           const productUrl = `${BASE_URL}${withLocale(`/product/${productSlug}`, locale)}`;
           return {
             '@type': 'ListItem',

@@ -94,7 +94,7 @@ To outperform national competitors in organic search and AI citations, Lucky Sto
 
 ### 1. Adopt Shwapno's "Brand Landing Pages" Strategy (High Impact)
 - **Insight:** Bangladeshi grocery shoppers heavily search brand names paired with products: *"Aarong milk price"*, *"Radhuni mustard oil Chattogram"*, *"Ispahani Mirzapore tea online"*, *"Rupchanda 5 liter"*.
-- **Gap in Lucky Store:** Lucky Store categorizes by product type (e.g. `/category/oil-and-ghee`), but lacks brand hub routes.
+- **Gap in Lucky Store (Pre-Rollout Baseline):** Lucky Store previously categorized only by product type (e.g. `/category/oil-and-ghee`), lacking brand hub routes prior to the October 2026 brand hubs rollout.
 - **Action:**
   - Introduce dedicated brand routes: `/brand/[slug]` (e.g. `/brand/aarong`, `/brand/radhuni`, `/brand/ispahani`, `/brand/rupchanda`, `/brand/teer`).
   - Add `Brand` schema linking products back to the brand entity.
@@ -110,7 +110,7 @@ To outperform national competitors in organic search and AI citations, Lucky Sto
 - **Insight:** Chaldal explicitly attempts to block generative AI answers in its robots file, while Shwapno and Meena Bazar deliver massive or client-only JS pages that AI bots truncate or fail to parse.
 - **Lucky Store's Action:**
   - Promote Lucky Store's `/api/markdown` and `llms.txt` / `llms-full.txt` capabilities.
-  - Generative search platforms (ChatGPT Search, Perplexity, Claude, Google AI Overviews) will preferentially cite Lucky Store for Chattogram grocery queries because the answer is instantly extractable in <2,000 tokens.
+  - **Testable Hypothesis:** Generative search platforms (ChatGPT Search, Perplexity, Claude, Google AI Overviews) are hypothesized to more readily extract and cite Lucky Store for localized Chattogram queries compared to competitors whose payloads are JS-rendered or blocked, due to sub-2,000 token extractable Markdown responses.
 
 ### 4. Own Hyper-Local Keyword Clusters (Chattogram & Chawkbazar)
 - **Insight:** Competitors target broad national terms (*"online grocery Bangladesh"*), resulting in diffuse page relevance. They fail to optimize for neighborhood-level purchase intent.

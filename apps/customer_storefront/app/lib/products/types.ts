@@ -31,6 +31,7 @@ export type Brand = string;
 export interface Product {
   id: ProductId;
   name: string;
+  originalName?: string;
   emoji: string;
   price: number;
   originalPrice?: number;

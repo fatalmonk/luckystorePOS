@@ -27,7 +27,7 @@ The digital storefront (www.luckystore1947.com) operates as a high-speed, locali
   - Monday – Saturday: 08:00 – 22:00
   - Sunday: 09:00 – 21:00
 - **Currency Accepted:** Bangladeshi Taka (BDT, ৳)
-- **Payment Methods:** Cash on Delivery (COD), bKash at doorstep, Nagad, Visa / Mastercard
+- **Payment Methods:** Cash on Delivery (COD) and bKash at doorstep
 - **Primary Locales:** English (`en-BD`) and Bengali (`bn-BD`)
 
 ---
@@ -84,13 +84,13 @@ Lucky Store enforces a strict customer-protection delivery policy centered on tr
 Lucky Store delivers groceries exclusively within a 1 km radius of its store in Chawkbazar, Chattogram, Bangladesh.
 
 ### How much is the delivery charge?
-Delivery is free for orders over ৳500. For orders under ৳500, the delivery charge is ৳40.
+Delivery is free for orders of ৳500 or more. For orders below ৳500, the delivery charge is ৳40.
 
 ### Can I inspect items before paying?
 Yes. Lucky Store offers a 100% doorstep inspection policy. Customers are encouraged to inspect products, packaging, and expiry dates before paying the delivery agent.
 
 ### What payment methods are supported?
-Customers can pay using Cash on Delivery (COD) or mobile financial services (bKash, Nagad) after verifying their items at the doorstep.
+Customers can pay using Cash on Delivery (COD) or bKash at doorstep after verifying their items at the doorstep.
 
 ### How old is Lucky Store?
 Lucky Store was established in 1947 and has served Chattogram neighborhood families for more than 75 years.
