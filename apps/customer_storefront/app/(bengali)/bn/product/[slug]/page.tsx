@@ -107,7 +107,14 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
   const canonicalSlug = toProductSlug(localized.sourceName, localized.product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
-  const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
+  const rawEnrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
+  const enrichment = rawEnrichment && localized.translated
+    ? {
+        ...rawEnrichment,
+        exactName: localized.product.name,
+        summary: localized.product.description || rawEnrichment.summary,
+      }
+    : rawEnrichment;
 
   return (
     <ProductClient

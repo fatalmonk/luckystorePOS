@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
@@ -7,6 +7,7 @@ import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
 import { WebMCPInit } from './components/WebMCPInit';
+import { MetaPixel } from './components/MetaPixel';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -308,6 +309,9 @@ export default function RootLayoutDocument({
             }
           `}
         </Script>
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
         <div
           id="lucky-consent-banner"
           role="region"
@@ -320,7 +324,7 @@ export default function RootLayoutDocument({
             Your privacy choices
           </p>
           <p id="lucky-consent-description" className="mt-1 text-sm leading-relaxed text-warm-muted">
-            We use optional Google Analytics to understand site traffic. Advertising storage and personalization remain disabled.
+            We use optional analytics (Google Analytics & Meta Pixel) to understand site traffic and improve our services. Advertising personalization remains disabled.
           </p>
           <p className="mt-2 text-xs leading-5 text-warm-muted">
             Read our{' '}
@@ -365,13 +369,13 @@ export default function RootLayoutDocument({
               var saveChoice = function (value) {
                 try { localStorage.setItem(storageKey, value); } catch (error) {}
               };
-              var clearGoogleAnalyticsCookies = function () {
+              var clearAnalyticsCookies = function () {
                 var hostParts = location.hostname.split('.');
                 var domains = ['', location.hostname];
                 if (hostParts.length > 2) domains.push('.' + hostParts.slice(-2).join('.'));
                 document.cookie.split(';').forEach(function (cookie) {
                   var name = cookie.split('=')[0].trim();
-                  if (name === '_ga' || name.indexOf('_ga_') === 0) {
+                  if (name === '_ga' || name.indexOf('_ga_') === 0 || name === '_fbp' || name === '_fbc') {
                     domains.forEach(function (domain) {
                       document.cookie = name + '=; Max-Age=0; path=/' + (domain ? '; domain=' + domain : '');
                     });
@@ -422,20 +426,23 @@ export default function RootLayoutDocument({
                 updateConsent('granted');
                 loadGoogleTagManager();
                 if (window.luckyLoadGoogleAnalytics) window.luckyLoadGoogleAnalytics();
+                if (window.luckyLoadMetaPixel) window.luckyLoadMetaPixel();
                 hideBanner();
               });
               reject.addEventListener('click', function () {
                 saveChoice('denied');
                 updateConsent('denied');
-                clearGoogleAnalyticsCookies();
+                clearAnalyticsCookies();
                 hideBanner();
               });
 
               var savedChoice = readChoice();
               if (savedChoice) hideBanner();
               else showBanner();
-              if (savedChoice === 'granted') loadGoogleTagManager();
-              if (savedChoice === 'denied') clearGoogleAnalyticsCookies();
+              if (savedChoice === 'granted') {
+                loadGoogleTagManager();
+              }
+              if (savedChoice === 'denied') clearAnalyticsCookies();
             })();
           `}
         </Script>
