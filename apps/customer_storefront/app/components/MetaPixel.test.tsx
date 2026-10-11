@@ -52,14 +52,37 @@ describe('MetaPixel', () => {
     expect((window as any).fbq.queue.length).toBe(initialQueueLength);
   });
 
-  it('skips PageView on sensitive routes (/order and /search)', () => {
+  it('skips PageView on order route (/order)', () => {
     localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
     mockPathname = '/order';
     render(<MetaPixel />);
 
     expect(typeof (window as any).fbq).toBe('function');
     const queue = (window as any).fbq.queue;
-    // fbq initialized but no PageView queued
+    expect(queue).toEqual([
+      ['init', '2783542491893720'],
+    ]);
+  });
+
+  it('skips PageView on search route (/search)', () => {
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
+    mockPathname = '/search';
+    render(<MetaPixel />);
+
+    expect(typeof (window as any).fbq).toBe('function');
+    const queue = (window as any).fbq.queue;
+    expect(queue).toEqual([
+      ['init', '2783542491893720'],
+    ]);
+  });
+
+  it('skips PageView on localized sensitive routes (/bn/order and /bn/search)', () => {
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
+    mockPathname = '/bn/search';
+    render(<MetaPixel />);
+
+    expect(typeof (window as any).fbq).toBe('function');
+    const queue = (window as any).fbq.queue;
     expect(queue).toEqual([
       ['init', '2783542491893720'],
     ]);
