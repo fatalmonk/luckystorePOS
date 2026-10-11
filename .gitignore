@@ -8,6 +8,9 @@
 # -----------------------------------------------------------------------------
 .env
 .env.*
+.env.local
+.env.*.local
+.env.secrets
 !.env.example
 !.env*.example
 
@@ -232,7 +235,9 @@ _plans/neon_data.sql
 catalog-images/
 .env*
 !.env.example
+!.env*.example
 !apps/*/.env.example
+!apps/*/.env*.example
 
 # Added by agent
 _archive
