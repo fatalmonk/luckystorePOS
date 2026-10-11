@@ -15,7 +15,11 @@ async function issueUploadToken(key: string, itemId?: string | null): Promise<st
   const { data, error } = await supabase.functions.invoke('issue-image-upload-ticket', {
     body: { key, itemId: itemId ?? undefined, contentType: 'image/webp' },
   });
-  if (error || !data?.token) throw new Error('Unable to authorize image upload');
+  if (error || !data?.token) {
+    const response = (error as { context?: Response })?.context;
+    const details = response ? await response.clone().json().catch(() => null) as { error?: string } | null : null;
+    throw new Error(details?.error || error?.message || 'Unable to authorize image upload');
+  }
   return data.token as string;
 }
 
@@ -23,7 +27,11 @@ async function issueDeleteToken(key: string, itemId: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke('issue-image-upload-ticket', {
     body: { key, itemId, operation: 'delete' },
   });
-  if (error || !data?.token) throw new Error('Unable to authorize image deletion');
+  if (error || !data?.token) {
+    const response = (error as { context?: Response })?.context;
+    const details = response ? await response.clone().json().catch(() => null) as { error?: string } | null : null;
+    throw new Error(details?.error || error?.message || 'Unable to authorize image deletion');
+  }
   return data.token as string;
 }
 
