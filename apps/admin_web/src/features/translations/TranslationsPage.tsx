@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { useNotify } from '@/components/NotificationContext';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui';
 
 type ReviewStatus = 'draft' | 'reviewed' | 'published';
 type TranslationRow = {

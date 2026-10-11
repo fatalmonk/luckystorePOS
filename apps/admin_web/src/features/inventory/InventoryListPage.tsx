@@ -10,7 +10,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '@/hooks';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { Card } from '../../components/ui/Card';
+import { Card } from '@/components/ui';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 import { SkeletonBlock } from '../../components/Skeleton';
 import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';

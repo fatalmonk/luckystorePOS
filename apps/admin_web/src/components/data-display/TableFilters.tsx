@@ -70,7 +70,7 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
 
       {/* Dropdown filters */}
       {filters.map((filter, idx) => (
-        <div key={idx} className="flex items-center space-x-2">
+        <div key={idx} className="flex items-center gap-2">
           <label className="text-sm font-medium text-text-main">{filter.label}</label>
           <select
             value={filter.value}

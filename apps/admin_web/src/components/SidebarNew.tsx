@@ -252,7 +252,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
         </div>
 
         {/* Navigation Groups / Accordions */}
-        <div className="sidebar-nav-container !p-3 space-y-2 scrollbar-hide">
+        <div className="sidebar-nav-container !p-3 flex flex-col gap-2 scrollbar-hide">
           {navGroups.map((group) => {
             const isExpanded = !!expandedGroups[group.id];
             const isAnyActive = isGroupActive(group);
@@ -270,7 +270,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                           to={item.path}
                           onClick={() => { if (isMobile) onClose?.(); }}
                           className={clsx(
-                            'flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200',
+                            'flex items-center justify-center size-10 rounded-lg transition-all duration-200',
                             isActive
                               ? 'bg-warm-accent text-white shadow-sm'
                               : 'text-warm-muted hover:bg-warm-border-warm hover:text-warm-fg'

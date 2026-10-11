@@ -1,6 +1,6 @@
 import { useState, useRef, useLayoutEffect } from 'react';
 import { X, ScanLine } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { Button } from '@/components/ui';
 
 interface BarcodeScannerModalProps {
   isOpen: boolean;
@@ -54,7 +54,7 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
           <p className="text-sm text-text-secondary text-center">
             Scan a product barcode or enter it manually below.
           </p>

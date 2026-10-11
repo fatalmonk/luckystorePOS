@@ -1,5 +1,5 @@
 import { ArrowUpDown, LayoutGrid, List, ScanLine, Search } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { Button } from '@/components/ui';
 
 interface InventoryFilterToolbarProps {
   searchTerm: string;

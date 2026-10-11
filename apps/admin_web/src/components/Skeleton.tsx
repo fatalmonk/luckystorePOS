@@ -1,5 +1,6 @@
 import React from 'react';
-import { clsx } from "clsx";
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 /**
  * Card skeleton loader - matches ProductCard dimensions
@@ -8,27 +9,27 @@ import { clsx } from "clsx";
 export const ProductCardSkeleton: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div
-      className={clsx(
-        'bg-surface rounded-md shadow-level-1 border border-border-default overflow-hidden',
+      className={cn(
+        'bg-card rounded-md shadow-sm border border-border overflow-hidden',
         className
       )}
     >
       {/* Image area - 1:1 aspect ratio */}
-      <div className="relative w-full aspect-square bg-background-subtle animate-pulse" />
+      <Skeleton className="w-full aspect-square rounded-none" />
       
       {/* Content area */}
       <div className="p-3 flex flex-col gap-2">
         {/* Title */}
-        <div className="h-4 bg-background-subtle rounded animate-pulse w-3/4" />
+        <Skeleton className="h-4 w-3/4" />
         
         {/* Stock row */}
         <div className="flex items-center justify-between mt-1">
-          <div className="h-5 w-8 bg-background-subtle rounded animate-pulse" />
-          <div className="h-4 w-12 bg-background-subtle rounded animate-pulse" />
+          <Skeleton className="h-5 w-8" />
+          <Skeleton className="h-4 w-12" />
         </div>
         
         {/* Button */}
-        <div className="h-8 bg-background-subtle rounded animate-pulse mt-1" />
+        <Skeleton className="h-8 w-full mt-1" />
       </div>
     </div>
   );
@@ -39,10 +40,10 @@ export const ProductCardSkeleton: React.FC<{ className?: string }> = ({ classNam
  */
 export const TableRowSkeleton: React.FC<{ cols?: number }> = ({ cols = 5 }) => {
   return (
-    <tr className="border-b border-border-default">
+    <tr className="border-b border-border">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-background-subtle rounded animate-pulse" />
+          <Skeleton className="h-4 w-full" />
         </td>
       ))}
     </tr>
@@ -54,13 +55,13 @@ export const TableRowSkeleton: React.FC<{ cols?: number }> = ({ cols = 5 }) => {
  */
 export const MetricCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-surface rounded-md shadow-level-1 border border-border-default p-4 flex flex-col gap-3">
+    <div className="bg-card rounded-md shadow-sm border border-border p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <div className="w-10 h-10 rounded-md bg-background-subtle animate-pulse" />
+        <Skeleton className="size-10 rounded-md" />
       </div>
       <div className="flex flex-col gap-2">
-        <div className="h-3 w-24 bg-background-subtle rounded animate-pulse" />
-        <div className="h-8 w-32 bg-background-subtle rounded animate-pulse" />
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-8 w-32" />
       </div>
     </div>
   );
@@ -80,5 +81,5 @@ export const ProductCardSkeletonGrid: React.FC<{ count?: number }> = ({ count = 
 };
 
 export const SkeletonBlock: React.FC<{ className?: string }> = ({ className }) => {
-  return <div className={clsx('bg-background-subtle animate-pulse rounded', className)} />;
+  return <Skeleton className={cn('rounded', className)} />;
 };
