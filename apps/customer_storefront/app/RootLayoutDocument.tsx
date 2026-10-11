@@ -441,7 +441,6 @@ export default function RootLayoutDocument({
               else showBanner();
               if (savedChoice === 'granted') {
                 loadGoogleTagManager();
-                if (window.luckyLoadMetaPixel) window.luckyLoadMetaPixel();
               }
               if (savedChoice === 'denied') clearAnalyticsCookies();
             })();

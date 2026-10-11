@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { ANALYTICS_CONSENT_KEY } from '../lib/analytics';
 
 declare global {
@@ -28,9 +28,23 @@ function hasConsent(): boolean {
   }
 }
 
+function isSensitiveRoute(path: string | null): boolean {
+  if (!path) return false;
+  const cleanPath = path.replace(/^\/bn/, '') || '/';
+  if (cleanPath === '/order' || cleanPath.startsWith('/order/') || cleanPath === '/search') {
+    return true;
+  }
+  if (typeof window !== 'undefined' && window.location.search) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('q') || params.has('num')) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function MetaPixel() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const isFirstRender = useRef(true);
 
   useEffect(() => {
@@ -38,9 +52,6 @@ export function MetaPixel() {
     window.luckyLoadMetaPixel = () => {
       if (!hasConsent()) return;
       if (document.querySelector('script[data-lucky-pixel]')) {
-        if (typeof window.fbq === 'function') {
-          window.fbq('track', 'PageView');
-        }
         return;
       }
 
@@ -57,6 +68,10 @@ export function MetaPixel() {
         fbqStub.version = '2.0';
         window.fbq = fbqStub;
         window._fbq = fbqStub;
+        fbqStub('init', META_PIXEL_ID);
+        if (!isSensitiveRoute(pathname)) {
+          fbqStub('track', 'PageView');
+        }
       }
 
       const script = document.createElement('script');
@@ -64,17 +79,13 @@ export function MetaPixel() {
       script.src = 'https://connect.facebook.net/en_US/fbevents.js';
       script.dataset.luckyPixel = 'true';
       script.setAttribute('data-cfasync', 'false');
-      script.onload = () => {
-        window.fbq?.('init', META_PIXEL_ID);
-        window.fbq?.('track', 'PageView');
-      };
       document.head.appendChild(script);
     };
 
     if (hasConsent()) {
       window.luckyLoadMetaPixel();
     }
-  }, []);
+  }, [pathname]);
 
   // Re-fire PageView on client-side route changes when consent is granted
   useEffect(() => {
@@ -82,10 +93,10 @@ export function MetaPixel() {
       isFirstRender.current = false;
       return;
     }
-    if (hasConsent() && typeof window.fbq === 'function') {
+    if (hasConsent() && !isSensitiveRoute(pathname) && typeof window.fbq === 'function') {
       window.fbq('track', 'PageView');
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
