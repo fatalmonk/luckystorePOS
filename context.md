@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Addressed PR review comments across customer_storefront UI components
-Done: Fixed Toast live-region, Header mobile rail gutter padding, Breadcrumbs asChild & WCAG role=link, AccordionTrigger onClick composition, Select variant styling, evaluated secret scanner archive rule
-Branch: codex/redesign-homepage
-Health: 380 vitest tests pass (66 files), 0 typecheck errors
+Current: Complete 100% catalog SEO enrichment accomplished under Hard Evidence Gate
+Done: All 521 catalog items in products_formatted.csv enriched into productEnrichmentRegistry.ts with 100% evidence manifest referential integrity, zero missing catalog items, all product vitest unit tests passing (44/44 across 6 test suites), 0 TypeScript errors
+Branch: feat/catalog-enrichment-and-faq-ld
+Health: 44 product tests pass (6 files), 0 typecheck errors
 Last Synced: 2026-10-11
-ctx: PR review fixes | done: 5 valid issues fixed & tested; 1 issue resolved with reason | next: Commit or await review approval
+ctx: 100% catalog product enrichment goal complete | done: 521 catalog items enriched and verified | next: Commit or prepare release
