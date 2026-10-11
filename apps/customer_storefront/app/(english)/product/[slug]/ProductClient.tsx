@@ -12,6 +12,7 @@ import { useCartContext } from '../../../components/CartProvider';
 import { QtyNumber } from '../../../components/ui/QtyNumber';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import { ProductJsonLd } from '../../../components/seo/ProductJsonLd';
+import { FaqJsonLd } from '../../../components/seo/FaqJsonLd';
 import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import { formatBdt } from '../../../lib/formatPrice';
 import type { Product, ProductEnrichment } from '../../../lib/products';
@@ -102,6 +103,9 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
         description={overviewText}
         canonicalUrl={productCanonicalUrl}
       />
+      {enrichment?.faqs && enrichment.faqs.length > 0 && (
+        <FaqJsonLd items={enrichment.faqs} />
+      )}
       <Header />
 
       <main className="flex-1 pb-28 md:pb-12">

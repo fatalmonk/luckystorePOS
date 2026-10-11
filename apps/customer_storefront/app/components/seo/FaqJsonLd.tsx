@@ -1,5 +1,6 @@
 import React from 'react';
 import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { JsonLd } from './JsonLd';
 
 export interface FaqItem {
   question: string;
@@ -53,10 +54,5 @@ export function FaqJsonLd({ items }: { items?: readonly FaqItem[] }) {
     ],
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <JsonLd data={jsonLd} />;
 }
