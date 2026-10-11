@@ -80,7 +80,7 @@ function shouldSkipPath(filePath) {
   const fileName = rel.split('/').pop() || '';
 
   if (resolve(filePath) === SELF) return true;
-  if (fileName === '.env.example') return false;
+  if (fileName.endsWith('.example')) return false;
 
   if (rel === '.worktrees' || rel.startsWith('.worktrees/')) return true;
   if (rel.endsWith('.dev.vars') || rel.includes('/.dev.vars')) return true;
@@ -144,7 +144,7 @@ function isCaseInsensitiveEnvContext(rel, trimmed) {
     /^export\s+/i.test(trimmed) ||
     fileName === '.env' ||
     fileName.startsWith('.env.') ||
-    fileName.endsWith('.env.example') ||
+    fileName.endsWith('.example') ||
     /\.(?:sh|bash|zsh)$/i.test(fileName)
   );
 }
@@ -378,6 +378,14 @@ function runSelfTest() {
       expectFinding: true,
       expectedCount: 1,
       redactedValue: 'synthetic-literal-credential',
+      expectPathScanned: true,
+    },
+    {
+      name: 'scans .env.*.example files and catches credentials',
+      rel: '.env.secrets.example',
+      content: 'SUPABASE_SERVICE_ROLE_KEY=synthetic-literal-credential\n',
+      expectFinding: true,
+      expectedCount: 1,
       expectPathScanned: true,
     },
     {
