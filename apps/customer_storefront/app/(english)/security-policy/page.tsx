@@ -105,10 +105,10 @@ export default function SecurityPolicyPage() {
                 We do <strong>not</strong> sell, rent, or share your personal data with third parties for marketing.
               </p>
               <p>
-                We use <strong>Google Analytics</strong> (G-K5JLJNSW6D) only after you accept analytics in the privacy banner. Advertising storage and personalization remain disabled.
+                We use <strong>Google Analytics</strong> (G-K5JLJNSW6D) and <strong>Meta Pixel</strong> (2783542491893720) only after you accept analytics in the privacy banner. Advertising personalization remains disabled.
               </p>
               <p>
-                When hosted on Vercel, Vercel Analytics and Speed Insights also collect usage and performance measurements regardless of your Google Analytics consent choice.
+                When hosted on Vercel, Vercel Analytics and Speed Insights also collect usage and performance measurements regardless of your analytics consent choice.
               </p>
             </PolicySection>
 
@@ -120,9 +120,9 @@ export default function SecurityPolicyPage() {
                 <li>Cart persistence across sessions</li>
                 <li>Session authentication tokens</li>
                 <li>Your analytics consent choice</li>
-                <li>Google Analytics cookies, only after consent</li>
+                <li>Google Analytics and Meta Pixel measurement cookies, only after explicit consent</li>
               </ul>
-              <p>No third-party advertising cookies are deployed.</p>
+              <p>No non-consensual third-party tracking cookies are deployed.</p>
             </PolicySection>
 
             <PolicySection icon="📦" title="Order & Delivery Safety">

@@ -77,8 +77,9 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   };
 
   const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
-  const displayName = enrichment?.exactName || product.name;
-  const overviewText = enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`;
+  const isBn = locale === 'bn';
+  const displayName = (isBn && product.name) ? product.name : (enrichment?.exactName || product.name);
+  const overviewText = (isBn && product.description) ? product.description : (enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`);
   const productBrand = enrichment?.brand || product.brand;
   const brandHref = getBrandHref(productBrand, locale);
 

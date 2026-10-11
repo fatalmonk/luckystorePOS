@@ -11,14 +11,30 @@
 import { supabase } from './supabase';
 
 const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL || '';
+async function extractFunctionError(error: unknown, fallbackMessage: string): Promise<{ details: Record<string, unknown> | null; message: string }> {
+  const err = error as { message?: string; context?: unknown };
+  let details: Record<string, unknown> | null = null;
+  if (err?.context instanceof Response) {
+    try {
+      details = await err.context.clone().json().catch(() => null) as Record<string, unknown> | null;
+    } catch {
+      details = null;
+    }
+  }
+  const detailMessage = typeof details?.error === 'string' ? details.error : typeof details?.message === 'string' ? details.message : undefined;
+  return {
+    details,
+    message: detailMessage || err?.message || fallbackMessage,
+  };
+}
+
 async function issueUploadToken(key: string, itemId?: string | null): Promise<string> {
   const { data, error } = await supabase.functions.invoke('issue-image-upload-ticket', {
     body: { key, itemId: itemId ?? undefined, contentType: 'image/webp' },
   });
   if (error || !data?.token) {
-    const response = (error as { context?: Response })?.context;
-    const details = response ? await response.clone().json().catch(() => null) as { error?: string } | null : null;
-    throw new Error(details?.error || error?.message || 'Unable to authorize image upload');
+    const { message } = await extractFunctionError(error, 'Unable to authorize image upload');
+    throw new Error(message);
   }
   return data.token as string;
 }
@@ -28,9 +44,8 @@ async function issueDeleteToken(key: string, itemId: string): Promise<string> {
     body: { key, itemId, operation: 'delete' },
   });
   if (error || !data?.token) {
-    const response = (error as { context?: Response })?.context;
-    const details = response ? await response.clone().json().catch(() => null) as { error?: string } | null : null;
-    throw new Error(details?.error || error?.message || 'Unable to authorize image deletion');
+    const { message } = await extractFunctionError(error, 'Unable to authorize image deletion');
+    throw new Error(message);
   }
   return data.token as string;
 }
@@ -114,11 +129,11 @@ export async function publishProductImage(input: {
 }): Promise<void> {
   const { data, error } = await supabase.functions.invoke('publish-product-image', { body: input });
   if (error) {
-    const response = (error as { context?: Response }).context;
-    const details = response ? await response.clone().json().catch(() => null) as { code?: unknown } | null : null;
-    const code = details?.code;
-    if (code === 'IMAGE_VERSION_CONFLICT') throw new Error('Product image changed while upload was in progress. Refresh and try again.');
-    throw new Error(error.message || 'Unable to publish product image');
+    const { details, message } = await extractFunctionError(error, 'Unable to publish product image');
+    if (details?.code === 'IMAGE_VERSION_CONFLICT') {
+      throw new Error('Product image changed while upload was in progress. Refresh and try again.');
+    }
+    throw new Error(message);
   }
   if (data?.code === 'IMAGE_VERSION_CONFLICT') throw new Error('Product image changed while upload was in progress. Refresh and try again.');
 }
