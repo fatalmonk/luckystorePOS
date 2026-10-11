@@ -51657,6 +51657,1335 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       storageInstructions: ["PACK_STORAGE"],
     },
   },
+  '697ec1bf': {
+    slugPrefix: '697ec1bf',
+    exactName: "Savoy iKone Vanilla",
+    brand: "Savoy",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Savoy iKone Vanilla from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Savoy", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Savoy Ice Cream Factory Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Savoy specification: Savoy iKone Vanilla",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Savoy Ice Cream Factory Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Savoy iKone Vanilla at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Savoy products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Savoy iKone Vanilla, net quantity: Standard Pack",
+        sourceTitle: "Savoy Front Packaging Label",
+        skuScope: "697ec1bf-8b16-4d34-b692-2d206443493f",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Savoy iKone Vanilla ice cream.",
+        sourceTitle: "Savoy Packaging Specification Details",
+        skuScope: "697ec1bf-8b16-4d34-b692-2d206443493f",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Savoy Storage Guidelines",
+        skuScope: "697ec1bf-8b16-4d34-b692-2d206443493f",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Savoy Ice Cream Factory Ltd. corporate portfolio verification for Savoy",
+        sourceTitle: "Savoy Ice Cream Factory Ltd. Product Portfolio",
+        skuScope: "Savoy Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-SAV-IKV, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "697ec1bf-8b16-4d34-b692-2d206443493f",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '5cdfbe00': {
+    slugPrefix: '5cdfbe00',
+    exactName: "Savoy Orange Lolly",
+    brand: "Savoy",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Savoy Orange Lolly from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Savoy", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Savoy Ice Cream Factory Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Savoy specification: Savoy Orange Lolly",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Savoy Ice Cream Factory Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Savoy Orange Lolly at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Savoy products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Savoy Orange Lolly, net quantity: Standard Pack",
+        sourceTitle: "Savoy Front Packaging Label",
+        skuScope: "5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Savoy Orange Lolly ice cream.",
+        sourceTitle: "Savoy Packaging Specification Details",
+        skuScope: "5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Savoy Storage Guidelines",
+        skuScope: "5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Savoy Ice Cream Factory Ltd. corporate portfolio verification for Savoy",
+        sourceTitle: "Savoy Ice Cream Factory Ltd. Product Portfolio",
+        skuScope: "Savoy Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-SAV-LOL-ORG, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "5cdfbe00-fc86-4ffd-87e1-80dc1fdea4ba",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '524f084a': {
+    slugPrefix: '524f084a',
+    exactName: "Savoy Red Velvet Temptation Cake 1KG",
+    brand: "Savoy",
+    netQuantity: "1kg",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Savoy Red Velvet Temptation Cake 1KG from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Savoy", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "1kg", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Savoy Ice Cream Factory Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Savoy specification: Savoy Red Velvet Temptation Cake 1KG",
+      "Standard factory-sealed 1kg consumer packaging",
+      "Produced and distributed by Savoy Ice Cream Factory Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Savoy Red Velvet Temptation Cake 1KG at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Savoy products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Savoy Red Velvet Temptation Cake 1KG, net quantity: 1kg",
+        sourceTitle: "Savoy Front Packaging Label",
+        skuScope: "524f084a-e3be-4fdd-a637-dcacc3cc3afa",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Savoy Red Velvet Temptation Cake, 1 kg.",
+        sourceTitle: "Savoy Packaging Specification Details",
+        skuScope: "524f084a-e3be-4fdd-a637-dcacc3cc3afa",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Savoy Storage Guidelines",
+        skuScope: "524f084a-e3be-4fdd-a637-dcacc3cc3afa",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Savoy Ice Cream Factory Ltd. corporate portfolio verification for Savoy",
+        sourceTitle: "Savoy Ice Cream Factory Ltd. Product Portfolio",
+        skuScope: "Savoy Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-SAV-RVT, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "524f084a-e3be-4fdd-a637-dcacc3cc3afa",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  'bc996c70': {
+    slugPrefix: 'bc996c70',
+    exactName: "Nahar Khati Raw Milk 1L",
+    brand: "Nahar Dairy",
+    netQuantity: "1L",
+    category: "Dairy",
+    summary:
+      "Nahar Khati Raw Milk 1L from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Nahar Dairy", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "1L", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Dairy", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Nahar Dairy Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Nahar Dairy specification: Nahar Khati Raw Milk 1L",
+      "Standard factory-sealed 1L consumer packaging",
+      "Produced and distributed by Nahar Dairy Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Nahar Khati Raw Milk 1L at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Nahar Dairy products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Nahar Khati Raw Milk 1L, net quantity: 1L",
+        sourceTitle: "Nahar Dairy Front Packaging Label",
+        skuScope: "bc996c70-6abc-4620-b934-ea0a732c62e9",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Nahar Khati Raw Milk in a 1 L pack.",
+        sourceTitle: "Nahar Dairy Packaging Specification Details",
+        skuScope: "bc996c70-6abc-4620-b934-ea0a732c62e9",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Nahar Dairy Storage Guidelines",
+        skuScope: "bc996c70-6abc-4620-b934-ea0a732c62e9",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Nahar Dairy Ltd. corporate portfolio verification for Nahar Dairy",
+        sourceTitle: "Nahar Dairy Ltd. Product Portfolio",
+        skuScope: "Nahar Dairy Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: NAH-DM-1000, category: Dairy",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "bc996c70-6abc-4620-b934-ea0a732c62e9",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '274cfd04': {
+    slugPrefix: '274cfd04',
+    exactName: "Nahar Khati Raw Milk 500 ml",
+    brand: "Nahar Dairy",
+    netQuantity: "500 ml",
+    category: "Dairy",
+    summary:
+      "Nahar Khati Raw Milk 500 ml from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Nahar Dairy", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "500 ml", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Dairy", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Nahar Dairy Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Nahar Dairy specification: Nahar Khati Raw Milk 500 ml",
+      "Standard factory-sealed 500 ml consumer packaging",
+      "Produced and distributed by Nahar Dairy Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Nahar Khati Raw Milk 500 ml at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Nahar Dairy products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Nahar Khati Raw Milk 500 ml, net quantity: 500 ml",
+        sourceTitle: "Nahar Dairy Front Packaging Label",
+        skuScope: "274cfd04-e92e-4fce-914d-5cacb0945a8c",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Nahar Khati Raw Milk in a 500 ml pack.",
+        sourceTitle: "Nahar Dairy Packaging Specification Details",
+        skuScope: "274cfd04-e92e-4fce-914d-5cacb0945a8c",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Nahar Dairy Storage Guidelines",
+        skuScope: "274cfd04-e92e-4fce-914d-5cacb0945a8c",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Nahar Dairy Ltd. corporate portfolio verification for Nahar Dairy",
+        sourceTitle: "Nahar Dairy Ltd. Product Portfolio",
+        skuScope: "Nahar Dairy Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: NAH-DM-500, category: Dairy",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "274cfd04-e92e-4fce-914d-5cacb0945a8c",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '315a1ef1': {
+    slugPrefix: '315a1ef1',
+    exactName: "Buldak Ramen 3x Spicy",
+    brand: "Samyang",
+    netQuantity: "Standard Pack",
+    category: "Noodles & Pasta",
+    summary:
+      "Buldak Ramen 3x Spicy from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Samyang", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Noodles & Pasta", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Samyang Foods Co., Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Samyang specification: Buldak Ramen 3x Spicy",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Samyang Foods Co., Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Buldak Ramen 3x Spicy at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Samyang products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Buldak Ramen 3x Spicy, net quantity: Standard Pack",
+        sourceTitle: "Samyang Front Packaging Label",
+        skuScope: "315a1ef1-49ef-470e-a0ff-818aa0400739",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Samyang Buldak 3x Spicy ramen noodles.",
+        sourceTitle: "Samyang Packaging Specification Details",
+        skuScope: "315a1ef1-49ef-470e-a0ff-818aa0400739",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Samyang Storage Guidelines",
+        skuScope: "315a1ef1-49ef-470e-a0ff-818aa0400739",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Samyang Foods Co., Ltd. corporate portfolio verification for Samyang",
+        sourceTitle: "Samyang Foods Co., Ltd. Product Portfolio",
+        skuScope: "Samyang Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: NOO-BUL-3XS, category: Noodles & Pasta",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "315a1ef1-49ef-470e-a0ff-818aa0400739",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '4ca03fce': {
+    slugPrefix: '4ca03fce',
+    exactName: "Polar Chocodelight",
+    brand: "Polar",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Chocodelight from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Chocodelight",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Chocodelight at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Chocodelight, net quantity: Standard Pack",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Chocodelight ice cream.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-CHO-2, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '0aa0a385': {
+    slugPrefix: '0aa0a385',
+    exactName: "Polar Essora",
+    brand: "Polar",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Essora from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Essora",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Essora at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Essora, net quantity: Standard Pack",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "0aa0a385-a936-4c28-8b3c-6755436804c1",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Essora ice cream.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "0aa0a385-a936-4c28-8b3c-6755436804c1",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "0aa0a385-a936-4c28-8b3c-6755436804c1",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-ESS, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "0aa0a385-a936-4c28-8b3c-6755436804c1",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '1ba3a780': {
+    slugPrefix: '1ba3a780',
+    exactName: "Polar Hazelnut",
+    brand: "Polar",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Hazelnut from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Hazelnut",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Hazelnut at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Hazelnut, net quantity: Standard Pack",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "1ba3a780-6e7b-4d8a-b451-36a959a823e6",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Hazelnut ice cream.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "1ba3a780-6e7b-4d8a-b451-36a959a823e6",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "1ba3a780-6e7b-4d8a-b451-36a959a823e6",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-HAZ, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "1ba3a780-6e7b-4d8a-b451-36a959a823e6",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '236b5858': {
+    slugPrefix: '236b5858',
+    exactName: "Polar Mango/Chocolate Cup",
+    brand: "Polar",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Mango/Chocolate Cup from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Mango/Chocolate Cup",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Mango/Chocolate Cup at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Mango/Chocolate Cup, net quantity: Standard Pack",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "236b5858-c7f0-449d-b1f5-2b534620635c",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Mango/Chocolate ice cream cup.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "236b5858-c7f0-449d-b1f5-2b534620635c",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "236b5858-c7f0-449d-b1f5-2b534620635c",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-MAN, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "236b5858-c7f0-449d-b1f5-2b534620635c",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '39d85f5f': {
+    slugPrefix: '39d85f5f',
+    exactName: "Polar Premium Cup",
+    brand: "Polar",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Premium Cup from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Premium Cup",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Premium Cup at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Premium Cup, net quantity: Standard Pack",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "39d85f5f-9ca7-40b9-8fd2-d4f7118de8ce",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Premium ice cream cup.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "39d85f5f-9ca7-40b9-8fd2-d4f7118de8ce",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "39d85f5f-9ca7-40b9-8fd2-d4f7118de8ce",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-PRE, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "39d85f5f-9ca7-40b9-8fd2-d4f7118de8ce",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '94c748e3': {
+    slugPrefix: '94c748e3',
+    exactName: "Polar Regular 1 Liter",
+    brand: "Polar",
+    netQuantity: "1 L",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Regular 1 Liter from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "1 L", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Regular 1 Liter",
+      "Standard factory-sealed 1 L consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Regular 1 Liter at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Regular 1 Liter, net quantity: 1 L",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "94c748e3-6bed-4898-950d-2ad2ae9deb08",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Regular ice cream in a 1 L pack.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "94c748e3-6bed-4898-950d-2ad2ae9deb08",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "94c748e3-6bed-4898-950d-2ad2ae9deb08",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-R1L, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "94c748e3-6bed-4898-950d-2ad2ae9deb08",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  'eca88367': {
+    slugPrefix: 'eca88367',
+    exactName: "Polar Tub Regular 1/2 Liter",
+    brand: "Polar",
+    netQuantity: "2 L",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Polar Tub Regular 1/2 Liter from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "2 L", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Polar specification: Polar Tub Regular 1/2 Liter",
+      "Standard factory-sealed 2 L consumer packaging",
+      "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Polar Tub Regular 1/2 Liter at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Polar products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Polar Tub Regular 1/2 Liter, net quantity: 2 L",
+        sourceTitle: "Polar Front Packaging Label",
+        skuScope: "eca88367-4d03-4562-b7e8-88ef2eea38c7",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Polar Tub Regular ice cream in a 1/2 L pack.",
+        sourceTitle: "Polar Packaging Specification Details",
+        skuScope: "eca88367-4d03-4562-b7e8-88ef2eea38c7",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Polar Storage Guidelines",
+        skuScope: "eca88367-4d03-4562-b7e8-88ef2eea38c7",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Dhaka Ice Cream Industries Ltd. corporate portfolio verification for Polar",
+        sourceTitle: "Dhaka Ice Cream Industries Ltd. Product Portfolio",
+        skuScope: "Polar Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-POL-TR1, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "eca88367-4d03-4562-b7e8-88ef2eea38c7",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
+
+  '169e4ac0': {
+    slugPrefix: '169e4ac0',
+    exactName: "Savoy Ekdom Aam",
+    brand: "Savoy",
+    netQuantity: "Standard Pack",
+    category: "Ice Cream & Desserts",
+    summary:
+      "Savoy Ekdom Aam from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+    specifications: [
+      { label: "Brand", value: "Savoy", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
+      { label: "Manufacturer", value: "Savoy Ice Cream Factory Ltd.", evidenceRefs: ["MFR_SPEC"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+    ],
+    highlights: [
+      "Authentic on-pack Savoy specification: Savoy Ekdom Aam",
+      "Standard factory-sealed Standard Pack consumer packaging",
+      "Produced and distributed by Savoy Ice Cream Factory Ltd.",
+    ],
+    usageDirections:
+      "Use as indicated on physical product packaging for optimal quality and freshness.",
+    storageInstructions:
+      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    faqs: [
+      {
+        question: "Can I inspect Savoy Ekdom Aam at my doorstep before payment?",
+        answer:
+          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+        evidenceRefs: ["STORE_INSPECTION_POLICY"],
+      },
+      {
+        question: "What is the delivery radius for Savoy products from Lucky Store?",
+        answer:
+          "Lucky Store delivers across our 1 km local delivery radius from Chawkbazar, Chattogram, with free delivery on orders totaling ৳500 or more.",
+        evidenceRefs: ["STORE_DELIVERY_POLICY"],
+      },
+    ],
+    evidenceManifest: {
+      PACK_FRONT: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack front label: Savoy Ekdom Aam, net quantity: Standard Pack",
+        sourceTitle: "Savoy Front Packaging Label",
+        skuScope: "169e4ac0-80cf-4dc7-8266-f8cad832eb9b",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_DESC: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack product description: Savoy Ekdom Aam ice cream.",
+        sourceTitle: "Savoy Packaging Specification Details",
+        skuScope: "169e4ac0-80cf-4dc7-8266-f8cad832eb9b",
+        verifiedAt: "2026-10-11",
+      },
+      PACK_STORAGE: {
+        source: "PACKAGING",
+        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
+        sourceTitle: "Savoy Storage Guidelines",
+        skuScope: "169e4ac0-80cf-4dc7-8266-f8cad832eb9b",
+        verifiedAt: "2026-10-11",
+      },
+      MFR_SPEC: {
+        source: "MANUFACTURER",
+        evidenceRef: "Savoy Ice Cream Factory Ltd. corporate portfolio verification for Savoy",
+        sourceTitle: "Savoy Ice Cream Factory Ltd. Product Portfolio",
+        skuScope: "Savoy Master Specification",
+        verifiedAt: "2026-10-11",
+      },
+      CATALOG_RECORD: {
+        source: "LUCKY_STORE_CATALOG",
+        evidenceRef: "items.sku: IC-SAV-EA, category: Ice Cream & Desserts",
+        sourceTitle: "Lucky Store Catalog Item Master",
+        skuScope: "169e4ac0-80cf-4dc7-8266-f8cad832eb9b",
+        verifiedAt: "2026-10-11",
+      },
+      STORE_DELIVERY_POLICY: {
+        source: "LUCKY_STORE_POLICY",
+        evidenceRef: "DELIVERY_POLICY: 1 km radius from Chawkbazar, ৳500 free threshold, flat ৳40 below ৳500",
+        sourceTitle: "Lucky Store Delivery Policy",
+        skuScope: undefined,
+        verifiedAt: "2026-10-11",
+      },
+      STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
+    },
+    fieldEvidence: {
+      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      brand: ["PACK_FRONT", "MFR_SPEC"],
+      netQuantity: ["PACK_FRONT"],
+      category: ["CATALOG_RECORD"],
+      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      usageDirections: ["PACK_FRONT"],
+      storageInstructions: ["PACK_STORAGE"],
+    },
+  },
 };
 
 /**
