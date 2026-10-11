@@ -6,6 +6,7 @@ import { supabase } from '../../../../lib/supabase';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { formatBdt } from '../../../../lib/formatPrice';
 import { isMissingItemTranslationsTableError } from '../../../../lib/translationErrors';
+import { getEnrichedProductData } from '../../../../lib/products/productEnrichment';
 import type { Product } from '../../../../lib/products/types';
 import ProductClient from '../../../../(english)/product/[slug]/ProductClient';
 
@@ -106,6 +107,8 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
   const canonicalSlug = toProductSlug(localized.sourceName, localized.product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
+  const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
+
   return (
     <ProductClient
       product={localized.product}
@@ -113,6 +116,7 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
       locale="bn"
       productUrlName={localized.sourceName}
       productCanonicalUrl={`https://www.luckystore1947.com/bn/product/${canonicalSlug}`}
+      enrichment={enrichment}
     />
   );
 }
