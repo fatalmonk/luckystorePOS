@@ -12,7 +12,7 @@
 .env.*.local
 .env.secrets
 !.env.example
-!.env*.example
+!.env.secrets.example
 
 apps/*/.env
 apps/*/.env.*
@@ -235,9 +235,10 @@ _plans/neon_data.sql
 catalog-images/
 .env*
 !.env.example
-!.env*.example
+!.env.secrets.example
 !apps/*/.env.example
-!apps/*/.env*.example
+!apps/mobile_app/env/.env.example
+!supabase/tests/.env.test.example
 
 # Added by agent
 _archive
