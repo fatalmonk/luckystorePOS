@@ -83,7 +83,7 @@ export function sanitizeNotFairArticleHtml(html: string) {
         if (!isAllowedImageSrc(src)) {
           return { tagName: 'span', attribs: { class: 'hidden' } as sanitizeHtml.Attributes };
         }
-        const alt = (attribs.alt && attribs.alt.trim()) || attribs.title || 'Article image';
+        const alt = attribs.alt !== undefined ? attribs.alt : (attribs.title || 'Article image');
         const imgAttribs: sanitizeHtml.Attributes = { ...attribs, alt };
         return {
           tagName: 'img',

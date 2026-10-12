@@ -47,9 +47,11 @@ describe('remote NotFair article HTML', () => {
   it('enforces alt attribute on images and blocks third-party tracking images', () => {
     const clean = sanitizeNotFairArticleHtml(`
       <img src="https://notfair.co/api/seo/photo1.webp" />
+      <img src="https://notfair.co/api/seo/decorative.webp" alt="" />
       <img src="https://tracker-beacon.evil.com/pixel.gif" alt="Tracking pixel" />
     `);
     expect(clean).toContain('alt="Article image"');
+    expect(clean).toContain('alt=""');
     expect(clean).not.toContain('tracker-beacon.evil.com');
   });
 });

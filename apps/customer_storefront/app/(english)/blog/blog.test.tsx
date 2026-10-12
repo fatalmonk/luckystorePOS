@@ -26,17 +26,15 @@ const post: SeoPost = {
 };
 
 describe('NotFair blog routes', () => {
-  const originalKey = process.env.NOTFAIR_SEO_API_KEY;
-
   beforeEach(() => {
-    process.env.NOTFAIR_SEO_API_KEY = 'test-notfair-key';
+    vi.stubEnv('NOTFAIR_SEO_API_KEY', 'test-notfair-key');
     vi.clearAllMocks();
     api.getSeoPosts.mockResolvedValue([post]);
     api.getSeoPost.mockResolvedValue(post);
   });
 
   afterEach(() => {
-    process.env.NOTFAIR_SEO_API_KEY = originalKey;
+    vi.unstubAllEnvs();
   });
 
   it('links index summaries to /blog/{slug} with the featured image', async () => {
@@ -45,6 +43,23 @@ describe('NotFair blog routes', () => {
     expect(html).toContain(encodeURIComponent(post.image_url));
     expect(html).toContain(post.meta_description);
     expect(api.getSeoPosts).toHaveBeenCalledOnce();
+  });
+
+  it('renders empty index state when NOTFAIR_SEO_API_KEY is unset without invoking the SDK', async () => {
+    vi.stubEnv('NOTFAIR_SEO_API_KEY', '');
+    delete process.env.NOTFAIR_SEO_API_KEY;
+    const html = renderToStaticMarkup(await BlogIndex());
+    expect(html).toContain('No articles have been published yet.');
+    expect(api.getSeoPosts).not.toHaveBeenCalled();
+  });
+
+  it('gracefully handles fetch errors on the index route by logging a warning and rendering empty state', async () => {
+    api.getSeoPosts.mockRejectedValue(new Error('Network timeout'));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const html = renderToStaticMarkup(await BlogIndex());
+    expect(html).toContain('No articles have been published yet.');
+    expect(warnSpy).toHaveBeenCalledWith('[notfair-seo] Failed to fetch blog index posts:', expect.any(Error));
+    warnSpy.mockRestore();
   });
 
   it('renders the hero before sanitized article content and preserves attribution', async () => {
@@ -72,5 +87,15 @@ describe('NotFair blog routes', () => {
     api.getSeoPost.mockResolvedValue(null);
     await expect(BlogPost({ params: Promise.resolve({ slug: 'missing' }) })).rejects.toThrow('NOT_FOUND');
     expect(api.getSeoPost).toHaveBeenCalledWith('missing');
+  });
+
+  it('preserves upstream SDK and network errors on [slug] instead of converting to notFound', async () => {
+    api.getSeoPost.mockRejectedValue(new Error('503 Service Unavailable'));
+    await expect(BlogPost({ params: Promise.resolve({ slug: 'test-article' }) })).rejects.toThrow('503 Service Unavailable');
+  });
+
+  it('preserves upstream SDK and network errors in generateMetadata instead of returning fallback title', async () => {
+    api.getSeoPost.mockRejectedValue(new Error('500 Internal Server Error'));
+    await expect(generateMetadata({ params: Promise.resolve({ slug: 'test-article' }) })).rejects.toThrow('500 Internal Server Error');
   });
 });

@@ -13,8 +13,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  if (!process.env.NOTFAIR_SEO_API_KEY) return { title: 'Blog' };
-  const post = await getPost(slug).catch(() => null);
+  const post = await getPost(slug);
   if (!post) notFound();
   const url = `https://www.luckystore1947.com/blog/${encodeURIComponent(post.slug)}`;
   return {
@@ -35,8 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPost({ params }: Props) {
   const { slug } = await params;
-  if (!process.env.NOTFAIR_SEO_API_KEY) notFound();
-  const post = await getPost(slug).catch(() => null);
+  const post = await getPost(slug);
   if (!post) notFound();
   return (
     <article className="mx-auto max-w-3xl space-y-8">
