@@ -1,0 +1,68 @@
+.articleContent {
+  --notfair-article-link: var(--color-section-kicker);
+  --notfair-article-accent: var(--color-accent);
+  --notfair-article-border: var(--color-border);
+  color: var(--color-foreground);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.articleContent > * + * { margin-top: 1.25rem; }
+.articleContent h1,
+.articleContent h2,
+.articleContent h3,
+.articleContent h4 {
+  color: inherit;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  scroll-margin-top: 6rem;
+}
+.articleContent h1 { font-size: 2rem; line-height: 1.2; }
+.articleContent h2 { margin-top: 3rem; font-size: 1.5rem; line-height: 1.25; }
+.articleContent h3 { margin-top: 2.25rem; font-size: 1.25rem; line-height: 1.35; }
+.articleContent h4 { margin-top: 1.75rem; font-size: 1.125rem; line-height: 1.4; }
+.articleContent ul,
+.articleContent ol { padding-left: 1.5rem; }
+.articleContent ul { list-style: disc; }
+.articleContent ol { list-style: decimal; }
+.articleContent li + li { margin-top: 0.5rem; }
+.articleContent li > ul,
+.articleContent li > ol { margin-top: 0.5rem; }
+.articleContent a {
+  color: var(--notfair-article-link, currentColor);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.articleContent blockquote {
+  border-left: 3px solid var(--notfair-article-accent, currentColor);
+  padding-left: 1rem;
+}
+.articleContent img { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+.articleContent figcaption { margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-muted); }
+.articleContent pre { overflow-x: auto; padding: 1rem; background: var(--color-surface); }
+.articleContent :global(.nf-toc) {
+  border: 1px solid var(--notfair-article-border, currentColor);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 1rem 1.25rem;
+}
+.articleContent :global(.nf-toc) ul { list-style: none; padding-left: 0; }
+.articleContent :global(.nf-toc-l3) { padding-left: 1rem; }
+.articleContent :global(.nf-toc-title) { font-weight: 600; }
+.articleContent :global(.nf-tablewrap) { max-width: 100%; overflow-x: auto; }
+.articleContent table { width: 100%; border-collapse: collapse; }
+.articleContent th,
+.articleContent td {
+  border: 1px solid var(--notfair-article-border, currentColor);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: top;
+}
+.articleContent :global(.nf-attribution) { font-size: 0.875rem; opacity: 0.75; }
+@media (max-width: 640px) {
+  .articleContent { font-size: 1rem; }
+  .articleContent th,
+  .articleContent td { min-width: 11rem; }
+}

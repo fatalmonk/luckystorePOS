@@ -29,6 +29,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.workers.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'notfair.co',
+        pathname: '/api/seo/**',
+      },
     ],
   },
   experimental: {

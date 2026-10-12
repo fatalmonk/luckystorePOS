@@ -21,9 +21,11 @@
     "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.20",
     "lucide-react": "^0.475.0",
+    "notfair-nextjs-blog": "https://github.com/nowork-studio/notfair-nextjs-blog/releases/download/v0.4.1/notfair-nextjs-blog-0.4.1.tgz",
     "postcss": "^8.5.23",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sanitize-html": "^2.18.0",
     "tailwindcss": "^3.4.7",
     "zod": "^3.23.0"
   },
@@ -37,6 +39,7 @@
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18",
+    "@types/sanitize-html": "^2.16.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.21.0",
     "eslint-config-next": "15.5.25",
@@ -49,7 +52,7 @@
     "vitest": "^3.0.0"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.12.0"
   },
   "browserslist": [
     "chrome >= 120",
