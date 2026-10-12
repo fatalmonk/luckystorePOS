@@ -3,7 +3,7 @@ import React, { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { getSeoPost } from 'notfair-nextjs-blog';
 import { NotFairPostHero } from 'notfair-nextjs-blog/react';
-import { sanitizeNotFairArticleHtml } from '@/src/lib/notfair-article';
+import { sanitizeNotFairArticleHtml } from '@/lib/notfair-article';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import styles from '../notfair-article.module.css';
 
@@ -13,7 +13,8 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPost(slug);
+  if (!process.env.NOTFAIR_SEO_API_KEY) return { title: 'Blog' };
+  const post = await getPost(slug).catch(() => null);
   if (!post) notFound();
   const url = `https://www.luckystore1947.com/blog/${encodeURIComponent(post.slug)}`;
   return {
@@ -34,7 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPost({ params }: Props) {
   const { slug } = await params;
-  const post = await getPost(slug);
+  if (!process.env.NOTFAIR_SEO_API_KEY) notFound();
+  const post = await getPost(slug).catch(() => null);
   if (!post) notFound();
   return (
     <article className="mx-auto max-w-3xl space-y-8">

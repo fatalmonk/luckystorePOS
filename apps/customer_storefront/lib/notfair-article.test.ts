@@ -34,4 +34,22 @@ describe('remote NotFair article HTML', () => {
       expect(clean).toContain(expected);
     }
   });
+
+  it('normalizes remote h1 to h2 to maintain single page h1 hierarchy for WCAG', () => {
+    const clean = sanitizeNotFairArticleHtml(`
+      <h1 id="overview">Overview Title</h1>
+      <p>Body copy</p>
+    `);
+    expect(clean).toContain('<h2 id="overview">Overview Title</h2>');
+    expect(clean).not.toContain('<h1');
+  });
+
+  it('enforces alt attribute on images and blocks third-party tracking images', () => {
+    const clean = sanitizeNotFairArticleHtml(`
+      <img src="https://notfair.co/api/seo/photo1.webp" />
+      <img src="https://tracker-beacon.evil.com/pixel.gif" alt="Tracking pixel" />
+    `);
+    expect(clean).toContain('alt="Article image"');
+    expect(clean).not.toContain('tracker-beacon.evil.com');
+  });
 });

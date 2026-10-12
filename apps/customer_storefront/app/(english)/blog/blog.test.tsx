@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SeoPost } from 'notfair-nextjs-blog';
 
 const api = vi.hoisted(() => ({ getSeoPosts: vi.fn(), getSeoPost: vi.fn() }));
@@ -26,10 +26,17 @@ const post: SeoPost = {
 };
 
 describe('NotFair blog routes', () => {
+  const originalKey = process.env.NOTFAIR_SEO_API_KEY;
+
   beforeEach(() => {
+    process.env.NOTFAIR_SEO_API_KEY = 'test-notfair-key';
     vi.clearAllMocks();
     api.getSeoPosts.mockResolvedValue([post]);
     api.getSeoPost.mockResolvedValue(post);
+  });
+
+  afterEach(() => {
+    process.env.NOTFAIR_SEO_API_KEY = originalKey;
   });
 
   it('links index summaries to /blog/{slug} with the featured image', async () => {
