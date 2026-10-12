@@ -126,7 +126,7 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || request.nextUrl.hostname;
   if (host.toLowerCase().startsWith('blog.luckystore1947.com')) {
     const pathname = request.nextUrl.pathname;
-    const targetPath = pathname.startsWith('/blog')
+    const targetPath = pathname === '/blog' || pathname.startsWith('/blog/')
       ? pathname
       : `/blog${pathname === '/' ? '' : pathname}`;
     const targetUrl = new URL(targetPath, 'https://www.luckystore1947.com');
