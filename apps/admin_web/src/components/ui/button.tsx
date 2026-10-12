@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
-import { Slot } from '@radix-ui/react-slot';
+import { Slot, Slottable } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Loader2 } from 'lucide-react';
 
@@ -11,12 +11,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm',
-        primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm',
+        default: 'bg-primary text-primary-on hover:bg-primary/90 shadow-sm',
+        primary: 'bg-primary text-primary-on hover:bg-primary/90 shadow-sm',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
         danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
         outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        secondary: 'bg-secondary text-secondary-on hover:bg-secondary/80',
         tertiary: 'bg-muted text-muted-foreground hover:bg-muted/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
@@ -57,23 +57,23 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={isDisabled}
+        aria-busy={loading ? true : undefined}
         {...props}
       >
-        {loading ? (
+        {loading && (
           <>
             <Loader2 className="animate-spin" data-icon="inline-start" />
-            {children || <span>Loading...</span>}
-          </>
-        ) : (
-          <>
-            {icon && (
-              <span className="inline-flex shrink-0 items-center justify-center" data-icon="inline-start">
-                {icon}
-              </span>
-            )}
-            {children}
+            <span className="sr-only" role="status" aria-live="polite">
+              Loading...
+            </span>
           </>
         )}
+        {!loading && icon && (
+          <span className="inline-flex shrink-0 items-center justify-center" data-icon="inline-start">
+            {icon}
+          </span>
+        )}
+        <Slottable>{children as any}</Slottable>
       </Comp>
     );
   }

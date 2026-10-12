@@ -19,14 +19,14 @@ const paddingClasses = {
 const highlightClasses = {
   emerald: 'bg-emerald-50 ring-2 ring-emerald-300 dark:bg-emerald-950/40',
   amber: 'bg-amber-50 ring-2 ring-amber-300 dark:bg-amber-950/40',
-  blue: 'bg-primary/10 ring-2 ring-primary/40',
+  blue: 'bg-primary-subtle ring-2 ring-primary',
 };
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   (
     {
       className,
-      padding,
+      padding = 'md',
       hoverable = false,
       highlight = false,
       highlightColor = 'emerald',

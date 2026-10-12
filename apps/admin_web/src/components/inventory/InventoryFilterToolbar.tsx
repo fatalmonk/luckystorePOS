@@ -103,11 +103,11 @@ export function InventoryFilterToolbar({
 
         {/* Desktop Scan Button (hidden on mobile) */}
         <Button
-          variant="secondary"
+          variant="outline"
           icon={<ScanLine size={16} />}
           onClick={onOpenBarcode}
           title="Scan Barcode"
-          className="shadow-xs h-9 px-3 hidden md:flex text-xs sm:text-sm font-medium"
+          className="shadow-xs h-9 px-3 hidden md:flex text-xs sm:text-sm font-medium bg-surface border-border text-text-primary hover:bg-background-subtle"
         >
           <span className="hidden sm:inline">Scan</span>
         </Button>

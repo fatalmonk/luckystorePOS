@@ -28,7 +28,7 @@ export const Drawer: React.FC<DrawerProps> = ({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="right"
-        className={cn('w-full sm:max-w-xl overflow-y-auto bg-card border-border', className)}
+        className={cn('w-full sm:max-w-xl max-w-full overflow-y-auto bg-card border-border', className, 'max-w-full')}
         onPointerDownOutside={(e) => {
           if (preventOutsideClose) {
             e.preventDefault();

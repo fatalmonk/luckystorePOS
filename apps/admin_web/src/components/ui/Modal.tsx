@@ -41,7 +41,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
       >
         <DialogHeader className={title ? undefined : 'sr-only'}>
-          <DialogTitle className="text-lg font-medium text-foreground">
+          <DialogTitle className="text-lg font-medium text-warm-fg">
             {title || 'Dialog'}
           </DialogTitle>
         </DialogHeader>

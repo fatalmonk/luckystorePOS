@@ -12,8 +12,8 @@
 |---|---|---|---|---|
 | **Phase 0** | Tooling, `components.json`, `src/lib/utils.ts`, Brand Token Mapping | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
 | **Phase 1** | Core Primitives (`button`, `badge`, `card`, `separator`, `skeleton`) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
-| **Phase 2** | Form Controls (`input`, `label`, `field`, `select`, `checkbox`, `switch`, `textarea`) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
-| **Phase 3** | Overlays & Feedback (`dialog`, `alert-dialog`, `sheet`, `drawer`, `dropdown-menu`, `sonner`) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
+| **Phase 2** | Form Controls (`input`, `label`, `select`, `checkbox`, `switch`, `textarea`) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
+| **Phase 3** | Overlays & Feedback (`dialog`, `alert-dialog`, `sheet`, `dropdown-menu`, `sonner`) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
 | **Phase 4** | Data Display & Complex Layout (`table`, `tabs`, `scroll-area`, `toggle-group`) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
 | **Phase 5** | Consumer View & Layout Modernization (`SidebarNew`, `TopHeader`, layout components) | COMPLETED | Passed (118 tests, typecheck 0 err, lint 0 err) | Passed (Standards & Spec green) |
 | **Phase 6** | Full System Audit, A11y & Production Build Verification | COMPLETED | Passed (Production build clean, SW built, secret scan clean) | Passed (Standards & Spec green) |

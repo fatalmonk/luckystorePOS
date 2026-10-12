@@ -10,21 +10,21 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+          'border-transparent bg-primary text-primary-on hover:bg-primary/80',
         secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'border-transparent bg-secondary text-secondary-on hover:bg-secondary/80',
         destructive:
           'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
-        outline: 'text-foreground',
+        outline: 'border-border text-foreground',
         // Backward-compatible semantic variants for POS / Admin domain
         success:
-          'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+          'border-transparent bg-success-subtle text-success-dark',
         warning:
-          'border-transparent bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+          'border-transparent bg-warning-subtle text-warning-dark',
         danger:
-          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
+          'border-transparent bg-danger-subtle text-danger-dark',
         info:
-          'border-transparent bg-primary/20 text-foreground dark:bg-primary/30',
+          'border-transparent bg-info-subtle text-info-dark dark:text-info',
         neutral:
           'border-border bg-card text-foreground',
       },

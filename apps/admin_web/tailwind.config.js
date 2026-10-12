@@ -1,3 +1,5 @@
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -7,6 +9,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        foreground: 'hsl(var(--foreground))',
         background: {
           DEFAULT: 'var(--color-background-default)',
           subtle: 'var(--color-background-subtle)',
@@ -22,12 +25,14 @@ export default {
           pressed: 'var(--color-primary-pressed)',
           subtle: 'var(--color-primary-subtle)',
           on: 'var(--color-primary-on)',
+          foreground: 'var(--color-primary-on)',
         },
         secondary: {
           DEFAULT: 'var(--color-secondary-default)',
           hover: 'var(--color-secondary-hover)',
           subtle: 'var(--color-secondary-subtle)',
           on: 'var(--color-secondary-on)',
+          foreground: 'var(--color-secondary-on)',
         },
         success: {
           DEFAULT: 'var(--color-success-default)',
@@ -175,5 +180,5 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 }

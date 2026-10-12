@@ -80,7 +80,7 @@ function shouldSkipPath(filePath) {
   const fileName = rel.split('/').pop() || '';
 
   if (resolve(filePath) === SELF) return true;
-  if (fileName.endsWith('.example')) return false;
+  if (/^\.env(\.[^/]+)?\.example$/.test(fileName) || fileName === '.dev.vars.example') return false;
 
   if (rel === '.worktrees' || rel.startsWith('.worktrees/')) return true;
   if (rel.endsWith('.dev.vars') || rel.includes('/.dev.vars')) return true;
