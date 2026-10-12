@@ -20,11 +20,21 @@ This document specifies the integration of NotFair-powered SEO articles into the
 
 ## 3. Security & HTML Sanitization
 
-Remote NotFair HTML is treated as untrusted third-party content and sanitized through [`sanitizeNotFairArticleHtml`](file:///Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_storefront/src/lib/notfair-article.ts) before injection into the DOM:
+Remote NotFair HTML is treated as untrusted third-party content and sanitized through [`sanitizeNotFairArticleHtml`](../apps/customer_storefront/src/lib/notfair-article.ts) before injection into the DOM:
 
 ### Allowed Tags & Attributes
-- Allowed structural tags: `p`, `span`, `h2`, `h3`, `h4`, `ul`, `ol`, `li`, `blockquote`, `code`, `pre`, `table`, `thead`, `tbody`, `tr`, `th`, `td`, `figure`, `figcaption`, `nav`, `img`, `a`.
-- Strictly stripped: `<script>`, `<iframe>`, `<style>`, `<form>`, `<input>`, `onclick`, inline CSS `style` attributes, and arbitrary unvetted classes.
+The sanitizer inherits `sanitizeHtml.defaults.allowedTags` and extends it with explicit structure tags:
+- **Inherited Default Tags**: Includes standard formatting and inline tags (`div`, `span`, `p`, `b`, `i`, `strong`, `em`, `strike`, `code`, `pre`, `blockquote`, `hr`, `a`, `ul`, `ol`, `li`, `table`, etc.).
+- **Explicit Additional Tags**: Extended with `'figure'`, `'figcaption'`, `'h1'`, `'h2'`, `'h3'`, `'h4'`, `'img'`, `'nav'`, `'table'`, `'thead'`, `'tbody'`, `'tr'`, `'th'`, `'td'`.
+- **Allowed Attributes**:
+  - `a`: `href`, `title`, `target`, `rel` (automatically transformed to enforce `rel="noopener noreferrer"`).
+  - `img`: `src`, `alt`, `title`, `width`, `height`, `loading`.
+  - `div`: `class` (restricted to `.nf-tablewrap`).
+  - `nav`: `aria-label`, `class` (restricted to `.nf-toc`).
+  - `li`: `class` (restricted to `.nf-toc-l2`, `.nf-toc-l3`).
+  - `p`: `class` (restricted to `.nf-attribution`, `.nf-toc-title`).
+  - `h1`-`h4`: `id` (for TOC anchor jumping).
+- **Strictly Stripped**: `<script>`, `<iframe>`, `<style>`, `<form>`, `<input>`, inline CSS `style` attributes, `javascript:` or `data:` URLs, and arbitrary unwhitelisted CSS classes.
 
 ### Accessibility (WCAG 2.1 AA)
 - **Single `<h1>` Hierarchy**: Remote `<h1>` elements inside article content are automatically transformed into `<h2>` headings while preserving their `id` attributes for table-of-contents jump links. The page hero renders the single top-level `<h1>`.
@@ -65,11 +75,20 @@ Remote NotFair HTML is treated as untrusted third-party content and sanitized th
 
 ---
 
-## 6. Verification & Testing
+## 6. Domain Routing & Cloudflare Subdomain Integration
+
+- **Primary Canonical Routing**: All blog routes are canonicalized to `https://www.luckystore1947.com/blog` and `https://www.luckystore1947.com/blog/[slug]`. NotFair crawls and validates published articles against these URLs.
+- **Subdomain (`blog.luckystore1947.com`)**:
+  - Cloudflare DNS configures `blog.luckystore1947.com` CNAME targeting `cname.vercel-dns.com`.
+  - For maximum domain authority and consolidated SEO juice, `blog.luckystore1947.com` can be aliased in Vercel with a permanent 301 redirect to `https://www.luckystore1947.com/blog`.
+
+---
+
+## 7. Verification & Testing
 
 ### Test Suites
-- **[`lib/notfair-article.test.ts`](file:///Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_storefront/lib/notfair-article.test.ts)**: Unit tests verifying tag allowlisting, XSS stripping, heading normalization (`h1` → `h2`), decorative image `alt=""` preservation, and origin filtering.
-- **[`app/(english)/blog/blog.test.tsx`](file:///Users/mac.alvi/Desktop/Projects/LuckyStore/apps/customer_storefront/app/(english)/blog/blog.test.tsx)**: Route component tests verifying breadcrumbs, featured images, metadata generation, error propagation, and 404 behavior.
+- **[`lib/notfair-article.test.ts`](../apps/customer_storefront/lib/notfair-article.test.ts)**: Unit tests verifying tag allowlisting, XSS stripping, heading normalization (`h1` → `h2`), decorative image `alt=""` preservation, and origin filtering.
+- **[`app/(english)/blog/blog.test.tsx`](../apps/customer_storefront/app/(english)/blog/blog.test.tsx)**: Route component tests verifying breadcrumbs, featured images, metadata generation, error propagation, and 404 behavior.
 
 ### Build Verification
 Execute the standard test and build commands prior to release:
