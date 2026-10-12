@@ -124,7 +124,7 @@ async function isKnownCategorySlug(slug: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   // Canonical Subdomain 301 Redirect: Consolidate blog.luckystore1947.com to https://www.luckystore1947.com/blog
   const host = request.headers.get('host') || request.nextUrl.hostname;
-  if (host.toLowerCase().startsWith('blog.luckystore1947.com')) {
+  if (/^blog\.luckystore1947\.com(?::\d+)?$/i.test(host)) {
     const pathname = request.nextUrl.pathname;
     const targetPath = pathname === '/blog' || pathname.startsWith('/blog/')
       ? pathname
