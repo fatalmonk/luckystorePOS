@@ -210,6 +210,28 @@
   --color-success: var(--color-success-default);
   --color-danger: var(--color-danger-default);
   --color-warning: var(--color-warning-default);
+
+  /* ===== SHADCN / RADIX SEMANTIC TOKENS ===== */
+  --background: 40 33% 98%; /* #FDFBF7 Warm Bone / Paper */
+  --foreground: 240 8% 5%; /* #0B0B0D Deep Night */
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 240 8% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 8% 5%;
+  --primary: 45 85% 60%; /* #f0c444 Saffron */
+  --primary-foreground: 240 8% 5%; /* #0B0B0D Deep Night text on Saffron */
+  --secondary: 173 84% 32%; /* #0d9488 Teal */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 40 14% 95%;
+  --muted-foreground: 25 5% 38%; /* #665f5a for >= 4.5:1 contrast */
+  --accent: 45 85% 60%; /* #f0c444 Saffron */
+  --accent-foreground: 240 8% 5%;
+  --destructive: 1 62% 39%; /* #a32624 */
+  --destructive-foreground: 0 0% 98%;
+  --border: 30 6% 90%; /* #e7e5e4 */
+  --input: 30 6% 90%;
+  --ring: 53 100% 18%; /* #5c5200 for >= 3:1 focus contrast in light mode */
+  --radius: 0.5rem;
 }
 
 /* ===== DARK MODE ===== */
@@ -240,6 +262,27 @@
   --color-neutral-400: #64748b;
 
   --color-surface-overlay: rgba(20, 20, 23, 0.85);
+
+  /* ===== SHADCN / RADIX SEMANTIC TOKENS (Dark) ===== */
+  --background: 240 8% 5%; /* #0B0B0D Deep Night */
+  --foreground: 40 33% 98%; /* #FDFBF7 Warm Bone */
+  --card: 240 7% 8%; /* #141417 */
+  --card-foreground: 40 33% 98%;
+  --popover: 240 7% 8%;
+  --popover-foreground: 40 33% 98%;
+  --primary: 45 85% 60%; /* #f0c444 Saffron */
+  --primary-foreground: 240 8% 5%; /* #0B0B0D */
+  --secondary: 173 58% 39%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 240 6% 12%;
+  --muted-foreground: 30 8% 69%;
+  --accent: 45 85% 60%;
+  --accent-foreground: 240 8% 5%;
+  --destructive: 1 84% 72%;
+  --destructive-foreground: 240 8% 5%;
+  --border: 30 11% 21%;
+  --input: 30 11% 21%;
+  --ring: 45 85% 60%;
 }
 
 /* Smooth theme transition */

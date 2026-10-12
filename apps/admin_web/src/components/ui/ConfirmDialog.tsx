@@ -1,7 +1,18 @@
-import React from 'react';
-import { Modal } from './Modal';
+import * as React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './alert-dialog';
+import { buttonVariants } from './button';
+import { cn } from '@/lib/utils';
 
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
   message: string;
@@ -25,18 +36,30 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onCancel,
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onCancel} title={title}>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>{message}</p>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-        <button className="button-outline" onClick={onCancel} disabled={isPending}>{cancelLabel}</button>
-        <button
-          className={variant === 'danger' ? 'button-danger' : 'button-primary'}
-          onClick={onConfirm}
-          disabled={isPending}
-        >
-          {isPending ? 'Deleting...' : confirmLabel}
-        </button>
-      </div>
-    </Modal>
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{message}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isPending}>
+            {cancelLabel}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              onConfirm();
+            }}
+            disabled={isPending}
+            className={cn(
+              variant === 'danger' && buttonVariants({ variant: 'destructive' })
+            )}
+          >
+            {isPending ? 'Processing...' : confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };

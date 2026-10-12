@@ -61,8 +61,8 @@ export function LoginPage() {
       
       <div className="w-full max-w-md px-4 relative z-10">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-level-3 mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-            <ShoppingBag className="text-primary-on w-8 h-8" />
+          <div className="inline-flex items-center justify-center size-16 rounded-2xl bg-primary shadow-level-3 mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+            <ShoppingBag className="text-primary-on size-8" />
           </div>
           <h1 className="text-4xl font-black text-text-primary tracking-tight mb-2">
             Lucky Store
@@ -71,7 +71,7 @@ export function LoginPage() {
         </div>
 
         <Card className="p-8 shadow-level-3 border-border-default bg-surface/80 backdrop-blur-xl">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="flex flex-col gap-6">
             <Input 
               label="Admin Email"
               type="email" 
