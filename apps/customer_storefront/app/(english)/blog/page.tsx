@@ -14,12 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogIndex() {
-  const posts = process.env.NOTFAIR_SEO_API_KEY
-    ? await getSeoPosts().catch((err) => {
-        console.warn('[notfair-seo] Failed to fetch blog index posts:', err);
-        return [];
-      })
-    : [];
+  const posts = await getSeoPosts();
   return (
     <>
       <h1 className="text-3xl font-black tracking-tight text-warm-fg sm:text-4xl">Blog</h1>

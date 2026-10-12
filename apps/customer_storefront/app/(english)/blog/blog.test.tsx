@@ -45,21 +45,15 @@ describe('NotFair blog routes', () => {
     expect(api.getSeoPosts).toHaveBeenCalledOnce();
   });
 
-  it('renders empty index state when NOTFAIR_SEO_API_KEY is unset without invoking the SDK', async () => {
-    vi.stubEnv('NOTFAIR_SEO_API_KEY', '');
-    delete process.env.NOTFAIR_SEO_API_KEY;
+  it('renders empty index state when getSeoPosts resolves with zero posts', async () => {
+    api.getSeoPosts.mockResolvedValue([]);
     const html = renderToStaticMarkup(await BlogIndex());
     expect(html).toContain('No articles have been published yet.');
-    expect(api.getSeoPosts).not.toHaveBeenCalled();
   });
 
-  it('gracefully handles fetch errors on the index route by logging a warning and rendering empty state', async () => {
+  it('propagates upstream fetch errors on the index route to allow ISR to serve stale responses', async () => {
     api.getSeoPosts.mockRejectedValue(new Error('Network timeout'));
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const html = renderToStaticMarkup(await BlogIndex());
-    expect(html).toContain('No articles have been published yet.');
-    expect(warnSpy).toHaveBeenCalledWith('[notfair-seo] Failed to fetch blog index posts:', expect.any(Error));
-    warnSpy.mockRestore();
+    await expect(BlogIndex()).rejects.toThrow('Network timeout');
   });
 
   it('renders the hero before sanitized article content and preserves attribution', async () => {
