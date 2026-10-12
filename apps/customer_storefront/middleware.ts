@@ -122,6 +122,18 @@ async function isKnownCategorySlug(slug: string): Promise<boolean> {
  */
 
 export async function middleware(request: NextRequest) {
+  // Canonical Subdomain 301 Redirect: Consolidate blog.luckystore1947.com to https://www.luckystore1947.com/blog
+  const host = request.headers.get('host') || request.nextUrl.hostname;
+  if (host.toLowerCase().startsWith('blog.luckystore1947.com')) {
+    const pathname = request.nextUrl.pathname;
+    const targetPath = pathname.startsWith('/blog')
+      ? pathname
+      : `/blog${pathname === '/' ? '' : pathname}`;
+    const targetUrl = new URL(targetPath, 'https://www.luckystore1947.com');
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl, 301);
+  }
+
   // Pre-session canonical redirect: consolidate raw UUID product URLs to human-readable slug URLs.
   // Google has indexed both /product/{uuid} and /product/{slug}--{prefix}; this must happen
   // before the product page can emit duplicate HTML.
