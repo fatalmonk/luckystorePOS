@@ -11,14 +11,16 @@ SELECT
   is_active,
   'https://luckystore1947.com/product/' ||
   substring(
-    trim(both '-' from
+    regexp_replace(
       regexp_replace(
         regexp_replace(
           regexp_replace(lower(name), '[^a-z0-9\s-]', '', 'g'),
-          '\s+', '-', 'g'
+          '^\s+|\s+$', '', 'g'
         ),
-        '-{2,}', '-', 'g'
-      )
+        '\s+', '-', 'g'
+      ),
+      '-{2,}', '-', 'g'
+    )
     ) from 1 for 60
   ) || '--' ||
   substring(replace(id::text, '-', '') from 1 for 8) AS storefront_url
