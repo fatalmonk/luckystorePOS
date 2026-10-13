@@ -88,10 +88,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Subscribe to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      setLoading(true);
-      resolveUser(s);
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setLoading(false);
+      } else if (event === 'SIGNED_IN') {
+        setLoading(true);
+        resolveUser(s);
+      } else {
+        // Refreshes and user updates should not unmount the authenticated app.
+        resolveUser(s);
+      }
     });
 
     return () => subscription.unsubscribe();
