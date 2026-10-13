@@ -184,7 +184,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       </div>
 
       {/* ----------------- 2. MAIN HEADER ----------------- */}
-      <header className="bg-white py-4 px-4 md:px-6 lg:px-8 border-b border-gray-100 sticky top-0 z-40 shadow-xs">
+      <header className="bg-warm-bg py-4 px-4 md:px-6 lg:px-8 border-b border-gray-100 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 lg:gap-8">
           
           {/* Official Lucky Store Logo */}
@@ -206,7 +206,7 @@ export default function FullZillyPreview(): React.JSX.Element {
           </div>
 
           {/* Integrated Search Bar with Category Select */}
-          <div className="hidden lg:flex flex-1 max-w-2xl border-2 border-[#f0c444] rounded-full overflow-hidden focus-within:shadow-md transition-all bg-white">
+          <div className="hidden lg:flex flex-1 max-w-2xl border-2 border-[#f0c444] rounded-full overflow-hidden focus-within:shadow-md transition-all bg-warm-bg">
             <select className="bg-gray-50 px-4 py-3 border-r border-gray-200 outline-none text-xs text-gray-700 font-bold cursor-pointer hover:bg-gray-100 transition-colors">
               <option>All Categories</option>
               <option>Vegetables</option>
@@ -261,7 +261,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       </header>
 
       {/* ----------------- 3. PRIMARY NAVIGATION MENU ----------------- */}
-      <nav className="hidden lg:block bg-white px-4 md:px-6 lg:px-8 border-b border-gray-200/80 shadow-xs relative z-30">
+      <nav className="hidden lg:block bg-warm-bg px-4 md:px-6 lg:px-8 border-b border-gray-200/80 shadow-xs relative z-30">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Left: Zilly Style Category Menu Trigger & Nav Links */}
@@ -280,7 +280,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
               {/* Category Dropdown Menu Popover */}
               {isCatMenuOpen && (
-                <div className="absolute top-full left-0 w-64 bg-white border border-gray-100 shadow-2xl rounded-b-2xl py-2 z-50 animate-fade-in-up">
+                <div className="absolute top-full left-0 w-64 bg-warm-bg border border-gray-100 shadow-2xl rounded-b-2xl py-2 z-50 animate-fade-in-up">
                   {categories.map((c) => (
                     <a
                       key={c.name}
@@ -310,7 +310,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                 <span>Home</span>
                 <span className="text-[9px]">▼</span>
                 {activeNavDropdown === 'home' && (
-                  <div className="absolute top-full left-0 w-44 bg-white border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
+                  <div className="absolute top-full left-0 w-44 bg-warm-bg border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Home 01 (Default)</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Home 02 (Grocery)</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Home 03 (Organic)</a>
@@ -327,7 +327,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                 <span>Pages</span>
                 <span className="text-[9px]">▼</span>
                 {activeNavDropdown === 'pages' && (
-                  <div className="absolute top-full left-0 w-44 bg-white border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
+                  <div className="absolute top-full left-0 w-44 bg-warm-bg border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">About Us</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Daily Deals</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">FAQ Page</a>
@@ -344,7 +344,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                 <span>Shop</span>
                 <span className="text-[9px]">▼</span>
                 {activeNavDropdown === 'shop' && (
-                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
+                  <div className="absolute top-full left-0 w-48 bg-warm-bg border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Shop Grid Layout</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Shop List Layout</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Single Product</a>
@@ -404,7 +404,7 @@ export default function FullZillyPreview(): React.JSX.Element {
         <div className="flex overflow-x-auto gap-3 md:gap-4 pb-2 no-scrollbar items-center justify-between">
           {categories.map((cat, idx) => (
             <React.Fragment key={cat.name}>
-              <div className="flex-shrink-0 bg-white shadow-xs rounded-full px-5 py-2.5 flex items-center space-x-3 border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#f0c444] transition-all group">
+              <div className="flex-shrink-0 bg-warm-bg shadow-xs rounded-full px-5 py-2.5 flex items-center space-x-3 border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#f0c444] transition-all group">
                 <div className="w-9 h-9 bg-[#FFF8E1] rounded-full flex items-center justify-center text-xl group-hover:bg-[#f0c444] group-hover:text-[#0B0B0D] transition-colors border border-[#f0c444]/30">
                   {cat.icon}
                 </div>
@@ -474,7 +474,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                 <h3 className="text-2xl font-black text-gray-900 leading-snug">Premium Honeynuts</h3>
                 <p className="text-xs text-gray-500 font-semibold">100% Salted Organic Nuts</p>
                 <div className="text-3xl font-black text-[#eb5757] pt-1">$15.00</div>
-                <button className="bg-white text-gray-900 px-6 py-2 rounded-full text-xs font-extrabold shadow-xs hover:bg-gray-50 transition-all cursor-pointer border border-gray-100">
+                <button className="bg-warm-bg text-gray-900 px-6 py-2 rounded-full text-xs font-extrabold shadow-xs hover:bg-gray-50 transition-all cursor-pointer border border-gray-100">
                   Shop Now
                 </button>
               </div>
@@ -494,7 +494,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                   <p className="text-[11px] text-blue-100 font-medium">Top Quality Product</p>
                 </div>
                 <div className="text-5xl text-center my-2 transform hover:scale-110 transition-transform">👶</div>
-                <button className="bg-white text-[#0066FF] hover:bg-blue-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs cursor-pointer">
+                <button className="bg-warm-bg text-[#0066FF] hover:bg-blue-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs cursor-pointer">
                   Shop Now
                 </button>
               </div>
@@ -509,7 +509,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                   <p className="text-[11px] text-gray-500 font-medium">All Fixed Size</p>
                 </div>
                 <div className="text-5xl text-center my-2 transform hover:scale-110 transition-transform">🧴</div>
-                <button className="bg-white text-gray-900 hover:bg-gray-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs border border-gray-100 cursor-pointer">
+                <button className="bg-warm-bg text-gray-900 hover:bg-gray-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs border border-gray-100 cursor-pointer">
                   Shop Now
                 </button>
               </div>
@@ -551,7 +551,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {featuredProducts.map((product) => (
-              <div key={product.id} className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col justify-between relative group hover:shadow-xl hover:border-[#f0c444] transition-all">
+              <div key={product.id} className="bg-warm-bg p-4 rounded-2xl border border-gray-100 flex flex-col justify-between relative group hover:shadow-xl hover:border-[#f0c444] transition-all">
                 
                 {/* Wishlist Icon */}
                 <button className="absolute top-3 right-3 text-gray-400 hover:text-[#eb5757] transition-colors z-10">
@@ -631,7 +631,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {vendors.map((v) => (
-              <div key={v.id} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center space-x-3 hover:shadow-md transition-shadow">
+              <div key={v.id} className="bg-warm-bg p-4 rounded-2xl border border-gray-100 flex items-center space-x-3 hover:shadow-md transition-shadow">
                 <div className="w-12 h-12 bg-[#FFF8E1] rounded-full flex items-center justify-center text-2xl border border-[#f0c444]/30">
                   {v.avatar}
                 </div>
@@ -666,7 +666,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
           <div className="bg-[#FFF8E1] rounded-3xl p-6 border border-[#f0c444]/50 grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Spotlight Banner */}
-            <div className="bg-white p-6 rounded-2xl flex flex-col justify-between shadow-xs border border-[#f0c444]/30">
+            <div className="bg-warm-bg p-6 rounded-2xl flex flex-col justify-between shadow-xs border border-[#f0c444]/30">
               <div className="text-center space-y-2">
                 <div className="text-7xl">🥔</div>
                 <h3 className="text-sm font-extrabold text-gray-900">Organic Idaho Russet Potatoes Basket</h3>
@@ -680,7 +680,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             {/* Right 2x3 Grid */}
             <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3">
               {featuredProducts.map((item) => (
-                <div key={`deal-${item.id}`} className="bg-white p-3 rounded-xl border border-gray-100 flex flex-col justify-between">
+                <div key={`deal-${item.id}`} className="bg-warm-bg p-3 rounded-xl border border-gray-100 flex flex-col justify-between">
                   <div className="text-3xl text-center my-1">{item.imageIcon}</div>
                   <div className="space-y-1">
                     <h4 className="text-[11px] font-bold text-gray-800 line-clamp-1">{item.title}</h4>
@@ -704,7 +704,7 @@ export default function FullZillyPreview(): React.JSX.Element {
               <p className="text-xs text-blue-600 font-bold">Organic Fruits</p>
               <h3 className="text-lg font-black text-gray-900">Baby Jam</h3>
               <p className="text-xs text-gray-500 font-semibold mt-1">From <span className="font-bold text-gray-900">BDT 1200</span></p>
-              <button className="mt-3 bg-white text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
+              <button className="mt-3 bg-warm-bg text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🫙</div>
           </div>
@@ -715,7 +715,7 @@ export default function FullZillyPreview(): React.JSX.Element {
               <p className="text-xs text-lime-700 font-bold">Organic Fruits</p>
               <h3 className="text-lg font-black text-gray-900">Fresh Juice</h3>
               <p className="text-xs text-gray-500 font-semibold mt-1">From <span className="font-bold text-gray-900">BDT 1400</span></p>
-              <button className="mt-3 bg-white text-lime-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
+              <button className="mt-3 bg-warm-bg text-lime-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🧃</div>
           </div>
@@ -726,7 +726,7 @@ export default function FullZillyPreview(): React.JSX.Element {
               <p className="text-xs text-purple-700 font-bold">Kids Category</p>
               <h3 className="text-lg font-black text-gray-900">Car Toys</h3>
               <p className="text-xs text-gray-500 font-semibold mt-1">From <span className="font-bold text-gray-900">BDT 800</span></p>
-              <button className="mt-3 bg-white text-purple-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
+              <button className="mt-3 bg-warm-bg text-purple-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🧸</div>
           </div>
@@ -745,7 +745,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {trendingProducts.map((item) => (
-              <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col justify-between hover:shadow-lg transition-all group">
+              <div key={item.id} className="bg-warm-bg p-4 rounded-2xl border border-gray-100 flex flex-col justify-between hover:shadow-lg transition-all group">
                 <div className="w-full h-32 bg-gray-50 rounded-xl flex items-center justify-center text-4xl mb-3 group-hover:scale-105 transition-transform">
                   {item.imageIcon}
                 </div>
@@ -782,7 +782,7 @@ export default function FullZillyPreview(): React.JSX.Element {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Spotlight Aptamil Box */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col justify-between text-center space-y-4 shadow-xs">
+          <div className="bg-warm-bg p-6 rounded-3xl border border-gray-100 flex flex-col justify-between text-center space-y-4 shadow-xs">
             <span className="text-xs font-extrabold text-[#eb5757] uppercase">Hot Deal</span>
             <div className="text-8xl my-2">🍼</div>
             <div className="space-y-2">
@@ -802,7 +802,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <h3 className="text-lg font-black text-gray-900 border-b border-gray-100 pb-2">On Sell Products</h3>
             <div className="space-y-3">
               {sideProducts.map((sp) => (
-                <div key={sp.id} className="bg-white p-3 rounded-2xl border border-gray-100 flex items-center space-x-3">
+                <div key={sp.id} className="bg-warm-bg p-3 rounded-2xl border border-gray-100 flex items-center space-x-3">
                   <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center text-3xl shrink-0">
                     {sp.imageIcon}
                   </div>
@@ -826,7 +826,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <h3 className="text-lg font-black text-gray-900 border-b border-gray-100 pb-2">Best Seller</h3>
             <div className="space-y-3">
               {bestSellerProducts.map((bp) => (
-                <div key={bp.id} className="bg-white p-3 rounded-2xl border border-gray-100 flex items-center space-x-3">
+                <div key={bp.id} className="bg-warm-bg p-3 rounded-2xl border border-gray-100 flex items-center space-x-3">
                   <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center text-3xl shrink-0">
                     {bp.imageIcon}
                   </div>
@@ -866,7 +866,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {blogs.map((b) => (
-            <div key={b.id} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow">
+            <div key={b.id} className="bg-warm-bg rounded-3xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow">
               <div className="w-full h-48 bg-[#FFF8E1] flex items-center justify-center text-7xl">
                 {b.image}
               </div>
@@ -888,7 +888,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       </div>
 
       {/* ----------------- 16. BRAND LOGO STRIP ----------------- */}
-      <div className="bg-white py-8 border-y border-gray-100">
+      <div className="bg-warm-bg py-8 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between opacity-60 text-sm font-extrabold tracking-wider text-gray-500 overflow-x-auto gap-8">
           <span>BabyCare</span>
           <span>Veggie</span>
@@ -991,7 +991,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <h4 className="font-extrabold text-sm uppercase tracking-wider text-[#f0c444]">Sign Up Newsletter</h4>
             <p className="text-gray-400 text-[11px]">Get daily updates and special discounts delivered to your inbox.</p>
             <div className="flex overflow-hidden rounded-lg">
-              <input type="email" placeholder="Your Email Address" className="px-3 py-2 text-gray-900 outline-none text-xs flex-1 bg-white" />
+              <input type="email" placeholder="Your Email Address" className="px-3 py-2 text-gray-900 outline-none text-xs flex-1 bg-warm-bg" />
               <button className="bg-[#f0c444] text-[#0B0B0D] px-4 font-bold hover:bg-[#e0b434] transition-colors cursor-pointer">Go</button>
             </div>
           </div>
@@ -1013,7 +1013,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       {/* ----------------- FLOATING ELEMENTS ----------------- */}
       
       {/* Real-time Purchase Toast */}
-      <div className="hidden sm:flex fixed bottom-6 left-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-2xl items-start space-x-4 max-w-[320px] z-50 border border-gray-100 animate-fade-in-up">
+      <div className="hidden sm:flex fixed bottom-6 left-6 bg-warm-bg/95 backdrop-blur-sm p-4 rounded-2xl shadow-2xl items-start space-x-4 max-w-[320px] z-50 border border-gray-100 animate-fade-in-up">
         <div className="w-12 h-12 md:w-14 md:h-14 bg-[#FFF8E1] rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-[#f0c444]/30 text-2xl md:text-3xl">
           🥭
         </div>

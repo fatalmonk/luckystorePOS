@@ -23,7 +23,7 @@ interface PolicySectionProps {
 
 function PolicySection({ icon, title, children }: PolicySectionProps) {
   return (
-    <section className="bg-white border border-warm-border rounded-[var(--radius-md)] p-5 sm:p-6 shadow-sm">
+    <section className="bg-warm-bg border border-warm-border rounded-[var(--radius-md)] p-5 sm:p-6 shadow-sm">
       <div className="flex items-start gap-3 mb-3">
         <span className="text-xl leading-none mt-0.5" aria-hidden="true">{icon}</span>
         <h2 className="text-base font-bold tracking-tight text-warm-fg">{title}</h2>
@@ -179,13 +179,13 @@ export default function SecurityPolicyPage() {
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <a
                 href="mailto:security@luckystore1947.com"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white text-warm-fg text-sm font-bold hover:bg-warm-accent transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-warm-bg text-warm-fg text-sm font-bold hover:bg-warm-accent transition-colors"
               >
                 📧 security@luckystore1947.com
               </a>
               <a
                 href="tel:+8801731944544"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-warm-bg/10 text-white text-sm font-bold hover:bg-warm-bg/20 transition-colors"
               >
                 📞 +880 1731-944544
               </a>
@@ -193,7 +193,7 @@ export default function SecurityPolicyPage() {
                 href="https://maps.app.goo.gl/tfiRABoc1WsKEt619"
                 target="_blank"
                 rel="noopener"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-warm-bg/10 text-white text-sm font-bold hover:bg-warm-bg/20 transition-colors"
               >
                 📍 Find us on Google Maps
               </a>

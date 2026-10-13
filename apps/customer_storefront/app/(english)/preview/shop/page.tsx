@@ -125,7 +125,7 @@ const TopHeader = (): React.JSX.Element => (
 );
 
 const MainHeader = (): React.JSX.Element => (
-  <div className="py-5 px-6 flex items-center justify-between border-b border-gray-100 bg-white">
+  <div className="py-5 px-6 flex items-center justify-between border-b border-gray-100 bg-warm-bg">
     <div className="flex items-center space-x-2 shrink-0 cursor-pointer select-none group">
       <div className="flex items-baseline space-x-1">
         <span className="font-extrabold text-2xl text-[#0B0B0D] tracking-tight uppercase leading-none">
@@ -175,7 +175,7 @@ const MainHeader = (): React.JSX.Element => (
 );
 
 const Navbar = (): React.JSX.Element => (
-  <nav className="flex items-center justify-between py-3.5 px-6 border-b border-gray-200/80 bg-white text-xs font-extrabold uppercase tracking-wider">
+  <nav className="flex items-center justify-between py-3.5 px-6 border-b border-gray-200/80 bg-warm-bg text-xs font-extrabold uppercase tracking-wider">
     <div className="flex space-x-8 text-gray-700">
       <span className="cursor-pointer flex items-center gap-1 hover:text-[#0B0B0D]">Home <ChevronDown className="w-3 h-3 text-gray-400" /></span>
       <span className="cursor-pointer flex items-center gap-1 hover:text-[#0B0B0D]">Pages <ChevronDown className="w-3 h-3 text-gray-400" /></span>
@@ -209,7 +209,7 @@ const Breadcrumbs = (): React.JSX.Element => (
 
 const Sidebar = (): React.JSX.Element => (
   <aside className="w-[300px] flex-shrink-0 flex flex-col gap-8 pr-6">
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
+    <div className="bg-warm-bg border border-gray-200 rounded-2xl p-6 shadow-xs">
       <h3 className="text-base font-black text-gray-900 border-b border-gray-100 pb-3 mb-4">Categories</h3>
       <ul className="flex flex-col gap-3">
         {CATEGORIES.map((cat) => (
@@ -228,15 +228,15 @@ const Sidebar = (): React.JSX.Element => (
 
 const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
   return (
-    <div className="group border border-gray-100 rounded-2xl p-5 bg-white hover:border-[#f0c444] hover:shadow-xl transition-all duration-300 relative flex flex-col h-full">
+    <div className="group border border-gray-100 rounded-2xl p-5 bg-warm-bg hover:border-[#f0c444] hover:shadow-xl transition-all duration-300 relative flex flex-col h-full">
       {/* Category Label */}
       <span className="text-[10px] uppercase font-bold text-gray-400 mb-2">{product.category}</span>
       
       {/* Floating Actions (Visible on Hover) */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 z-10">
-        <button className="bg-white p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><Heart className="w-4 h-4" /></button>
-        <button className="bg-white p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><RefreshCw className="w-4 h-4" /></button>
-        <button className="bg-white p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><Eye className="w-4 h-4" /></button>
+        <button className="bg-warm-bg p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><Heart className="w-4 h-4" /></button>
+        <button className="bg-warm-bg p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><RefreshCw className="w-4 h-4" /></button>
+        <button className="bg-warm-bg p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><Eye className="w-4 h-4" /></button>
       </div>
 
       {/* Discount Tag */}
@@ -302,7 +302,7 @@ const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
 
 const ProductArea = (): React.JSX.Element => (
   <div className="flex-1 flex flex-col gap-6">
-    <div className="flex justify-between items-center bg-white border border-gray-100 rounded-2xl p-4 shadow-xs">
+    <div className="flex justify-between items-center bg-warm-bg border border-gray-100 rounded-2xl p-4 shadow-xs">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 border-r border-gray-200 pr-4">
           <LayoutGrid className="w-5 h-5 text-[#0B0B0D] cursor-pointer" />
@@ -312,7 +312,7 @@ const ProductArea = (): React.JSX.Element => (
       </div>
       <div className="flex items-center gap-3 text-xs">
         <span className="text-gray-500 font-semibold">Sort by:</span>
-        <div className="border border-gray-200 rounded-lg px-3 py-1.5 flex items-center gap-2 cursor-pointer bg-white min-w-[160px] justify-between font-bold text-gray-700">
+        <div className="border border-gray-200 rounded-lg px-3 py-1.5 flex items-center gap-2 cursor-pointer bg-warm-bg min-w-[160px] justify-between font-bold text-gray-700">
           <span>Default Sorting</span>
           <ChevronDown className="w-4 h-4 text-gray-400" />
         </div>

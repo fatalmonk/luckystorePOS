@@ -36,7 +36,6 @@
   text-underline-offset: 0.2em;
 }
 .articleContent blockquote {
-  border-left: 3px solid var(--notfair-article-accent, currentColor);
   padding-left: 1rem;
 }
 .articleContent img { max-width: 100%; height: auto; border-radius: var(--radius-md); }

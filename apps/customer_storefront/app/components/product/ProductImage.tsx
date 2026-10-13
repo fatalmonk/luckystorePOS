@@ -33,7 +33,7 @@ export function ProductImageFallback({
         <CategoryIcon category={categoryName} size={iconSize} />
       </span>
       {!isKnown && (
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-warm-dim">
+        <span className="text-label-sm font-extrabold uppercase tracking-[0.16em] text-warm-dim">
           Lucky Store
         </span>
       )}
