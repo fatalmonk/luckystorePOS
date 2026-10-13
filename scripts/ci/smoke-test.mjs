@@ -72,11 +72,22 @@ async function run() {
     {
       name: '1. Health Check Endpoint (/api/health)',
       fn: async () => {
-        const res = await request(`${baseUrl}/api/health`);
-        if (res.statusCode !== 200) throw new Error(`Expected 200, got ${res.statusCode}`);
-        const data = JSON.parse(res.body);
-        if (data.status !== 'ok') throw new Error(`Expected status 'ok', got: ${res.body}`);
-        return 'Status 200 OK';
+        let lastErr;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const res = await request(`${baseUrl}/api/health`);
+            if (res.statusCode !== 200) throw new Error(`Expected 200, got ${res.statusCode}`);
+            const data = JSON.parse(res.body);
+            if (data.status !== 'ok') throw new Error(`Expected status 'ok', got: ${res.body}`);
+            return `Status 200 OK${attempt > 1 ? ` (attempt ${attempt})` : ''}`;
+          } catch (err) {
+            lastErr = err;
+            if (attempt < 3) {
+              await new Promise(r => setTimeout(r, 2000 * attempt));
+            }
+          }
+        }
+        throw lastErr;
       }
     },
     {
