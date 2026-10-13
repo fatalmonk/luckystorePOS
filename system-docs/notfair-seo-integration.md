@@ -12,7 +12,7 @@ This document specifies the integration of NotFair-powered SEO articles into the
 
 ## 2. Dependencies & Tooling
 
-- **`notfair-nextjs-blog` (`^0.4.1`)**: Official SDK for fetching remote SEO articles and rendering the post hero component.
+- **`notfair-nextjs-blog` (`^0.4.1`)**: SDK retained for types and the post hero component. Server-side data fetching uses `apps/customer_storefront/lib/notfair-client.ts` because SDK v0.4.1 collapses HTTP failures and invalid JSON into missing/empty results.
 - **`sanitize-html` (`^2.18.0`)**: Rigorous server-side HTML sanitizer preventing XSS, unwanted scripts, inline styles, and unapproved external embeds.
 - **Node Engine**: Configured to `>=22.12.0` in `apps/customer_storefront/package.json` to align with modern ESM/CJS compatibility and sanitizer dependencies.
 
@@ -53,14 +53,18 @@ The sanitizer inherits `sanitizeHtml.defaults.allowedTags` and extends it with e
 
 ## 4. Error Handling & Caching Model
 
-### Incremental Static Regeneration (ISR)
-- Both index and article routes are set to `export const revalidate = 3600;`.
-- **Error Bubbling for Stale Cache Preservation**:
-  - When upstream API calls to NotFair fail (e.g. temporary 503 outage or rate limiting), `getSeoPosts()` and `getPost(slug)` propagate the error rather than swallowing it as an empty response or `notFound()`.
-  - In Next.js ISR, thrown errors instruct the server to retain the existing stale cached version of the page, ensuring visitors continue seeing real content during transient upstream outages.
-- **Accurate HTTP Status Codes**:
-  - `notFound()` is invoked **only** when `getSeoPost(slug)` returns `null` for a confirmed non-existent slug.
-  - Upstream network or authentication failures result in standard 500 server errors, avoiding false 404 indexing by search engines.
+### Fetch and error contract
+- Both routes declare `export const revalidate = 3600;`; the server-only client also passes `next: { revalidate: 3600 }` to fetch.
+- `lib/notfair-client.ts` requires `NOTFAIR_SEO_API_KEY` before fetching and optionally uses the server-only `NOTFAIR_SEO_API_URL` override.
+- Authentication errors, rate limits, upstream failures and network rejections propagate. Invalid JSON and malformed response envelopes throw sanitized errors rather than producing empty/missing content. Errors do not include upstream response bodies or credentials.
+- Article absence is recognized only by HTTP 404 or a successful, valid `{ post: null }` envelope. A successful `{ posts: [] }` envelope represents a genuinely empty index; index HTTP 404 is an error.
+- The SDK hero component is unchanged. The local client validates response fields against the SDK v0.4.1 data contract before rendering.
+
+### Caching and HTTP status limits
+- Thrown regeneration errors can preserve an existing page when Next.js actually uses ISR and has a prior successful cached result. This is not a guarantee for first requests or dynamically rendered routes.
+- Live article responses observed on 2026-10-13 used `Cache-Control: private, no-cache, no-store`; deployed stale-page retention remains unverified.
+- `notFound()` is invoked only for a missing article. Next.js may retain HTTP 200 if the response has already begun streaming, adding `noindex` instead. A live nonexistent blog slug exhibited this behavior; calling `notFound()` alone does not guarantee a hard HTTP 404.
+- Do not infer deployed status codes or stale-content behavior from fixture unit tests. Verify them separately in staging with controlled failure injection.
 
 ---
 
@@ -87,8 +91,9 @@ The sanitizer inherits `sanitizeHtml.defaults.allowedTags` and extends it with e
 ## 7. Verification & Testing
 
 ### Test Suites
+- **[`lib/notfair-client.test.ts`](../apps/customer_storefront/lib/notfair-client.test.ts)**: HTTP-boundary tests for successful content, confirmed absence, missing keys, HTTP failures, network errors, invalid JSON and malformed envelopes.
 - **[`lib/notfair-article.test.ts`](../apps/customer_storefront/lib/notfair-article.test.ts)**: Unit tests verifying tag allowlisting, XSS stripping, heading normalization (`h1` → `h2`), decorative image `alt=""` preservation, and origin filtering.
-- **[`app/(english)/blog/blog.test.tsx`](../apps/customer_storefront/app/(english)/blog/blog.test.tsx)**: Route component tests verifying breadcrumbs, featured images, metadata generation, error propagation, and 404 behavior.
+- **[`app/(english)/blog/blog.test.tsx`](../apps/customer_storefront/app/(english)/blog/blog.test.tsx)**: Route component tests using the real client with mocked HTTP responses to verify breadcrumbs, featured images, metadata, missing keys, error propagation and notFound behavior.
 
 ### Build Verification
 Execute the standard test and build commands prior to release:
