@@ -74,8 +74,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
 
   return (
     <div
-      onClick={handleCardClick}
-      className={`relative p-3.5 sm:p-4 bg-surface rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm select-none active:scale-[0.99] active:brightness-95 overflow-hidden ${
+      className={`relative p-3.5 sm:p-4 bg-surface rounded-2xl border transition-all duration-200 flex flex-col gap-2.5 shadow-sm select-none overflow-hidden ${
         isSelected
           ? 'border-primary shadow-level-1 ring-1 ring-primary/20'
           : isHighlighted
@@ -91,7 +90,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             setShowMenu(!showMenu);
           }}
           className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-surface-raised active:bg-surface-raised text-text-secondary transition-colors"
-          aria-label="Actions"
+          aria-label={`Actions for ${item.name}`}
           aria-haspopup="menu"
           aria-expanded={showMenu}
         >
@@ -134,8 +133,28 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
         )}
       </div>
 
-      {/* Main card body split into Left block (Image + Stock status) and Right block (Texts + pricing info) */}
-      <div className="flex gap-3 sm:gap-4 items-start w-full min-w-0">
+      {onToggleSelect && (
+        <label className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(item.id)}
+            aria-label={`Select ${item.name}`}
+            className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+          />
+        </label>
+      )}
+
+      {/* Main card body split into Left block (Image + Stock status) and Right block (Texts + pricing info) */}      {/* Product name heading - moved outside button for accessibility */}
+      <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 pr-6">
+        {item.name}
+      </h3>
+
+      <button
+        type="button"
+        onClick={handleCardClick}
+        className="flex gap-3 sm:gap-4 items-start w-full min-w-0 text-left rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:scale-[0.99] active:brightness-95 transition-transform"
+      >
         {/* Left Column: Image with rounded box + stock status underneath */}
         <div className="flex flex-col gap-1.5 sm:gap-2 items-center flex-shrink-0">
           <div className="relative">
@@ -159,23 +178,6 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
               )}
             </div>
 
-            {onToggleSelect && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleSelect(item.id);
-                }}
-                className="absolute top-1.5 left-1.5 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-6 h-6 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => {}}
-                  aria-label={`Select ${item.name}`}
-                  className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
-                />
-              </div>
-            )}
           </div>
 
           <span className={`w-full text-center text-[11px] sm:text-xs font-semibold tracking-tight ${getStockTextColor()}`}>
@@ -186,9 +188,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
         {/* Right Column: Title + SKU + Pricing grid list */}
         <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch gap-1.5">
           <div className="min-w-0">
-            <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 pr-6">
-              {item.name}
-            </h3>
+
             <span className="text-[10px] sm:text-[11px] text-text-secondary font-mono block truncate mt-0.5">
               SKU: {item.sku || '—'}
             </span>
@@ -207,7 +207,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
               </div>
               <div className="flex justify-between items-center tabular-nums">
                 <span className="text-text-muted text-[10px] sm:text-[11px]">MRP:</span>
-                <span className="font-semibold">৳{(item.mrp || 0).toFixed(2)}</span>
+                <span className="font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
               </div>
               <div className="flex justify-between items-center pt-0.5 border-t border-border/20 tabular-nums">
                 <div className="flex items-center gap-1 min-w-0 truncate pr-1">
@@ -224,21 +224,12 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
 
             <div className="flex-shrink-0">
               {isOutOfStock ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onUpdateStock) {
-                      onUpdateStock(item);
-                    } else if (onClick) {
-                      onClick(item);
-                    }
-                  }}
-                  className="flex flex-col items-center justify-center px-2 sm:px-2.5 py-2 rounded-xl sm:rounded-2xl border border-danger/30 bg-danger-subtle text-danger hover:bg-danger/20 active:scale-95 transition-all w-[62px] sm:w-[70px] cursor-pointer shadow-xs"
-                  title="Reorder stock"
+                <span
+                  className="flex flex-col items-center justify-center px-2 sm:px-2.5 py-2 rounded-xl sm:rounded-2xl border border-danger/30 bg-danger-subtle text-danger w-[62px] sm:w-[70px] shadow-xs"
+                  aria-hidden="true"
                 >
-                  <span className="text-[11px] font-bold">Reorder</span>
-                </button>
+                  <span className="text-[11px] font-bold">Edit stock</span>
+                </span>
               ) : (
                 margin !== null && (() => {
                   const marginBadge = getMarginBadgeStyles(margin);
@@ -257,7 +248,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             </div>
           </div>
         </div>
-      </div>
+      </button>
     </div>
   );
 });

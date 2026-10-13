@@ -259,9 +259,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
               <div className="w-10 h-10 rounded-lg bg-warm-accent/10 flex items-center justify-center text-warm-accent">
                 <Download size={20} />
               </div>
-              <h3 className="font-display font-bold text-warm-fg text-base">Excel Spreadsheet Template</h3>
+              <h3 className="font-display font-bold text-warm-fg text-base">CSV Import Template</h3>
               <p className="text-xs text-warm-muted leading-relaxed">
-                Ensure your Excel files match our expected headers exactly to secure automated client-side parsing.
+                Use the template headers exactly so the file can be validated before import.
               </p>
             </div>
             <button
@@ -436,7 +436,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
               <div className="border border-warm-border-warm rounded-xl p-4 divide-y divide-warm-border-warm text-sm bg-warm-bg/30">
                 <div className="flex justify-between py-2">
                   <span className="text-warm-muted font-medium">Import Source:</span>
-                  <span className="text-warm-fg font-semibold">Excel Spreadsheet</span>
+                  <span className="text-warm-fg font-semibold">CSV file</span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-warm-muted font-medium">Valid Records:</span>

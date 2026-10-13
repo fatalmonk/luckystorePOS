@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { EmptyState, ErrorState } from '../../components/PageState';
-import { History, Package, AlertTriangle, TrendingDown, Wallet, Plus } from 'lucide-react';
+import { History, Package, AlertTriangle, TrendingDown, Wallet, Plus, ShoppingCart, Upload } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '@/hooks';
@@ -30,7 +30,7 @@ const BarcodeScannerModal = lazy(() => import('../../components/inventory/Barcod
 
 export function InventoryListPage() {
   const inventoryRegionRef = useRef<HTMLDivElement>(null);
-  const { storeId, tenantId } = useAuth();
+  const { storeId, tenantId, user } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -330,7 +330,7 @@ export function InventoryListPage() {
           Master your inventory flow <span className="inline-block w-24 h-[1em] rounded-full align-middle bg-gradient-to-r from-amber-400 to-yellow-500 mx-2 overflow-hidden shadow-lg opacity-90 border border-warm-border"></span> with precision.
         </h1>
         
-        <div className="relative z-10 flex flex-wrap justify-center gap-4 mb-12">
+        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-12">
            <button
              className="px-8 py-4 bg-warm-accent text-black font-bold rounded-full shadow-xl hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2"
              onClick={() => setIsAddModalOpen(true)}
@@ -339,9 +339,19 @@ export function InventoryListPage() {
              Add New Product
            </button>
            <Link to="/inventory/history" className="px-8 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-             <History size={20} />
-             View Audit Log
-           </Link>
+                       <History size={20} />
+                       View Audit Log
+                     </Link>
+                     {user?.role === 'admin' || user?.role === 'manager' && (
+                       <Link to="/purchase" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
+                         <ShoppingCart size={20} />
+                         Record Purchase
+                       </Link>
+                     )}
+                     <Link to="/import/products" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
+                       <Upload size={20} />
+                       Import Products
+                     </Link>
         </div>
 
         {/* Ambient stats bar */}

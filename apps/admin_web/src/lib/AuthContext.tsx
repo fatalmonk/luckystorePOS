@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { supabase } from "@/lib/supabase";
 import type { Session } from '@supabase/supabase-js';
 
@@ -41,10 +41,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const resolveUserRequestId = useRef(0);
 
   useEffect(() => {
     // Resolve the admin user profile whenever the auth session changes.
     const resolveUser = async (s: Session | null) => {
+      // Increment request ID before each resolveUser call so in-flight stale
+      // results can be identified and ignored on sign-out.
+      resolveUserRequestId.current += 1;
+      const currentRequestId = resolveUserRequestId.current;
+
       if (!s) {
         setUser(null);
         setLoading(false);
@@ -73,6 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: (userRow.role as string) ?? 'viewer',
           name: (userRow.full_name ?? userRow.name) as string | null,
         });
+        // Only apply this result if no newer request has been made since we started
+        if (resolveUserRequestId.current !== currentRequestId) {
+          // A newer resolveUser call has been made; ignore this stale result
+          return;
+        }
       } catch (e) {
         console.error('[AuthContext] Unexpected error resolving user:', e);
         setUser(null);
@@ -88,10 +99,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Subscribe to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      setLoading(true);
-      resolveUser(s);
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setLoading(false);
+      } else if (event === 'SIGNED_IN') {
+        setLoading(true);
+        resolveUser(s);
+      } else {
+        // Refreshes and user updates should not unmount the authenticated app.
+        resolveUser(s);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -99,6 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Increment request ID on sign-out so any in-flight resolveUser results
+    // are treated as stale and ignored
+    resolveUserRequestId.current += 1;
   };
 
   const value: AuthContextValue = {
