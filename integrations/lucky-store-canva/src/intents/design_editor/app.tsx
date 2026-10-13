@@ -2,13 +2,11 @@ import { useFeatureSupport } from "@canva/app-hooks";
 import { upload, type ImageMimeType } from "@canva/asset";
 import { Button, FormField, Rows, Text, TextInput } from "@canva/app-ui-kit";
 import { addElementAtCursor, addElementAtPoint } from "@canva/design";
-import { requestOpenExternalUrl } from "@canva/platform";
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { canvaApiRequest } from "src/lib/api";
 import * as styles from "styles/components.css";
 
-export const DOCS_URL = "https://www.canva.dev/docs/apps/";
 /* eslint-disable formatjs/no-literal-string-in-jsx */
 
 type Product = {
@@ -128,16 +126,6 @@ export const App = () => {
     }
   };
 
-  const openExternalUrl = async (url: string) => {
-    const response = await requestOpenExternalUrl({
-      url,
-    });
-
-    if (response.status === "aborted") {
-      // user decided not to navigate to the link
-    }
-  };
-
   const intl = useIntl();
 
   return (
@@ -211,9 +199,6 @@ export const App = () => {
             description:
               "Button text for inserting the selected product into the design.",
           })}
-        </Button>
-        <Button variant="secondary" onClick={() => openExternalUrl(DOCS_URL)}>
-          Open Canva Apps SDK docs
         </Button>
       </Rows>
     </div>

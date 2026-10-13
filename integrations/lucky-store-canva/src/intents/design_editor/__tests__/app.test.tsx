@@ -1,9 +1,8 @@
 import { useFeatureSupport } from "@canva/app-hooks";
 import { addElementAtPoint } from "@canva/design";
 import type { Feature } from "@canva/platform";
-import { requestOpenExternalUrl } from "@canva/platform";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { App, DOCS_URL } from "src/intents/design_editor/app";
+import { App } from "src/intents/design_editor/app";
 import { renderInTestProvider } from "src/utils/test_render";
 import { canvaApiRequest } from "src/lib/api";
 
@@ -15,7 +14,6 @@ jest.mock("src/lib/api");
 describe("Lucky Store product panel", () => {
   const mockIsSupported = jest.fn();
   const mockUseFeatureSupport = jest.mocked(useFeatureSupport);
-  const mockRequestOpenExternalUrl = jest.mocked(requestOpenExternalUrl);
   const mockCanvaApiRequest = jest.mocked(canvaApiRequest);
 
   beforeEach(() => {
@@ -24,7 +22,6 @@ describe("Lucky Store product panel", () => {
       (fn: Feature) => fn === addElementAtPoint,
     );
     mockUseFeatureSupport.mockReturnValue(mockIsSupported);
-    mockRequestOpenExternalUrl.mockResolvedValue({ status: "completed" });
     mockCanvaApiRequest.mockReturnValue(new Promise(() => undefined));
   });
 
@@ -69,24 +66,15 @@ describe("Lucky Store product panel", () => {
     });
   });
 
-  // this test uses a mock in place of the @canva/platform requestOpenExternalUrl function
-  it("should call `requestOpenExternalUrl` when the button is clicked", () => {
-    expect(mockRequestOpenExternalUrl).not.toHaveBeenCalled();
-
+  it("does not allow insertion when catalog authorization fails", async () => {
+    mockCanvaApiRequest.mockRejectedValue(new Error("Not authorized"));
     renderInTestProvider(<App />);
-
-    // get a reference to the Apps SDK button by name
-    const sdkButton = screen.getByRole("button", {
-      name: "Open Canva Apps SDK docs",
-    });
-
-    expect(mockRequestOpenExternalUrl).not.toHaveBeenCalled();
-    fireEvent.click(sdkButton);
-    expect(mockRequestOpenExternalUrl).toHaveBeenCalled();
-
-    // assert that the requestOpenExternalUrl function was called with the expected arguments
-    expect(mockRequestOpenExternalUrl.mock.calls[0]?.[0]).toEqual({
-      url: DOCS_URL,
-    });
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Not authorized",
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Insert selected product" }),
+    );
+    expect(addElementAtPoint).not.toHaveBeenCalled();
   });
 });
