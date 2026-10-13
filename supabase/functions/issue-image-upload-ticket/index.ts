@@ -2,11 +2,29 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.104.1'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const allowedRoles = new Set(['owner', 'manager', 'admin', 'stock'])
-const cors = {
-  'Access-Control-Allow-Origin': Deno.env.get('ADMIN_APP_ORIGIN') ?? 'https://admin.luckystore1947.com',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
-  'Content-Type': 'application/json',
+const allowedOrigins = [
+  'https://admin.luckystore1947.com',
+  'https://luckystore1947.com',
+  'https://www.luckystore1947.com',
+  'https://next.luckystore1947.com',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  ...(Deno.env.get('ADMIN_APP_ORIGIN') ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+  ...(Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+]
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') ?? ''
+  const isAllowed = !origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')
+  return {
+    'Access-Control-Allow-Origin': isAllowed && origin ? origin : (Deno.env.get('ADMIN_APP_ORIGIN') ?? 'https://admin.luckystore1947.com'),
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+    'Content-Type': 'application/json',
+    'Vary': 'Origin',
+  }
 }
 
 function encode(value: Uint8Array | string): string {
@@ -23,12 +41,10 @@ async function sign(payload: string, secret: string): Promise<string> {
   return encode(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))))
 }
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: cors })
-}
-
 serve(async (req) => {
+  const cors = getCorsHeaders(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: cors })
   if (req.method !== 'POST') return json({ error: 'Only POST is allowed' }, 405)
 
   try {
