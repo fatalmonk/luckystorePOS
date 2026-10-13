@@ -1,0 +1,52 @@
+# Canva Automation Reference for Lucky Store Receipts
+
+## Overview
+This reference guides automated receipt card generation, asset management, and export workflows using the Canva REST API and Autofill engine for Lucky Store operations (focusing on May 2026 audit workflows).
+
+## 1. Authentication & Credentials
+- Set `CANVA_CLIENT_ID` and `CANVA_CLIENT_SECRET` in environment or `~/.hermes/.env`.
+- CLI login: `canva login`
+
+## 2. Brand Template Dataset Inspection
+- Fetch brand template dataset schema via Canva REST API:
+  ```bash
+  curl -s -H "Authorization: Bearer $CANVA_ACCESS_TOKEN" \
+    "https://api.canva.com/v1/brand-templates/<BRAND_TEMPLATE_ID>/dataset"
+  ```
+- **Crucial Rule:** If the dataset returns `{}` (empty), elements were tagged in the Canva editor but *not re-published as a Brand Template*. Re-publish in Canva UI (Share → More → Brand Template → Publish).
+
+## 3. Asset Upload (Binary Files)
+- Upload binary assets (PNG/JPEG/SVG with CORS compatibility) to Canva Asset API:
+  ```bash
+  curl -s -X POST -H "Authorization: Bearer $CANVA_ACCESS_TOKEN" \
+    -H "Content-Type: application/octet-stream" \
+    --data-binary "@/path/to/receipt.jpg" \
+    "https://api.canva.com/v1/assets"
+  ```
+- Poll upload job/asset status until ready to obtain `asset.id`.
+
+## 4. Autofill Execution
+- Create autofill job using brand template and asset IDs via Canva REST API:
+  ```bash
+  curl -s -X POST -H "Authorization: Bearer $CANVA_ACCESS_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "brand_template_id": "<BRAND_TEMPLATE_ID>",
+      "title": "Receipt Audit - May 2026",
+      "data": {
+        "RECEIPT_IMAGE": {"type": "image", "asset_id": "<ASSET_ID>"},
+        "AMOUNT": {"type": "text", "text": "BDT 697"}
+      }
+    }' \
+    "https://api.canva.com/v1/autofills"
+  ```
+
+## 5. Export & Download
+- Create export job:
+  ```bash
+  curl -s -X POST -H "Authorization: Bearer $CANVA_ACCESS_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"design_id": "<DESIGN_ID>", "format": {"type": "pdf"}}' \
+    "https://api.canva.com/v1/exports"
+  ```
+- Poll export status and download resulting export URLs via `curl`.

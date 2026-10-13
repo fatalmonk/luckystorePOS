@@ -414,7 +414,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                 </div>
               </div>
               {idx < categories.length - 1 && (
-                <div className="hidden md:flex text-gray-300 font-black tracking-widest flex-col justify-center leading-[4px] px-1">
+                <div className="hidden md:flex text-warm-border font-black tracking-widest flex-col justify-center leading-[4px] px-1">
                   . . .
                 </div>
               )}
@@ -436,7 +436,7 @@ export default function FullZillyPreview(): React.JSX.Element {
 
               {/* Title Lockup */}
               <div className="space-y-1">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-[1.05] tracking-tight font-serif italic drop-shadow-xs">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#0B0B0D] leading-[1.05] tracking-tight font-serif italic drop-shadow-xs">
                   Fresh Organic
                 </h1>
                 <p className="text-2xl md:text-3xl font-bold text-[#1b8057] tracking-wide">
@@ -445,7 +445,7 @@ export default function FullZillyPreview(): React.JSX.Element {
               </div>
 
               {/* Price */}
-              <div className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+              <div className="text-4xl md:text-5xl font-black text-[#0B0B0D] tracking-tight">
                 $59.00
               </div>
 
@@ -471,10 +471,10 @@ export default function FullZillyPreview(): React.JSX.Element {
             {/* Top Right Card ("Premium Honeynuts") */}
             <div className="bg-[#F2F1ED] rounded-[1.75rem] p-6 md:p-8 flex items-center justify-between relative overflow-hidden min-h-[225px] shadow-xs border border-warm-border">
               <div className="relative z-10 space-y-2 max-w-[190px]">
-                <h3 className="text-2xl font-black text-gray-900 leading-snug">Premium Honeynuts</h3>
-                <p className="text-xs text-gray-500 font-semibold">100% Salted Organic Nuts</p>
+                <h3 className="text-2xl font-black text-[#0B0B0D] leading-snug">Premium Honeynuts</h3>
+                <p className="text-xs text-[#0B0B0D]/60 font-semibold">100% Salted Organic Nuts</p>
                 <div className="text-3xl font-black text-[#eb5757] pt-1">$15.00</div>
-                <button className="bg-warm-bg text-warm-fg px-6 py-2 rounded-full text-xs font-extrabold shadow-xs hover:bg-warm-surface transition-all cursor-pointer border border-warm-border">
+                <button className="bg-white text-[#0B0B0D] px-6 py-2 rounded-full text-xs font-extrabold shadow-xs hover:bg-gray-50 transition-all cursor-pointer border border-[#0B0B0D]/10">
                   Shop Now
                 </button>
               </div>
@@ -494,22 +494,22 @@ export default function FullZillyPreview(): React.JSX.Element {
                   <p className="text-[11px] text-blue-100 font-medium">Top Quality Product</p>
                 </div>
                 <div className="text-5xl text-center my-2 transform hover:scale-110 transition-transform">👶</div>
-                <button className="bg-warm-bg text-[#0066FF] hover:bg-blue-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs cursor-pointer">
+                <button className="bg-white text-[#0066FF] hover:bg-blue-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs cursor-pointer">
                   Shop Now
                 </button>
               </div>
 
               {/* Pink Card ("Dark wash FaceWash") */}
-              <div className="bg-[#FFF0F4] text-gray-900 rounded-[1.75rem] p-5 flex flex-col justify-between relative overflow-hidden shadow-xs border border-pink-100">
+              <div className="bg-[#FFF0F4] text-[#0B0B0D] rounded-[1.75rem] p-5 flex flex-col justify-between relative overflow-hidden shadow-xs border border-pink-100">
                 <div className="space-y-1">
                   <div className="bg-[#eb5757] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full w-max shadow-xs">
                     15% OFF
                   </div>
                   <h4 className="font-extrabold text-sm md:text-base leading-tight pt-1">Dark wash FaceWash</h4>
-                  <p className="text-[11px] text-gray-500 font-medium">All Fixed Size</p>
+                  <p className="text-[11px] text-[#0B0B0D]/60 font-medium">All Fixed Size</p>
                 </div>
                 <div className="text-5xl text-center my-2 transform hover:scale-110 transition-transform">🧴</div>
-                <button className="bg-warm-bg text-warm-fg hover:bg-warm-surface px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs border border-warm-border cursor-pointer">
+                <button className="bg-white text-[#0B0B0D] hover:bg-pink-50 px-5 py-2 rounded-full text-[11px] font-extrabold text-center transition-colors w-max mx-auto shadow-xs border border-[#0B0B0D]/10 cursor-pointer">
                   Shop Now
                 </button>
               </div>
@@ -607,7 +607,7 @@ export default function FullZillyPreview(): React.JSX.Element {
         <div className="bg-[#FFF0ED] rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-red-100 shadow-xs relative overflow-hidden">
           <div className="space-y-2 text-center md:text-left z-10">
             <span className="text-xs font-extrabold text-[#eb5757] uppercase tracking-wider">Special Collection</span>
-            <h3 className="text-2xl md:text-3xl font-black text-gray-900">
+            <h3 className="text-2xl md:text-3xl font-black text-[#0B0B0D]">
               The Finest New Collection 2026 — <br className="hidden md:block"/>
               Nourishing Women Body Lotions
             </h3>
@@ -637,7 +637,7 @@ export default function FullZillyPreview(): React.JSX.Element {
                   {v.avatar}
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-xs text-warm-fg">{v.name}</h4>
+                  <h3 className="font-extrabold text-xs text-warm-fg">{v.name}</h3>
                   <div className="flex items-center space-x-1 mt-0.5" role="img" aria-label={`Rated ${v.rating.toFixed(1)} out of 5 stars`}>
                     <span className="sr-only">Rated {v.rating.toFixed(1)} out of 5 stars</span>
                     {[...Array(5)].map((_, i) => (
@@ -705,7 +705,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <div>
               <p className="text-xs text-blue-600 font-bold">Organic Fruits</p>
               <h3 className="text-lg font-black text-[#0B0B0D]">Baby Jam</h3>
-              <p className="text-xs text-warm-muted font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 1200</span></p>
+              <p className="text-xs text-[#0B0B0D]/60 font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 1200</span></p>
               <button className="mt-3 bg-white text-blue-600 hover:bg-blue-50 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🫙</div>
@@ -716,7 +716,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <div>
               <p className="text-xs text-lime-700 font-bold">Organic Fruits</p>
               <h3 className="text-lg font-black text-[#0B0B0D]">Fresh Juice</h3>
-              <p className="text-xs text-warm-muted font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 1400</span></p>
+              <p className="text-xs text-[#0B0B0D]/60 font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 1400</span></p>
               <button className="mt-3 bg-white text-lime-700 hover:bg-lime-50 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🧃</div>
@@ -727,7 +727,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <div>
               <p className="text-xs text-purple-700 font-bold">Kids Category</p>
               <h3 className="text-lg font-black text-[#0B0B0D]">Car Toys</h3>
-              <p className="text-xs text-warm-muted font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 800</span></p>
+              <p className="text-xs text-[#0B0B0D]/60 font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 800</span></p>
               <button className="mt-3 bg-white text-purple-700 hover:bg-purple-50 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🧸</div>
