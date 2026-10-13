@@ -1,6 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalPassThroughEnv": [
+    "MANAGER_PASSWORD",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
+    "SUPABASE_URL_*"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

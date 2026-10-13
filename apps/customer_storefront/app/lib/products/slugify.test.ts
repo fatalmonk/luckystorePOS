@@ -1,5 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { uuidPrefixRange } from './slugify';
+import { uuidPrefixRange, extractIdFromSlug } from './slugify';
+
+describe('extractIdFromSlug', () => {
+  it('extracts prefix from standard double-hyphen slug', () => {
+    expect(extractIdFromSlug('radhuni-jira-gura-100-g--045df58d')).toBe('045df58d');
+  });
+
+  it('extracts prefix from unicode en-dash slug', () => {
+    expect(extractIdFromSlug('radhuni-jira-gura-100-g–045df58d')).toBe('045df58d');
+  });
+
+  it('extracts prefix from unicode em-dash slug', () => {
+    expect(extractIdFromSlug('radhuni-jira-gura-100-g—045df58d')).toBe('045df58d');
+  });
+
+  it('extracts prefix from URI-encoded en-dash slug', () => {
+    expect(extractIdFromSlug('radhuni-jira-gura-100-g%E2%80%93045df58d')).toBe('045df58d');
+  });
+
+  it('falls back cleanly when no separator is found', () => {
+    expect(extractIdFromSlug('045df58d')).toBe('045df58d');
+  });
+});
 
 describe('uuidPrefixRange', () => {
   it('returns inclusive/exclusive bounds for an 8-char hex prefix', () => {

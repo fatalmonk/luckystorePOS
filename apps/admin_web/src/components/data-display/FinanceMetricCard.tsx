@@ -59,7 +59,7 @@ export const FinanceMetricCard: React.FC<FinanceMetricCardProps> = ({
     <div
       className={clsx(
         'bg-[var(--color-paper)] rounded-[1.25rem] p-1.5 border border-[var(--color-border)]',
-        'hover:border-[var(--color-accent)]/30 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]',
+        'hover:border-[var(--color-accent)]/30 transition-all duration-500 ease-spring',
         className
       )}
     >
