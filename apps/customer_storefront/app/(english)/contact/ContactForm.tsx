@@ -111,7 +111,7 @@ export function ContactForm() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Your full name"
-                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-white outline-none text-xs font-semibold transition-all"
+                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-warm-surface outline-none text-xs font-semibold transition-all"
                 required
               />
             </div>
@@ -127,7 +127,7 @@ export function ContactForm() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="your.email@example.com"
-                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-white outline-none text-xs font-semibold transition-all"
+                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-warm-surface outline-none text-xs font-semibold transition-all"
                 required
               />
             </div>
@@ -143,7 +143,7 @@ export function ContactForm() {
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="+880 1700-000000"
-                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-white outline-none text-xs font-semibold transition-all"
+                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-warm-surface outline-none text-xs font-semibold transition-all"
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ export function ContactForm() {
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 placeholder="Order status, product inquiry..."
-                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-white outline-none text-xs font-semibold transition-all"
+                className="w-full h-11 px-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-warm-surface outline-none text-xs font-semibold transition-all"
               />
             </div>
 
@@ -193,7 +193,7 @@ export function ContactForm() {
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               placeholder="Write your query or message here..."
-              className="w-full p-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-white outline-none text-xs font-semibold transition-all resize-y"
+              className="w-full p-4 rounded-2xl bg-warm-bg border border-warm-border/80 focus:border-warm-accent focus:bg-warm-surface outline-none text-xs font-semibold transition-all resize-y"
               required
             />
           </div>

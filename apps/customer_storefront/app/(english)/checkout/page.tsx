@@ -686,7 +686,7 @@ function CheckoutContent() {
                       {formData.paymentMethod === 'bkash' && (
                         <div className="mt-3 rounded-xl border border-[#e2136e]/30 bg-[#e2136e]/5 p-3">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            <div className="shrink-0 self-start overflow-hidden rounded-lg border border-warm-border bg-white p-1">
+                            <div className="shrink-0 self-start overflow-hidden rounded-lg border border-warm-border bg-warm-bg p-1">
                               <Image
                                 src="/images/payments/bkash-payment-qr.png"
                                 alt="bKash payment QR code for 01731944544"
@@ -708,7 +708,7 @@ function CheckoutContent() {
                                 onChange={(e) => updateField('trxId', e.target.value)}
                                 placeholder="e.g. 9A1B2C3D4E"
                                 maxLength={100}
-                                className="mt-3 bg-white"
+                                className="mt-3 bg-warm-bg"
                                 aria-invalid={!!errors.trxId}
                                 aria-describedby={errors.trxId ? 'checkout-trxid-error' : undefined}
                                 data-testid="checkout-bkash-trxid"

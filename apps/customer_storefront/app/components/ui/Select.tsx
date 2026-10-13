@@ -26,13 +26,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const variantStyles: Record<SelectVariant, string> = {
       default: 'bg-warm-surface border-warm-border',
       subtle: 'bg-warm-bg border-warm-border',
-      form: 'bg-warm-bg border-warm-border/80 focus:bg-white',
+      form: 'bg-warm-bg border-warm-border/80 focus:bg-warm-surface',
     };
 
     return (
       <div className={`relative ${containerClassName}`.trim()}>
         {label && (
-          <label htmlFor={selectId} className="block text-[13px] font-bold mb-1.5 text-warm-fg">
+          <label htmlFor={selectId} className="block text-label-md font-bold mb-1.5 text-warm-fg">
             {label}
           </label>
         )}
