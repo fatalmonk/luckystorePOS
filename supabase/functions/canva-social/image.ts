@@ -6,7 +6,7 @@ export async function catalogImageData(imageUrl: string, fetcher: typeof fetch =
     source.username || source.password || source.port || !source.pathname.startsWith('/products/') ||
     /%|\.\./.test(source.pathname)) throw new Error('IMAGE_SOURCE_DENIED')
   const response = await fetcher(source, { redirect: 'error', signal: AbortSignal.timeout(10000) })
-  const mimeType = response.headers.get('content-type')?.split(';')[0].trim()
+  const mimeType = response.headers.get('content-type')?.split(';')[0]?.toLowerCase()?.trim()
   if (!response.ok || !['image/jpeg', 'image/png', 'image/webp'].includes(mimeType ?? '')) {
     throw new Error('IMAGE_UNAVAILABLE')
   }
