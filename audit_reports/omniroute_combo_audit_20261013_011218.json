@@ -1,0 +1,122 @@
+{
+  "total_combos": 9,
+  "combo_model_counts": {
+    "free-stack": 49,
+    "coding-gods": 4,
+    "speed-demons": 9,
+    "deep-reasoning": 5,
+    "free-tier-only": 6,
+    "free-vision": 5,
+    "codex-last-resort": 3,
+    "static-best-coding": 548,
+    "static-best-coding 2": 299
+  },
+  "total_model_slots": 928,
+  "combo_provider_distribution": {
+    "openrouter": 263,
+    "devin-cli": 162,
+    "cloudflare-ai": 132,
+    "github": 68,
+    "cohere": 49,
+    "agy": 47,
+    "antigravity": 34,
+    "kiro": 32,
+    "qwen-cloud": 28,
+    "groq": 22,
+    "qoder": 21,
+    "cerebras": 14,
+    "aion": 10,
+    "felo": 10,
+    "nous-research": 8,
+    "codex": 6,
+    "trae": 6,
+    "grok-cli": 6,
+    "gemini-web": 6,
+    "api-airforce": 2,
+    "together": 1,
+    "huggingface": 1
+  },
+  "provider_connections": {
+    "agy": {
+      "count": 1,
+      "active": 1
+    },
+    "aihorde": {
+      "count": 1,
+      "active": 1
+    },
+    "aion": {
+      "count": 1,
+      "active": 1
+    },
+    "antigravity": {
+      "count": 7,
+      "active": 7
+    },
+    "api-airforce": {
+      "count": 1,
+      "active": 1
+    },
+    "cerebras": {
+      "count": 1,
+      "active": 1
+    },
+    "cloudflare-ai": {
+      "count": 1,
+      "active": 1
+    },
+    "codex": {
+      "count": 1,
+      "active": 1
+    }
+  },
+  "provider_metrics": {
+    "agy": {
+      "req": 43,
+      "success": 100,
+      "lat": 679
+    },
+    "aihorde": {
+      "req": 246,
+      "success": 100,
+      "lat": 3
+    },
+    "aion": {
+      "req": 255,
+      "success": 99,
+      "lat": 904
+    },
+    "antigravity": {
+      "req": 608,
+      "success": 75,
+      "lat": 2814
+    },
+    "api-airforce": {
+      "req": 1211,
+      "success": 100,
+      "lat": 1200
+    },
+    "cerebras": {
+      "req": 99,
+      "success": 100,
+      "lat": 434
+    },
+    "cloudflare-ai": {
+      "req": 69,
+      "success": 100,
+      "lat": 111
+    },
+    "codex": {
+      "req": 7,
+      "success": 100,
+      "lat": 1318
+    },
+    "cohere": {
+      "req": 1090,
+      "success": 100,
+      "lat": 233
+    }
+  },
+  "available_providers": 352,
+  "connection_count": 14
+}

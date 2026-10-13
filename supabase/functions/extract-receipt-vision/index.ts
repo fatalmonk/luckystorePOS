@@ -28,7 +28,7 @@ function getCorsHeaders(req: Request) {
   return { headers, originAllowed }
 }
 
-const DEFAULT_OPENROUTER_PRESET = '@preset/omniroutepreset'
+const DEFAULT_OPENROUTER_PRESET = ''
 
 // OpenRouter preset (routing/fallback config). Only sent to openrouter.ai; set AI_PRESET="" to disable.
 function openRouterPresetFields(baseUrl: string): { preset?: string } {
@@ -40,7 +40,7 @@ function openRouterPresetFields(baseUrl: string): { preset?: string } {
 }
 
 async function extractWithOpenRouter(imageBase64: string, mimeType: string, apiKey: string, baseUrl: string, modelOverride?: string) {
-  const model = modelOverride || Deno.env.get('AI_MODEL') || 'gpt-4o';
+  const model = modelOverride || Deno.env.get('AI_MODEL') || 'google/gemini-2.5-flash';
 
   let aiEndpoint: URL
   try {
@@ -741,7 +741,7 @@ serve(async (req) => {
     }
 
     const aiBaseUrl = Deno.env.get('AI_BASE_URL') || 'https://openrouter.ai/api/v1'
-    const aiModel = Deno.env.get('AI_MODEL') || 'gpt-4o'
+    const aiModel = Deno.env.get('AI_MODEL') || 'google/gemini-2.5-flash'
     const { parsed, provider, model } = await extractWithOpenRouter(imageBase64, mimeType, apiKey, aiBaseUrl, aiModel);
 
     const typesafeApiKey = Deno.env.get('TYPESAFE_API_KEY');

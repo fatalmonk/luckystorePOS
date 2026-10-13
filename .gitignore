@@ -39,6 +39,8 @@ node_modules/
 .pnp
 .pnp.js
 *.traineddata
+*-DRAFT.pdf
+aiREADME.md
 
 .npm/
 .pnpm-store/
