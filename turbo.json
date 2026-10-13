@@ -1,8 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": ["SUPABASE_URL"],
   "globalPassThroughEnv": [
-    "SUPABASE_URL",
     "SUPABASE_URL_*"
   ],
   "tasks": {
