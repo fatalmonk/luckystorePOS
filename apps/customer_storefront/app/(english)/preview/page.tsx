@@ -551,10 +551,10 @@ export default function FullZillyPreview(): React.JSX.Element {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {featuredProducts.map((product) => (
-              <div key={product.id} className="bg-warm-bg p-4 rounded-2xl border border-gray-100 flex flex-col justify-between relative group hover:shadow-xl hover:border-[#f0c444] transition-all">
+              <div key={product.id} className="bg-warm-bg p-4 rounded-2xl border border-warm-border flex flex-col justify-between relative group hover:shadow-xl hover:border-[#f0c444] transition-all">
                 
                 {/* Wishlist Icon */}
-                <button className="absolute top-3 right-3 text-gray-400 hover:text-[#eb5757] transition-colors z-10">
+                <button className="absolute top-3 right-3 text-warm-muted hover:text-[#eb5757] transition-colors z-10">
                   <Heart className="w-4 h-4" />
                 </button>
 
@@ -565,8 +565,8 @@ export default function FullZillyPreview(): React.JSX.Element {
 
                 {/* Info */}
                 <div className="space-y-1.5">
-                  <p className="text-[10px] text-gray-400 font-semibold uppercase">{product.category}</p>
-                  <h3 className="text-xs font-bold text-gray-800 leading-snug line-clamp-2 min-h-[32px]">
+                  <p className="text-[10px] text-warm-muted font-semibold uppercase">{product.category}</p>
+                  <h3 className="text-xs font-bold text-warm-fg leading-snug line-clamp-2 min-h-[32px]">
                     {product.title}
                   </h3>
 
