@@ -2,13 +2,11 @@ import { useFeatureSupport } from "@canva/app-hooks";
 import { upload, type ImageMimeType } from "@canva/asset";
 import { Button, FormField, Rows, Text, TextInput } from "@canva/app-ui-kit";
 import { addElementAtCursor, addElementAtPoint } from "@canva/design";
-import { requestOpenExternalUrl } from "@canva/platform";
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { canvaApiRequest } from "src/lib/api";
 import * as styles from "styles/components.css";
 
-export const DOCS_URL = "https://www.canva.dev/docs/apps/";
 /* eslint-disable formatjs/no-literal-string-in-jsx */
 
 type Product = {
@@ -90,22 +88,35 @@ export const App = () => {
     setUploading(true);
     setUploadStatus(null);
     try {
-      const imageUrl = new URL(selectedProduct.image_url);
-      const mimeTypeByExtension: Record<string, ImageMimeType> = {
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".png": "image/png",
-        ".webp": "image/webp",
-      };
-      const extension = imageUrl.pathname.match(/\.[^.]+$/)?.[0].toLowerCase();
-      const mimeType = extension ? mimeTypeByExtension[extension] : undefined;
-      if (!mimeType) throw new Error("Unsupported product image format.");
+      const source = await canvaApiRequest<{
+        dataUrl: string;
+        mimeType: ImageMimeType;
+      }>(
+        `/functions/v1/canva-social?image_item_id=${encodeURIComponent(selectedProduct.id)}`,
+      );
+      const preview = new Image();
+      await new Promise<void>((resolve, reject) => {
+        preview.onload = () => resolve();
+        preview.onerror = () =>
+          reject(new Error("Unable to prepare product thumbnail."));
+        preview.src = source.dataUrl;
+      });
+      const canvas = document.createElement("canvas");
+      const scale = Math.min(
+        1,
+        300 / Math.max(preview.naturalWidth, preview.naturalHeight),
+      );
+      canvas.width = Math.max(1, Math.round(preview.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(preview.naturalHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Unable to prepare product thumbnail.");
+      context.drawImage(preview, 0, 0, canvas.width, canvas.height);
       const image = await upload({
         type: "image",
         name: `Lucky Store - ${selectedProduct.name}`,
-        mimeType,
-        url: selectedProduct.image_url,
-        thumbnailUrl: selectedProduct.image_url,
+        mimeType: source.mimeType,
+        url: source.dataUrl,
+        thumbnailUrl: canvas.toDataURL("image/png"),
         aiDisclosure: "none",
       });
       await addElement({
@@ -125,16 +136,6 @@ export const App = () => {
       );
     } finally {
       setUploading(false);
-    }
-  };
-
-  const openExternalUrl = async (url: string) => {
-    const response = await requestOpenExternalUrl({
-      url,
-    });
-
-    if (response.status === "aborted") {
-      // user decided not to navigate to the link
     }
   };
 
@@ -211,9 +212,6 @@ export const App = () => {
             description:
               "Button text for inserting the selected product into the design.",
           })}
-        </Button>
-        <Button variant="secondary" onClick={() => openExternalUrl(DOCS_URL)}>
-          Open Canva Apps SDK docs
         </Button>
       </Rows>
     </div>

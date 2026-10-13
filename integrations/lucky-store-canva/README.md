@@ -2,14 +2,14 @@
 
 This app connects Canva to the Lucky Store catalog and Facebook publishing flow.
 
-It supports two Canva intents:
+The current release enables Design Editor only:
 
 - Design Editor: search live active Lucky Store products and insert product copy into a design.
-- Content Publisher: publish a JPG design with a caption and optional storefront link to the connected Lucky Store Facebook page.
+- Content Publisher code is retained for a future release, but the intent and backend publishing feature flag remain disabled.
 
 The Supabase Edge Function at `supabase/functions/canva-social` verifies Canva user tokens, resolves the linked Lucky Store staff identity, scopes catalog reads to that staff member's store, and records Facebook publication results in `social_posts`.
 
-Before previewing, configure `CANVA_APP_ID=AAHOGP8N-Fw`, the development URL, the Content Publisher intent, the app authentication settings, and the Supabase function secrets. The Canva token and Facebook credentials must remain server-side.
+Before previewing, configure `CANVA_APP_ID=AAHOGP8N-Fw`, the development URL, the Design Editor intent, the app authentication settings, and the Supabase function secrets. Keep Content Publisher disabled. The Canva token must remain server-side; Facebook credentials are not required for this release.
 
 After applying the migration, an authorized Lucky Store administrator must provision the corresponding `(canva_user_id, canva_brand_id, user_id, tenant_id, store_id)` row in `canva_social_identity_links` through a restricted service-role process before catalog reads or publishing are enabled. This repository does not yet include a self-service identity-linking flow; do not enable the app for staff until an approved provisioning path is in place.
 
@@ -57,8 +57,9 @@ To preview an app:
 1. Create an app via the [Developer Portal](https://www.canva.com/developers/apps).
 2. Select **App source > Development URL**.
 3. In the **Development URL** field, enter the URL of the development server.
-4. Click **Preview**. This opens the Canva editor (and the app) in a new tab.
-5. Click **Open**. (This screen only appears when using an app for the first time.)
+4. Configure the **Design Editor** intent under **Inside Canva > Intents**. Leave Content Publisher disabled.
+5. Click **Preview**. This opens the Canva editor (and the app) in a new tab.
+6. Click **Open**. (This screen only appears when using an app for the first time.)
 
 The app will appear in the side panel.
 
@@ -120,6 +121,16 @@ If you're using AI coding tools, such as Cursor or Claude Code, you can connect 
 ## Backend configuration
 
 This app uses the Supabase Edge Function at `supabase/functions/canva-social`; it does not include a local Express backend. Set `CANVA_BACKEND_HOST` to the HTTPS Supabase project URL (for example, `https://<project-ref>.supabase.co`). The app appends `/functions/v1/canva-social` to that host. Use the same HTTPS URL for local previews and published builds.
+
+Use `npm run build` so the backend configuration guard runs before bundling. The approved disposable review build is:
+
+```sh
+CANVA_BACKEND_HOST=https://grxxenvdhfwzafzyykgo.supabase.co npm run build
+```
+
+The backend must configure `CANVA_APP_ID=AAHOGP8N-Fw` and `CANVA_APP_ORIGIN=https://app-aahogp8n-fw.canva-apps.com`. It verifies Canva-signed tokens itself, rather than treating them as Supabase Auth JWTs. Keep `CANVA_CONTENT_PUBLISHER_ENABLED=false` for the Design Editor-only release. No Facebook credentials are needed for this release.
+
+Catalog and image requests require an authorized Canva identity link to the staff tenant/store. Images are fetched by catalog item ID, with store membership and source-host checks, then supplied to Canva as bounded data URLs with a PNG thumbnail. No image-service CORS changes are needed. A reviewer using a different Canva identity needs a separate explicit test-account mapping; an external admin password alone does not create that mapping.
 
 ## Configure ngrok (optional)
 
