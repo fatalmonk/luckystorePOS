@@ -39,6 +39,13 @@ node_modules/
 .pnp
 .pnp.js
 *.traineddata
+*-DRAFT.pdf
+aiREADME.md
+audit_reports/
+scripts/ops/extract-*.mjs
+scripts/ops/generate-*-audit-report.mjs
+scripts/ops/scan-receipts-dryrun.mjs
+scripts/ops/triage-*.mjs
 
 .npm/
 .pnpm-store/
