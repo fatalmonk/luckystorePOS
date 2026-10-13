@@ -1,6 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from 'https://esm.sh/jose@5.10.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { catalogImageData } from './image.ts'
 
 const origin = Deno.env.get('CANVA_APP_ORIGIN')
 let parsedOrigin: URL | undefined
@@ -38,12 +39,17 @@ async function verifyCanvaToken(token: string): Promise<CanvaClaims> {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers })
 
-  let markPendingAuditFailed: (() => Promise<void>) | undefined
+  let markPendingAuditFailed: ((message?: string) => Promise<void>) | undefined
   let facebookPublished = false
   try {
     const authorization = req.headers.get('Authorization')
     if (!authorization?.startsWith('Bearer ')) return json({ error: 'Canva bearer token required' }, 401)
-    const claims = await verifyCanvaToken(authorization.slice(7))
+    let claims: CanvaClaims
+    try {
+      claims = await verifyCanvaToken(authorization.slice(7))
+    } catch {
+      return json({ error: 'Invalid Canva bearer token' }, 401)
+    }
 
     const url = Deno.env.get('SUPABASE_URL')
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -65,6 +71,20 @@ serve(async (req) => {
     }
 
     if (req.method === 'GET') {
+      const imageItemId = new URL(req.url).searchParams.get('image_item_id')
+      if (imageItemId) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageItemId)) {
+          return json({ error: 'Invalid product ID' }, 400)
+        }
+        const { data: imageRow, error: imageError } = await admin.from('stock_levels')
+          .select('items!inner(image_url,tenant_id,is_active)')
+          .eq('store_id', identity.store_id).eq('item_id', imageItemId)
+          .eq('items.tenant_id', identity.tenant_id).eq('items.is_active', true).maybeSingle()
+        const item = imageRow?.items as { image_url?: string } | undefined
+        if (imageError || !item?.image_url) return json({ error: 'Product image unavailable' }, 404)
+        try { return json(await catalogImageData(item.image_url)) }
+        catch { return json({ error: 'Product image unavailable' }, 502) }
+      }
       const query = new URL(req.url).searchParams.get('query') ?? ''
       const { data, error } = await admin.rpc('canva_search_items', {
         p_tenant_id: identity.tenant_id,
@@ -84,6 +104,9 @@ serve(async (req) => {
     }
 
     if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+    if (Deno.env.get('CANVA_CONTENT_PUBLISHER_ENABLED') !== 'true') {
+      return json({ error: 'Content publishing is disabled' }, 403)
+    }
     const body = await req.json() as { caption?: unknown; link?: unknown; mediaUrl?: unknown; platform?: unknown }
     if (body.platform !== 'facebook' || typeof body.caption !== 'string' || !body.caption.trim()) {
       return json({ error: 'A non-empty Facebook caption is required' }, 400)

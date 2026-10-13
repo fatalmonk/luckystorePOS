@@ -121,6 +121,16 @@ If you're using AI coding tools, such as Cursor or Claude Code, you can connect 
 
 This app uses the Supabase Edge Function at `supabase/functions/canva-social`; it does not include a local Express backend. Set `CANVA_BACKEND_HOST` to the HTTPS Supabase project URL (for example, `https://<project-ref>.supabase.co`). The app appends `/functions/v1/canva-social` to that host. Use the same HTTPS URL for local previews and published builds.
 
+Use `npm run build` so the backend configuration guard runs before bundling. The approved disposable review build is:
+
+```sh
+CANVA_BACKEND_HOST=https://grxxenvdhfwzafzyykgo.supabase.co npm run build
+```
+
+The backend must configure `CANVA_APP_ID=AAHOGP8N-Fw` and `CANVA_APP_ORIGIN=https://app-aahogp8n-fw.canva-apps.com`. It verifies Canva-signed tokens itself, rather than treating them as Supabase Auth JWTs. Keep `CANVA_CONTENT_PUBLISHER_ENABLED=false` for the Design Editor-only release. No Facebook credentials are needed for this release.
+
+Catalog and image requests require an authorized Canva identity link to the staff tenant/store. Images are fetched by catalog item ID, with store membership and source-host checks, then supplied to Canva as bounded data URLs with a PNG thumbnail. No image-service CORS changes are needed. A reviewer using a different Canva identity needs a separate explicit test-account mapping; an external admin password alone does not create that mapping.
+
 ## Configure ngrok (optional)
 
 If your app requires authentication with a third party service, your server needs to be exposed via a publicly available URL, so that Canva can send requests to it.

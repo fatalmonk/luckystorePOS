@@ -88,22 +88,35 @@ export const App = () => {
     setUploading(true);
     setUploadStatus(null);
     try {
-      const imageUrl = new URL(selectedProduct.image_url);
-      const mimeTypeByExtension: Record<string, ImageMimeType> = {
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".png": "image/png",
-        ".webp": "image/webp",
-      };
-      const extension = imageUrl.pathname.match(/\.[^.]+$/)?.[0].toLowerCase();
-      const mimeType = extension ? mimeTypeByExtension[extension] : undefined;
-      if (!mimeType) throw new Error("Unsupported product image format.");
+      const source = await canvaApiRequest<{
+        dataUrl: string;
+        mimeType: ImageMimeType;
+      }>(
+        `/functions/v1/canva-social?image_item_id=${encodeURIComponent(selectedProduct.id)}`,
+      );
+      const preview = new Image();
+      await new Promise<void>((resolve, reject) => {
+        preview.onload = () => resolve();
+        preview.onerror = () =>
+          reject(new Error("Unable to prepare product thumbnail."));
+        preview.src = source.dataUrl;
+      });
+      const canvas = document.createElement("canvas");
+      const scale = Math.min(
+        1,
+        300 / Math.max(preview.naturalWidth, preview.naturalHeight),
+      );
+      canvas.width = Math.max(1, Math.round(preview.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(preview.naturalHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Unable to prepare product thumbnail.");
+      context.drawImage(preview, 0, 0, canvas.width, canvas.height);
       const image = await upload({
         type: "image",
         name: `Lucky Store - ${selectedProduct.name}`,
-        mimeType,
-        url: selectedProduct.image_url,
-        thumbnailUrl: selectedProduct.image_url,
+        mimeType: source.mimeType,
+        url: source.dataUrl,
+        thumbnailUrl: canvas.toDataURL("image/png"),
         aiDisclosure: "none",
       });
       await addElement({
