@@ -23,6 +23,9 @@ async function contentFetch(slug: string | undefined, opts: SeoFetchOptions): Pr
   if (!key) throw new Error('NotFair: NOTFAIR_SEO_API_KEY is not set');
   const base = process.env.NOTFAIR_SEO_API_URL ?? 'https://notfair.co/api/seo/content';
   const url = new URL(base);
+  if (url.protocol !== 'https:') {
+    throw new Error(`NotFair: Only HTTPS endpoints are allowed, got ${url.protocol}`);
+  }
   if (slug !== undefined) url.searchParams.set('slug', slug);
   return fetch(url.toString(), {
     headers: { authorization: `Bearer ${key}` },

@@ -48,6 +48,13 @@ describe('NotFair HTTP client', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('rejects non-HTTPS URLs without fetching', async () => {
+    vi.stubEnv('NOTFAIR_SEO_API_URL', 'http://insecure.example/api/seo/content');
+    await expect(getSeoPost('fixture')).rejects.toThrow('Only HTTPS endpoints are allowed');
+    await expect(getSeoPosts()).rejects.toThrow('Only HTTPS endpoints are allowed');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('propagates network failures', async () => {
     fetchMock.mockRejectedValue(new Error('Network timeout'));
     await expect(getSeoPost('fixture')).rejects.toThrow('Network timeout');
