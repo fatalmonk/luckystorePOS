@@ -24,9 +24,17 @@ export function toProductSlug(name: string, id: string): string {
  * Extract the ID prefix from a slug.
  * Returns the 8-char hex prefix from `name--prefix`.
  * Falls back to the whole string if no `--` separator found.
+ * Resilient against rich text / smart punctuation converting `--` to en-dash (`–`) or em-dash (`—`).
  */
 export function extractIdFromSlug(slug: string): string {
-  const parts = slug.split('--');
+  let decoded = slug;
+  try {
+    decoded = decodeURIComponent(slug);
+  } catch {
+    // ignore malformed URI
+  }
+  const normalized = decoded.replace(/[\u2013\u2014\u2212]/g, '--');
+  const parts = normalized.split('--');
   return parts.at(-1) ?? slug;
 }
 

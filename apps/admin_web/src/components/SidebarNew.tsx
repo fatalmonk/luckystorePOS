@@ -236,7 +236,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
           hidden ? 'sidebar--hidden' : '',
           !isMobile && collapsed ? 'sidebar-collapsed' : '',
           !isMobile && collapsed && isHovered ? 'sidebar-hover-expanded' : '',
-          '!bg-warm-surface !border-warm-border-warm flex flex-col h-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]'
+          '!bg-warm-surface !border-warm-border-warm flex flex-col h-full transition-all duration-200 ease-smooth'
         )}
       >
         {/* Sidebar Header */}

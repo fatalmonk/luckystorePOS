@@ -190,7 +190,7 @@ function InventoryListTableRowComponent({
       ref={rowRef}
       aria-rowindex={rowIndex}
       className={clsx(
-        'relative transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] group',
+        'relative transition-all duration-300 ease-spring active:scale-[0.99] group',
         isSelected && 'bg-primary/10 hover:bg-primary/15 [&>td]:!bg-transparent'
       )}
       style={{ height: `${virtualRowSize}px` }}
@@ -432,7 +432,7 @@ function InventoryListTableRowComponent({
             <button
               ref={smartPricingBtnRef}
               onClick={(e) => { e.stopPropagation(); setShowSmartPricing(true); }}
-              className="w-11 h-11 -my-2 flex items-center justify-center rounded-full bg-transparent hover:bg-background-subtle text-text-muted hover:text-primary opacity-0 group-hover/price:opacity-100 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-11 h-11 -my-2 flex items-center justify-center rounded-full bg-transparent hover:bg-background-subtle text-text-muted hover:text-primary opacity-0 group-hover/price:opacity-100 transition-all duration-300 ease-spring focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-primary"
               title="Smart Pricing"
               aria-label="Open Smart Pricing Editor"
             >
@@ -521,7 +521,7 @@ function InventoryListTableRowComponent({
             aria-haspopup="menu"
             aria-expanded={isOpen}
             aria-label={`Actions menu for ${item.name}`}
-            className="w-11 h-11 -my-2 flex items-center justify-center rounded-full bg-transparent hover:bg-background-subtle transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-11 h-11 -my-2 flex items-center justify-center rounded-full bg-transparent hover:bg-background-subtle transition-all duration-300 ease-spring focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <div className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-raised border border-border-default/40 hover:border-border-default">
               <MoreVertical size={16} className="text-text-secondary" />

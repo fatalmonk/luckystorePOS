@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Addressed all PR review violations for shadcn implementation on feat/shadcn
-Done: Resolved 24 review comments across tokens, button, card, input, badge, drawer, modal, confirm dialog, sonner, secret scanner, package-lock, tailwind config, 118 tests pass, build clean, secret scan green
-Branch: feat/shadcn
-Health: 118 admin_web tests pass (19 files), 0 typecheck errors, 0 lint errors, build clean, secret scan green
-Last Synced: 2026-10-12
-ctx: shadcn admin_web implementation | done: 24 PR review issues resolved | next: push & update PR #444
+Current: Storefront URL resilience & admin_web build optimizations
+Done: PR #446 merged; normalized dashes in slugify.ts (8 tests pass); added v_storefront_products view migration; tokenized Tailwind cubic-bezier curves (0 build warnings); configured turbo.json globalPassThroughEnv
+Branch: feat/storefront-and-admin-fixes
+Health: main up to date, CI green, admin_web 0 warnings, 0 leaks
+Last Synced: 2026-10-13
+ctx: storefront-admin-optimizations | done: PR #447 opened | next: CI green & review/merge PR #447
