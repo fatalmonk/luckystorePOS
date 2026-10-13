@@ -134,7 +134,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
       </div>
 
       {onToggleSelect && (
-        <label className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm" onClick={() => onToggleSelect(item.id)}>
+        <label className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm">
           <input
             type="checkbox"
             checked={isSelected}
@@ -153,7 +153,6 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
       <button
         type="button"
         onClick={handleCardClick}
-        aria-label={`Open ${item.name} for stock editing`}
         className="flex gap-3 sm:gap-4 items-start w-full min-w-0 text-left rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:scale-[0.99] active:brightness-95 transition-transform"
       >
         {/* Left Column: Image with rounded box + stock status underneath */}

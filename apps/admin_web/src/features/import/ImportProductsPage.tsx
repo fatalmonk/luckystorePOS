@@ -8,7 +8,13 @@ import { useTranslation } from 'react-i18next';
 
 const optionalUrl = z.preprocess(
   (value) => typeof value === 'string' && value.trim() === '' ? undefined : value,
-  z.string().url('Image URL must be a valid URL').optional(),
+  z.string()
+    .url('Image URL must be a valid URL')
+    .refine(
+      (str) => !str || str.startsWith('https://'),
+      { message: 'Image URL must use HTTPS' }
+    )
+    .optional(),
 );
 
 const productSchema = z.object({
