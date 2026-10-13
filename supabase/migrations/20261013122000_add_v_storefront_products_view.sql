@@ -1,7 +1,7 @@
 -- Migration: Add v_storefront_products view
 -- Algorithmic parity with apps/customer_storefront/app/lib/products/slugify.ts:toProductSlug
 
-CREATE OR REPLACE VIEW public.v_storefront_products AS
+CREATE OR REPLACE VIEW public.v_storefront_products WITH (security_invoker = true) AS
 SELECT
   id,
   name,
