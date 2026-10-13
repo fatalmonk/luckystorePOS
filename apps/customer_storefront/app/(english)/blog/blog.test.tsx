@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SeoPost } from 'notfair-nextjs-blog';
 
-const api = vi.hoisted(() => ({ getSeoPosts: vi.fn(), getSeoPost: vi.fn() }));
-vi.mock('notfair-nextjs-blog', () => api);
+const fetchMock = vi.fn();
+vi.mock('server-only', () => ({}));
 // Normalize the SDK's explicit .js CJS import for Vitest's ESM runner.
 vi.mock('next/image.js', async () => ({ default: (await import('next/image')).default }));
 vi.mock('next/navigation', () => ({ notFound: () => { throw new Error('NOT_FOUND'); } }));
@@ -28,13 +28,17 @@ const post: SeoPost = {
 describe('NotFair blog routes', () => {
   beforeEach(() => {
     vi.stubEnv('NOTFAIR_SEO_API_KEY', 'test-notfair-key');
-    vi.clearAllMocks();
-    api.getSeoPosts.mockResolvedValue([post]);
-    api.getSeoPost.mockResolvedValue(post);
+    vi.stubEnv('NOTFAIR_SEO_API_URL', 'https://notfair.co/api/seo/content');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+    fetchMock.mockImplementation(async (url: string) => Response.json(
+      url.includes('?slug=') ? { post } : { posts: [post] },
+    ));
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it('links index summaries to /blog/{slug} with the featured image', async () => {
@@ -42,23 +46,23 @@ describe('NotFair blog routes', () => {
     expect(html).toContain('href="/blog/test-article"');
     expect(html).toContain(encodeURIComponent(post.image_url));
     expect(html).toContain(post.meta_description);
-    expect(api.getSeoPosts).toHaveBeenCalledOnce();
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it('renders empty index state when getSeoPosts resolves with zero posts', async () => {
-    api.getSeoPosts.mockResolvedValue([]);
+    fetchMock.mockImplementation(async () => Response.json({ posts: [] }));
     const html = renderToStaticMarkup(await BlogIndex());
     expect(html).toContain('No articles have been published yet.');
   });
 
-  it('propagates upstream fetch errors on the index route to allow ISR to serve stale responses', async () => {
-    api.getSeoPosts.mockRejectedValue(new Error('Network timeout'));
+  it('propagates network errors on the index route', async () => {
+    fetchMock.mockRejectedValue(new Error('Network timeout'));
     await expect(BlogIndex()).rejects.toThrow('Network timeout');
   });
 
   it('renders the hero before sanitized article content and preserves attribution', async () => {
     const html = renderToStaticMarkup(await BlogPost({ params: Promise.resolve({ slug: post.slug }) }));
-    expect(api.getSeoPost).toHaveBeenCalledWith(post.slug);
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(`?slug=${post.slug}`), expect.any(Object));
     const imageUrl = encodeURIComponent(post.image_url);
     expect(html).toContain(imageUrl);
     expect(html.indexOf(imageUrl)).toBeLessThan(html.indexOf('Article section'));
@@ -78,18 +82,37 @@ describe('NotFair blog routes', () => {
   });
 
   it('returns notFound only after the NotFair lookup returns no post', async () => {
-    api.getSeoPost.mockResolvedValue(null);
+    fetchMock.mockImplementation(async () => Response.json({ post: null }));
     await expect(BlogPost({ params: Promise.resolve({ slug: 'missing' }) })).rejects.toThrow('NOT_FOUND');
-    expect(api.getSeoPost).toHaveBeenCalledWith('missing');
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('?slug=missing'), expect.any(Object));
   });
 
-  it('preserves upstream SDK and network errors on [slug] instead of converting to notFound', async () => {
-    api.getSeoPost.mockRejectedValue(new Error('503 Service Unavailable'));
-    await expect(BlogPost({ params: Promise.resolve({ slug: 'test-article' }) })).rejects.toThrow('503 Service Unavailable');
+  it('preserves upstream HTTP errors on [slug] instead of converting to notFound', async () => {
+    fetchMock.mockImplementation(async () => new Response('', { status: 503 }));
+    await expect(BlogPost({ params: Promise.resolve({ slug: 'test-article' }) })).rejects.toThrow('HTTP 503');
   });
 
-  it('preserves upstream SDK and network errors in generateMetadata instead of returning fallback title', async () => {
-    api.getSeoPost.mockRejectedValue(new Error('500 Internal Server Error'));
-    await expect(generateMetadata({ params: Promise.resolve({ slug: 'test-article' }) })).rejects.toThrow('500 Internal Server Error');
+  it('preserves upstream HTTP errors in generateMetadata instead of returning fallback title', async () => {
+    fetchMock.mockImplementation(async () => new Response('', { status: 500 }));
+    await expect(generateMetadata({ params: Promise.resolve({ slug: 'test-article' }) })).rejects.toThrow('HTTP 500');
+  });
+
+  it('rejects a missing key on index, detail and metadata without issuing HTTP requests', async () => {
+    vi.stubEnv('NOTFAIR_SEO_API_KEY', '');
+    await expect(BlogIndex()).rejects.toThrow('NOTFAIR_SEO_API_KEY');
+    await expect(BlogPost({ params: Promise.resolve({ slug: post.slug }) })).rejects.toThrow('NOTFAIR_SEO_API_KEY');
+    await expect(generateMetadata({ params: Promise.resolve({ slug: post.slug }) })).rejects.toThrow('NOTFAIR_SEO_API_KEY');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not turn HTTP authentication errors into empty index content', async () => {
+    fetchMock.mockImplementation(async () => new Response('', { status: 401 }));
+    await expect(BlogIndex()).rejects.toThrow('HTTP 401');
+  });
+
+  it('returns notFound for a detail 404 in both article rendering and metadata', async () => {
+    fetchMock.mockImplementation(async () => new Response('', { status: 404 }));
+    await expect(BlogPost({ params: Promise.resolve({ slug: 'missing' }) })).rejects.toThrow('NOT_FOUND');
+    await expect(generateMetadata({ params: Promise.resolve({ slug: 'missing' }) })).rejects.toThrow('NOT_FOUND');
   });
 });

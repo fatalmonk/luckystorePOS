@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import React, { cache } from 'react';
 import { notFound } from 'next/navigation';
-import { getSeoPost } from 'notfair-nextjs-blog';
+import { getSeoPost } from '@/lib/notfair-client';
 import { NotFairPostHero } from 'notfair-nextjs-blog/react';
 import { sanitizeNotFairArticleHtml } from '@/lib/notfair-article';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';

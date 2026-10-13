@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getSeoPosts } from 'notfair-nextjs-blog';
+import { getSeoPosts } from '@/lib/notfair-client';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 
 export const revalidate = 3600;
