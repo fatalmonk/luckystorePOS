@@ -23,6 +23,7 @@ export function assertImageDimensions(bytes: Uint8Array, mime: string) {
     if (!ended) fail()
   } else if (mime === 'image/jpeg') {
     if (bytes.length < 4 || bytes[0] !== 255 || bytes[1] !== 216) fail()
+    if (bytes[bytes.length - 2] !== 255 || bytes[bytes.length - 1] !== 217) fail()
     let offset = 2
     while (offset < bytes.length) {
       if (bytes[offset++] !== 255) fail()

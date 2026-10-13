@@ -38,8 +38,12 @@ Deno.test('dimensions cap decoded pixels and reject malformed or mismatched imag
   const png = new Uint8Array(45); png.set([137,80,78,71,13,10,26,10]); png.set(new TextEncoder().encode('IHDR'), 12)
   png.set(new TextEncoder().encode('IEND'), 37)
   const view = new DataView(png.buffer); view.setUint32(8, 13); view.setUint32(16, 400); view.setUint32(20, 200)
-  const jpeg = new Uint8Array([255,216,255,192,0,8,8,0,200,1,144,1])
-  for (const [bytes, mime] of [[png, 'image/png'], [jpeg, 'image/jpeg'], [webp(400,200), 'image/webp']] as const) {
+  const completeJpeg = new Uint8Array([255,216,255,192,0,8,8,0,200,1,144,1,255,217])
+  const truncatedJpeg = new Uint8Array([255,216,255,192,0,8,8,0,200,1,144,1])
+  let truncatedRejected = false
+  try { assertImageDimensions(truncatedJpeg, 'image/jpeg') } catch { truncatedRejected = true }
+  if (!truncatedRejected) throw new Error('UNSAFE_DIMENSIONS_ACCEPTED')
+  for (const [bytes, mime] of [[png, 'image/png'], [completeJpeg, 'image/jpeg'], [webp(400,200), 'image/webp']] as const) {
     const result = assertImageDimensions(bytes, mime)
     if (result.width !== 400 || result.height !== 200) throw new Error('DIMENSION_MISMATCH')
   }

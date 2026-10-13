@@ -6,6 +6,18 @@ export class CanvaVerificationError extends Error {
   constructor(public readonly status: 401 | 500 | 503, message: string) { super(message) }
 }
 
+
+const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>()
+
+function getJwks(appId: string) {
+  let jwks = jwksCache.get(appId)
+  if (!jwks) {
+    jwks = createRemoteJWKSet(new URL(`https://api.canva.com/rest/v1/apps/${encodeURIComponent(appId)}/jwks`))
+    jwksCache.set(appId, jwks)
+  }
+  return jwks
+}
+
 // A key-fetch/configuration failure says nothing about whether the bearer is valid.
 export function verificationFailure(error: unknown): CanvaVerificationError {
   if (error instanceof CanvaVerificationError) return error
@@ -20,7 +32,7 @@ export function verificationFailure(error: unknown): CanvaVerificationError {
 export async function verifyCanvaToken(token: string, appId: string | undefined): Promise<CanvaClaims> {
   if (!appId) throw new CanvaVerificationError(500, 'Canva authentication is not configured')
   try {
-    const jwks = createRemoteJWKSet(new URL(`https://api.canva.com/rest/v1/apps/${encodeURIComponent(appId)}/jwks`))
+    const jwks = getJwks(appId)
     const { payload } = await jwtVerify(token, jwks, { audience: appId })
     if (typeof payload.userId !== 'string' || !payload.userId ||
       typeof payload.brandId !== 'string' || !payload.brandId) {

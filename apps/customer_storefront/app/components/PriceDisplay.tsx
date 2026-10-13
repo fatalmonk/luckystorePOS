@@ -19,7 +19,7 @@ export function PriceDisplay({ value, className = '', original, savings, unit }:
         <span className="line-through text-sm text-warm-muted">{formatBdt(original)}</span>
       )}
       {hasSavings && (
-        <span className="bg-warm-success-bg text-warm-success text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+        <span className="bg-warm-success-bg text-warm-success text-label-sm font-bold px-1.5 py-0.5 rounded-full">
           −{formatBdt(savings)}
         </span>
       )}

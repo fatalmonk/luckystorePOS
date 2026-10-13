@@ -61,5 +61,21 @@ module.exports = {
       },
     },
   },
-  plugins: [],
-};
+  plugins: [
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.text-label-md': {
+          fontSize: '13px',
+          fontWeight: 'bold',
+        },
+        '.text-body-sm': {
+          fontSize: '13px',
+        },
+        '.text-label-sm': {
+          fontSize: '10px',
+        },
+      }
+      addUtilities(newUtilities, ['responsive', 'hover'])
+    },
+  ],
+}

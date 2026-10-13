@@ -12,7 +12,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, classNam
   return (
     <div className="mb-4">
       {label && (
-        <label htmlFor={inputId} className="block text-[13px] font-bold mb-1.5 text-warm-fg">
+        <label htmlFor={inputId} className="block text-body-sm font-bold mb-1.5 text-warm-fg">
           {label}
         </label>
       )}
@@ -46,7 +46,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({ label,
   return (
     <div className="mb-4">
       {label && (
-        <label htmlFor={textareaId} className="block text-[13px] font-bold mb-1.5 text-warm-fg">
+        <label htmlFor={textareaId} className="block text-body-sm font-bold mb-1.5 text-warm-fg">
           {label}
         </label>
       )}

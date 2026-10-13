@@ -1,4 +1,5 @@
 import { verifyCanvaToken, verificationFailure, type CanvaClaims } from './auth.ts'
+import { isContentPublishingEnabled } from './config.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { catalogImageData } from './image.ts'
@@ -94,7 +95,7 @@ serve(async (req) => {
     }
 
     if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
-    if (Deno.env.get('CANVA_CONTENT_PUBLISHER_ENABLED') !== 'true') {
+    if (!isContentPublishingEnabled()) {
       return json({ error: 'Content publishing is disabled' }, 403)
     }
     const body = await req.json() as { caption?: unknown; link?: unknown; mediaUrl?: unknown; platform?: unknown }
