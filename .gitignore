@@ -38,6 +38,7 @@ apps/mobile_app/env/*
 node_modules/
 .pnp
 .pnp.js
+*.traineddata
 
 .npm/
 .pnpm-store/

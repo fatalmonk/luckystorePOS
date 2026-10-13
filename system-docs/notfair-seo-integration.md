@@ -73,8 +73,9 @@ The sanitizer inherits `sanitizeHtml.defaults.allowedTags` and extends it with e
 ### Secret Management
 - **`NOTFAIR_SEO_API_KEY`**: Server-only API credential.
   - Local development: Defined in `apps/customer_storefront/.env.local` (gitignored).
+  - GitHub Actions: Repository Secret (`NOTFAIR_SEO_API_KEY`) used during `npm run build` in CI.
+  - Hostinger hPanel: Required under Node.js -> Environment Variables for ISR runtime revalidation.
   - Vercel: Configured as a server-side secret across Preview and Production environments.
-  - CI / GitHub Actions: Provided via repository secrets (`${{ secrets.NOTFAIR_SEO_API_KEY }}`) for automated build and verification steps.
   - **Rule**: Never expose with `NEXT_PUBLIC_` prefix and never commit into version control.
 
 ---
