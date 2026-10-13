@@ -153,22 +153,22 @@ const MainHeader = (): React.JSX.Element => (
     </div>
 
     <div className="flex items-center gap-6">
-      <button className="text-warm-fg hover:text-warm-muted transition-colors"><User className="w-6 h-6" /></button>
+      <button aria-label="Account" className="text-warm-fg hover:text-warm-muted transition-colors"><User className="w-6 h-6" /></button>
       <div className="flex items-center gap-4">
-        <div className="relative cursor-pointer group">
+        <button aria-label="Compare" className="relative cursor-pointer group">
           <RefreshCw className="w-6 h-6 text-warm-fg group-hover:text-warm-muted transition-colors" />
           <span className="absolute -top-2 -right-2 bg-[#f0c444] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full text-[#0B0B0D]">0</span>
-        </div>
-        <div className="relative cursor-pointer group">
+        </button>
+        <button aria-label="Wishlist" className="relative cursor-pointer group">
           <Heart className="w-6 h-6 text-warm-fg group-hover:text-warm-muted transition-colors" />
           <span className="absolute -top-2 -right-2 bg-[#f0c444] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full text-[#0B0B0D]">0</span>
-        </div>
-        <div className="relative cursor-pointer group flex items-center gap-3">
+        </button>
+        <button aria-label="Shopping Cart" className="relative cursor-pointer group flex items-center gap-3">
           <div className="relative bg-[#FFF8E1] p-2 rounded-xl border border-[#f0c444]/40">
             <ShoppingCart className="w-6 h-6 text-[#0B0B0D]" />
             <span className="absolute -top-2 -right-2 bg-[#f0c444] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full text-[#0B0B0D]">0</span>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   </div>
@@ -234,9 +234,9 @@ const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
       
       {/* Floating Actions (Visible on Hover) */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 z-10">
-        <button className="bg-warm-bg p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-surface"><Heart className="w-4 h-4" /></button>
-        <button className="bg-warm-bg p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-surface"><RefreshCw className="w-4 h-4" /></button>
-        <button className="bg-warm-bg p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-surface"><Eye className="w-4 h-4" /></button>
+        <button aria-label="Add to wishlist" className="bg-warm-bg p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-surface"><Heart className="w-4 h-4" /></button>
+        <button aria-label="Compare" className="bg-warm-bg p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-surface"><RefreshCw className="w-4 h-4" /></button>
+        <button aria-label="Quick view" className="bg-warm-bg p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-surface"><Eye className="w-4 h-4" /></button>
       </div>
 
       {/* Discount Tag */}
@@ -281,7 +281,8 @@ const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
       </h3>
 
       {/* Rating */}
-      <div className="flex justify-center items-center gap-1 mb-4">
+      <div className="flex justify-center items-center gap-1 mb-4" role="img" aria-label={`Rated ${product.rating} out of 5 stars`}>
+        <span className="sr-only">Rated {product.rating} out of 5 stars</span>
         {[...Array(5)].map((_, i) => (
           <Star 
             key={i} 

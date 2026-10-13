@@ -227,22 +227,22 @@ export default function FullZillyPreview(): React.JSX.Element {
 
           {/* Header Action Icons */}
           <div className="flex items-center space-x-3 md:space-x-5 text-warm-fg">
-            <button title="Account" className="hover:text-warm-fg transition-colors hidden sm:flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
+            <button title="Account" aria-label="Account" className="hover:text-warm-fg transition-colors hidden sm:flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
               <User className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             
-            <button title="Compare" className="relative hover:text-warm-fg transition-colors hidden md:flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
+            <button title="Compare" aria-label="Compare" className="relative hover:text-warm-fg transition-colors hidden md:flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
               <ClipboardList className="w-5 h-5 md:w-6 md:h-6" />
               <span className="absolute top-0 right-0 bg-[#f0c444] text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold text-[#0B0B0D] shadow-xs">0</span>
             </button>
             
-            <button title="Wishlist" className="relative hover:text-warm-fg transition-colors flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
+            <button title="Wishlist" aria-label="Wishlist" className="relative hover:text-warm-fg transition-colors flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
               <Heart className="w-5 h-5 md:w-6 md:h-6" />
               <span className="absolute top-0 right-0 bg-[#f0c444] text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold text-[#0B0B0D] shadow-xs">0</span>
             </button>
             
             {/* Cart Button */}
-            <button className="flex items-center space-x-3 hover:opacity-90 transition-opacity group">
+            <button aria-label="Shopping Cart" className="flex items-center space-x-3 hover:opacity-90 transition-opacity group">
               <div className="relative bg-[#FFF8E1] p-2.5 rounded-xl border border-[#f0c444]/40 group-hover:border-[#f0c444]">
                 <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-[#0B0B0D]" />
                 <span className="absolute -top-1.5 -right-1.5 bg-[#f0c444] text-[10px] rounded-full w-5 h-5 flex items-center justify-center font-bold text-[#0B0B0D] shadow-xs border border-white">0</span>
@@ -253,7 +253,7 @@ export default function FullZillyPreview(): React.JSX.Element {
               </div>
             </button>
             
-            <button className="lg:hidden hover:text-[#0B0B0D] p-1">
+            <button aria-label="Open mobile menu" className="lg:hidden hover:text-warm-fg p-1">
               <Menu className="w-6 h-6 md:w-7 md:h-7" />
             </button>
           </div>
@@ -261,7 +261,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       </header>
 
       {/* ----------------- 3. PRIMARY NAVIGATION MENU ----------------- */}
-      <nav className="hidden lg:block bg-warm-bg px-4 md:px-6 lg:px-8 border-b border-gray-200/80 shadow-xs relative z-30">
+      <nav className="hidden lg:block bg-warm-bg px-4 md:px-6 lg:px-8 border-b border-warm-border shadow-xs relative z-30">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Left: Zilly Style Category Menu Trigger & Nav Links */}
@@ -426,7 +426,7 @@ export default function FullZillyPreview(): React.JSX.Element {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           
           {/* Main Left Hero Banner (lg:col-span-2) */}
-          <div className="lg:col-span-2 bg-[#F6F4EE] rounded-[1.75rem] p-8 md:p-12 lg:p-14 flex items-center justify-between relative overflow-hidden min-h-[380px] md:min-h-[440px] lg:min-h-[480px] shadow-xs border border-gray-100/80">
+          <div className="lg:col-span-2 bg-[#F6F4EE] rounded-[1.75rem] p-8 md:p-12 lg:p-14 flex items-center justify-between relative overflow-hidden min-h-[380px] md:min-h-[440px] lg:min-h-[480px] shadow-xs border border-warm-border">
             
             <div className="relative z-10 space-y-4 md:space-y-6 max-w-sm md:max-w-md">
               {/* Notched Ribbon Badge */}
@@ -469,7 +469,7 @@ export default function FullZillyPreview(): React.JSX.Element {
           <div className="flex flex-col justify-between space-y-6 h-full">
             
             {/* Top Right Card ("Premium Honeynuts") */}
-            <div className="bg-[#F2F1ED] rounded-[1.75rem] p-6 md:p-8 flex items-center justify-between relative overflow-hidden min-h-[225px] shadow-xs border border-gray-100">
+            <div className="bg-[#F2F1ED] rounded-[1.75rem] p-6 md:p-8 flex items-center justify-between relative overflow-hidden min-h-[225px] shadow-xs border border-warm-border">
               <div className="relative z-10 space-y-2 max-w-[190px]">
                 <h3 className="text-2xl font-black text-gray-900 leading-snug">Premium Honeynuts</h3>
                 <p className="text-xs text-gray-500 font-semibold">100% Salted Organic Nuts</p>
@@ -554,7 +554,7 @@ export default function FullZillyPreview(): React.JSX.Element {
               <div key={product.id} className="bg-warm-surface p-4 rounded-2xl border border-warm-border flex flex-col justify-between relative group hover:shadow-xl hover:border-[#f0c444] transition-all">
                 
                 {/* Wishlist Icon */}
-                <button className="absolute top-3 right-3 text-warm-muted hover:text-[#eb5757] transition-colors z-10">
+                <button aria-label="Add to wishlist" className="absolute top-3 right-3 text-warm-muted hover:text-[#eb5757] transition-colors z-10">
                   <Heart className="w-4 h-4" />
                 </button>
 
@@ -582,7 +582,8 @@ export default function FullZillyPreview(): React.JSX.Element {
                   )}
 
                   {/* Stars */}
-                  <div className="flex items-center space-x-0.5">
+                  <div className="flex items-center space-x-0.5" role="img" aria-label="Rated 5 out of 5 stars">
+                    <span className="sr-only">Rated 5 out of 5 stars</span>
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                     ))}
@@ -637,11 +638,12 @@ export default function FullZillyPreview(): React.JSX.Element {
                 </div>
                 <div>
                   <h4 className="font-extrabold text-xs text-warm-fg">{v.name}</h4>
-                  <div className="flex items-center space-x-1 mt-0.5">
+                  <div className="flex items-center space-x-1 mt-0.5" role="img" aria-label={`Rated ${v.rating.toFixed(1)} out of 5 stars`}>
+                    <span className="sr-only">Rated {v.rating.toFixed(1)} out of 5 stars</span>
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                     ))}
-                    <span className="text-[10px] text-warm-muted font-bold ml-1">({v.rating.toFixed(1)})</span>
+                    <span className="text-[10px] text-warm-muted font-bold ml-1" aria-hidden="true">({v.rating.toFixed(1)})</span>
                   </div>
                 </div>
               </div>
@@ -702,9 +704,9 @@ export default function FullZillyPreview(): React.JSX.Element {
           <div className="bg-[#E6F0FF] rounded-2xl p-6 flex items-center justify-between border border-blue-100 shadow-xs">
             <div>
               <p className="text-xs text-blue-600 font-bold">Organic Fruits</p>
-              <h3 className="text-lg font-black text-gray-900">Baby Jam</h3>
-              <p className="text-xs text-gray-500 font-semibold mt-1">From <span className="font-bold text-gray-900">BDT 1200</span></p>
-              <button className="mt-3 bg-warm-bg text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
+              <h3 className="text-lg font-black text-[#0B0B0D]">Baby Jam</h3>
+              <p className="text-xs text-warm-muted font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 1200</span></p>
+              <button className="mt-3 bg-white text-blue-600 hover:bg-blue-50 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🫙</div>
           </div>
@@ -713,9 +715,9 @@ export default function FullZillyPreview(): React.JSX.Element {
           <div className="bg-[#F4FBDF] rounded-2xl p-6 flex items-center justify-between border border-lime-200 shadow-xs">
             <div>
               <p className="text-xs text-lime-700 font-bold">Organic Fruits</p>
-              <h3 className="text-lg font-black text-gray-900">Fresh Juice</h3>
-              <p className="text-xs text-gray-500 font-semibold mt-1">From <span className="font-bold text-gray-900">BDT 1400</span></p>
-              <button className="mt-3 bg-warm-bg text-lime-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
+              <h3 className="text-lg font-black text-[#0B0B0D]">Fresh Juice</h3>
+              <p className="text-xs text-warm-muted font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 1400</span></p>
+              <button className="mt-3 bg-white text-lime-700 hover:bg-lime-50 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🧃</div>
           </div>
@@ -724,9 +726,9 @@ export default function FullZillyPreview(): React.JSX.Element {
           <div className="bg-[#F3E8FF] rounded-2xl p-6 flex items-center justify-between border border-purple-200 shadow-xs">
             <div>
               <p className="text-xs text-purple-700 font-bold">Kids Category</p>
-              <h3 className="text-lg font-black text-gray-900">Car Toys</h3>
-              <p className="text-xs text-gray-500 font-semibold mt-1">From <span className="font-bold text-gray-900">BDT 800</span></p>
-              <button className="mt-3 bg-warm-bg text-purple-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
+              <h3 className="text-lg font-black text-[#0B0B0D]">Car Toys</h3>
+              <p className="text-xs text-warm-muted font-semibold mt-1">From <span className="font-bold text-[#0B0B0D]">BDT 800</span></p>
+              <button className="mt-3 bg-white text-purple-700 hover:bg-purple-50 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs">Shop Now</button>
             </div>
             <div className="text-5xl">🧸</div>
           </div>
@@ -752,7 +754,8 @@ export default function FullZillyPreview(): React.JSX.Element {
                 <div className="space-y-1">
                   <p className="text-[10px] text-warm-muted font-semibold uppercase">{item.category}</p>
                   <h3 className="text-xs font-bold text-warm-fg line-clamp-2">{item.title}</h3>
-                  <div className="flex items-center space-x-1 pt-1">
+                  <div className="flex items-center space-x-1 pt-1" role="img" aria-label="Rated 5 out of 5 stars">
+                    <span className="sr-only">Rated 5 out of 5 stars</span>
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                     ))}
@@ -787,7 +790,8 @@ export default function FullZillyPreview(): React.JSX.Element {
             <div className="text-8xl my-2">🍼</div>
             <div className="space-y-2">
               <h3 className="text-sm font-extrabold text-warm-fg">Aptamil Gold+ ProNutra Infant Formula</h3>
-              <div className="flex justify-center space-x-1">
+              <div className="flex justify-center space-x-1" role="img" aria-label="Rated 5 out of 5 stars">
+                <span className="sr-only">Rated 5 out of 5 stars</span>
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />)}
               </div>
               <div className="text-xl font-black text-warm-fg">BDT 2400 – BDT 4000</div>
@@ -808,7 +812,8 @@ export default function FullZillyPreview(): React.JSX.Element {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-warm-fg line-clamp-1">{sp.title}</h4>
-                    <div className="flex items-center space-x-1 my-1">
+                    <div className="flex items-center space-x-1 my-1" role="img" aria-label="Rated 5 out of 5 stars">
+                      <span className="sr-only">Rated 5 out of 5 stars</span>
                       {[...Array(5)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" aria-hidden="true" />)}
                     </div>
                     <div className="flex items-center space-x-2">
@@ -832,7 +837,8 @@ export default function FullZillyPreview(): React.JSX.Element {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-warm-fg line-clamp-1">{bp.title}</h4>
-                    <div className="flex items-center space-x-1 my-1">
+                    <div className="flex items-center space-x-1 my-1" role="img" aria-label="Rated 5 out of 5 stars">
+                      <span className="sr-only">Rated 5 out of 5 stars</span>
                       {[...Array(5)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" aria-hidden="true" />)}
                     </div>
                     <div className="flex items-center space-x-2">
@@ -1029,6 +1035,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       {/* Floating Back To Top */}
       <button 
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Back to top"
         className="fixed bottom-6 right-6 bg-[#f0c444] text-[#0B0B0D] p-3 rounded-full shadow-2xl hover:bg-[#e0b434] transition-all z-50 cursor-pointer border border-[#f0c444]"
       >
         <ArrowUp className="w-5 h-5" />
