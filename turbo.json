@@ -5,6 +5,7 @@
     "MANAGER_PASSWORD",
     "ADMIN_EMAIL",
     "ADMIN_PASSWORD",
+    "SUPABASE_URL",
     "SUPABASE_URL_*"
   ],
   "tasks": {
