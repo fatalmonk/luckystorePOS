@@ -1,0 +1,46 @@
+# Canva Automation Reference for Lucky Store Receipts
+
+## Overview
+This reference guides automated receipt card generation, asset management, and export workflows using the Canva REST API and Autofill engine for Lucky Store operations (focusing on May 2026 audit workflows).
+
+## 1. Authentication & Credentials
+- Set `CANVA_CLIENT_ID` and `CANVA_CLIENT_SECRET` in environment or `~/.hermes/.env`.
+- CLI login: `canva login`
+
+## 2. Brand Template Dataset Verification
+- Verify dataset fields before autofill:
+  ```bash
+  canva api brand-templates dataset <BRAND_TEMPLATE_ID>
+  ```
+- **Crucial Rule:** If the dataset returns `{}` (empty), elements were tagged in the Canva editor but *not re-published as a Brand Template*. Re-publish in Canva UI (Share → More → Brand Template → Publish).
+
+## 3. Asset Upload (Binary Files)
+- Always upload local binary files rather than remote URLs to avoid CDN/User-Agent `fetch_failed` errors:
+  ```bash
+  canva api assets create-upload --name "<receipt_name>" --file "/path/to/receipt.jpg"
+  ```
+- Poll upload job until `status: "success"` to obtain `asset.id`:
+  ```bash
+  canva api assets get-upload <JOB_ID>
+  ```
+
+## 4. Autofill Execution
+- Create autofill job using brand template and mapped asset IDs:
+  ```bash
+  canva api autofill create \
+    --type create_from_brand_template \
+    --brand-template-id "<BRAND_TEMPLATE_ID>" \
+    --title "Receipt Audit - May 2026" \
+    --data '{"RECEIPT_IMAGE": {"type": "image", "asset_id": "<ASSET_ID>"}, "AMOUNT": {"type": "text", "text": "BDT 697"}}'
+  ```
+- Poll autofill job until `status: "success"` to obtain `design.id`:
+  ```bash
+  canva api autofill get <JOB_ID>
+  ```
+
+## 5. Export & Download
+- Create export job:
+  ```bash
+  canva api exports create --design-id "<DESIGN_ID>" --format pdf
+  ```
+- Poll export job, extract `urls[0]`, and download via `curl`.
