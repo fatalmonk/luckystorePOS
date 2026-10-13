@@ -134,7 +134,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
       </div>
 
       {onToggleSelect && (
-        <div className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm">
+        <label className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm" onClick={() => onToggleSelect(item.id)}>
           <input
             type="checkbox"
             checked={isSelected}
@@ -142,10 +142,14 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
             aria-label={`Select ${item.name}`}
             className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
           />
-        </div>
+        </label>
       )}
 
-      {/* Main card body split into Left block (Image + Stock status) and Right block (Texts + pricing info) */}
+      {/* Main card body split into Left block (Image + Stock status) and Right block (Texts + pricing info) */}      {/* Product name heading - moved outside button for accessibility */}
+      <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 pr-6">
+        {item.name}
+      </h3>
+
       <button
         type="button"
         onClick={handleCardClick}
@@ -185,9 +189,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
         {/* Right Column: Title + SKU + Pricing grid list */}
         <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch gap-1.5">
           <div className="min-w-0">
-            <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 pr-6">
-              {item.name}
-            </h3>
+
             <span className="text-[10px] sm:text-[11px] text-text-secondary font-mono block truncate mt-0.5">
               SKU: {item.sku || '—'}
             </span>

@@ -30,7 +30,7 @@ const BarcodeScannerModal = lazy(() => import('../../components/inventory/Barcod
 
 export function InventoryListPage() {
   const inventoryRegionRef = useRef<HTMLDivElement>(null);
-  const { storeId, tenantId } = useAuth();
+  const { storeId, tenantId, user } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -339,17 +339,19 @@ export function InventoryListPage() {
              Add New Product
            </button>
            <Link to="/inventory/history" className="px-8 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-             <History size={20} />
-             View Audit Log
-           </Link>
-           <Link to="/purchase" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-             <ShoppingCart size={20} />
-             Record Purchase
-           </Link>
-           <Link to="/import/products" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-             <Upload size={20} />
-             Import Products
-           </Link>
+                       <History size={20} />
+                       View Audit Log
+                     </Link>
+                     {user?.role === 'admin' || user?.role === 'manager' && (
+                       <Link to="/purchase" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
+                         <ShoppingCart size={20} />
+                         Record Purchase
+                       </Link>
+                     )}
+                     <Link to="/import/products" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
+                       <Upload size={20} />
+                       Import Products
+                     </Link>
         </div>
 
         {/* Ambient stats bar */}
