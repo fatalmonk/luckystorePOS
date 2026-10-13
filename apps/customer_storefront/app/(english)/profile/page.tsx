@@ -116,7 +116,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 mb-6">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-warm-bg hover:bg-stone-50 border border-warm-border text-warm-fg transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-warm-bg hover:bg-warm-surface border border-warm-border text-warm-fg transition-colors"
             aria-label="Back to home"
           >
             <ArrowLeft size={16} weight="bold" />

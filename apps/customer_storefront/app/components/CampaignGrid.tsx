@@ -38,7 +38,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
   return (
     <MarketPanel aria-labelledby="campaign-hero-title" tone="paper" className="campaign-hero relative w-full border-0 bg-transparent shadow-none">
       <div className="flex w-full flex-col gap-6">
-        <div className="campaign-feature relative isolate overflow-hidden rounded-2xl bg-[#ffedb4] text-inverse">
+        <div className="campaign-feature relative isolate overflow-hidden rounded-2xl bg-[#ffedb4] text-warm-accent-text">
           <div role="img" aria-label={dict.campaign.basketAlt} className="absolute inset-0 -z-20 hidden sm:block">
             <Image
               src="/images/hero-reference.webp"

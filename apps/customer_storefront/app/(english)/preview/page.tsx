@@ -197,17 +197,17 @@ export default function FullZillyPreview(): React.JSX.Element {
               </g>
             </svg>
             <div className="flex items-baseline space-x-1">
-              <span className="font-extrabold text-lg md:text-2xl text-[#0B0B0D] tracking-tight uppercase leading-none">
+              <span className="font-extrabold text-lg md:text-2xl text-warm-fg tracking-tight uppercase leading-none">
                 LUCKY STORE
               </span>
               <span className="w-2 h-2 rounded-full bg-[#f0c444] inline-block shrink-0 transition-transform group-hover:scale-125" aria-hidden="true" />
-              <span className="hidden sm:inline font-mono text-xs text-gray-500 font-medium ml-1">1947</span>
+              <span className="hidden sm:inline font-mono text-xs text-warm-muted font-medium ml-1">1947</span>
             </div>
           </div>
 
           {/* Integrated Search Bar with Category Select */}
           <div className="hidden lg:flex flex-1 max-w-2xl border-2 border-[#f0c444] rounded-full overflow-hidden focus-within:shadow-md transition-all bg-warm-bg">
-            <select className="bg-gray-50 px-4 py-3 border-r border-gray-200 outline-none text-xs text-gray-700 font-bold cursor-pointer hover:bg-gray-100 transition-colors">
+            <select className="bg-warm-surface px-4 py-3 border-r border-warm-border outline-none text-xs text-warm-fg font-bold cursor-pointer hover:bg-warm-bg transition-colors">
               <option>All Categories</option>
               <option>Vegetables</option>
               <option>Fresh Fruits</option>
@@ -218,7 +218,7 @@ export default function FullZillyPreview(): React.JSX.Element {
             <input 
               type="text" 
               placeholder="Type Your Products ..." 
-              className="flex-1 px-4 outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium" 
+              className="flex-1 px-4 outline-none text-warm-fg placeholder:text-warm-muted text-sm font-medium bg-transparent" 
             />
             <button className="bg-[#f0c444] hover:bg-[#e0b434] text-[#0B0B0D] px-8 py-3 font-extrabold flex items-center transition-colors cursor-pointer text-xs uppercase tracking-wider">
               Search <Search className="w-4 h-4 ml-2" />
@@ -226,17 +226,17 @@ export default function FullZillyPreview(): React.JSX.Element {
           </div>
 
           {/* Header Action Icons */}
-          <div className="flex items-center space-x-3 md:space-x-5 text-gray-700">
-            <button title="Account" className="hover:text-[#0B0B0D] transition-colors hidden sm:flex items-center justify-center p-2 rounded-full hover:bg-gray-100">
+          <div className="flex items-center space-x-3 md:space-x-5 text-warm-fg">
+            <button title="Account" className="hover:text-warm-fg transition-colors hidden sm:flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
               <User className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             
-            <button title="Compare" className="relative hover:text-[#0B0B0D] transition-colors hidden md:flex items-center justify-center p-2 rounded-full hover:bg-gray-100">
+            <button title="Compare" className="relative hover:text-warm-fg transition-colors hidden md:flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
               <ClipboardList className="w-5 h-5 md:w-6 md:h-6" />
               <span className="absolute top-0 right-0 bg-[#f0c444] text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold text-[#0B0B0D] shadow-xs">0</span>
             </button>
             
-            <button title="Wishlist" className="relative hover:text-[#0B0B0D] transition-colors flex items-center justify-center p-2 rounded-full hover:bg-gray-100">
+            <button title="Wishlist" className="relative hover:text-warm-fg transition-colors flex items-center justify-center p-2 rounded-full hover:bg-warm-surface">
               <Heart className="w-5 h-5 md:w-6 md:h-6" />
               <span className="absolute top-0 right-0 bg-[#f0c444] text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold text-[#0B0B0D] shadow-xs">0</span>
             </button>
@@ -248,8 +248,8 @@ export default function FullZillyPreview(): React.JSX.Element {
                 <span className="absolute -top-1.5 -right-1.5 bg-[#f0c444] text-[10px] rounded-full w-5 h-5 flex items-center justify-center font-bold text-[#0B0B0D] shadow-xs border border-white">0</span>
               </div>
               <div className="flex-col text-left text-xs font-semibold hidden lg:flex">
-                <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Shopping Cart</span>
-                <span className="text-[#0B0B0D] font-black text-sm">BDT 0.00</span>
+                <span className="text-warm-muted text-[10px] uppercase font-bold tracking-wider">Shopping Cart</span>
+                <span className="text-warm-fg font-black text-sm">BDT 0.00</span>
               </div>
             </button>
             
@@ -280,18 +280,18 @@ export default function FullZillyPreview(): React.JSX.Element {
 
               {/* Category Dropdown Menu Popover */}
               {isCatMenuOpen && (
-                <div className="absolute top-full left-0 w-64 bg-warm-bg border border-gray-100 shadow-2xl rounded-b-2xl py-2 z-50 animate-fade-in-up">
+                <div className="absolute top-full left-0 w-64 bg-warm-bg border border-warm-border shadow-2xl rounded-b-2xl py-2 z-50 animate-fade-in-up">
                   {categories.map((c) => (
                     <a
                       key={c.name}
                       href="#"
-                      className="flex items-center justify-between px-5 py-2.5 hover:bg-[#FFF8E1] transition-colors text-xs font-bold text-gray-800 hover:text-[#0B0B0D] border-b border-gray-50 last:border-none"
+                      className="flex items-center justify-between px-5 py-2.5 hover:bg-warm-surface transition-colors text-xs font-bold text-warm-fg border-b border-warm-border last:border-none"
                     >
                       <span className="flex items-center space-x-3">
                         <span className="text-base">{c.icon}</span>
                         <span>{c.name}</span>
                       </span>
-                      <span className="text-[10px] text-gray-400 font-semibold bg-gray-100 px-2 py-0.5 rounded-full">{c.count}</span>
+                      <span className="text-[10px] text-warm-muted font-semibold bg-warm-surface px-2 py-0.5 rounded-full">{c.count}</span>
                     </a>
                   ))}
                 </div>
@@ -299,20 +299,20 @@ export default function FullZillyPreview(): React.JSX.Element {
             </div>
 
             {/* Nav Menu Links */}
-            <ul className="flex items-center space-x-7 text-xs font-extrabold py-3.5 text-gray-700 tracking-wide uppercase">
+            <ul className="flex items-center space-x-7 text-xs font-extrabold py-3.5 text-warm-fg tracking-wide uppercase">
               
               {/* Home */}
               <li 
                 onMouseEnter={() => setActiveNavDropdown('home')}
                 onMouseLeave={() => setActiveNavDropdown(null)}
-                className="relative cursor-pointer text-[#0B0B0D] border-b-2 border-[#f0c444] pb-0.5 flex items-center space-x-1"
+                className="relative cursor-pointer text-warm-fg border-b-2 border-[#f0c444] pb-0.5 flex items-center space-x-1"
               >
                 <span>Home</span>
                 <span className="text-[9px]">▼</span>
                 {activeNavDropdown === 'home' && (
-                  <div className="absolute top-full left-0 w-44 bg-warm-bg border border-gray-100 shadow-xl rounded-xl py-2 text-xs text-gray-700 font-semibold uppercase tracking-normal">
-                    <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Home 01 (Default)</a>
-                    <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Home 02 (Grocery)</a>
+                  <div className="absolute top-full left-0 w-44 bg-warm-bg border border-warm-border shadow-xl rounded-xl py-2 text-xs text-warm-fg font-semibold uppercase tracking-normal">
+                    <a href="#" className="block px-4 py-2 hover:bg-warm-surface hover:text-warm-fg">Home 01 (Default)</a>
+                    <a href="#" className="block px-4 py-2 hover:bg-warm-surface hover:text-warm-fg">Home 02 (Grocery)</a>
                     <a href="#" className="block px-4 py-2 hover:bg-[#FFF8E1] hover:text-[#0B0B0D]">Home 03 (Organic)</a>
                   </div>
                 )}
@@ -990,8 +990,8 @@ export default function FullZillyPreview(): React.JSX.Element {
           <div className="space-y-3">
             <h4 className="font-extrabold text-sm uppercase tracking-wider text-[#f0c444]">Sign Up Newsletter</h4>
             <p className="text-gray-400 text-[11px]">Get daily updates and special discounts delivered to your inbox.</p>
-            <div className="flex overflow-hidden rounded-lg">
-              <input type="email" placeholder="Your Email Address" className="px-3 py-2 text-gray-900 outline-none text-xs flex-1 bg-warm-bg" />
+            <div className="flex overflow-hidden rounded-lg border border-warm-border">
+              <input type="email" placeholder="Your Email Address" className="px-3 py-2 text-warm-fg placeholder:text-warm-muted outline-none text-xs flex-1 bg-warm-surface" />
               <button className="bg-[#f0c444] text-[#0B0B0D] px-4 font-bold hover:bg-[#e0b434] transition-colors cursor-pointer">Go</button>
             </div>
           </div>

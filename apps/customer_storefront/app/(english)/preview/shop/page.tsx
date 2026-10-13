@@ -228,15 +228,15 @@ const Sidebar = (): React.JSX.Element => (
 
 const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
   return (
-    <div className="group border border-gray-100 rounded-2xl p-5 bg-warm-bg hover:border-[#f0c444] hover:shadow-xl transition-all duration-300 relative flex flex-col h-full">
+    <div className="group border border-warm-border rounded-2xl p-5 bg-warm-bg hover:border-[#f0c444] hover:shadow-xl transition-all duration-300 relative flex flex-col h-full">
       {/* Category Label */}
-      <span className="text-[10px] uppercase font-bold text-gray-400 mb-2">{product.category}</span>
+      <span className="text-[10px] uppercase font-bold text-warm-muted mb-2">{product.category}</span>
       
       {/* Floating Actions (Visible on Hover) */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 z-10">
-        <button className="bg-warm-bg p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><Heart className="w-4 h-4" /></button>
-        <button className="bg-warm-bg p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><RefreshCw className="w-4 h-4" /></button>
-        <button className="bg-warm-bg p-2 rounded-full shadow-md text-gray-500 hover:text-[#0B0B0D] hover:bg-[#FFF8E1]"><Eye className="w-4 h-4" /></button>
+        <button className="bg-warm-surface p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-bg"><Heart className="w-4 h-4" /></button>
+        <button className="bg-warm-surface p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-bg"><RefreshCw className="w-4 h-4" /></button>
+        <button className="bg-warm-surface p-2 rounded-full shadow-md text-warm-muted hover:text-warm-fg hover:bg-warm-bg"><Eye className="w-4 h-4" /></button>
       </div>
 
       {/* Discount Tag */}
@@ -247,14 +247,14 @@ const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
       )}
 
       {/* Image Fallback */}
-      <div className="w-full h-48 flex items-center justify-center text-7xl bg-gray-50 rounded-xl mb-4 group-hover:scale-105 transition-transform duration-500">
+      <div className="w-full h-48 flex items-center justify-center text-7xl bg-warm-surface rounded-xl mb-4 group-hover:scale-105 transition-transform duration-500">
         {product.imageFallback}
       </div>
 
       {/* Weight/Size Options */}
       <div className="flex gap-2 mb-4 justify-center">
         {product.options.map((opt) => (
-          <span key={opt} className="text-[10px] text-gray-500 font-semibold border border-gray-200 rounded-full px-2.5 py-0.5 bg-gray-50">
+          <span key={opt} className="text-[10px] text-warm-muted font-semibold border border-warm-border rounded-full px-2.5 py-0.5 bg-warm-surface">
             {opt}
           </span>
         ))}
@@ -264,11 +264,11 @@ const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
       <div className="flex flex-col items-center gap-1 mb-2">
         <div className="flex items-center gap-2">
           {product.originalPrice && (
-            <span className="text-xs text-gray-400 line-through">
+            <span className="text-xs text-warm-muted line-through">
               BDT {product.originalPrice.toFixed(2)}
             </span>
           )}
-          <span className="text-base font-black text-[#0B0B0D]">
+          <span className="text-base font-black text-warm-fg">
             BDT {product.priceMin.toFixed(2)}
             {product.priceMax ? ` - BDT ${product.priceMax.toFixed(2)}` : ''}
           </span>
@@ -276,7 +276,7 @@ const ProductCard = ({ product }: { product: Product }): React.JSX.Element => {
       </div>
 
       {/* Title */}
-      <h3 className="text-xs text-gray-800 font-extrabold leading-snug text-center line-clamp-2 hover:text-[#0B0B0D] cursor-pointer mb-3 flex-1">
+      <h3 className="text-xs text-warm-fg font-extrabold leading-snug text-center line-clamp-2 hover:text-[#f0c444] cursor-pointer mb-3 flex-1">
         {product.title}
       </h3>
 
