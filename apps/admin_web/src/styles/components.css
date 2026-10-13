@@ -1710,11 +1710,27 @@ a.button-outline {
   }
 }
 
-/* Reduce motion for users who prefer it */
+/* Reduce motion for users who prefer it without suppressing state feedback. */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  .animate-spin {
+    animation: none !important;
+  }
+
+  @keyframes flash-success { 0%, 100% { border-color: transparent; } }
+  @keyframes highlight-brief { 0%, 100% { background-color: transparent; } }
+  @keyframes amount-flash { 0%, 100% { color: inherit; } }
+  @keyframes status-pop { 0%, 100% { transform: none; } }
+  @keyframes finance-tab-enter { from { opacity: 1; transform: none; } to { opacity: 1; transform: none; } }
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  [class*="transition"] {
+    transition-property: color, background-color, border-color, opacity !important;
     transition-duration: 0.01ms !important;
   }
 }
