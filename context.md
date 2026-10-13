@@ -5,4 +5,4 @@ Done: PR #446 merged; normalized dashes in slugify.ts (8 tests pass); added v_st
 Branch: feat/storefront-and-admin-fixes
 Health: main up to date, CI green, admin_web 0 warnings, 0 leaks
 Last Synced: 2026-10-13
-ctx: storefront-admin-optimizations | done: tests pass & builds clean | next: open PR & review CI
+ctx: storefront-admin-optimizations | done: PR #447 opened | next: CI green & review/merge PR #447
