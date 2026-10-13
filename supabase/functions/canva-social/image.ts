@@ -1,3 +1,5 @@
+import { assertImageDimensions } from './dimensions.ts'
+
 export async function catalogImageData(imageUrl: string, fetcher: typeof fetch = fetch) {
   const source = new URL(imageUrl)
   if (source.protocol !== 'https:' || source.hostname !== 'images.luckystore1947.com' ||
@@ -20,6 +22,10 @@ export async function catalogImageData(imageUrl: string, fetcher: typeof fetch =
     chunks.push(value)
   }
   if (!length) throw new Error('IMAGE_UNAVAILABLE')
+  const bytes = new Uint8Array(length)
+  let offset = 0
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length }
+  assertImageDimensions(bytes, mimeType!)
   let binary = ''
   for (const chunk of chunks) for (let i = 0; i < chunk.length; i += 8192) {
     binary += String.fromCharCode(...chunk.subarray(i, i + 8192))

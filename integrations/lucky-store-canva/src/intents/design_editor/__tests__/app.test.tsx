@@ -72,9 +72,11 @@ describe("Lucky Store product panel", () => {
     expect((await screen.findByRole("alert")).textContent).toContain(
       "Not authorized",
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Insert selected product" }),
-    );
+    expect(
+      screen
+        .getByRole("button", { name: "Insert selected product" })
+        .getAttribute("aria-disabled"),
+    ).toBe("true");
     expect(addElementAtPoint).not.toHaveBeenCalled();
   });
 });

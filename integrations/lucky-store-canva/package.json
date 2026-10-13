@@ -13,7 +13,7 @@
     "lint:types": "tsc",
     "start": "npx @canva/cli apps start",
     "start:preview": "npx @canva/cli apps start --preview",
-    "test": "jest --no-cache --passWithNoTests",
+    "test": "node --test scripts/validate-backend.test.mjs && jest --no-cache --passWithNoTests",
     "test:watch": "jest --watchAll",
     "test:update": "npm run test -- -u",
     "generate:posts": "tsx ./scripts/generate-posts.ts",
@@ -65,7 +65,7 @@
     "typescript": "5.9.2"
   },
   "engines": {
-    "node": "^22 || ^24"
+    "node": "^22.9.0 || ^24"
   },
   "canvaCliMetadata": {
     "name": "@canva/cli",

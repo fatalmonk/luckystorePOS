@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify } from 'https://esm.sh/jose@5.10.0'
+import { verifyCanvaToken, verificationFailure, type CanvaClaims } from './auth.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { catalogImageData } from './image.ts'
@@ -19,21 +19,10 @@ const headers = {
   'Content-Type': 'application/json',
 }
 
-type CanvaClaims = { aud?: string; userId?: string; brandId?: string }
 type ProductRow = { id: string; name: string; price: number; image_url: string | null; sku: string | null }
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers })
-}
-
-async function verifyCanvaToken(token: string): Promise<CanvaClaims> {
-  const appId = Deno.env.get('CANVA_APP_ID')
-  if (!appId) throw new Error('Canva app is not configured')
-  const jwks = createRemoteJWKSet(new URL(`https://api.canva.com/rest/v1/apps/${encodeURIComponent(appId)}/jwks`))
-  const { payload } = await jwtVerify(token, jwks, { audience: appId })
-  const claims = payload as CanvaClaims
-  if (!claims.userId || !claims.brandId) throw new Error('Canva identity is incomplete')
-  return claims
 }
 
 serve(async (req) => {
@@ -46,9 +35,10 @@ serve(async (req) => {
     if (!authorization?.startsWith('Bearer ')) return json({ error: 'Canva bearer token required' }, 401)
     let claims: CanvaClaims
     try {
-      claims = await verifyCanvaToken(authorization.slice(7))
-    } catch {
-      return json({ error: 'Invalid Canva bearer token' }, 401)
+      claims = await verifyCanvaToken(authorization.slice(7), Deno.env.get('CANVA_APP_ID'))
+    } catch (error) {
+      const failure = verificationFailure(error)
+      return json({ error: failure.message }, failure.status)
     }
 
     const url = Deno.env.get('SUPABASE_URL')

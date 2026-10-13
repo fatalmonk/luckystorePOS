@@ -1,10 +1,19 @@
+import process from "node:process";
+
 const configured = process.env.CANVA_BACKEND_HOST;
 try {
   const url = new URL(configured ?? "");
-  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) {
+  if (
+    url.protocol !== "https:" ||
+    url.username ||
+    url.password ||
+    url.pathname !== "/" ||
+    url.href.includes("?") ||
+    url.href.includes("#")
+  ) {
     throw new Error();
   }
 } catch {
-  console.error("Set CANVA_BACKEND_HOST to the intended HTTPS backend before building.");
+  process.stderr.write("Set CANVA_BACKEND_HOST to the intended root HTTPS backend URL before building.\n");
   process.exit(1);
 }

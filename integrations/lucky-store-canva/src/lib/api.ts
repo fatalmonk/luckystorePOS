@@ -16,6 +16,7 @@ export async function canvaApiRequest<T>(
     baseUrl.protocol !== "https:" ||
     baseUrl.username ||
     baseUrl.password ||
+    baseUrl.pathname !== "/" ||
     baseUrl.search ||
     baseUrl.hash ||
     baseUrl.href.includes("?") ||

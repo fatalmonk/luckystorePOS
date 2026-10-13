@@ -26,3 +26,11 @@ Identity table has RLS enabled and no anon/authenticated read grants. Catalog RP
 Runtime dependency audit: zero advisories. Development dependencies retain 50 advisories (37 high, 13 moderate); both previously critical advisories were patched. Developer-tool risk remains to be assessed before release.
 
 Testing-instructions fields, video link and login fields are populated. Credentials were not printed or copied. Their actual login validity, video's content/accessibility and whether the reviewer Canva account matches the authorized test mapping remain unverified. Only the current signed-in account has passed live acceptance. Portal submission was not performed.
+
+## PR #453 review follow-up
+
+Confirmed and corrected six findings: verifier/configuration outages were masked as 401; the denied-catalog UI test asserted only an inert click; README preview setup enabled a future publisher intent; the build guard allowed paths/empty query or fragment delimiters; the Node engine range admitted versions before the env-file flag existed; and compressed image limits did not cap decoded pixel allocation.
+
+Verifier failures now distinguish invalid tokens (401), absent app configuration (500), and transient/unexpected JWKS failures (503), with safe response messages. Backend image headers are checked before returning data URLs, capped at 4096 pixels per axis and four million total pixels; unsupported, mismatched or animated PNG/WebP containers are denied. Original supported image bytes still form the Canva asset, while the browser creates its PNG thumbnail. There is no central server feature-flag layer or duplicate publisher flag in this repository; the existing server-only publisher switch remains fail-closed.
+
+The build and runtime URL guards require a root HTTPS URL and reject credentials and query/fragment delimiters. Node 22 support now begins at 22.9.0. Validation passed: 11 build-guard cases, two UI tests, ten backend tests, lint, TypeScript, formatting, build, diff checks and secret scanning. Three real catalog WebP images passed dimension parsing (480x234, 385x480, 225x225). This follow-up is a source/PR change; it has not yet been deployed to the disposable backend or uploaded to Canva, so the live evidence above continues to describe version 4.
