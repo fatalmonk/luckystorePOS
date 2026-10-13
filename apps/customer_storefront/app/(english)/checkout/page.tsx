@@ -708,7 +708,7 @@ function CheckoutContent() {
                                 onChange={(e) => updateField('trxId', e.target.value)}
                                 placeholder="e.g. 9A1B2C3D4E"
                                 maxLength={100}
-                                className="mt-3 bg-warm-bg"
+                                className="mt-3 bg-warm-bg !"
                                 aria-invalid={!!errors.trxId}
                                 aria-describedby={errors.trxId ? 'checkout-trxid-error' : undefined}
                                 data-testid="checkout-bkash-trxid"

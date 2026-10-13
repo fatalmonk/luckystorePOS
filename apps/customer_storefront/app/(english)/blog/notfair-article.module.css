@@ -37,6 +37,7 @@
 }
 .articleContent blockquote {
   padding-left: 1rem;
+  border-left: 3px solid var(--notfair-article-accent, currentColor);
 }
 .articleContent img { max-width: 100%; height: auto; border-radius: var(--radius-md); }
 .articleContent figcaption { margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-muted); }

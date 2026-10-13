@@ -24,11 +24,13 @@ export function assertImageDimensions(bytes: Uint8Array, mime: string) {
   } else if (mime === 'image/jpeg') {
     if (bytes.length < 4 || bytes[0] !== 255 || bytes[1] !== 216) fail()
     let offset = 2
+    let hasEOI = false
     while (offset < bytes.length) {
       if (bytes[offset++] !== 255) fail()
       while (bytes[offset] === 255) offset++
       const marker = bytes[offset++]
-      if (marker === 217 || marker === 218) break
+      if (marker === 218) { hasEOI = true; break }
+      if (marker === 217) break
       if (marker === 1 || (marker >= 208 && marker <= 215)) continue
       if (offset + 2 > bytes.length) fail()
       const size = view.getUint16(offset)
@@ -40,6 +42,7 @@ export function assertImageDimensions(bytes: Uint8Array, mime: string) {
       }
       offset += size
     }
+    if (!hasEOI) fail()
   } else if (mime === 'image/webp') {
     if (bytes.length < 20 || ascii(0, 4) !== 'RIFF' || ascii(8, 4) !== 'WEBP' ||
       view.getUint32(4, true) + 8 !== bytes.length) fail()

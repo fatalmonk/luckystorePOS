@@ -38,7 +38,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
   return (
     <MarketPanel aria-labelledby="campaign-hero-title" tone="paper" className="campaign-hero relative w-full border-0 bg-transparent shadow-none">
       <div className="flex w-full flex-col gap-6">
-        <div className="campaign-feature relative isolate overflow-hidden rounded-2xl bg-[#ffedb4] text-[#0b2517]">
+        <div className="campaign-feature relative isolate overflow-hidden rounded-2xl bg-[#ffedb4] text-inverse">
           <div role="img" aria-label={dict.campaign.basketAlt} className="absolute inset-0 -z-20 hidden sm:block">
             <Image
               src="/images/hero-reference.webp"
@@ -58,7 +58,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
                 <span aria-hidden="true">·</span>
                 Lucky Store
               </p>
-              <h1 id="campaign-hero-title" className="campaign-display text-[#0b2517] text-balance text-[2rem] font-black leading-[1.03] tracking-tight sm:text-[2.5rem] lg:text-[3.25rem]">
+              <h1 id="campaign-hero-title" className="campaign-display text-inverse text-balance text-[2rem] font-black leading-[1.03] tracking-tight sm:text-[2.5rem] lg:text-[3.25rem]">
                 {dict.campaign.headline}
               </h1>
               <p className="mt-5 max-w-lg text-sm leading-6 sm:text-base sm:leading-7">
@@ -79,7 +79,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
               <Link
                 href={withLocale('/delivery', locale)}
                 data-cro="hero-delivery-eligibility"
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-warm-surface/95 px-5 text-sm font-semibold text-[#0b2517] transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003d24]"
+                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-warm-surface/95 px-5 text-sm font-semibold text-inverse transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003d24]"
               >
                 <MapPin size={17} aria-hidden="true" />
                 {dict.campaign.deliveryCta}

@@ -206,12 +206,12 @@ export default function SignupPage() {
 
           {/* Value Props Strip */}
           <div className="relative z-10 grid grid-cols-2 gap-4 my-8">
-            <div className="rounded-2xl border border-white/10 bg-warm-surface p-4 backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
               <Truck weight="bold" size={24} className="text-[#f0c444] mb-2" />
               <div className="text-sm font-bold text-white">1 km Delivery Radius</div>
               <div className="text-xs text-white/60 mt-0.5">Rapid delivery from Chawkbazar hub</div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-warm-surface p-4 backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
               <ShieldCheck weight="bold" size={24} className="text-[#f0c444] mb-2" />
               <div className="text-sm font-bold text-white">Pay After Inspection</div>
               <div className="text-xs text-white/60 mt-0.5">Cash on delivery or bKash at doorstep</div>

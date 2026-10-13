@@ -126,7 +126,7 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Account Details */}
-          <div className="md:col-span-1 bg-warm-bg border border-warm-border rounded-[24px] p-6 shadow-sm h-fit">
+          <div className="md:col-span-1 bg-warm-surface border border-warm-border rounded-[24px] p-6 shadow-sm h-fit">
             <div className="flex flex-col items-center text-center mb-6">
               <div className="w-20 h-20 bg-warm-accent text-warm-fg font-bold rounded-full flex items-center justify-center text-2xl mb-3 shadow-inner">
                 {user.user_metadata?.full_name?.[0]?.toUpperCase() || 'U'}
@@ -188,7 +188,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Order History */}
-          <div id="orders" className="md:col-span-2 scroll-mt-24 bg-warm-bg border border-warm-border rounded-[24px] p-6 shadow-sm">
+          <div id="orders" className="md:col-span-2 scroll-mt-24 bg-warm-surface border border-warm-border rounded-[24px] p-6 shadow-sm">
             <h2 className="text-lg font-bold text-warm-fg mb-4 flex items-center gap-2">
               <Package size={20} weight="bold" className="text-warm-muted" />
               Order History

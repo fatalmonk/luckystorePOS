@@ -1013,7 +1013,7 @@ export default function FullZillyPreview(): React.JSX.Element {
       {/* ----------------- FLOATING ELEMENTS ----------------- */}
       
       {/* Real-time Purchase Toast */}
-      <div className="hidden sm:flex fixed bottom-6 left-6 bg-warm-bg/95 backdrop-blur-sm p-4 rounded-2xl shadow-2xl items-start space-x-4 max-w-[320px] z-50 border border-gray-100 animate-fade-in-up">
+      <div className="hidden sm:flex fixed bottom-6 left-6 bg-warm-surface/95 backdrop-blur-sm p-4 rounded-2xl shadow-2xl items-start space-x-4 max-w-[320px] z-50 border border-gray-100 animate-fade-in-up">
         <div className="w-12 h-12 md:w-14 md:h-14 bg-[#FFF8E1] rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-[#f0c444]/30 text-2xl md:text-3xl">
           🥭
         </div>
