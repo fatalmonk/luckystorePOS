@@ -9,7 +9,7 @@ SELECT
   image_url,
   category_id,
   is_active,
-  'https://luckystore1947.com/product/' ||
+  'https://www.luckystore1947.com/product/' ||
   substring(
     regexp_replace(
       regexp_replace(
@@ -20,7 +20,6 @@ SELECT
         '\s+', '-', 'g'
       ),
       '-{2,}', '-', 'g'
-    )
     ) from 1 for 60
   ) || '--' ||
   substring(replace(id::text, '-', '') from 1 for 8) AS storefront_url
@@ -28,3 +27,6 @@ FROM public.items;
 
 COMMENT ON VIEW public.v_storefront_products IS
   'Storefront products view providing direct canonical product URLs matching the customer storefront slugify algorithm.';
+
+REVOKE ALL ON public.v_storefront_products FROM PUBLIC;
+GRANT SELECT ON public.v_storefront_products TO anon, authenticated, service_role;
