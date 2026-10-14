@@ -30,7 +30,7 @@ Use this template for every PR opened by the SEO Autopilot.
 ### Verification
 - [ ] Schema validates at https://validator.schema.org
 - [ ] robots.txt still passes AI bot check
-- [ ] Sitemap URL count unchanged (run: `curl -s https://www.luckystore1947.com/sitemap.xml | grep -c '<loc>'`)
+- [ ] Sitemap URL count matches intended additions and removals (run: `curl -s https://www.luckystore1947.com/sitemap.xml | grep -o '<loc>' | wc -l`)
 - [ ] No TypeScript errors (`cd apps/customer_storefront && npm run typecheck`)
 - [ ] `seo/state.md` updated with run metrics
 
