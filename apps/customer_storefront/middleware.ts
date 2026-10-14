@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
 import { getCanonicalCategorySlug, isCategoryGroup, normalizeCategorySlug } from './app/lib/types';
-import { isBareUuid, toProductSlug, uuidPrefixRange } from './app/lib/products/slugify';
+import { isBareUuid, normalizeProductSlug, toProductSlug, uuidPrefixRange } from './app/lib/products/slugify';
 import { BUYING_GUIDES } from './app/lib/buying-guides/registry';
 import { isPublicGuideSlug } from './app/lib/buying-guides/publication';
 
@@ -25,6 +25,10 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
     authorization: `Bearer ${supabaseAnonKey}`,
   };
 
+  // Bound this extra pre-session lookup so named canonical routes can fail open.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1500);
+
   try {
     const itemUrl = new URL('/rest/v1/items', supabaseUrl);
     itemUrl.searchParams.set('select', 'id,name');
@@ -45,6 +49,7 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
     const itemResponse = await fetch(itemUrl, {
       headers: restHeaders,
       cache: 'no-store',
+      signal: controller.signal,
     });
 
     if (!itemResponse.ok) return null;
@@ -71,6 +76,8 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
   } catch (error) {
     console.error('Failed to resolve product canonical redirect', { identifier, error });
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -161,7 +168,7 @@ export async function middleware(request: NextRequest) {
 
     const isLegacyPrefixSlug = /^--+[0-9a-f]{8}$/i.test(decodedProductSlug);
     const isUuidAlias = isBareUuid(decodedProductSlug);
-    const namedPrefix = decodedProductSlug.match(/^.+--([0-9a-f]{8})$/i)?.[1];
+    const namedPrefix = normalizeProductSlug(rawProductSlug).match(/^.+--([0-9a-f]{8})$/i)?.[1];
     if (isUuidAlias || isLegacyPrefixSlug || namedPrefix) {
       const identifier = isUuidAlias
         ? decodedProductSlug.toLowerCase()

@@ -132,7 +132,38 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
         new Response(JSON.stringify([mockProduct]), { status: 200 }));
     });
-    afterEach(() => { vi.mocked(fetch).mockRestore(); vi.unstubAllEnvs(); });
+    afterEach(() => { vi.mocked(fetch).mockRestore(); vi.unstubAllEnvs(); vi.useRealTimers(); });
+
+    it.each(['%E2%80%93', '%E2%80%94', '%E2%88%92'])('redirects encoded supported separator %s before session for both locales', async (separator) => {
+      const { middleware } = await import('../../../middleware');
+      for (const locale of ['', 'bn/']) {
+        const response = await middleware(new NextRequest(`https://www.luckystore1947.com/${locale}product/old-name${separator}029b62d8?ref=smart&x=1&x=2`));
+        expect(response.status).toBe(308);
+        expect(response.headers.get('location')).toBe(`https://www.luckystore1947.com/${locale}product/radhuni-holud-gura-100gm--029b62d8?ref=smart&x=1&x=2`);
+      }
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['radhuni-holud-gura-100gm--029b62d8', 200],
+      ['--029b62d8', 404],
+    ])('aborts stalled lookup for %s and preserves failure semantics', async (slug, expectedStatus) => {
+      vi.useFakeTimers();
+      let lookupSignal: AbortSignal | undefined;
+      vi.mocked(fetch).mockImplementation((_input, init) => new Promise((_resolve, reject) => {
+        lookupSignal = init?.signal ?? undefined;
+        lookupSignal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+      }));
+      const { middleware } = await import('../../../middleware');
+      const pending = middleware(new NextRequest(`https://www.luckystore1947.com/product/${slug}`));
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(lookupSignal?.aborted).toBe(true);
+      const response = await pending;
+      expect(response.status).toBe(expectedStatus);
+      expect(response.headers.get('location')).toBeNull();
+      expect(mockUpdateSession).toHaveBeenCalledTimes(expectedStatus === 200 ? 1 : 0);
+      expect(vi.getTimerCount()).toBe(0);
+    });
 
     it.each([
       ['https://luckystore1947.com', '', 'https://www.luckystore1947.com'],
