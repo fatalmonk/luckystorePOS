@@ -1,0 +1,4 @@
+query,intent,monthly_volume,difficulty,target_url,status,current_position,last_checked
+online grocery delivery Chattogram,transactional,,,/,planned,,
+grocery delivery Chawkbazar,transactional,,,/delivery,planned,,
+Lucky Store 1947 Chattogram,navigational,,,/,planned,,
