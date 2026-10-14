@@ -40,6 +40,7 @@ jobs:
           fi
 
       - name: Preflight: reject overlapping autopilot PR
+        id: existing_pr
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -76,8 +77,9 @@ jobs:
 
       - name: Reject unsafe or unsupported changes
         run: |
-          python3 scripts/seo/validate_autopilot_changes.py --base HEAD
           rm -f seo/autopilot-input.json
+          python3 scripts/seo/validate_autopilot_changes.py --base HEAD
+          if [ -n "$(git status --porcelain)" ]; then echo 'changed=true' >> "$GITHUB_OUTPUT"; fi
 
       - name: Verify storefront changes
         working-directory: apps/customer_storefront
@@ -110,9 +112,6 @@ jobs:
           add-paths: |
             seo/**
             apps/customer_storefront/**
-          labels: |
-            seo
-            autopilot
 
       - name: Report result
         if: always()
