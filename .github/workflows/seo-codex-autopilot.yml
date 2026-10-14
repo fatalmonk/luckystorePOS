@@ -32,10 +32,10 @@ jobs:
 
       - name: Preflight: configured API key
         env:
-          CODEX_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CODEX_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           if [ -z "$CODEX_KEY" ]; then
-            echo "::error::Missing OPENAI_API_KEY. Configure the seo-autopilot environment secret."
+            echo "::error::Missing OPENROUTER_API_KEY. Configure the seo-autopilot environment secret."
             exit 1
           fi
 
@@ -47,10 +47,11 @@ jobs:
           count=$(gh pr list --base main --state open --json headRefName --jq '[.[] | select(.headRefName == "seo/codex-autopilot")] | length')
           if [ "$count" -gt 0 ]; then
             echo "An existing SEO Codex PR awaits review; do not overwrite it."
-            exit 0
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Fetch latest verified technical audit
+        if: steps.existing_pr.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -66,9 +67,13 @@ jobs:
           fi
 
       - name: Run Codex in restricted workspace
+        if: steps.existing_pr.outputs.skip != 'true'
         uses: openai/codex-action@v1
         with:
-          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          openai-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          responses-api-endpoint: https://openrouter.ai/api/v1/responses
+          model: ${{ vars.OPENROUTER_CODEX_MODEL || 'openai/gpt-5.6-sol' }}
+          effort: medium
           permission-profile: ":workspace"
           safety-strategy: drop-sudo
           allow-bots: true
@@ -76,12 +81,15 @@ jobs:
           output-file: /tmp/seo-autopilot-evidence/codex-summary.txt
 
       - name: Reject unsafe or unsupported changes
+        if: steps.existing_pr.outputs.skip != 'true'
+        id: guard
         run: |
           rm -f seo/autopilot-input.json
           python3 scripts/seo/validate_autopilot_changes.py --base HEAD
           if [ -n "$(git status --porcelain)" ]; then echo 'changed=true' >> "$GITHUB_OUTPUT"; fi
 
       - name: Verify storefront changes
+        if: steps.existing_pr.outputs.skip != 'true' && steps.guard.outputs.changed == 'true'
         working-directory: apps/customer_storefront
         run: |
           npm ci --ignore-scripts
@@ -92,6 +100,7 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
 
       - name: Create draft review PR (never merge)
+        if: steps.existing_pr.outputs.skip != 'true' && steps.guard.outputs.changed == 'true'
         id: pr
         uses: peter-evans/create-pull-request@v8
         with:
