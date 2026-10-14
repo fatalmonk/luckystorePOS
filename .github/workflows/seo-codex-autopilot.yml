@@ -92,12 +92,21 @@ jobs:
         if: steps.existing_pr.outputs.skip != 'true' && steps.guard.outputs.changed == 'true'
         working-directory: apps/customer_storefront
         run: |
+          for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NOTFAIR_SEO_API_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required storefront build configuration: $name"
+              exit 1
+            fi
+          done
           npm ci --ignore-scripts
           npm run typecheck
           npm run test -- --run
           npm run build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NOTFAIR_SEO_API_KEY: ${{ secrets.NOTFAIR_SEO_API_KEY }}
 
       - name: Create draft review PR (never merge)
         if: steps.existing_pr.outputs.skip != 'true' && steps.guard.outputs.changed == 'true'
