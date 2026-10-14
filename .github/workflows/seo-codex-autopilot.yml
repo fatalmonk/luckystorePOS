@@ -16,17 +16,19 @@ jobs:
   propose:
     if: github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     environment: seo-autopilot
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      pull-requests: read
       actions: read
+    outputs:
+      changed: ${{ steps.guard.outputs.changed }}
     steps:
       - name: Checkout main without credentials
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
 
@@ -83,54 +85,194 @@ jobs:
       - name: Reject unsafe or unsupported changes
         if: steps.existing_pr.outputs.skip != 'true'
         id: guard
+        env:
+          BASE_SHA: ${{ github.sha }}
         run: |
           rm -f seo/autopilot-input.json
-          python3 scripts/seo/validate_autopilot_changes.py --base HEAD
-          if [ -n "$(git status --porcelain)" ]; then echo 'changed=true' >> "$GITHUB_OUTPUT"; fi
+          git show "$BASE_SHA:scripts/seo/validate_autopilot_changes.py" > /tmp/seo-guard.py
+          python3 -I /tmp/seo-guard.py --base "$BASE_SHA"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -- seo/ apps/customer_storefront/app/
+            git diff --cached --no-ext-diff --no-textconv --binary "$BASE_SHA" > /tmp/seo-autopilot-evidence/proposal.patch
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Verify storefront changes
-        if: steps.existing_pr.outputs.skip != 'true' && steps.guard.outputs.changed == 'true'
-        working-directory: apps/customer_storefront
+      - uses: actions/upload-artifact@v4
+        if: steps.guard.outputs.changed == 'true'
+        with:
+          name: seo-proposal
+          path: /tmp/seo-autopilot-evidence/proposal.patch
+          if-no-files-found: error
+          retention-days: 7
+
+  evidence:
+    needs: propose
+    if: needs.propose.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: seo-autopilot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Capture published content on trusted runner
+        env:
+          NOTFAIR_SEO_API_KEY: ${{ secrets.NOTFAIR_SEO_API_KEY }}
+        run: python3 scripts/seo/notfair_snapshot.py --output /tmp/notfair-snapshot.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seo-content-snapshot
+          path: /tmp/notfair-snapshot.json
+          if-no-files-found: error
+          retention-days: 1
+      - uses: actions/download-artifact@v4
+        with:
+          name: seo-proposal
+          path: /tmp/seo-proposal
+      - name: Independently validate proposal without executing it
+        env:
+          BASE_SHA: ${{ github.sha }}
         run: |
-          for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NOTFAIR_SEO_API_KEY; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Missing required storefront build configuration: $name"
-              exit 1
-            fi
-          done
+          test "$(wc -c < /tmp/seo-proposal/proposal.patch)" -le 131072
+          cp -R scripts/seo "$RUNNER_TEMP/seo-trusted"
+          python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --patch /tmp/seo-proposal/proposal.patch
+          git apply --index /tmp/seo-proposal/proposal.patch
+          python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --base "$BASE_SHA"
+      - name: Jev advisory review through OpenRouter
+        env:
+          BASE_SHA: ${{ github.sha }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python3 "$RUNNER_TEMP/seo-trusted/jev_review.py" --base "$BASE_SHA" --output /tmp/jev-review.json --markdown /tmp/jev-review.md
+          cat /tmp/jev-review.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seo-jev-review
+          path: /tmp/jev-review.*
+          if-no-files-found: error
+          retention-days: 7
+
+  verify:
+    needs: [propose, evidence]
+    if: needs.propose.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # No environment or injected API credentials on the execution runner.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: seo-proposal
+          path: /tmp/seo-proposal
+      - uses: actions/download-artifact@v4
+        with:
+          name: seo-content-snapshot
+          path: /tmp/seo-inputs
+      - name: Independently validate proposal
+        env:
+          BASE_SHA: ${{ github.sha }}
+        run: |
+          test "$(wc -c < /tmp/seo-proposal/proposal.patch)" -le 131072
+          cp -R scripts/seo "$RUNNER_TEMP/seo-trusted"
+          python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --patch /tmp/seo-proposal/proposal.patch
+          git apply --index /tmp/seo-proposal/proposal.patch
+          python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --base "$BASE_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify storefront using credential-free build inputs
+        env:
+          BASE_SHA: ${{ github.sha }}
+          NEXT_TELEMETRY_DISABLED: '1'
+          NEXT_PUBLIC_SUPABASE_URL: https://127.0.0.1:9443
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: seo-verification-fixture
+          NOTFAIR_SEO_API_URL: https://127.0.0.1:9443/api/seo/content
+          NOTFAIR_SEO_API_KEY: seo-verification-fixture
+          NODE_EXTRA_CA_CERTS: /tmp/seo-inputs/cert.pem
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/seo-inputs/key.pem -out /tmp/seo-inputs/cert.pem -days 1 -subj '/CN=127.0.0.1' -addext 'subjectAltName=IP:127.0.0.1' 2>/dev/null
+          python3 "$RUNNER_TEMP/seo-trusted/snapshot_server.py" --snapshot /tmp/seo-inputs/notfair-snapshot.json --cert /tmp/seo-inputs/cert.pem --key /tmp/seo-inputs/key.pem > /tmp/seo-inputs/server.log 2>&1 &
+          snapshot_pid=$!
+          trap 'kill "$snapshot_pid" "${next_pid:-}" 2>/dev/null || true' EXIT
+          cd apps/customer_storefront
           npm ci --ignore-scripts
+          npx --no-install eslint .
           npm run typecheck
           npm run test -- --run
           npm run build
-        env:
-          NEXT_TELEMETRY_DISABLED: '1'
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NOTFAIR_SEO_API_KEY: ${{ secrets.NOTFAIR_SEO_API_KEY }}
+          npm run start -- --hostname 127.0.0.1 > /tmp/seo-inputs/next.log 2>&1 &
+          next_pid=$!
+          cd ../..
+          python3 "$RUNNER_TEMP/seo-trusted/wait_for_storefront.py"
+          python3 "$RUNNER_TEMP/seo-trusted/rendered_review.py" --base "$BASE_SHA" --output /tmp/seo-inputs/rendered-review.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seo-rendered-review
+          path: /tmp/seo-inputs/rendered-review.json
+          if-no-files-found: warn
+          retention-days: 7
 
+  publish:
+    needs: [propose, evidence, verify]
+    if: needs.propose.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Reject stale base or overlapping proposal
+        env:
+          BASE_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          count=$(gh pr list --base main --state open --json headRefName --jq '[.[] | select(.headRefName == "seo/codex-autopilot")] | length')
+          test "$count" -eq 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: seo-proposal
+          path: /tmp/seo-proposal
+      - uses: actions/download-artifact@v4
+        with:
+          name: seo-jev-review
+          path: /tmp/seo-review
+      - name: Revalidate exact proposal and prepare review body
+        env:
+          BASE_SHA: ${{ github.sha }}
+        run: |
+          test "$(wc -c < /tmp/seo-proposal/proposal.patch)" -le 131072
+          cp -R scripts/seo "$RUNNER_TEMP/seo-trusted"
+          python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --patch /tmp/seo-proposal/proposal.patch
+          git apply --index /tmp/seo-proposal/proposal.patch
+          python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --base "$BASE_SHA"
+          cp /tmp/seo-review/jev-review.md /tmp/seo-pr-body.md
+          printf '\nChecks: deterministic diff policy, ESLint, typecheck, tests, production build and rendered SEO checks.\n\nBuild used published NotFair snapshots and local catalog fixtures. Production data, indexing and dynamic-route coverage remain unverified.\n\nNo automatic merge or deployment. PRs created with GITHUB_TOKEN may not trigger other PR workflows.\n' >> /tmp/seo-pr-body.md
       - name: Create draft review PR (never merge)
-        if: steps.existing_pr.outputs.skip != 'true' && steps.guard.outputs.changed == 'true'
         id: pr
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.SEO_PR_TOKEN || github.token }}
+          token: ${{ github.token }}
           branch: seo/codex-autopilot
           base: main
           delete-branch: false
           draft: true
           commit-message: 'seo(autopilot): propose verified daily improvement'
           title: 'seo(autopilot): Codex daily verified improvement'
-          body: |
-            ## Automated SEO proposal
-            Codex used `seo/codex-daily-prompt.md` and the most recent available technical report.
-            Review source evidence and verify rendered output before merging.
-            Checks: change policy, storefront typecheck, tests and build.
-            No automatic merge or deployment is configured.
-            Note: if created with GITHUB_TOKEN, GitHub may not trigger other PR workflows automatically.
+          body-path: /tmp/seo-pr-body.md
           add-paths: |
             seo/**
-            apps/customer_storefront/**
-
+            apps/customer_storefront/app/**
       - name: Report result
         if: always()
         env:
