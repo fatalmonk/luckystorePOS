@@ -207,12 +207,8 @@ describe('sitemap', () => {
     expect(deliveryEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/delivery');
     expect(deliveryBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/delivery');
 
-    expect(urls).toContain('https://www.luckystore1947.com/fortune-cookies-near-me');
-    expect(urls).toContain('https://www.luckystore1947.com/bn/fortune-cookies-near-me');
-    const fortuneEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/fortune-cookies-near-me');
-    const fortuneBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/fortune-cookies-near-me');
-    expect(fortuneEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/fortune-cookies-near-me');
-    expect(fortuneBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/fortune-cookies-near-me');
+    expect(urls).not.toContain('https://www.luckystore1947.com/fortune-cookies-near-me');
+    expect(urls).not.toContain('https://www.luckystore1947.com/bn/fortune-cookies-near-me');
 
     // Unpaired static pages: no fabricated /bn counterparts
     expect(urls).toContain('https://www.luckystore1947.com/contact');

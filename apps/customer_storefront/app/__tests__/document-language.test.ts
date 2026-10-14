@@ -24,6 +24,12 @@ import EnglishRootLayout from '../(english)/layout';
 import BengaliRootLayout from '../(bengali)/layout';
 
 describe('RootLayout document language', () => {
+  it('does not claim fortune cookies as store knowledge or an offering', () => {
+    const markup = renderToStaticMarkup(EnglishRootLayout({ children: React.createElement('main') }));
+    const scripts = [...markup.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map(match => JSON.parse(match[1]));
+    expect(scripts.length).toBeGreaterThan(0);
+    expect(JSON.stringify(scripts)).not.toMatch(/fortune cookies/i);
+  });
   it('server-renders the English root layout with lang=en', () => {
     const markup = renderToStaticMarkup(EnglishRootLayout({ children: React.createElement('main') }));
     expect(markup).toContain('<html lang="en"');

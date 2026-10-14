@@ -180,7 +180,6 @@ export default function RootLayoutDocument({
                 'Edible oil and pure ghee',
                 'Ispahani and packaged tea blends',
                 'Aarong dairy and milk',
-                'Fortune cookies',
               ],
               hasMap: 'https://maps.google.com/?cid=1342606622879549324',
               areaServed: {

@@ -40,13 +40,6 @@ const dynamicIndexRoutes = [
 // Only routes with verified page implementations emit localized counterparts and alternates.
 const staticRoutes = [
   {
-    enPath: '/fortune-cookies-near-me',
-    bnPath: '/bn/fortune-cookies-near-me',
-    priority: 0.8,
-    changefreq: 'weekly',
-    lastMod: '2026-09-25T00:00:00Z',
-  },
-  {
     enPath: '/delivery',
     bnPath: '/bn/delivery',
     priority: 0.8,
