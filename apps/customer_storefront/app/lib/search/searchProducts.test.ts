@@ -2,6 +2,28 @@ import { describe, it, expect, vi } from 'vitest';
 import { searchStorefrontProducts } from './searchProducts';
 
 describe('searchStorefrontProducts', () => {
+  it('fetches subsequent RPC pages rather than truncating the public catalogue at 1000', async () => {
+    const rows = Array.from({ length: 1001 }, (_, index) => ({
+      item_id: `item-${index}`, name: `Product ${index}`, price: 10, qty_on_hand: 2,
+    }));
+    const rpc = vi.fn((_name: string, params: { p_offset: number; p_limit: number }) =>
+      Promise.resolve({ data: rows.slice(params.p_offset, params.p_offset + params.p_limit), error: null }));
+    const { products, hasMore } = await searchStorefrontProducts({
+      limit: 100, page: 10, supabaseClient: {
+        rpc,
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: [], error: null }),
+        })),
+      } as any,
+    });
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(products.map(p => p.id)).toEqual(['item-1000']);
+    expect(hasMore).toBe(false);
+  });
+
   it('matches published Bengali translations prior to pagination and merges items with correct mrp and stock mapping', async () => {
     const mockTranslations = [
       {

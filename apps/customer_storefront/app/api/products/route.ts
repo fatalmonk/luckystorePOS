@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProductRepository, createProductId } from '../../lib/products/index';
 import { supabase } from '../../lib/supabase';
+import { toProductSlug } from '../../lib/products/slugify';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -33,7 +34,13 @@ export async function GET(req: NextRequest) {
     }
 
     const { products, hasMore } = await repo.search({ query, page, limit });
-    return NextResponse.json({ products, hasMore, offset, limit });
+    return NextResponse.json({
+      products: products.map(product => ({
+        ...product,
+        productPath: `/product/${toProductSlug(product.name, product.id)}`,
+      })),
+      hasMore, offset, limit,
+    });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });
   }
