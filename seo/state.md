@@ -13,8 +13,8 @@
 ```
 phase:          baseline-established
 last_run:       2026-10-14
-last_pr:        none (init run)
-open_prs:       none
+last_pr:        #460 (merged); manual review PR pending
+open_prs:       manual-run state PR (review required)
 next_run:       2026-10-15
 ```
 
@@ -145,3 +145,16 @@ competitor_signals:
 |------|-----|-----|------------|
 | 2026-10-14 | init | #458 | Baseline recorded, seo/ initialized |
 | 2026-10-14 | review | #460 | Reconciled implementation queue with runbook; removed FAQ markup-only priority and unsupported zero metrics |
+| 2026-10-14 | manual run | pending PR | Verified repository runbook/state, attempted live checks; live sitemap, robots, full page HTML, rankings and conversions not verified; no production code changes |
+
+---
+
+## Manual run evidence — 2026-10-14
+
+- Source: GitHub `main` files `seo/state.md`, `seo/runbook.md`, `seo/content-calendar.md`, `seo/pr-template.md` read on 2026-10-14. Corrected state/runbook from #460 is present.
+- Live homepage: web text fetch resolved `luckystore1947.com` to `www.luckystore1947.com` and showed the cart shell, but did not expose enough HTML to validate canonical tags, structured data or content. No definitive pass/fail.
+- Live `/delivery`: web text fetch returned only the cart shell; cannot independently confirm the visible FAQ from this response. Repository baseline records an existing FAQ implementation.
+- Live `/sitemap.xml`, `/robots.txt` and a published article URL: web fetch inaccessible; do not infer HTTP errors. Container network DNS also unavailable. The 902-URL count remains **previously recorded, not remeasured**.
+- Search Console, conversion analytics, AI citations and competitor changes: not measured; retain null/unknown rather than inventing observations.
+- Publication count: unverified. The content calendar is a proposal, not evidence of an empty blog.
+- Action: no production SEO edits because evidence threshold was not met. Next run should use an HTTP-capable execution environment and verified analytics before choosing an implementation PR.
