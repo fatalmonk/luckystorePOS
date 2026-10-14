@@ -1,7 +1,7 @@
 # SEO Autopilot — Daily Runbook
 
 This file is the operational script for every daily run of the Lucky Store SEO Autopilot.
-The scheduled agent reads this file first, executes each phase in order, updates `seo/state.md`, and opens a review PR for verified changes. Never auto-merge.
+The scheduled agent reads this file and `seo/autopilot-v2.md` first, executes only phases supported by verified access, updates `seo/state.md` in a review PR, and opens a review PR for verified changes. Never auto-merge. The scheduled GitHub Actions technical monitor is a deterministic evidence collector, not a coding agent.
 
 ---
 
@@ -52,11 +52,13 @@ done
 - Record unexpected changes as findings; block deployment only for confirmed critical regressions.
 
 ### 1c. Canonical + hreflang spot check
+Use the latest Actions artifact as evidence; verify alternate-language routes exist, are indexable, and reciprocate before filing a fix.
 - Fetch homepage and one product page HTML
 - Verify `rel="canonical"` present and not self-conflicting
 - Verify `hreflang="en-BD"` and `hreflang="bn-BD"` pair emitted
 
 ### 1d. Schema validation spot check
+Treat historical schema counts as hypotheses. The production audit only confirms observed types, not complete schema validity.
 - Fetch `https://www.luckystore1947.com` HTML
 - Grep for `application/ld+json` — expect ≥3 blocks (GroceryStore, WebSite, ItemList)
 - Flag if any block is missing
