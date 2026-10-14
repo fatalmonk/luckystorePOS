@@ -81,25 +81,27 @@ export async function searchStorefrontProducts({
 
   const rawRowsMap = new Map<string, any>();
 
+  const rpcPageSize = 1000;
   for (const catId of targetCategoryIds) {
-    const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_storefront_catalog', {
-      p_store_id: storeId,
-      p_query: cleanQuery,
-      p_category_id: catId,
-      p_limit: 1000,
-      p_offset: 0,
-    });
+    for (let rpcOffset = 0; rpcOffset <= 100000; rpcOffset += rpcPageSize) {
+      const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_storefront_catalog', {
+        p_store_id: storeId,
+        p_query: cleanQuery,
+        p_category_id: catId,
+        p_limit: rpcPageSize,
+        p_offset: rpcOffset,
+      });
 
-    if (posError) {
-      console.error('search_storefront_catalog failed:', posError);
-      throw new Error('Search service temporarily unavailable');
-    }
-
-    for (const item of (posItems || [])) {
-      const id = String(item.item_id ?? item.id ?? '').trim();
-      if (id && !rawRowsMap.has(id)) {
-        rawRowsMap.set(id, item);
+      if (posError || !Array.isArray(posItems)) {
+        console.error('search_storefront_catalog failed:', posError);
+        throw new Error('Search service temporarily unavailable');
       }
+      for (const item of posItems) {
+        const id = String(item.item_id ?? item.id ?? '').trim();
+        if (id && !rawRowsMap.has(id)) rawRowsMap.set(id, item);
+      }
+      if (posItems.length < rpcPageSize) break;
+      if (rpcOffset === 100000) throw new Error('Storefront catalogue RPC pagination limit exceeded');
     }
   }
 
