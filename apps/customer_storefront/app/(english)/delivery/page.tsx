@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Script from 'next/script';
 import { Header } from '../../components/updated/Header';
 import { Footer } from '../../components/updated/Footer';
 import { BottomNav } from '../../components/BottomNav';
 import { WhatsAppFloat } from '../../components/WhatsAppFloat';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
+import { JsonLd } from '../../components/seo/JsonLd';
 import { DeliveryFaqAccordion } from './DeliveryFaqAccordion';
 import {
   DELIVERY_POLICY,
@@ -40,15 +40,9 @@ export const metadata: Metadata = {
 };
 
 export default function DeliveryHubPage() {
-  const faqSchema = getDeliveryFaqSchema();
-
   return (
     <>
-      <Script
-        id="delivery-faq-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={getDeliveryFaqSchema()} />
       <Header />
 
       <main className="flex-1 overflow-x-hidden pb-16">

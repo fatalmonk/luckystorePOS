@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
+import React from 'react';
 import { NextRequest } from 'next/server';
 import { metadata } from '../../(english)/delivery/page';
+import { JsonLd } from '../../components/seo/JsonLd';
 import {
   DELIVERY_POLICY,
   DELIVERY_FAQS,
@@ -119,6 +121,18 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   });
 
   describe('Schema.org Precision & Validity', () => {
+    it('renders delivery FAQ JSON-LD as an initial HTML script element', () => {
+      const element = JsonLd({ data: getDeliveryFaqSchema() });
+      const elementProps = React.isValidElement(element) ? element.props : null;
+
+      expect(React.isValidElement(element)).toBe(true);
+      expect(element.type).toBe('script');
+      expect(elementProps?.type).toBe('application/ld+json');
+      const json = JSON.parse(elementProps?.dangerouslySetInnerHTML.__html ?? '{}');
+      expect(json['@type']).toBe('FAQPage');
+      expect(json.mainEntity).toHaveLength(DELIVERY_FAQS.length);
+    });
+
     it('models the basket-dependent standard policy through ShippingService conditions', () => {
       const service = getDeliveryShippingServiceSchema();
       expect(service['@type']).toBe('ShippingService');
