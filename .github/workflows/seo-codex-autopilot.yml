@@ -1,0 +1,123 @@
+name: Lucky Store SEO Codex Autopilot
+
+on:
+  schedule:
+    - cron: '45 2 * * *' # 08:45 Asia/Dhaka; after the 08:00 technical audit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-codex-autopilot-main
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    if: github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: seo-autopilot
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Checkout main without credentials
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Preflight: configured API key
+        env:
+          CODEX_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$CODEX_KEY" ]; then
+            echo "::error::Missing OPENAI_API_KEY. Configure the seo-autopilot environment secret."
+            exit 1
+          fi
+
+      - name: Preflight: reject overlapping autopilot PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          count=$(gh pr list --base main --state open --json headRefName --jq '[.[] | select(.headRefName == "seo/codex-autopilot")] | length')
+          if [ "$count" -gt 0 ]; then
+            echo "An existing SEO Codex PR awaits review; do not overwrite it."
+            exit 0
+          fi
+
+      - name: Fetch latest verified technical audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/seo-autopilot-evidence
+          run_id=$(gh run list --workflow seo-technical-monitor.yml --branch main --status completed --limit 10 --json databaseId,conclusion --jq '[.[] | select(.conclusion == "success")][0].databaseId // empty')
+          if [ -n "$run_id" ]; then
+            gh run download "$run_id" -n seo-technical-report -D /tmp/seo-autopilot-evidence || true
+          fi
+          if [ -f /tmp/seo-autopilot-evidence/latest.json ]; then
+            cp /tmp/seo-autopilot-evidence/latest.json seo/autopilot-input.json
+          else
+            echo '{"status":"unverified","limitations":["No verified GitHub Actions technical audit artifact available"]}' > seo/autopilot-input.json
+          fi
+
+      - name: Run Codex in restricted workspace
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          permission-profile: ":workspace"
+          safety-strategy: drop-sudo
+          allow-bots: true
+          prompt-file: seo/codex-daily-prompt.md
+          output-file: /tmp/seo-autopilot-evidence/codex-summary.txt
+
+      - name: Reject unsafe or unsupported changes
+        run: |
+          python3 scripts/seo/validate_autopilot_changes.py --base HEAD
+          rm -f seo/autopilot-input.json
+
+      - name: Verify storefront changes
+        working-directory: apps/customer_storefront
+        run: |
+          npm ci --ignore-scripts
+          npm run typecheck
+          npm run test -- --run
+          npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Create draft review PR (never merge)
+        id: pr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.SEO_PR_TOKEN || github.token }}
+          branch: seo/codex-autopilot
+          base: main
+          delete-branch: false
+          draft: true
+          commit-message: 'seo(autopilot): propose verified daily improvement'
+          title: 'seo(autopilot): Codex daily verified improvement'
+          body: |
+            ## Automated SEO proposal
+            Codex used `seo/codex-daily-prompt.md` and the most recent available technical report.
+            Review source evidence and verify rendered output before merging.
+            Checks: change policy, storefront typecheck, tests and build.
+            No automatic merge or deployment is configured.
+            Note: if created with GITHUB_TOKEN, GitHub may not trigger other PR workflows automatically.
+          add-paths: |
+            seo/**
+            apps/customer_storefront/**
+          labels: |
+            seo
+            autopilot
+
+      - name: Report result
+        if: always()
+        env:
+          PR_URL: ${{ steps.pr.outputs.pull-request-url }}
+        run: |
+          echo "## SEO Codex daily proposal" >> "$GITHUB_STEP_SUMMARY"
+          echo "PR: ${PR_URL:-No PR created}" >> "$GITHUB_STEP_SUMMARY"
