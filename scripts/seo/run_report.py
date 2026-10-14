@@ -43,10 +43,18 @@ def build_report(needs, run_id, attempt, sha):
         status = "not_completed"
         reason = "The workflow did not complete a verified proposal; inspect skipped jobs and trigger conditions."
         next_action = "Inspect the workflow run before retrying; do not infer a successful SEO change."
+    evidence = {
+        "technical_audit": _evidence_status(needs.get("propose", {}).get("outputs", {}).get("audit")),
+        "gsc_performance": _evidence_status(jobs["gsc"]),
+        "indexing": "not_verified",
+        "ai_visibility": "not_verified",
+        "production": "not_verified",
+    }
     report = {"schema_version": 1, "created_at": datetime.now(timezone.utc).isoformat(),
               "run_url": f"https://github.com/fatalmonk/luckystorePOS/actions/runs/{run_id}",
               "run_attempt": int(attempt), "base_sha": sha, "status": status,
               "reason": reason, "next_action": next_action, "jobs": jobs,
+              "evidence": evidence,
               "source_changed": changed, "pr_url": pr or None,
               "limitations": "Job success does not prove indexing, traffic gains, conversions or production deployment."}
     markdown = "\n".join([
@@ -54,10 +62,21 @@ def build_report(needs, run_id, attempt, sha):
         f"[Workflow run]({report['run_url']}) · attempt {attempt} · commit `{sha[:12]}`", "",
         "| Job | Result |", "| --- | --- |",
         *(f"| {name} | {result} |" for name, result in jobs.items()), "",
+        "| Evidence | Status |",
+        "| --- | --- |",
+        *(f"| {name} | {status} |" for name, status in evidence.items()), "",
         f"**PR:** {pr or 'None created'}", "", f"**Next action:** {next_action}", "",
         report["limitations"], "",
     ])
     return report, markdown
+
+
+def _evidence_status(result):
+    if result == "success":
+        return "available"
+    if result in ("failure", "cancelled"):
+        return "failed"
+    return "unverified"
 
 
 def main():
