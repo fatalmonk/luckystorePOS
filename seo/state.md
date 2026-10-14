@@ -43,7 +43,7 @@ next_run:       2026-10-15
 | Signal | Status | Gap |
 |--------|--------|-----|
 | Definition block on homepage | ⚠️ | No explicit 1-2 sentence entity definition in first 200 words |
-| FAQPage schema — `/delivery` | ✅ | `getDeliveryFaqSchema()` + visible FAQ section — live in production |
+| FAQPage schema — `/delivery` + `/bn/delivery` | 🛠️ | Shared schema is now emitted in server-rendered HTML in source; production verification is pending deployment |
 | Homepage buyer FAQ / clarity | ⚠️ | Evaluate whether shoppers need additional visible guidance; schema absence is not a defect |
 | Fortune-cookie page buyer guidance | ❓ | Review live content and demand; FAQ markup is optional |
 | Blog / content hub | ❓ | Route exists; published post count requires live/CMS verification |
@@ -86,7 +86,7 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ### 🔴 HIGH — Verify buyer-facing homepage and delivery clarity
 - **Outcome sought:** Help eligible Chawkbazar shoppers understand what Lucky Store sells, whether delivery reaches them, and how to complete an order.
-- **Status:** `/delivery` already includes visible FAQs and `getDeliveryFaqSchema()`; missing homepage or fortune-cookie FAQ markup alone is **not** an SEO defect.
+- **Status:** Both delivery routes include visible FAQs and the shared `getDeliveryFaqSchema()` source; server-rendered JSON-LD is implemented, with live production verification pending deployment. Missing homepage or fortune-cookie FAQ markup alone is **not** an SEO defect.
 - **Pages:** Homepage and `/delivery`; assess `/fortune-cookies-near-me` only when its actual content and search demand justify work.
 - **Action:** Audit rendered copy, checkout flow and current delivery policies; add or clarify **visible** buyer-helpful content only when a specific verified gap exists. Do not add FAQ JSON-LD solely for AI citations or unsupported Google rich-result expectations. Any structured data must reflect visible, accurate content.
 - **Evidence gate:** Record the user question, source of truth, expected conversion benefit and validation method before implementation.
@@ -122,7 +122,7 @@ technical_seo:
   broken_links: null              # no full crawl evidenced; unknown until measured
 
 content:
-  faq_schema_pages: 1             # pages with FAQPage schema (/delivery confirmed)
+  faq_schema_pages: null          # source now emits on /delivery and /bn/delivery; verify live after deployment
   blog_posts_published: null      # not verified; count live published posts before setting
   llms_txt_last_updated: "2026-10-14"
 
@@ -146,3 +146,4 @@ competitor_signals:
 | 2026-10-14 | init | #458 | Baseline recorded, seo/ initialized |
 | 2026-10-14 | review | #460 | Reconciled implementation queue with runbook; removed FAQ markup-only priority and unsupported zero metrics |
 | 2026-10-14 | autopilot | pending | Added missing English homepage hreflang alternates; delivery FAQ confirmed single-sourced and unchanged |
+| 2026-10-15 | fix | pending | Render delivery FAQ JSON-LD in initial HTML for both locales; live verification pending deployment |
