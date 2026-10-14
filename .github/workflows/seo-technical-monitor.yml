@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: seo-technical-monitor
@@ -14,7 +15,7 @@ concurrency:
 
 jobs:
   audit:
-    name: Audit production SEO
+    name: Audit production SEO and reconcile incidents
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -23,7 +24,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Unit tests
-        run: python -m unittest discover -s scripts/seo -p 'test_technical_monitor.py' -v
+        run: python -m unittest discover -s scripts/seo -p 'test_*.py' -v
       - name: Audit production website
         id: audit
         continue-on-error: true
@@ -43,6 +44,68 @@ jobs:
           path: seo/reports/technical/latest.json
           retention-days: 90
           if-no-files-found: error
+      - name: Classify and reconcile GitHub incident
+        if: always() && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        env:
+          REPORT_PATH: seo/reports/technical/latest.json
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const marker = '<!-- lucky-store-seo-technical-incident:v1 -->';
+            const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'));
+            const failed = process.env.AUDIT_OUTCOME !== 'success' || report.status === 'execution_failed';
+            const problems = Array.isArray(report.issues) ? report.issues : [];
+            const limitations = Array.isArray(report.limitations) ? report.limitations : [];
+            const warnings = Array.isArray(report.warnings) ? report.warnings : [];
+            const isIncident = failed || problems.length > 0 || limitations.length > 0;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const title = 'SEO technical monitor: production checks need attention';
+            const existing = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'all', per_page: 100
+            });
+            const matches = existing.filter(i => !i.pull_request && i.body?.includes(marker));
+            const open = matches.find(i => i.state === 'open');
+            const excerpt = arr => arr.slice(0, 25).map(v => '- ' + String(v).slice(0, 400)).join('\n') || '- None';
+            const body = [
+              marker,
+              'Automated incident from the read-only SEO monitor. Investigate before changing production.',
+              '',
+              `**Last run:** ${runUrl}`,
+              `**Report status:** ${report.status || 'unknown'}`,
+              `**Audit step:** ${process.env.AUDIT_OUTCOME}`,
+              `**Sitemap URLs:** ${report.checks?.sitemap?.url_count ?? 'unverified'}`,
+              '',
+              '### Issues', excerpt(problems),
+              '',
+              '### Verification limitations', excerpt(limitations),
+              '',
+              '### Warnings (informational)', excerpt(warnings),
+              '',
+              'Download the full `seo-technical-report` artifact from the workflow run.',
+              'Do not interpret network failures as confirmed production defects.',
+            ].join('\n');
+            if (isIncident) {
+              if (open) {
+                await github.rest.issues.update({ owner, repo, issue_number: open.number, body });
+                core.info(`Updated incident #${open.number}`);
+              } else {
+                const created = await github.rest.issues.create({ owner, repo, title, body });
+                core.info(`Opened incident #${created.data.number}`);
+              }
+            } else if (report.status === 'passed' && open) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: open.number,
+                body: `Monitor recovered in ${runUrl}. No issues or verification limitations were reported. Closing this automated incident; warnings, if any, remain in the report.`
+              });
+              await github.rest.issues.update({ owner, repo, issue_number: open.number, state: 'closed', state_reason: 'completed' });
+              core.info(`Closed recovered incident #${open.number}`);
+            } else {
+              core.info('No incident change required; monitor state is not a confirmed recovery.');
+            }
       - name: Fail on execution failure
         if: steps.audit.outcome == 'failure'
         run: exit 1
