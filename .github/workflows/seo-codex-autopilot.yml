@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Preflight: configured API key
+      - name: 'Preflight: configured API key'
         env:
           CODEX_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
@@ -39,7 +39,7 @@ jobs:
             exit 1
           fi
 
-      - name: Preflight: reject overlapping autopilot PR
+      - name: 'Preflight: reject overlapping autopilot PR'
         id: existing_pr
         env:
           GH_TOKEN: ${{ github.token }}
