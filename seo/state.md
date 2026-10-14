@@ -145,3 +145,4 @@ competitor_signals:
 |------|-----|-----|------------|
 | 2026-10-14 | init | #458 | Baseline recorded, seo/ initialized |
 | 2026-10-14 | review | #460 | Reconciled implementation queue with runbook; removed FAQ markup-only priority and unsupported zero metrics |
+| 2026-10-14 | autopilot | pending | Added missing English homepage hreflang alternates; delivery FAQ confirmed single-sourced and unchanged |
