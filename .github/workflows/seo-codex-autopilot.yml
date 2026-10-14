@@ -73,6 +73,10 @@ jobs:
       actions: read
     outputs:
       changed: ${{ steps.guard.outputs.changed }}
+      overlap: ${{ steps.existing_pr.outputs.skip }}
+      audit: ${{ steps.audit.outcome }}
+      codex: ${{ steps.codex.outcome }}
+      guard: ${{ steps.guard.outcome }}
     steps:
       - name: Checkout main without credentials
         uses: actions/checkout@v4
@@ -102,6 +106,7 @@ jobs:
           fi
 
       - name: Validate exact fresh audit evidence
+        id: audit
         if: steps.existing_pr.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -119,6 +124,7 @@ jobs:
           path: seo/
 
       - name: Run Codex in restricted workspace
+        id: codex
         if: steps.existing_pr.outputs.skip != 'true'
         uses: openai/codex-action@v1
         with:
@@ -145,6 +151,8 @@ jobs:
             git add -- seo/ apps/customer_storefront/app/
             git diff --cached --no-ext-diff --no-textconv --binary "$BASE_SHA" > /tmp/seo-autopilot-evidence/proposal.patch
             echo 'changed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/upload-artifact@v4
@@ -275,6 +283,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    outputs:
+      pr_url: ${{ steps.pr.outputs.pull-request-url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -330,3 +340,34 @@ jobs:
         run: |
           echo "## SEO Codex daily proposal" >> "$GITHUB_STEP_SUMMARY"
           echo "PR: ${PR_URL:-No PR created}" >> "$GITHUB_STEP_SUMMARY"
+
+  report:
+    name: Report every SEO run
+    needs: [gsc, propose, evidence, verify, publish]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Write outcome report and workflow summary
+        env:
+          SEO_JOB_RESULTS: ${{ toJSON(needs) }}
+          SEO_RUN_ID: ${{ github.run_id }}
+          SEO_RUN_ATTEMPT: ${{ github.run_attempt }}
+          SEO_BASE_SHA: ${{ github.sha }}
+        run: python3 scripts/seo/run_report.py --output /tmp/seo-run-report
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seo-run-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/seo-run-report/
+          if-no-files-found: error
+          retention-days: 7
