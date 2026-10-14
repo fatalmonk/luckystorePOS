@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Bike, Gift, HandCoins, ShieldCheck } from 'lucide-react';
+import { Bicycle, Gift, HandCoins, ShieldCheck } from '@phosphor-icons/react/dist/ssr';
 import { DELIVERY_POLICY } from '../lib/deliveryData';
 import { withLocale, type Locale } from '../lib/i18n/config';
 
@@ -10,7 +10,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
   const threshold = DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString(bn ? 'bn-BD' : 'en');
   const facts = [
     {
-      icon: Bike,
+      icon: Bicycle,
       title: bn ? 'স্থানীয় ডেলিভারি' : 'Local delivery',
       detail: bn ? `চকবাজার থেকে ${radius} কিমির মধ্যে` : `Within ${radius} km of Chawkbazar`,
       href: '/delivery',
@@ -41,7 +41,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
         {facts.map(({ icon: Icon, title, detail, href }) => (
           <div key={title} className="relative flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eee7da] text-warm-fg sm:h-16 sm:w-16">
-              <Icon size={30} strokeWidth={1.5} aria-hidden="true" />
+              <Icon size={30} weight="light" aria-hidden="true" />
             </span>
             <div>
               <dt className="text-sm font-extrabold text-warm-fg">

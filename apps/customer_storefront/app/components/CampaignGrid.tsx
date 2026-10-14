@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Gift, MapPin, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowRight, Gift, MapPin, ShieldCheck, Truck } from '@phosphor-icons/react';
 import { MarketPanel } from './ui/MarketSurface';
 import { HeroDiscoveryRail } from './ui/HeroFloatingCard';
 import { HomeCategoryBanners } from './HomePromoBanners';
@@ -87,13 +87,13 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
             </div>
 
             <div className="relative -mx-5 mt-6 h-44 sm:hidden" aria-hidden="true">
-              <Image src="/images/hero-reference.webp" alt="" fill sizes="100vw" className="object-cover object-right" />
+              <Image src="/images/hero-reference.webp" alt="" fill priority sizes="100vw" className="object-cover object-right" />
             </div>
 
             <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-3 text-xs font-medium sm:mt-9 sm:text-sm">
               {reassurance.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-center gap-2 rounded-full bg-[#fff2c9]/75 py-1 pr-3">
-                  <Icon size={22} strokeWidth={1.5} aria-hidden="true" />
+                  <Icon size={22} weight="light" aria-hidden="true" />
                   {text}
                 </li>
               ))}

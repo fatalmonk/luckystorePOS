@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, X } from '@phosphor-icons/react';
 import { type Locale } from '../lib/i18n/config';
 import {
   type BeforeInstallPromptEvent,

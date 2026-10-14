@@ -18,12 +18,14 @@ const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   variable: '--font-bricolage',
   display: 'swap',
+  preload: false,
 });
 
 const manrope = Manrope({
   subsets: ['latin'],
   variable: '--font-manrope',
   display: 'swap',
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
@@ -273,9 +275,6 @@ export default function RootLayoutDocument({
         {/* Google Analytics — consolidated with Cloudflare Zaraz to avoid redundant 173 KiB script when Zaraz is active */}
         <Script id="gtag-init" strategy="lazyOnload">
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            window.gtag = gtag;
             var consentStorageKey = 'lucky-analytics-consent';
             var getAnalyticsChoice = function(){
               try { return localStorage.getItem(consentStorageKey); } catch (error) { return null; }
