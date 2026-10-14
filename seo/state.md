@@ -27,7 +27,7 @@ next_run:       2026-10-15
 | Signal | Status | Evidence |
 |--------|--------|----------|
 | Sitemap live | ✅ | `/sitemap.xml` — 902 URLs, bilingual alternates (en-BD / bn-BD) |
-| Sitemap URL limit | ✅ | 902 << 24,000 ceiling enforced in `sitemap.ts` |
+| Sitemap URL limit | ✅ | 902 URLs; `sitemap.ts` caps products at 24,000 (not total URLs); protocol limit is 50,000 URLs |
 | AI bots in robots.txt | ✅ | GPTBot, PerplexityBot, ClaudeBot, Google-Extended, Applebot-Extended, cohere-ai — all allowed |
 | Canonical signals | ✅ | `x-default` + `hreflang` alternates per URL pair |
 | Schema: GroceryStore | ✅ | `RootLayoutDocument.tsx` — `['Store','GroceryStore','Organization']` with full NAP, hours, geo, areaServed |

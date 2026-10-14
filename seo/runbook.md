@@ -111,7 +111,7 @@ Implement one improvement per run from the priority list in `context.md`.
   },
   {
     "q": "How much does Lucky Store delivery cost?",
-    "a": "Delivery is free for orders over ৳500. Orders below ৳500 incur a ৳40 delivery fee."
+    "a": "Delivery is free for orders of ৳500 and above. Orders below ৳500 incur a ৳40 delivery fee."
   },
   {
     "q": "What payment methods does Lucky Store accept?",
@@ -119,11 +119,11 @@ Implement one improvement per run from the priority list in `context.md`.
   },
   {
     "q": "What are Lucky Store's delivery hours?",
-    "a": "Lucky Store is open daily from 9:00 AM to 12:30 AM (midnight). Orders placed within delivery hours are dispatched the same day."
+    "a": "Lucky Store's delivery service runs daily from 9:00 AM to 12:30 AM. Orders placed within delivery hours are dispatched the same day."
   },
   {
     "q": "Can I return groceries from Lucky Store?",
-    "a": "Yes. Lucky Store accepts returns within 1 day of delivery at no cost. Items are inspected at the doorstep before payment, so customers may decline any unsatisfactory items."
+    "a": "You may decline any unsatisfactory item during doorstep inspection by handing it back to the delivery agent immediately, with no fee penalty."
   }
 ]
 ```
