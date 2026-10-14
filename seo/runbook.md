@@ -24,11 +24,33 @@ curl -s https://www.luckystore1947.com/sitemap.xml | grep -c '<loc>'
 - Update `sitemap_url_count` in `context.md`
 
 ### 1b. robots.txt AI bot access
+
+All six required bots must be listed with `Allow: /` and no overriding `Disallow: /`. Fetch the file and check each bot's directive block:
+
 ```bash
-curl -s https://www.luckystore1947.com/robots.txt | grep -E "GPTBot|PerplexityBot|ClaudeBot|Google-Extended"
+ROBOTS=$(curl -s https://www.luckystore1947.com/robots.txt)
+REQUIRED_BOTS=("GPTBot" "PerplexityBot" "ClaudeBot" "Google-Extended" "Applebot-Extended" "cohere-ai")
+for BOT in "${REQUIRED_BOTS[@]}"; do
+  BOT_LINE=$(echo "$ROBOTS" | grep -n "User-agent: $BOT" | cut -d: -f1)
+  if [ -z "$BOT_LINE" ]; then
+    echo "FAIL: $BOT not in robots.txt"
+    continue
+  fi
+  # Extract directives until the next blank line
+  BLOCK=$(echo "$ROBOTS" | tail -n +"$BOT_LINE" | awk '/^[[:space:]]*$/{exit} {print}')
+  if echo "$BLOCK" | grep -qE "^Disallow: /$"; then
+    echo "FAIL: $BOT has Disallow: / — fully blocked"
+  elif echo "$BLOCK" | grep -qE "^Allow: /"; then
+    echo "OK:   $BOT"
+  else
+    echo "WARN: $BOT — no explicit Allow: / (check wildcard block)"
+  fi
+done
 ```
-- Expect: all four present with `Allow: /`
-- If any is missing or `Disallow: /` — STOP, create HIGH-PRIORITY PR immediately
+
+- All six must print `OK`
+- Any `FAIL` → STOP, create HIGH-PRIORITY PR before continuing the run
+- `WARN` → check wildcard `User-agent: *` block; acceptable only if it has `Allow: /`
 
 ### 1c. Canonical + hreflang spot check
 - Fetch homepage and one product page HTML
@@ -153,8 +175,24 @@ PR description template: see `pr-template.md`
 ## Phase 6: State Update
 
 After every run (even if no code changes):
-1. Update `seo/state.md` — last_run date, metrics, changelog row
-2. Commit state update to the PR branch (if open) or to a separate `seo/state-YYYY-MM-DD` branch
+1. Update `seo/state.md` — `last_run`, metrics block, changelog row
+2. Commit **and push** the state file:
+
+```bash
+# If a run PR branch is already open, commit onto it:
+git add seo/state.md
+git commit -m "seo(state): update metrics for YYYY-MM-DD run"
+git push origin HEAD
+
+# If no run PR is open (state-only run), create and push a dedicated branch:
+git checkout -b seo/state-YYYY-MM-DD
+git add seo/state.md
+git commit -m "seo(state): update metrics for YYYY-MM-DD run"
+git push origin seo/state-YYYY-MM-DD
+# Open a PR targeting main — small, merge-ready
+```
+
+> State-only PRs should be tiny and merge-ready. Do not batch state updates across multiple runs.
 
 ---
 

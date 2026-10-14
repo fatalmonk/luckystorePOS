@@ -43,8 +43,9 @@ next_run:       2026-10-15
 | Signal | Status | Gap |
 |--------|--------|-----|
 | Definition block on homepage | ⚠️ | No explicit 1-2 sentence entity definition in first 200 words |
-| FAQPage schema | ❌ | No FAQ schema on any page — highest-impact missing schema |
-| FAQ content block | ❌ | No visible FAQ section on homepage or delivery page |
+| FAQPage schema — `/delivery` | ✅ | `getDeliveryFaqSchema()` + visible FAQ section — live in production |
+| FAQPage schema — homepage | ❌ | No FAQ schema or visible FAQ block on homepage |
+| FAQPage schema — `/fortune-cookies-near-me` | ❌ | No FAQ schema on this page |
 | Blog / content hub | ❌ | `/blog` route exists but no published posts |
 | Author attribution | ❌ | No named author pages |
 | Original research / data | ❌ | No proprietary data publications |
@@ -83,10 +84,11 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ## Open Opportunities (Priority-Ordered)
 
-### 🔴 HIGH — FAQPage schema + FAQ content block
-- **Impact:** Directly feeds AI Overview and Perplexity citation for "grocery delivery Chattogram" queries
-- **Pages:** Homepage (`page.tsx`), `/delivery`, `/fortune-cookies-near-me`
-- **Action:** Add FAQ JSON-LD + visible Q&A section to each; target Q&As documented in `runbook.md`
+### 🔴 HIGH — FAQPage schema + FAQ content block (homepage)
+- **Impact:** Directly feeds AI Overview and Perplexity citation for "what is Lucky Store" and "order groceries Chattogram" queries
+- **Status:** `/delivery` already has FAQPage schema ✅; homepage and `/fortune-cookies-near-me` do not
+- **Pages:** Homepage (`(english)/page.tsx`), `/fortune-cookies-near-me`
+- **Action:** Add FAQ JSON-LD + visible Q&A section; target Q&As documented in `runbook.md`
 
 ### 🔴 HIGH — Homepage entity definition block
 - **Impact:** AI answer engines cite clear, first-200-word definitions; current homepage leads with hero image
@@ -119,7 +121,7 @@ technical_seo:
   broken_links: 0                 # from crawl
 
 content:
-  faq_schema_pages: 0             # pages with FAQPage schema
+  faq_schema_pages: 1             # pages with FAQPage schema (/delivery confirmed)
   blog_posts_published: 0         # total live posts
   llms_txt_last_updated: "2026-10-14"
 

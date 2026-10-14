@@ -25,14 +25,14 @@ Use this template for every PR opened by the SEO Autopilot.
 - [What was added / removed / modified]
 
 ### Why
-[1-2 sentences on the SEO opportunity this addresses, from the priority list in seo/context.md]
+[1-2 sentences on the SEO opportunity this addresses, from the priority list in `seo/state.md`]
 
 ### Verification
 - [ ] Schema validates at https://validator.schema.org
 - [ ] robots.txt still passes AI bot check
 - [ ] Sitemap URL count unchanged (run: `curl -s https://www.luckystore1947.com/sitemap.xml | grep -c '<loc>'`)
-- [ ] No TypeScript errors (`rtk npm run build --dry` or type-check)
-- [ ] seo/context.md updated with run metrics
+- [ ] No TypeScript errors (`cd apps/customer_storefront && npm run typecheck`)
+- [ ] `seo/state.md` updated with run metrics
 
 ### AI visibility impact expected
 [Expected citation gains and timeline]

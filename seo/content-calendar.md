@@ -32,12 +32,14 @@ Content voice: Practical, local, helpful. Not promotional.
 
 **Comparison table:**
 
-| Rice variety | Best for | Pack sizes available | Notes |
-|-------------|---------|---------------------|-------|
-| Nazirshail | Everyday cooking | 5 kg, 10 kg | Mild aroma, widely preferred |
-| Chinigura | Special occasions / biryani | 2 kg, 5 kg | Fragrant, premium |
-| Miniket | Daily use, budget | 5 kg, 10 kg, 25 kg | Consistent quality |
-| Kataribhog | Festival meals | 2 kg, 5 kg | Fine grain, aromatic |
+| Rice variety | Best for | Available formats (verified catalog) | Notes |
+|-------------|---------|--------------------------------------|-------|
+| Nazirshail | Everyday cooking | Loose (per kg), 25 KG | Rahman, Rupchanda, Premium labels |
+| Jirashail | Daily use, budget | Loose (per kg), 25 KG | Nobanno and Bashir labels |
+| Miniket Atob | Everyday use | Loose (per kg), 25 KG | Shonko label |
+| Katari Atob | Special occasions / biryani | Loose (per kg), 25 KG | Rahman and Premium labels |
+| Basmati | Festival meals | 1 KG (Fortune), 5 KG (Premium) | Aromatic, fine grain |
+| Chinigura | Premium cooking | 50 KG Loose (ACI) | Bulk only; sold per kg at counter |
 
 **FAQ block:**
 
