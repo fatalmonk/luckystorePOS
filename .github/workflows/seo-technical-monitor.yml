@@ -1,0 +1,48 @@
+name: Lucky Store Technical SEO Monitor
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 08:00 Bangladesh Standard Time (UTC+6)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-technical-monitor
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Audit production SEO
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest discover -s scripts/seo -p 'test_technical_monitor.py' -v
+      - name: Audit production website
+        id: audit
+        continue-on-error: true
+        run: python scripts/seo/technical_monitor.py --output seo/reports/technical/latest.json --summary "$GITHUB_STEP_SUMMARY"
+      - name: Ensure audit report exists
+        if: always()
+        run: |
+          test -s seo/reports/technical/latest.json || {
+            mkdir -p seo/reports/technical
+            printf '{"schema_version":1,"status":"execution_failed","issues":["audit process failed before report generation"]}\n' > seo/reports/technical/latest.json
+          }
+      - name: Upload machine-readable report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-technical-report
+          path: seo/reports/technical/latest.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Fail on execution failure
+        if: steps.audit.outcome == 'failure'
+        run: exit 1
