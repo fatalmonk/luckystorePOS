@@ -1,9 +1,21 @@
+import type { Metadata } from 'next';
 import { HomeShell } from '../components/HomeShell';
 import { getHomePageData } from '../lib/products/getHomePageData';
 import { img, srcSet } from '../lib/imageUrl';
 import { toProductSlug } from '../lib/products/slugify';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: 'https://www.luckystore1947.com/',
+    languages: {
+      'en-BD': 'https://www.luckystore1947.com/',
+      'bn-BD': 'https://www.luckystore1947.com/bn',
+      'x-default': 'https://www.luckystore1947.com/',
+    },
+  },
+};
 
 export default async function Home() {
   const data = await getHomePageData('en');
