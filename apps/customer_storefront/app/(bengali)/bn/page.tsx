@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   },
 };
 
+/** Loads Bengali homepage data and renders structured data, the hero preload, and the home shell. */
 export default async function BengaliHomePage() {
   const data = await getHomePageData('bn');
 

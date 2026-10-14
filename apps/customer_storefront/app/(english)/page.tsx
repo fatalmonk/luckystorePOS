@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   },
 };
 
+/** Loads English homepage data and renders structured data, the hero preload, and the home shell. */
 export default async function Home() {
   const data = await getHomePageData('en');
 

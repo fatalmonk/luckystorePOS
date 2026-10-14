@@ -131,6 +131,7 @@ export const viewport: Viewport = {
   ],
 };
 
+/** Wraps storefront pages with the HTML document, shared providers, metadata, and analytics scripts. */
 export default function RootLayoutDocument({
   children,
   lang,

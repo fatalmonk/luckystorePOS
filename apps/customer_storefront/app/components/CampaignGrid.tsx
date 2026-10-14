@@ -18,6 +18,7 @@ interface CampaignGridProps {
   locale?: Locale;
 }
 
+/** Renders the localized campaign hero, delivery details, and discovery rail for the supplied products. */
 export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
   const dict = getDictionary(locale);
   const bn = locale === 'bn';

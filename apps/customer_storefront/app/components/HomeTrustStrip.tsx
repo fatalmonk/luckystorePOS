@@ -4,6 +4,7 @@ import { Bicycle, Gift, HandCoins, ShieldCheck } from '@phosphor-icons/react/dis
 import { DELIVERY_POLICY } from '../lib/deliveryData';
 import { withLocale, type Locale } from '../lib/i18n/config';
 
+/** Renders localized delivery, payment, and store trust details with links to further information. */
 export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
   const bn = locale === 'bn';
   const radius = DELIVERY_POLICY.radiusKm.toLocaleString(bn ? 'bn-BD' : 'en');
