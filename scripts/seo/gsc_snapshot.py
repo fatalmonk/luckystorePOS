@@ -7,12 +7,37 @@ import os
 from pathlib import Path
 import urllib.parse
 import urllib.request
+import urllib.error
 from zoneinfo import ZoneInfo
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         return None
+
+
+class GoogleRequestError(Exception):
+    """Only fixed local diagnostics may enter logs; never remote error text."""
+    def __init__(self, stage, status, oauth_error=None):
+        self.diagnostic = f"{stage} failed (HTTP {int(status)}). "
+        if stage == "OAuth token exchange":
+            hints = {
+                "invalid_grant": "Refresh token expired, revoked, or belongs to a different client; regenerate it using this client.",
+                "invalid_client": "Check GSC_CLIENT_ID and GSC_CLIENT_SECRET belong to the same Google OAuth client.",
+                "unauthorized_client": "Check the OAuth client supports refresh-token authorization.",
+            }
+            self.diagnostic += hints.get(oauth_error, "Check the matching client ID, client secret and refresh token.")
+        elif status == 403:
+            self.diagnostic += "Check Search Console API is enabled, token has webmasters.readonly scope, and authorizing account has property access; also check quota."
+        elif status == 401:
+            self.diagnostic += "Google rejected the access token; check OAuth authorization."
+        elif status == 404:
+            self.diagnostic += "Check GSC_SITE_URL exactly matches an accessible Search Console property."
+        elif status == 429:
+            self.diagnostic += "Google quota or rate limit reached; retry later."
+        else:
+            self.diagnostic += "Check API configuration; retry later for Google server errors."
+        super().__init__(self.diagnostic)
 
 
 def clean_rows(data, dimensions):
@@ -51,8 +76,21 @@ def capture(now=None):
 
     def request(url, body, headers):
         req = urllib.request.Request(url, data=body, headers=headers, method="POST")
-        with opener.open(req, timeout=30) as response:
-            raw = response.read(2_000_001)
+        try:
+            with opener.open(req, timeout=30) as response:
+                raw = response.read(2_000_001)
+        except urllib.error.HTTPError as exc:
+            stage = "OAuth token exchange" if url == "https://oauth2.googleapis.com/token" else "Search Analytics query"
+            error_code = None
+            if stage == "OAuth token exchange":
+                try:
+                    remote = json.loads(exc.read(8192))
+                    candidate = remote.get("error") if isinstance(remote, dict) else None
+                    if candidate in ("invalid_grant", "invalid_client", "unauthorized_client"):
+                        error_code = candidate
+                except Exception:
+                    pass
+            raise GoogleRequestError(stage, exc.code, error_code) from None
         if len(raw) > 2_000_000:
             raise ValueError("Response exceeds limit")
         data = json.loads(raw)
@@ -112,6 +150,9 @@ def main():
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(report, allow_nan=False) + "\n")
         print("Captured finalized GSC evidence for two 28-day windows; no credentials exported")
+    except GoogleRequestError as exc:
+        print("GSC capture failed: " + exc.diagnostic)
+        return 1
     except Exception as exc:
         # Never log remote bodies, credential-bearing URLs, or exception messages.
         print(f"GSC capture failed ({type(exc).__name__}); check configuration and property access")

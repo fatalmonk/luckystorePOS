@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import MagicMock, patch
 
 import gsc_snapshot as gsc
@@ -17,6 +18,29 @@ CONFIG = {"GSC_CLIENT_ID": "fake-client", "GSC_CLIENT_SECRET": "fake-secret",
 
 
 class SnapshotTests(unittest.TestCase):
+    def test_http_errors_identify_stage_without_exporting_remote_text(self):
+        cases = [(400, b'{"error":"invalid_grant","error_description":"fake-secret"}', "OAuth token exchange", "Refresh token"),
+                 (401, b'{"error":"invalid_client"}', "OAuth token exchange", "GSC_CLIENT_SECRET"),
+                 (403, b'{"error":{"message":"fake-secret"}}', "Search Analytics query", "property access")]
+        for status, body, stage, hint in cases:
+            with self.subTest(stage=stage, status=status):
+                opener = MagicMock()
+                error = urllib.error.HTTPError("https://example.invalid/fake-secret", status, "fake-secret", {}, io.BytesIO(body))
+                if stage == "OAuth token exchange":
+                    opener.open.side_effect = error
+                else:
+                    response = MagicMock()
+                    response.__enter__.return_value.read.return_value = b'{"access_token":"fake-access"}'
+                    opener.open.side_effect = [response, error]
+                with patch.dict(os.environ, CONFIG, clear=True), patch("urllib.request.build_opener", return_value=opener):
+                    with self.assertRaises(gsc.GoogleRequestError) as caught:
+                        gsc.capture()
+                text = caught.exception.diagnostic
+                self.assertIn(stage, text)
+                self.assertIn(str(status), text)
+                self.assertIn(hint, text)
+                self.assertNotIn("fake-secret", text)
+
     def test_capture_dates_requests_and_credentials(self):
         requests = []
 
