@@ -123,12 +123,14 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   describe('Schema.org Precision & Validity', () => {
     it('renders delivery FAQ JSON-LD as an initial HTML script element', () => {
       const element = JsonLd({ data: getDeliveryFaqSchema() });
-      const elementProps = React.isValidElement(element) ? element.props : null;
 
-      expect(React.isValidElement(element)).toBe(true);
+      if (!React.isValidElement(element)) {
+        throw new Error('Expected JSON-LD to render a script element');
+      }
+
       expect(element.type).toBe('script');
-      expect(elementProps?.type).toBe('application/ld+json');
-      const json = JSON.parse(elementProps?.dangerouslySetInnerHTML.__html ?? '{}');
+      expect(element.props.type).toBe('application/ld+json');
+      const json = JSON.parse(element.props.dangerouslySetInnerHTML.__html);
       expect(json['@type']).toBe('FAQPage');
       expect(json.mainEntity).toHaveLength(DELIVERY_FAQS.length);
     });
