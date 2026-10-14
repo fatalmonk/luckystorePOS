@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { HomeShell } from '../components/HomeShell';
 import { getHomePageData } from '../lib/products/getHomePageData';
-import { img, srcSet } from '../lib/imageUrl';
 import { toProductSlug } from '../lib/products/slugify';
 
 export const revalidate = 60;
@@ -17,14 +16,10 @@ export const metadata: Metadata = {
   },
 };
 
+/** Loads English homepage data and renders structured data, the hero preload, and the home shell. */
 export default async function Home() {
   const data = await getHomePageData('en');
 
-  // Preload primary campaign hero image (LCP element)
-  const primaryHeroAvif = img('/banners/promo_welcome_v2_1200.avif');
-  const primaryHeroSrcSet = srcSet(
-    '/banners/promo_welcome_v2_400.avif 400w, /banners/promo_welcome_v2_600.avif 600w, /banners/promo_welcome_v2_800.avif 800w, /banners/promo_welcome_v2_1200.avif 1200w'
-  );
   const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
@@ -56,15 +51,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd).replace(/</g, '\\u003c') }}
       />
-      <link
-        rel="preload"
-        as="image"
-        href={primaryHeroAvif}
-        imageSrcSet={primaryHeroSrcSet}
-        imageSizes="100vw"
-        type="image/avif"
-        fetchPriority="high"
-      />
+      <link rel="preload" as="image" href="/images/hero-reference.webp" fetchPriority="high" />
       <HomeShell
         {...data}
         locale="en"
