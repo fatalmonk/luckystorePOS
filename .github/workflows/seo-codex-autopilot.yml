@@ -20,7 +20,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gsc:
+    if: >-
+      github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: seo-autopilot
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate Search Console collector
+        run: python3 -m unittest discover -s scripts/seo -p 'test_gsc_snapshot.py' -v
+      - name: Capture read-only Search Console evidence
+        env:
+          GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
+          GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
+          GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+        run: python3 scripts/seo/gsc_snapshot.py --output /tmp/gsc-input.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seo-gsc-evidence
+          path: /tmp/gsc-input.json
+          if-no-files-found: error
+          retention-days: 1
+
   propose:
+    needs: gsc
     if: >-
       github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
@@ -74,6 +111,13 @@ jobs:
           mkdir -p /tmp/seo-autopilot-evidence
           python3 scripts/seo/audit_input.py --run-id "$AUDIT_RUN_ID" --base "$BASE_SHA" --output seo/autopilot-input.json
 
+      - name: Download credential-free Search Console evidence
+        if: steps.existing_pr.outputs.skip != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: seo-gsc-evidence
+          path: seo/
+
       - name: Run Codex in restricted workspace
         if: steps.existing_pr.outputs.skip != 'true'
         uses: openai/codex-action@v1
@@ -94,7 +138,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.sha }}
         run: |
-          rm -f seo/autopilot-input.json
+          rm -f seo/autopilot-input.json seo/gsc-input.json
           git show "$BASE_SHA:scripts/seo/validate_autopilot_changes.py" > /tmp/seo-guard.py
           python3 -I /tmp/seo-guard.py --base "$BASE_SHA"
           if [ -n "$(git status --porcelain)" ]; then
