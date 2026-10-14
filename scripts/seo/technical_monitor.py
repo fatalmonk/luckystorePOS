@@ -21,10 +21,25 @@ MAX_BYTES = 8_000_000
 MAX_SITEMAP_URLS = 50000
 TRACKED_BOTS = ("GPTBot", "PerplexityBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "cohere-ai")
 
+class RestrictedRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Reject unsafe redirect destinations before any redirected request."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not same_site(newurl):
+            raise ValueError("blocked unsafe redirect destination")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
 def fetch(url):
+    if not same_site(url):
+        return {"status": None, "url": url, "error": "blocked unsafe request URL"}
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xml,text/plain,*/*"})
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT, context=ssl.create_default_context()) as res:
+        opener = urllib.request.build_opener(
+            urllib.request.HTTPSHandler(context=ssl.create_default_context()),
+            RestrictedRedirectHandler(),
+        )
+        with opener.open(req, timeout=TIMEOUT) as res:
+            if not same_site(res.geturl()):
+                raise ValueError("blocked unsafe final URL")
             body = res.read(MAX_BYTES + 1)
             if len(body) > MAX_BYTES:
                 raise ValueError("response exceeds 8 MB limit")
@@ -35,8 +50,14 @@ def fetch(url):
         return {"status": None, "url": url, "error": str(exc)}
 
 def same_site(url):
-    p = urllib.parse.urlsplit(url)
-    return p.scheme == "https" and p.hostname in {"luckystore1947.com", "www.luckystore1947.com"}
+    try:
+        p = urllib.parse.urlsplit(url)
+        return (p.scheme == "https"
+                and p.hostname in {"luckystore1947.com", "www.luckystore1947.com"}
+                and p.port in (None, 443)
+                and not p.username and not p.password)
+    except ValueError:
+        return False
 
 def parse_sitemap(xml):
     root = ET.fromstring(xml)
@@ -173,6 +194,7 @@ def run(base=BASE, sample_limit=3):
     seen = set()
     urls = []
     sitemap_failures = []
+    truncated = False
     while queue and len(seen) < 25 and len(urls) < MAX_SITEMAP_URLS:
         url = queue.pop(0)
         if url in seen:
@@ -190,15 +212,19 @@ def run(base=BASE, sample_limit=3):
             if kind == "sitemapindex":
                 queue.extend(entries)
             else:
-                urls.extend(entries)
+                remaining = MAX_SITEMAP_URLS - len(urls)
+                urls.extend(entries[:remaining])
+                if len(entries) > remaining:
+                    truncated = True
         except (ET.ParseError, ValueError) as exc:
             sitemap_failures.append({"url": url, "error": str(exc)})
-    if queue or len(urls) >= MAX_SITEMAP_URLS:
+    incomplete = bool(queue) or truncated
+    if incomplete:
         report["limitations"].append("sitemap traversal cap reached; count incomplete")
     if sitemap_failures:
         report["issues"].append("sitemap_fetch_or_parse_failure")
-    report["checks"]["sitemap"] = {"sitemaps_checked": len(seen), "url_count": len(urls) if not sitemap_failures and not queue else None,
-        "unique_url_count": len(set(urls)) if not sitemap_failures and not queue else None, "failures": sitemap_failures, "complete": not sitemap_failures and not queue}
+    report["checks"]["sitemap"] = {"sitemaps_checked": len(seen), "url_count": len(urls) if not sitemap_failures and not incomplete else None,
+        "unique_url_count": len(set(urls)) if not sitemap_failures and not incomplete else None, "failures": sitemap_failures, "complete": not sitemap_failures and not incomplete}
     candidates = [base + "/"]
     for url in urls:
         if same_site(url) and urllib.parse.urlsplit(url).path.rstrip("/") == "/delivery":
