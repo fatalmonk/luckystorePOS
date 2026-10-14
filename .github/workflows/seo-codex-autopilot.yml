@@ -1,9 +1,16 @@
 name: Lucky Store SEO Codex Autopilot
 
 on:
-  schedule:
-    - cron: '45 2 * * *' # 08:45 Asia/Dhaka; after the 08:00 technical audit
+  workflow_run:
+    workflows: ['Lucky Store Technical SEO Monitor']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      audit_run_id:
+        description: 'Completed current-main audit run ID; blank selects latest successful main audit'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -14,7 +21,12 @@ concurrency:
 
 jobs:
   propose:
-    if: github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main'
+    if: >-
+      github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: seo-autopilot
@@ -52,21 +64,15 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Fetch latest verified technical audit
+      - name: Validate exact fresh audit evidence
         if: steps.existing_pr.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          AUDIT_RUN_ID: ${{ github.event.workflow_run.id || inputs.audit_run_id }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           mkdir -p /tmp/seo-autopilot-evidence
-          run_id=$(gh run list --workflow seo-technical-monitor.yml --branch main --status completed --limit 10 --json databaseId,conclusion --jq '[.[] | select(.conclusion == "success")][0].databaseId // empty')
-          if [ -n "$run_id" ]; then
-            gh run download "$run_id" -n seo-technical-report -D /tmp/seo-autopilot-evidence || true
-          fi
-          if [ -f /tmp/seo-autopilot-evidence/latest.json ]; then
-            cp /tmp/seo-autopilot-evidence/latest.json seo/autopilot-input.json
-          else
-            echo '{"status":"unverified","limitations":["No verified GitHub Actions technical audit artifact available"]}' > seo/autopilot-input.json
-          fi
+          python3 scripts/seo/audit_input.py --run-id "$AUDIT_RUN_ID" --base "$BASE_SHA" --output seo/autopilot-input.json
 
       - name: Run Codex in restricted workspace
         if: steps.existing_pr.outputs.skip != 'true'

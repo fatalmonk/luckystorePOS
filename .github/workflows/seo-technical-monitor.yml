@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -34,13 +36,13 @@ jobs:
         run: |
           test -s seo/reports/technical/latest.json || {
             mkdir -p seo/reports/technical
-            printf '{"schema_version":1,"status":"execution_failed","issues":["audit process failed before report generation"]}\n' > seo/reports/technical/latest.json
+            printf '{"schema_version":2,"status":"execution_failed","issues":["audit process failed before report generation"]}\n' > seo/reports/technical/latest.json
           }
       - name: Upload machine-readable report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: seo-technical-report
+          name: seo-technical-report-${{ github.run_attempt }}
           path: seo/reports/technical/latest.json
           retention-days: 90
           if-no-files-found: error
@@ -78,6 +80,7 @@ jobs:
               `**Report status:** ${report.status || 'unknown'}`,
               `**Audit step:** ${process.env.AUDIT_OUTCOME}`,
               `**Sitemap URLs:** ${report.checks?.sitemap?.url_count ?? 'unverified'}`,
+              `**Coverage:** ${report.coverage?.scope ?? 'unverified'}; ${report.coverage?.attempted_pages ?? 'unverified'} pages attempted; ${report.coverage?.skipped_sitemap_urls ?? 'unverified'} sitemap URLs skipped`,
               '',
               '### Issues', excerpt(problems),
               '',
@@ -85,7 +88,7 @@ jobs:
               '',
               '### Warnings (informational)', excerpt(warnings),
               '',
-              'Download the full `seo-technical-report` artifact from the workflow run.',
+              'Download the attempt-specific `seo-technical-report` artifact from the workflow run.',
               'Do not interpret network failures as confirmed production defects.',
             ].join('\n');
             if (isIncident) {
@@ -96,10 +99,10 @@ jobs:
                 const created = await github.rest.issues.create({ owner, repo, title, body });
                 core.info(`Opened incident #${created.data.number}`);
               }
-            } else if (report.status === 'passed' && open) {
+            } else if (report.status === 'passed_sample' && open) {
               await github.rest.issues.createComment({
                 owner, repo, issue_number: open.number,
-                body: `Monitor recovered in ${runUrl}. No issues or verification limitations were reported. Closing this automated incident; warnings, if any, remain in the report.`
+                body: `The sampled checks recovered in ${runUrl}. No issues or verification limitations were reported in this sample. Closing this automated incident; uninspected URLs and indexing remain unverified. Warnings, if any, remain in the report.`
               });
               await github.rest.issues.update({ owner, repo, issue_number: open.number, state: 'closed', state_reason: 'completed' });
               core.info(`Closed recovered incident #${open.number}`);

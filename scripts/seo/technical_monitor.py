@@ -2,6 +2,7 @@
 """Read-only Lucky Store technical SEO monitor. Python standard library only."""
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -15,6 +16,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 BASE = "https://www.luckystore1947.com"
+MONITOR_VERSION = "2"
 UA = "LuckyStoreSEOAudit/1.0 (+https://www.luckystore1947.com)"
 TIMEOUT = 20
 MAX_BYTES = 8_000_000
@@ -43,7 +45,8 @@ def fetch(url):
             body = res.read(MAX_BYTES + 1)
             if len(body) > MAX_BYTES:
                 raise ValueError("response exceeds 8 MB limit")
-            return {"status": res.status, "url": res.geturl(), "content_type": res.headers.get("Content-Type", ""), "body": body.decode("utf-8", errors="replace")}
+            return {"status": res.status, "url": res.geturl(), "content_type": res.headers.get("Content-Type", ""), "body": body.decode("utf-8", errors="replace"),
+                    "body_sha256": hashlib.sha256(body).hexdigest(), "etag": res.headers.get("ETag"), "last_modified": res.headers.get("Last-Modified")}
     except urllib.error.HTTPError as exc:
         return {"status": exc.code, "url": exc.geturl(), "error": f"HTTP {exc.code}"}
     except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
@@ -122,7 +125,12 @@ def schema_types(obj):
 
 def inspect_page(url):
     res = fetch(url)
-    out = {"requested_url": url, "final_url": res["url"], "http_status": res["status"], "issues": [], "warnings": []}
+    out = {"requested_url": url, "final_url": res["url"], "http_status": res["status"], "issues": [], "warnings": [], "limitations": [],
+           "response_evidence": {k: res.get(k) for k in ("body_sha256", "etag", "last_modified")}}
+    if res["status"] is None:
+        out["limitations"].append("page_unreachable_from_audit_runner; production defect unconfirmed")
+        out["error"] = res.get("error")
+        return out
     if res["status"] != 200:
         out["issues"].append("page_not_http_200_or_unreachable")
         out["error"] = res.get("error")
@@ -183,13 +191,17 @@ def robots_summary(text):
 
 def run(base=BASE, sample_limit=3):
     now = dt.datetime.now(dt.timezone.utc).isoformat()
-    report = {"schema_version": 1, "checked_at_utc": now, "base_url": base, "status": "completed", "checks": {}, "pages": [], "issues": [], "warnings": [], "limitations": []}
+    report = {"schema_version": 2, "checked_at_utc": now, "base_url": base, "status": "completed", "checks": {}, "pages": [], "issues": [], "warnings": [], "limitations": [],
+              "provenance": {"monitor_version": MONITOR_VERSION, "monitor_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                             "repository": os.environ.get("GITHUB_REPOSITORY"), "run_id": os.environ.get("GITHUB_RUN_ID"),
+                             "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"), "checkout_commit": os.environ.get("GITHUB_SHA"),
+                             "deployed_commit": "unverified"}}
     robots = fetch(base + "/robots.txt")
     if robots["status"] == 200:
         report["checks"]["robots"] = {"http_status": 200, **robots_summary(robots["body"])}
     else:
         report["checks"]["robots"] = {"http_status": robots["status"], "error": robots.get("error")}
-        report["issues"].append("robots_unavailable")
+        report["limitations" if robots["status"] is None else "issues"].append("robots_unavailable")
     queue = [base + "/sitemap.xml"]
     seen = set()
     urls = []
@@ -205,7 +217,7 @@ def run(base=BASE, sample_limit=3):
             continue
         res = fetch(url)
         if res["status"] != 200:
-            sitemap_failures.append({"url": url, "error": res.get("error", "non_200")})
+            sitemap_failures.append({"url": url, "http_status": res["status"], "classification": "unverified" if res["status"] is None else "issue", "error": res.get("error", "non_200")})
             continue
         try:
             kind, entries = parse_sitemap(res["body"])
@@ -221,17 +233,28 @@ def run(base=BASE, sample_limit=3):
     incomplete = bool(queue) or truncated
     if incomplete:
         report["limitations"].append("sitemap traversal cap reached; count incomplete")
-    if sitemap_failures:
+    if any(failure.get("classification") != "unverified" for failure in sitemap_failures):
         report["issues"].append("sitemap_fetch_or_parse_failure")
+    if any(failure.get("classification") == "unverified" for failure in sitemap_failures):
+        report["limitations"].append("sitemap transport failure from audit runner; production defect unconfirmed")
     report["checks"]["sitemap"] = {"sitemaps_checked": len(seen), "url_count": len(urls) if not sitemap_failures and not incomplete else None,
         "unique_url_count": len(set(urls)) if not sitemap_failures and not incomplete else None, "failures": sitemap_failures, "complete": not sitemap_failures and not incomplete}
-    candidates = [base + "/"]
-    for url in urls:
-        if same_site(url) and urllib.parse.urlsplit(url).path.rstrip("/") == "/delivery":
-            candidates.append(url)
-            break
+    # Always inspect both locale homepages and delivery entry points. Sample
+    # each available route family rather than the first three products alone.
+    candidates = [base + path for path in ("/", "/bn", "/delivery", "/bn/delivery")]
+    safe_urls = list(dict.fromkeys(url for url in urls if same_site(url)))
+    families = ("/category/", "/bn/category/", "/brand/", "/bn/brand/", "/blog/")
+    missing_families = []
+    for family in families:
+        candidate = next((url for url in safe_urls if urllib.parse.urlsplit(url).path.startswith(family)), None)
+        if candidate:
+            candidates.append(candidate)
+        else:
+            missing_families.append(family)
     product_candidates = [x for x in urls if same_site(x) and re.search(r"/(product|products)/", urllib.parse.urlsplit(x).path)]
-    candidates.extend(product_candidates[:sample_limit])
+    for bengali in (False, True):
+        localized = [url for url in product_candidates if urllib.parse.urlsplit(url).path.startswith("/bn/") == bengali]
+        candidates.extend(localized[:sample_limit])
     if not product_candidates:
         report["limitations"].append("no product URLs identified in sitemap sample; product schema not assessed")
     for url in dict.fromkeys(candidates):
@@ -239,9 +262,23 @@ def run(base=BASE, sample_limit=3):
         report["pages"].append(page)
         report["issues"].extend(f"{url}: {i}" for i in page["issues"])
         report["warnings"].extend(f"{url}: {i}" for i in page["warnings"])
+        report["limitations"].extend(f"{url}: {i}" for i in page["limitations"])
+    attempted = {page["requested_url"] for page in report["pages"]}
+    discovered = set(urls)
+    report["coverage"] = {
+        "scope": "sample", "full_site_verified": False,
+        "discovered_urls": len(discovered), "attempted_pages": len(attempted),
+        "fetched_pages": sum(page["http_status"] == 200 for page in report["pages"]),
+        "failed_pages": sum(page["http_status"] != 200 for page in report["pages"]),
+        "inspected_sitemap_urls": len(discovered & attempted),
+        "skipped_sitemap_urls": len(discovered - attempted),
+        "unsafe_sitemap_urls": sum(not same_site(url) for url in discovered),
+        "missing_route_families": missing_families,
+        "limitations": ["Bounded route sample only; uninspected URLs, indexing and deployed revision remain unverified."],
+    }
     if report["checks"]["sitemap"]["url_count"] is None:
         report["limitations"].append("sitemap URL count not independently verified")
-    report["status"] = "issues_found" if report["issues"] else ("incomplete" if report["limitations"] else "passed")
+    report["status"] = "issues_found" if report["issues"] else ("incomplete" if report["limitations"] else "passed_sample")
     return report
 
 def main():
@@ -253,7 +290,9 @@ def main():
     dest = Path(args.output)
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    summary = f"### Lucky Store technical SEO — {report['status']}\n\n- Sitemap URLs (complete): {report['checks']['sitemap']['url_count']}\n- Pages sampled: {len(report['pages'])}\n- Issues: {len(report['issues'])}\n- Warnings: {len(report['warnings'])}\n- Limitations: {len(report['limitations'])}\n- Report: workflow artifact `seo-technical-report`\n"
+    coverage = report['coverage']
+    artifact = f"seo-technical-report-{os.environ.get('GITHUB_RUN_ATTEMPT', 'local')}"
+    summary = f"### Lucky Store technical SEO — {report['status']}\n\n- Sitemap URLs (complete): {report['checks']['sitemap']['url_count']}\n- Sample attempted/fetched/failed: {coverage['attempted_pages']}/{coverage['fetched_pages']}/{coverage['failed_pages']}\n- Sitemap URLs inspected/skipped: {coverage['inspected_sitemap_urls']}/{coverage['skipped_sitemap_urls']}\n- Scope: bounded sample, not a full-site verdict\n- Issues: {len(report['issues'])}\n- Warnings: {len(report['warnings'])}\n- Verification limitations: {len(report['limitations'])}\n- Report: workflow artifact `{artifact}`\n"
     print(summary)
     if args.summary:
         with open(args.summary, "a", encoding="utf-8") as fh:
