@@ -26,6 +26,28 @@ const post: SeoPost = {
 };
 
 describe('NotFair blog routes', () => {
+  it.each([
+    ['2026-10-14T05:59:59+06:00', true],
+    ['2026-10-14T06:00:00+06:00', true],
+    ['2026-10-13T20:00:01-04:00', false],
+    ['2099-01-01T00:00:00Z', false],
+  ])('claims publication only once its instant has arrived (%s)', async (published_at, eligible) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-14T00:00:00Z'));
+    try {
+      fetchMock.mockImplementation(async () => Response.json({ post: { ...post, published_at } }));
+      const params = Promise.resolve({ slug: post.slug });
+      const html = renderToStaticMarkup(await BlogPost({ params }));
+      const schema = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+        .map(match => JSON.parse(match[1])).find(value => value['@type'] === 'BlogPosting');
+      expect(schema?.datePublished).toBe(eligible ? published_at : undefined);
+      expect(schema).not.toHaveProperty('dateModified');
+      expect((await generateMetadata({ params })).openGraph).toMatchObject({ publishedTime: eligible ? published_at : undefined });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('emits truthful and injection-safe BlogPosting structured data', async () => {
     const hostile = { ...post, title: '</script><script>injected()</script>' };
     fetchMock.mockImplementation(async () => Response.json({ post: hostile }));

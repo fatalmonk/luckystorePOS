@@ -88,6 +88,26 @@ vi.mock('../lib/products/getCachedCategories', () => ({
 }));
 
 describe('sitemap', () => {
+  it('includes publication instants before and at now but excludes later scheduled posts', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-14T00:00:00Z'));
+    try {
+      vi.mocked(getSeoPosts).mockResolvedValueOnce([
+        { slug: 'before', published_at: '2026-10-14T05:59:59+06:00' },
+        { slug: 'at-now', published_at: '2026-10-14T06:00:00+06:00' },
+        { slug: 'after', published_at: '2026-10-13T20:00:01-04:00' },
+        { slug: 'future', published_at: '2099-01-01T00:00:00Z' },
+      ] as Awaited<ReturnType<typeof getSeoPosts>>);
+      expect((await sitemap()).filter(entry => entry.url.includes('/blog')).map(entry => entry.url)).toEqual([
+        'https://www.luckystore1947.com/blog',
+        'https://www.luckystore1947.com/blog/before',
+        'https://www.luckystore1947.com/blog/at-now',
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('adds published canonical blog URLs once without inventing modification dates', async () => {
     vi.mocked(getSeoPosts).mockResolvedValueOnce([
       { slug: 'published', published_at: '2026-10-12T00:00:00Z' },
