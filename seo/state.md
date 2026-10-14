@@ -22,7 +22,7 @@ next_run:       2026-10-15
 
 ## Baseline Snapshot (2026-10-14)
 
-### Technical SEO — PASS ✅
+### Technical SEO — recorded baseline (revalidate live)
 
 | Signal | Status | Evidence |
 |--------|--------|----------|
@@ -38,15 +38,15 @@ next_run:       2026-10-15
 | llms.txt | ✅ | `/llms.txt` + `/llms-full.txt` present (105-line full doc) |
 | AI agent resources | ✅ | `auth.md`, `/.well-known/api-catalog` advertised in llms.txt |
 
-### Content & Entity — PARTIAL ⚠️
+### Content & Entity — mixed / pending verification
 
 | Signal | Status | Gap |
 |--------|--------|-----|
 | Definition block on homepage | ⚠️ | No explicit 1-2 sentence entity definition in first 200 words |
 | FAQPage schema — `/delivery` | ✅ | `getDeliveryFaqSchema()` + visible FAQ section — live in production |
-| FAQPage schema — homepage | ❌ | No FAQ schema or visible FAQ block on homepage |
-| FAQPage schema — `/fortune-cookies-near-me` | ❌ | No FAQ schema on this page |
-| Blog / content hub | ❌ | `/blog` route exists but no published posts |
+| Homepage buyer FAQ / clarity | ⚠️ | Evaluate whether shoppers need additional visible guidance; schema absence is not a defect |
+| Fortune-cookie page buyer guidance | ❓ | Review live content and demand; FAQ markup is optional |
+| Blog / content hub | ❓ | Route exists; published post count requires live/CMS verification |
 | Author attribution | ❌ | No named author pages |
 | Original research / data | ❌ | No proprietary data publications |
 | Wikidata / Wikipedia entity | ❓ | Not verified — check manually |
@@ -84,30 +84,31 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ## Open Opportunities (Priority-Ordered)
 
-### 🔴 HIGH — FAQPage schema + FAQ content block (homepage)
-- **Impact:** Directly feeds AI Overview and Perplexity citation for "what is Lucky Store" and "order groceries Chattogram" queries
-- **Status:** `/delivery` already has FAQPage schema ✅; homepage and `/fortune-cookies-near-me` do not
-- **Pages:** Homepage (`(english)/page.tsx`), `/fortune-cookies-near-me`
-- **Action:** Add FAQ JSON-LD + visible Q&A section; target Q&As documented in `runbook.md`
+### 🔴 HIGH — Verify buyer-facing homepage and delivery clarity
+- **Outcome sought:** Help eligible Chawkbazar shoppers understand what Lucky Store sells, whether delivery reaches them, and how to complete an order.
+- **Status:** `/delivery` already includes visible FAQs and `getDeliveryFaqSchema()`; missing homepage or fortune-cookie FAQ markup alone is **not** an SEO defect.
+- **Pages:** Homepage and `/delivery`; assess `/fortune-cookies-near-me` only when its actual content and search demand justify work.
+- **Action:** Audit rendered copy, checkout flow and current delivery policies; add or clarify **visible** buyer-helpful content only when a specific verified gap exists. Do not add FAQ JSON-LD solely for AI citations or unsupported Google rich-result expectations. Any structured data must reflect visible, accurate content.
+- **Evidence gate:** Record the user question, source of truth, expected conversion benefit and validation method before implementation.
 
 ### 🔴 HIGH — Homepage entity definition block
-- **Impact:** AI answer engines cite clear, first-200-word definitions; current homepage leads with hero image
+- **Impact hypothesis:** A concise, accurate introduction may help shoppers understand the store and delivery scope; AI citation gains are unproven.
 - **Pages:** Homepage `HomeShell` component or layout metadata
-- **Action:** Add `<meta name="description">` with entity framing + update `llms.txt` "About Lucky Store" block with definition-first copy
+- **Action:** Inspect existing visible introduction and metadata first; improve verified customer-facing clarity if needed. Treat `llms.txt` changes as optional documentation, not a ranking tactic.
 
 ### 🟡 MEDIUM — Blog / content hub activation
-- **Impact:** Original grocery content earns citations for category-level queries
-- **Pages:** `/blog` — route exists, 0 posts
-- **Action:** Draft first 3 posts targeting queries #9, #10, #4 (roadmap in `content-calendar.md`)
+- **Impact hypothesis:** Useful, differentiated content may attract relevant shoppers; citation and conversion effects require measurement.
+- **Pages:** `/blog` — publication count must be verified against live routes and CMS before work.
+- **Action:** Audit already published articles, Search Console queries and catalog availability; commission new posts only for supported gaps (see `seo/content-calendar.md`).
 
 ### 🟡 MEDIUM — Product page schema (Product + Offer)
-- **Impact:** Product comparison queries, price-aware AI answers
+- **Impact hypothesis:** Accurate product and offer details can help search engines and shoppers interpret listings; no AI citation guarantee.
 - **Pages:** `/product/[slug]`
 - **Action:** Verify `Product` schema exists and includes `offers.price` and `availability`
 
 ### 🟢 LOW — Wikidata entity creation
-- **Impact:** Knowledge Graph recognition, entity authority
-- **Action:** Create Wikidata item for Lucky Store with NAP + founding year
+- **Impact:** No guaranteed Knowledge Graph outcome; third-party entity creation is not a priority without independent notability and policy eligibility.
+- **Action:** Do not create a Wikidata item solely for SEO. Assess notability and sourcing requirements first.
 
 ---
 
@@ -117,18 +118,18 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 technical_seo:
   sitemap_url_count: 902          # updated each run
   robots_ai_bots_pass: true       # boolean
-  canonical_errors: 0             # from crawl
-  broken_links: 0                 # from crawl
+  canonical_errors: null          # no full crawl evidenced; unknown until measured
+  broken_links: null              # no full crawl evidenced; unknown until measured
 
 content:
   faq_schema_pages: 1             # pages with FAQPage schema (/delivery confirmed)
-  blog_posts_published: 0         # total live posts
+  blog_posts_published: null      # not verified; count live published posts before setting
   llms_txt_last_updated: "2026-10-14"
 
 ai_visibility:
   queries_tested: 0               # of 10
   citations_earned: 0             # times LS cited
-  citation_rate: "0%"
+  citation_rate: null             # no queries tested; avoid treating unknown as 0%
 
 competitor_signals:
   chaldal_new_ctg_content: false  # manual flag
@@ -142,4 +143,5 @@ competitor_signals:
 
 | Date | Run | PRs | Key Action |
 |------|-----|-----|------------|
-| 2026-10-14 | init | — | Baseline established, seo/ initialized |
+| 2026-10-14 | init | #458 | Baseline recorded, seo/ initialized |
+| 2026-10-14 | review | #460 | Reconciled implementation queue with runbook; removed FAQ markup-only priority and unsupported zero metrics |

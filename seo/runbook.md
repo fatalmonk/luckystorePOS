@@ -1,15 +1,15 @@
 # SEO Autopilot — Daily Runbook
 
 This file is the operational script for every daily run of the Lucky Store SEO Autopilot.
-The scheduled agent reads this file first, executes each phase in order, updates `context.md`, and opens a PR if changes were made.
+The scheduled agent reads this file first, executes each phase in order, updates `seo/state.md`, and opens a review PR for verified changes. Never auto-merge.
 
 ---
 
 ## Pre-Flight
 
-1. `git pull origin main` — sync to latest
+1. Sync to the current default branch and confirm a clean working tree; never overwrite another agent's changes
 2. Read `seo/state.md` — load current state + last-run metrics
-3. Check `context.md` (repo root) — note any active PRs or merges since last run
+3. Review recent commits and open PRs; use `seo/state.md` as canonical persisted state. Root `context.md` is gitignored and is not SEO state.
 
 ---
 
@@ -21,11 +21,11 @@ curl -s https://www.luckystore1947.com/sitemap.xml | grep -c '<loc>'
 ```
 - Expect: > 800 URLs
 - Flag if count drops >10% from baseline (potential page deletion / build failure)
-- Update `sitemap_url_count` in `context.md`
+- Update `sitemap_url_count` in `seo/state.md` only after a successful HTTP response and parsed XML count; otherwise mark unverified.
 
 ### 1b. robots.txt AI bot access
 
-All six required bots must be listed with `Allow: /` and no overriding `Disallow: /`. Fetch the file and check each bot's directive block:
+Audit the six tracked agents as an **observability check**, not a universal requirement to allow AI crawlers. A missing explicit Allow does not automatically mean blocked. Check effective robots directives, including wildcard rules and longest-match precedence; report intentional policy separately. The simple script below is a diagnostic only:
 
 ```bash
 ROBOTS=$(curl -s https://www.luckystore1947.com/robots.txt)
@@ -48,9 +48,8 @@ for BOT in "${REQUIRED_BOTS[@]}"; do
 done
 ```
 
-- All six must print `OK`
-- Any `FAIL` → STOP, create HIGH-PRIORITY PR before continuing the run
-- `WARN` → check wildcard `User-agent: *` block; acceptable only if it has `Allow: /`
+- Interpret diagnostic results against effective directives and documented crawler policy. Do not automatically unblock AI bots.
+- Record unexpected changes as findings; block deployment only for confirmed critical regressions.
 
 ### 1c. Canonical + hreflang spot check
 - Fetch homepage and one product page HTML
@@ -67,7 +66,7 @@ done
 ## Phase 2: Ranking Opportunities (10 min)
 
 ### 2a. Target query tracking
-For each query in the 10-query list in `context.md`:
+For each query in the 10-query list in `seo/state.md`:
 1. Search Perplexity (if accessible) or note "manual check needed"
 2. Record: cited? competitor cited instead? content format winning?
 3. Update `ai_visibility.queries_tested` and `ai_visibility.citations_earned`
@@ -75,7 +74,7 @@ For each query in the 10-query list in `context.md`:
 ### 2b. New keyword opportunities
 Look for queries where Lucky Store content exists but AI answer goes to a competitor:
 - Identify the content gap (definition missing? no FAQ? no schema?)
-- Add to opportunity backlog in `context.md` if new
+- Add a sourced opportunity to `seo/state.md` if new
 
 ---
 
@@ -92,60 +91,16 @@ For each competitor (Chaldal, Shwapno, Meena Bazar):
 
 ## Phase 4: AI Visibility Improvements (implementation)
 
-Implement one improvement per run from the priority list in `context.md`.
+Implement one verified, conversion-relevant improvement per run from `seo/state.md`. Do not ship markup solely to chase AI citations or unsupported rich-result expectations.
 
-### Current top priority: FAQPage schema
+### Current priority: validate existing FAQ and improve buyer-facing content
 
-**Target pages (in order):**
-1. `/delivery` — FAQ: delivery radius, fees, hours, payment methods
-2. Homepage (`(english)/page.tsx`) — FAQ: what is Lucky Store, delivery area, how to order
-3. `/fortune-cookies-near-me` — FAQ: what brands, near me context
-
-**FAQ questions to implement on `/delivery`:**
-
-```json
-[
-  {
-    "q": "What areas does Lucky Store deliver to?",
-    "a": "Lucky Store delivers within a verified 1 km radius of the store at 665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203, Bangladesh. Delivery is available to addresses within walking distance of Chawkbazar."
-  },
-  {
-    "q": "How much does Lucky Store delivery cost?",
-    "a": "Delivery is free for orders of ৳500 and above. Orders below ৳500 incur a ৳40 delivery fee."
-  },
-  {
-    "q": "What payment methods does Lucky Store accept?",
-    "a": "Lucky Store accepts Cash on Delivery and bKash. Payment is collected at the doorstep after you inspect the items."
-  },
-  {
-    "q": "What are Lucky Store's delivery hours?",
-    "a": "Lucky Store's delivery service runs daily from 9:00 AM to 12:30 AM. Orders placed within delivery hours are dispatched the same day."
-  },
-  {
-    "q": "Can I return groceries from Lucky Store?",
-    "a": "You may decline any unsatisfactory item during doorstep inspection by handing it back to the delivery agent immediately, with no fee penalty."
-  }
-]
-```
-
-**FAQ questions to implement on homepage:**
-
-```json
-[
-  {
-    "q": "What is Lucky Store?",
-    "a": "Lucky Store is a neighborhood grocery and daily bazaar store in Chawkbazar, Chattogram, Bangladesh, founded in 1947. It offers online ordering with doorstep delivery within 1 km of the store."
-  },
-  {
-    "q": "How do I order groceries from Lucky Store online?",
-    "a": "Browse products at luckystore1947.com, add items to your cart, and place your order. Delivery is available within 1 km of Chawkbazar. You pay with Cash on Delivery or bKash at the doorstep."
-  },
-  {
-    "q": "Does Lucky Store deliver to Chawkbazar?",
-    "a": "Yes. Lucky Store's primary delivery area is Chawkbazar and the surrounding 1 km radius in Chattogram. Enter your address at checkout to confirm eligibility."
-  }
-]
-```
+- **/delivery already has visible FAQ content and `getDeliveryFaqSchema()`.** Do not add duplicate FAQ markup. Verify it matches rendered text and current delivery rules.
+- Homepage: assess whether a short, visible explanation of Lucky Store, delivery eligibility and ordering answers genuine customer questions. Add useful text only when supported by code and live policy.
+- `/fortune-cookies-near-me`: inspect actual page content, stock and query intent before deciding whether any FAQ is useful.
+- Google's FAQ rich results are generally limited to well-known authoritative government and health sites; FAQPage markup is **not** a promised rich result or AI-citation boost. If used, markup must exactly match visible, accurate Q&A.
+- Verify store address, radius, fees, payment methods, hours, return policy and fulfillment promises against the current production source of truth. Do not reuse unverified example answers from prior runbooks.
+- Check existing live blog URLs and publication status before planning new articles; a route existing does not mean zero published posts.
 
 ### Subsequent priorities (queue)
 1. Blog post: "Best rice brands available online in Chattogram" → `/blog/best-rice-brands-chattogram`
@@ -157,18 +112,18 @@ Implement one improvement per run from the priority list in `context.md`.
 
 ## Phase 5: PR Creation
 
-If any change was made during Phase 4 (or if state metrics changed):
+For verified source changes or state updates, use a review PR; do not commit unrelated files or auto-merge:
 
 ```bash
 git checkout -b seo/YYYY-MM-DD
-git add -A
+git add <explicit-reviewed-paths>
 git commit -m "seo(autopilot): YYYY-MM-DD run — [summary of change]"
 git push origin seo/YYYY-MM-DD
 ```
 
 PR title format: `seo: [date] — [1-line summary]`
 PR labels: `seo`, `autopilot`
-PR description template: see `pr-template.md`
+PR description template: see `seo/pr-template.md`. Run applicable lint, typecheck and build; inspect affected rendered pages before proposing code changes. If unavailable, disclose that verification was not run.
 
 ---
 
@@ -198,8 +153,8 @@ git push origin seo/state-YYYY-MM-DD
 
 ## Abort Conditions
 
-Stop the run and notify immediately if:
-- `robots.txt` is blocking any AI bot with `Disallow: /`
+Stop deployment and notify immediately if:
+- Production robots directives unexpectedly block an important crawler, after verifying effective directives and intended policy (not every AI bot must be allowed)
 - Sitemap URL count drops below 400 (possible build failure)
 - Homepage schema blocks are missing (possible layout regression)
 - Any canonical URL points to a broken/404 page
