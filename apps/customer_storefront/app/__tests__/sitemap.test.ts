@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import sitemap, { isProductSitemapEligible } from '../sitemap';
+import { getSeoPosts } from '../../lib/notfair-client';
+
+vi.mock('../../lib/notfair-client', () => ({ getSeoPosts: vi.fn().mockResolvedValue([]) }));
 
 vi.mock('server-only', () => ({}));
 
@@ -85,6 +88,30 @@ vi.mock('../lib/products/getCachedCategories', () => ({
 }));
 
 describe('sitemap', () => {
+  it('adds published canonical blog URLs once without inventing modification dates', async () => {
+    vi.mocked(getSeoPosts).mockResolvedValueOnce([
+      { slug: 'published', published_at: '2026-10-12T00:00:00Z' },
+      { slug: 'published', published_at: '2026-10-12T00:00:00Z' },
+      { slug: 'draft', published_at: null },
+      { slug: 'invalid-date', published_at: 'not-a-date' },
+      { slug: 'invalid-calendar', published_at: '2026-02-30T00:00:00Z' },
+    ] as Awaited<ReturnType<typeof getSeoPosts>>);
+    const blogs = (await sitemap()).filter(entry => entry.url.includes('/blog'));
+    expect(blogs).toEqual([
+      { url: 'https://www.luckystore1947.com/blog' },
+      { url: 'https://www.luckystore1947.com/blog/published' },
+    ]);
+  });
+
+  it('isolates provider failures and preserves the non-blog sitemap', async () => {
+    const baseline = await sitemap();
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(getSeoPosts).mockRejectedValueOnce(new Error('private upstream details'));
+    expect(await sitemap()).toEqual(baseline);
+    expect(warning).toHaveBeenCalledWith('Blog sitemap unavailable; preserving non-blog entries.');
+    warning.mockRestore();
+  });
+
   it('correctly filters product sitemap eligibility', () => {
     expect(isProductSitemapEligible({ id: '1', name: 'Milk', price: 90, is_active: true })).toBe(true);
     expect(isProductSitemapEligible({ id: '2', name: 'Milk', price: 90, is_active: false })).toBe(false);

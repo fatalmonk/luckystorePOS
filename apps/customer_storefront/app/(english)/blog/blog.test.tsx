@@ -26,6 +26,32 @@ const post: SeoPost = {
 };
 
 describe('NotFair blog routes', () => {
+  it('emits truthful and injection-safe BlogPosting structured data', async () => {
+    const hostile = { ...post, title: '</script><script>injected()</script>' };
+    fetchMock.mockImplementation(async () => Response.json({ post: hostile }));
+    const html = renderToStaticMarkup(await BlogPost({ params: Promise.resolve({ slug: post.slug }) }));
+    const json = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match => match[1]).find(value => JSON.parse(value)['@type'] === 'BlogPosting');
+    expect(json).toBeDefined();
+    expect(json).not.toContain('<');
+    expect(JSON.parse(json!)).toEqual({
+      '@context': 'https://schema.org', '@type': 'BlogPosting',
+      headline: hostile.title, image: post.image_url,
+      url: 'https://www.luckystore1947.com/blog/test-article',
+      mainEntityOfPage: 'https://www.luckystore1947.com/blog/test-article',
+      datePublished: post.published_at,
+    });
+  });
+
+  it.each([null, 'invalid', '2026-02-30T00:00:00Z'])('omits unsupported publication dates (%s)', async (published_at) => {
+    fetchMock.mockImplementation(async () => Response.json({ post: { ...post, published_at } }));
+    const html = renderToStaticMarkup(await BlogPost({ params: Promise.resolve({ slug: post.slug }) }));
+    const json = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match => match[1]).find(value => JSON.parse(value)['@type'] === 'BlogPosting');
+    expect(json).toBeDefined();
+    expect(JSON.parse(json!)).not.toHaveProperty('datePublished');
+    expect(JSON.parse(json!)).not.toHaveProperty('dateModified');
+    expect(JSON.parse(json!)).not.toHaveProperty('author');
+  });
+
   beforeEach(() => {
     vi.stubEnv('NOTFAIR_SEO_API_KEY', 'test-notfair-key');
     vi.stubEnv('NOTFAIR_SEO_API_URL', 'https://notfair.co/api/seo/content');

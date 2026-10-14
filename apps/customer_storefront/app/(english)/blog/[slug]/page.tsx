@@ -6,6 +6,8 @@ import { NotFairPostHero } from 'notfair-nextjs-blog/react';
 import { sanitizeNotFairArticleHtml } from '@/lib/notfair-article';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import styles from '../notfair-article.module.css';
+import { JsonLd } from '../../../components/seo/JsonLd';
+import { getBlogCanonicalUrl, getBlogPublicationDate } from '@/lib/blog-seo';
 
 export const revalidate = 3600;
 const getPost = cache((slug: string) => getSeoPost(slug));
@@ -15,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
-  const url = `https://www.luckystore1947.com/blog/${encodeURIComponent(post.slug)}`;
+  const url = getBlogCanonicalUrl(post.slug);
   return {
     title: post.title,
     description: post.meta_description ?? undefined,
@@ -26,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'article',
       url,
       images: [{ url: post.image_url, width: 1600, height: 900, alt: post.title }],
-      publishedTime: post.published_at ?? undefined,
+      publishedTime: getBlogPublicationDate(post.published_at),
     },
     twitter: { card: 'summary_large_image', title: post.title, images: [post.image_url] },
   };
@@ -36,8 +38,19 @@ export default async function BlogPost({ params }: Props) {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
+  const url = getBlogCanonicalUrl(post.slug);
+  const datePublished = getBlogPublicationDate(post.published_at);
   return (
     <article className="mx-auto max-w-3xl space-y-8">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        image: post.image_url,
+        url,
+        mainEntityOfPage: url,
+        ...(datePublished ? { datePublished } : {}),
+      }} />
       <Breadcrumbs items={[{ label: 'Blog', href: '/blog' }, { label: post.title, href: `/blog/${encodeURIComponent(post.slug)}` }]} />
       <NotFairPostHero
         post={post}
