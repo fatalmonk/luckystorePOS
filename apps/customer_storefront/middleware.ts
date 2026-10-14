@@ -54,7 +54,7 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
 
     const prefix = identifier.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
     const matches = isBareUuid(identifier)
-      ? rows
+      ? rows.filter((row) => typeof row?.id === 'string' && row.id.toLowerCase() === identifier.toLowerCase())
       : rows.filter(
           (row) =>
             typeof row?.id === 'string' &&
@@ -65,7 +65,7 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
 
     const id = matches[0]?.id;
     const name = matches[0]?.name;
-    return typeof id === 'string' && typeof name === 'string' && name.trim()
+    return typeof id === 'string' && isBareUuid(id) && typeof name === 'string' && name.trim()
       ? { id, name: name.trim() }
       : null;
   } catch (error) {
@@ -156,18 +156,35 @@ export async function middleware(request: NextRequest) {
       return notFoundResponse();
     }
 
+    // Encoded separators must not become a second path segment after decoding.
+    if (/[\/\\\u0000-\u001f\u007f]/.test(decodedProductSlug)) return notFoundResponse();
+
     const isLegacyPrefixSlug = /^--+[0-9a-f]{8}$/i.test(decodedProductSlug);
-    if (isBareUuid(decodedProductSlug) || isLegacyPrefixSlug) {
-      const identifier = isLegacyPrefixSlug
-        ? decodedProductSlug.replace(/^-+/, '').toLowerCase()
-        : decodedProductSlug.toLowerCase();
+    const isUuidAlias = isBareUuid(decodedProductSlug);
+    const namedPrefix = decodedProductSlug.match(/^.+--([0-9a-f]{8})$/i)?.[1];
+    if (isUuidAlias || isLegacyPrefixSlug || namedPrefix) {
+      const identifier = isUuidAlias
+        ? decodedProductSlug.toLowerCase()
+        : (namedPrefix ?? decodedProductSlug.replace(/^-+/, '')).toLowerCase();
       const product = await resolveProductForCanonicalRedirect(identifier);
       if (product) {
+        const canonicalPath = `/${localePrefix}product/${toProductSlug(product.name, product.id)}`;
         const url = request.nextUrl.clone();
-        url.pathname = `/${localePrefix}product/${toProductSlug(product.name, product.id)}`;
-        return NextResponse.redirect(url, 308);
+        url.pathname = canonicalPath;
+        if (/^(?:www\.)?luckystore1947\.com$/i.test(request.nextUrl.hostname)) {
+          url.protocol = 'https:';
+          url.hostname = 'www.luckystore1947.com';
+          url.port = '';
+        }
+        if (request.nextUrl.pathname !== canonicalPath || url.origin !== request.nextUrl.origin) {
+          return NextResponse.redirect(url, 308);
+        }
+      } else if (isUuidAlias || isLegacyPrefixSlug) {
+        return notFoundResponse();
       }
-      return notFoundResponse();
+      // The resolver conflates absence, ambiguity and upstream errors. Named routes
+      // retain page-level identity validation so a transient failure cannot 404 a
+      // canonical product. UUID/empty-name aliases retain their existing 404 behavior.
     }
   }
 
