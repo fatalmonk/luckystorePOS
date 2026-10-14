@@ -3,6 +3,15 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import ProductClient from './ProductClient';
 import { createProductId } from '../../../lib/products/types';
+import { getEnrichedProductData } from '../../../lib/products/productEnrichment';
+import { toProductSlug } from '../../../lib/products/slugify';
+import { getCachedProductBySlug } from '../../../lib/products/getCachedProduct';
+import { generateMetadata } from './page';
+
+vi.mock('../../../lib/products/getCachedProduct', () => ({ getCachedProductBySlug: vi.fn() }));
+vi.mock('../../../lib/products/getCachedCrossSell', () => ({
+  getCachedCrossSellProducts: vi.fn(), prepareCrossSell: vi.fn(),
+}));
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
@@ -51,6 +60,26 @@ describe('ProductClient Brand Linking', () => {
     description: 'Fresh black tea from Ispahani.',
     emoji: '☕',
   };
+
+  it.each(['029b62d8', 'bdcf65f2'])('uses the current %s price in route metadata, visible price and Product offer', async (id) => {
+    const enrichment = getEnrichedProductData(id)!;
+    for (const price of [83, 97]) {
+      const product = { ...mockProduct, id: createProductId(id), name: enrichment.exactName, brand: enrichment.brand, price, unit: 'pc' };
+      vi.mocked(getCachedProductBySlug).mockResolvedValue(product);
+      const metadata = await generateMetadata({ params: Promise.resolve({ slug: toProductSlug(product.name, product.id) }) });
+      expect(metadata.title).toEqual({ absolute: expect.stringContaining(`৳${price}`) });
+      expect(metadata.openGraph?.title).toContain(`৳${price}`);
+      expect(metadata.twitter?.title).toContain(`৳${price}`);
+      expect(metadata.description).toContain(id === '029b62d8' ? '100g' : '50gm');
+      const { container, unmount } = render(<ProductClient product={product} crossSell={[]} enrichment={enrichment} />);
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(enrichment.exactName);
+      expect(screen.getAllByText(`৳${price}`).length).toBeGreaterThan(0);
+      const json = JSON.parse(container.querySelector('script[type="application/ld+json"]')!.textContent!);
+      expect(json.offers.price).toBe(price);
+      expect(json.offers.priceCurrency).toBe('BDT');
+      unmount();
+    }
+  });
 
   it('renders brand links to dedicated brand hub in English locale', () => {
     render(<ProductClient product={mockProduct} crossSell={[]} locale="en" />);

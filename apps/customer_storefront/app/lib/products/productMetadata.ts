@@ -18,8 +18,9 @@ export function formatProductMetaTitle(name: string, price: number, unit?: strin
 }
 
 /**
- * Formats an intent-matched, policy-accurate meta description (120–160 chars)
- * incorporating Chattogram local intent, live price, 1 km GeoCircle, COD, and doorstep inspection.
+ * Fits a description within 160 characters. Identity takes priority over optional
+ * store-policy prose; 120 characters is a display guideline, not a minimum.
+ * Verified enrichment is kept as complete sentences when it includes the identity.
  */
 export function formatProductMetaDescription(
   name: string,
@@ -27,22 +28,38 @@ export function formatProductMetaDescription(
   unit?: string,
   enrichedSummary?: string
 ): string {
-  if (enrichedSummary && enrichedSummary.length >= 120 && enrichedSummary.length <= 160) {
-    return enrichedSummary;
+  if (enrichedSummary) {
+    const identityWords = name.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+    const summaryWords = new Set(enrichedSummary.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu));
+    if (identityWords.length && identityWords.every((word) => summaryWords.has(word))) {
+      if (enrichedSummary.length <= 160) return enrichedSummary;
+      const sentences = enrichedSummary.match(/[^.!?]+[.!?](?:\s|$)/g) || [];
+      let excerpt = '';
+      for (const sentence of sentences) {
+        const candidate = `${excerpt} ${sentence.trim()}`.trim();
+        if (candidate.length > 160) break;
+        excerpt = candidate;
+      }
+      const excerptWords = new Set(excerpt.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu));
+      if (identityWords.every((word) => excerptWords.has(word))) return excerpt;
+    }
   }
   const priceStr = formatBdt(price);
   const unitStr = unit && unit !== 'pc' ? ` (${unit})` : '';
-  const template = `Order ${name}${unitStr} online at Lucky Store in Chattogram (${priceStr}). Free delivery on ৳500+ within 1 km, Cash on Delivery & doorstep inspection.`;
-  if (template.length >= 120 && template.length <= 160) {
-    return template;
+  const core = `Order ${name}${unitStr} at Lucky Store in Chattogram (${priceStr}).`;
+  if (core.length <= 160) {
+    let description = core;
+    for (const detail of [' Free delivery on ৳500+ within 1 km.', ' Cash on Delivery.', ' Doorstep inspection.']) {
+      if (description.length + detail.length <= 160) description += detail;
+    }
+    return description;
   }
-  if (template.length < 120) {
-    const longer = `Order ${name}${unitStr} online at Lucky Store in Chattogram (${priceStr}). Free local delivery on orders ৳500+ within 1 km, Cash on Delivery & doorstep inspection.`;
-    return longer.slice(0, 160);
-  }
-  const availableForName =
-    160 -
-    `Order …${unitStr} online at Lucky Store in Chattogram. Free delivery on ৳500+ within 1 km, Cash on Delivery & doorstep inspection.`.length;
-  const trimmed = name.slice(0, Math.max(10, availableForName)).trim();
-  return `Order ${trimmed}…${unitStr} online at Lucky Store in Chattogram. Free delivery on ৳500+ within 1 km, Cash on Delivery & doorstep inspection.`;
+  // Remove all optional prose before shortening an unusually long identity.
+  const suffix = `${unitStr} (${priceStr}).`;
+  const available = Math.max(0, 160 - 'Order '.length - suffix.length);
+  if (name.length <= available) return `Order ${name}${suffix}`;
+  // A middle ellipsis preserves the brand/start and pack-size/end of catalog names.
+  const tailLength = Math.min(32, Math.floor((available - 1) / 2));
+  const headLength = Math.max(0, available - tailLength - 1);
+  return `Order ${name.slice(0, headLength).trimEnd()}…${name.slice(-tailLength).trimStart()}${suffix}`;
 }
