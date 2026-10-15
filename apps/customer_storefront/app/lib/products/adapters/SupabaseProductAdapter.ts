@@ -105,7 +105,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const limit = criteria.limit ?? 60;
-    const offset = (criteria.page ?? 0) * limit;
+    const offset = criteria.offset ?? (criteria.page ?? 0) * limit;
 
     const { products: searchResults, hasMore } = await searchStorefrontProducts({
       query: criteria.query,

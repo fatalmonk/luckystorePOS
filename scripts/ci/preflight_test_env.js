@@ -81,6 +81,17 @@ async function runPreflight() {
   }
   console.log(`✓ Items table accessible (${itemData.length} items sampled)`);
 
+  const { error: onlineReservationErr } = await adminClient
+    .from('stock_levels')
+    .select('qty_reserved_online')
+    .limit(1);
+  if (onlineReservationErr) {
+    throw new Error(
+      `stock_levels online reservation check failed: ${onlineReservationErr.message}. Apply migration 20261015080000_ensure_online_stock_reservation_column.sql to the approved test project.`,
+    );
+  }
+  console.log('✓ stock_levels online reservation column accessible');
+
   // Bengali storefront routes depend on the translation migration. Check it
   // before Playwright so schema drift is reported as an environment failure,
   // not as a noisy WebServer error during an unrelated browser test.
@@ -109,6 +120,27 @@ async function runPreflight() {
     throw new Error(`search_storefront_catalog returned no sellable stock for store ${STORE_ID}. Check stock_levels association.`);
   }
   console.log(`✓ search_storefront_catalog RPC verified (${items.length} items returned for store)`);
+
+  // The storefront repository now uses v2 for bounded translated-item matches
+  // and direct offsets. Fail here with migration guidance instead of allowing
+  // every browser route that searches the catalogue to fail during Playwright.
+  const { data: searchV2Data, error: searchV2Err } = await client.rpc('search_storefront_catalog_v2', {
+    p_store_id: STORE_ID,
+    p_query: '',
+    p_category_id: null,
+    p_item_ids: [],
+    p_limit: 10,
+    p_offset: 0,
+  });
+  if (searchV2Err) {
+    throw new Error(
+      `search_storefront_catalog_v2 RPC check failed: ${searchV2Err.message}. Apply migration 20261015165958_bound_storefront_catalog_search.sql to the approved test project.`,
+    );
+  }
+  if (!Array.isArray(searchV2Data) || searchV2Data.length === 0) {
+    throw new Error(`search_storefront_catalog_v2 returned no catalogue items for store ${STORE_ID}.`);
+  }
+  console.log(`✓ search_storefront_catalog_v2 RPC verified (${searchV2Data.length} items returned for store)`);
 
   // 4. Probe the order RPC with an invalid store so existence is tested without
   // inserting an order or touching stock/idempotency state. The wrapper checks

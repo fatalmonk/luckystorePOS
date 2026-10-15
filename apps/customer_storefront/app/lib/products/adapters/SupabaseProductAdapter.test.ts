@@ -71,6 +71,9 @@ function createMockSupabase(overrides?: {
       return mockQueryBuilder;
     }),
     rpc: vi.fn((rpcName: string) => {
+      if (rpcName === 'search_storefront_catalog_v2') {
+        return Promise.resolve({ data: [], error: null });
+      }
       if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
         return Promise.resolve({
           data: overrides?.rpcRows ?? [],
@@ -85,6 +88,18 @@ function createMockSupabase(overrides?: {
 }
 
 describe('SupabaseProductAdapter', () => {
+  it('passes an exact offset through to storefront catalogue search', async () => {
+    const supabase = createMockSupabase();
+    const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+    await adapter.search({ limit: 100, page: 2, offset: 250 });
+
+    expect(supabase.rpc).toHaveBeenCalledWith('search_storefront_catalog_v2', expect.objectContaining({
+      p_limit: 101,
+      p_offset: 250,
+    }));
+  });
+
   describe('getById', () => {
     it('retrieves full product projection including database description', async () => {
       const mockItem = {
