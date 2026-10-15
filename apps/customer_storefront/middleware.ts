@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './app/lib/supabase/middleware';
 import { getCanonicalCategorySlug, isCategoryGroup, normalizeCategorySlug } from './app/lib/types';
 import { isBareUuid, toProductSlug, uuidPrefixRange } from './app/lib/products/slugify';
+import { BUYING_GUIDES } from './app/lib/buying-guides/registry';
+import { isPublicGuideSlug } from './app/lib/buying-guides/publication';
 
 type CanonicalProduct = { id: string; name: string };
 
@@ -134,6 +136,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(targetUrl, 301);
   }
 
+  // Reject unpublished/unknown guide routes before Next can stream a soft 404.
+  if (request.nextUrl.pathname.startsWith('/best/')) {
+    const slug = request.nextUrl.pathname.slice('/best/'.length).replace(/\/$/, '');
+    if (slug !== 'editorial' && !(await isPublicGuideSlug(slug, BUYING_GUIDES))) return notFoundResponse();
+  }
+
   // Pre-session canonical redirect: consolidate raw UUID product URLs to human-readable slug URLs.
   // Google has indexed both /product/{uuid} and /product/{slug}--{prefix}; this must happen
   // before the product page can emit duplicate HTML.
@@ -231,7 +239,10 @@ export async function middleware(request: NextRequest) {
     originalPath === '/llms-full.txt' ||
     originalPath.endsWith('.txt');
 
-  if (wantsMarkdown && !isStaticTextDoc) {
+  // Buying guides already deliver complete server-rendered HTML. The Markdown endpoint
+  // has no guide renderer; rewriting here would replace the article with generic navigation.
+  const isBuyingGuide = originalPath === '/best' || originalPath.startsWith('/best/');
+  if (wantsMarkdown && !isStaticTextDoc && !isBuyingGuide) {
     const search = request.nextUrl.search;
 
     // Rewrite to the markdown API route with original path as query param

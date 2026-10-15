@@ -5,6 +5,8 @@ import { toProductSlug } from './lib/products/slugify';
 import { getCanonicalCategorySlug } from './lib/types';
 import { isMissingItemTranslationsTableError } from './lib/translationErrors';
 import { POPULAR_BRANDS, isProductOfBrand } from './lib/brandsData';
+import { getPublishedGuides } from './lib/buying-guides/service';
+import { guideUrl } from './lib/buying-guides/model';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -448,6 +450,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   return [
+    ...getPublishedGuides().map(guide => ({ url: guideUrl(guide.slug), lastModified: guide.updatedAt! })),
     ...dynamicIndexEntries,
     ...staticEntries,
     ...categoryEntries,

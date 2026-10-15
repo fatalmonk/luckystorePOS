@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import sitemap, { isProductSitemapEligible } from '../sitemap';
 
+vi.mock('server-only', () => ({}));
+
 vi.mock('../lib/supabase', () => ({
   supabase: {
     from: vi.fn((table: string) => {
