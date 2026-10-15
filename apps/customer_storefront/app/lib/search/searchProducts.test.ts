@@ -28,6 +28,27 @@ describe('searchStorefrontProducts', () => {
     expect(hasMore).toBe(false);
   });
 
+  it('uses sellable stock instead of physical on-hand quantity', async () => {
+    const { products } = await searchStorefrontProducts({
+      limit: 10,
+      supabaseClient: {
+        rpc: vi.fn(() => Promise.resolve({
+          data: [{ id: 'reserved-item', name: 'Reserved item', price: 10, qty_on_hand: 8, sellable_qty: 0 }],
+          error: null,
+        })),
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: [], error: null }),
+        })),
+      } as any,
+    });
+
+    expect(products).toHaveLength(1);
+    expect(products[0].stock).toBe(0);
+  });
+
   it('matches published Bengali translations prior to pagination and merges items with correct mrp and stock mapping', async () => {
     const mockTranslations = [
       {
@@ -45,6 +66,7 @@ describe('searchStorefrontProducts', () => {
         price: 90,
         mrp: 100,
         qty_on_hand: 12,
+        sellable_qty: 12,
         unit: 'pc',
         category: 'dairy-and-eggs',
         brand: 'Lucky Dairy',
@@ -59,6 +81,7 @@ describe('searchStorefrontProducts', () => {
         price: 90,
         mrp: 100,
         qty_on_hand: 12,
+        sellable_qty: 12,
         unit: 'pc',
         category: 'dairy-and-eggs',
         brand: 'Lucky Dairy',
@@ -70,6 +93,7 @@ describe('searchStorefrontProducts', () => {
         price: 95,
         mrp: 95,
         qty_on_hand: 7,
+        sellable_qty: 7,
         unit: 'pc',
         category: 'dairy-and-eggs',
         brand: 'Farm Fresh',
@@ -135,6 +159,7 @@ describe('searchStorefrontProducts', () => {
         price: 250,
         mrp: 300,
         qty_on_hand: 5,
+        sellable_qty: 5,
         unit: 'pc',
         category: 'tea-and-coffee',
       },

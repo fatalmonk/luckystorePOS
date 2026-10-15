@@ -128,13 +128,13 @@ export async function searchStorefrontProducts({
     ? allRows.slice(0, limit)
     : allRows.slice(actualOffset, actualOffset + limit);
 
-  // 4. Map RPC fields (mrp -> originalPrice / sale badge, qty_on_hand -> stock)
+  // 4. Map RPC fields (mrp -> originalPrice / sale badge, sellable_qty -> stock)
   const items: SearchProductResult[] = paginatedRows.map((item: any) => {
     const id = createProductId(String(item.item_id ?? item.id ?? ''));
     const price = Number(item.price);
     const mrp = item.mrp ? Number(item.mrp) : undefined;
     const originalPrice = mrp && mrp > price ? mrp : undefined;
-    const stock = Number(item.stock ?? item.qty_on_hand ?? 0);
+    const stock = Number(item.sellable_qty ?? 0);
 
     return {
       id,

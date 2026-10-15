@@ -19,6 +19,7 @@ type CatalogRow = {
   description?: string | null;
   unit?: string | null;
   qty_on_hand?: number | string | null;
+  sellable_qty?: number | string | null;
   stock?: number | string | null;
 };
 
@@ -72,7 +73,9 @@ function toGuideProduct(row: CatalogRow): GuideProduct | null {
   const id = row.id ?? row.item_id;
   const price = Number(row.price);
   const mrp = Number(row.mrp);
-  const stock = Number(row.qty_on_hand ?? row.stock ?? 0);
+  // Fail closed if the catalogue projection does not provide reservation-aware
+  // availability. Raw on-hand quantity can include stock already committed.
+  const stock = Number(row.sellable_qty ?? 0);
   if (!id || !row.name?.trim() || !Number.isFinite(price) || price <= 0 || !Number.isFinite(mrp) || mrp <= price || !Number.isFinite(stock) || stock <= 0) return null;
   return {
     id,

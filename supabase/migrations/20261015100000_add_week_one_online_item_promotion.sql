@@ -63,7 +63,9 @@ insert into public.storefront_item_promotions (
   ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '7fd83cfc-2eac-45d1-aa90-0002ca5a0222', 'Buldak Ramen Quattro Cheese', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
   ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '841b013d-e7bd-46a6-9e69-282f84aa2781', 'Buldak Ramen Rose', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00');
 
-create or replace function public.create_order_with_stock_idempotent(
+-- Keep the promo-aware implementation behind the private function used by the
+-- guest-tracking wrapper installed by the order-lifecycle migration.
+create or replace function public.create_order_with_stock_idempotent_unowned(
   p_order_number text,
   p_tenant_id uuid,
   p_store_id uuid,
@@ -254,9 +256,9 @@ begin
 end;
 $function$;
 
-revoke all on function public.create_order_with_stock_idempotent(
+revoke all on function public.create_order_with_stock_idempotent_unowned(
   text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text, text
 ) from public, anon, authenticated;
-grant execute on function public.create_order_with_stock_idempotent(
+alter function public.create_order_with_stock_idempotent_unowned(
   text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text, text
-) to anon, authenticated;
+) owner to postgres;

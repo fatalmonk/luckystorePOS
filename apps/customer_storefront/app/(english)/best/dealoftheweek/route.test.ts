@@ -4,8 +4,8 @@ const state = vi.hoisted(() => ({
   catalogError: null as null | { message: string },
   campaignError: null as null | { message: string },
   catalogRows: [
-    { id: 'item-1', name: 'Verified Ramen', price: 150, mrp: 190, qty_on_hand: 3, category: 'Noodles', image_url: null },
-    { id: 'item-2', name: 'Verified Soap', price: 80, mrp: 100, qty_on_hand: 2, category: 'Personal Care', image_url: null },
+    { id: 'item-1', name: 'Verified Ramen', price: 150, mrp: 190, qty_on_hand: 3, sellable_qty: 3, category: 'Noodles', image_url: null },
+    { id: 'item-2', name: 'Verified Soap', price: 80, mrp: 100, qty_on_hand: 2, sellable_qty: 2, category: 'Personal Care', image_url: null },
   ] as Array<Record<string, unknown>>,
   campaignRows: [] as unknown[],
 }));
@@ -33,8 +33,8 @@ describe('Deal of the Week route', () => {
     state.catalogError = null;
     state.campaignError = null;
     state.catalogRows = [
-      { id: 'item-1', name: 'Verified Ramen', price: 150, mrp: 190, qty_on_hand: 3, category: 'Noodles', image_url: null },
-      { id: 'item-2', name: 'Verified Soap', price: 80, mrp: 100, qty_on_hand: 2, category: 'Personal Care', image_url: null },
+      { id: 'item-1', name: 'Verified Ramen', price: 150, mrp: 190, qty_on_hand: 3, sellable_qty: 3, category: 'Noodles', image_url: null },
+      { id: 'item-2', name: 'Verified Soap', price: 80, mrp: 100, qty_on_hand: 2, sellable_qty: 2, category: 'Personal Care', image_url: null },
     ];
     state.campaignRows = [];
   });
@@ -73,6 +73,17 @@ describe('Deal of the Week route', () => {
     expect(html).not.toContain('% off MRP');
   });
 
+  it('hides products with no sellable stock even when physical on-hand quantity is positive', async () => {
+    state.catalogRows[1] = { ...state.catalogRows[1], qty_on_hand: 8, sellable_qty: 0 };
+
+    const response = await GET();
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('Verified Ramen');
+    expect(html).not.toContain('Verified Soap');
+  });
+
   it('shows verified catalogue deals when the weekly edition lookup is unavailable', async () => {
     state.campaignError = { message: 'weekly edition unavailable' };
     const response = await GET();
@@ -108,6 +119,7 @@ describe('Deal of the Week route', () => {
       price: 90,
       mrp: 100,
       qty_on_hand: 5,
+      sellable_qty: 5,
       category: index % 2 ? 'Grocery' : 'Household',
       image_url: null,
     }));

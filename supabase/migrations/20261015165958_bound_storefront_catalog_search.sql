@@ -51,6 +51,10 @@ BEGIN
         c.name        AS category,
         c.id          AS category_id,
         COALESCE(sl.qty, 0)::integer AS qty_on_hand,
+        GREATEST(
+          0,
+          COALESCE(sl.qty, 0) - COALESCE(sl.reserved, 0) - COALESCE(sl.qty_reserved_online, 0)
+        )::integer AS sellable_qty,
         i.created_at,
         i.updated_at
       FROM public.items i

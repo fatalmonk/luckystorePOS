@@ -17,7 +17,35 @@ $$;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET LOCAL search_path = public, extensions, pg_temp;
 
-SELECT plan(9);
+SELECT plan(13);
+
+-- The guest-safe wrapper must delegate to the private promotion-aware core.
+SELECT ok(
+  position(
+    'create_order_with_stock_idempotent_unowned'
+    IN pg_get_functiondef('public.create_order_with_stock_idempotent(text,uuid,uuid,text,text,text,jsonb,numeric,numeric,numeric,text,text,text,text)'::regprocedure)
+  ) > 0,
+  'public guest-tracking wrapper delegates to the private checkout core'
+);
+SELECT ok(
+  position(
+    'storefront_item_promotions'
+    IN pg_get_functiondef('public.create_order_with_stock_idempotent_unowned(text,uuid,uuid,text,text,text,jsonb,numeric,numeric,numeric,text,text,text,text)'::regprocedure)
+  ) > 0,
+  'private checkout core applies verified storefront promotions'
+);
+
+-- Storefront search projections expose sellable stock after both reservation pools.
+SELECT ok(
+  position('reserved' IN pg_get_functiondef('public.search_storefront_catalog(uuid,text,uuid,integer,integer)'::regprocedure)) > 0
+  AND position('qty_reserved_online' IN pg_get_functiondef('public.search_storefront_catalog(uuid,text,uuid,integer,integer)'::regprocedure)) > 0,
+  'catalogue search accounts for reserved and online-reserved quantities'
+);
+SELECT ok(
+  position('reserved' IN pg_get_functiondef('public.search_storefront_catalog_v2(uuid,text,uuid,uuid[],integer,integer)'::regprocedure)) > 0
+  AND position('qty_reserved_online' IN pg_get_functiondef('public.search_storefront_catalog_v2(uuid,text,uuid,uuid[],integer,integer)'::regprocedure)) > 0,
+  'catalogue search v2 accounts for reserved and online-reserved quantities'
+);
 
 -- 1. Check privilege rules
 SELECT ok(

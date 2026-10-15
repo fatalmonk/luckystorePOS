@@ -20,6 +20,8 @@ function createMockSupabase(overrides?: {
   rpcRows?: any[];
   rpcError?: any;
   stockQty?: number;
+  stockReserved?: number;
+  onlineReserved?: number;
   categories?: any[];
 }) {
   const categories = overrides?.categories ?? [
@@ -33,7 +35,11 @@ function createMockSupabase(overrides?: {
     maybeSingle: vi.fn().mockImplementation(function (this: any) {
       // If querying stock_levels
       return Promise.resolve({
-        data: overrides?.stockQty !== undefined ? { qty: overrides.stockQty } : { qty: 5 },
+        data: {
+          qty: overrides?.stockQty ?? 5,
+          reserved: overrides?.stockReserved ?? 0,
+          qty_reserved_online: overrides?.onlineReserved ?? 0,
+        },
         error: null,
       });
     }),
@@ -53,7 +59,11 @@ function createMockSupabase(overrides?: {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({
-            data: overrides?.stockQty !== undefined ? { qty: overrides.stockQty } : { qty: 2 },
+            data: {
+              qty: overrides?.stockQty ?? 2,
+              reserved: overrides?.stockReserved ?? 0,
+              qty_reserved_online: overrides?.onlineReserved ?? 0,
+            },
             error: null,
           }),
         };
@@ -144,6 +154,26 @@ describe('SupabaseProductAdapter', () => {
 
       expect(product).not.toBeNull();
       expect(product?.description).toBe('');
+    });
+
+    it('subtracts POS and online reservations from direct stock reads', async () => {
+      const supabase = createMockSupabase({
+        itemsRow: {
+          id: '169e4ac0-80cf-4dc7-8266-f8cad832eb9b',
+          name: 'Savoy Ekdom Aam',
+          price: 48,
+          category_id: 'cat-1',
+          description: null,
+        },
+        stockQty: 7,
+        stockReserved: 4,
+        onlineReserved: 3,
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getById(createProductId('169e4ac0-80cf-4dc7-8266-f8cad832eb9b'));
+
+      expect(product?.stock).toBe(0);
     });
 
     it('returns null when product is not found or inactive', async () => {
