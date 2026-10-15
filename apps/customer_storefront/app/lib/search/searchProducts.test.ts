@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { searchStorefrontProducts } from './searchProducts';
 
 describe('searchStorefrontProducts', () => {
-  it('fetches subsequent RPC pages rather than truncating the public catalogue at 1000', async () => {
+  it('requests pages beyond the RPC row cap with a direct offset', async () => {
     const rows = Array.from({ length: 1001 }, (_, index) => ({
       item_id: `item-${index}`, name: `Product ${index}`, price: 10, qty_on_hand: 2,
     }));
@@ -19,7 +19,11 @@ describe('searchStorefrontProducts', () => {
         })),
       } as any,
     });
-    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('search_storefront_catalog_v2', expect.objectContaining({
+      p_offset: 1000,
+      p_limit: 101,
+    }));
     expect(products.map(p => p.id)).toEqual(['item-1000']);
     expect(hasMore).toBe(false);
   });
@@ -79,6 +83,7 @@ describe('searchStorefrontProducts', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
             or: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
             in: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
@@ -90,13 +95,13 @@ describe('searchStorefrontProducts', () => {
         return {};
       }),
       rpc: vi.fn((rpcName: string, params: any) => {
-        if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
-          if (params.p_query === 'দুধ') {
-            // English search returns nothing for Bengali script
-            return Promise.resolve({ data: [], error: null });
-          }
-          // Full catalog query to resolve missing translated item IDs
-          return Promise.resolve({ data: mockAllCatalogItems, error: null });
+        if (rpcName === 'search_storefront_catalog_v2') {
+          expect(params.p_item_ids).toEqual(['item-bn-1']);
+          // Bengali translation matches are passed as item IDs to the bounded catalog RPC.
+          return Promise.resolve({
+            data: mockAllCatalogItems.filter((item) => params.p_item_ids.includes(item.item_id)),
+            error: null,
+          });
         }
         return Promise.resolve({ data: [], error: null });
       }),
@@ -139,6 +144,7 @@ describe('searchStorefrontProducts', () => {
       from: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
         or: vi.fn().mockResolvedValue({ data: [], error: null }),
         in: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
@@ -168,6 +174,7 @@ describe('searchStorefrontProducts', () => {
       from: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
         or: vi.fn().mockResolvedValue({ data: [], error: null }),
       })),
       rpc: vi.fn(() => Promise.resolve({ data: null, error: { message: 'Database connection failed' } })),
@@ -189,6 +196,7 @@ describe('searchStorefrontProducts', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
             or: vi.fn().mockImplementation((filterStr: string) => {
               capturedOrFilter = filterStr;
               return Promise.resolve({ data: [], error: null });
@@ -252,6 +260,7 @@ describe('searchStorefrontProducts', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
             or: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
             in: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
@@ -263,17 +272,15 @@ describe('searchStorefrontProducts', () => {
         return {};
       }),
       rpc: vi.fn((rpcName: string, params: any) => {
-        if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
-          if (params.p_query === 'দুধ') {
-            return Promise.resolve({ data: [], error: null });
-          }
-          if (params.p_category_id) {
-            return Promise.resolve({
-              data: mockCatalogItems.filter((i) => i.category_id === params.p_category_id || i.category === params.p_category_id),
-              error: null,
-            });
-          }
-          return Promise.resolve({ data: mockCatalogItems, error: null });
+        if (rpcName === 'search_storefront_catalog_v2') {
+          const translatedIds = params.p_item_ids ?? [];
+          return Promise.resolve({
+            data: mockCatalogItems.filter((item) =>
+              translatedIds.includes(item.item_id) &&
+              (!params.p_category_id || item.category_id === params.p_category_id || item.category === params.p_category_id)
+            ),
+            error: null,
+          });
         }
         return Promise.resolve({ data: [], error: null });
       }),
