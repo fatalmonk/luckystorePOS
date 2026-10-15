@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { Header } from '../../../components/updated/Header';
 import { Footer } from '../../../components/updated/Footer';
 import { BottomNav } from '../../../components/BottomNav';
-import { JsonLd } from '../../../components/seo/JsonLd';
-import { DELIVERY_POLICY, COVERED_AREAS, getDeliveryFaqSchema } from '../../../lib/deliveryData';
+import { DELIVERY_POLICY, COVERED_AREAS } from '../../../lib/deliveryData';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 
 export const metadata: Metadata = {
@@ -45,7 +44,6 @@ export const metadata: Metadata = {
 export default function BengaliDeliveryPage() {
   return (
     <>
-      <JsonLd data={getDeliveryFaqSchema()} />
       <Header />
       <main className="mx-auto max-w-5xl px-6 py-24 text-warm-fg">
         <Breadcrumbs
