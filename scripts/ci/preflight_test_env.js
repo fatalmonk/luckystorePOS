@@ -140,8 +140,31 @@ async function runPreflight() {
   if (!Array.isArray(searchV2Data) || searchV2Data.length === 0) {
     throw new Error(`search_storefront_catalog_v2 returned no catalogue items for store ${STORE_ID}.`);
   }
-  if (!searchV2Data.some((item) => Number(item.sellable_qty) > 0)) {
-    throw new Error(`search_storefront_catalog_v2 returned no sellable stock for store ${STORE_ID}. Check stock reservations and fixtures.`);
+  if (!searchV2Data.every((item) => Object.hasOwn(item, 'sellable_qty'))) {
+    throw new Error(
+      `search_storefront_catalog_v2 does not expose sellable_qty for store ${STORE_ID}. Apply migration 20261016100000_expose_sellable_storefront_stock.sql to the approved test project.`,
+    );
+  }
+  const sellableItems = searchV2Data.filter((item) => Number(item.sellable_qty) > 0);
+  if (sellableItems.length === 0) {
+    const { data: stockRows, error: stockErr } = await adminClient
+      .from('stock_levels')
+      .select('qty, reserved, qty_reserved_online')
+      .eq('store_id', STORE_ID);
+    if (stockErr) throw new Error(`Could not inspect test stock reservations: ${stockErr.message}`);
+    const stockSummary = (stockRows ?? []).reduce((summary, row) => {
+      const quantity = Number(row.qty) || 0;
+      const reserved = Number(row.reserved) || 0;
+      const onlineReserved = Number(row.qty_reserved_online) || 0;
+      summary.rows += 1;
+      summary.rowsWithSellableStock += Math.max(0, quantity - reserved - onlineReserved) > 0 ? 1 : 0;
+      summary.quantity += quantity;
+      summary.reserved += reserved;
+      summary.onlineReserved += onlineReserved;
+      return summary;
+    }, { rows: 0, rowsWithSellableStock: 0, quantity: 0, reserved: 0, onlineReserved: 0 });
+    console.error(`[Preflight] Stock summary for ${STORE_ID}: ${JSON.stringify(stockSummary)}`);
+    throw new Error(`search_storefront_catalog_v2 returned no sellable stock for store ${STORE_ID}. Check the RPC projection and stock reservations.`);
   }
   console.log(`✓ search_storefront_catalog_v2 RPC verified (${searchV2Data.length} items returned for store)`);
 
