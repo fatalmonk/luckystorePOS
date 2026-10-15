@@ -133,7 +133,15 @@ function renderPage(products: GuideProduct[], activeEdition: boolean, now: Date)
 export async function GET(): Promise<Response> {
   const now = new Date();
   try {
-    const [catalog, allCampaignRows] = await Promise.all([loadCatalog(), loadCurrentStorefrontDealCampaign(supabase, now)]);
+    const catalog = await loadCatalog();
+    let allCampaignRows: CampaignRow[] = [];
+    try {
+      allCampaignRows = await loadCurrentStorefrontDealCampaign(supabase, now) as CampaignRow[];
+    } catch {
+      // A missing or temporarily unavailable weekly edition must not hide the
+      // independently verified, unranked catalogue fallback.
+      console.warn('Weekly deal edition could not be verified; showing current unranked deals.');
+    }
     const activeRows = getActiveWeeklyDealEdition(allCampaignRows, now) as CampaignRow[];
     const activeEdition = activeRows.length > 0;
     const byId = new Map(catalog.map((product) => [product.id, product]));
