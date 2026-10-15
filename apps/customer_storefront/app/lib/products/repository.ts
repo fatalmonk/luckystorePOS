@@ -38,6 +38,10 @@ export interface CacheControl {
 /** No-op cache control when caching is disabled. */
 const NOOP_CACHE_CONTROL: CacheControl = { invalidate: () => {} };
 
+// Reuse the default repository bundle across requests handled by this Node.js
+// process so the adapter's bounded TTL caches actually reduce Supabase reads.
+const defaultRepositoryBundles = new WeakMap<SupabaseClient, ProductRepositoryBundle>();
+
 /**
  * Return type from createProductRepository.
  * Provides both the repository seam and a cache control handle.
@@ -102,6 +106,11 @@ export function createProductRepository(
     enableCache?: boolean;
   }
 ): ProductRepositoryBundle {
+  if (options === undefined) {
+    const existing = defaultRepositoryBundles.get(supabaseClient);
+    if (existing) return existing;
+  }
+
   const brandParser = options?.brandParser ?? new RuleBasedBrandParser();
   const emojiResolver = options?.emojiResolver ?? new WordMatchEmojiResolver();
 
@@ -119,8 +128,14 @@ export function createProductRepository(
     cacheControl = cachingAdapter;
   }
 
-  return {
+  const bundle = {
     repo: new ProductRepository(adapter, brandParser, emojiResolver),
     cache: cacheControl,
   };
+
+  if (options === undefined) {
+    defaultRepositoryBundles.set(supabaseClient, bundle);
+  }
+
+  return bundle;
 }

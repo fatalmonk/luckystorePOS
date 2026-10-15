@@ -44,6 +44,9 @@ export async function searchStorefrontProducts({
   supabaseClient = defaultSupabase,
 }: SearchOptions): Promise<SearchProductsResponse> {
   const actualOffset = offset !== undefined ? offset : (page ?? 0) * limit;
+  if (!Number.isSafeInteger(actualOffset) || actualOffset < 0 || actualOffset > 100_000) {
+    throw new Error('Storefront catalogue offset is out of range');
+  }
   const cleanQuery = query.trim().toLowerCase();
   const safeQuery = sanitizePostgrestSearchTerm(cleanQuery);
 
@@ -57,6 +60,7 @@ export async function searchStorefrontProducts({
         .select('item_id')
         .eq('locale', 'bn')
         .eq('review_status', 'published')
+        .limit(1000)
         .or(`name.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,search_terms.cs.{${safeQuery}}`);
 
       if (transError) {
@@ -80,86 +84,49 @@ export async function searchStorefrontProducts({
   }
 
   const rawRowsMap = new Map<string, any>();
-
   const rpcPageSize = 1000;
+  const singleCategory = targetCategoryIds.length === 1;
+  const rowsNeeded = actualOffset + limit + 1;
+  const rowsToFetchPerCategory = singleCategory ? limit + 1 : rowsNeeded;
+  const initialOffset = singleCategory ? actualOffset : 0;
+
   for (const catId of targetCategoryIds) {
-    for (let rpcOffset = 0; rpcOffset <= 100000; rpcOffset += rpcPageSize) {
-      const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_storefront_catalog', {
+    let fetched = 0;
+    let rpcOffset = initialOffset;
+
+    while (fetched < rowsToFetchPerCategory) {
+      const pageLimit = Math.min(rpcPageSize, rowsToFetchPerCategory - fetched);
+      const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_storefront_catalog_v2', {
         p_store_id: storeId,
         p_query: cleanQuery,
         p_category_id: catId,
-        p_limit: rpcPageSize,
+        p_item_ids: translationMatchedItemIds,
+        p_limit: pageLimit,
         p_offset: rpcOffset,
       });
 
       if (posError || !Array.isArray(posItems)) {
-        console.error('search_storefront_catalog failed:', posError);
+        console.error('search_storefront_catalog_v2 failed:', posError);
         throw new Error('Search service temporarily unavailable');
       }
       for (const item of posItems) {
         const id = String(item.item_id ?? item.id ?? '').trim();
         if (id && !rawRowsMap.has(id)) rawRowsMap.set(id, item);
       }
-      if (posItems.length < rpcPageSize) break;
-      if (rpcOffset === 100000) throw new Error('Storefront catalogue RPC pagination limit exceeded');
-    }
-  }
 
-  // 3. Merge items matched via Bengali translations that weren't in catalog RPC results, querying and paginating requested categories
-  if (translationMatchedItemIds.length > 0) {
-    const missingIds = translationMatchedItemIds.filter((id) => !rawRowsMap.has(id));
-    if (missingIds.length > 0) {
-      const missingSet = new Set(missingIds);
-      try {
-        for (const catId of targetCategoryIds) {
-          if (missingSet.size === 0) break;
-          let catOffset = 0;
-          const PAGE_SIZE = 1000;
-          while (missingSet.size > 0) {
-            const { data: catItems, error: catError } = await (supabaseClient as any).rpc('search_storefront_catalog', {
-              p_store_id: storeId,
-              p_query: '',
-              p_category_id: catId,
-              p_limit: PAGE_SIZE,
-              p_offset: catOffset,
-            });
-
-            if (catError || !catItems || catItems.length === 0) {
-              if (catError) {
-                console.error('Failed to resolve category items for translations:', catError);
-              }
-              break;
-            }
-
-            for (const item of catItems) {
-              const id = String(item.item_id ?? item.id ?? '').trim();
-              if (missingSet.has(id)) {
-                if (catId) {
-                  const itemCat = String(item.category_id ?? item.category ?? '').trim();
-                  if (itemCat && itemCat !== catId) {
-                    continue;
-                  }
-                }
-                if (!rawRowsMap.has(id)) {
-                  rawRowsMap.set(id, item);
-                }
-                missingSet.delete(id);
-              }
-            }
-
-            if (catItems.length < PAGE_SIZE) break;
-            catOffset += PAGE_SIZE;
-          }
-        }
-      } catch (err) {
-        console.error('Failed to resolve missing translated items:', err);
-      }
+      fetched += posItems.length;
+      if (singleCategory || posItems.length < pageLimit) break;
+      rpcOffset += posItems.length;
     }
   }
 
   const allRows = Array.from(rawRowsMap.values());
-  const hasMore = allRows.length > actualOffset + limit;
-  const paginatedRows = allRows.slice(actualOffset, actualOffset + limit);
+  const hasMore = singleCategory
+    ? allRows.length > limit
+    : allRows.length > actualOffset + limit;
+  const paginatedRows = singleCategory
+    ? allRows.slice(0, limit)
+    : allRows.slice(actualOffset, actualOffset + limit);
 
   // 4. Map RPC fields (mrp -> originalPrice / sale badge, qty_on_hand -> stock)
   const items: SearchProductResult[] = paginatedRows.map((item: any) => {
