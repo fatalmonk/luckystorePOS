@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-14
-last_pr:        none (init run)
-open_prs:       none
-next_run:       2026-10-15
+last_run:       2026-10-15
+last_pr:        review PR pending (seo/2026-10-15-bn-delivery-buyer-help)
+open_prs:       review PR pending
+next_run:       2026-10-16
 ```
 
 ---
@@ -33,7 +33,7 @@ next_run:       2026-10-15
 | Schema: GroceryStore | ✅ | `RootLayoutDocument.tsx` — `['Store','GroceryStore','Organization']` with full NAP, hours, geo, areaServed |
 | Schema: WebSite | ✅ | Homepage — `WebSite` + `sitelinks_searchbox`-eligible name |
 | Schema: ItemList | ✅ | Homepage — featured products emitted as `ItemList` |
-| HTTPS | ✅ | Live on Vercel, valid cert |
+| HTTPS | ⚠️ | 2026-10-15 web fetch followed homepage and `/delivery` to `www`; Hostinger Node.js is the stated host, certificate chain not independently inspected |
 | Google Search Console verification | ✅ | `googledd38bcebed6ae845.html` in `public/` |
 | llms.txt | ✅ | `/llms.txt` + `/llms-full.txt` present (105-line full doc) |
 | AI agent resources | ✅ | `auth.md`, `/.well-known/api-catalog` advertised in llms.txt |
@@ -43,7 +43,7 @@ next_run:       2026-10-15
 | Signal | Status | Gap |
 |--------|--------|-----|
 | Definition block on homepage | ⚠️ | No explicit 1-2 sentence entity definition in first 200 words |
-| FAQPage schema — `/delivery` + `/bn/delivery` | 🛠️ | Shared schema is now emitted in server-rendered HTML in source; production verification is pending deployment |
+| FAQPage schema — `/delivery` + `/bn/delivery` | 🛠️ | English `/delivery` retains visible FAQ and shared schema in source. Bengali route has English FAQPage JSON-LD but no corresponding visible FAQ; 2026-10-15 review PR proposes visible Bengali buyer FAQs and removal of mismatched Bengali markup. Production verification pending. |
 | Homepage buyer FAQ / clarity | ⚠️ | Evaluate whether shoppers need additional visible guidance; schema absence is not a defect |
 | Fortune-cookie page buyer guidance | ❓ | Review live content and demand; FAQ markup is optional |
 | Blog / content hub | ❓ | Route exists; published post count requires live/CMS verification |
@@ -116,8 +116,8 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ```yaml
 technical_seo:
-  sitemap_url_count: 902          # updated each run
-  robots_ai_bots_pass: true       # boolean
+  sitemap_url_count: null         # 2026-10-15 live XML inaccessible; 902 is the historical 2026-10-14 recorded baseline only
+  robots_ai_bots_pass: null       # 2026-10-15 live robots.txt inaccessible; not a confirmed failure
   canonical_errors: null          # no full crawl evidenced; unknown until measured
   broken_links: null              # no full crawl evidenced; unknown until measured
 
@@ -139,6 +139,17 @@ competitor_signals:
 
 ---
 
+## 2026-10-15 evidence and verification status
+
+- **Verified live (limited):** Public web fetches of `https://luckystore1947.com/` and `/delivery` resolved to `https://www.luckystore1947.com/` and `/delivery`, with page titles. The available extractor exposed only a cart fragment, so homepage body content, rendered JSON-LD, canonical tags and checkout behavior were **not** verified.
+- **Not verified:** Live `/robots.txt`, `/sitemap.xml`, `/bn/delivery`, `/blog`; no HTTP status or parsed XML count obtained. A failed fetch is not evidence of a 404, robots block or indexing defect.
+- **Repo-confirmed:** English delivery page renders visible FAQ content and `getDeliveryFaqSchema()`; Bengali delivery page in main emits the same English FAQ JSON-LD without corresponding visible FAQ questions. A review PR proposes customer-facing Bengali answers while removing that mismatched markup, not duplicating English FAQ schema.
+- **Access:** Search Console and analytics workspace integration returned 403 (not a member); no ranking, click, impression, index coverage, AI citation or order conversion figures were collected.
+- **Buyer objective:** Clarify eligibility (1 km Chawkbazar), fees (free on ৳500+, otherwise ৳40), checkout and payment for eligible Bengali shoppers. No change to delivery policy, pricing, stock or fulfillment logic.
+- **Next verification:** Inspect deployed `/delivery` and `/bn/delivery` HTML, sitemap and robots from a trusted network; verify GSC/GA access and completed-order events before attributing impact.
+
+---
+
 ## Changelog
 
 | Date | Run | PRs | Key Action |
@@ -146,4 +157,5 @@ competitor_signals:
 | 2026-10-14 | init | #458 | Baseline recorded, seo/ initialized |
 | 2026-10-14 | review | #460 | Reconciled implementation queue with runbook; removed FAQ markup-only priority and unsupported zero metrics |
 | 2026-10-14 | autopilot | pending | Added missing English homepage hreflang alternates; delivery FAQ confirmed single-sourced and unchanged |
-| 2026-10-15 | fix | pending | Render delivery FAQ JSON-LD in initial HTML for both locales; live verification pending deployment |
+| 2026-10-15 | fix | #478 (merged) | Delivery FAQ JSON-LD server-rendering in both locales; production verification pending. |
+| 2026-10-15 | manual review | review PR pending | Repo-confirmed Bengali `/bn/delivery` English FAQPage mismatch; propose 4 visible Bengali buyer FAQs and remove unmatched Bengali JSON-LD. English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
