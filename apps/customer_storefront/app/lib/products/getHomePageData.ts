@@ -118,6 +118,42 @@ export interface HomePageData {
   snacksProducts: Product[];
 }
 
+function logCatalogueRequestFailure(source: string, error: unknown): void {
+  const errorCode =
+    error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+      ? error.code
+      : undefined;
+
+  // Keep diagnostics useful without logging product data, request URLs, or credentials.
+  console.error('[homepage-catalog] request failed', {
+    source,
+    errorName: error instanceof Error ? error.name : 'UnknownError',
+    ...(errorCode ? { errorCode } : {}),
+  });
+}
+
+async function loadCatalogueSource<T>(
+  source: string,
+  load: () => Promise<T>,
+  fallback: T,
+  hasNoResults: (result: T) => boolean,
+  emptyDetails: (result: T) => Record<string, number> = () => ({}),
+): Promise<T> {
+  try {
+    const result = await load();
+    if (hasNoResults(result)) {
+      console.warn('[homepage-catalog] request returned an empty or unusable result', {
+        source,
+        ...emptyDetails(result),
+      });
+    }
+    return result;
+  } catch (error) {
+    logCatalogueRequestFailure(source, error);
+    return fallback;
+  }
+}
+
 const DEFAULT_FALLBACK_CATEGORIES: CategoryItem[] = [
   { id: 'cat-1', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾' },
   { id: 'cat-2', slug: 'oil-and-ghee', name: 'Oil & Ghee', emoji: '🛢️' },
@@ -134,20 +170,41 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   let nestleSearchResults: Product[] = [];
   let rawCategories: any[] = [];
 
-  try {
-    const [prodRes, nestleRes, catRes] = await Promise.all([
-      repo.search({ limit: 500 }),
-      repo.search({ query: 'nestle', limit: 20 }),
-      repo.getCategories(),
-    ]);
-    rawProducts = prodRes?.products || [];
-    nestleSearchResults = nestleRes?.products || [];
-    rawCategories = catRes || [];
-  } catch {
-    rawProducts = [];
-    nestleSearchResults = [];
-    rawCategories = [];
-  }
+  const [prodRes, nestleRes, catRes] = await Promise.all([
+    loadCatalogueSource(
+      'all-products search',
+      () => repo.search({ limit: 500 }),
+      { products: [], hasMore: false },
+      (result) => {
+        const products = result?.products ?? [];
+        return products.length === 0 || !products.some((product) => Number(product.stock) > 0);
+      },
+      (result) => {
+        const products = result?.products ?? [];
+        return {
+          productCount: products.length,
+          sellableProductCount: products.filter((product) => Number(product.stock) > 0).length,
+        };
+      },
+    ),
+    loadCatalogueSource(
+      'Nestle product search',
+      () => repo.search({ query: 'nestle', limit: 20 }),
+      { products: [], hasMore: false },
+      (result) => (result?.products ?? []).length === 0,
+      (result) => ({ productCount: (result?.products ?? []).length }),
+    ),
+    loadCatalogueSource(
+      'categories query',
+      () => repo.getCategories(),
+      [],
+      (result) => result.length === 0,
+      (result) => ({ categoryCount: result.length }),
+    ),
+  ]);
+  rawProducts = prodRes?.products || [];
+  nestleSearchResults = nestleRes?.products || [];
+  rawCategories = catRes || [];
 
   let products = rawProducts && rawProducts.length > 0 ? rawProducts : FALLBACK_PRODUCTS;
 
