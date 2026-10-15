@@ -39,7 +39,7 @@ describe('Deal of the Week route', () => {
     state.campaignRows = [];
   });
 
-  it('renders the indexed all-store fallback with category links and no unverified discount claims', async () => {
+  it('renders the indexed all-store fallback as one concise, unranked product grid', async () => {
     const response = await GET();
     const html = await response.text();
 
@@ -49,7 +49,14 @@ describe('Deal of the Week route', () => {
     expect(html).toContain('Current unranked store deals');
     expect(html).toContain('<title>Deal of the Week: Current Store Offers | Lucky Store</title>');
     expect(html).toContain('offers across Lucky Store products');
-    expect(html).toContain('Browse by category');
+    expect(html).not.toContain('Browse by category');
+    expect(html).not.toContain('class="deal-category"');
+    expect(html.match(/class="grid"/g)).toHaveLength(1);
+    expect(html).not.toContain('class="trust-panel"');
+    expect(html).not.toContain('class="checked-note"');
+    expect(html).not.toContain('class="hero-aside"');
+    expect(html).not.toContain('class="category"');
+    expect(html).not.toContain('class="editorial-note"');
     expect(html).toContain('Verified Ramen');
     expect(html).not.toContain('% off MRP');
     expect(html).not.toContain('<del class="mrp">');
@@ -127,6 +134,9 @@ describe('Deal of the Week route', () => {
     expect(html).toContain('19 October 2026–25 October 2026 (Asia/Dhaka)');
     expect(html).toContain('10% below verified MRP');
     expect(html).toContain('Extra 5% off this week');
+    expect(html).toContain('class="editorial-note"');
+    expect(html).toContain('href="/best/editorial"');
+    expect(html).toContain('Selected and sold by Lucky Store');
     expect(html).not.toContain('Browse by category');
     vi.useRealTimers();
   });
