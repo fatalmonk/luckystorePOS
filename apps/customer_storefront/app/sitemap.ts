@@ -450,6 +450,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   return [
+    { url: `${BASE_URL}/best/dealoftheweek`, changeFrequency: 'weekly', priority: 0.8 },
     ...getPublishedGuides().map(guide => ({ url: guideUrl(guide.slug), lastModified: guide.updatedAt! })),
     ...dynamicIndexEntries,
     ...staticEntries,

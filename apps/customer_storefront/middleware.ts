@@ -139,7 +139,7 @@ export async function middleware(request: NextRequest) {
   // Reject unpublished/unknown guide routes before Next can stream a soft 404.
   if (request.nextUrl.pathname.startsWith('/best/')) {
     const slug = request.nextUrl.pathname.slice('/best/'.length).replace(/\/$/, '');
-    if (slug !== 'editorial' && !(await isPublicGuideSlug(slug, BUYING_GUIDES))) return notFoundResponse();
+    if (slug !== 'editorial' && slug !== 'dealoftheweek' && !(await isPublicGuideSlug(slug, BUYING_GUIDES))) return notFoundResponse();
   }
 
   // Pre-session canonical redirect: consolidate raw UUID product URLs to human-readable slug URLs.

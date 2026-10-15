@@ -7,18 +7,26 @@ create table public.storefront_item_promotions (
   tenant_id uuid not null,
   store_id uuid not null references public.stores(id),
   item_id uuid not null references public.items(id),
+  expected_name text not null,
   campaign_key text not null,
+  revision integer not null default 1 check (revision > 0),
+  is_current boolean not null default true,
   discount_percent numeric(5, 2) not null check (discount_percent > 0 and discount_percent <= 100),
   expected_price numeric(12, 2) not null check (expected_price >= 0),
-  expected_mrp numeric(12, 2) not null check (expected_mrp >= expected_price),
+  expected_mrp numeric(12, 2) not null check (expected_mrp >= expected_price and expected_price <= round(expected_mrp * 0.90, 2)),
   starts_at timestamptz not null,
   ends_at timestamptz not null check (ends_at > starts_at),
+  offer_terms text not null,
   selection_reason text not null,
   evidence_source text not null,
   evidence_checked_at timestamptz not null,
   created_at timestamptz not null default statement_timestamp(),
-  unique (campaign_key, item_id)
+  unique (campaign_key, item_id, revision)
 );
+
+create unique index storefront_item_promotions_one_current_pick
+  on public.storefront_item_promotions (campaign_key, item_id)
+  where is_current is true;
 
 alter table public.storefront_item_promotions enable row level security;
 revoke all on public.storefront_item_promotions from public;
@@ -26,34 +34,34 @@ revoke all on public.storefront_item_promotions from anon, authenticated;
 grant select on public.storefront_item_promotions to anon, authenticated;
 grant all on public.storefront_item_promotions to service_role;
 
-create policy storefront_item_promotions_active_read
+create policy storefront_item_promotions_current_campaign_read
   on public.storefront_item_promotions
   for select
   to anon, authenticated
   using (
     tenant_id = '00000000-0000-0000-0000-000000000001'::uuid
     and store_id = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'::uuid
-    and starts_at <= statement_timestamp()
+    and is_current is true
     and ends_at > statement_timestamp()
   );
 
 insert into public.storefront_item_promotions (
-  tenant_id, store_id, item_id, campaign_key, discount_percent,
+  tenant_id, store_id, item_id, expected_name, campaign_key, discount_percent, offer_terms,
   expected_price, expected_mrp, starts_at, ends_at,
   selection_reason, evidence_source, evidence_checked_at
 ) values
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '685b9d11-a04a-4ef4-8753-712b21fdb75b', 'dealoftheweek-2026-10-19', 5, 150, 207, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '0c815bf1-c506-44f5-88dd-b504db60d7af', 'dealoftheweek-2026-10-19', 5, 150, 190, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'b79a6606-3eb8-425e-bf53-57c5788dc7ea', 'dealoftheweek-2026-10-19', 5, 150, 190, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '4bbb76d4-f058-430f-9fd1-87db15d71b5c', 'dealoftheweek-2026-10-19', 5, 150, 190, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '16eece31-f416-4db2-9c0c-371d2696a917', 'dealoftheweek-2026-10-19', 5, 1000, 1265, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0e370df-8e43-4368-ac84-b083b96cce2f', 'dealoftheweek-2026-10-19', 5, 19, 24, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'f49fa080-07f8-4ec3-926a-6f64e315802f', 'dealoftheweek-2026-10-19', 5, 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '315a1ef1-49ef-470e-a0ff-818aa0400739', 'dealoftheweek-2026-10-19', 5, 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'e04a2efd-9a26-411a-9984-eaf227f72cdc', 'dealoftheweek-2026-10-19', 5, 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '8169739f-dd49-4588-928e-837a22faa388', 'dealoftheweek-2026-10-19', 5, 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '7fd83cfc-2eac-45d1-aa90-0002ca5a0222', 'dealoftheweek-2026-10-19', 5, 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
-  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '841b013d-e7bd-46a6-9e69-282f84aa2781', 'dealoftheweek-2026-10-19', 5, 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Chosen from the 12 highest-discount active catalogue products for week one.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00');
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '685b9d11-a04a-4ef4-8753-712b21fdb75b', 'Awei Data Cable Micro USB (CL-115M)', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 150, 207, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '0c815bf1-c506-44f5-88dd-b504db60d7af', 'Buldak Ramen Cheese Cup', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 150, 190, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'b79a6606-3eb8-425e-bf53-57c5788dc7ea', 'Buldak Ramen Noodles 2x Spicy Cup', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 150, 190, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '4bbb76d4-f058-430f-9fd1-87db15d71b5c', 'Buldak Ramen Original Cup', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 150, 190, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '16eece31-f416-4db2-9c0c-371d2696a917', 'Avonee Pant Style Baby Diaper (9-14 kg) - L 48 pcs', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 1000, 1265, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0e370df-8e43-4368-ac84-b083b96cce2f', 'Dove Conditioner Intensive Repair 50 ml', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 19, 24, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'f49fa080-07f8-4ec3-926a-6f64e315802f', 'Buldak Ramen 2x Spicy', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '315a1ef1-49ef-470e-a0ff-818aa0400739', 'Buldak Ramen 3x Spicy', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'e04a2efd-9a26-411a-9984-eaf227f72cdc', 'Buldak Ramen Cream Carbonara', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '8169739f-dd49-4588-928e-837a22faa388', 'Buldak Ramen Original', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '7fd83cfc-2eac-45d1-aa90-0002ca5a0222', 'Buldak Ramen Quattro Cheese', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00'),
+  ('00000000-0000-0000-0000-000000000001', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '841b013d-e7bd-46a6-9e69-282f84aa2781', 'Buldak Ramen Rose', 'dealoftheweek-2026-10-19', 5, 'Online checkout only; extra 5% off the verified current selling price; valid 19–25 October 2026, Asia/Dhaka.', 160, 200, '2026-10-18 18:00:00+00', '2026-10-25 18:00:00+00', 'Selected as one of the 12 highest-discount active catalogue products in the verification snapshot.', 'Lucky Store production catalogue snapshot', '2026-10-15 15:52:22.275871+00');
 
 create or replace function public.create_order_with_stock_idempotent(
   p_order_number text,
@@ -167,6 +175,8 @@ begin
     where p.tenant_id = v_expected_tenant_id
       and p.store_id = p_store_id
       and p.item_id = i.id
+      and p.is_current is true
+      and p.expected_name = i.name
       and p.expected_price = i.price
       and p.expected_mrp = i.mrp
       and p.starts_at <= statement_timestamp()

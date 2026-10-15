@@ -4,6 +4,7 @@ import { getCategoryGroup, normalizeCategorySlug, BENGALI_CATEGORY_NAMES } from 
 import type { Product } from '../types';
 import type { CategoryItem } from '../../components/HomeShell';
 import type { Locale } from '../i18n/config';
+import { getActiveWeeklyDealEdition, loadCurrentStorefrontDealCampaign } from '../storefront-promotions';
 
 export { BENGALI_CATEGORY_NAMES };
 
@@ -102,6 +103,9 @@ export const FALLBACK_PRODUCTS: Product[] = [
 
 export interface HomePageData {
   inStock: Product[];
+  weeklyPicks: Product[];
+  weeklyEditionActive: boolean;
+  weeklyEditionUnavailable: boolean;
   categories: CategoryItem[];
   dealsProducts: Product[];
   morningProducts: Product[];
@@ -184,6 +188,35 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   }));
 
   const inStock = products.filter((p) => p.stock > 0);
+  let weeklyPicks: Product[] = [];
+  let weeklyEditionActive = false;
+  let weeklyEditionUnavailable = false;
+  try {
+    const now = new Date();
+    const campaignRows = await loadCurrentStorefrontDealCampaign(supabase, now);
+    const activeRows = getActiveWeeklyDealEdition(campaignRows, now);
+    if (activeRows.length > 0) {
+      weeklyEditionActive = true;
+      const knownProducts = new Map(inStock.map((product) => [product.id, product]));
+      const resolved = await Promise.all(activeRows.map(async (row) => {
+        const product = knownProducts.get(row.item_id) ?? await repo.getById(row.item_id as any);
+        if (
+          !product || product.stock <= 0 || product.name !== row.expected_name ||
+          product.price !== Number(row.expected_price) ||
+          Number(product.originalPrice ?? product.price) !== Number(row.expected_mrp) ||
+          product.price > Math.round(Number(row.expected_mrp) * 0.9 * 100) / 100
+        ) return null;
+        return product;
+      }));
+      weeklyPicks = resolved.filter((product): product is Product => product !== null);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (!/PGRST205|42P01|storefront_item_promotions.*does not exist|Could not find the table ['"]public\.storefront_item_promotions['"] in the schema cache/i.test(message)) {
+      weeklyEditionUnavailable = true;
+      console.error('Unable to verify weekly homepage picks:', message);
+    }
+  }
   const onSale = inStock.filter((p) => p.originalPrice != null && p.originalPrice > p.price);
   const withBadge = inStock.filter((p) => p.badge);
   const dealsPool = onSale.length >= 4 ? onSale : withBadge.length >= 4 ? withBadge : inStock;
@@ -249,6 +282,9 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
 
   return {
     inStock,
+    weeklyPicks,
+    weeklyEditionActive,
+    weeklyEditionUnavailable,
     categories,
     dealsProducts: dealsPool,
     morningProducts,

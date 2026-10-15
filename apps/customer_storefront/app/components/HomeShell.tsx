@@ -25,6 +25,9 @@ export interface CategoryItem {
 
 export interface HomeShellProps {
   inStock: Product[];
+  weeklyPicks?: Product[];
+  weeklyEditionActive?: boolean;
+  weeklyEditionUnavailable?: boolean;
   categories?: CategoryItem[];
   dealsProducts: Product[];
   morningProducts: Product[];
@@ -40,6 +43,9 @@ export interface HomeShellProps {
 
 export function HomeShell({
   inStock,
+  weeklyPicks = [],
+  weeklyEditionActive = false,
+  weeklyEditionUnavailable = false,
   categories = [],
   dealsProducts,
   morningProducts,
@@ -148,7 +154,13 @@ export function HomeShell({
             </div>
 
             <div className="shelf-container-deferred py-2 sm:py-4">
-              <DealOfTheWeek products={inStock} locale={locale} />
+              <DealOfTheWeek
+                products={inStock}
+                weeklyPicks={weeklyPicks}
+                weeklyEditionActive={weeklyEditionActive}
+                weeklyEditionUnavailable={weeklyEditionUnavailable}
+                locale={locale}
+              />
             </div>
 
             <div className="shelf-container-deferred">

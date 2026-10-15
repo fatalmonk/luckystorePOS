@@ -96,6 +96,8 @@ describe('sitemap', () => {
   it('generates both EN and BN URLs with reciprocal language alternates and accurate timestamps', async () => {
     const entries = await sitemap();
     const urls = entries.map((e) => e.url);
+    expect(urls).toContain('https://www.luckystore1947.com/best/dealoftheweek');
+    expect(entries.find((e) => e.url === 'https://www.luckystore1947.com/best/dealoftheweek')?.lastModified).toBeUndefined();
 
     // Dynamic Index: Homepage pair
     expect(urls).toContain('https://www.luckystore1947.com');
