@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { Header } from '../../../components/updated/Header';
 import { Footer } from '../../../components/updated/Footer';
 import { BottomNav } from '../../../components/BottomNav';
-import { JsonLd } from '../../../components/seo/JsonLd';
-import { DELIVERY_POLICY, COVERED_AREAS, getDeliveryFaqSchema } from '../../../lib/deliveryData';
+import { DELIVERY_POLICY, COVERED_AREAS } from '../../../lib/deliveryData';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 
 export const metadata: Metadata = {
@@ -45,7 +44,6 @@ export const metadata: Metadata = {
 export default function BengaliDeliveryPage() {
   return (
     <>
-      <JsonLd data={getDeliveryFaqSchema()} />
       <Header />
       <main className="mx-auto max-w-5xl px-6 py-24 text-warm-fg">
         <Breadcrumbs
@@ -77,6 +75,39 @@ export default function BengaliDeliveryPage() {
         <section className="mt-12 rounded-2xl border border-warm-border bg-warm-surface p-6" aria-labelledby="payment-heading">
           <h2 id="payment-heading" className="text-2xl font-black">পেমেন্ট ও পণ্য পরীক্ষা পদ্ধতি</h2>
           <p className="mt-3 leading-8 text-warm-muted">ক্যাশ অন ডেলিভারি (COD) ও bKash-এ পেমেন্ট সুবিধা রয়েছে। ডেলিভারি পার্টনারের কাছ থেকে প্যাকেট, ওজন, সিল ও মেয়াদ নিজে দেখে নিশ্চিত হয়ে তারপর নিশ্চিন্তে পেমেন্ট করুন।</p>
+        </section>
+        <section className="mt-12" aria-labelledby="delivery-faq-heading">
+          <h2 id="delivery-faq-heading" className="text-2xl font-black">ডেলিভারি সম্পর্কে সাধারণ প্রশ্ন</h2>
+          <dl className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-warm-border bg-warm-surface p-5">
+              <dt className="font-bold">আমার ঠিকানায় ডেলিভারি হবে কি?</dt>
+              <dd className="mt-2 leading-7 text-warm-muted">
+                চকবাজারের Lucky Store থেকে শুধু {DELIVERY_POLICY.radiusKm} কিমি ব্যাসার্ধের মধ্যে থাকা ঠিকানায় ডেলিভারি দেওয়া হয়।
+                কাছাকাছি এলাকার সব ঠিকানা এই সীমার মধ্যে পড়ে না। বিস্তারিত জানতে <Link href="/bn/delivery" className="underline underline-offset-2">ডেলিভারি এলাকার তথ্য</Link> দেখুন।
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-warm-border bg-warm-surface p-5">
+              <dt className="font-bold">কত টাকার অর্ডারে ফ্রি ডেলিভারি?</dt>
+              <dd className="mt-2 leading-7 text-warm-muted">
+                ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ডেলিভারি ফ্রি।
+                এর কম অর্ডারে ডেলিভারি চার্জ ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}।
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-warm-border bg-warm-surface p-5">
+              <dt className="font-bold">অর্ডার ও পেমেন্ট কীভাবে করব?</dt>
+              <dd className="mt-2 leading-7 text-warm-muted">
+                পণ্য কার্টে যোগ করে চেকআউটে ডেলিভারির ঠিকানা দিন।
+                পণ্য হাতে পেয়ে পরীক্ষা করার পর ক্যাশ অন ডেলিভারি (COD) বা bKash-এ পেমেন্ট করতে পারবেন।
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-warm-border bg-warm-surface p-5">
+              <dt className="font-bold">ডেলিভারির সময় কখন?</dt>
+              <dd className="mt-2 leading-7 text-warm-muted">
+                ডেলিভারি সেবার সময় {DELIVERY_POLICY.deliveryHours.display}।
+                অর্ডার দেওয়ার আগে আপনার ঠিকানা ডেলিভারি সীমার মধ্যে আছে কি না নিশ্চিত করুন।
+              </dd>
+            </div>
+          </dl>
         </section>
         <Link href="/bn/category/rice-and-grain" className="mt-8 inline-flex min-h-12 items-center rounded-full bg-warm-accent px-6 font-bold text-black">কেনাকাটা শুরু করুন</Link>
       </main>
