@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import sitemap, { isProductSitemapEligible } from '../sitemap';
+import { getSeoPosts } from '../../lib/notfair-client';
+
+vi.mock('../../lib/notfair-client', () => ({ getSeoPosts: vi.fn().mockResolvedValue([]) }));
 
 vi.mock('server-only', () => ({}));
 
@@ -85,6 +88,50 @@ vi.mock('../lib/products/getCachedCategories', () => ({
 }));
 
 describe('sitemap', () => {
+  it('includes publication instants before and at now but excludes later scheduled posts', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-14T00:00:00Z'));
+    try {
+      vi.mocked(getSeoPosts).mockResolvedValueOnce([
+        { slug: 'before', published_at: '2026-10-14T05:59:59+06:00' },
+        { slug: 'at-now', published_at: '2026-10-14T06:00:00+06:00' },
+        { slug: 'after', published_at: '2026-10-13T20:00:01-04:00' },
+        { slug: 'future', published_at: '2099-01-01T00:00:00Z' },
+      ] as Awaited<ReturnType<typeof getSeoPosts>>);
+      expect((await sitemap()).filter(entry => entry.url.includes('/blog')).map(entry => entry.url)).toEqual([
+        'https://www.luckystore1947.com/blog',
+        'https://www.luckystore1947.com/blog/before',
+        'https://www.luckystore1947.com/blog/at-now',
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('adds published canonical blog URLs once without inventing modification dates', async () => {
+    vi.mocked(getSeoPosts).mockResolvedValueOnce([
+      { slug: 'published', published_at: '2026-10-12T00:00:00Z' },
+      { slug: 'published', published_at: '2026-10-12T00:00:00Z' },
+      { slug: 'draft', published_at: null },
+      { slug: 'invalid-date', published_at: 'not-a-date' },
+      { slug: 'invalid-calendar', published_at: '2026-02-30T00:00:00Z' },
+    ] as Awaited<ReturnType<typeof getSeoPosts>>);
+    const blogs = (await sitemap()).filter(entry => entry.url.includes('/blog'));
+    expect(blogs).toEqual([
+      { url: 'https://www.luckystore1947.com/blog' },
+      { url: 'https://www.luckystore1947.com/blog/published' },
+    ]);
+  });
+
+  it('isolates provider failures and preserves the non-blog sitemap', async () => {
+    const baseline = await sitemap();
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(getSeoPosts).mockRejectedValueOnce(new Error('private upstream details'));
+    expect(await sitemap()).toEqual(baseline);
+    expect(warning).toHaveBeenCalledWith('Blog sitemap unavailable; preserving non-blog entries.');
+    warning.mockRestore();
+  });
+
   it('correctly filters product sitemap eligibility', () => {
     expect(isProductSitemapEligible({ id: '1', name: 'Milk', price: 90, is_active: true })).toBe(true);
     expect(isProductSitemapEligible({ id: '2', name: 'Milk', price: 90, is_active: false })).toBe(false);
@@ -160,12 +207,8 @@ describe('sitemap', () => {
     expect(deliveryEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/delivery');
     expect(deliveryBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/delivery');
 
-    expect(urls).toContain('https://www.luckystore1947.com/fortune-cookies-near-me');
-    expect(urls).toContain('https://www.luckystore1947.com/bn/fortune-cookies-near-me');
-    const fortuneEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/fortune-cookies-near-me');
-    const fortuneBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/fortune-cookies-near-me');
-    expect(fortuneEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/fortune-cookies-near-me');
-    expect(fortuneBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/fortune-cookies-near-me');
+    expect(urls).not.toContain('https://www.luckystore1947.com/fortune-cookies-near-me');
+    expect(urls).not.toContain('https://www.luckystore1947.com/bn/fortune-cookies-near-me');
 
     // Unpaired static pages: no fabricated /bn counterparts
     expect(urls).toContain('https://www.luckystore1947.com/contact');

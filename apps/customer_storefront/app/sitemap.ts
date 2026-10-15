@@ -7,6 +7,8 @@ import { isMissingItemTranslationsTableError } from './lib/translationErrors';
 import { POPULAR_BRANDS, isProductOfBrand } from './lib/brandsData';
 import { getPublishedGuides } from './lib/buying-guides/service';
 import { guideUrl } from './lib/buying-guides/model';
+import { getSeoPosts } from '../lib/notfair-client';
+import { getBlogCanonicalUrl, getBlogPublicationDate } from '../lib/blog-seo';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -37,13 +39,6 @@ const dynamicIndexRoutes = [
 // Truly static routes: audited for exact localized /bn/... route existence.
 // Only routes with verified page implementations emit localized counterparts and alternates.
 const staticRoutes = [
-  {
-    enPath: '/fortune-cookies-near-me',
-    bnPath: '/bn/fortune-cookies-near-me',
-    priority: 0.8,
-    changefreq: 'weekly',
-    lastMod: '2026-09-25T00:00:00Z',
-  },
   {
     enPath: '/delivery',
     bnPath: '/bn/delivery',
@@ -229,10 +224,11 @@ async function getPublishedBengaliItemIds(): Promise<Set<string>> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [categories, products, publishedBnItemIds] = await Promise.all([
+  const [categories, products, publishedBnItemIds, blogEntries] = await Promise.all([
     getCategories(),
     getProducts(),
     getPublishedBengaliItemIds(),
+    getBlogEntries(),
   ]);
 
   const productUpdatedAts = products
@@ -457,5 +453,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categoryEntries,
     ...brandEntries,
     ...productEntries,
+    ...blogEntries,
   ];
+}
+
+async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
+  const entries: MetadataRoute.Sitemap = [{ url: `${BASE_URL}/blog` }];
+  try {
+    const posts = await getSeoPosts({ revalidate });
+    const seen = new Set<string>();
+    for (const post of posts) {
+      if (!post.slug.trim() || !getBlogPublicationDate(post.published_at) || seen.has(post.slug)) continue;
+      seen.add(post.slug);
+      // Publication does not establish a last-modification timestamp.
+      entries.push({ url: getBlogCanonicalUrl(post.slug) });
+    }
+  } catch {
+    // A provider outage must never remove product/category/static sitemap entries.
+    // Avoid logging upstream error details, which can contain private response data.
+    console.warn('Blog sitemap unavailable; preserving non-blog entries.');
+  }
+  return entries;
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { isProductSitemapEligible } from '../../sitemap';
 import { getCanonicalCategorySlug } from '../types';
@@ -123,6 +123,114 @@ vi.mock('../products/getCachedCrossSell', () => ({
 describe('SEO & Routing Contract Tests (Phase 2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('HTTP named product canonical redirects', () => {
+    beforeEach(() => {
+      vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+      vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key');
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+        new Response(JSON.stringify([mockProduct]), { status: 200 }));
+    });
+    afterEach(() => { vi.mocked(fetch).mockRestore(); vi.unstubAllEnvs(); vi.useRealTimers(); });
+
+    it.each(['%E2%80%93', '%E2%80%94', '%E2%88%92'])('redirects encoded supported separator %s before session for both locales', async (separator) => {
+      const { middleware } = await import('../../../middleware');
+      for (const locale of ['', 'bn/']) {
+        const response = await middleware(new NextRequest(`https://www.luckystore1947.com/${locale}product/old-name${separator}029b62d8?ref=smart&x=1&x=2`));
+        expect(response.status).toBe(308);
+        expect(response.headers.get('location')).toBe(`https://www.luckystore1947.com/${locale}product/radhuni-holud-gura-100gm--029b62d8?ref=smart&x=1&x=2`);
+      }
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['radhuni-holud-gura-100gm--029b62d8', 200],
+      ['--029b62d8', 404],
+    ])('aborts stalled lookup for %s and preserves failure semantics', async (slug, expectedStatus) => {
+      vi.useFakeTimers();
+      let lookupSignal: AbortSignal | undefined;
+      vi.mocked(fetch).mockImplementation((_input, init) => new Promise((_resolve, reject) => {
+        lookupSignal = init?.signal ?? undefined;
+        lookupSignal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+      }));
+      const { middleware } = await import('../../../middleware');
+      const pending = middleware(new NextRequest(`https://www.luckystore1947.com/product/${slug}`));
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(lookupSignal?.aborted).toBe(true);
+      const response = await pending;
+      expect(response.status).toBe(expectedStatus);
+      expect(response.headers.get('location')).toBeNull();
+      expect(mockUpdateSession).toHaveBeenCalledTimes(expectedStatus === 200 ? 1 : 0);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it.each([
+      ['https://luckystore1947.com', '', 'https://www.luckystore1947.com'],
+      ['https://www.luckystore1947.com', 'bn/', 'https://www.luckystore1947.com'],
+      ['http://localhost:3000', '', 'http://localhost:3000'],
+      ['https://seo-preview.vercel.app', 'bn/', 'https://seo-preview.vercel.app'],
+    ])('redirects obsolete names before session on %s', async (origin, locale, target) => {
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest(`${origin}/${locale}product/old-name--029b62d8?utm_source=test&x=1&x=2`));
+      expect(response.status).toBe(308);
+      expect(response.headers.get('location')).toBe(`${target}/${locale}product/radhuni-holud-gura-100gm--029b62d8?utm_source=test&x=1&x=2`);
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+      const lookup = new URL(String(vi.mocked(fetch).mock.calls[0][0]));
+      expect(lookup.searchParams.get('is_active')).toBe('eq.true');
+      expect(lookup.searchParams.get('limit')).toBe('2');
+    });
+
+    it('passes the current slug through without a redirect loop', async () => {
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest('https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8'));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('location')).toBeNull();
+      expect(mockUpdateSession).toHaveBeenCalledOnce();
+    });
+
+    it.each([[[]], [[mockProduct, { ...mockProduct, id: '029b62d8-0000-0000-0000-000000000000' }]], [[{ id: '029b62d8-invalid', name: 'Bad ID' }]]])('never guesses identity from missing, ambiguous or malformed rows: %j', async (...rows) => {
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(rows[0]), { status: 200 }));
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest('https://www.luckystore1947.com/product/old-name--029b62d8'));
+      expect(response.headers.get('location')).toBeNull();
+      expect(mockUpdateSession).toHaveBeenCalledOnce();
+    });
+
+    it('passes named routes through when lookup fails but preserves alias 404 semantics', async () => {
+      vi.mocked(fetch).mockImplementation(async () => new Response('unavailable', { status: 503 }));
+      const { middleware } = await import('../../../middleware');
+      expect((await middleware(new NextRequest('https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8'))).status).toBe(200);
+      expect((await middleware(new NextRequest('https://www.luckystore1947.com/product/--029b62d8'))).status).toBe(404);
+    });
+
+    it.each(['--029b62d8', '---029b62d8', '029b62d8-1111-2222-3333-444455556666'])('canonicalizes legacy alias %s on the production apex', async (slug) => {
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest(`http://luckystore1947.com/bn/product/${slug}?ref=alias`));
+      expect(response.status).toBe(308);
+      expect(response.headers.get('location')).toBe('https://www.luckystore1947.com/bn/product/radhuni-holud-gura-100gm--029b62d8?ref=alias');
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+    });
+
+    it('keeps named canonical routes available when credentials are absent', async () => {
+      vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
+      const { middleware } = await import('../../../middleware');
+      expect((await middleware(new NextRequest('https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8'))).status).toBe(200);
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it.each(['old--029b62d', 'old--029b62d80', 'old--zzzzzzzz'])('leaves invalid suffix %s to page validation', async (slug) => {
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest(`https://www.luckystore1947.com/product/${slug}`));
+      expect(response.headers.get('location')).toBeNull();
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it.each(['bad%ZZ--029b62d8', 'bad%2Fname--029b62d8'])('rejects malformed path encoding %s before lookup', async (slug) => {
+      const { middleware } = await import('../../../middleware');
+      expect((await middleware(new NextRequest(`https://www.luckystore1947.com/product/${slug}`))).status).toBe(404);
+      expect(fetch).not.toHaveBeenCalled();
+    });
   });
 
   describe('Product Routing & Metadata Contract', () => {

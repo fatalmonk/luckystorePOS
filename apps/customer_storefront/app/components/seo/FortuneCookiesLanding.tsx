@@ -1,82 +1,40 @@
 import Link from 'next/link';
-import { ArrowRight, Cookie, MagnifyingGlass, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, Cookie, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
 import { BottomNav } from '../BottomNav';
 import { Footer } from '../updated/Footer';
 import { Header } from '../updated/Header';
 import { Breadcrumbs } from '../ui/Breadcrumbs';
-import { DELIVERY_POLICY } from '../../lib/deliveryData';
 import { withLocale, type Locale } from '../../lib/i18n/config';
 import { FaqJsonLd, type FaqItem } from './FaqJsonLd';
 
 const copy = {
   en: {
-    home: 'Home',
-    category: 'Biscuits & Cookies',
-    title: 'Fortune Cookies',
-    eyebrow: 'Fortune Cookies',
-    heading: 'Looking for Fortune Cookies near you?',
-    intro: 'Lucky Store is checking local demand for Fortune Cookies in Chawkbazar. Browse today’s live biscuits and cookies, or message the store team to confirm if Fortune Cookies can be arranged.',
-    browse: 'Browse biscuits & cookies',
-    whatsapp: 'Ask on WhatsApp',
-    message: 'Hi Lucky Store, do you have Fortune Cookies in stock?',
-    status: 'Current status',
-    listing: 'Live product listing',
-    noListing: 'Not yet connected to the storefront catalog.',
-    delivery: 'Delivery area',
-    deliveryArea: `${DELIVERY_POLICY.radiusLabel} around Chawkbazar.`,
-    nextStep: 'Best next step',
-    nextStepBody: 'Message the store team before visiting or ordering.',
-    info: [
-      ['Why this page exists', 'Searchers are asking specifically for Fortune Cookies, but the current catalog only has a broader biscuits and cookies category.'],
-      ['No fake stock claims', 'This page does not create Product or Offer schema until a real item exists in the store catalog.'],
-      ['Fast availability check', 'WhatsApp is the fastest route for confirming whether Fortune Cookies are stocked or can be sourced today.'],
-    ],
-    snacksTitle: 'Browse similar tea-time snacks',
-    snacksBody: 'Until a Fortune Cookies SKU is connected, the closest live shopping path is the biscuits and cookies category.',
-    openCategory: 'Open biscuits and cookies',
-    faqTitle: 'Fortune Cookies questions',
-    faqs: [
-      { question: 'Does Lucky Store sell Fortune Cookies?', answer: 'Lucky Store is tracking local demand for Fortune Cookies. Check the biscuits and cookies category for current live listings, or message the store team on WhatsApp for today’s availability.' },
-      { question: 'Can I get Fortune Cookies delivered near Chawkbazar?', answer: `Lucky Store delivers within a verified ${DELIVERY_POLICY.radiusLabel} around the Chawkbazar store. Delivery is available for stocked items only.` },
-    ],
+    home: 'Home', category: 'Biscuits & Cookies', title: 'Fortune Cookies', eyebrow: 'Availability',
+    heading: 'Fortune Cookies are not available at Lucky Store',
+    intro: 'Lucky Store does not stock Fortune Cookies and has no plans to stock them. Browse our biscuits and cookies category for current alternatives.',
+    browse: 'Browse biscuits & cookies', status: 'Current status', listing: 'Fortune Cookies',
+    noListing: 'Not stocked. No plans to stock.', delivery: 'Delivery', deliveryArea: 'Fortune Cookies are not available for delivery.',
+    nextStep: 'Explore alternatives', nextStepBody: 'Browse the current biscuits and cookies catalog.',
+    info: [['Availability', 'We do not sell or arrange sourcing for Fortune Cookies.'], ['Shopping alternatives', 'Browse the biscuits and cookies category for actual catalog items.'], ['Before ordering', 'Check each listed product for its current price and availability.']],
+    snacksTitle: 'Browse biscuits and cookies', snacksBody: 'Explore current catalog alternatives.', openCategory: 'Open biscuits and cookies', faqTitle: 'Fortune Cookies questions',
+    faqs: [{ question: 'Does Lucky Store sell Fortune Cookies?', answer: 'No. Lucky Store does not stock Fortune Cookies and has no plans to stock them.' }, { question: 'Can Lucky Store arrange Fortune Cookies?', answer: 'No. Please browse our biscuits and cookies category for current alternatives.' }],
   },
   bn: {
-    home: 'হোম',
-    category: 'বিস্কুট ও কুকিজ',
-    title: 'ফরচুন কুকিজ',
-    eyebrow: 'ফরচুন কুকিজ',
-    heading: 'কাছাকাছি ফরচুন কুকিজ খুঁজছেন?',
-    intro: 'চকবাজারে ফরচুন কুকিজের চাহিদা যাচাই করছে লাকি স্টোর। আজকের বিস্কুট ও কুকিজ দেখুন, অথবা পণ্যটি পাওয়া যাবে কি না জানতে স্টোর টিমকে বার্তা দিন।',
-    browse: 'বিস্কুট ও কুকিজ দেখুন',
-    whatsapp: 'হোয়াটসঅ্যাপে জিজ্ঞাসা করুন',
-    message: 'হ্যালো লাকি স্টোর, ফরচুন কুকিজ কি স্টকে আছে?',
-    status: 'বর্তমান অবস্থা',
-    listing: 'লাইভ পণ্যের তালিকা',
-    noListing: 'এখনো স্টোরের ক্যাটালগে যুক্ত হয়নি।',
-    delivery: 'ডেলিভারি এলাকা',
-    deliveryArea: `চকবাজারের আশেপাশে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমি।`,
-    nextStep: 'পরবর্তী করণীয়',
-    nextStepBody: 'আসা বা অর্ডার করার আগে স্টোর টিমকে বার্তা দিন।',
-    info: [
-      ['এই পেজটি কেন', 'অনেকে বিশেষভাবে ফরচুন কুকিজ খুঁজছেন, তবে বর্তমান ক্যাটালগে বিস্কুট ও কুকিজের সাধারণ বিভাগ রয়েছে।'],
-      ['স্টকের ভুল দাবি নয়', 'স্টোর ক্যাটালগে আসল পণ্য যুক্ত না হওয়া পর্যন্ত এই পেজে Product বা Offer schema দেওয়া হয় না।'],
-      ['দ্রুত খোঁজ নিন', 'ফরচুন কুকিজ স্টকে আছে বা আজ সংগ্রহ করা যাবে কি না জানতে হোয়াটসঅ্যাপে যোগাযোগ করুন।'],
-    ],
-    snacksTitle: 'চায়ের সময়ের আরও স্ন্যাকস দেখুন',
-    snacksBody: 'ফরচুন কুকিজ ক্যাটালগে যুক্ত না হওয়া পর্যন্ত বিস্কুট ও কুকিজ বিভাগে বর্তমান পণ্য দেখতে পারেন।',
-    openCategory: 'বিস্কুট ও কুকিজ খুলুন',
-    faqTitle: 'ফরচুন কুকিজ সম্পর্কে প্রশ্ন',
-    faqs: [
-      { question: 'লাকি স্টোরে কি ফরচুন কুকিজ পাওয়া যায়?', answer: 'লাকি স্টোর ফরচুন কুকিজের স্থানীয় চাহিদা যাচাই করছে। বর্তমান পণ্যের জন্য বিস্কুট ও কুকিজ বিভাগ দেখুন, অথবা আজকের প্রাপ্যতা জানতে হোয়াটসঅ্যাপে স্টোর টিমকে বার্তা দিন।' },
-      { question: 'চকবাজারের কাছে কি ফরচুন কুকিজ ডেলিভারি পাওয়া যাবে?', answer: `লাকি স্টোর চকবাজারের দোকান থেকে যাচাইকৃত ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমি এলাকার মধ্যে ডেলিভারি দেয়। শুধু স্টকে থাকা পণ্য ডেলিভারি করা হয়।` },
-    ],
+    home: 'হোম', category: 'বিস্কুট ও কুকিজ', title: 'ফরচুন কুকিজ', eyebrow: 'প্রাপ্যতা',
+    heading: 'লাকি স্টোরে ফরচুন কুকিজ পাওয়া যায় না',
+    intro: 'লাকি স্টোর ফরচুন কুকিজ স্টকে রাখে না এবং রাখার কোনো পরিকল্পনা নেই। বিকল্প পণ্যের জন্য আমাদের বিস্কুট ও কুকিজ বিভাগ দেখুন।',
+    browse: 'বিস্কুট ও কুকিজ দেখুন', status: 'বর্তমান অবস্থা', listing: 'ফরচুন কুকিজ',
+    noListing: 'স্টকে নেই। স্টকে রাখার পরিকল্পনা নেই।', delivery: 'ডেলিভারি', deliveryArea: 'ফরচুন কুকিজ ডেলিভারির জন্য পাওয়া যায় না।',
+    nextStep: 'বিকল্প পণ্য দেখুন', nextStepBody: 'বিস্কুট ও কুকিজের বর্তমান ক্যাটালগ দেখুন।',
+    info: [['প্রাপ্যতা', 'আমরা ফরচুন কুকিজ বিক্রি করি না বা সংগ্রহের ব্যবস্থা করি না।'], ['বিকল্প পণ্য', 'ক্যাটালগের পণ্যের জন্য বিস্কুট ও কুকিজ বিভাগ দেখুন।'], ['অর্ডারের আগে', 'প্রতিটি পণ্যের বর্তমান দাম ও প্রাপ্যতা দেখুন।']],
+    snacksTitle: 'বিস্কুট ও কুকিজ দেখুন', snacksBody: 'বর্তমান ক্যাটালগের বিকল্প পণ্য দেখুন।', openCategory: 'বিস্কুট ও কুকিজ খুলুন', faqTitle: 'ফরচুন কুকিজ সম্পর্কে প্রশ্ন',
+    faqs: [{ question: 'লাকি স্টোরে কি ফরচুন কুকিজ পাওয়া যায়?', answer: 'না। লাকি স্টোর ফরচুন কুকিজ স্টকে রাখে না এবং রাখার কোনো পরিকল্পনা নেই।' }, { question: 'লাকি স্টোর কি ফরচুন কুকিজের ব্যবস্থা করতে পারে?', answer: 'না। বিকল্প পণ্যের জন্য আমাদের বিস্কুট ও কুকিজ বিভাগ দেখুন।' }],
   },
 } satisfies Record<Locale, {
   home: string; category: string; title: string; eyebrow: string; heading: string; intro: string;
-  browse: string; whatsapp: string; message: string; status: string; listing: string; noListing: string;
-  delivery: string; deliveryArea: string; nextStep: string; nextStepBody: string;
-  info: readonly (readonly [string, string])[]; snacksTitle: string; snacksBody: string;
-  openCategory: string; faqTitle: string; faqs: readonly FaqItem[];
+  browse: string; status: string; listing: string; noListing: string; delivery: string; deliveryArea: string;
+  nextStep: string; nextStepBody: string; info: readonly (readonly [string, string])[];
+  snacksTitle: string; snacksBody: string; openCategory: string; faqTitle: string; faqs: readonly FaqItem[];
 }>;
 
 export function FortuneCookiesLanding({ locale }: { locale: Locale }) {
@@ -114,9 +72,7 @@ export function FortuneCookiesLanding({ locale }: { locale: Locale }) {
                   <Link href={categoryPath} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-warm-accent px-5 text-sm font-black text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-fg">
                     {text.browse}<ArrowRight size={17} weight="bold" aria-hidden="true" />
                   </Link>
-                  <Link href={`https://wa.me/8801731944544?text=${encodeURIComponent(text.message)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-warm-border bg-warm-bg px-5 text-sm font-black text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent">
-                    <WhatsappLogo size={18} weight="bold" aria-hidden="true" />{text.whatsapp}
-                  </Link>
+
                 </div>
               </div>
               <aside className="border-t border-warm-border bg-warm-image-well/50 p-5 sm:p-8 lg:border-l lg:border-t-0">
