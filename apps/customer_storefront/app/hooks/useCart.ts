@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CartItem, Product } from '../lib/types';
 import { trackAddToCart } from '../lib/analytics';
+import { supabase } from '../lib/supabase';
+import { getPromotionalPrice, getPromotionSavings, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../lib/storefront-promotions';
 
 const CART_KEY = 'lucky-cart';
 const FREE_DELIVERY_THRESHOLD = 500;
@@ -12,6 +14,8 @@ export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const cartRef = useRef<CartItem[]>([]);
   const [storageError, setStorageError] = useState(false);
+  const [promotions, setPromotions] = useState<StorefrontItemPromotion[]>([]);
+  const [pricingNow, setPricingNow] = useState(() => new Date());
   // Single hydration guard — replaces the previous dual isLoaded + mounted pattern
   const [hydrated, setHydrated] = useState(false);
 
@@ -36,6 +40,28 @@ export function useCart() {
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+
+    let cancelled = false;
+    const refreshPromotions = async () => {
+      setPricingNow(new Date());
+      try {
+        const active = await loadActiveStorefrontPromotions(supabase, cart.map((item) => item.id));
+        if (!cancelled) setPromotions(active);
+      } catch {
+        if (!cancelled) setPromotions([]);
+      }
+    };
+
+    void refreshPromotions();
+    const interval = window.setInterval(() => void refreshPromotions(), 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [cart, hydrated]);
 
   // Save cart to localStorage when it changes (only after hydration)
   useEffect(() => {
@@ -68,9 +94,9 @@ export function useCart() {
       cartRef.current = nextCart;
       return nextCart;
     });
-    trackAddToCart(product);
+    trackAddToCart({ ...product, price: getPromotionalPrice(product, promotions, pricingNow) });
     return true;
-  }, []);
+  }, [promotions, pricingNow]);
 
   const updateQty = useCallback((productId: string, delta: number) => {
     const existing = cartRef.current.find((item) => item.id === productId);
@@ -91,8 +117,13 @@ export function useCart() {
       cartRef.current = nextCart;
       return nextCart;
     });
-    if (existing && canIncrease) trackAddToCart(existing, Math.min(delta, existing.stock - existing.qty));
-  }, []);
+    if (existing && canIncrease) {
+      trackAddToCart(
+        { ...existing, price: getPromotionalPrice(existing, promotions, pricingNow) },
+        Math.min(delta, existing.stock - existing.qty),
+      );
+    }
+  }, [promotions, pricingNow]);
 
   const [lastRemoved, setLastRemoved] = useState<CartItem | null>(null);
 
@@ -129,12 +160,16 @@ export function useCart() {
     setCart([]);
   }, []);
 
-  const syncPrices = useCallback((updates: { id: string; name?: string; price: number }[]) => {
+  const syncPrices = useCallback((updates: { id: string; name?: string; price: number; mrp?: number }[]) => {
     const prices = new Map(updates.map((update) => [update.id, update]));
     setCart((prev) => {
       const nextCart = prev.map((item) => {
         const update = prices.get(item.id);
-        return update ? { ...item, price: update.price } : item;
+        return update ? {
+          ...item,
+          price: update.price,
+          ...(update.mrp !== undefined ? { originalPrice: update.mrp > update.price ? update.mrp : undefined } : {}),
+        } : item;
       });
       cartRef.current = nextCart;
       return nextCart;
@@ -144,9 +179,13 @@ export function useCart() {
   // Before hydration, show empty cart to avoid SSR/client mismatch
   const safeCart = hydrated ? cart : [];
   const totalItems = hydrated ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
-  const subtotal = hydrated ? cart.reduce((sum, item) => sum + item.price * item.qty, 0) : 0;
+  const effectivePrice = useCallback(
+    (item: CartItem) => getPromotionalPrice(item, promotions, pricingNow),
+    [promotions, pricingNow],
+  );
+  const subtotal = hydrated ? Math.round(cart.reduce((sum, item) => sum + effectivePrice(item) * item.qty, 0) * 100) / 100 : 0;
   const deliveryFee = subtotal === 0 ? 0 : subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : (hydrated ? FREE_DELIVERY_FEE : 0);
-  const discount = 0;
+  const discount = hydrated ? Math.round(cart.reduce((sum, item) => sum + getPromotionSavings(item, promotions, pricingNow) * item.qty, 0) * 100) / 100 : 0;
   const total = subtotal + deliveryFee;
 
   return {
@@ -158,6 +197,7 @@ export function useCart() {
     undoRemove,
     clearCart,
     syncPrices,
+    effectivePrice,
     totalItems,
     subtotal,
     deliveryFee,
